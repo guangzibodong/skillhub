@@ -275,11 +275,12 @@ Completed:
 - Installed-skill update inbox API endpoint.
 - Skill review submission endpoint.
 - Admin review queue and review decision endpoints.
+- Project API key creation, listing, and revocation.
+- Runtime invocation endpoint with API key auth, installed-skill gate, permission policy checks, rate limit checks, budget checks, invocation logs, and usage events.
+- SDK and CLI runtime invocation helpers.
 
 Next:
 
-- Runtime invocation policy gate.
-- Usage event recording.
 - Billable usage to ledger transaction creation.
 - Notification event rendering in dashboard/admin.
 - Auth and role enforcement to replace temporary operator-token write protection.

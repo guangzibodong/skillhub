@@ -13,6 +13,24 @@ export type SearchSkillsOptions = {
   permissionLevel?: "low" | "medium" | "high";
 };
 
+export type InvokeSkillOptions = {
+  version?: string;
+};
+
+export type SkillInvocationResult<TOutput = unknown> = {
+  invocationId: string;
+  projectSlug: string;
+  skillSlug: string;
+  version: string;
+  status: "success" | "error" | "blocked";
+  latencyMs: number;
+  billable: boolean;
+  amountCents: number;
+  currency: string;
+  output: TOutput;
+  error?: string;
+};
+
 export class SkillHubClient {
   private readonly apiKey?: string;
   private readonly baseUrl: string;
@@ -63,6 +81,23 @@ export class SkillHubClient {
     });
 
     return (await response.json()) as { id: string; slug: string };
+  }
+
+  async run<TOutput = unknown>(
+    skillSlug: string,
+    input: unknown = {},
+    options: InvokeSkillOptions = {}
+  ): Promise<SkillInvocationResult<TOutput>> {
+    const response = await this.request(new URL("/v1/runtime/invoke", this.baseUrl), {
+      method: "POST",
+      body: JSON.stringify({
+        skillSlug,
+        version: options.version,
+        input
+      })
+    });
+
+    return (await response.json()) as SkillInvocationResult<TOutput>;
   }
 
   private async request(url: URL, init: RequestInit): Promise<Response> {

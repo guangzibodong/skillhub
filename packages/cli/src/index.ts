@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { assertSkillManifest } from "@useskillhub/schema";
 import { SkillHubClient } from "@useskillhub/sdk";
 
-type Command = "validate" | "publish" | "search" | "help";
+type Command = "validate" | "publish" | "search" | "run" | "help";
 
 const [, , rawCommand = "help", ...args] = process.argv;
 const command = rawCommand as Command;
@@ -45,6 +45,22 @@ async function main() {
     return;
   }
 
+  if (command === "run") {
+    const [skillSlug, rawInput = "{}"] = args;
+
+    if (!skillSlug) {
+      throw new Error("Usage: skillhub run <skill> [json-input]");
+    }
+
+    const client = new SkillHubClient({
+      apiKey: process.env.SKILLHUB_API_KEY,
+      baseUrl: process.env.SKILLHUB_API_URL
+    });
+    const result = await client.run(skillSlug, JSON.parse(rawInput));
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   printHelp();
 }
 
@@ -61,6 +77,7 @@ Usage:
   skillhub validate [manifest]
   skillhub publish [manifest]
   skillhub search <query>
+  skillhub run <skill> [json-input]
 
 Environment:
   SKILLHUB_API_KEY

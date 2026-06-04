@@ -110,6 +110,79 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox"
 
 Writes are temporarily protected by the operator token until full account auth and role checks are connected.
 
+## Project API Keys
+
+Project API keys authenticate agent runtime calls. The raw key is returned only once when it is created; SkillHub stores only a hash plus display metadata.
+
+Create a project API key:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/api-keys" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Research Agent runtime"}'
+```
+
+List project API keys:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/api-keys" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Revoke a project API key:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/api-keys/$KEY_ID/revoke" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+## Runtime Invocation
+
+Runtime calls use a project API key, not the operator token.
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/runtime/invoke" \
+  -H "Authorization: Bearer $SKILLHUB_PROJECT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "browser-research",
+    "input": {
+      "query": "MCP server registry trends"
+    }
+  }'
+```
+
+Before recording a successful invocation, the gateway checks:
+
+- Project API key is valid and not revoked.
+- Skill is installed for the project.
+- Installed version matches when a version is requested.
+- Skill is verified or deprecated, not draft, rejected, or suspended.
+- Project install is approved.
+- Project policy allows the skill permission profile.
+- Rate limit and monthly budget are not exceeded.
+
+Every allowed call writes a `skill_invocations` row. Successful calls also write a `usage_events` row. Per-call prices make the usage event billable; free and subscription skills still record usage without direct per-call billing.
+
+External runtime proxying is disabled by default. When `SKILLHUB_RUNTIME_PROXY=enabled`, HTTP runtime skills can be proxied to their manifest entrypoint. Otherwise the gateway returns a metered contract response so policy, logging, and billing paths can be tested safely.
+
+SDK:
+
+```ts
+import { SkillHubClient } from "@useskillhub/sdk";
+
+const skillhub = new SkillHubClient({ apiKey: process.env.SKILLHUB_PROJECT_API_KEY });
+const result = await skillhub.run("browser-research", { query: "MCP server registry trends" });
+```
+
+CLI:
+
+```bash
+SKILLHUB_API_KEY="$SKILLHUB_PROJECT_API_KEY" \
+  skillhub run browser-research '{"query":"MCP server registry trends"}'
+```
+
 ## Review Workflow
 
 Submit a skill for review:

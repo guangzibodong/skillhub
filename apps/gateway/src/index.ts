@@ -19,6 +19,12 @@ import {
   submitSkillForReview,
   upsertProjectPolicy
 } from "./operations.js";
+import {
+  createProjectApiKey,
+  invokeSkill,
+  listProjectApiKeys,
+  revokeProjectApiKey
+} from "./runtime.js";
 
 type Env = {
   Bindings: {
@@ -144,6 +150,67 @@ app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
   return c.json({
     updates: await listProjectUpdateInbox(c.req.param("projectSlug"))
   });
+});
+
+app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    apiKeys: await listProjectApiKeys(c.req.param("projectSlug"))
+  });
+});
+
+app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { name?: string };
+
+  try {
+    return c.json(
+      {
+        apiKey: await createProjectApiKey(c.req.param("projectSlug"), body.name)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create API key." }, 400);
+  }
+});
+
+app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      apiKey: await revokeProjectApiKey(c.req.param("projectSlug"), c.req.param("keyId"))
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to revoke API key." }, 400);
+  }
+});
+
+app.post("/v1/runtime/invoke", async (c) => {
+  try {
+    const result = await invokeSkill(
+      c.req.header("Authorization"),
+      (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+    );
+    return c.json(result.body, result.status as 200 | 400 | 401 | 403 | 502);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to invoke skill." }, 503);
+  }
 });
 
 app.post("/v1/skills/:slug/submit", async (c) => {

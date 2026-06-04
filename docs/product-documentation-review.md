@@ -129,6 +129,14 @@ Added first operational API endpoints, covering:
 - Admin review queue.
 - Admin review decisions and audit/event recording.
 
+Added first runtime API endpoints, covering:
+
+- Project API key creation, listing, and revocation.
+- Project API key authentication for runtime calls.
+- Runtime policy checks against installed skills, approval state, permission policies, rate limits, and budgets.
+- Invocation logging and usage event recording.
+- SDK and CLI runtime calls.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
