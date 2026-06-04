@@ -2729,6 +2729,45 @@ a {
   white-space: normal;
 }
 
+.buyer-request-panel {
+  grid-column: 1 / -1;
+}
+
+.buyer-request-row {
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(120px, 0.45fr)
+    minmax(100px, 0.35fr)
+    minmax(120px, 0.42fr)
+    minmax(160px, 0.58fr);
+  min-width: 880px;
+}
+
+.buyer-request-row strong {
+  display: grid;
+  gap: 4px;
+  white-space: normal;
+}
+
+.buyer-request-row small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buyer-request-row--empty {
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+
+.buyer-request-row--empty strong {
+  white-space: normal;
+}
+
 .money-table__row {
   grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(96px, 0.45fr));
   min-width: 760px;

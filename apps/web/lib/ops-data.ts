@@ -200,6 +200,26 @@ export type PublisherSkillRecord = {
   updatedAt: string;
 };
 
+export type BuyerRequestRecord = {
+  id: string;
+  requesterOrganizationId: string | null;
+  requesterOrganizationName: string | null;
+  title: string;
+  description: string;
+  category: string;
+  bountyCents: number;
+  currency: string;
+  status: "open" | "claimed" | "submitted" | "matched" | "closed" | "canceled";
+  claimedByPublisherId: string | null;
+  claimedByPublisherName: string | null;
+  claimedByPublisherOrganizationId: string | null;
+  dueAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  canClaim: boolean;
+  nextAction: string;
+};
+
 export type DeveloperProjectRecord = {
   id: string;
   slug: string;
@@ -641,6 +661,66 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       ]
     },
     updatedAt: "demo"
+  }
+];
+
+const fallbackBuyerRequests: BuyerRequestRecord[] = [
+  {
+    id: "demo-request-figma-linear",
+    requesterOrganizationId: "demo-buyer-org",
+    requesterOrganizationName: "OpsPilot",
+    title: "Figma change request to Linear issue",
+    description: "Convert annotated Figma comments into scoped Linear issues with acceptance criteria.",
+    category: "workflow",
+    bountyCents: 60000,
+    currency: "usd",
+    status: "open",
+    claimedByPublisherId: null,
+    claimedByPublisherName: null,
+    claimedByPublisherOrganizationId: null,
+    dueAt: "demo",
+    createdAt: "demo",
+    updatedAt: "demo",
+    canClaim: true,
+    nextAction: "Claim request"
+  },
+  {
+    id: "demo-request-shopify-ops",
+    requesterOrganizationId: "demo-buyer-org",
+    requesterOrganizationName: "Commerce Desk",
+    title: "Shopify product operations skill",
+    description: "Normalize product attributes, flag missing SEO fields, and prepare bulk update actions.",
+    category: "commerce",
+    bountyCents: 90000,
+    currency: "usd",
+    status: "claimed",
+    claimedByPublisherId: "demo-publisher",
+    claimedByPublisherName: "SkillHub Publisher",
+    claimedByPublisherOrganizationId: "demo-org",
+    dueAt: "demo",
+    createdAt: "demo",
+    updatedAt: "demo",
+    canClaim: false,
+    nextAction: "Submit build"
+  },
+  {
+    id: "demo-request-slack-incident",
+    requesterOrganizationId: "demo-buyer-org",
+    requesterOrganizationName: "Reliability AI",
+    title: "Slack incident summarizer",
+    description: "Summarize incident threads into timeline, owner actions, and customer-impact notes.",
+    category: "ops",
+    bountyCents: 45000,
+    currency: "usd",
+    status: "submitted",
+    claimedByPublisherId: "demo-publisher",
+    claimedByPublisherName: "SkillHub Publisher",
+    claimedByPublisherOrganizationId: "demo-org",
+    dueAt: "demo",
+    createdAt: "demo",
+    updatedAt: "demo",
+    canClaim: false,
+    nextAction: "Await buyer match"
   }
 ];
 
@@ -1096,6 +1176,32 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
     return payload.skills;
   } catch {
     return fallbackPublisherSkills;
+  }
+}
+
+export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackBuyerRequests;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/buyer-requests?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher buyer requests failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
+    return payload.requests;
+  } catch {
+    return fallbackBuyerRequests;
   }
 }
 

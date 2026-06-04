@@ -61,6 +61,14 @@ import {
   listPublisherRefunds
 } from "./adjustments.js";
 import {
+  claimBuyerRequest,
+  createBuyerRequest,
+  decideBuyerRequest,
+  listDeveloperBuyerRequests,
+  listPublisherBuyerRequests,
+  submitBuyerRequestBuild
+} from "./buyer-requests.js";
+import {
   authorize,
   createBootstrapUserToken,
   publicSubject,
@@ -198,6 +206,66 @@ app.get("/v1/developer/projects/:projectSlug", async (c) => {
   }
 
   return c.json({ project });
+});
+
+app.get("/v1/developer/buyer-requests", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    requests: await listDeveloperBuyerRequests(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/developer/buyer-requests", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        request: await createBuyerRequest(
+          authorization.subject.organizationId,
+          (await c.req.json()) as Record<string, unknown>
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create buyer request." }, 400);
+  }
+});
+
+app.post("/v1/developer/buyer-requests/:requestId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      request: await decideBuyerRequest(
+        authorization.subject.organizationId,
+        c.req.param("requestId"),
+        (await c.req.json()) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update buyer request." }, 400);
+  }
 });
 
 app.get("/v1/publisher/overview", async (c) => {
@@ -632,6 +700,56 @@ app.get("/v1/publisher/disputes", async (c) => {
   return c.json({
     disputes: await listPublisherDisputes(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.get("/v1/publisher/buyer-requests", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    requests: await listPublisherBuyerRequests(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/publisher/buyer-requests/:requestId/claim", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      request: await claimBuyerRequest(authorization.subject.organizationId, c.req.param("requestId"))
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to claim buyer request." }, 400);
+  }
+});
+
+app.post("/v1/publisher/buyer-requests/:requestId/submit", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      request: await submitBuyerRequestBuild(authorization.subject.organizationId, c.req.param("requestId"))
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to submit buyer request build." }, 400);
+  }
 });
 
 app.get("/v1/publisher/finance/ledger", async (c) => {

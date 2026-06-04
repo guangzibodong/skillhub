@@ -236,6 +236,14 @@ Added publisher-scoped revenue ledger depth, covering:
 - Recent transaction rows limited to the current publisher's transaction splits and balance rows.
 - Dashboard revenue ledger now reads the publisher-scoped ledger instead of the admin global finance ledger, giving publishers a trustworthy repeat-use earnings view.
 
+Added buyer request board depth, covering:
+
+- Developer organizations can create missing-skill requests with category, bounty, due date, and description.
+- Publishers can read open demand plus their own claimed requests, claim open requests, and submit builds.
+- Developers can match, close, or cancel their own requests after publisher submission.
+- Every buyer request state change writes audit and in-app notification records before email delivery exists.
+- Dashboard now shows buyer request status, bounty, requester, due date, and next action, giving publishers a concrete demand loop.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

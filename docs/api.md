@@ -262,6 +262,64 @@ The response includes each owned skill's latest version, verification state, lat
 
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
+## Buyer Request Board
+
+Buyer requests let developer organizations ask for missing agent skills and let publishers claim demand before building. The workflow is stored before payment and email integrations are connected, and every state change records audit and in-app notification rows.
+
+Developer-side reads and creation:
+
+```bash
+curl "https://api.useskillhub.com/v1/developer/buyer-requests?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/developer/buyer-requests" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Slack incident summarizer",
+    "description": "Summarize incident threads into timeline, owner actions, and customer-impact notes.",
+    "category": "ops",
+    "bountyCents": 45000,
+    "currency": "usd",
+    "dueAt": "2026-06-30T00:00:00.000Z"
+  }'
+```
+
+Publisher-side request board:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/buyer-requests?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Publishers see open requests plus requests claimed by their own publisher organization. They can claim open requests and submit builds:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/buyer-requests/$REQUEST_ID/claim" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/publisher/buyer-requests/$REQUEST_ID/submit" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Developers can match, close, or cancel requests owned by their organization:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/developer/buyer-requests/$REQUEST_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"matched","reason":"Submitted skill satisfies the request."}'
+```
+
+Buyer request states:
+
+- `open`
+- `claimed`
+- `submitted`
+- `matched`
+- `closed`
+- `canceled`
+
 ## Skill Pricing
 
 Read skill prices:
