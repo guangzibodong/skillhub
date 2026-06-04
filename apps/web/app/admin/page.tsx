@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { formatMoney, getAdminNotifications, getFinanceLedger } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -88,11 +89,33 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const overview = await getPlatformOverview();
+  const [overview, financeLedger, notifications] = await Promise.all([
+    getPlatformOverview(),
+    getFinanceLedger(),
+    getAdminNotifications()
+  ]);
+  const financeRows =
+    financeLedger.recentTransactions.length > 0
+      ? financeLedger.recentTransactions.slice(0, 5).map((transaction) => [
+          transaction.skillName ?? transaction.skillSlug ?? transaction.id,
+          formatMoney(transaction.grossCents, transaction.currency),
+          formatMoney(transaction.platformFeeCents, transaction.currency),
+          formatMoney(transaction.publisherShareCents, transaction.currency),
+          transaction.balanceState ?? transaction.status
+        ])
+      : ops.moneyRows;
+  const notificationRows =
+    notifications.length > 0
+      ? notifications.slice(0, 5).map((notification) => [
+          notification.subject ?? notification.eventType,
+          notification.eventType,
+          notification.status
+        ])
+      : labels.auditRows.map((item) => [item, "system", "queued"]);
   const visibleMetrics = [
-    labels.metrics[0],
-    labels.metrics[1],
-    [labels.metrics[2][0], getOverviewMetric(overview.admin.metrics, "Payout review", labels.metrics[2][1])],
+    [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
+    [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
+    [labels.metrics[2][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
     [labels.metrics[3][0], getOverviewMetric(overview.admin.metrics, "Review queue", labels.metrics[3][1])]
   ];
 
@@ -148,10 +171,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <span>{labels.auditTitle}</span>
           </div>
           <div className="audit-list">
-            {labels.auditRows.map((item) => (
-              <div className="audit-row" key={item}>
+            {notificationRows.map(([subject, eventType, status]) => (
+              <div className="audit-row" key={`${subject}-${eventType}`}>
                 <ShieldCheck size={16} aria-hidden="true" />
-                <span>{item}</span>
+                <span>
+                  <strong>{subject}</strong>
+                  <small>{eventType} · {status}</small>
+                </span>
               </div>
             ))}
           </div>
@@ -212,7 +238,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {ops.moneyRows.map(([batch, gross, fee, share, state]) => (
+            {financeRows.map(([batch, gross, fee, share, state]) => (
               <div className="money-table__row" key={batch}>
                 <strong>{batch}</strong>
                 <span>{gross}</span>
@@ -230,7 +256,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <span>{labels.metrics[2][0]}</span>
           </div>
           <div className="payout-list">
-            {ops.payoutRows.map(([label, state], index) => {
+            {[
+              [formatMoney(financeLedger.summary.pendingBalanceCents), "pending"],
+              [formatMoney(financeLedger.summary.availableBalanceCents), "available"],
+              [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
+            ].map(([label, state], index) => {
               const Icon = index === 0 ? AlertTriangle : index === 1 ? ShieldCheck : Banknote;
               return (
                 <div className="payout-row" key={label}>

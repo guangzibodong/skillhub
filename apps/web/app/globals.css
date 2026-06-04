@@ -1529,6 +1529,17 @@ a {
   align-items: flex-start;
 }
 
+.audit-row span {
+  display: grid;
+  gap: 4px;
+}
+
+.audit-row small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .admin-finance-section {
   margin-bottom: 72px;
 }

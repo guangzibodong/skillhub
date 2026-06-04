@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { formatMoney, getFinanceLedger } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -79,10 +80,20 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const overview = await getPlatformOverview();
+  const [overview, financeLedger] = await Promise.all([getPlatformOverview(), getFinanceLedger()]);
+  const ledgerRows =
+    financeLedger.recentTransactions.length > 0
+      ? financeLedger.recentTransactions.slice(0, 5).map((transaction) => [
+          transaction.skillName ?? transaction.skillSlug ?? transaction.id,
+          formatMoney(transaction.grossCents, transaction.currency),
+          formatMoney(transaction.platformFeeCents, transaction.currency),
+          formatMoney(transaction.publisherShareCents, transaction.currency),
+          transaction.balanceState ?? transaction.status
+        ])
+      : labels.ledgerRows;
   const visibleMetrics = [
-    [labels.metrics[0][0], getOverviewMetric(overview.publisher.metrics, "Available balance", labels.metrics[0][1])],
-    [labels.metrics[1][0], getOverviewMetric(overview.publisher.metrics, "Pending balance", labels.metrics[1][1])],
+    [labels.metrics[0][0], formatMoney(financeLedger.summary.availableBalanceCents)],
+    [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
     [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
     [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
   ];
@@ -215,7 +226,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {labels.ledgerRows.map(([skill, gross, fee, net, status]) => (
+            {ledgerRows.map(([skill, gross, fee, net, status]) => (
               <div className="ledger-row" key={skill}>
                 <strong>{skill}</strong>
                 <span>{gross}</span>

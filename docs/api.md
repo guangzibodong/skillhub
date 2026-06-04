@@ -259,6 +259,17 @@ curl -X POST "https://api.useskillhub.com/v1/admin/finance/release-balances" \
 
 Balances start as `pending` and become `available` only after their risk/refund window has elapsed. The default balance delay is 14 days and can be configured with `SKILLHUB_BALANCE_DELAY_DAYS`.
 
+## Admin Notifications
+
+Notification events are recorded before the final email provider is connected. Admin can inspect queued, sent, failed, and skipped events:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
+
 ## Review Workflow
 
 Submit a skill for review:

@@ -32,6 +32,7 @@ import {
   releaseAvailableBalances,
   setSkillPrice
 } from "./billing.js";
+import { listAdminNotifications } from "./notifications.js";
 
 type Env = {
   Bindings: {
@@ -285,6 +286,20 @@ app.post("/v1/admin/finance/release-balances", async (c) => {
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to release balances." }, 400);
   }
+});
+
+app.get("/v1/admin/notifications", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const limit = Number(c.req.query("limit") ?? "25");
+
+  return c.json({
+    notifications: await listAdminNotifications(limit)
+  });
 });
 
 app.post("/v1/skills/:slug/submit", async (c) => {

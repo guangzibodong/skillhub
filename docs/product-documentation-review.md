@@ -147,6 +147,13 @@ Added first billing-ledger API endpoints, covering:
 - Matured balance release.
 - Read-only finance ledger summary.
 
+Connected the operating UI to live platform data, covering:
+
+- Admin finance metrics from the ledger.
+- Admin money table from recent ledger transactions.
+- Admin notification/audit stream from notification events.
+- Dashboard publisher balances and revenue ledger from the same finance source.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
