@@ -1,0 +1,22 @@
+{
+  "name": "@useskillhub/cli",
+  "version": "0.1.0",
+  "description": "SkillHub command line tools.",
+  "type": "module",
+  "bin": {
+    "skillhub": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@useskillhub/schema": "workspace:*",
+    "@useskillhub/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

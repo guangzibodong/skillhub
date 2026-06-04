@@ -1,0 +1,10 @@
+name = "skillhub-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-12-18"
+
+[vars]
+SKILLHUB_ENV = "development"
+
+[[r2_buckets]]
+binding = "PACKAGES"
+bucket_name = "skillhub-packages"

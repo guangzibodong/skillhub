@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "0.1",
+  "name": "browser-research",
+  "displayName": "Browser Research",
+  "version": "0.1.0",
+  "description": "Research a web topic and return concise findings with source URLs.",
+  "author": {
+    "name": "SkillHub",
+    "url": "https://useskillhub.com"
+  },
+  "tags": ["research", "browser", "citations"],
+  "runtime": {
+    "type": "http",
+    "entrypoint": "https://api.useskillhub.com/demo/browser-research"
+  },
+  "permissions": {
+    "network": true,
+    "browser": true,
+    "filesystem": "none",
+    "secrets": []
+  },
+  "inputSchema": {
+    "type": "object",
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "minLength": 3
+      },
+      "freshnessDays": {
+        "type": "number",
+        "minimum": 1
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["summary", "sources"],
+    "properties": {
+      "summary": {
+        "type": "string"
+      },
+      "sources": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

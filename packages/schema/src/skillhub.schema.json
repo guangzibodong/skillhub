@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://useskillhub.com/schemas/skillhub.schema.json",
+  "title": "SkillHub Manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "name",
+    "displayName",
+    "version",
+    "description",
+    "tags",
+    "runtime",
+    "permissions",
+    "inputSchema",
+    "outputSchema"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "0.1" },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+    },
+    "displayName": { "type": "string", "minLength": 2 },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.-]+)?$"
+    },
+    "description": { "type": "string", "minLength": 10 },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "runtime": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "entrypoint"],
+          "properties": {
+            "type": { "const": "http" },
+            "entrypoint": { "type": "string", "format": "uri" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "serverUrl"],
+          "properties": {
+            "type": { "const": "mcp" },
+            "serverUrl": { "type": "string", "format": "uri" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "command"],
+          "properties": {
+            "type": { "const": "local" },
+            "command": { "type": "string" },
+            "args": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "permissions": {
+      "type": "object",
+      "required": ["network", "browser", "filesystem", "secrets"],
+      "properties": {
+        "network": { "type": "boolean" },
+        "browser": { "type": "boolean" },
+        "filesystem": { "enum": ["none", "read", "write"] },
+        "secrets": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "inputSchema": { "type": "object" },
+    "outputSchema": { "type": "object" }
+  },
+  "additionalProperties": false
+}

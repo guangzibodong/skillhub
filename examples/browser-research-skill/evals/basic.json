@@ -1,0 +1,12 @@
+[
+  {
+    "name": "returns sources",
+    "input": {
+      "query": "latest Model Context Protocol server concepts"
+    },
+    "expect": {
+      "requiredFields": ["summary", "sources"],
+      "minSources": 2
+    }
+  }
+]
