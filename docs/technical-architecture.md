@@ -224,7 +224,7 @@ Developer searches marketplace
 ```text
 Agent requests skill
 -> gateway authenticates project API key
--> gateway checks subscription/budget/version pin
+-> gateway checks subscription lifecycle, budget, and version pin
 -> gateway checks permission policy
 -> runtime adapter executes skill
 -> invocation is logged

@@ -12,11 +12,11 @@ import {
   PackageCheck,
   RadioTower,
   ShieldCheck,
-  WalletCards,
-  Zap
+  WalletCards
 } from "lucide-react";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
+import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
@@ -265,31 +265,15 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             </div>
           </section>
 
-          <section className="ops-panel project-table-panel">
-            <div className="card-kicker">
-              <Zap size={16} aria-hidden="true" />
-              <span>{labels.billingTitle}</span>
-            </div>
-            <div className="project-table project-table--compact">
-              <div className="project-table__row project-table__row--head project-billing-row">
-                {labels.billingHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
-              </div>
-              {detail.subscriptions.length > 0 ? (
-                detail.subscriptions.map((subscription) => (
-                  <div className="project-table__row project-billing-row" key={subscription.id}>
-                    <strong>{subscription.displayName}</strong>
-                    <span className={statusChipClass(subscription.status)}>{subscription.status}</span>
-                    <span>{subscriptionModelLabel(subscription.billingModel, subscription.unitAmountCents, subscription.currency)}</span>
-                    <span>{formatDateValue(subscription.currentPeriodEnd, locale, labels.noDate)}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="project-table__row project-table__row--empty">{labels.empty}</div>
-              )}
-            </div>
-          </section>
+          <ProjectSubscriptionManager
+            emptyLabel={labels.empty}
+            headers={labels.billingHeaders}
+            locale={locale}
+            noDateLabel={labels.noDate}
+            projectSlug={project.slug}
+            subscriptions={detail.subscriptions}
+            titleLabel={labels.billingTitle}
+          />
         </aside>
       </section>
     </main>
@@ -416,12 +400,4 @@ function skillAction(skill: DeveloperProjectSkillRecord, locale: Locale) {
   }
 
   return locale === "zh" ? "持续监控" : "Monitor";
-}
-
-function subscriptionModelLabel(model: "free" | "per_call" | "subscription" | null, cents: number | null, currency: string | null) {
-  if (model === "per_call") {
-    return `${formatMoney(cents ?? 0, currency ?? "usd")} / call`;
-  }
-
-  return model ?? "free";
 }

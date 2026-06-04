@@ -319,13 +319,15 @@ Completed:
 - Dashboard publisher workspace now shows a buyer request board with request, category, bounty, status, requester, due date, and next action signals.
 - Project installed-skill status endpoint now lets project operators restore, suspend, or remove installs under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
+- Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
+- Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
 
 Next:
 
 - Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project write workflows for update handling actions, invoice detail views, and subscription lifecycle actions.
+- Project write workflows for update handling actions and invoice detail views.
 
 ## Engineering Acceptance Standard
 

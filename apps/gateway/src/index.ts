@@ -26,6 +26,7 @@ import {
   listProjectApiKeys,
   revokeProjectApiKey
 } from "./runtime.js";
+import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
@@ -432,6 +433,36 @@ app.get("/v1/projects/:projectSlug/disputes", async (c) => {
   return c.json({
     disputes: await listProjectDisputes(projectSlug, authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.put("/v1/projects/:projectSlug/subscriptions/:subscriptionId/status", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { status?: string };
+
+  if (!body.status) {
+    return c.json({ error: "Missing subscription status." }, 400);
+  }
+
+  try {
+    return c.json({
+      subscription: await updateProjectSubscriptionStatus(
+        projectSlug,
+        c.req.param("subscriptionId"),
+        body.status,
+        authorization.subject.organizationId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update subscription status." }, 400);
+  }
 });
 
 app.get("/v1/projects/:projectSlug/api-keys", async (c) => {

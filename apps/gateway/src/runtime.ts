@@ -45,6 +45,12 @@ type PriceRecord = {
   currency: string;
 };
 
+type SubscriptionRecord = {
+  id: string;
+  status: "trialing" | "active" | "past_due" | "paused" | "canceled";
+  current_period_end: string | null;
+};
+
 const permissionRank: Record<SkillSummary["permissionLevel"], number> = {
   low: 1,
   medium: 2,
@@ -254,10 +260,41 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
     };
   }
 
+  const price = await getActivePrice(sql, skill.skill_id);
+  const subscription = await evaluateSubscription(sql, skill, price);
+
+  if (!subscription.ok) {
+    const invocation = await recordInvocation(sql, {
+      projectId: apiKeyRecord.project_id,
+      skillId: skill.skill_id,
+      skillVersionId: skill.skill_version_id,
+      status: "blocked",
+      latencyMs: Date.now() - startedAt,
+      errorCode: subscription.code,
+      policyResult: {
+        ...policy,
+        subscription
+      },
+      inputSummary: summarizeValue(input.input)
+    });
+
+    return {
+      status: 403,
+      body: {
+        error: subscription.message,
+        code: subscription.code,
+        invocationId: invocation.id,
+        policy: {
+          ...policy,
+          subscription
+        }
+      }
+    };
+  }
+
   const execution = await executeSkill(skill.manifest, input.input);
   const latencyMs = Date.now() - startedAt;
   const status = execution.ok ? "success" : "error";
-  const price = await getActivePrice(sql, skill.skill_id);
   const amountCents = status === "success" && price.billing_model === "per_call" ? price.unit_amount_cents : 0;
   const invocation = await recordInvocation(sql, {
     projectId: apiKeyRecord.project_id,
@@ -266,7 +303,10 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
     status,
     latencyMs,
     errorCode: execution.ok ? undefined : execution.errorCode,
-    policyResult: policy,
+    policyResult: {
+      ...policy,
+      subscription
+    },
     inputSummary: summarizeValue(input.input),
     outputSummary: summarizeValue(execution.output)
   });
@@ -580,6 +620,80 @@ async function getActivePrice(sql: Sql, skillId: string): Promise<PriceRecord> {
   `) as PriceRecord[];
 
   return rows[0] ?? { id: null, billing_model: "free", unit_amount_cents: 0, currency: "usd" };
+}
+
+async function evaluateSubscription(sql: Sql, skill: RuntimeSkillRecord, price: PriceRecord) {
+  if (price.billing_model !== "subscription") {
+    return {
+      ok: true,
+      code: "not_required",
+      message: "Subscription is not required for this price model."
+    };
+  }
+
+  const subscriptions = (await sql`
+    select
+      id::text,
+      status,
+      current_period_end
+    from subscriptions
+    where project_id = ${skill.project_id}
+      and skill_id = ${skill.skill_id}
+      and (${price.id}::uuid is null or price_id = ${price.id} or price_id is null)
+    order by
+      case
+        when status in ('active', 'trialing') and (current_period_end is null or current_period_end > now()) then 0
+        when status = 'paused' then 1
+        when status = 'past_due' then 2
+        when status = 'canceled' then 3
+        else 4
+      end,
+      created_at desc
+    limit 1
+  `) as SubscriptionRecord[];
+  const subscription = subscriptions[0];
+
+  if (!subscription) {
+    return blocked("subscription_required", "This subscription skill requires an active project subscription.", {
+      billingModel: price.billing_model,
+      skillSlug: skill.skill_slug
+    });
+  }
+
+  if (!["active", "trialing"].includes(subscription.status)) {
+    const messageByStatus: Record<SubscriptionRecord["status"], string> = {
+      active: "Project subscription is active.",
+      trialing: "Project subscription is trialing.",
+      past_due: "Project subscription is past due.",
+      paused: "Project subscription is paused.",
+      canceled: "Project subscription is canceled."
+    };
+
+    return blocked(`subscription_${subscription.status}`, messageByStatus[subscription.status], {
+      billingModel: price.billing_model,
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status
+    });
+  }
+
+  if (subscription.current_period_end && new Date(subscription.current_period_end).getTime() <= Date.now()) {
+    return blocked("subscription_period_expired", "Project subscription period has expired.", {
+      billingModel: price.billing_model,
+      subscriptionId: subscription.id,
+      subscriptionStatus: subscription.status,
+      currentPeriodEnd: subscription.current_period_end
+    });
+  }
+
+  return {
+    ok: true,
+    code: "subscription_active",
+    message: "Project subscription is active.",
+    billingModel: price.billing_model,
+    subscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+    currentPeriodEnd: subscription.current_period_end
+  };
 }
 
 async function recordInvocation(

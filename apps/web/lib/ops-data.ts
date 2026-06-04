@@ -357,6 +357,9 @@ export type DeveloperProjectSubscriptionRecord = {
   currency: string | null;
   currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
+  pausedAt: string | null;
+  canceledAt: string | null;
+  updatedAt: string | null;
   createdAt: string;
 };
 
@@ -995,6 +998,9 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         currency: "usd",
         currentPeriodStart: "demo",
         currentPeriodEnd: "demo",
+        pausedAt: null,
+        canceledAt: null,
+        updatedAt: "demo",
         createdAt: "demo"
       }
     ]

@@ -2536,6 +2536,46 @@ a {
   min-width: 560px;
 }
 
+.project-billing-row--actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  min-width: 0;
+  padding: 13px 0;
+}
+
+.project-table__row--head.project-billing-row--actions {
+  display: none;
+}
+
+.project-billing-row--actions strong,
+.project-billing-row--actions .subscription-actions {
+  grid-column: 1 / -1;
+}
+
+.subscription-block {
+  min-width: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.subscription-block:last-child {
+  border-bottom: 0;
+}
+
+.subscription-block .project-table__row {
+  border-bottom: 0;
+}
+
+.subscription-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.subscription-action-form {
+  display: inline-flex;
+}
+
 .table-link {
   color: var(--ink);
   text-decoration: none;

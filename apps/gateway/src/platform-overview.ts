@@ -200,7 +200,7 @@ async function queryOverviewFromDatabase(sql: any, registryStats: Awaited<Return
       select coalesce(sum(amount_cents) filter (where state = 'pending'), 0)::int as pending_cents
       from publisher_balances
     `,
-    sql`select count(*)::int as count from subscriptions where status in ('trialing', 'active')`,
+    sql`select count(*)::int as count from subscriptions where status in ('trialing', 'active') and (current_period_end is null or current_period_end > now())`,
     sql`select count(*)::int as count from skill_reviews where status in ('queued', 'in_review')`,
     sql`select count(*)::int as count from payouts where status in ('requested', 'review', 'blocked')`,
     sql`select count(*)::int as count from notification_events where status = 'queued'`,

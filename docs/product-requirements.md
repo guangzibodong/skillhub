@@ -237,7 +237,7 @@ Requirements:
 Requirements:
 
 - Projects.
-- Project detail command center with installed skills, editable per-skill policies, API keys, updates, runtime calls, subscriptions, cost, and next actions.
+- Project detail command center with installed skills, editable per-skill policies, API keys, updates, runtime calls, manageable subscription lifecycle, cost, and next actions.
 - Project API keys with create, reveal-once, copy, rotation, and revoke workflows.
 - Approved skills.
 - Version pins.

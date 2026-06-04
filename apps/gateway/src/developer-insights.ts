@@ -108,6 +108,9 @@ type ProjectSubscriptionRow = {
   currency: string | null;
   currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
+  pausedAt: string | null;
+  canceledAt: string | null;
+  updatedAt: string | null;
   createdAt: string;
 };
 
@@ -194,6 +197,7 @@ export async function listDeveloperProjects(organizationId: string | null | unde
       from subscriptions
       where project_id = p.id
         and status in ('trialing', 'active')
+        and (current_period_end is null or current_period_end > now())
     ) subscriptions on true
     left join lateral (
       select
@@ -293,6 +297,7 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
       from subscriptions
       where project_id = p.id
         and status in ('trialing', 'active')
+        and (current_period_end is null or current_period_end > now())
     ) subscriptions on true
     left join lateral (
       select
@@ -609,6 +614,9 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         currency: "usd",
         currentPeriodStart: "demo",
         currentPeriodEnd: "demo",
+        pausedAt: null,
+        canceledAt: null,
+        updatedAt: "demo",
         createdAt: "demo"
       }
     ]
@@ -924,6 +932,9 @@ async function listProjectSubscriptions(projectSlug: string, organizationId: str
       sp.currency,
       sub.current_period_start as "currentPeriodStart",
       sub.current_period_end as "currentPeriodEnd",
+      sub.paused_at as "pausedAt",
+      sub.canceled_at as "canceledAt",
+      sub.updated_at as "updatedAt",
       sub.created_at as "createdAt"
     from subscriptions sub
     join projects p on p.id = sub.project_id

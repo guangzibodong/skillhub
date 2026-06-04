@@ -155,6 +155,23 @@ Allowed install statuses:
 
 Install status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects any install that is not `installed`.
 
+Pause, restore, or cancel a project subscription:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/subscriptions/demo-subscription-browser-research/status" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"paused"}'
+```
+
+Allowed project-managed subscription statuses:
+
+- `active`: runtime can use subscription-priced skills when the current period is still valid.
+- `paused`: the subscription is retained for restoration, but runtime calls are blocked.
+- `canceled`: the subscription is closed and cannot be restored from the project console.
+
+Subscription status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects subscription-priced skills when the project has no active or trialing subscription, when the period is expired, or when the subscription is paused, past due, or canceled.
+
 Read project skill policies:
 
 ```bash
@@ -244,7 +261,7 @@ Before recording a successful invocation, the gateway checks:
 - Project policy allows the skill permission profile.
 - Rate limit and monthly budget are not exceeded.
 
-Every allowed call writes a `skill_invocations` row. Successful calls also write a `usage_events` row. Per-call prices make the usage event billable; free and subscription skills still record usage without direct per-call billing.
+Every allowed call writes a `skill_invocations` row. Successful calls also write a `usage_events` row. Per-call prices make the usage event billable; free and subscription skills still record usage without direct per-call billing. Subscription-priced skills must have an active or trialing project subscription whose current period has not expired; paused, past-due, canceled, missing, or expired subscriptions are blocked before execution and recorded as blocked invocations.
 
 External runtime proxying is disabled by default. When `SKILLHUB_RUNTIME_PROXY=enabled`, HTTP runtime skills can be proxied to their manifest entrypoint. Otherwise the gateway returns a metered contract response so policy, logging, and billing paths can be tested safely.
 

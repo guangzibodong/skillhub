@@ -251,6 +251,13 @@ Added project installed-skill lifecycle controls, covering:
 - Each install status change writes audit and in-app notification records.
 - Project detail now gives developers a concrete repeat-use loop for disabling risky skills, restoring safe skills, and preserving an audit trail.
 
+Added project subscription lifecycle controls, covering:
+
+- Project operators can mark subscriptions as `active`, `paused`, or `canceled` inside their own organization scope.
+- Runtime invocation blocks subscription-priced skills when the project subscription is missing, expired, paused, past due, or canceled.
+- Each subscription status change writes audit and in-app notification records before payment provider webhooks are connected.
+- Project detail now gives developers and agent operators a concrete repeat-use loop for controlling recurring spend, pausing risky paid skills, and restoring required skills without losing the billing history.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
