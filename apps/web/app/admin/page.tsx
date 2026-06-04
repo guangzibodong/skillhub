@@ -8,10 +8,10 @@ import {
   ReceiptText,
   Scale,
   ShieldCheck,
-  Siren,
-  WalletCards
+  Siren
 } from "lucide-react";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
+import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
@@ -55,11 +55,6 @@ const adminOpsCopy = {
       ["Approve skill", "Creates audit log and public listing event"],
       ["Block payout", "Requires reason, owner, and retry condition"],
       ["Reverse transaction", "Adds adjustment, never edits historical split"]
-    ],
-    payoutRows: [
-      ["$4,800 payout", "KYC hold"],
-      ["$1,240 payout", "ready"],
-      ["$680 payout", "scheduled"]
     ]
   },
   zh: {
@@ -82,11 +77,6 @@ const adminOpsCopy = {
       ["批准技能", "创建审计日志和公开上架事件"],
       ["阻止提现", "必须记录原因、负责人和重试条件"],
       ["冲回交易", "新增调整交易，绝不修改历史分账"]
-    ],
-    payoutRows: [
-      ["$4,800 提现", "KYC 暂停"],
-      ["$1,240 提现", "可执行"],
-      ["$680 提现", "已计划"]
     ]
   }
 } as const;
@@ -125,17 +115,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
           notification.status
         ])
       : labels.auditRows.map((item) => [item, "system", "queued"]);
-  const payoutRows =
-    payouts.length > 0
-      ? payouts.slice(0, 4).map((payout) => [
-          formatMoney(payout.amountCents, payout.currency),
-          `${payout.status} / ${payout.publisherName}`
-        ])
-      : [
-          [formatMoney(financeLedger.summary.pendingBalanceCents), "pending balance"],
-          [formatMoney(financeLedger.summary.availableBalanceCents), "available balance"],
-          [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
-        ];
   const riskRows =
     abuseReports.length + refunds.length + disputes.length > 0
       ? [
@@ -284,24 +263,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </article>
 
-        <aside className="ops-panel">
-          <div className="card-kicker">
-            <WalletCards size={16} aria-hidden="true" />
-            <span>{labels.metrics[2][0]}</span>
-          </div>
-          <div className="payout-list">
-            {payoutRows.map(([label, state], index) => {
-              const Icon = index === 0 ? AlertTriangle : index === 1 ? ShieldCheck : Banknote;
-              return (
-                <div className="payout-row" key={label}>
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{state}</strong>
-                </div>
-              );
-            })}
-          </div>
-        </aside>
+        <AdminPayoutManager locale={locale} payouts={payouts} />
       </section>
 
       <section className="admin-finance-section">

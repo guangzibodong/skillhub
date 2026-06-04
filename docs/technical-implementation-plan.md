@@ -288,6 +288,7 @@ Completed:
 - Payout workflow migration linking payouts to reserved publisher balance rows.
 - Publisher payout readiness and request endpoints.
 - Admin payout queue and payout decision endpoints.
+- Admin payout review console now reads the live payout queue and exposes approve, mark-paid, fail, and block decisions with finance notes and provider references.
 - Dashboard and admin pages reading payout readiness and payout queue data.
 - Dashboard withdrawal panel now exposes payout request actions for verified publisher accounts with balances above the threshold, reserving eligible balances through the publisher payout endpoint.
 - Refund and dispute workflow migration with adjustment transaction links.

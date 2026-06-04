@@ -361,6 +361,13 @@ Added admin review operations, covering:
 - Decisions call the review workflow API, which updates listing verification state and records audit, skill-update, and notification events before external email/provider integrations are connected.
 - This strengthens platform trust because submitted skills now have an operator-controlled path from publisher submission to verified, rejected, or suspended listing state.
 
+Added admin payout operations, covering:
+
+- `/admin` now exposes the live payout queue as an operator decision surface instead of a read-only summary list.
+- Finance operators can approve payouts into processing, mark provider payout completion, record provider references, fail payouts back to available balances, or block payouts for further review.
+- Decisions call the payout workflow API, which updates payout state, linked publisher balance state, audit records, and notification events before final payment-provider APIs are connected.
+- This strengthens marketplace trust because publisher withdrawals now have a controlled finance path from request to processing, paid, failed, or blocked state.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
