@@ -81,6 +81,37 @@ export type PublisherPayoutSummary = {
   payouts: PayoutRecord[];
 };
 
+export type RefundRecord = {
+  id: string;
+  transactionId: string | null;
+  adjustmentTransactionId: string | null;
+  skillName: string | null;
+  amountCents: number;
+  currency: string;
+  status: "requested" | "approved" | "posted" | "rejected" | "failed";
+  reason: string | null;
+  providerReference: string | null;
+  createdAt: string;
+  requestedAt: string;
+  decidedAt: string | null;
+  postedAt: string | null;
+};
+
+export type DisputeRecord = {
+  id: string;
+  transactionId: string | null;
+  skillName: string | null;
+  amountCents: number;
+  currency: string;
+  status: "open" | "won" | "lost" | "warning_needs_response";
+  reason: string | null;
+  externalReference: string | null;
+  dueAt: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackLedger: FinanceLedger = {
@@ -192,6 +223,41 @@ const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
   payouts: fallbackPayouts
 };
 
+const fallbackRefunds: RefundRecord[] = [
+  {
+    id: "demo-refund-request",
+    transactionId: "demo-usage-browser-research",
+    adjustmentTransactionId: null,
+    skillName: "Browser Research",
+    amountCents: 9600,
+    currency: "usd",
+    status: "requested",
+    reason: "Buyer reported duplicate billable call.",
+    providerReference: null,
+    createdAt: "demo",
+    requestedAt: "demo",
+    decidedAt: null,
+    postedAt: null
+  }
+];
+
+const fallbackDisputes: DisputeRecord[] = [
+  {
+    id: "demo-dispute-warning",
+    transactionId: "demo-usage-support-triage",
+    skillName: "Support Triage",
+    amountCents: 7600,
+    currency: "usd",
+    status: "warning_needs_response",
+    reason: "Card network warning needs evidence before deadline.",
+    externalReference: "dp_demo_warning",
+    dueAt: "demo",
+    resolvedAt: null,
+    createdAt: "demo",
+    updatedAt: "demo"
+  }
+];
+
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 
@@ -291,6 +357,58 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
     return (await response.json()) as PublisherPayoutSummary;
   } catch {
     return fallbackPublisherPayoutSummary;
+  }
+}
+
+export async function getAdminRefunds(): Promise<RefundRecord[]> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackRefunds;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/finance/refunds?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin refunds failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { refunds: RefundRecord[] };
+    return payload.refunds;
+  } catch {
+    return fallbackRefunds;
+  }
+}
+
+export async function getAdminDisputes(): Promise<DisputeRecord[]> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackDisputes;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/finance/disputes?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin disputes failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { disputes: DisputeRecord[] };
+    return payload.disputes;
+  } catch {
+    return fallbackDisputes;
   }
 }
 

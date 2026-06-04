@@ -110,7 +110,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     [
       labels.payoutItems[3][0],
       latestPayout
-        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} · ${latestPayout.status}`
+        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${latestPayout.status}`
         : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
     ]
   ];

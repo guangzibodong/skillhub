@@ -14,7 +14,14 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
-import { formatMoney, getAdminNotifications, getAdminPayouts, getFinanceLedger } from "@/lib/ops-data";
+import {
+  formatMoney,
+  getAdminDisputes,
+  getAdminNotifications,
+  getAdminPayouts,
+  getAdminRefunds,
+  getFinanceLedger
+} from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -89,11 +96,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [overview, financeLedger, notifications, payouts] = await Promise.all([
+  const [overview, financeLedger, notifications, payouts, refunds, disputes] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
     getAdminNotifications(),
-    getAdminPayouts()
+    getAdminPayouts(),
+    getAdminRefunds(),
+    getAdminDisputes()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -117,13 +126,30 @@ export default async function AdminPage({ searchParams }: PageProps) {
     payouts.length > 0
       ? payouts.slice(0, 4).map((payout) => [
           formatMoney(payout.amountCents, payout.currency),
-          `${payout.status} · ${payout.publisherName}`
+          `${payout.status} / ${payout.publisherName}`
         ])
       : [
           [formatMoney(financeLedger.summary.pendingBalanceCents), "pending balance"],
           [formatMoney(financeLedger.summary.availableBalanceCents), "available balance"],
           [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
         ];
+  const riskRows =
+    refunds.length + disputes.length > 0
+      ? [
+          ...refunds.slice(0, 3).map((refund) => [
+            `Refund ${refund.status}`,
+            refund.skillName ?? refund.transactionId ?? refund.id,
+            refund.reason ?? "Review refund adjustment",
+            "Finance"
+          ]),
+          ...disputes.slice(0, 3).map((dispute) => [
+            `Dispute ${dispute.status}`,
+            dispute.skillName ?? dispute.transactionId ?? dispute.id,
+            dispute.reason ?? "Resolve dispute evidence",
+            "Trust"
+          ])
+        ].slice(0, 5)
+      : ops.riskRows;
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
@@ -188,7 +214,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <ShieldCheck size={16} aria-hidden="true" />
                 <span>
                   <strong>{subject}</strong>
-                  <small>{eventType} · {status}</small>
+                  <small>{eventType} / {status}</small>
                 </span>
               </div>
             ))}
@@ -208,7 +234,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {ops.riskRows.map(([signal, scope, action, owner]) => (
+            {riskRows.map(([signal, scope, action, owner]) => (
               <div className="work-table__row" key={signal}>
                 <strong>{signal}</strong>
                 <span>{scope}</span>

@@ -306,6 +306,78 @@ Supported payout actions:
 
 Every payout request and decision records an audit log and a queued in-app notification event.
 
+## Refund And Dispute Workflow
+
+Refunds and disputes create adjustment records instead of mutating original usage or subscription transactions.
+
+Read the admin refund queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/finance/refunds?limit=50" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Request a refund against a positive usage or subscription transaction:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/refunds" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transactionId": "TRANSACTION_ID",
+    "amountCents": 9600,
+    "reason": "Duplicate billable call."
+  }'
+```
+
+Record a refund decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/refunds/$REFUND_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"post","reason":"Approved after usage review."}'
+```
+
+Supported refund actions:
+
+- `approve`: marks the refund approved but does not move ledger value yet.
+- `reject`: rejects the refund request with an audit reason.
+- `post`: creates a negative `transactions` row, negative `transaction_splits` row, and reversed publisher balance adjustment.
+- `fail`: records that the provider or operating step failed.
+
+Read the admin dispute queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/finance/disputes?limit=50" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Open a dispute:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/disputes" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transactionId": "TRANSACTION_ID",
+    "amountCents": 7600,
+    "status": "warning_needs_response",
+    "reason": "Card network warning needs evidence."
+  }'
+```
+
+Resolve or update a dispute:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/disputes/$DISPUTE_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"lost","reason":"Evidence window expired.","postRefund":true}'
+```
+
+If a dispute is marked `lost` and `postRefund` is not false, SkillHub creates and posts the corresponding refund adjustment automatically. Every refund and dispute state change records admin audit and queued notification events.
+
 ## Admin Notifications
 
 Notification events are recorded before the final email provider is connected. Admin can inspect queued, sent, failed, and skipped events:

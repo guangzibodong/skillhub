@@ -39,6 +39,14 @@ import {
   listAdminPayouts,
   requestPublisherPayout
 } from "./payouts.js";
+import {
+  createDispute,
+  createRefundRequest,
+  decideDispute,
+  decideRefund,
+  listAdminDisputes,
+  listAdminRefunds
+} from "./adjustments.js";
 
 type Env = {
   Bindings: {
@@ -291,6 +299,90 @@ app.post("/v1/admin/finance/release-balances", async (c) => {
     return c.json(await releaseAvailableBalances(body.limit));
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to release balances." }, 400);
+  }
+});
+
+app.get("/v1/admin/finance/refunds", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    refunds: await listAdminRefunds(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/finance/refunds", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({ refund: await createRefundRequest((await c.req.json()) as Record<string, unknown>) }, 201);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to request refund." }, 400);
+  }
+});
+
+app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      refund: await decideRefund(c.req.param("refundId"), (await c.req.json()) as Record<string, unknown>)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update refund." }, 400);
+  }
+});
+
+app.get("/v1/admin/finance/disputes", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    disputes: await listAdminDisputes(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/finance/disputes", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({ dispute: await createDispute((await c.req.json()) as Record<string, unknown>) }, 201);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to open dispute." }, 400);
+  }
+});
+
+app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      dispute: await decideDispute(c.req.param("disputeId"), (await c.req.json()) as Record<string, unknown>)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update dispute." }, 400);
   }
 });
 

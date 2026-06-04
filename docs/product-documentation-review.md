@@ -162,6 +162,14 @@ Added payout workflow states, covering:
 - Every payout state change creates audit and notification records before the final provider integration.
 - Admin and publisher dashboards read payout queue/readiness data with fallback states.
 
+Added refund and dispute workflow states, covering:
+
+- Refund requests validate against remaining refundable transaction amount.
+- Posted refunds create negative adjustment transactions, negative splits, and reversed publisher balance rows.
+- Disputes can be opened, updated, won, or lost.
+- Lost disputes can automatically post the matching refund adjustment.
+- Admin risk operations read refund and dispute queues with fallback states.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

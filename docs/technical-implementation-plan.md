@@ -287,12 +287,16 @@ Completed:
 - Publisher payout readiness and request endpoints.
 - Admin payout queue and payout decision endpoints.
 - Dashboard and admin pages reading payout readiness and payout queue data.
+- Refund and dispute workflow migration with adjustment transaction links.
+- Admin refund request, refund decision, dispute open, and dispute decision endpoints.
+- Dispute-lost flow can post refund adjustment records automatically.
+- Admin risk table reads refund and dispute queues with safe fallback states.
 
 Next:
 
 - Auth and role enforcement to replace temporary operator-token write protection.
-- Refund and dispute state actions.
 - Payout account onboarding screens and provider handoff state.
+- Publisher/developer-facing refund and dispute history views.
 
 ## Engineering Acceptance Standard
 
