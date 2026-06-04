@@ -234,6 +234,8 @@ Acceptance checks:
 - `/`: product value, trust model, registry preview.
 - `/marketplace`: searchable catalog with filters, install commands, trust, pricing, and request board.
 - `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support.
+- `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
+- `/publishers/[slug]`: public publisher trust profile with marketplace-safe skill and operating signals.
 - `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
 
 ### Developer Workspace
@@ -349,6 +351,7 @@ Completed:
 - Skill detail pages now expose project-scoped save and install controls, letting developers move a discovered skill into a selected project collection or installed-skill inventory without retyping the slug in the project console.
 - Skill detail pages now expose similar and replacement skill suggestions scored from category, shared tags, runtime, pricing, verification, and permission-risk signals, giving developers a comparison and fallback path before install or after deprecation/suspension.
 - Public publisher profile endpoints and `/publishers/[slug]` now expose marketplace-safe trust signals, public skills, verification counts, install/call evidence, active paid skill count, payout readiness state, and skill-level detail links without exposing private organization or payout-account data.
+- `/publishers` now exposes a browseable public publisher trust directory and marketplace links now surface publisher count, verified publisher count, and a supplier-trust path before install decisions.
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 - Developer project creation now lets organization-scoped users create new agent projects from the dashboard, with explicit API validation, organization-local slug uniqueness, audit logging, and in-app notification records.
 - `/publisher` now gives skill authors a dedicated operations workspace for owned skills, review submission, pricing, buyer demand, publisher revenue, refund/dispute watch, payout readiness, account onboarding, and notifications.

@@ -2,7 +2,7 @@ import {
   ArrowRight,
   BadgeCheck,
   BookOpenCheck,
-  CircleDollarSign,
+  Building2,
   ClipboardList,
   Code2,
   HandCoins,
@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getPublicMarketplaceSkills } from "@/lib/public-marketplace";
+import { getPublicPublishers } from "@/lib/public-publishers";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,8 @@ const pageCopy = {
     description:
       "SkillHub is becoming the operating layer for agent capabilities: searchable skills, explicit permissions, install commands, usage metering, review queues, pricing, and payout operations.",
     primary: "Browse catalog",
-    secondary: "Publisher console",
+    directory: "Publisher directory",
+    console: "Publisher workspace",
     consoleTitle: "Live install path",
     consoleSubtitle: "Agents should install from a contract they can inspect.",
     proof: ["Searchable catalog", "Permission review", "Install command", "Billing-ready usage"],
@@ -54,11 +56,16 @@ const pageCopy = {
       ["Ledger rule", "Usage logs never pay out directly"]
     ],
     catalogMetric: "Live catalog",
-    metricRows: [
-      ["Install formats", "CLI / MCP / SDK"],
-      ["Review gates", "Schema + Runtime + Human"],
-      ["Money flow", "Ledger before payout"]
-    ]
+    publisherMetric: "Public publishers",
+    verifiedPublisherMetric: "Verified publishers",
+    reviewMetric: "Review gates",
+    reviewMetricValue: "Schema + Runtime + Human",
+    moneyMetric: "Money flow",
+    moneyMetricValue: "Ledger before payout",
+    publisherDirectoryTitle: "Supplier trust is part of discovery",
+    publisherDirectoryBody:
+      "Every marketplace card now links to the supplier behind the skill. The public directory lets teams compare verified listings, payout readiness, runtime evidence, and active paid inventory before installing.",
+    publisherDirectoryCta: "Browse publishers"
   },
   zh: {
     eyebrow: "智能体技能市场",
@@ -66,7 +73,8 @@ const pageCopy = {
     description:
       "SkillHub 要成为智能体能力的运营层：可搜索技能、明确权限、安装命令、用量计量、审核队列、价格体系和提现运营。",
     primary: "浏览目录",
-    secondary: "发布者控制台",
+    directory: "发布者目录",
+    console: "发布者工作台",
     consoleTitle: "实时安装路径",
     consoleSubtitle: "智能体应该从可检查的协议里安装技能。",
     proof: ["可搜索目录", "权限审核", "安装命令", "可计费用量"],
@@ -89,11 +97,16 @@ const pageCopy = {
       ["账本规则", "绝不直接从用量日志打款"]
     ],
     catalogMetric: "实时目录",
-    metricRows: [
-      ["安装格式", "CLI / MCP / SDK"],
-      ["审核关卡", "Schema / 运行时 / 人审"],
-      ["资金流", "先入账本再提现"]
-    ]
+    publisherMetric: "公开发布者",
+    verifiedPublisherMetric: "已验证发布者",
+    reviewMetric: "审核关卡",
+    reviewMetricValue: "Schema / 运行时 / 人审",
+    moneyMetric: "资金流",
+    moneyMetricValue: "先入账本再提现",
+    publisherDirectoryTitle: "供应方信任也是发现的一部分",
+    publisherDirectoryBody:
+      "每张市场技能卡现在都会连接到背后的发布者。公开目录让团队在安装前比较已验证上架、提现准备、运行证据和活跃付费技能。",
+    publisherDirectoryCta: "浏览发布者"
   }
 } as const;
 
@@ -103,10 +116,14 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
-  const skills = await getPublicMarketplaceSkills();
+  const [skills, publishers] = await Promise.all([getPublicMarketplaceSkills(), getPublicPublishers()]);
+  const verifiedPublisherCount = publishers.filter((publisher) => publisher.trustLevel === "verified").length;
   const metrics = [
     [labels.catalogMetric, String(skills.length)],
-    ...labels.metricRows
+    [labels.publisherMetric, String(publishers.length)],
+    [labels.verifiedPublisherMetric, String(verifiedPublisherCount)],
+    [labels.reviewMetric, labels.reviewMetricValue],
+    [labels.moneyMetric, labels.moneyMetricValue]
   ];
 
   return (
@@ -126,9 +143,13 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
               <PackageSearch size={18} aria-hidden="true" />
               <span>{labels.primary}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/dashboard", locale)}>
-              <WalletCards size={18} aria-hidden="true" />
-              <span>{labels.secondary}</span>
+            <a className="secondary-button secondary-button--large" href={localizedHref("/publishers", locale)}>
+              <Building2 size={18} aria-hidden="true" />
+              <span>{labels.directory}</span>
+            </a>
+            <a className="ghost-button" href={localizedHref("/publisher", locale)}>
+              <WalletCards size={17} aria-hidden="true" />
+              <span>{labels.console}</span>
             </a>
           </div>
         </div>
@@ -164,6 +185,21 @@ skillhub install browser-research`}</code>
         ))}
       </section>
 
+      <section className="market-publisher-callout" aria-label={labels.publisherDirectoryTitle}>
+        <div>
+          <div className="card-kicker">
+            <Building2 size={16} aria-hidden="true" />
+            <span>{labels.publisherDirectoryTitle}</span>
+          </div>
+          <p>{labels.publisherDirectoryBody}</p>
+        </div>
+        <a className="secondary-button secondary-button--compact" href={localizedHref("/publishers", locale)}>
+          <ShieldCheck size={15} aria-hidden="true" />
+          <span>{labels.publisherDirectoryCta}</span>
+          <ArrowRight size={14} aria-hidden="true" />
+        </a>
+      </section>
+
       <div id="catalog">
         <MarketplaceBrowser locale={locale} skills={skills} />
       </div>
@@ -180,7 +216,9 @@ skillhub install browser-research`}</code>
               <div className="request-row" key={localizeText(request.title, locale)}>
                 <div>
                   <strong>{localizeText(request.title, locale)}</strong>
-                  <span>{localizeText(request.status, locale)} · {localizeText(request.due, locale)}</span>
+                  <span>
+                    {localizeText(request.status, locale)} | {localizeText(request.due, locale)}
+                  </span>
                 </div>
                 <b>{request.bounty}</b>
               </div>

@@ -390,6 +390,13 @@ Added public publisher trust profiles, covering:
 - Marketplace cards and skill detail pages now link to the publisher profile, so a developer can evaluate the supplier behind a skill before installing it.
 - This strengthens developer first-visit trust and publisher repeat-use motivation because publisher profile quality becomes part of marketplace credibility and distribution.
 
+Added the public publisher trust directory, covering:
+
+- `/publishers` gives developers a browseable supplier directory instead of making publisher trust reachable only from individual skill cards.
+- Marketplace now exposes publisher count, verified publisher count, and a direct publisher-directory path beside catalog discovery.
+- Directory cards rank publishers by trust level, verified skill inventory, install evidence, runtime calls, payout readiness, active paid skills, and average success rate.
+- This improves first-visit trust because buyers can compare suppliers before installing, and improves publisher repeat-use motivation because public quality signals become a distribution surface.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
