@@ -1,37 +1,33 @@
 import { Box, ExternalLink, PackageCheck, ShieldCheck } from "lucide-react";
 import type { SkillSummary } from "@useskillhub/schema";
+import type { Dictionary } from "@/lib/i18n";
 import { StatusPill } from "./status-pill";
 
 type SkillTableProps = {
   skills: SkillSummary[];
   apiUrl?: string;
+  labels: Dictionary["skillTable"];
 };
 
-const riskLabels: Record<SkillSummary["permissionLevel"], string> = {
-  low: "Low risk",
-  medium: "Medium risk",
-  high: "High risk"
-};
-
-export function SkillTable({ apiUrl = "https://api.useskillhub.com", skills }: SkillTableProps) {
+export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, skills }: SkillTableProps) {
   if (skills.length === 0) {
     return (
       <div className="empty-state">
         <Box size={22} aria-hidden="true" />
-        <h3>No skills published</h3>
-        <p>Publish a SkillHub manifest to populate the registry.</p>
+        <h3>{labels.emptyTitle}</h3>
+        <p>{labels.emptyBody}</p>
       </div>
     );
   }
 
   return (
-    <div className="skill-table" aria-label="Skill registry">
+    <div className="skill-table" aria-label={labels.aria}>
       <div className="skill-table__head">
-        <span>Skill</span>
-        <span>Tags</span>
-        <span>Trust</span>
-        <span>Risk</span>
-        <span aria-label="Actions" />
+        <span>{labels.skill}</span>
+        <span>{labels.tags}</span>
+        <span>{labels.trust}</span>
+        <span>{labels.risk}</span>
+        <span aria-label={labels.actions} />
       </div>
       {skills.map((skill) => (
         <article className="skill-row" key={skill.id}>
@@ -54,17 +50,17 @@ export function SkillTable({ apiUrl = "https://api.useskillhub.com", skills }: S
             ))}
           </div>
           <div className="trust-stack">
-            <StatusPill status={skill.verificationStatus} />
-            <span>Manifest checked</span>
+            <StatusPill labels={labels.status} status={skill.verificationStatus} />
+            <span>{labels.manifestChecked}</span>
           </div>
           <div className={`risk risk--${skill.permissionLevel}`}>
             <ShieldCheck size={16} aria-hidden="true" />
-            <span>{riskLabels[skill.permissionLevel]}</span>
+            <span>{labels.riskLabels[skill.permissionLevel]}</span>
           </div>
           <a
             className="icon-button icon-button--quiet"
             href={`${apiUrl}/v1/skills/${skill.slug}`}
-            aria-label={`Open ${skill.displayName} manifest`}
+            aria-label={`${labels.openManifest}: ${skill.displayName}`}
           >
             <ExternalLink size={16} />
           </a>

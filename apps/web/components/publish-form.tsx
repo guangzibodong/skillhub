@@ -2,9 +2,11 @@
 
 import { CheckCircle2, FileJson, KeyRound, LockKeyhole, Send, ShieldCheck, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { Dictionary } from "@/lib/i18n";
 
 type PublishFormProps = {
   apiUrl: string;
+  labels: Dictionary["publishForm"];
 };
 
 type ReviewCheck = {
@@ -61,7 +63,7 @@ function toText(value: unknown, fallback: string) {
   return typeof value === "string" && value.length > 0 ? value : fallback;
 }
 
-export function PublishForm({ apiUrl }: PublishFormProps) {
+export function PublishForm({ apiUrl, labels }: PublishFormProps) {
   const [adminToken, setAdminToken] = useState("");
   const [manifestText, setManifestText] = useState(JSON.stringify(exampleManifest, null, 2));
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -84,48 +86,50 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
 
     const checks: ReviewCheck[] = [
       {
-        label: "Valid JSON",
+        label: labels.checks.validJson.label,
         ok: Boolean(parsedManifest),
-        detail: parsedManifest ? "Parser ready" : "Fix syntax before publishing"
+        detail: parsedManifest ? labels.checks.validJson.ok : labels.checks.validJson.fail
       },
       {
-        label: "Package identity",
+        label: labels.checks.identity.label,
         ok: Boolean(manifest.name && manifest.displayName && manifest.version),
-        detail: "name, displayName, version"
+        detail: labels.checks.identity.detail
       },
       {
-        label: "Runtime declared",
+        label: labels.checks.runtime.label,
         ok: Boolean(runtime.type),
-        detail: toText(runtime.type, "HTTP, MCP, or local")
+        detail: toText(runtime.type, labels.checks.runtime.fallback)
       },
       {
-        label: "Schemas attached",
+        label: labels.checks.schemas.label,
         ok: isRecord(manifest.inputSchema) && isRecord(manifest.outputSchema),
-        detail: "inputSchema and outputSchema"
+        detail: labels.checks.schemas.detail
       },
       {
-        label: "Permissions scoped",
+        label: labels.checks.permissions.label,
         ok: isRecord(manifest.permissions),
-        detail: `${permissions.filesystem ?? "unknown"} filesystem, ${secrets} secrets`
+        detail: labels.checks.permissions.detail
+          .replace("{filesystem}", String(permissions.filesystem ?? labels.unknown))
+          .replace("{secrets}", String(secrets))
       }
     ];
 
     return {
       checks,
-      displayName: toText(manifest.displayName, "Untitled skill"),
-      name: toText(manifest.name, "missing-name"),
-      runtime: toText(runtime.type, "unknown"),
+      displayName: toText(manifest.displayName, labels.untitledSkill),
+      name: toText(manifest.name, labels.missingName),
+      runtime: toText(runtime.type, labels.unknown),
       version: toText(manifest.version, "0.0.0"),
       tagCount: tags.length
     };
-  }, [parsedManifest]);
+  }, [labels, parsedManifest]);
 
   const canSubmit = Boolean(adminToken.trim()) && Boolean(parsedManifest) && status !== "submitting";
 
   async function submit() {
     if (!parsedManifest) {
       setStatus("error");
-      setMessage("Manifest JSON is invalid.");
+      setMessage(labels.invalidManifest);
       return;
     }
 
@@ -149,10 +153,10 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
       }
 
       setStatus("success");
-      setMessage(`Published ${payload.slug}.`);
+      setMessage(`${labels.publishedPrefix} ${payload.slug}.`);
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Unable to publish skill.");
+      setMessage(error instanceof Error ? error.message : labels.unableToPublish);
     }
   }
 
@@ -164,19 +168,19 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
             <div>
               <div className="card-kicker">
                 <KeyRound size={16} aria-hidden="true" />
-                <span>Operator access</span>
+                <span>{labels.operatorAccess}</span>
               </div>
-              <h2>Admin token</h2>
+              <h2>{labels.adminToken}</h2>
             </div>
             <span className="private-badge">
               <LockKeyhole size={14} aria-hidden="true" />
-              Private
+              {labels.private}
             </span>
           </div>
 
           <div className="field-grid">
             <label>
-              <span>Admin token</span>
+              <span>{labels.adminToken}</span>
               <input
                 autoComplete="off"
                 onChange={(event) => setAdminToken(event.target.value)}
@@ -198,7 +202,7 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
               <FileJson size={16} aria-hidden="true" />
               skillhub.json
             </span>
-            <small>{parsedManifest ? "Valid JSON" : "Invalid JSON"}</small>
+            <small>{parsedManifest ? labels.validJson : labels.invalidJson}</small>
           </span>
           <textarea
             aria-invalid={!parsedManifest}
@@ -211,7 +215,7 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
         <div className="publish-actions">
           <button className="primary-button primary-button--large" disabled={!canSubmit} onClick={submit} type="button">
             <Send size={18} aria-hidden="true" />
-            <span>{status === "submitting" ? "Publishing" : "Publish skill"}</span>
+            <span>{status === "submitting" ? labels.publishing : labels.publishSkill}</span>
           </button>
           {status === "success" && (
             <p className="form-message form-message--success">
@@ -234,30 +238,30 @@ export function PublishForm({ apiUrl }: PublishFormProps) {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h2>Manifest review</h2>
-            <p>Preflight for registry submission.</p>
+            <h2>{labels.reviewTitle}</h2>
+            <p>{labels.reviewBody}</p>
           </div>
         </div>
 
         <dl className="manifest-summary">
           <div>
-            <dt>Package</dt>
+            <dt>{labels.package}</dt>
             <dd>{review.displayName}</dd>
           </div>
           <div>
-            <dt>Slug</dt>
+            <dt>{labels.slug}</dt>
             <dd>{review.name}</dd>
           </div>
           <div>
-            <dt>Runtime</dt>
+            <dt>{labels.runtime}</dt>
             <dd>{review.runtime}</dd>
           </div>
           <div>
-            <dt>Version</dt>
+            <dt>{labels.version}</dt>
             <dd>{review.version}</dd>
           </div>
           <div>
-            <dt>Tags</dt>
+            <dt>{labels.tags}</dt>
             <dd>{review.tagCount}</dd>
           </div>
         </dl>
