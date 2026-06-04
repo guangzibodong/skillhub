@@ -33,12 +33,18 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .app-shell {
@@ -178,6 +184,11 @@ button {
   min-height: 40px;
   border-radius: var(--radius);
   white-space: nowrap;
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .icon-button {
@@ -456,6 +467,97 @@ button {
   font-size: 14px;
 }
 
+.publish-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 24px;
+}
+
+.publish-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 1120px;
+  margin: 0 auto 20px;
+}
+
+.publish-header h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.publish-header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.publish-form {
+  display: grid;
+  gap: 16px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.7fr);
+  gap: 14px;
+}
+
+.publish-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.publish-form input,
+.publish-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  outline: 0;
+}
+
+.publish-form input {
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.manifest-editor textarea {
+  min-height: 560px;
+  resize: vertical;
+  padding: 14px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.publish-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.form-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.form-message--success {
+  color: var(--teal-dark);
+}
+
+.form-message--error {
+  color: var(--coral);
+}
+
 @media (max-width: 1060px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -516,6 +618,10 @@ button {
 
   .metric-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
   }
 }
 

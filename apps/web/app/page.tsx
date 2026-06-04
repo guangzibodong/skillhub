@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   UploadCloud
 } from "lucide-react";
+import Link from "next/link";
 import { SkillTable } from "@/components/skill-table";
 import { getGatewayStats, getSkills } from "@/lib/registry";
 
@@ -59,10 +60,10 @@ export default async function Home() {
             <button className="icon-button" aria-label="Verify skills">
               <ShieldCheck size={18} />
             </button>
-            <button className="primary-button">
+            <Link className="primary-button" href="/publish">
               <UploadCloud size={18} aria-hidden="true" />
               <span>Publish</span>
-            </button>
+            </Link>
           </div>
         </header>
 
@@ -73,10 +74,10 @@ export default async function Home() {
                 <h1 id="registry-heading">Agent Skill Registry</h1>
                 <p>Universal skills for AI agents</p>
               </div>
-              <button className="secondary-button">
+              <Link className="secondary-button" href="/publish">
                 <Plus size={18} aria-hidden="true" />
                 <span>New skill</span>
-              </button>
+              </Link>
             </div>
             <SkillTable skills={skills} />
           </section>
