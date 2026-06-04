@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { getMarketplaceSkill, localizeText, marketplaceSkills } from "@/lib/marketplace-data";
+import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
+import { getPublicMarketplaceSkill } from "@/lib/public-marketplace";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const skill = getMarketplaceSkill(slug);
+  const skill = await getPublicMarketplaceSkill(slug);
   const labels = copy[locale];
 
   if (!skill) {

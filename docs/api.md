@@ -37,6 +37,8 @@ Response:
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 ```
 
+The public marketplace and skill detail pages now read these registry endpoints first, then fall back to bundled demo content if the API is unavailable. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`.
+
 ## Registry Stats
 
 ```bash

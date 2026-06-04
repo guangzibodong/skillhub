@@ -15,7 +15,8 @@ import {
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { localizeText, marketplaceRequests, marketplaceSkills } from "@/lib/marketplace-data";
+import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
+import { getPublicMarketplaceSkills } from "@/lib/public-marketplace";
 
 export const dynamic = "force-dynamic";
 
@@ -52,8 +53,8 @@ const pageCopy = {
       ["Review threshold", "Manual review above configured amount"],
       ["Ledger rule", "Usage logs never pay out directly"]
     ],
-    metrics: [
-      ["Launch catalog", String(marketplaceSkills.length)],
+    catalogMetric: "Live catalog",
+    metricRows: [
       ["Install formats", "CLI / MCP / SDK"],
       ["Review gates", "Schema + Runtime + Human"],
       ["Money flow", "Ledger before payout"]
@@ -87,8 +88,8 @@ const pageCopy = {
       ["审核阈值", "超过配置金额进入人工审核"],
       ["账本规则", "绝不直接从用量日志打款"]
     ],
-    metrics: [
-      ["首批目录", String(marketplaceSkills.length)],
+    catalogMetric: "实时目录",
+    metricRows: [
       ["安装格式", "CLI / MCP / SDK"],
       ["审核关卡", "Schema / 运行时 / 人审"],
       ["资金流", "先入账本再提现"]
@@ -102,6 +103,11 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
+  const skills = await getPublicMarketplaceSkills();
+  const metrics = [
+    [labels.catalogMetric, String(skills.length)],
+    ...labels.metricRows
+  ];
 
   return (
     <main className="product-shell">
@@ -135,8 +141,8 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           <p>{labels.consoleSubtitle}</p>
           <pre>
             <code>{`skillhub search "browser research"
-skillhub inspect browser-research-pro
-skillhub install browser-research-pro`}</code>
+skillhub inspect browser-research
+skillhub install browser-research`}</code>
           </pre>
           <div className="proof-grid">
             {labels.proof.map((item) => (
@@ -150,7 +156,7 @@ skillhub install browser-research-pro`}</code>
       </section>
 
       <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
-        {labels.metrics.map(([label, value]) => (
+        {metrics.map(([label, value]) => (
           <div key={label}>
             <span>{label}</span>
             <strong>{value}</strong>
@@ -159,7 +165,7 @@ skillhub install browser-research-pro`}</code>
       </section>
 
       <div id="catalog">
-        <MarketplaceBrowser locale={locale} skills={marketplaceSkills} />
+        <MarketplaceBrowser locale={locale} skills={skills} />
       </div>
 
       <section className="market-operations-layout">
