@@ -137,6 +137,16 @@ Added first runtime API endpoints, covering:
 - Invocation logging and usage event recording.
 - SDK and CLI runtime calls.
 
+Added first billing-ledger API endpoints, covering:
+
+- Skill price setup and listing.
+- Billable usage processing.
+- Transaction creation.
+- Commission split creation.
+- Pending publisher balance creation.
+- Matured balance release.
+- Read-only finance ledger summary.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

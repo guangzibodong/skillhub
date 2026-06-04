@@ -278,10 +278,12 @@ Completed:
 - Project API key creation, listing, and revocation.
 - Runtime invocation endpoint with API key auth, installed-skill gate, permission policy checks, rate limit checks, budget checks, invocation logs, and usage events.
 - SDK and CLI runtime invocation helpers.
+- Skill price setup and listing endpoints.
+- Billable usage ledger posting from `usage_events` into `transactions`, `transaction_splits`, and pending `publisher_balances`.
+- Finance ledger read endpoint and matured balance release endpoint.
 
 Next:
 
-- Billable usage to ledger transaction creation.
 - Notification event rendering in dashboard/admin.
 - Auth and role enforcement to replace temporary operator-token write protection.
 

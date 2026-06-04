@@ -39,6 +39,7 @@ type RuntimeInvokeInput = {
 };
 
 type PriceRecord = {
+  id: string | null;
   billing_model: "free" | "per_call" | "subscription";
   unit_amount_cents: number;
   currency: string;
@@ -278,6 +279,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
         project_id,
         skill_id,
         skill_version_id,
+        price_id,
         event_type,
         quantity,
         billable,
@@ -289,6 +291,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
         ${apiKeyRecord.project_id},
         ${skill.skill_id},
         ${skill.skill_version_id},
+        ${price.id},
         'invocation_success',
         1,
         ${amountCents > 0},
@@ -563,7 +566,7 @@ async function executeSkill(manifest: SkillManifest, input: unknown) {
 
 async function getActivePrice(sql: Sql, skillId: string): Promise<PriceRecord> {
   const rows = (await sql`
-    select billing_model, unit_amount_cents, currency
+    select id::text, billing_model, unit_amount_cents, currency
     from skill_prices
     where skill_id = ${skillId}
       and status = 'active'
@@ -571,7 +574,7 @@ async function getActivePrice(sql: Sql, skillId: string): Promise<PriceRecord> {
     limit 1
   `) as PriceRecord[];
 
-  return rows[0] ?? { billing_model: "free", unit_amount_cents: 0, currency: "usd" };
+  return rows[0] ?? { id: null, billing_model: "free", unit_amount_cents: 0, currency: "usd" };
 }
 
 async function recordInvocation(

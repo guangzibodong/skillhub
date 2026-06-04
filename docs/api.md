@@ -183,6 +183,82 @@ SKILLHUB_API_KEY="$SKILLHUB_PROJECT_API_KEY" \
   skillhub run browser-research '{"query":"MCP server registry trends"}'
 ```
 
+## Skill Pricing
+
+Read skill prices:
+
+```bash
+curl "https://api.useskillhub.com/v1/skills/browser-research/prices"
+```
+
+Set a skill price:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "billingModel": "per_call",
+    "unitAmountCents": 2,
+    "currency": "usd",
+    "status": "active"
+  }'
+```
+
+Supported `billingModel` values:
+
+- `free`
+- `per_call`
+- `subscription`
+
+Active paid pricing requires a verified publisher payout state. Until final payment-provider onboarding is connected, the internal publisher and payout states are still modeled in the database so pricing, metering, and ledger behavior can be tested safely.
+
+## Finance Ledger
+
+SkillHub never pays publishers from raw usage logs. Billable usage must be posted into the ledger first:
+
+```text
+usage_events
+-> transactions
+-> transaction_splits
+-> publisher_balances
+```
+
+Read the finance ledger:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/finance/ledger" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Post unprocessed billable usage into the ledger:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/process-usage" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":50}'
+```
+
+Ledger posting:
+
+- Creates a posted `transactions` row.
+- Creates a `transaction_splits` row using the active commission rule.
+- Creates a pending `publisher_balances` row.
+- Links the `usage_events` row to the transaction.
+- Records a queued in-app notification event.
+
+Release matured pending balances:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/release-balances" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":100}'
+```
+
+Balances start as `pending` and become `available` only after their risk/refund window has elapsed. The default balance delay is 14 days and can be configured with `SKILLHUB_BALANCE_DELAY_DAYS`.
+
 ## Review Workflow
 
 Submit a skill for review:

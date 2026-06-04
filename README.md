@@ -23,6 +23,7 @@ SkillHub is a registry and runtime layer for agent skills. It gives AI agents a 
 - Search skills by task, tags, permission profile, runtime, and pricing model.
 - Agent-friendly discovery and invocation endpoints.
 - Project API keys and runtime policy gates for installed skills.
+- Billing-ready ledger posting from billable usage to transaction splits and publisher balances.
 - Usage, transactions, commission splits, balances, payout states, refunds, and disputes.
 - Notification events and templates, with actual email protocol integration handled at the final integration stage.
 - Payment provider and email provider integrations are final-stage external integrations, not early product blockers.

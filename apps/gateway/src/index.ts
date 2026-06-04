@@ -25,6 +25,13 @@ import {
   listProjectApiKeys,
   revokeProjectApiKey
 } from "./runtime.js";
+import {
+  getFinanceLedger,
+  listSkillPrices,
+  processBillableUsage,
+  releaseAvailableBalances,
+  setSkillPrice
+} from "./billing.js";
 
 type Env = {
   Bindings: {
@@ -210,6 +217,73 @@ app.post("/v1/runtime/invoke", async (c) => {
     return c.json(result.body, result.status as 200 | 400 | 401 | 403 | 502);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to invoke skill." }, 503);
+  }
+});
+
+app.get("/v1/skills/:slug/prices", async (c) => {
+  return c.json({
+    prices: await listSkillPrices(c.req.param("slug"))
+  });
+});
+
+app.post("/v1/skills/:slug/prices", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        price: await setSkillPrice(c.req.param("slug"), (await c.req.json()) as Record<string, unknown>)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to set skill price." }, 400);
+  }
+});
+
+app.get("/v1/admin/finance/ledger", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json(await getFinanceLedger());
+});
+
+app.post("/v1/admin/finance/process-usage", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+
+  try {
+    return c.json(await processBillableUsage(body.limit));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to process billable usage." }, 400);
+  }
+});
+
+app.post("/v1/admin/finance/release-balances", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+
+  try {
+    return c.json(await releaseAvailableBalances(body.limit));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to release balances." }, 400);
   }
 });
 
