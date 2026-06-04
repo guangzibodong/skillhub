@@ -342,6 +342,7 @@ Completed:
 - Public marketplace and skill detail pages now read live registry search, manifest, and price endpoints with bundled marketplace content as a safe fallback.
 - Skill detail pages now expose project-scoped save and install controls, letting developers move a discovered skill into a selected project collection or installed-skill inventory without retyping the slug in the project console.
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
+- Developer project creation now lets organization-scoped users create new agent projects from the dashboard, with explicit API validation, organization-local slug uniqueness, audit logging, and in-app notification records.
 
 Next:
 

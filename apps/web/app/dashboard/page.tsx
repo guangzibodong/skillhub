@@ -18,6 +18,7 @@ import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
+import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -325,6 +326,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{ops.projectTitle}</span>
           </div>
+          <ProjectCreateForm locale={locale} />
           <div className="work-table">
             <div className="work-table__row work-table__row--head">
               {ops.projectHeaders.map((header) => (

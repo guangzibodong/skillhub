@@ -46,6 +46,7 @@ import {
   upsertOrganizationPaymentMethod
 } from "./organization-billing.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
+import { createDeveloperProject } from "./developer-projects.js";
 import { getPublisherOverview } from "./publisher-overview.js";
 import {
   getFinanceLedger,
@@ -309,6 +310,34 @@ app.get("/v1/developer/projects", async (c) => {
   return c.json({
     projects: await listDeveloperProjects(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.post("/v1/developer/projects", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.organizationId) {
+    return c.json({ error: "Project creation requires an organization-scoped user token." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        project: await createDeveloperProject((await c.req.json().catch(() => ({}))) as Record<string, unknown>, {
+          actorUserId: authorization.subject.userId,
+          organizationId: authorization.subject.organizationId
+        })
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create project." }, 400);
+  }
 });
 
 app.get("/v1/developer/projects/:projectSlug", async (c) => {

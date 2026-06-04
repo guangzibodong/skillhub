@@ -325,6 +325,13 @@ Added web console token session, covering:
 - Dashboard now shows session source, organization scope, role summary, and masked token label, making it clearer whether operations are running as a real user or an environment fallback.
 - This strengthens the product's operational value because project, publisher, billing, notification, trust, and invoice flows can be exercised by different organization-scoped users instead of one deployment-wide operator token.
 
+Added developer project creation, covering:
+
+- Organization-scoped users can create a new agent project from `/dashboard` without relying on implicit project upserts from API-key or install actions.
+- The API validates project name/slug, enforces organization-local slug uniqueness, writes an audit log, and queues an in-app notification.
+- The dashboard returns a direct link to the new project command center so the next action is creating runtime keys, installing skills, and setting policies.
+- This strengthens developer retention because a workspace can grow from discovery into multiple real agent projects, each with its own keys, installs, budgets, updates, invoices, and usage history.
+
 Added tenant-scoped publisher overview, covering:
 
 - Publisher overview now requires publisher, owner, or admin authorization instead of serving global marketplace aggregates publicly.

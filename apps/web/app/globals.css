@@ -3582,6 +3582,51 @@ a {
   color: #7d8476;
 }
 
+.project-create-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.055);
+  padding: 13px;
+}
+
+.project-create-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) minmax(140px, 0.8fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.project-create-form label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.project-create-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.project-create-form input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 12px;
+}
+
+.project-create-form input::placeholder {
+  color: #7d8476;
+}
+
 .action-message {
   display: flex;
   gap: 8px;
@@ -3595,6 +3640,10 @@ a {
 
 .action-message svg {
   flex: 0 0 auto;
+}
+
+.action-message .ghost-button--inline {
+  margin-left: auto;
 }
 
 .action-message--success {
@@ -4615,6 +4664,7 @@ a {
   .auth-form,
   .auth-status-grid,
   .key-create-form,
+  .project-create-form,
   .policy-editor {
     grid-template-columns: 1fr;
   }
@@ -4626,6 +4676,15 @@ a {
 
   .auth-form .primary-button {
     width: 100%;
+  }
+
+  .project-create-form .primary-button,
+  .action-message .ghost-button--inline {
+    width: 100%;
+  }
+
+  .action-message {
+    flex-wrap: wrap;
   }
 
   .buyer-request-item {

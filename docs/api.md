@@ -120,6 +120,17 @@ Project writes are organization scoped. When a user token installs a skill, upda
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.
 
+Create a developer project:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/developer/projects" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Research Agent","slug":"research-agent"}'
+```
+
+Project creation is scoped to the token organization. The slug must be unique inside that organization. The API writes a project audit log and an in-app notification so the project lifecycle is visible before any runtime API keys or installed skills exist.
+
 Read the developer project operations view:
 
 ```bash
