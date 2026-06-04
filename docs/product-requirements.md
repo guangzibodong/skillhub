@@ -41,6 +41,13 @@ It should not be positioned as:
 
 ## Target Users
 
+SkillHub has two primary marketplace sides:
+
+- Supply side: publishers who upload, maintain, and monetize skills.
+- Demand side: developers and agent builders who discover, install, and run skills.
+
+Both sides must receive immediate first-visit value and repeat-visit value. A static directory is not enough.
+
 ### Developer / Agent Builder
 
 Needs:
@@ -50,6 +57,19 @@ Needs:
 - Install by CLI, SDK, or MCP.
 - Manage projects, API keys, budgets, subscriptions, and usage.
 - Pin versions for predictable agent behavior.
+
+First-visit value:
+
+- Find a skill faster than building it from scratch.
+- Understand whether a skill is safe enough for the agent to call.
+- See install commands, schemas, examples, pricing, and runtime requirements in one place.
+
+Repeat-visit value:
+
+- Manage installed skills per project.
+- Monitor usage, cost, failures, latency, and version changes.
+- Approve or reject high-risk skills for projects.
+- Discover newly verified or better alternatives.
 
 ### Publisher / Skill Author
 
@@ -61,6 +81,19 @@ Needs:
 - Choose pricing model.
 - See usage, errors, revenue, refunds, and payout state.
 - Connect payout account when paid publishing is enabled.
+
+First-visit value:
+
+- Turn an agent capability into an installable product.
+- Get a public listing with trust, documentation, runtime, and install paths.
+- Enter a review flow that can create credibility.
+
+Repeat-visit value:
+
+- Track review status, runtime checks, installs, calls, errors, and latency.
+- Improve versions based on usage and feedback.
+- Respond to buyer requests, incidents, and review notes.
+- Track revenue ledger, balance, and payout readiness.
 
 ### Platform Reviewer
 
@@ -119,18 +152,21 @@ Requirements:
 - Search skills.
 - Filter by category.
 - Filter by pricing model.
+- Filter by runtime, permission risk, verification state, and installed/approved status.
 - Show risk level.
 - Show price.
 - Show runtime.
 - Show install command.
 - Show verification status.
 - Link to skill detail.
+- Show installed state for signed-in developers.
+- Show update/deprecation/incident state for installed skills.
 
 Skill card must include:
 
 - Name.
 - Short description.
-- Author later.
+- Author or publisher.
 - Category.
 - Tags.
 - Price.
@@ -138,6 +174,21 @@ Skill card must include:
 - Success rate and latency once real data exists.
 - Permission risk.
 - Install command.
+- Last reviewed or last updated signal.
+- Compatibility or version signal.
+
+Discovery and ranking should consider:
+
+- Query relevance.
+- Verification status.
+- Permission risk match.
+- Runtime success rate.
+- Latency.
+- Recent maintenance.
+- Version stability.
+- Publisher responsiveness.
+- Install-to-success conversion.
+- Incident and abuse history.
 
 ### Skill Detail
 
@@ -154,7 +205,11 @@ Requirements:
 - Use cases.
 - Changelog.
 - Operator notes or reviews.
-- Deprecation and support expectations later.
+- Deprecation and support expectations.
+- Installed projects.
+- Version pin options.
+- Similar or replacement skills.
+- Request support/report issue entry.
 
 ### Publisher Dashboard
 
@@ -171,6 +226,10 @@ Requirements:
 - Payout readiness.
 - Payout history.
 - Notification preferences, with actual email protocol integration deferred until the final integration phase.
+- Buyer request board.
+- Listing quality checklist.
+- Publisher quality score.
+- Incident response queue.
 
 ### Developer Dashboard
 
@@ -186,6 +245,10 @@ Requirements:
 - Invoices.
 - Webhooks.
 - Notification preferences, with actual email protocol integration deferred until the final integration phase.
+- Installed skills by project.
+- Skill update and deprecation inbox.
+- Project permission approvals.
+- Saved skills and collections.
 
 ### Admin Dashboard
 
@@ -201,6 +264,52 @@ Requirements:
 - User and org management.
 - Audit stream.
 - Notification/event templates, with actual email protocol integration deferred until the final integration phase.
+- Marketplace quality dashboard.
+- Publisher quality dashboard.
+- Ranking/featured listing controls.
+- Abuse report and takedown queue.
+
+## User Value And Retention Requirements
+
+For detailed user value strategy, read [User Value And Retention Strategy](./user-value-and-retention.md).
+For engineering mapping, read [Technical Implementation Plan](./technical-implementation-plan.md).
+
+SkillHub must answer three questions for each external user:
+
+1. Why should I come here the first time?
+2. Why should I trust what I find or upload here?
+3. Why should I come back next week?
+
+Developer retention is driven by:
+
+- Installed skill management.
+- Project usage analytics.
+- Version and incident notifications.
+- Budget and rate-limit alerts.
+- Permission approval workflows.
+- Newly verified and better matching skills.
+
+Publisher retention is driven by:
+
+- Review pipeline.
+- Runtime check feedback.
+- Usage and install analytics.
+- Buyer request board.
+- Listing improvement checklist.
+- Revenue ledger and payout readiness.
+- Incident and support workflows.
+
+SkillHub must build a two-sided marketplace flywheel:
+
+```text
+more useful skills
+-> better search results
+-> more installs and invocations
+-> more operational data and trust signals
+-> better ranking and user confidence
+-> more publisher motivation
+-> more and better skills
+```
 
 ## Skill Lifecycle Requirements
 
@@ -345,6 +454,42 @@ High-risk skills require:
 - Owner approval before installation.
 - Clear permission explanation.
 - Stronger audit logging.
+
+## Skill Upload Quality Requirements
+
+Every uploaded skill must provide:
+
+- Valid `skillhub.json`.
+- Clear display name.
+- Clear short description.
+- Publisher identity.
+- Tags and category.
+- Runtime type and endpoint.
+- Input schema.
+- Output schema.
+- Permission declaration.
+- Example input and output.
+- Version.
+- Changelog.
+- Support or issue path.
+
+Verified skills must additionally provide:
+
+- Passing automated manifest validation.
+- Passing runtime reachability check.
+- Passing example invocation.
+- Completed permission classification.
+- Review decision record.
+- Data retention note when handling user or business data.
+- High-risk permission explanation when applicable.
+
+Paid skills must additionally provide:
+
+- Active publisher profile.
+- Acceptable payout account state.
+- Approved pricing.
+- Accepted refund/dispute terms.
+- Ledger configuration.
 
 ## Full Product Scope
 

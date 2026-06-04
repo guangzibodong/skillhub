@@ -144,7 +144,8 @@ export const dictionaries = {
         submitted: "Submitted",
         verified: "Verified",
         deprecated: "Deprecated",
-        rejected: "Rejected"
+        rejected: "Rejected",
+        suspended: "Suspended"
       }
     },
     registryPage: {
@@ -494,7 +495,8 @@ export const dictionaries = {
         submitted: "已提交",
         verified: "已验证",
         deprecated: "已弃用",
-        rejected: "已拒绝"
+        rejected: "已拒绝",
+        suspended: "已暂停"
       }
     },
     registryPage: {

@@ -43,6 +43,23 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 curl "https://api.useskillhub.com/v1/stats"
 ```
 
+## Platform Overview
+
+These endpoints expose the first real operating shape for the two-sided marketplace. They are safe to use before payment and email providers are connected because they read product states, not external provider movement.
+
+```bash
+curl "https://api.useskillhub.com/v1/platform/overview"
+curl "https://api.useskillhub.com/v1/developer/overview"
+curl "https://api.useskillhub.com/v1/publisher/overview"
+curl "https://api.useskillhub.com/v1/admin/overview"
+```
+
+The overview includes:
+
+- Developer installed-skill and update-inbox signals.
+- Publisher review, runtime-check, buyer-request, and balance signals.
+- Admin review, payout, notification, incident, and runtime-risk signals.
+
 ## Publish Skill
 
 Publishing requires `SKILLHUB_ADMIN_TOKEN` on the server.

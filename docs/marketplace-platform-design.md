@@ -160,7 +160,7 @@ skill_versions
 skill_manifests
 skill_reviews
 skill_runtime_checks
-skill_usage_events
+usage_events
 
 products
 prices

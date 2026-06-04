@@ -8,6 +8,7 @@ import {
   publishSkill,
   searchSkills
 } from "./registry.js";
+import { getPlatformOverview } from "./platform-overview.js";
 
 type Env = {
   Bindings: {
@@ -53,6 +54,23 @@ app.get("/v1/skills/search", async (c) => {
 });
 
 app.get("/v1/stats", async (c) => c.json(await getRegistryStats()));
+
+app.get("/v1/platform/overview", async (c) => c.json(await getPlatformOverview()));
+
+app.get("/v1/developer/overview", async (c) => {
+  const overview = await getPlatformOverview();
+  return c.json(overview.developer);
+});
+
+app.get("/v1/publisher/overview", async (c) => {
+  const overview = await getPlatformOverview();
+  return c.json(overview.publisher);
+});
+
+app.get("/v1/admin/overview", async (c) => {
+  const overview = await getPlatformOverview();
+  return c.json(overview.admin);
+});
 
 app.get("/v1/skills/:slug", async (c) => {
   const skill = await getSkillManifest(c.req.param("slug"));

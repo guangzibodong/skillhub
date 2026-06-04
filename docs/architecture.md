@@ -5,7 +5,10 @@ This file is now the short architecture index.
 Read the full architecture here:
 
 - [Technical Architecture](./technical-architecture.md)
+- [Technical Implementation Plan](./technical-implementation-plan.md)
 - [Product Requirements](./product-requirements.md)
+- [Product Documentation Review](./product-documentation-review.md)
+- [User Value And Retention Strategy](./user-value-and-retention.md)
 - [Full Build Plan](./full-build-plan.md)
 - [Marketplace Platform Design](./marketplace-platform-design.md)
 - [Marketplace Competitive Research](./marketplace-competitive-research.md)

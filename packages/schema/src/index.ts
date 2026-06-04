@@ -57,7 +57,7 @@ export type SkillSummary = {
   description: string;
   tags: string[];
   version: string;
-  verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected";
+  verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected" | "suspended";
   permissionLevel: "low" | "medium" | "high";
 };
 

@@ -29,7 +29,10 @@ SkillHub is a registry and runtime layer for agent skills. It gives AI agents a 
 ## Product Documents
 
 - [Product requirements](docs/product-requirements.md)
+- [Product documentation review](docs/product-documentation-review.md)
+- [User value and retention](docs/user-value-and-retention.md)
 - [Technical architecture](docs/technical-architecture.md)
+- [Technical implementation plan](docs/technical-implementation-plan.md)
 - [Full build plan](docs/full-build-plan.md)
 - [Marketplace platform design](docs/marketplace-platform-design.md)
 - [Competitive research](docs/marketplace-competitive-research.md)

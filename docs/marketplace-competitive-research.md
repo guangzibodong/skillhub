@@ -8,6 +8,11 @@ This note captures what SkillHub should learn from current agent-tool and market
 - Composio: agent integrations, tool execution, managed authentication, and connected app workflows. https://composio.dev/
 - Toolhouse: agent tool store and SDK-oriented tool access. https://toolhouse.ai/
 - Agent.ai: marketplace-style agent discovery and public profile patterns. https://agent.ai/
+- Hugging Face Hub: models, datasets, Spaces, repositories, search, downloads, model/dataset cards, collections, private team collaboration, tokens, and webhooks. https://huggingface.co/docs/hub
+- Docker Hub: trusted content, verified publishers, usage insights, vulnerability scanning, webhooks, and repository operations. https://docs.docker.com/docker-hub/
+- GitHub Marketplace: installable developer apps, verified publishers, free trials, ratings, and workflow-oriented app discovery. https://github.com/marketplace
+- Chrome Web Store: extension review, higher scrutiny for broad/sensitive permissions, user ratings/reviews, and user support flows. https://developer.chrome.com/docs/webstore/
+- OpenAI GPT Store: custom GPT discovery, public publishing requirements, categories, and engagement-based creator program direction. https://openai.com/blog/introducing-the-gpt-store
 - Stripe Connect: marketplace connected accounts, platform fees, balances, and payouts. https://stripe.com/connect
 - Stripe Connect docs: destination charges, separate charges and transfers, connected accounts, and payout constraints. https://docs.stripe.com/connect
 
@@ -96,6 +101,63 @@ Admin dashboard:
 - Refunds/disputes.
 - Audit logs.
 
+### 6. Return Loops Matter More Than Listing Count
+
+Platforms that retain users give them a reason to return after the first install or upload.
+
+Developer return loops:
+
+- Installed item management.
+- Version updates.
+- Security or permission changes.
+- Usage analytics.
+- Incident notifications.
+- Better alternatives in the same category.
+- Team approval flows.
+
+Publisher return loops:
+
+- Review status.
+- Usage and install analytics.
+- Quality or security feedback.
+- User requests and support issues.
+- Ranking/discoverability improvements.
+- Revenue, balance, and payout state.
+
+SkillHub should not measure success only by published skill count. It should measure active installed skills, successful invocations, publisher updates, review throughput, and repeat dashboard usage.
+
+### 7. Trust Programs Are Product Features
+
+Docker Hub's trusted content and verified publisher programs show that trust is not only a label; it affects discovery, credibility, security posture, and publisher motivation. Chrome Web Store review processes show that broad or sensitive permissions need more review, not the same review as low-risk content.
+
+SkillHub should treat trust as a system:
+
+- Verified publisher.
+- Verified skill.
+- Restricted skill.
+- Permission risk.
+- Runtime health.
+- Version freshness.
+- Incident history.
+- Data retention disclosure.
+- Admin review trail.
+
+### 8. Creator Motivation Is Broader Than Payments
+
+Payment matters, but the first publisher value can arrive earlier:
+
+- Distribution.
+- Install commands.
+- Public profile.
+- Verification.
+- Usage analytics.
+- Buyer requests.
+- Quality score.
+- Reputation.
+- Documentation structure.
+
+OpenAI's GPT Store direction shows the appeal of searchable custom AI tools, but SkillHub should avoid being only an engagement directory. Publishers need clearer installability, operational analytics, and eventually transparent commercial flows.
+
 ## SkillHub Product Decisions
 
 - Keep the public marketplace and the registry connected, but not identical. The registry is the protocol surface; the marketplace is the commercial and trust surface.
@@ -104,6 +166,9 @@ Admin dashboard:
 - Use a payment provider with marketplace support, such as Stripe Connect, for connected accounts and payouts.
 - Build the ledger before integrating payouts.
 - Treat high-risk skills as restricted listings with explicit owner approval requirements.
+- Build developer and publisher return loops before optimizing for raw listing volume.
+- Require quality gates before verified listing status.
+- Give publishers analytics and buyer demand signals before real payout integration is connected.
 
 ## Current Implementation Changes
 

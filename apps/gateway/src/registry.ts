@@ -323,8 +323,8 @@ async function upsertDefaultOrganization(sql: SqlClient): Promise<{ id: string }
   return rows[0];
 }
 
-async function getSql(): Promise<any | undefined> {
-  const databaseUrl = process.env.DATABASE_URL;
+export async function getSql(): Promise<any | undefined> {
+  const databaseUrl = typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
 
   if (!databaseUrl) {
     return undefined;

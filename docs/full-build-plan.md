@@ -40,6 +40,9 @@ Let a real publisher submit, operate, and monetize skills; let a real developer 
 - Rate limits.
 - Approved permissions.
 - Version pins.
+- Installed skill inventory.
+- Skill update and deprecation inbox.
+- Saved skills and collections.
 
 ### Publisher System
 
@@ -51,6 +54,10 @@ Let a real publisher submit, operate, and monetize skills; let a real developer 
 - Review comments.
 - Pricing setup.
 - Usage analytics.
+- Install analytics.
+- Listing quality checklist.
+- Buyer request board.
+- Incident response queue.
 - Revenue ledger.
 - Payout account state.
 
@@ -59,12 +66,16 @@ Let a real publisher submit, operate, and monetize skills; let a real developer 
 - Database-backed skill catalog.
 - Skill detail pages.
 - Search and filters.
+- Ranking and quality signals.
 - Manifest display.
 - Input/output schema display.
 - Runtime and permission display.
 - Security/trust report.
 - Pricing display.
 - Install commands for CLI, SDK, and MCP.
+- Similar or replacement skill suggestions.
+- Publisher profiles.
+- Verified publisher and verified skill states.
 
 ### Review And Trust
 
@@ -75,6 +86,8 @@ Let a real publisher submit, operate, and monetize skills; let a real developer 
 - Approve/reject/block/deprecate/suspend decisions.
 - Risk notes.
 - Admin audit trail.
+- Abuse reports and takedown queue.
+- High-risk owner approval workflow.
 
 ### Runtime And Metering
 
@@ -139,6 +152,8 @@ The actual email protocol/provider integration is last.
 - Publisher profiles.
 - Publisher verification state.
 - Dashboard shells backed by API data.
+- Installed skill inventory.
+- Saved skills.
 
 ### Phase 3: Registry Workflow
 
@@ -148,6 +163,8 @@ The actual email protocol/provider integration is last.
 - Package metadata.
 - Public marketplace from database.
 - Skill detail from database.
+- Publisher listing quality checklist.
+- Buyer request board.
 
 ### Phase 4: Review And Trust
 
@@ -157,6 +174,8 @@ The actual email protocol/provider integration is last.
 - Risk labels.
 - Audit logs.
 - Suspension/deprecation flows.
+- Verified publisher and verified skill programs.
+- Abuse reports and takedown workflow.
 
 ### Phase 5: Runtime And Usage
 
@@ -166,6 +185,8 @@ The actual email protocol/provider integration is last.
 - Usage event recording.
 - Runtime logs.
 - Metrics and alert states.
+- Installed skill health and update inbox.
+- Publisher install and usage analytics.
 
 ### Phase 6: Pricing And Ledger
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
+  const overview = await getPlatformOverview();
+  const visibleMetrics = [
+    [labels.metrics[0][0], getOverviewMetric(overview.publisher.metrics, "Available balance", labels.metrics[0][1])],
+    [labels.metrics[1][0], getOverviewMetric(overview.publisher.metrics, "Pending balance", labels.metrics[1][1])],
+    [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
+    [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
+  ];
 
   return (
     <main className="product-shell">
@@ -96,7 +104,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
       <section className="console-board">
         <div className="metric-strip metric-strip--four metric-strip--standalone">
-          {labels.metrics.map(([label, value]) => (
+          {visibleMetrics.map(([label, value]) => (
             <div className="metric" key={label}>
               <span>{label}</span>
               <strong>{value}</strong>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
+  const overview = await getPlatformOverview();
+  const visibleMetrics = [
+    labels.metrics[0],
+    labels.metrics[1],
+    [labels.metrics[2][0], getOverviewMetric(overview.admin.metrics, "Payout review", labels.metrics[2][1])],
+    [labels.metrics[3][0], getOverviewMetric(overview.admin.metrics, "Review queue", labels.metrics[3][1])]
+  ];
 
   return (
     <main className="product-shell">
@@ -105,7 +113,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="console-board">
         <div className="metric-strip metric-strip--four metric-strip--standalone">
-          {labels.metrics.map(([label, value]) => (
+          {visibleMetrics.map(([label, value]) => (
             <div className="metric" key={label}>
               <span>{label}</span>
               <strong>{value}</strong>

@@ -145,7 +145,7 @@ api_keys
 skill_invocations
 ```
 
-Marketplace operations migration adds:
+Marketplace and operations migrations add:
 
 ```text
 users
@@ -166,6 +166,20 @@ admin_audit_logs
 notification_events
 notification_templates
 notification_preferences
+```
+
+The implementation plan expands this into the next retention and operations tables:
+
+```text
+project_skill_installs
+project_skill_policies
+skill_runtime_checks
+skill_update_events
+skill_incidents
+saved_skills
+buyer_requests
+publisher_quality_scores
+usage_events
 ```
 
 Important rules:
@@ -338,6 +352,8 @@ Future improvements:
 - Add uptime monitoring for app and API health.
 
 ## Full Product Build Order
+
+Read [Technical Implementation Plan](./technical-implementation-plan.md) for the database, API, frontend, and acceptance mapping.
 
 This is not a reduced release plan. It is the order for building the complete product without mixing concerns.
 

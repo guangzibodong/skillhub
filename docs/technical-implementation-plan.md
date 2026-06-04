@@ -1,0 +1,276 @@
+# SkillHub Technical Implementation Plan
+
+This document turns the full product requirements into implementation order, domain boundaries, database tables, API surfaces, and acceptance checks.
+
+SkillHub is a two-sided AI-agent skill marketplace:
+
+- Publishers upload, maintain, verify, and monetize skills.
+- Developers discover, install, approve, and run skills inside agent projects.
+- Platform admins operate trust, review, incidents, money states, and payouts.
+
+The implementation should make these three workspaces real before final payment and email provider integrations are connected.
+
+## Product Value To Preserve In Engineering
+
+Every feature should create at least one of these values:
+
+- Developer value: faster skill discovery, safer installs, predictable runtime behavior, project-level control, usage/cost visibility.
+- Publisher value: easier packaging, review credibility, install distribution, runtime feedback, demand signals, future revenue.
+- Platform value: review control, risk visibility, audit trail, immutable money records, quality and ranking signals.
+
+If a feature does not support one of those values, it is secondary.
+
+## Implementation Domains
+
+### 1. Identity And Workspace
+
+Purpose:
+
+- Let users own organizations, publisher profiles, and developer projects.
+- Separate developer, publisher, reviewer, finance, and admin permissions.
+
+Core tables:
+
+- `users`
+- `organizations`
+- `organization_members`
+- `publisher_profiles`
+- `projects`
+- `api_keys`
+
+API groups:
+
+- `/v1/orgs/*`
+- `/v1/projects/*`
+- `/v1/api-keys/*`
+- `/v1/publisher/profile`
+
+Acceptance checks:
+
+- A project belongs to one organization.
+- API keys are project-scoped and revocable.
+- Publisher actions require publisher or owner role.
+- Admin actions require reviewer, finance, or super admin role.
+
+### 2. Skill Registry And Publishing
+
+Purpose:
+
+- Turn uploaded skills into versioned contracts.
+- Keep runtime behavior inspectable before installation.
+
+Core tables:
+
+- `skills`
+- `skill_versions`
+- `skill_reviews`
+- `skill_runtime_checks`
+
+API groups:
+
+- `/v1/skills/search`
+- `/v1/skills/:slug`
+- `/v1/skills`
+- `/v1/skills/:slug/versions`
+- `/v1/reviews/*`
+
+Acceptance checks:
+
+- A submitted skill version must have a valid manifest.
+- A verified skill version must have a review decision.
+- A new version cannot silently replace a verified version.
+- Suspended skills cannot be installed or invoked.
+
+### 3. Discovery And Developer Retention
+
+Purpose:
+
+- Make developers return to manage installed skills, versions, permissions, incidents, and cost.
+
+Core tables:
+
+- `project_skill_installs`
+- `project_skill_policies`
+- `skill_update_events`
+- `skill_incidents`
+- `saved_skills`
+
+API groups:
+
+- `/v1/projects/:projectId/installed-skills`
+- `/v1/projects/:projectId/policies`
+- `/v1/projects/:projectId/update-inbox`
+- `/v1/projects/:projectId/saved-skills`
+
+Acceptance checks:
+
+- An installed skill records project, skill, version pin, approval state, and permission policy.
+- High-risk skills require owner approval before invocation.
+- Developers can see updates, deprecations, incidents, and replacements for installed skills.
+- Saved skills and collections exist before purchase flows are added.
+
+### 4. Publisher Retention
+
+Purpose:
+
+- Make publishers return to fix review issues, improve listings, respond to demand, and watch operational performance.
+
+Core tables:
+
+- `publisher_profiles`
+- `skill_reviews`
+- `skill_runtime_checks`
+- `usage_events`
+- `buyer_requests`
+- `publisher_quality_scores`
+
+API groups:
+
+- `/v1/publisher/overview`
+- `/v1/publisher/skills`
+- `/v1/publisher/reviews`
+- `/v1/publisher/runtime-checks`
+- `/v1/publisher/buyer-requests`
+
+Acceptance checks:
+
+- Publishers can see review status and reviewer notes.
+- Runtime checks expose pass/fail state and next action.
+- Publisher analytics include installs, calls, success rate, latency, and errors.
+- Buyer requests can be opened, claimed, submitted, matched, and closed.
+
+### 5. Runtime And Metering
+
+Purpose:
+
+- Give agents a safe path to call skills through a project policy and version contract.
+
+Core tables:
+
+- `api_keys`
+- `project_skill_installs`
+- `project_skill_policies`
+- `skill_invocations`
+- `usage_events`
+
+API groups:
+
+- `/v1/runtime/invoke`
+- `/v1/usage/*`
+- `/mcp`
+
+Acceptance checks:
+
+- Runtime calls authenticate project API keys.
+- Gateway checks install state, version pin, permission approval, budget, and rate limit.
+- Every invocation records status, latency, error code, and skill version.
+- Only successful billable invocations can create billable usage.
+
+### 6. Billing-Ready Ledger
+
+Purpose:
+
+- Model commercial flows safely before integrating a payment provider.
+
+Core tables:
+
+- `skill_prices`
+- `subscriptions`
+- `commission_rules`
+- `transactions`
+- `transaction_splits`
+- `publisher_balances`
+- `refunds`
+- `disputes`
+
+API groups:
+
+- `/v1/prices/*`
+- `/v1/subscriptions/*`
+- `/v1/transactions/*`
+- `/v1/publisher/balances/*`
+- `/v1/admin/finance/*`
+
+Acceptance checks:
+
+- Usage logs never pay publishers directly.
+- Posted transactions create immutable splits.
+- Commission rules are versioned.
+- Balance changes use pending, available, paid, reversed, and blocked states.
+- Refunds and disputes add adjustment records instead of editing history.
+
+### 7. Payout And Notification States
+
+Purpose:
+
+- Prepare all payout and email workflows before final providers are connected.
+
+Core tables:
+
+- `payout_accounts`
+- `payouts`
+- `notification_events`
+- `notification_templates`
+- `notification_preferences`
+
+API groups:
+
+- `/v1/payouts/*`
+- `/v1/notifications/*`
+- `/v1/admin/payouts/*`
+- `/v1/admin/notifications/*`
+
+Acceptance checks:
+
+- Paid publishing requires acceptable payout account state.
+- Payout requests above a threshold enter manual review.
+- Blocked payout records reason and retry condition.
+- Review, incident, billing, payout, refund, and dispute events are recorded before email delivery exists.
+
+## Frontend Pages To Make Real
+
+### Public
+
+- `/`: product value, trust model, registry preview.
+- `/marketplace`: searchable catalog with filters, install commands, trust, pricing, and request board.
+- `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support.
+- `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
+
+### Developer Workspace
+
+- `/dashboard`: project list, installed skills, budgets, API keys, usage, invoices, update inbox.
+- Future split: `/dashboard/projects/[id]` for project-specific controls.
+
+### Publisher Workspace
+
+- `/publish`: package submission and manifest preflight.
+- Future split: `/publisher`: skills, versions, reviews, runtime checks, analytics, buyer requests, earnings, payout readiness.
+
+### Platform Admin
+
+- `/admin`: review queue, risk command center, finance ledger, payout review, incidents, audit stream.
+
+## Near-Term Build Sequence
+
+1. Add missing retention and operations tables.
+2. Add API overview endpoints for developer, publisher, admin, and platform health data.
+3. Wire dashboards to API-backed data where possible, with safe fallback demo data.
+4. Add skill install and project policy endpoints.
+5. Add review queue endpoints and admin decision actions.
+6. Add runtime invocation record and policy gate.
+7. Add ledger creation functions for billable usage.
+8. Add notification event recording.
+9. Connect auth and role enforcement.
+10. Integrate payment and email providers last.
+
+## Engineering Acceptance Standard
+
+Before a feature is considered complete, it must answer:
+
+- Which user side does it serve?
+- What first-visit or repeat-visit reason does it strengthen?
+- What database state does it own?
+- What API operation exposes it?
+- What dashboard shows it?
+- What admin or audit control is needed?
+- What tests or typechecks prove it does not break the platform?
