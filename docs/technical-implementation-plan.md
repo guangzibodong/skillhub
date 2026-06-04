@@ -239,7 +239,7 @@ Acceptance checks:
 ### Developer Workspace
 
 - `/dashboard`: project list, installed skills, budgets, API keys, usage, invoices, update inbox.
-- Future split: `/dashboard/projects/[id]` for project-specific controls.
+- `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, update inbox, recent runtime calls, subscriptions, and operational next actions.
 
 ### Publisher Workspace
 
@@ -307,13 +307,15 @@ Completed:
 - Publisher dashboard publishing pipeline reads owned skill operations data instead of static rows.
 - Developer project operations endpoint aggregating organization-scoped projects, API keys, installs, approvals, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
 - Dashboard buyer project controls now read developer project operations data instead of static rows.
+- Developer project detail endpoint aggregating one organization-scoped project with installed skills, per-skill policies, usage, runtime quality, API key metadata, update inbox, recent invocations, and subscription records.
+- `/dashboard/projects/[slug]` now exposes a project command center with drill-down links from the dashboard project list.
 
 Next:
 
 - Tenant-scoped ownership enforcement for remaining publisher read and write surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project detail pages for per-skill budgets, version pins, API key rotation, update handling, invoices, and runtime logs.
+- Project write workflows for API key rotation UX, update handling actions, invoice detail views, and subscription lifecycle actions.
 
 ## Engineering Acceptance Standard
 

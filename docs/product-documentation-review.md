@@ -211,6 +211,12 @@ Added developer project operations analytics, covering:
 - Aggregated project signals for API keys, installed skills, approvals, policies, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
 - Dashboard buyer project controls now read project operations data, giving developers a concrete reason to return and manage agent project risk and cost.
 
+Added developer project command-center depth, covering:
+
+- Developer read-only project detail endpoint scoped by authorized organization.
+- Per-project aggregation of installed skills, per-skill policies, budget state, runtime quality, usage cost, API keys, update inbox, recent invocations, and subscriptions.
+- Dashboard project rows now link into `/dashboard/projects/[slug]`, giving developers a repeat-use surface for project risk review, version/update handling, key hygiene, and cost monitoring.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

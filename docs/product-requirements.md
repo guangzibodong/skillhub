@@ -237,6 +237,7 @@ Requirements:
 Requirements:
 
 - Projects.
+- Project detail command center with installed skills, per-skill policies, API keys, updates, runtime calls, subscriptions, cost, and next actions.
 - Project API keys.
 - Approved skills.
 - Version pins.

@@ -1555,7 +1555,8 @@ a {
 }
 
 .market-hero,
-.skill-detail-hero {
+.skill-detail-hero,
+.project-detail-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
   gap: 28px;
@@ -1566,7 +1567,8 @@ a {
 }
 
 .market-hero h1,
-.skill-detail-hero h1 {
+.skill-detail-hero h1,
+.project-detail-hero h1 {
   max-width: 860px;
   margin: 18px 0 0;
   color: var(--ink);
@@ -1576,7 +1578,8 @@ a {
 }
 
 .market-hero p,
-.skill-detail-hero p {
+.skill-detail-hero p,
+.project-detail-hero p {
   max-width: 760px;
   margin: 18px 0 0;
   color: var(--muted);
@@ -2024,6 +2027,8 @@ a {
 
 .breadcrumb-link {
   display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 18px;
   color: var(--muted);
   font-size: 13px;
@@ -2249,6 +2254,194 @@ a {
 
 .support-list span:last-child {
   border-bottom: 0;
+}
+
+.project-health-panel {
+  align-self: stretch;
+}
+
+.project-health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.project-health-item {
+  display: grid;
+  gap: 7px;
+  min-height: 86px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.project-health-item svg,
+.project-metric svg {
+  color: var(--cyan);
+}
+
+.project-health-item span,
+.project-table__row small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.project-health-item strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.project-metric {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.project-metric strong {
+  margin-top: 0;
+}
+
+.project-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 18px;
+  align-items: start;
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto 72px;
+}
+
+.project-detail-main,
+.project-detail-side {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.project-table {
+  display: grid;
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.project-table__row {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  min-height: 54px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.project-table__row:last-child {
+  border-bottom: 0;
+}
+
+.project-table__row--head {
+  min-height: 34px;
+  color: #7f8778;
+  font-size: 11px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.project-table__row strong {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.project-table__row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-table__row span small {
+  display: block;
+  margin-top: 5px;
+}
+
+.project-table__row code {
+  min-width: 0;
+  overflow: hidden;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-table__row--empty {
+  grid-template-columns: 1fr;
+  min-width: 0;
+  min-height: 48px;
+  color: var(--muted);
+}
+
+.project-skill-row {
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(180px, 0.78fr)
+    minmax(150px, 0.55fr)
+    minmax(130px, 0.48fr)
+    minmax(160px, 0.58fr);
+  min-width: 920px;
+}
+
+.project-call-row {
+  grid-template-columns: minmax(180px, 1fr) 110px 110px minmax(170px, 0.8fr);
+  min-width: 680px;
+}
+
+.project-key-row {
+  grid-template-columns: minmax(150px, 1fr) minmax(92px, 0.55fr) minmax(110px, 0.65fr) 92px;
+  min-width: 560px;
+}
+
+.project-update-row {
+  grid-template-columns: minmax(150px, 0.85fr) 90px minmax(190px, 1fr) 110px;
+  min-width: 640px;
+}
+
+.project-billing-row {
+  grid-template-columns: minmax(150px, 1fr) 92px minmax(110px, 0.75fr) 110px;
+  min-width: 560px;
+}
+
+.table-link {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.table-link:hover {
+  color: var(--signal);
+}
+
+.status-chip--warning {
+  background: rgba(215, 168, 76, 0.15);
+  color: var(--amber);
+}
+
+.status-chip--danger {
+  background: rgba(255, 133, 111, 0.14);
+  color: var(--coral);
+}
+
+.status-chip--neutral {
+  background: rgba(158, 184, 255, 0.14);
+  color: var(--blue);
 }
 
 .workspace-ops-layout {
@@ -2715,9 +2908,11 @@ a {
   .admin-layout,
   .market-hero,
   .skill-detail-hero,
+  .project-detail-hero,
   .market-browser__top,
   .market-operations-layout,
   .skill-detail-layout,
+  .project-detail-layout,
   .schema-grid,
   .security-grid,
   .workspace-ops-layout {
@@ -2807,6 +3002,8 @@ a {
   .marketplace-ops-strip,
   .skill-detail-hero,
   .skill-detail-layout,
+  .project-detail-hero,
+  .project-detail-layout,
   .workspace-ops-layout {
     width: min(100% - 28px, 1220px);
   }
@@ -2819,7 +3016,8 @@ a {
   .publish-hero h1,
   .page-hero h1,
   .market-hero h1,
-  .skill-detail-hero h1 {
+  .skill-detail-hero h1,
+  .project-detail-hero h1 {
     font-size: 42px;
     line-height: 1.02;
   }
@@ -2828,7 +3026,8 @@ a {
   .publish-hero p,
   .page-hero p,
   .market-hero p,
-  .skill-detail-hero p {
+  .skill-detail-hero p,
+  .project-detail-hero p {
     font-size: 15px;
   }
 
@@ -2993,8 +3192,13 @@ a {
   .publish-hero h1,
   .page-hero h1,
   .market-hero h1,
-  .skill-detail-hero h1 {
+  .skill-detail-hero h1,
+  .project-detail-hero h1 {
     font-size: 32px;
+  }
+
+  .project-health-grid {
+    grid-template-columns: 1fr;
   }
 
   .install-command-row,

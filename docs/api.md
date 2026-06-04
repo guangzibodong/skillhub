@@ -113,6 +113,15 @@ curl "https://api.useskillhub.com/v1/developer/projects?limit=20" \
 
 The response is scoped to the token organization and includes each project with active/revoked API key counts, installed/approved/owner-review skill counts, policy count, monthly budget, runtime calls, success/error/blocked counts, average latency, billable usage, gross usage cost, active subscriptions, and update-inbox count.
 
+Read a single developer project command-center view:
+
+```bash
+curl "https://api.useskillhub.com/v1/developer/projects/research-agent" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, and subscription records. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints.
+
 Read installed skills:
 
 ```bash

@@ -25,7 +25,7 @@ import {
   listProjectApiKeys,
   revokeProjectApiKey
 } from "./runtime.js";
-import { listDeveloperProjects } from "./developer-insights.js";
+import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
   listSkillPrices,
@@ -179,6 +179,24 @@ app.get("/v1/developer/projects", async (c) => {
   return c.json({
     projects: await listDeveloperProjects(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.get("/v1/developer/projects/:projectSlug", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const project = await getDeveloperProjectDetail(c.req.param("projectSlug"), authorization.subject.organizationId);
+
+  if (!project) {
+    return c.json({ error: "Project not found." }, 404);
+  }
+
+  return c.json({ project });
 });
 
 app.get("/v1/publisher/overview", async (c) => {

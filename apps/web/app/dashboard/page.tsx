@@ -15,7 +15,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -161,13 +161,20 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       : ops.pipelineRows;
   const developerProjectRows =
     developerProjects.length > 0
-      ? developerProjects.slice(0, 6).map((project) => [
-          project.name,
-          `${formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)} / ${formatCompactNumber(project.runtime.callCount)} calls`,
-          `${project.apiKeys.activeCount} active / ${project.apiKeys.revokedCount} revoked`,
-          `${project.policy.state} / ${project.updates.count} updates`
-        ])
-      : ops.projectRows;
+      ? developerProjects.slice(0, 6).map((project) => ({
+          budget: `${formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)} / ${formatCompactNumber(project.runtime.callCount)} calls`,
+          keys: `${project.apiKeys.activeCount} active / ${project.apiKeys.revokedCount} revoked`,
+          name: project.name,
+          policy: `${project.policy.state} / ${project.updates.count} updates`,
+          slug: project.slug
+        }))
+      : ops.projectRows.map(([name, budget, keys, policy]) => ({
+          budget,
+          keys,
+          name,
+          policy,
+          slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+        }));
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
@@ -293,12 +300,16 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {developerProjectRows.map(([project, budget, keys, policy]) => (
-              <div className="work-table__row" key={project}>
-                <strong>{project}</strong>
-                <span>{budget}</span>
-                <span>{keys}</span>
-                <span>{policy}</span>
+            {developerProjectRows.map((project) => (
+              <div className="work-table__row" key={project.slug}>
+                <strong>
+                  <a className="table-link" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                    {project.name}
+                  </a>
+                </strong>
+                <span>{project.budget}</span>
+                <span>{project.keys}</span>
+                <span>{project.policy}</span>
               </div>
             ))}
           </div>

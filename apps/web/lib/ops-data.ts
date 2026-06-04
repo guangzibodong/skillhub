@@ -243,6 +243,112 @@ export type DeveloperProjectRecord = {
   createdAt: string;
 };
 
+export type DeveloperProjectSkillRecord = {
+  skillSlug: string;
+  displayName: string;
+  description: string;
+  version: string | null;
+  verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected" | "suspended";
+  status: string;
+  approvalState: string;
+  permissionLevel: "low" | "medium" | "high";
+  installedAt: string;
+  updatedAt: string;
+  policy: {
+    maxPermissionLevel: "low" | "medium" | "high";
+    allowNetwork: boolean;
+    allowBrowser: boolean;
+    filesystemAccess: "none" | "read" | "write";
+    allowSecretAccess: boolean;
+    monthlyBudgetCents: number;
+    rateLimitPerMinute: number | null;
+    approvalRequired: boolean;
+    approvedAt: string | null;
+    state: "approved" | "owner_review" | "suspended";
+  };
+  runtime: {
+    callCount: number;
+    successCount: number;
+    errorCount: number;
+    blockedCount: number;
+    successRate: number | null;
+    avgLatencyMs: number | null;
+  };
+  usage: {
+    billableUsageCount: number;
+    grossCents: number;
+    currency: string;
+  };
+  pricing: {
+    billingModel: "free" | "per_call" | "subscription";
+    unitAmountCents: number;
+    currency: string;
+    status: "draft" | "active" | "archived";
+  };
+  updates: {
+    count: number;
+    latestAt: string | null;
+  };
+  incidents: {
+    openCount: number;
+  };
+};
+
+export type DeveloperProjectApiKeyRecord = {
+  id: string;
+  projectSlug: string;
+  name: string;
+  keyPrefix: string;
+  keyLast4: string;
+  lastUsedAt: string | null;
+  createdAt: string;
+  revokedAt: string | null;
+};
+
+export type DeveloperProjectUpdateRecord = {
+  id: string;
+  skillSlug: string;
+  displayName: string;
+  eventType: string;
+  severity: string;
+  title: string;
+  body: string | null;
+  createdAt: string;
+};
+
+export type DeveloperProjectInvocationRecord = {
+  id: string;
+  skillSlug: string | null;
+  displayName: string | null;
+  version: string | null;
+  status: "success" | "error" | "blocked";
+  latencyMs: number | null;
+  errorCode: string | null;
+  createdAt: string;
+};
+
+export type DeveloperProjectSubscriptionRecord = {
+  id: string;
+  skillSlug: string;
+  displayName: string;
+  status: string;
+  billingModel: "free" | "per_call" | "subscription" | null;
+  unitAmountCents: number | null;
+  currency: string | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  createdAt: string;
+};
+
+export type DeveloperProjectDetail = {
+  project: DeveloperProjectRecord;
+  installedSkills: DeveloperProjectSkillRecord[];
+  apiKeys: DeveloperProjectApiKeyRecord[];
+  updateInbox: DeveloperProjectUpdateRecord[];
+  recentInvocations: DeveloperProjectInvocationRecord[];
+  subscriptions: DeveloperProjectSubscriptionRecord[];
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackLedger: FinanceLedger = {
@@ -625,6 +731,196 @@ const fallbackDeveloperProjects: DeveloperProjectRecord[] = [
   }
 ];
 
+const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDeveloperProjects.map((project) => {
+  const isResearch = project.slug === "research-agent";
+
+  return {
+    project,
+    installedSkills: [
+      {
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        description: "Research a web topic and return concise findings with source URLs.",
+        version: "0.1.0",
+        verificationStatus: "verified",
+        status: "installed",
+        approvalState: "approved",
+        permissionLevel: "medium",
+        installedAt: "demo",
+        updatedAt: "demo",
+        policy: {
+          maxPermissionLevel: "medium",
+          allowNetwork: true,
+          allowBrowser: true,
+          filesystemAccess: "none",
+          allowSecretAccess: false,
+          monthlyBudgetCents: isResearch ? 48000 : 12000,
+          rateLimitPerMinute: 60,
+          approvalRequired: false,
+          approvedAt: "demo",
+          state: "approved"
+        },
+        runtime: {
+          callCount: isResearch ? 18400 : 9200,
+          successCount: isResearch ? 17664 : 8832,
+          errorCount: isResearch ? 642 : 318,
+          blockedCount: isResearch ? 94 : 50,
+          successRate: 0.96,
+          avgLatencyMs: isResearch ? 1280 : 940
+        },
+        usage: {
+          billableUsageCount: isResearch ? 12400 : 0,
+          grossCents: isResearch ? 248000 : 0,
+          currency: "usd"
+        },
+        pricing: {
+          billingModel: isResearch ? "per_call" : "free",
+          unitAmountCents: isResearch ? 2 : 0,
+          currency: "usd",
+          status: "active"
+        },
+        updates: {
+          count: isResearch ? 2 : 1,
+          latestAt: "demo"
+        },
+        incidents: {
+          openCount: 0
+        }
+      },
+      {
+        skillSlug: "dataset-summarizer",
+        displayName: "Dataset Summarizer",
+        description: "Summarize structured datasets with typed output.",
+        version: "0.1.0",
+        verificationStatus: "submitted",
+        status: "installed",
+        approvalState: isResearch ? "owner_required" : "approved",
+        permissionLevel: "medium",
+        installedAt: "demo",
+        updatedAt: "demo",
+        policy: {
+          maxPermissionLevel: "medium",
+          allowNetwork: false,
+          allowBrowser: false,
+          filesystemAccess: "read",
+          allowSecretAccess: false,
+          monthlyBudgetCents: isResearch ? 0 : 8000,
+          rateLimitPerMinute: 30,
+          approvalRequired: isResearch,
+          approvedAt: isResearch ? null : "demo",
+          state: isResearch ? "owner_review" : "approved"
+        },
+        runtime: {
+          callCount: 9200,
+          successCount: 8832,
+          errorCount: 318,
+          blockedCount: 50,
+          successRate: 0.96,
+          avgLatencyMs: 1420
+        },
+        usage: {
+          billableUsageCount: 0,
+          grossCents: 0,
+          currency: "usd"
+        },
+        pricing: {
+          billingModel: "free",
+          unitAmountCents: 0,
+          currency: "usd",
+          status: "active"
+        },
+        updates: {
+          count: 1,
+          latestAt: "demo"
+        },
+        incidents: {
+          openCount: isResearch ? 1 : 0
+        }
+      }
+    ],
+    apiKeys: [
+      {
+        id: `demo-key-${project.slug}-primary`,
+        projectSlug: project.slug,
+        name: "Production runtime",
+        keyPrefix: "skh",
+        keyLast4: "demo",
+        lastUsedAt: "demo",
+        createdAt: "demo",
+        revokedAt: null
+      },
+      {
+        id: `demo-key-${project.slug}-rotation`,
+        projectSlug: project.slug,
+        name: "Rotation candidate",
+        keyPrefix: "skh",
+        keyLast4: "next",
+        lastUsedAt: null,
+        createdAt: "demo",
+        revokedAt: null
+      }
+    ],
+    updateInbox: [
+      {
+        id: `demo-update-${project.slug}-browser-research`,
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        eventType: "new_version",
+        severity: "info",
+        title: "New citation freshness scoring available",
+        body: "Version 0.1.1 adds fresher source ranking for research agents.",
+        createdAt: "demo"
+      },
+      {
+        id: `demo-update-${project.slug}-dataset-summarizer`,
+        skillSlug: "dataset-summarizer",
+        displayName: "Dataset Summarizer",
+        eventType: "security",
+        severity: "medium",
+        title: "File-retention policy requires review",
+        body: "Project owner approval is required before broad file reads are enabled.",
+        createdAt: "demo"
+      }
+    ],
+    recentInvocations: [
+      {
+        id: `demo-invocation-${project.slug}-success`,
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        version: "0.1.0",
+        status: "success",
+        latencyMs: isResearch ? 1184 : 840,
+        errorCode: null,
+        createdAt: "demo"
+      },
+      {
+        id: `demo-invocation-${project.slug}-blocked`,
+        skillSlug: "dataset-summarizer",
+        displayName: "Dataset Summarizer",
+        version: "0.1.0",
+        status: "blocked",
+        latencyMs: 42,
+        errorCode: "policy_approval_required",
+        createdAt: "demo"
+      }
+    ],
+    subscriptions: [
+      {
+        id: `demo-subscription-${project.slug}-browser-research`,
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        status: isResearch ? "active" : "trialing",
+        billingModel: isResearch ? "per_call" : "free",
+        unitAmountCents: isResearch ? 2 : 0,
+        currency: "usd",
+        currentPeriodStart: "demo",
+        currentPeriodEnd: "demo",
+        createdAt: "demo"
+      }
+    ]
+  };
+});
+
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 
@@ -801,6 +1097,37 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
     return payload.projects;
   } catch {
     return fallbackDeveloperProjects;
+  }
+}
+
+export async function getDeveloperProjectDetail(projectSlug: string): Promise<DeveloperProjectDetail | null> {
+  const fallback = fallbackDeveloperProjectDetails.find((detail) => detail.project.slug === projectSlug) ?? null;
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallback;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/developer/projects/${encodeURIComponent(projectSlug)}`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 404) {
+      return fallback;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Developer project detail failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { project: DeveloperProjectDetail };
+    return payload.project;
+  } catch {
+    return fallback;
   }
 }
 
