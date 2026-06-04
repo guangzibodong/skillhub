@@ -1,51 +1,63 @@
 import type { SkillSummary } from "@useskillhub/schema";
 
-export const skills: SkillSummary[] = [
-  {
-    id: "browser-research",
-    slug: "browser-research",
-    displayName: "Browser Research",
-    description: "Research a web topic and return concise findings with source URLs.",
-    tags: ["research", "browser", "citations"],
-    version: "0.1.0",
-    verificationStatus: "verified",
-    permissionLevel: "medium"
-  },
-  {
-    id: "manifest-review",
-    slug: "manifest-review",
-    displayName: "Manifest Review",
-    description: "Review a SkillHub manifest for completeness, risk, and publish readiness.",
-    tags: ["review", "schema", "trust"],
-    version: "0.1.0",
-    verificationStatus: "draft",
-    permissionLevel: "low"
-  },
-  {
-    id: "dataset-summarizer",
-    slug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    description: "Convert tabular data into structured notes, anomalies, and next actions.",
-    tags: ["data", "analysis", "summary"],
-    version: "0.1.0",
-    verificationStatus: "submitted",
-    permissionLevel: "medium"
-  },
-  {
-    id: "support-triage",
-    slug: "support-triage",
-    displayName: "Support Triage",
-    description: "Classify support requests by urgency, product area, and escalation path.",
-    tags: ["support", "classification", "ops"],
-    version: "0.1.0",
-    verificationStatus: "draft",
-    permissionLevel: "low"
-  }
-];
+type RegistryStats = {
+  publishedSkills: number;
+  verifiedSkills: number;
+  apiCalls: number;
+  avgLatencyMs: number | null;
+};
 
-export const gatewayStats = [
-  { label: "Published skills", value: "4" },
-  { label: "Verified", value: "1" },
-  { label: "API calls", value: "0" },
-  { label: "Avg latency", value: "--" }
-];
+export type GatewayMetric = {
+  label: string;
+  value: string;
+};
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+
+export async function getSkills(): Promise<SkillSummary[]> {
+  try {
+    const response = await fetch(`${apiUrl}/v1/skills/search?limit=50`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Skill search failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { skills: SkillSummary[] };
+    return payload.skills;
+  } catch {
+    return [];
+  }
+}
+
+export async function getGatewayStats(): Promise<GatewayMetric[]> {
+  try {
+    const response = await fetch(`${apiUrl}/v1/stats`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Registry stats failed: ${response.status}`);
+    }
+
+    const stats = (await response.json()) as RegistryStats;
+    return formatStats(stats);
+  } catch {
+    return formatStats({
+      publishedSkills: 0,
+      verifiedSkills: 0,
+      apiCalls: 0,
+      avgLatencyMs: null
+    });
+  }
+}
+
+function formatStats(stats: RegistryStats): GatewayMetric[] {
+  return [
+    { label: "Published skills", value: String(stats.publishedSkills) },
+    { label: "Verified", value: String(stats.verifiedSkills) },
+    { label: "API calls", value: String(stats.apiCalls) },
+    { label: "Avg latency", value: stats.avgLatencyMs === null ? "--" : `${stats.avgLatencyMs}ms` }
+  ];
+}

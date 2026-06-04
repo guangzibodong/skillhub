@@ -239,6 +239,29 @@ button {
   gap: 8px;
 }
 
+.empty-state {
+  display: grid;
+  min-height: 240px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--muted);
+  padding: 28px;
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.empty-state p {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
 .skill-table__head,
 .skill-row {
   display: grid;

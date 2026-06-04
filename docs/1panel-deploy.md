@@ -28,6 +28,20 @@ Before starting the stack, create `.env` from `.env.production.example` and repl
 cp .env.production.example .env
 ```
 
+Generate the deployment secrets:
+
+```bash
+POSTGRES_PASSWORD=$(openssl rand -hex 32)
+SESSION_SECRET=$(openssl rand -hex 48)
+API_KEY_SALT=$(openssl rand -hex 48)
+ADMIN_TOKEN=$(openssl rand -hex 32)
+
+sed -i "s|replace-with-a-long-random-password|$POSTGRES_PASSWORD|g" .env
+sed -i "s|replace-with-a-long-random-secret|$SESSION_SECRET|1" .env
+sed -i "s|replace-with-a-long-random-secret|$API_KEY_SALT|1" .env
+sed -i "s|replace-with-a-long-random-admin-token|$ADMIN_TOKEN|g" .env
+```
+
 Start the stack:
 
 ```bash
@@ -75,3 +89,7 @@ The API should return:
   "env": "production"
 }
 ```
+
+## Updates
+
+For updating the existing server after a new GitHub commit, see `docs/server-update.md`.

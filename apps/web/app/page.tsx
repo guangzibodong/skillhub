@@ -11,7 +11,9 @@ import {
   UploadCloud
 } from "lucide-react";
 import { SkillTable } from "@/components/skill-table";
-import { gatewayStats, skills } from "@/lib/registry";
+import { getGatewayStats, getSkills } from "@/lib/registry";
+
+export const dynamic = "force-dynamic";
 
 const navItems = [
   { label: "Registry", icon: Boxes },
@@ -21,7 +23,9 @@ const navItems = [
   { label: "Audit", icon: Activity }
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [skills, gatewayStats] = await Promise.all([getSkills(), getGatewayStats()]);
+
   return (
     <main className="app-shell">
       <aside className="sidebar">

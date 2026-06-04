@@ -7,6 +7,16 @@ type SkillTableProps = {
 };
 
 export function SkillTable({ skills }: SkillTableProps) {
+  if (skills.length === 0) {
+    return (
+      <div className="empty-state">
+        <Box size={22} aria-hidden="true" />
+        <h3>No skills published</h3>
+        <p>Publish a SkillHub manifest to populate the registry.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="skill-table" aria-label="Skill registry">
       <div className="skill-table__head">
