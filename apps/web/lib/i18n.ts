@@ -28,13 +28,16 @@ export function localizedHref(path: string, locale: Locale) {
 export const dictionaries = {
   en: {
     common: {
+      admin: "Admin",
       apiHealth: "API health",
       backToRegistry: "Registry",
+      dashboard: "Dashboard",
       gateway: "Gateway",
       github: "GitHub",
       health: "Health",
       language: "Language",
       live: "Live",
+      marketplace: "Marketplace",
       mcp: "MCP",
       publish: "Publish",
       publishSkill: "Publish skill",
@@ -43,15 +46,18 @@ export const dictionaries = {
     },
     nav: {
       home: "Home",
+      marketplace: "Marketplace",
       registry: "Registry",
       agents: "Agents",
-      docs: "Docs"
+      docs: "Docs",
+      dashboard: "Dashboard",
+      admin: "Admin"
     },
     home: {
       eyebrow: "Agent skill infrastructure",
       title: "Universal skills agents can discover, trust, and run.",
       description:
-        "SkillHub is the registry and gateway layer for reusable AI-agent capabilities: one manifest format, searchable packages, permission profiles, and agent-ready APIs.",
+        "SkillHub is the registry, marketplace, and gateway layer for reusable AI-agent capabilities: one manifest format, searchable packages, permission profiles, billing-ready usage, and agent-ready APIs.",
       publishCta: "Publish a skill",
       gatewayTitle: "Production edge",
       registryEyebrow: "Registry",
@@ -61,11 +67,11 @@ export const dictionaries = {
       protocolEyebrow: "Protocol",
       protocolTitle: "A skill contract agents can read before they act.",
       protocolBody:
-        "A SkillHub package is not just a prompt. It is a typed, versioned capability with declared runtime, schemas, and permissions.",
+        "A SkillHub package is not just a prompt. It is a typed, versioned capability with declared runtime, schemas, permissions, pricing, and review state.",
       manifestEyebrow: "skillhub.json",
       manifestTitle: "One manifest for humans, agents, and runtime gateways.",
       manifestBody:
-        "The registry accepts a compact JSON manifest. The same contract powers search results, trust review, SDK generation, and MCP tool discovery.",
+        "The registry accepts a compact JSON manifest. The same contract powers search results, trust review, SDK generation, billing, and MCP tool discovery.",
       trustEyebrow: "Trust layer",
       trustTitle: "Designed for agents that need guardrails.",
       status: {
@@ -78,15 +84,15 @@ export const dictionaries = {
       workflows: [
         {
           title: "Discover",
-          description: "Agents search by task, tags, permission profile, and runtime contract."
+          description: "Agents search by task, tags, permission profile, runtime contract, and pricing model."
         },
         {
           title: "Validate",
-          description: "Skill manifests declare inputs, outputs, runtime entrypoints, and access needs."
+          description: "Skill manifests declare inputs, outputs, runtime entrypoints, access needs, and version history."
         },
         {
           title: "Execute",
-          description: "The gateway exposes HTTP and MCP endpoints so agents can call skills safely."
+          description: "The gateway exposes HTTP and MCP endpoints so agents can call skills safely and meter usage."
         }
       ],
       manifestBullets: [
@@ -106,7 +112,7 @@ export const dictionaries = {
         },
         {
           title: "Operator control",
-          description: "Publishing is gated behind admin tokens while public discovery remains open."
+          description: "Paid publishing, review, refunds, and payouts stay behind audited platform controls."
         }
       ]
     },
@@ -153,6 +159,123 @@ export const dictionaries = {
       packageTitle: "Package signals",
       packageBody: "Every listed skill includes trust status, tags, version, and permission risk."
     },
+    marketplacePage: {
+      eyebrow: "Marketplace model",
+      title: "A skill marketplace built for publishers, developers, and agents.",
+      description:
+        "SkillHub separates discovery, execution, billing, and payout operations so third-party skill authors can publish while buyers keep control of cost and risk.",
+      ctaPrimary: "Open dashboard",
+      ctaSecondary: "Read docs",
+      rails: [
+        {
+          title: "Publishers",
+          description: "Create skill versions, submit reviews, choose pricing, track usage, and receive payouts."
+        },
+        {
+          title: "Developers",
+          description: "Create projects, issue API keys, approve paid skills, inspect invoices, and pin versions."
+        },
+        {
+          title: "Platform",
+          description: "Review submissions, classify risk, resolve disputes, audit money movement, and protect users."
+        }
+      ],
+      moneyTitle: "Commission and payout flow",
+      moneySteps: ["Customer payment", "Usage transaction", "Platform fee", "Publisher balance", "Payout review", "Paid out"],
+      pricingTitle: "First pricing models",
+      pricing: [
+        {
+          name: "Free",
+          detail: "Public discovery and metered usage without money movement."
+        },
+        {
+          name: "Per call",
+          detail: "Every successful billable execution creates a transaction split."
+        },
+        {
+          name: "Subscription",
+          detail: "Monthly access to one skill, one publisher bundle, or a curated collection."
+        }
+      ],
+      commissionTitle: "Default split",
+      splitCaption: "platform / publisher",
+      commissionRows: [
+        ["Platform fee", "20%"],
+        ["Publisher share", "80%"],
+        ["Processing fee", "Recorded separately"],
+        ["Refunds", "Reverse fee and share proportionally"]
+      ]
+    },
+    dashboardPage: {
+      eyebrow: "Workspace dashboard",
+      title: "Run the publisher and developer sides from one console.",
+      description:
+        "The dashboard is split into publisher operations, buyer projects, earnings, and payout readiness so the platform can grow into real marketplace workflows.",
+      publisher: "Publisher backend",
+      buyer: "Developer backend",
+      earnings: "Earnings",
+      payouts: "Payouts",
+      metrics: [
+        ["Available balance", "$4,820"],
+        ["Pending balance", "$1,260"],
+        ["Billable calls", "38.4k"],
+        ["Active subscriptions", "126"]
+      ],
+      publisherCards: [
+        ["Skill pipeline", "3 submitted, 8 verified, 1 needs runtime fix"],
+        ["Pricing", "Per-call and subscription pricing ready for review"],
+        ["Analytics", "Latency, errors, conversion, and top consuming projects"]
+      ],
+      buyerCards: [
+        ["Projects", "Agent projects with scoped API keys and budgets"],
+        ["Subscriptions", "Approved paid skills, renewals, cancellations"],
+        ["Usage", "Cost, calls, latency, and skill-level breakdowns"]
+      ],
+      ledgerTitle: "Revenue ledger",
+      ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
+      ledgerRows: [
+        ["browser-research", "$1,240", "$248", "$992", "available"],
+        ["support-triage", "$760", "$152", "$608", "pending"],
+        ["schema-auditor", "$420", "$84", "$336", "available"]
+      ],
+      payoutTitle: "Withdrawal readiness",
+      payoutItems: [
+        ["Payout account", "Connected"],
+        ["KYC status", "Verified"],
+        ["Minimum threshold", "$100"],
+        ["Next payout", "Scheduled review"]
+      ]
+    },
+    adminPage: {
+      eyebrow: "Platform admin",
+      title: "Control review, risk, finance, payouts, and audit trails.",
+      description:
+        "Admin operations must protect the registry and the money flow. Every approval, rejection, refund, dispute, and payout decision needs a durable record.",
+      metrics: [
+        ["GMV", "$18.6k"],
+        ["Platform revenue", "$3.7k"],
+        ["Payouts due", "$5.1k"],
+        ["Review queue", "9"]
+      ],
+      reviewTitle: "Skill review queue",
+      reviewRows: [
+        ["browser-research-pro", "High", "Runtime test passed", "Manual review"],
+        ["crm-enrichment", "Medium", "Needs data policy", "Waiting"],
+        ["local-file-agent", "High", "Filesystem access", "Blocked"]
+      ],
+      financeTitle: "Finance operations",
+      financeRows: [
+        ["Transaction splits", "Immutable platform fee and publisher share records"],
+        ["Payout review", "Manual review above threshold or risk flag"],
+        ["Refunds and disputes", "Adjustments instead of editing historical transactions"]
+      ],
+      auditTitle: "Audit stream",
+      auditRows: [
+        "Reviewer approved schema-auditor v0.2.1",
+        "Finance blocked payout for missing provider verification",
+        "System recorded per-call transaction batch"
+      ]
+    },
     agentsPage: {
       eyebrow: "Agent runtime",
       title: "A common skill layer for every agent stack.",
@@ -185,7 +308,7 @@ export const dictionaries = {
       sections: [
         {
           title: "Manifest contract",
-          description: "Declare identity, runtime, permissions, input schema, and output schema in skillhub.json."
+          description: "Declare identity, runtime, permissions, input schema, output schema, and pricing state in skillhub.json."
         },
         {
           title: "Search API",
@@ -255,13 +378,16 @@ export const dictionaries = {
   },
   zh: {
     common: {
+      admin: "管理后台",
       apiHealth: "API 状态",
-      backToRegistry: "注册表",
+      backToRegistry: "技能库",
+      dashboard: "工作台",
       gateway: "网关",
       github: "GitHub",
       health: "健康状态",
       language: "语言",
       live: "在线",
+      marketplace: "市场",
       mcp: "MCP",
       publish: "发布",
       publishSkill: "发布技能",
@@ -270,15 +396,18 @@ export const dictionaries = {
     },
     nav: {
       home: "首页",
+      marketplace: "市场",
       registry: "技能库",
       agents: "智能体",
-      docs: "文档"
+      docs: "文档",
+      dashboard: "工作台",
+      admin: "后台"
     },
     home: {
       eyebrow: "智能体技能基础设施",
-      title: "让智能体能够发现、信任并运行通用技能。",
+      title: "让智能体发现、信任并运行通用技能。",
       description:
-        "SkillHub 是给 AI 智能体使用的技能注册表和运行网关：统一 manifest 格式、可搜索技能包、权限画像，以及面向智能体的 API。",
+        "SkillHub 是给 AI 智能体使用的技能注册表、市场和运行网关：统一 manifest 格式、可搜索技能包、权限画像、可计费用量，以及面向智能体的 API。",
       publishCta: "发布一个技能",
       gatewayTitle: "生产网关",
       registryEyebrow: "技能库",
@@ -287,10 +416,12 @@ export const dictionaries = {
       searchPlaceholder: "搜索技能、标签、运行时",
       protocolEyebrow: "协议",
       protocolTitle: "智能体执行之前，可以先读懂技能协议。",
-      protocolBody: "SkillHub 技能包不是一段提示词，而是带运行时、输入输出 schema 和权限声明的版本化能力。",
+      protocolBody:
+        "SkillHub 技能包不是一段提示词，而是带运行时、输入输出 schema、权限、价格和审核状态的版本化能力。",
       manifestEyebrow: "skillhub.json",
       manifestTitle: "一份 manifest，同时服务人、智能体和运行网关。",
-      manifestBody: "注册表接受简洁的 JSON manifest；它会驱动搜索结果、信任审核、SDK 生成和 MCP 工具发现。",
+      manifestBody:
+        "注册表接受简洁的 JSON manifest；它会驱动搜索结果、信任审核、SDK 生成、计费和 MCP 工具发现。",
       trustEyebrow: "信任层",
       trustTitle: "为需要护栏的智能体而设计。",
       status: {
@@ -303,15 +434,15 @@ export const dictionaries = {
       workflows: [
         {
           title: "发现",
-          description: "智能体可以按任务、标签、权限画像和运行时协议搜索技能。"
+          description: "智能体可按任务、标签、权限画像、运行协议和价格模型搜索技能。"
         },
         {
           title: "校验",
-          description: "技能 manifest 声明输入、输出、运行入口和访问需求。"
+          description: "技能 manifest 声明输入、输出、运行入口、访问需求和版本历史。"
         },
         {
           title: "执行",
-          description: "网关提供 HTTP 和 MCP 端点，让智能体安全调用技能。"
+          description: "网关提供 HTTP 和 MCP 端点，让智能体安全调用技能并记录用量。"
         }
       ],
       manifestBullets: [
@@ -331,7 +462,7 @@ export const dictionaries = {
         },
         {
           title: "运营可控",
-          description: "发布入口由管理员 token 保护，公开发现接口保持开放。"
+          description: "付费发布、审核、退款和提现都放在带审计的后台控制里。"
         }
       ]
     },
@@ -362,7 +493,7 @@ export const dictionaries = {
         draft: "草稿",
         submitted: "已提交",
         verified: "已验证",
-        deprecated: "已废弃",
+        deprecated: "已弃用",
         rejected: "已拒绝"
       }
     },
@@ -377,14 +508,132 @@ export const dictionaries = {
       packageTitle: "包信号",
       packageBody: "每个技能都包含信任状态、标签、版本和权限风险。"
     },
+    marketplacePage: {
+      eyebrow: "市场模型",
+      title: "给发布者、开发者和智能体使用的技能市场。",
+      description:
+        "SkillHub 把发现、执行、计费和提现运营拆开，让第三方技能作者可以发布技能，同时让购买方控制成本和风险。",
+      ctaPrimary: "打开工作台",
+      ctaSecondary: "阅读文档",
+      rails: [
+        {
+          title: "发布者",
+          description: "创建技能版本、提交审核、选择价格、查看用量并获得提现。"
+        },
+        {
+          title: "开发者",
+          description: "创建项目、签发 API Key、批准付费技能、查看发票并固定版本。"
+        },
+        {
+          title: "平台",
+          description: "审核提交、分类风险、处理争议、审计资金流并保护用户。"
+        }
+      ],
+      moneyTitle: "分佣和提现流程",
+      moneySteps: ["客户付款", "用量交易", "平台佣金", "发布者余额", "提现审核", "打款完成"],
+      pricingTitle: "第一批价格模型",
+      pricing: [
+        {
+          name: "免费",
+          detail: "公开发现和用量记录，但不产生资金流。"
+        },
+        {
+          name: "按次调用",
+          detail: "每一次成功的可计费执行都会生成一条分账交易。"
+        },
+        {
+          name: "订阅",
+          detail: "按月购买单个技能、发布者合集或平台精选合集。"
+        }
+      ],
+      commissionTitle: "默认分账",
+      splitCaption: "平台 / 发布者",
+      commissionRows: [
+        ["平台佣金", "20%"],
+        ["发布者收入", "80%"],
+        ["支付通道费", "单独记录"],
+        ["退款", "按比例冲回平台佣金和发布者收入"]
+      ]
+    },
+    dashboardPage: {
+      eyebrow: "工作台",
+      title: "发布者后台和开发者后台放在同一个控制台。",
+      description:
+        "工作台拆成发布运营、购买方项目、收益和提现准备四块，这样平台以后可以自然接入真实市场流程。",
+      publisher: "发布者后台",
+      buyer: "开发者后台",
+      earnings: "收益",
+      payouts: "提现",
+      metrics: [
+        ["可提现余额", "$4,820"],
+        ["待结算余额", "$1,260"],
+        ["可计费调用", "38.4k"],
+        ["活跃订阅", "126"]
+      ],
+      publisherCards: [
+        ["技能流程", "3 个待审核，8 个已验证，1 个运行时需修复"],
+        ["价格", "按次调用和订阅价格已进入审核流程"],
+        ["分析", "延迟、错误、转化率和主要调用项目"]
+      ],
+      buyerCards: [
+        ["项目", "带作用域 API Key 和预算的智能体项目"],
+        ["订阅", "已批准付费技能、续费和取消记录"],
+        ["用量", "成本、调用、延迟和技能级别拆分"]
+      ],
+      ledgerTitle: "收益账本",
+      ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
+      ledgerRows: [
+        ["browser-research", "$1,240", "$248", "$992", "可提现"],
+        ["support-triage", "$760", "$152", "$608", "待结算"],
+        ["schema-auditor", "$420", "$84", "$336", "可提现"]
+      ],
+      payoutTitle: "提现准备",
+      payoutItems: [
+        ["提现账户", "已连接"],
+        ["KYC 状态", "已验证"],
+        ["最低提现金额", "$100"],
+        ["下一笔提现", "等待计划审核"]
+      ]
+    },
+    adminPage: {
+      eyebrow: "平台管理后台",
+      title: "控制审核、风险、财务、提现和审计链路。",
+      description:
+        "后台运营必须同时保护技能库和资金流。每一次批准、拒绝、退款、争议和提现决策都要留下持久记录。",
+      metrics: [
+        ["交易额", "$18.6k"],
+        ["平台收入", "$3.7k"],
+        ["待提现", "$5.1k"],
+        ["审核队列", "9"]
+      ],
+      reviewTitle: "技能审核队列",
+      reviewRows: [
+        ["browser-research-pro", "高", "运行测试通过", "人工审核"],
+        ["crm-enrichment", "中", "需要数据政策", "等待"],
+        ["local-file-agent", "高", "文件系统权限", "已阻止"]
+      ],
+      financeTitle: "财务运营",
+      financeRows: [
+        ["交易分账", "不可变的平台佣金和发布者收入记录"],
+        ["提现审核", "超过阈值或命中风险时进入人工审核"],
+        ["退款和争议", "用调整交易处理，不修改历史交易"]
+      ],
+      auditTitle: "审计流",
+      auditRows: [
+        "审核员批准 schema-auditor v0.2.1",
+        "财务因支付方验证缺失阻止提现",
+        "系统记录按次调用交易批次"
+      ]
+    },
     agentsPage: {
       eyebrow: "智能体运行层",
       title: "给所有智能体栈共用的一层技能系统。",
-      description: "无论运行时是 HTTP、MCP 还是本地命令，SkillHub 都给智能体一条从发现、校验到执行的稳定路径。",
+      description:
+        "无论运行时是 HTTP、MCP 还是本地命令，SkillHub 都给智能体一条从发现、校验到执行的稳定路径。",
       cards: [
         {
           title: "适合规划器发现",
-          description: "把技能搜索暴露成智能体工具，让规划器先找到可复用能力，而不是每次重新写步骤。"
+          description: "把技能搜索暴露成智能体工具，让规划器先找到可复用能力，而不是每次重写步骤。"
         },
         {
           title: "运行时路由",
@@ -403,11 +652,12 @@ export const dictionaries = {
     docsPage: {
       eyebrow: "开发者文档",
       title: "构建并发布 SkillHub 技能包。",
-      description: "当前协议刻意保持小而清晰：JSON manifest、公开发现 API，以及智能体可以调用的网关。",
+      description:
+        "当前协议刻意保持小而清晰：JSON manifest、公开发现 API，以及智能体可以调用的网关。",
       sections: [
         {
           title: "Manifest 协议",
-          description: "在 skillhub.json 中声明身份、运行时、权限、输入 schema 和输出 schema。"
+          description: "在 skillhub.json 中声明身份、运行时、权限、输入 schema、输出 schema 和价格状态。"
         },
         {
           title: "搜索 API",

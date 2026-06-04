@@ -10,10 +10,16 @@ type LanguageSwitcherProps = {
 export function LanguageSwitcher({ label, locale, pathname }: LanguageSwitcherProps) {
   return (
     <div className="language-switcher" aria-label={label}>
-      <a className={locale === "en" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"} href={localizedHref(pathname, "en")}>
+      <a
+        className={locale === "en" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"}
+        href={localizedHref(pathname, "en")}
+      >
         EN
       </a>
-      <a className={locale === "zh" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"} href={localizedHref(pathname, "zh")}>
+      <a
+        className={locale === "zh" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"}
+        href={localizedHref(pathname, "zh")}
+      >
         中文
       </a>
     </div>

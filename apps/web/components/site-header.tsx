@@ -4,7 +4,7 @@ import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
 
 type SiteHeaderProps = {
-  active: "home" | "registry" | "agents" | "docs" | "publish";
+  active: "home" | "marketplace" | "registry" | "agents" | "docs" | "dashboard" | "admin" | "publish";
   apiUrl?: string;
   dictionary: Dictionary;
   locale: Locale;
@@ -15,9 +15,12 @@ type SiteHeaderProps = {
 export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dictionary, locale, pathname, subtitle }: SiteHeaderProps) {
   const navItems = [
     { id: "home", label: dictionary.nav.home, href: "/" },
+    { id: "marketplace", label: dictionary.nav.marketplace, href: "/marketplace" },
     { id: "registry", label: dictionary.nav.registry, href: "/registry" },
     { id: "agents", label: dictionary.nav.agents, href: "/agents" },
-    { id: "docs", label: dictionary.nav.docs, href: "/docs" }
+    { id: "docs", label: dictionary.nav.docs, href: "/docs" },
+    { id: "dashboard", label: dictionary.nav.dashboard, href: "/dashboard" },
+    { id: "admin", label: dictionary.nav.admin, href: "/admin" }
   ] as const;
 
   return (
