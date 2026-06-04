@@ -36,6 +36,18 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type AdminReviewRecord = {
+  id: string;
+  skillSlug: string;
+  displayName: string;
+  version: string | null;
+  status: "approved" | "blocked" | "in_review" | "queued" | "rejected" | string;
+  riskLevel: "low" | "medium" | "high" | string | null;
+  notes: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+};
+
 export type UserNotificationRecord = {
   id: string;
   eventType: string;
@@ -568,6 +580,42 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackAdminReviews: AdminReviewRecord[] = [
+  {
+    id: "demo-review-browser-research",
+    skillSlug: "browser-research",
+    displayName: "Browser Research",
+    version: "0.1.0",
+    status: "queued",
+    riskLevel: "medium",
+    notes: "Validate browser domain allowlist, citation output schema, and pricing readiness before approval.",
+    createdAt: "demo",
+    decidedAt: null
+  },
+  {
+    id: "demo-review-dataset-summarizer",
+    skillSlug: "dataset-summarizer",
+    displayName: "Dataset Summarizer",
+    version: "0.1.0",
+    status: "in_review",
+    riskLevel: "low",
+    notes: "Runtime passed; reviewer should confirm file-retention wording and example output coverage.",
+    createdAt: "demo",
+    decidedAt: null
+  },
+  {
+    id: "demo-review-local-file-agent",
+    skillSlug: "local-file-agent",
+    displayName: "Local File Agent",
+    version: "0.2.0",
+    status: "blocked",
+    riskLevel: "high",
+    notes: "Filesystem write access requires explicit owner approval and stronger rollback instructions.",
+    createdAt: "demo",
+    decidedAt: null
   }
 ];
 
@@ -1494,6 +1542,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackAdminReviews;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/reviews`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin reviews failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { reviews: AdminReviewRecord[] };
+    return payload.reviews;
+  } catch {
+    return fallbackAdminReviews;
   }
 }
 

@@ -1,7 +1,6 @@
 import {
   AlertTriangle,
   Banknote,
-  ClipboardCheck,
   FileClock,
   Gavel,
   ListChecks,
@@ -13,6 +12,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
+import { AdminReviewManager } from "@/components/admin-review-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
@@ -21,10 +21,10 @@ import {
   getAdminDisputes,
   getAdminNotifications,
   getAdminPayouts,
+  getAdminReviews,
   getAdminRefunds,
   getFinanceLedger
 } from "@/lib/ops-data";
-import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -98,14 +98,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [overview, financeLedger, notifications, payouts, refunds, disputes, abuseReports] = await Promise.all([
-    getPlatformOverview(),
+  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, reviews] = await Promise.all([
     getFinanceLedger(),
     getAdminNotifications(),
     getAdminPayouts(),
     getAdminRefunds(),
     getAdminDisputes(),
-    getAdminAbuseReports()
+    getAdminAbuseReports(),
+    getAdminReviews()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -163,7 +163,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
     [labels.metrics[2][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
-    [labels.metrics[3][0], getOverviewMetric(overview.admin.metrics, "Review queue", labels.metrics[3][1])]
+    [labels.metrics[3][0], String(reviews.length)]
   ];
 
   return (
@@ -193,24 +193,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
 
       <section className="admin-layout">
-        <article className="ops-panel admin-review-panel">
-          <div className="card-kicker">
-            <ClipboardCheck size={16} aria-hidden="true" />
-            <span>{labels.reviewTitle}</span>
-          </div>
-          <div className="review-queue">
-            {labels.reviewRows.map(([name, risk, signal, state]) => (
-              <div className="review-queue__row" key={name}>
-                <div>
-                  <strong>{name}</strong>
-                  <span>{signal}</span>
-                </div>
-                <span className="risk-badge">{risk}</span>
-                <span className="status-chip">{state}</span>
-              </div>
-            ))}
-          </div>
-        </article>
+        <AdminReviewManager locale={locale} reviews={reviews} />
 
         <aside className="ops-panel admin-audit-panel">
           <div className="card-kicker">

@@ -354,6 +354,13 @@ Added dedicated developer workspace, covering:
 - The buyer request exchange now has a developer-only mode, so skill buyers can publish demand and decide their own requests without publisher claim controls mixed into the workflow.
 - This strengthens repeat visits because developers have a clear home for "what needs action today" across projects, keys, approvals, usage, demand, billing, and notifications.
 
+Added admin review operations, covering:
+
+- `/admin` now reads the live skill review queue instead of static review rows.
+- Reviewers can approve, reject, or block skill submissions with required reviewer notes from the admin console.
+- Decisions call the review workflow API, which updates listing verification state and records audit, skill-update, and notification events before external email/provider integrations are connected.
+- This strengthens platform trust because submitted skills now have an operator-controlled path from publisher submission to verified, rejected, or suspended listing state.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

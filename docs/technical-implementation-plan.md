@@ -276,6 +276,7 @@ Completed:
 - Installed-skill update inbox API endpoint.
 - Skill review submission endpoint.
 - Admin review queue and review decision endpoints.
+- Admin review console now reads the live review queue and exposes approve, reject, and block decisions with required reviewer notes.
 - Project API key creation, listing, and revocation.
 - Runtime invocation endpoint with API key auth, installed-skill gate, permission policy checks, rate limit checks, budget checks, invocation logs, and usage events.
 - SDK and CLI runtime invocation helpers.
