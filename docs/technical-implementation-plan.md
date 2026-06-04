@@ -296,12 +296,15 @@ Completed:
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
+- Publisher profile and payout-account onboarding endpoints.
+- Provider-deferred onboarding session records for payout handoff, completion, blocking, audit, and notifications.
+- Publisher dashboard reads payout account and onboarding state.
 
 Next:
 
 - Tenant-scoped route ownership enforcement for publisher resources and read surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
-- Payout account onboarding screens and provider handoff state.
+- Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Publisher/developer-facing refund and dispute history views.
 
 ## Engineering Acceptance Standard

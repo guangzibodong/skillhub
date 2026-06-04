@@ -184,6 +184,13 @@ Added first tenant-scoped project write enforcement, covering:
 - New project records are created under the user token organization instead of the demo fallback.
 - Service tokens keep the demo fallback for bootstrap and controlled operator flows.
 
+Added provider-deferred payout account onboarding, covering:
+
+- Publisher profile read/update endpoints scoped to the authorized organization.
+- Payout account onboarding session creation with provider handoff URL, return URL, refresh URL, status, expiry, and audit trail.
+- Onboarding completion can mark payout accounts verified, verification-required, blocked, or not configured.
+- Publisher payout readiness now reads payout account and onboarding session state in the dashboard.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

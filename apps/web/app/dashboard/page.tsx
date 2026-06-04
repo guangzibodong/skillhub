@@ -14,7 +14,12 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
-import { formatMoney, getFinanceLedger, getPublisherPayoutSummary } from "@/lib/ops-data";
+import {
+  formatMoney,
+  getFinanceLedger,
+  getPublisherAccountSummary,
+  getPublisherPayoutSummary
+} from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -80,10 +85,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const [overview, financeLedger, payoutSummary] = await Promise.all([
+  const [overview, financeLedger, payoutSummary, publisherAccount] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
-    getPublisherPayoutSummary()
+    getPublisherPayoutSummary(),
+    getPublisherAccountSummary()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
@@ -101,15 +107,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
     [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
   ];
-  const payoutAccount = payoutSummary.payoutAccounts[0];
+  const payoutAccount = publisherAccount.payoutAccounts[0] ?? payoutSummary.payoutAccounts[0];
+  const latestOnboarding = publisherAccount.onboardingSessions[0];
   const latestPayout = payoutSummary.payouts[0];
   const payoutItems = [
     [labels.payoutItems[0][0], payoutAccount?.status ?? "not configured"],
-    [labels.payoutItems[1][0], payoutSummary.publisherProfile?.payoutStatus ?? "not configured"],
+    [labels.payoutItems[1][0], publisherAccount.publisherProfile?.payoutStatus ?? payoutSummary.publisherProfile?.payoutStatus ?? "not configured"],
     [labels.payoutItems[2][0], formatMoney(payoutSummary.balances.minPayoutCents, payoutSummary.balances.currency)],
     [
       labels.payoutItems[3][0],
-      latestPayout
+      latestOnboarding
+        ? `${latestOnboarding.provider} / ${latestOnboarding.status}`
+        : latestPayout
         ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${latestPayout.status}`
         : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
     ]

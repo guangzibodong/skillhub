@@ -303,6 +303,44 @@ Balances start as `pending` and become `available` only after their risk/refund 
 
 Payout provider movement is still deferred, but SkillHub now models the internal payout state machine and reserves exact balance rows before a payout can be marked paid.
 
+Read or update the publisher profile and payout account readiness:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/profile" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/publisher/profile" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"displayName":"SkillHub Publisher","status":"active"}'
+```
+
+Create a payout-account onboarding handoff:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "manual_deferred",
+    "returnUrl": "https://app.useskillhub.com/dashboard",
+    "refreshUrl": "https://app.useskillhub.com/dashboard"
+  }'
+```
+
+Complete or block the deferred onboarding state:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding/complete" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"SESSION_ID","status":"verified","reason":"Provider verification passed."}'
+```
+
+Current onboarding sessions are provider-deferred records. They model provider handoff URLs, session status, payout account status, publisher payout readiness, audit logs, and notification events before the final payment provider API is connected.
+
 Read publisher payout readiness:
 
 ```bash

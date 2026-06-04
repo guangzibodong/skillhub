@@ -40,6 +40,12 @@ import {
   requestPublisherPayout
 } from "./payouts.js";
 import {
+  completePayoutAccountOnboarding,
+  createPayoutAccountOnboarding,
+  getPublisherAccountSummary,
+  upsertPublisherProfile
+} from "./publisher.js";
+import {
   createDispute,
   createRefundRequest,
   decideDispute,
@@ -479,7 +485,8 @@ app.get("/v1/admin/notifications", async (c) => {
 
 app.get("/v1/publisher/payouts", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
-    publisherProfileId: c.req.query("publisherProfileId") ?? undefined
+    publisherProfileId: c.req.query("publisherProfileId") ?? undefined,
+    requireOrganization: true
   });
 
   if (!authorization.ok) {
@@ -487,14 +494,15 @@ app.get("/v1/publisher/payouts", async (c) => {
   }
 
   return c.json(
-    await getPublisherPayoutSummary(c.req.query("publisherProfileId") ?? undefined)
+    await getPublisherPayoutSummary(c.req.query("publisherProfileId") ?? undefined, authorization.subject.organizationId)
   );
 });
 
 app.post("/v1/publisher/payouts", async (c) => {
   const body = (await c.req.json().catch(() => ({}))) as { publisherProfileId?: string; currency?: string };
   const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
-    publisherProfileId: body.publisherProfileId
+    publisherProfileId: body.publisherProfileId,
+    requireOrganization: true
   });
 
   if (!authorization.ok) {
@@ -502,9 +510,90 @@ app.post("/v1/publisher/payouts", async (c) => {
   }
 
   try {
-    return c.json({ payout: await requestPublisherPayout(body) }, 201);
+    return c.json({ payout: await requestPublisherPayout({ ...body, organizationId: authorization.subject.organizationId }) }, 201);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to request payout." }, 400);
+  }
+});
+
+app.get("/v1/publisher/profile", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    publisherProfileId: c.req.query("publisherProfileId") ?? undefined,
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json(
+    await getPublisherAccountSummary(authorization.subject.organizationId, c.req.query("publisherProfileId") ?? undefined)
+  );
+});
+
+app.put("/v1/publisher/profile", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      publisherProfile: await upsertPublisherProfile(
+        authorization.subject.organizationId,
+        (await c.req.json()) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update publisher profile." }, 400);
+  }
+});
+
+app.post("/v1/publisher/payout-account/onboarding", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        onboarding: await createPayoutAccountOnboarding(
+          authorization.subject.organizationId,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create payout onboarding." }, 400);
+  }
+});
+
+app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      publisher: await completePayoutAccountOnboarding(
+        authorization.subject.organizationId,
+        (await c.req.json()) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to complete payout onboarding." }, 400);
   }
 });
 

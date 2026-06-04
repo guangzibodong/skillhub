@@ -12,6 +12,7 @@ type PayoutDecisionInput = {
 };
 
 type RequestPayoutInput = {
+  organizationId?: string | null;
   publisherProfileId?: string;
   currency?: string;
 };
@@ -86,14 +87,14 @@ const fallbackPayoutSummary = {
   ]
 };
 
-export async function getPublisherPayoutSummary(publisherProfileId?: string) {
+export async function getPublisherPayoutSummary(publisherProfileId?: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
     return fallbackPayoutSummary;
   }
 
-  const publisher = await getPublisherProfile(sql, publisherProfileId);
+  const publisher = await getPublisherProfile(sql, publisherProfileId, false, organizationId);
 
   if (!publisher) {
     return {
@@ -167,7 +168,7 @@ export async function requestPublisherPayout(input: RequestPayoutInput) {
   const currency = normalizeCurrency(input.currency);
 
   return sql.begin(async (tx: Sql) => {
-    const publisher = await getPublisherProfile(tx, input.publisherProfileId, true);
+    const publisher = await getPublisherProfile(tx, input.publisherProfileId, true, input.organizationId);
 
     if (!publisher) {
       throw new Error("Publisher profile not found.");
@@ -421,7 +422,8 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
 async function getPublisherProfile(
   sql: Sql,
   publisherProfileId?: string,
-  forUpdate = false
+  forUpdate = false,
+  organizationId?: string | null
 ): Promise<PublisherProfile | null> {
   const lock = forUpdate ? sql`for update` : sql``;
   const rows = publisherProfileId
@@ -434,9 +436,24 @@ async function getPublisherProfile(
           payout_status as "payoutStatus"
         from publisher_profiles
         where id = ${publisherProfileId}
+          and (${organizationId ?? null}::uuid is null or organization_id = ${organizationId ?? null})
         limit 1
         ${lock}
       `) as PublisherProfile[])
+    : organizationId
+      ? ((await sql`
+          select
+            id::text,
+            organization_id::text as "organizationId",
+            display_name as "displayName",
+            status,
+            payout_status as "payoutStatus"
+          from publisher_profiles
+          where organization_id = ${organizationId}
+          order by created_at asc
+          limit 1
+          ${lock}
+        `) as PublisherProfile[])
     : ((await sql`
         select
           id::text,

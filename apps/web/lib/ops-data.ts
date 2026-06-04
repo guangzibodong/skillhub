@@ -81,6 +81,40 @@ export type PublisherPayoutSummary = {
   payouts: PayoutRecord[];
 };
 
+export type PublisherAccountSummary = {
+  publisherProfile: {
+    id: string;
+    organizationId: string;
+    displayName: string;
+    status: string;
+    payoutStatus: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  payoutAccounts: Array<{
+    id: string;
+    provider: string;
+    providerAccountId: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  onboardingSessions: Array<{
+    id: string;
+    payoutAccountId: string | null;
+    provider: string;
+    providerSessionId: string;
+    onboardingUrl: string;
+    returnUrl: string | null;
+    refreshUrl: string | null;
+    status: "created" | "opened" | "completed" | "expired" | "canceled";
+    expiresAt: string | null;
+    completedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
+
 export type RefundRecord = {
   id: string;
   transactionId: string | null;
@@ -223,6 +257,44 @@ const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
   payouts: fallbackPayouts
 };
 
+const fallbackPublisherAccountSummary: PublisherAccountSummary = {
+  publisherProfile: {
+    id: "demo-publisher",
+    organizationId: "demo-org",
+    displayName: "SkillHub Publisher",
+    status: "active",
+    payoutStatus: "verification_required",
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  payoutAccounts: [
+    {
+      id: "demo-payout-account",
+      provider: "manual_deferred",
+      providerAccountId: "manual_deferred_demo",
+      status: "verification_required",
+      createdAt: "demo",
+      updatedAt: "demo"
+    }
+  ],
+  onboardingSessions: [
+    {
+      id: "demo-onboarding-session",
+      payoutAccountId: "demo-payout-account",
+      provider: "manual_deferred",
+      providerSessionId: "po_demo_session",
+      onboardingUrl: "https://app.useskillhub.com/dashboard?payout_onboarding=demo",
+      returnUrl: null,
+      refreshUrl: null,
+      status: "created",
+      expiresAt: "demo",
+      completedAt: null,
+      createdAt: "demo",
+      updatedAt: "demo"
+    }
+  ]
+};
+
 const fallbackRefunds: RefundRecord[] = [
   {
     id: "demo-refund-request",
@@ -357,6 +429,31 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
     return (await response.json()) as PublisherPayoutSummary;
   } catch {
     return fallbackPublisherPayoutSummary;
+  }
+}
+
+export async function getPublisherAccountSummary(): Promise<PublisherAccountSummary> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackPublisherAccountSummary;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/profile`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher account failed: ${response.status}`);
+    }
+
+    return (await response.json()) as PublisherAccountSummary;
+  } catch {
+    return fallbackPublisherAccountSummary;
   }
 }
 
