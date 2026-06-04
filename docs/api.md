@@ -500,6 +500,8 @@ Buyer request states:
 - `closed`
 - `canceled`
 
+The dashboard buyer request exchange uses these endpoints directly: developers can create requests and record match/close/cancel decisions, while publishers can claim open demand and submit builds from the same workspace.
+
 ## Skill Pricing
 
 Read skill prices:

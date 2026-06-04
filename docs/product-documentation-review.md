@@ -260,6 +260,7 @@ Added buyer request board depth, covering:
 - Developers can match, close, or cancel their own requests after publisher submission.
 - Every buyer request state change writes audit and in-app notification records before email delivery exists.
 - Dashboard now shows buyer request status, bounty, requester, due date, and next action, giving publishers a concrete demand loop.
+- Dashboard now lets developers create demand and decide submitted work, while publishers can claim requests and submit builds from the same buyer request exchange.
 
 Added project installed-skill lifecycle controls, covering:
 

@@ -1624,6 +1624,32 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
   }
 }
 
+export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackBuyerRequests;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/developer/buyer-requests?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Developer buyer requests failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
+    return payload.requests;
+  } catch {
+    return fallbackBuyerRequests;
+  }
+}
+
 export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> {
   const token = getWorkspaceToken();
 

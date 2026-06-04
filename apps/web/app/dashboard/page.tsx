@@ -4,7 +4,6 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   CircleDollarSign,
-  ClipboardList,
   CreditCard,
   FileClock,
   KeyRound,
@@ -15,6 +14,7 @@ import {
   ShieldAlert,
   WalletCards
 } from "lucide-react";
+import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SiteHeader } from "@/components/site-header";
@@ -23,6 +23,7 @@ import {
   formatCompactNumber,
   formatMoney,
   formatPercent,
+  getDeveloperBuyerRequests,
   getDeveloperProjects,
   getNotificationPreferences,
   getOrganizationBillingSummary,
@@ -118,6 +119,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherAccount,
     publisherSkills,
     publisherBuyerRequests,
+    developerBuyerRequests,
     developerProjects,
     publisherRefunds,
     publisherDisputes,
@@ -130,6 +132,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getPublisherAccountSummary(),
     getPublisherSkills(),
     getPublisherBuyerRequests(),
+    getDeveloperBuyerRequests(),
     getDeveloperProjects(),
     getPublisherRefunds(),
     getPublisherDisputes(),
@@ -213,16 +216,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       type: "Dispute"
     }))
   ].slice(0, 6);
-  const buyerRequestRows = publisherBuyerRequests.slice(0, 6).map((request) => ({
-    bounty: formatMoney(request.bountyCents, request.currency),
-    category: request.category,
-    id: request.id,
-    next: localizeBuyerRequestAction(request.nextAction, locale),
-    requester: request.requesterOrganizationName ?? "unknown buyer",
-    status: request.status,
-    title: request.title,
-    due: formatBuyerRequestDue(request.dueAt, locale)
-  }));
 
   return (
     <main className="product-shell">
@@ -343,37 +336,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </div>
         </article>
 
-        <article className="ops-panel work-table-panel buyer-request-panel">
-          <div className="card-kicker">
-            <ClipboardList size={16} aria-hidden="true" />
-            <span>{ops.buyerRequestTitle}</span>
-          </div>
-          <div className="work-table">
-            <div className="work-table__row work-table__row--head buyer-request-row">
-              {ops.buyerRequestHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
-            </div>
-            {buyerRequestRows.length > 0 ? (
-              buyerRequestRows.map((request) => (
-                <div className="work-table__row buyer-request-row" key={request.id}>
-                  <strong title={request.title}>
-                    {request.title}
-                    <small>{request.requester} / {request.due}</small>
-                  </strong>
-                  <span>{request.category}</span>
-                  <span>{request.bounty}</span>
-                  <span className="status-chip">{request.status}</span>
-                  <span>{request.next}</span>
-                </div>
-              ))
-            ) : (
-              <div className="work-table__row buyer-request-row buyer-request-row--empty">
-                <strong>{ops.buyerRequestEmpty}</strong>
-              </div>
-            )}
-          </div>
-        </article>
+        <BuyerRequestManager
+          developerRequests={developerBuyerRequests}
+          locale={locale}
+          publisherRequests={publisherBuyerRequests}
+        />
       </section>
 
       <section className="finance-layout">
@@ -506,43 +473,4 @@ function getPublisherNextStep(
   }
 
   return locale === "zh" ? "监控用量和反馈" : "Monitor usage and feedback";
-}
-
-function formatBuyerRequestDue(value: string | null, locale: "en" | "zh") {
-  if (!value) {
-    return locale === "zh" ? "无截止日期" : "No due date";
-  }
-
-  if (value === "demo") {
-    return locale === "zh" ? "演示日期" : "demo due date";
-  }
-
-  const parsed = new Date(value);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return locale === "zh" ? "无截止日期" : "No due date";
-  }
-
-  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    day: "numeric",
-    month: "short"
-  }).format(parsed);
-}
-
-function localizeBuyerRequestAction(action: string, locale: "en" | "zh") {
-  if (locale === "en") {
-    return action;
-  }
-
-  const zhActions: Record<string, string> = {
-    "Await buyer match": "等待买方匹配",
-    "Canceled": "已取消",
-    "Claim request": "认领需求",
-    "Closed": "已关闭",
-    "Convert to skill listing": "转为技能上架",
-    "Submit build": "提交构建",
-    "Watch request": "关注需求"
-  };
-
-  return zhActions[action] ?? action;
 }
