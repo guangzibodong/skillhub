@@ -5,8 +5,11 @@ import {
   CheckCircle2,
   CircleDollarSign,
   CreditCard,
+  FileClock,
   KeyRound,
+  LockKeyhole,
   PackageCheck,
+  RadioTower,
   WalletCards
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -21,12 +24,60 @@ type PageProps = {
 const publisherIcons = [PackageCheck, CircleDollarSign, BarChart3] as const;
 const buyerIcons = [BriefcaseBusiness, CreditCard, Activity] as const;
 
+const opsCopy = {
+  en: {
+    pipelineTitle: "Publishing pipeline",
+    pipelineHeaders: ["Skill", "Stage", "Reviewer", "Next step"],
+    pipelineRows: [
+      ["browser-research-pro", "Pricing approval", "Mira", "Confirm per-call cap"],
+      ["crm-enrichment", "Data policy", "Nolan", "Review CRM token scope"],
+      ["codebase-risk-scanner", "Restricted launch", "Asha", "Owner approval required"]
+    ],
+    projectTitle: "Buyer project controls",
+    projectHeaders: ["Project", "Budget", "Keys", "Policy"],
+    projectRows: [
+      ["Research Agent", "$480 / mo", "2 active", "Medium risk approved"],
+      ["Support Agent", "$120 / mo", "1 rotating", "Free skills only"],
+      ["Finance Ops", "$900 / mo", "3 active", "Manual approval above $50"]
+    ],
+    apiTitle: "Runtime operations",
+    apiRows: [
+      ["Rate limits", "Project-scoped keys with monthly budgets"],
+      ["Version pinning", "Agents can pin exact skill versions before execution"],
+      ["Webhook events", "Skill review, billing, payout, and runtime incident events"]
+    ]
+  },
+  zh: {
+    pipelineTitle: "发布流水线",
+    pipelineHeaders: ["技能", "阶段", "审核人", "下一步"],
+    pipelineRows: [
+      ["browser-research-pro", "价格批准", "Mira", "确认按次调用上限"],
+      ["crm-enrichment", "数据政策", "Nolan", "审核 CRM token 范围"],
+      ["codebase-risk-scanner", "受限上线", "Asha", "需要 owner 批准"]
+    ],
+    projectTitle: "购买方项目控制",
+    projectHeaders: ["项目", "预算", "Key", "策略"],
+    projectRows: [
+      ["Research Agent", "$480 / 月", "2 个活跃", "已批准中风险技能"],
+      ["Support Agent", "$120 / 月", "1 个轮换中", "仅允许免费技能"],
+      ["Finance Ops", "$900 / 月", "3 个活跃", "$50 以上人工批准"]
+    ],
+    apiTitle: "运行时运营",
+    apiRows: [
+      ["速率限制", "项目级 API Key 和月度预算"],
+      ["版本固定", "智能体执行前可固定具体技能版本"],
+      ["Webhook 事件", "技能审核、计费、提现和运行事故事件"]
+    ]
+  }
+} as const;
+
 export default async function DashboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
+  const ops = opsCopy[locale];
 
   return (
     <main className="product-shell">
@@ -98,6 +149,52 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <section className="workspace-ops-layout">
+        <article className="ops-panel work-table-panel">
+          <div className="card-kicker">
+            <FileClock size={16} aria-hidden="true" />
+            <span>{ops.pipelineTitle}</span>
+          </div>
+          <div className="work-table">
+            <div className="work-table__row work-table__row--head">
+              {ops.pipelineHeaders.map((header) => (
+                <span key={header}>{header}</span>
+              ))}
+            </div>
+            {ops.pipelineRows.map(([skill, stage, reviewer, next]) => (
+              <div className="work-table__row" key={skill}>
+                <strong>{skill}</strong>
+                <span>{stage}</span>
+                <span>{reviewer}</span>
+                <span>{next}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="ops-panel work-table-panel">
+          <div className="card-kicker">
+            <LockKeyhole size={16} aria-hidden="true" />
+            <span>{ops.projectTitle}</span>
+          </div>
+          <div className="work-table">
+            <div className="work-table__row work-table__row--head">
+              {ops.projectHeaders.map((header) => (
+                <span key={header}>{header}</span>
+              ))}
+            </div>
+            {ops.projectRows.map(([project, budget, keys, policy]) => (
+              <div className="work-table__row" key={project}>
+                <strong>{project}</strong>
+                <span>{budget}</span>
+                <span>{keys}</span>
+                <span>{policy}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
       <section className="finance-layout">
         <article className="ops-panel finance-panel">
           <div className="card-kicker">
@@ -137,6 +234,23 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             ))}
           </div>
         </aside>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <article className="ops-panel runtime-ops-panel">
+          <div className="card-kicker">
+            <RadioTower size={16} aria-hidden="true" />
+            <span>{ops.apiTitle}</span>
+          </div>
+          <div className="trust-requirement-grid">
+            {ops.apiRows.map(([title, detail]) => (
+              <div className="trust-requirement" key={title}>
+                <strong>{title}</strong>
+                <span>{detail}</span>
+              </div>
+            ))}
+          </div>
+        </article>
       </section>
     </main>
   );

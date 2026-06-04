@@ -1543,6 +1543,772 @@ a {
   padding: 20px;
 }
 
+.market-hero,
+.skill-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  gap: 28px;
+  align-items: center;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 58px 0 28px;
+}
+
+.market-hero h1,
+.skill-detail-hero h1 {
+  max-width: 860px;
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 60px;
+  font-weight: 760;
+  line-height: 0.98;
+}
+
+.market-hero p,
+.skill-detail-hero p {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.install-console,
+.skill-status-panel,
+.market-browser,
+.market-ops-panel,
+.skill-detail-panel {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.install-console {
+  padding: 18px;
+}
+
+.install-console__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--signal);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.install-console p {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.install-console pre {
+  margin: 18px 0 0;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: #0b0e0a;
+  color: #cce7c2;
+  padding: 16px;
+}
+
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.proof-grid span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.07);
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
+.marketplace-ops-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto 18px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.marketplace-ops-strip div {
+  min-height: 92px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 18px;
+}
+
+.marketplace-ops-strip div:last-child {
+  border-right: 0;
+}
+
+.marketplace-ops-strip span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.marketplace-ops-strip strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.05;
+}
+
+.market-browser,
+.market-operations-layout,
+.skill-detail-layout {
+  width: min(1220px, calc(100% - 48px));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.market-browser {
+  padding: 18px;
+}
+
+.market-browser__top {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(360px, 0.9fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.market-browser__top strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--ink);
+  font-size: 28px;
+}
+
+.market-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  padding: 0 13px;
+}
+
+.market-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.market-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.filter-button {
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 12px;
+}
+
+.filter-button--active {
+  border-color: rgba(155, 226, 141, 0.28);
+  background: rgba(155, 226, 141, 0.12);
+  color: var(--signal);
+}
+
+.market-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.market-skill-card {
+  display: grid;
+  min-height: 360px;
+  align-content: start;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius);
+  background: rgba(12, 15, 11, 0.72);
+  padding: 18px;
+}
+
+.market-skill-card__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.market-skill-card__icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.12);
+  color: var(--cyan);
+}
+
+.market-skill-card__head span:not(.risk-badge) {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.market-skill-card h2 {
+  margin: 5px 0 0;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.market-skill-card p {
+  min-height: 48px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.market-skill-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.market-skill-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 9px;
+}
+
+.install-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: #0b0e0a;
+  padding: 8px 9px 8px 12px;
+}
+
+.install-strip code {
+  min-width: 0;
+  overflow: hidden;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.install-strip button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  border: 1px solid rgba(155, 226, 141, 0.2);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.1);
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
+.market-skill-card__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.market-skill-card__foot div {
+  display: grid;
+  gap: 5px;
+}
+
+.market-skill-card__foot span {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 780;
+}
+
+.market-skill-card__foot strong {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.risk-badge--low {
+  background: rgba(155, 226, 141, 0.12);
+  color: var(--signal);
+}
+
+.risk-badge--medium {
+  background: rgba(215, 168, 76, 0.14);
+  color: var(--amber);
+}
+
+.risk-badge--high {
+  background: rgba(255, 133, 111, 0.14);
+  color: var(--coral);
+}
+
+.market-operations-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.72fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 18px;
+}
+
+.market-operations-layout--bottom {
+  margin-bottom: 72px;
+}
+
+.market-ops-panel {
+  min-width: 0;
+  padding: 18px;
+}
+
+.market-ops-panel > p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.request-board,
+.publish-flow-list,
+.trust-requirement-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.request-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 62px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.request-row:last-child {
+  border-bottom: 0;
+}
+
+.request-row div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.request-row strong,
+.publish-flow-step strong,
+.trust-requirement strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.request-row span,
+.trust-requirement span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.request-row b {
+  color: var(--signal);
+  font-size: 16px;
+}
+
+.publish-flow-list {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publish-flow-step {
+  position: relative;
+  display: grid;
+  min-height: 118px;
+  align-content: space-between;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.publish-flow-step span {
+  color: var(--signal);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+
+.publish-flow-step svg {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  color: var(--muted);
+}
+
+.trust-requirement-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trust-requirement {
+  display: grid;
+  gap: 8px;
+  min-height: 110px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 14px;
+}
+
+.ghost-button--inline {
+  width: max-content;
+  margin-top: 16px;
+}
+
+.breadcrumb-link {
+  display: inline-flex;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.breadcrumb-link:hover {
+  color: var(--signal);
+}
+
+.skill-status-panel {
+  padding: 18px;
+}
+
+.skill-status-panel__top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 62px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.skill-status-panel__top svg {
+  color: var(--signal);
+}
+
+.skill-status-panel__top div {
+  display: grid;
+  gap: 5px;
+}
+
+.skill-status-panel__top span,
+.skill-status-grid span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.skill-status-panel__top strong {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.skill-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.skill-status-grid div {
+  display: grid;
+  gap: 8px;
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.skill-status-grid strong {
+  color: var(--ink);
+  font-size: 21px;
+  line-height: 1;
+}
+
+.skill-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 72px;
+}
+
+.skill-detail-main,
+.skill-detail-side {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.skill-detail-panel {
+  min-width: 0;
+  padding: 18px;
+}
+
+.install-command-list,
+.permission-list,
+.changelog-list,
+.support-list,
+.use-case-list,
+.security-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.install-command-row {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.install-command-row:last-child {
+  border-bottom: 0;
+}
+
+.install-command-row span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.install-command-row code {
+  min-width: 0;
+  overflow-x: auto;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.use-case-row {
+  display: flex;
+  gap: 10px;
+  min-height: 38px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.use-case-row svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.schema-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.schema-grid .code-panel {
+  box-shadow: none;
+}
+
+.security-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.security-row,
+.permission-row,
+.changelog-row {
+  display: grid;
+  gap: 7px;
+  min-height: 78px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.security-row strong,
+.permission-row strong,
+.changelog-row strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.security-row span,
+.permission-row span,
+.changelog-row span,
+.price-block span,
+.support-list span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.price-block {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.price-block strong {
+  color: var(--ink);
+  font-size: 32px;
+  line-height: 1;
+}
+
+.operator-note {
+  margin: 18px 0 0;
+  border-left: 2px solid rgba(155, 226, 141, 0.5);
+  padding-left: 14px;
+}
+
+.operator-note p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.operator-note cite {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.support-list span {
+  min-height: 34px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 9px;
+}
+
+.support-list span:last-child {
+  border-bottom: 0;
+}
+
+.workspace-ops-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto;
+}
+
+.workspace-ops-layout--bottom {
+  grid-template-columns: 1fr;
+  margin-bottom: 72px;
+}
+
+.work-table,
+.money-table {
+  display: grid;
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.work-table__row,
+.money-table__row {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.work-table__row {
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.55fr) minmax(110px, 0.42fr) minmax(190px, 0.8fr);
+  min-width: 760px;
+}
+
+.money-table__row {
+  grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(96px, 0.45fr));
+  min-width: 760px;
+}
+
+.work-table__row:last-child,
+.money-table__row:last-child {
+  border-bottom: 0;
+}
+
+.work-table__row--head,
+.money-table__row--head {
+  min-height: 34px;
+  color: #7f8778;
+  font-size: 11px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.work-table__row strong,
+.money-table__row strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-ops-panel {
+  margin-bottom: 0;
+}
+
 .reveal-item {
   animation: reveal-up 620ms ease both;
 }
@@ -1901,7 +2667,15 @@ a {
   .marketplace-layout,
   .console-grid,
   .finance-layout,
-  .admin-layout {
+  .admin-layout,
+  .market-hero,
+  .skill-detail-hero,
+  .market-browser__top,
+  .market-operations-layout,
+  .skill-detail-layout,
+  .schema-grid,
+  .security-grid,
+  .workspace-ops-layout {
     grid-template-columns: 1fr;
   }
 
@@ -1931,8 +2705,18 @@ a {
   .feature-grid,
   .timeline,
   .pricing-grid,
-  .finance-rule-grid {
+  .finance-rule-grid,
+  .market-card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .marketplace-ops-strip,
+  .trust-requirement-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .publish-flow-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .publish-hero {
@@ -1971,7 +2755,14 @@ a {
   .console-board,
   .finance-layout,
   .admin-layout,
-  .admin-finance-section {
+  .admin-finance-section,
+  .market-hero,
+  .market-browser,
+  .market-operations-layout,
+  .marketplace-ops-strip,
+  .skill-detail-hero,
+  .skill-detail-layout,
+  .workspace-ops-layout {
     width: min(100% - 28px, 1220px);
   }
 
@@ -1981,15 +2772,55 @@ a {
 
   .hero-copy h1,
   .publish-hero h1,
-  .page-hero h1 {
+  .page-hero h1,
+  .market-hero h1,
+  .skill-detail-hero h1 {
     font-size: 42px;
     line-height: 1.02;
   }
 
   .hero-copy p,
   .publish-hero p,
-  .page-hero p {
+  .page-hero p,
+  .market-hero p,
+  .skill-detail-hero p {
     font-size: 15px;
+  }
+
+  .marketplace-ops-strip,
+  .publish-flow-list,
+  .proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-ops-strip div {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .marketplace-ops-strip div:last-child {
+    border-bottom: 0;
+  }
+
+  .market-skill-card__foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .market-skill-card__foot .secondary-button {
+    width: 100%;
+  }
+
+  .install-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .install-strip button {
+    justify-content: center;
+  }
+
+  .skill-status-grid {
+    grid-template-columns: 1fr;
   }
 
   .workbench-top,
@@ -2115,8 +2946,26 @@ a {
 
   .hero-copy h1,
   .publish-hero h1,
-  .page-hero h1 {
+  .page-hero h1,
+  .market-hero h1,
+  .skill-detail-hero h1 {
     font-size: 32px;
+  }
+
+  .install-command-row,
+  .request-row {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    align-items: start;
+    padding: 10px 0;
+  }
+
+  .market-skill-card__head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .market-skill-card__head .risk-badge {
+    grid-column: 1 / -1;
   }
 }
 
