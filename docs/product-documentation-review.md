@@ -318,6 +318,13 @@ Added user notification inbox, covering:
 - Dashboard now surfaces notification context and links to the relevant project, skill, dashboard, or admin view.
 - This turns audit/event recording into a user-visible repeat-use loop instead of leaving notifications as admin-only operational logs.
 
+Added web console token session, covering:
+
+- Operators can sign in through `/login` with a bootstrap-created user access token before a final OAuth/passwordless provider is connected.
+- The token is validated against `/v1/auth/me` and stored in an httpOnly cookie, then used by dashboard reads and core server actions ahead of server environment token fallbacks.
+- Dashboard now shows session source, organization scope, role summary, and masked token label, making it clearer whether operations are running as a real user or an environment fallback.
+- This strengthens the product's operational value because project, publisher, billing, notification, trust, and invoice flows can be exercised by different organization-scoped users instead of one deployment-wide operator token.
+
 Added tenant-scoped publisher overview, covering:
 
 - Publisher overview now requires publisher, owner, or admin authorization instead of serving global marketplace aggregates publicly.

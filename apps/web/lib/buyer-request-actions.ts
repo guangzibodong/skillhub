@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type BuyerRequestActionState = {
@@ -20,7 +21,7 @@ const copy = {
     missingDescription: "Describe the requested skill outcome.",
     missingRequest: "Missing buyer request id.",
     missingTitle: "Enter a buyer request title.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before managing buyer requests.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing buyer requests.",
     publisherSaved: "Buyer request updated.",
     decisionSaved: "Buyer request decision recorded.",
     unableCreate: "Unable to create buyer request.",
@@ -36,7 +37,7 @@ const copy = {
     missingDescription: "请描述需要交付的技能结果。",
     missingRequest: "缺少买家需求 ID。",
     missingTitle: "请输入买家需求标题。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能管理买家需求。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理买家需求。",
     publisherSaved: "买家需求已更新。",
     decisionSaved: "买家需求处理结果已记录。",
     unableCreate: "无法创建买家需求。",
@@ -54,7 +55,7 @@ export async function createBuyerRequestAction(
   formData: FormData
 ): Promise<BuyerRequestActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const category = String(formData.get("category") ?? "workflow").trim() || "workflow";
@@ -126,7 +127,7 @@ export async function updatePublisherBuyerRequestAction(
   formData: FormData
 ): Promise<BuyerRequestActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const requestId = String(formData.get("requestId") ?? "").trim();
   const action = String(formData.get("action") ?? "").trim();
 
@@ -177,7 +178,7 @@ export async function decideDeveloperBuyerRequestAction(
   formData: FormData
 ): Promise<BuyerRequestActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const requestId = String(formData.get("requestId") ?? "").trim();
   const status = String(formData.get("decision") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
@@ -257,8 +258,4 @@ function parseDueAt(value: FormDataEntryValue | null, invalidMessage: string) {
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

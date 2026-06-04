@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { CheckCircle2, Download, FileText, Plus, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectInvoiceRecord } from "@/lib/ops-data";
-import { formatMoney } from "@/lib/ops-data";
+import { formatMoney } from "@/lib/ops-format";
 import { generateProjectInvoiceAction, type ProjectInvoiceActionState } from "@/lib/project-invoice-actions";
 
 type ProjectInvoiceManagerProps = {

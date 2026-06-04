@@ -1422,7 +1422,7 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
 });
 
 export async function getFinanceLedger(): Promise<FinanceLedger> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackLedger;
@@ -1447,7 +1447,7 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
 }
 
 export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackLedger;
@@ -1472,7 +1472,7 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
 }
 
 export async function getAdminNotifications(): Promise<AdminNotification[]> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackNotifications;
@@ -1498,7 +1498,7 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
 }
 
 export async function getUserNotifications(): Promise<UserNotificationRecord[]> {
-  const token = process.env.SKILLHUB_USER_TOKEN;
+  const token = await readUserToken();
 
   if (!token) {
     return fallbackUserNotifications;
@@ -1524,7 +1524,7 @@ export async function getUserNotifications(): Promise<UserNotificationRecord[]> 
 }
 
 export async function getNotificationPreferences(): Promise<NotificationPreferenceRecord[]> {
-  const token = process.env.SKILLHUB_USER_TOKEN;
+  const token = await readUserToken();
 
   if (!token) {
     return fallbackNotificationPreferences;
@@ -1550,7 +1550,7 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 }
 
 export async function getAdminPayouts(): Promise<PayoutRecord[]> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackPayouts;
@@ -1576,7 +1576,7 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
 }
 
 export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummary> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackPublisherPayoutSummary;
@@ -1601,7 +1601,7 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
 }
 
 export async function getPublisherAccountSummary(): Promise<PublisherAccountSummary> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackPublisherAccountSummary;
@@ -1626,7 +1626,7 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
 }
 
 export async function getOrganizationBillingSummary(): Promise<OrganizationBillingSummary> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackOrganizationBillingSummary;
@@ -1652,7 +1652,7 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
 }
 
 export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackPublisherSkills;
@@ -1678,7 +1678,7 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
 }
 
 export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackBuyerRequests;
@@ -1704,7 +1704,7 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
 }
 
 export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackBuyerRequests;
@@ -1730,7 +1730,7 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
 }
 
 export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackDeveloperProjects;
@@ -1757,7 +1757,7 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
 
 export async function getDeveloperProjectDetail(projectSlug: string): Promise<DeveloperProjectDetail | null> {
   const fallback = fallbackDeveloperProjectDetails.find((detail) => detail.project.slug === projectSlug) ?? null;
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallback;
@@ -1787,7 +1787,7 @@ export async function getDeveloperProjectDetail(projectSlug: string): Promise<De
 }
 
 export async function getPublisherRefunds(): Promise<RefundRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackRefunds;
@@ -1813,7 +1813,7 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
 }
 
 export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
-  const token = getWorkspaceToken();
+  const token = await readWorkspaceToken();
 
   if (!token) {
     return fallbackDisputes;
@@ -1839,7 +1839,7 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
 }
 
 export async function getAdminRefunds(): Promise<RefundRecord[]> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackRefunds;
@@ -1865,7 +1865,7 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
 }
 
 export async function getAdminDisputes(): Promise<DisputeRecord[]> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackDisputes;
@@ -1891,7 +1891,7 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
 }
 
 export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await readAdminOperatorToken();
 
   if (!token) {
     return fallbackAbuseReports;
@@ -1942,6 +1942,17 @@ export function formatCompactNumber(value: number | null | undefined) {
   }).format(value ?? 0);
 }
 
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
+async function readWorkspaceToken() {
+  const { getWorkspaceToken } = await import("@/lib/auth-session");
+  return getWorkspaceToken();
+}
+
+async function readUserToken() {
+  const { getUserToken } = await import("@/lib/auth-session");
+  return getUserToken();
+}
+
+async function readAdminOperatorToken() {
+  const { getAdminOperatorToken } = await import("@/lib/auth-session");
+  return getAdminOperatorToken();
 }

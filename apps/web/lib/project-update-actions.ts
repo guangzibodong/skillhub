@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type ProjectUpdateActionState = {
@@ -12,14 +13,14 @@ export type ProjectUpdateActionState = {
 const actionCopy = {
   en: {
     invalidStatus: "Update action must be acknowledged, scheduled, adopted, or ignored.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before handling project updates.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before handling project updates.",
     missingUpdate: "Missing update id.",
     saved: "Update action saved.",
     unableSave: "Unable to save update action."
   },
   zh: {
     invalidStatus: "更新处理状态必须是 acknowledged、scheduled、adopted 或 ignored。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能处理项目更新。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能处理项目更新。",
     missingUpdate: "缺少更新 ID。",
     saved: "更新处理状态已保存。",
     unableSave: "无法保存更新处理状态。"
@@ -35,7 +36,7 @@ export async function updateProjectUpdateAction(
   formData: FormData
 ): Promise<ProjectUpdateActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const updateId = String(formData.get("updateId") ?? "").trim();
   const status = String(formData.get("status") ?? "");
   const note = String(formData.get("note") ?? "").trim();
@@ -93,8 +94,4 @@ export async function updateProjectUpdateAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

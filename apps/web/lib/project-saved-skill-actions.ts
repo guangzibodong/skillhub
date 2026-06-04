@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type ProjectSavedSkillActionState = {
@@ -13,7 +14,7 @@ const copy = {
   en: {
     missingSavedSkill: "Missing saved skill id.",
     missingSkill: "Enter a skill slug before saving.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before managing saved skills.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing saved skills.",
     removed: "Saved skill removed.",
     saved: "Skill saved to this project.",
     unableRemove: "Unable to remove saved skill.",
@@ -22,7 +23,7 @@ const copy = {
   zh: {
     missingSavedSkill: "缺少收藏记录 ID。",
     missingSkill: "请输入技能 slug 后再保存。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能管理收藏技能。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理收藏技能。",
     removed: "收藏技能已移除。",
     saved: "技能已保存到这个项目。",
     unableRemove: "无法移除收藏技能。",
@@ -37,7 +38,7 @@ export async function saveProjectSavedSkillAction(
   formData: FormData
 ): Promise<ProjectSavedSkillActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
 
   if (!skillSlug) {
@@ -81,7 +82,7 @@ export async function removeProjectSavedSkillAction(
   formData: FormData
 ): Promise<ProjectSavedSkillActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const savedSkillId = String(formData.get("savedSkillId") ?? "").trim();
 
   if (!savedSkillId) {
@@ -118,8 +119,4 @@ export async function removeProjectSavedSkillAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

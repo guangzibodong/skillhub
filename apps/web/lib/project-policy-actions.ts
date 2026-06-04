@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type ProjectPolicyActionState = {
@@ -15,7 +16,7 @@ const actionCopy = {
     invalidPermission: "Invalid permission level.",
     invalidRateLimit: "Rate limit must be empty or greater than zero.",
     invalidSkill: "Missing skill slug.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before updating project policies.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before updating project policies.",
     saved: "Project skill policy saved.",
     unableSave: "Unable to save project policy."
   },
@@ -24,7 +25,7 @@ const actionCopy = {
     invalidPermission: "权限等级无效。",
     invalidRateLimit: "速率限制必须为空或大于 0。",
     invalidSkill: "缺少技能 slug。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能更新项目策略。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能更新项目策略。",
     saved: "项目技能策略已保存。",
     unableSave: "无法保存项目策略。"
   }
@@ -40,7 +41,7 @@ export async function updateProjectSkillPolicyAction(
   formData: FormData
 ): Promise<ProjectPolicyActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const maxPermissionLevel = String(formData.get("maxPermissionLevel") ?? "");
   const filesystemAccess = String(formData.get("filesystemAccess") ?? "");
@@ -119,8 +120,4 @@ export async function updateProjectSkillPolicyAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

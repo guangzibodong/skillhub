@@ -6,7 +6,7 @@ import type { Locale } from "@/lib/i18n";
 import { updateProjectSkillInstallStatusAction, type ProjectInstallActionState } from "@/lib/project-install-actions";
 import { updateProjectSkillPolicyAction, type ProjectPolicyActionState } from "@/lib/project-policy-actions";
 import type { DeveloperProjectSkillRecord } from "@/lib/ops-data";
-import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-data";
+import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 
 type ProjectSkillPolicyManagerProps = {
   emptyLabel: string;

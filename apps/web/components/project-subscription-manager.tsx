@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { CheckCircle2, PauseCircle, RotateCcw, XCircle, Zap } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectSubscriptionRecord } from "@/lib/ops-data";
-import { formatMoney } from "@/lib/ops-data";
+import { formatMoney } from "@/lib/ops-format";
 import {
   updateProjectSubscriptionStatusAction,
   type ProjectSubscriptionActionState

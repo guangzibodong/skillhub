@@ -98,6 +98,14 @@ curl "https://api.useskillhub.com/v1/auth/me" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+Web console session:
+
+- `/login` lets an operator paste a user access token created by the bootstrap flow.
+- The web app validates the token with `/v1/auth/me` before storing it.
+- The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
+- Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.
+- `SKILLHUB_USER_TOKEN` and `SKILLHUB_ADMIN_TOKEN` remain server-side fallbacks for bootstrap, demos, and emergency operator deployments.
+
 Role boundaries:
 
 - Project operations require `developer`, `owner`, `admin`, or `super_admin`.

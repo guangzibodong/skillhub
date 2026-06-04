@@ -18,7 +18,9 @@ import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
+import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
   formatCompactNumber,
@@ -127,7 +129,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherDisputes,
     organizationBilling,
     userNotifications,
-    notificationPreferences
+    notificationPreferences,
+    session
   ] = await Promise.all([
     getPlatformOverview(),
     getPublisherFinanceLedger(),
@@ -141,7 +144,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getPublisherDisputes(),
     getOrganizationBillingSummary(),
     getUserNotifications(),
-    getNotificationPreferences()
+    getNotificationPreferences(),
+    getWorkspaceSession()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
@@ -237,6 +241,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
 
       <section className="console-board">
+        <SessionStatusPanel locale={locale} session={session} />
+
         <div className="metric-strip metric-strip--four metric-strip--standalone">
           {visibleMetrics.map(([label, value]) => (
             <div className="metric" key={label}>

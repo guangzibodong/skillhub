@@ -1,3 +1,5 @@
+import { getWorkspaceToken } from "@/lib/auth-session";
+
 type RouteContext = {
   params: Promise<{
     invoiceId: string;
@@ -7,10 +9,10 @@ type RouteContext = {
 
 export async function GET(_request: Request, context: RouteContext) {
   const { invoiceId, slug } = await context.params;
-  const token = process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = await getWorkspaceToken();
 
   if (!token) {
-    return new Response("Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before downloading invoices.", {
+    return new Response("Sign in with a SkillHub user token or configure a server fallback before downloading invoices.", {
       status: 401
     });
   }

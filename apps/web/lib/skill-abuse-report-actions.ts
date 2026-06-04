@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getUserToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type SkillAbuseReportActionState = {
@@ -15,7 +16,7 @@ const copy = {
     missingDescription: "Describe what happened before submitting.",
     missingSkill: "Missing skill slug.",
     missingTitle: "Enter a report title.",
-    missingToken: "Set SKILLHUB_USER_TOKEN before submitting a trust report.",
+    missingToken: "Sign in with a SkillHub user token before submitting a trust report.",
     saved: "Report submitted to the trust queue.",
     unableSave: "Unable to submit report."
   },
@@ -25,7 +26,7 @@ const copy = {
     missingDescription: "请先描述发生了什么。",
     missingSkill: "缺少技能 slug。",
     missingTitle: "请输入举报标题。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN，才能提交信任安全举报。",
+    missingToken: "请先用 SkillHub 用户 token 登录，才能提交信任安全举报。",
     saved: "举报已提交到信任安全队列。",
     unableSave: "无法提交举报。"
   }
@@ -41,7 +42,7 @@ export async function createSkillAbuseReportAction(
   formData: FormData
 ): Promise<SkillAbuseReportActionState> {
   const labels = copy[locale];
-  const token = process.env.SKILLHUB_USER_TOKEN;
+  const token = await getUserToken();
   const normalizedSkillSlug = skillSlug.trim();
   const category = String(formData.get("category") ?? "").trim();
   const severity = String(formData.get("severity") ?? "").trim();

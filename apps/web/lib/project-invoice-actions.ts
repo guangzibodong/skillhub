@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type ProjectInvoiceActionState = {
@@ -12,12 +13,12 @@ export type ProjectInvoiceActionState = {
 const actionCopy = {
   en: {
     generated: "Invoice generated from posted transactions.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before generating invoices.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before generating invoices.",
     unableGenerate: "Unable to generate invoice."
   },
   zh: {
     generated: "已根据入账交易生成发票。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能生成发票。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能生成发票。",
     unableGenerate: "无法生成发票。"
   }
 } as const;
@@ -29,7 +30,7 @@ export async function generateProjectInvoiceAction(
   formData: FormData
 ): Promise<ProjectInvoiceActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const currency = String(formData.get("currency") ?? "usd").trim();
   const periodStart = String(formData.get("periodStart") ?? "").trim();
   const periodEnd = String(formData.get("periodEnd") ?? "").trim();
@@ -76,8 +77,4 @@ export async function generateProjectInvoiceAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

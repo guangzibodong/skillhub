@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getAdminOperatorToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type AbuseReportActionState = {
@@ -14,7 +15,7 @@ const copy = {
     invalidAction: "Action must be triage, dismiss, warn, restrict, suspend, or resolve.",
     missingReason: "Decision reason is required.",
     missingReport: "Missing abuse report id.",
-    missingToken: "Set SKILLHUB_ADMIN_TOKEN before handling abuse reports.",
+    missingToken: "Sign in with a platform admin token or configure SKILLHUB_ADMIN_TOKEN before handling abuse reports.",
     saved: "Trust action recorded.",
     unableSave: "Unable to update abuse report."
   },
@@ -22,7 +23,7 @@ const copy = {
     invalidAction: "处理动作必须是 triage、dismiss、warn、restrict、suspend 或 resolve。",
     missingReason: "必须填写处理原因。",
     missingReport: "缺少举报 ID。",
-    missingToken: "请先配置 SKILLHUB_ADMIN_TOKEN，才能处理举报。",
+    missingToken: "请先用平台管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理举报。",
     saved: "信任安全处理已记录。",
     unableSave: "无法更新举报。"
   }
@@ -36,7 +37,7 @@ export async function decideAbuseReportAction(
   formData: FormData
 ): Promise<AbuseReportActionState> {
   const labels = copy[locale];
-  const token = getAdminToken();
+  const token = await getAdminOperatorToken();
   const reportId = String(formData.get("reportId") ?? "").trim();
   const action = String(formData.get("action") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
@@ -89,8 +90,4 @@ export async function decideAbuseReportAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getAdminToken() {
-  return process.env.SKILLHUB_ADMIN_TOKEN;
 }

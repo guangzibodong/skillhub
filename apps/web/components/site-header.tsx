@@ -1,4 +1,4 @@
-import { Gauge, UploadCloud } from "lucide-react";
+import { Gauge, LogIn, UploadCloud } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
@@ -49,6 +49,10 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
 
       <div className="site-actions">
         <LanguageSwitcher label={dictionary.common.language} locale={locale} pathname={pathname} />
+        <a className="ghost-button" href={localizedHref("/login", locale)}>
+          <LogIn size={17} aria-hidden="true" />
+          <span>{locale === "zh" ? "登录" : "Sign in"}</span>
+        </a>
         <a className="ghost-button" href={`${apiUrl}/health`}>
           <Gauge size={17} aria-hidden="true" />
           <span>{dictionary.common.apiHealth}</span>

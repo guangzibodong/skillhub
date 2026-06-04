@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getUserToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type NotificationInboxActionState = {
@@ -13,13 +14,13 @@ const copy = {
   en: {
     markedRead: "Notification marked read.",
     missingNotification: "Missing notification id.",
-    missingToken: "Set SKILLHUB_USER_TOKEN before managing your notification inbox.",
+    missingToken: "Sign in with a SkillHub user token before managing your notification inbox.",
     unableMarkRead: "Unable to mark notification read."
   },
   zh: {
     markedRead: "通知已标记为已读。",
     missingNotification: "缺少通知 ID。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN，才能管理通知收件箱。",
+    missingToken: "请先用 SkillHub 用户 token 登录，才能管理通知收件箱。",
     unableMarkRead: "无法标记通知。"
   }
 } as const;
@@ -30,7 +31,7 @@ export async function markNotificationReadAction(
   formData: FormData
 ): Promise<NotificationInboxActionState> {
   const labels = copy[locale];
-  const token = process.env.SKILLHUB_USER_TOKEN;
+  const token = await getUserToken();
   const notificationId = String(formData.get("notificationId") ?? "").trim();
 
   if (!notificationId) {

@@ -341,10 +341,11 @@ Completed:
 - Skill detail pages now expose a user-scoped trust report form so security, privacy, quality, billing, malicious-runtime, copyright, spam, and other reports can enter the takedown queue from the public listing.
 - Public marketplace and skill detail pages now read live registry search, manifest, and price endpoints with bundled marketplace content as a safe fallback.
 - Skill detail pages now expose project-scoped save and install controls, letting developers move a discovered skill into a selected project collection or installed-skill inventory without retyping the slug in the project console.
+- Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 
 Next:
 
-- Full login/session provider integration to replace bootstrap-created user access tokens.
+- Full OAuth/passwordless login provider integration to replace pasted bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
 

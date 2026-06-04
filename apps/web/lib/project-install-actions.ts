@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type ProjectInstallActionState = {
@@ -13,14 +14,14 @@ const actionCopy = {
   en: {
     invalidSkill: "Missing skill slug.",
     invalidStatus: "Install status must be installed, suspended, or removed.",
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before updating installed skills.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before updating installed skills.",
     saved: "Installed skill status updated.",
     unableSave: "Unable to update installed skill."
   },
   zh: {
     invalidSkill: "缺少技能 slug。",
     invalidStatus: "安装状态必须是 installed、suspended 或 removed。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能更新已安装技能。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能更新已安装技能。",
     saved: "已安装技能状态已更新。",
     unableSave: "无法更新已安装技能。"
   }
@@ -35,7 +36,7 @@ export async function updateProjectSkillInstallStatusAction(
   formData: FormData
 ): Promise<ProjectInstallActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const status = String(formData.get("status") ?? "");
 
@@ -87,8 +88,4 @@ export async function updateProjectSkillInstallStatusAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

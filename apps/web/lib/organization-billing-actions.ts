@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type OrganizationBillingActionState = {
@@ -10,14 +11,14 @@ export type OrganizationBillingActionState = {
 
 const actionCopy = {
   en: {
-    missingToken: "Set SKILLHUB_USER_TOKEN or SKILLHUB_ADMIN_TOKEN before managing organization billing.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing organization billing.",
     paymentSaved: "Payment method state saved.",
     profileSaved: "Billing profile saved.",
     unablePayment: "Unable to save payment method.",
     unableProfile: "Unable to save billing profile."
   },
   zh: {
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN 或 SKILLHUB_ADMIN_TOKEN，才能管理组织账单。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理组织账单。",
     paymentSaved: "付款方式状态已保存。",
     profileSaved: "账单资料已保存。",
     unablePayment: "无法保存付款方式。",
@@ -31,7 +32,7 @@ export async function updateOrganizationBillingProfileAction(
   formData: FormData
 ): Promise<OrganizationBillingActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
 
   if (!token) {
     return { message: labels.missingToken, status: "error" };
@@ -77,7 +78,7 @@ export async function addOrganizationPaymentMethodAction(
   formData: FormData
 ): Promise<OrganizationBillingActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
 
   if (!token) {
     return { message: labels.missingToken, status: "error" };
@@ -123,7 +124,7 @@ export async function updateOrganizationPaymentMethodAction(
   formData: FormData
 ): Promise<OrganizationBillingActionState> {
   const labels = actionCopy[locale];
-  const token = getWorkspaceToken();
+  const token = await getWorkspaceToken();
   const paymentMethodId = String(formData.get("paymentMethodId") ?? "").trim();
 
   if (!token) {
@@ -158,8 +159,4 @@ export async function updateOrganizationPaymentMethodAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

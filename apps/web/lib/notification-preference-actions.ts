@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getUserToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type NotificationPreferenceActionState = {
@@ -13,13 +14,13 @@ const copy = {
   en: {
     missingEventType: "Missing notification topic.",
     missingToken:
-      "Set SKILLHUB_USER_TOKEN before managing notification preferences.",
+      "Sign in with a SkillHub user token before managing notification preferences.",
     saved: "Notification preference saved.",
     unableSave: "Unable to save notification preference.",
   },
   zh: {
     missingEventType: "缺少通知主题。",
-    missingToken: "请先配置 SKILLHUB_USER_TOKEN，才能管理通知偏好。",
+    missingToken: "请先用 SkillHub 用户 token 登录，才能管理通知偏好。",
     saved: "通知偏好已保存。",
     unableSave: "无法保存通知偏好。",
   },
@@ -31,7 +32,7 @@ export async function updateNotificationPreferenceAction(
   formData: FormData,
 ): Promise<NotificationPreferenceActionState> {
   const labels = copy[locale];
-  const token = getWorkspaceToken();
+  const token = await getUserToken();
   const eventType = String(formData.get("eventType") ?? "").trim();
 
   if (!eventType) {
@@ -81,8 +82,4 @@ export async function updateNotificationPreferenceAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-}
-
-function getWorkspaceToken() {
-  return process.env.SKILLHUB_USER_TOKEN;
 }
