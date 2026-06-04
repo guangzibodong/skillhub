@@ -229,9 +229,35 @@ Allowed update action statuses:
 - `adopted`: the update has been handled and leaves the active inbox.
 - `ignored`: the project intentionally dismissed the update and it leaves the active inbox.
 
-Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Update actions write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
+List project saved skills:
 
-The project detail console at `/dashboard/projects/[slug]` exposes the same policy, install, and update-inbox controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, handle version/security/incidents updates, or remove skills without leaving the workspace.
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/saved-skills" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Save a skill to a project collection before installing or buying:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/saved-skills" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "browser-research",
+    "collectionName": "evaluation"
+  }'
+```
+
+Remove a saved skill:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/saved-skills/SAVED_SKILL_ID/remove" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Project installed skills, project policies, update inbox reads, and saved skill reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Update actions and saved-skill changes write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
+
+The project detail console at `/dashboard/projects/[slug]` exposes the same policy, install, update-inbox, and saved-skill controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, handle version/security/incidents updates, save candidate skills for evaluation, or remove skills without leaving the workspace.
 
 List generated project invoices:
 

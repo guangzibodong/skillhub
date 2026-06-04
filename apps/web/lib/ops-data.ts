@@ -413,6 +413,26 @@ export type DeveloperProjectSubscriptionRecord = {
   createdAt: string;
 };
 
+export type DeveloperProjectSavedSkillRecord = {
+  id: string;
+  projectSlug: string;
+  skillSlug: string;
+  displayName: string;
+  description: string;
+  version: string | null;
+  verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected" | "suspended";
+  permissionLevel: "low" | "medium" | "high";
+  collectionName: string;
+  installedStatus: string | null;
+  pricing: {
+    billingModel: "free" | "per_call" | "subscription";
+    currency: string;
+    status: "draft" | "active" | "archived";
+    unitAmountCents: number;
+  };
+  savedAt: string;
+};
+
 export type DeveloperProjectInvoiceRecord = {
   id: string;
   projectSlug: string;
@@ -440,6 +460,7 @@ export type DeveloperProjectDetail = {
   recentInvocations: DeveloperProjectInvocationRecord[];
   subscriptions: DeveloperProjectSubscriptionRecord[];
   invoices: DeveloperProjectInvoiceRecord[];
+  savedSkills: DeveloperProjectSavedSkillRecord[];
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
@@ -1145,6 +1166,46 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         createdAt: "demo",
         updatedAt: "demo",
         lineItemCount: isResearch ? 2 : 1
+      }
+    ],
+    savedSkills: [
+      {
+        id: `demo-saved-${project.slug}-browser-research`,
+        projectSlug: project.slug,
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        description: "Research a web topic and return concise findings with source URLs.",
+        version: "0.1.0",
+        verificationStatus: "verified",
+        permissionLevel: "medium",
+        collectionName: "default",
+        installedStatus: "installed",
+        pricing: {
+          billingModel: "per_call",
+          currency: "usd",
+          status: "active",
+          unitAmountCents: 2
+        },
+        savedAt: "demo"
+      },
+      {
+        id: `demo-saved-${project.slug}-manifest-review`,
+        projectSlug: project.slug,
+        skillSlug: "manifest-review",
+        displayName: "Manifest Review",
+        description: "Review a skillhub.json manifest for completeness before submission.",
+        version: "0.1.0",
+        verificationStatus: "draft",
+        permissionLevel: "low",
+        collectionName: "review",
+        installedStatus: null,
+        pricing: {
+          billingModel: "free",
+          currency: "usd",
+          status: "draft",
+          unitAmountCents: 0
+        },
+        savedAt: "demo"
       }
     ]
   };

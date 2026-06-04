@@ -1,6 +1,7 @@
 import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
 import { getSql } from "./registry.js";
 import { listProjectInvoices } from "./project-invoices.js";
+import { listProjectSavedSkills } from "./project-saved-skills.js";
 
 type ProjectRow = {
   id: string;
@@ -327,13 +328,14 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
     return null;
   }
 
-  const [installedSkills, apiKeys, updateInbox, recentInvocations, subscriptions, invoices] = await Promise.all([
+  const [installedSkills, apiKeys, updateInbox, recentInvocations, subscriptions, invoices, savedSkills] = await Promise.all([
     listProjectSkillDetails(project.slug, scopedOrganizationId),
     listProjectApiKeyDetails(project.slug, scopedOrganizationId),
     listProjectUpdateDetails(project.slug, scopedOrganizationId),
     listRecentProjectInvocations(project.slug, scopedOrganizationId),
     listProjectSubscriptions(project.slug, scopedOrganizationId),
-    listProjectInvoices(project.slug, scopedOrganizationId)
+    listProjectInvoices(project.slug, scopedOrganizationId),
+    listProjectSavedSkills(project.slug, scopedOrganizationId)
   ]);
 
   return {
@@ -343,7 +345,8 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
     updateInbox,
     recentInvocations,
     subscriptions,
-    invoices
+    invoices,
+    savedSkills
   };
 }
 
@@ -660,6 +663,46 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         createdAt: "demo",
         updatedAt: "demo",
         lineItemCount: isResearch ? 2 : 1
+      }
+    ],
+    savedSkills: [
+      {
+        id: `demo-saved-${project.slug}-browser-research`,
+        projectSlug: project.slug,
+        skillSlug: "browser-research",
+        displayName: "Browser Research",
+        description: "Research a web topic and return concise findings with source URLs.",
+        version: "0.1.0",
+        verificationStatus: "verified",
+        permissionLevel: "medium",
+        collectionName: "default",
+        installedStatus: "installed",
+        pricing: {
+          billingModel: "per_call",
+          currency: "usd",
+          status: "active",
+          unitAmountCents: 2
+        },
+        savedAt: "demo"
+      },
+      {
+        id: `demo-saved-${project.slug}-manifest-review`,
+        projectSlug: project.slug,
+        skillSlug: "manifest-review",
+        displayName: "Manifest Review",
+        description: "Review a skillhub.json manifest for completeness before submission.",
+        version: "0.1.0",
+        verificationStatus: "draft",
+        permissionLevel: "low",
+        collectionName: "review",
+        installedStatus: null,
+        pricing: {
+          billingModel: "free",
+          currency: "usd",
+          status: "draft",
+          unitAmountCents: 0
+        },
+        savedAt: "demo"
       }
     ]
   };

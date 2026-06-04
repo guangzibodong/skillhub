@@ -265,6 +265,13 @@ Added project update-inbox handling controls, covering:
 - Each update action writes audit and in-app notification records before email delivery exists.
 - Project detail now gives developers and agent operators a concrete repeat-use loop for handling new versions, security notices, deprecations, and incidents instead of letting update warnings become static dashboard noise.
 
+Added project saved skills, covering:
+
+- Project operators can save candidate skills into named project collections before installing, approving, subscribing, or buying.
+- Saved skills are organization scoped and show collection, verification state, permission risk, pricing model, and installed status inside the project command center.
+- Each save or removal writes audit and in-app notification records before email delivery exists.
+- This strengthens developer repeat visits because teams can build and revisit evaluation shortlists instead of losing discovery work between sessions.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.

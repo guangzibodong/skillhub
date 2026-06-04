@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectInvoiceManager } from "@/components/project-invoice-manager";
+import { ProjectSavedSkillManager } from "@/components/project-saved-skill-manager";
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
 import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
@@ -61,6 +62,7 @@ const copy = {
     billingTitle: "Subscriptions and billing",
     billingHeaders: ["Skill", "Status", "Model", "Period"],
     invoicesTitle: "Invoices",
+    savedSkillsTitle: "Saved skills",
     empty: "No records yet",
     noDate: "n/a",
     approved: "Approved",
@@ -93,6 +95,7 @@ const copy = {
     billingTitle: "订阅与计费",
     billingHeaders: ["技能", "状态", "模式", "周期"],
     invoicesTitle: "发票",
+    savedSkillsTitle: "收藏技能",
     empty: "暂无记录",
     noDate: "暂无",
     approved: "已批准",
@@ -244,6 +247,14 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             projectSlug={project.slug}
             titleLabel={labels.updatesTitle}
             updates={detail.updateInbox}
+          />
+
+          <ProjectSavedSkillManager
+            emptyLabel={labels.empty}
+            locale={locale}
+            projectSlug={project.slug}
+            savedSkills={detail.savedSkills}
+            titleLabel={labels.savedSkillsTitle}
           />
 
           <ProjectSubscriptionManager

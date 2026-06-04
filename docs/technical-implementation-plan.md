@@ -323,6 +323,8 @@ Completed:
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
 - Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes update handling controls with notes and schedule dates; adopted and ignored updates leave the active inbox and project update counts.
+- Project saved-skill endpoints now let project operators list, save, and remove candidate skills in named collections under organization-scoped authorization, with audit and notification records.
+- Project detail console now exposes saved skills beside update and billing operations so developers can keep evaluation shortlists before installing or buying.
 - Project invoice endpoints now let project operators list, generate, inspect, and download CSV invoices generated from posted project transactions under organization-scoped authorization.
 - Project detail console now exposes invoice generation, totals, due dates, line item counts, and CSV download links so project finance history is visible before payment-provider invoice APIs are connected.
 - Organization billing endpoints now let owner/admin/finance operators read and update billing profile data plus payment method state records under organization-scoped authorization, with audit and notification records.

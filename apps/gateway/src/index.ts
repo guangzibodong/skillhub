@@ -29,6 +29,11 @@ import {
 import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
 import { upsertProjectUpdateAction } from "./project-updates.js";
 import {
+  listProjectSavedSkills,
+  removeProjectSavedSkill,
+  saveProjectSkill
+} from "./project-saved-skills.js";
+import {
   generateProjectInvoice,
   getProjectInvoice,
   invoiceToCsv,
@@ -538,6 +543,67 @@ app.put("/v1/projects/:projectSlug/update-inbox/:updateId/action", async (c) => 
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update project update action." }, 400);
+  }
+});
+
+app.get("/v1/projects/:projectSlug/saved-skills", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    savedSkills: await listProjectSavedSkills(c.req.param("projectSlug"), authorization.subject.organizationId)
+  });
+});
+
+app.post("/v1/projects/:projectSlug/saved-skills", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        savedSkill: await saveProjectSkill(
+          c.req.param("projectSlug"),
+          authorization.subject.organizationId,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to save project skill." }, 400);
+  }
+});
+
+app.post("/v1/projects/:projectSlug/saved-skills/:savedSkillId/remove", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      savedSkill: await removeProjectSavedSkill(
+        c.req.param("projectSlug"),
+        authorization.subject.organizationId,
+        c.req.param("savedSkillId")
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to remove project saved skill." }, 400);
   }
 });
 
