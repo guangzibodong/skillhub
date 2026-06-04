@@ -47,6 +47,13 @@ import {
   listAdminDisputes,
   listAdminRefunds
 } from "./adjustments.js";
+import {
+  authorize,
+  createBootstrapUserToken,
+  publicSubject,
+  requireServiceAuthorization,
+  type AuthRole
+} from "./auth.js";
 
 type Env = {
   Bindings: {
@@ -63,6 +70,23 @@ type JsonRpcRequest = {
 };
 
 const app = new Hono<Env>();
+const anyAuthenticatedRole: AuthRole[] = [
+  "service",
+  "super_admin",
+  "admin",
+  "finance",
+  "reviewer",
+  "publisher",
+  "developer",
+  "owner",
+  "support",
+  "user"
+];
+const projectOperatorRoles: AuthRole[] = ["super_admin", "admin", "owner", "developer"];
+const publisherOperatorRoles: AuthRole[] = ["super_admin", "admin", "owner", "publisher"];
+const reviewOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
+const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
+const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
 
 app.use(
   "*",
@@ -80,6 +104,37 @@ app.get("/health", (c) =>
     env: c.env?.SKILLHUB_ENV ?? getProcessEnv("SKILLHUB_ENV") ?? "development"
   })
 );
+
+app.get("/v1/auth/me", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    subject: publicSubject(authorization.subject)
+  });
+});
+
+app.post("/v1/auth/bootstrap-token", async (c) => {
+  const authorization = await requireServiceAuthorization(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        bootstrap: await createBootstrapUserToken((await c.req.json()) as Record<string, unknown>)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create bootstrap user token." }, 400);
+  }
+});
 
 app.get("/v1/skills/search", async (c) => {
   const query = c.req.query("q")?.toLowerCase() ?? "";
@@ -117,7 +172,8 @@ app.get("/v1/projects/:projectSlug/installed-skills", async (c) => {
 });
 
 app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -131,7 +187,7 @@ app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
 
   try {
     const install = await installSkill({
-      projectSlug: c.req.param("projectSlug"),
+      projectSlug,
       skillSlug: body.skillSlug,
       version: body.version
     });
@@ -149,7 +205,8 @@ app.get("/v1/projects/:projectSlug/policies", async (c) => {
 });
 
 app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -157,7 +214,7 @@ app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
 
   try {
     const policy = await upsertProjectPolicy(
-      c.req.param("projectSlug"),
+      projectSlug,
       c.req.param("skillSlug"),
       (await c.req.json()) as Record<string, unknown>
     );
@@ -175,19 +232,21 @@ app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
 });
 
 app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
   return c.json({
-    apiKeys: await listProjectApiKeys(c.req.param("projectSlug"))
+    apiKeys: await listProjectApiKeys(projectSlug)
   });
 });
 
 app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -198,7 +257,7 @@ app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
   try {
     return c.json(
       {
-        apiKey: await createProjectApiKey(c.req.param("projectSlug"), body.name)
+        apiKey: await createProjectApiKey(projectSlug, body.name)
       },
       201
     );
@@ -208,7 +267,8 @@ app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
 });
 
 app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -216,7 +276,7 @@ app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
 
   try {
     return c.json({
-      apiKey: await revokeProjectApiKey(c.req.param("projectSlug"), c.req.param("keyId"))
+      apiKey: await revokeProjectApiKey(projectSlug, c.req.param("keyId"))
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to revoke API key." }, 400);
@@ -242,7 +302,7 @@ app.get("/v1/skills/:slug/prices", async (c) => {
 });
 
 app.post("/v1/skills/:slug/prices", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -261,7 +321,7 @@ app.post("/v1/skills/:slug/prices", async (c) => {
 });
 
 app.get("/v1/admin/finance/ledger", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -271,7 +331,7 @@ app.get("/v1/admin/finance/ledger", async (c) => {
 });
 
 app.post("/v1/admin/finance/process-usage", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -287,7 +347,7 @@ app.post("/v1/admin/finance/process-usage", async (c) => {
 });
 
 app.post("/v1/admin/finance/release-balances", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -303,7 +363,7 @@ app.post("/v1/admin/finance/release-balances", async (c) => {
 });
 
 app.get("/v1/admin/finance/refunds", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -315,7 +375,7 @@ app.get("/v1/admin/finance/refunds", async (c) => {
 });
 
 app.post("/v1/admin/finance/refunds", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -329,7 +389,7 @@ app.post("/v1/admin/finance/refunds", async (c) => {
 });
 
 app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -345,7 +405,7 @@ app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
 });
 
 app.get("/v1/admin/finance/disputes", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -357,7 +417,7 @@ app.get("/v1/admin/finance/disputes", async (c) => {
 });
 
 app.post("/v1/admin/finance/disputes", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -371,7 +431,7 @@ app.post("/v1/admin/finance/disputes", async (c) => {
 });
 
 app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -387,7 +447,7 @@ app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
 });
 
 app.get("/v1/admin/notifications", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -401,7 +461,9 @@ app.get("/v1/admin/notifications", async (c) => {
 });
 
 app.get("/v1/publisher/payouts", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    publisherProfileId: c.req.query("publisherProfileId") ?? undefined
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -413,13 +475,14 @@ app.get("/v1/publisher/payouts", async (c) => {
 });
 
 app.post("/v1/publisher/payouts", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const body = (await c.req.json().catch(() => ({}))) as { publisherProfileId?: string; currency?: string };
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    publisherProfileId: body.publisherProfileId
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
   }
-
-  const body = (await c.req.json().catch(() => ({}))) as { publisherProfileId?: string; currency?: string };
 
   try {
     return c.json({ payout: await requestPublisherPayout(body) }, 201);
@@ -429,7 +492,7 @@ app.post("/v1/publisher/payouts", async (c) => {
 });
 
 app.get("/v1/admin/payouts", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -441,7 +504,7 @@ app.get("/v1/admin/payouts", async (c) => {
 });
 
 app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -457,7 +520,7 @@ app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
 });
 
 app.post("/v1/skills/:slug/submit", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -471,7 +534,7 @@ app.post("/v1/skills/:slug/submit", async (c) => {
 });
 
 app.get("/v1/admin/reviews", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), reviewOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -481,7 +544,7 @@ app.get("/v1/admin/reviews", async (c) => {
 });
 
 app.post("/v1/admin/reviews/:reviewId/decision", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), reviewOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -516,7 +579,7 @@ app.get("/v1/skills/:slug", async (c) => {
 });
 
 app.post("/v1/skills", async (c) => {
-  const authorization = requireAdminToken(c.req.header("Authorization"));
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -587,36 +650,6 @@ app.post("/mcp", async (c) => {
 
   return rpcError(request.id, -32601, "Method not found.");
 });
-
-function readBearer(header?: string): string | undefined {
-  if (!header?.startsWith("Bearer ")) {
-    return undefined;
-  }
-
-  return header.slice("Bearer ".length).trim();
-}
-
-function requireAdminToken(header?: string): { ok: true } | { ok: false; error: string; status: 401 | 503 } {
-  const configuredToken = getProcessEnv("SKILLHUB_ADMIN_TOKEN");
-
-  if (!configuredToken) {
-    return {
-      ok: false,
-      error: "Publishing is not configured. Set SKILLHUB_ADMIN_TOKEN.",
-      status: 503
-    };
-  }
-
-  if (readBearer(header) !== configuredToken) {
-    return {
-      ok: false,
-      error: "Invalid admin token.",
-      status: 401
-    };
-  }
-
-  return { ok: true };
-}
 
 function rpc(id: JsonRpcRequest["id"], result: unknown) {
   return Response.json({

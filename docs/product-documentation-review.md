@@ -170,6 +170,13 @@ Added refund and dispute workflow states, covering:
 - Lost disputes can automatically post the matching refund adjustment.
 - Admin risk operations read refund and dispute queues with fallback states.
 
+Added the first role-based access layer, covering:
+
+- User access tokens stored as hashes with prefix/last-four metadata.
+- Service-token bootstrap for creating the initial user and organization membership.
+- Active subject inspection through `/v1/auth/me`.
+- Gateway role checks for developer project operations, publisher operations, review actions, finance actions, and admin read operations.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

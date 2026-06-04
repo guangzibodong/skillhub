@@ -291,10 +291,14 @@ Completed:
 - Admin refund request, refund decision, dispute open, and dispute decision endpoints.
 - Dispute-lost flow can post refund adjustment records automatically.
 - Admin risk table reads refund and dispute queues with safe fallback states.
+- User access token table and bootstrap flow for initial operator identities.
+- Gateway role checks for project, publisher, reviewer, finance, and admin operations.
+- `/v1/auth/me` endpoint for inspecting the active subject and roles.
 
 Next:
 
-- Auth and role enforcement to replace temporary operator-token write protection.
+- Tenant-scoped route ownership enforcement for every publisher and project mutation.
+- Full login/session provider integration to replace bootstrap-created user access tokens.
 - Payout account onboarding screens and provider handoff state.
 - Publisher/developer-facing refund and dispute history views.
 

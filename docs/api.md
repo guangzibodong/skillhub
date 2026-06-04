@@ -60,6 +60,44 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
+## Identity And RBAC
+
+Business API writes use user access tokens with role checks. The deployment service token can bootstrap the first user token and remains available for emergency service operations, but it is no longer the product permission model. In the current gateway environment the service token is read from `SKILLHUB_ADMIN_TOKEN`; API examples call it `SKILLHUB_SERVICE_TOKEN` to distinguish it from user credentials.
+
+Create an initial user token from the service token:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/auth/bootstrap-token" \
+  -H "Authorization: Bearer $SKILLHUB_SERVICE_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "operator@useskillhub.com",
+    "displayName": "SkillHub Operator",
+    "organizationSlug": "skillhub",
+    "organizationName": "SkillHub",
+    "role": "owner",
+    "platformRole": "admin",
+    "tokenName": "Initial user token"
+  }'
+```
+
+The raw user token is returned only once. SkillHub stores only the token hash, prefix, and last four characters.
+
+Inspect the current token subject:
+
+```bash
+curl "https://api.useskillhub.com/v1/auth/me" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Role boundaries:
+
+- Project operations require `developer`, `owner`, `admin`, or `super_admin`.
+- Publisher operations require `publisher`, `owner`, `admin`, or `super_admin`.
+- Review operations require `reviewer`, `admin`, or `super_admin`.
+- Finance, refunds, disputes, and payouts require `finance`, `admin`, or `super_admin`.
+- Platform admin read operations require `support`, `admin`, or `super_admin`.
+
 ## Developer Project Operations
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.
@@ -74,7 +112,7 @@ Install or update a skill version for a project:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/installed-skills" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"skillSlug":"browser-research","version":"0.1.0"}'
 ```
@@ -89,7 +127,7 @@ Update a project skill policy:
 
 ```bash
 curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/policies/browser-research" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "maxPermissionLevel": "medium",
@@ -108,7 +146,7 @@ Read the installed-skill update inbox:
 curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox"
 ```
 
-Writes are temporarily protected by the operator token until full account auth and role checks are connected.
+Writes are protected by user access tokens and role checks. Project API keys are separate runtime credentials and cannot manage project policy.
 
 ## Project API Keys
 
@@ -118,7 +156,7 @@ Create a project API key:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/api-keys" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Research Agent runtime"}'
 ```
@@ -127,19 +165,19 @@ List project API keys:
 
 ```bash
 curl "https://api.useskillhub.com/v1/projects/research-agent/api-keys" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Revoke a project API key:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/api-keys/$KEY_ID/revoke" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 ## Runtime Invocation
 
-Runtime calls use a project API key, not the operator token.
+Runtime calls use a project API key, not a user or service token.
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/runtime/invoke" \
@@ -195,7 +233,7 @@ Set a skill price:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "billingModel": "per_call",
@@ -228,14 +266,14 @@ Read the finance ledger:
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/finance/ledger" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Post unprocessed billable usage into the ledger:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/process-usage" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"limit":50}'
 ```
@@ -252,7 +290,7 @@ Release matured pending balances:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/release-balances" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"limit":100}'
 ```
@@ -267,14 +305,14 @@ Read publisher payout readiness:
 
 ```bash
 curl "https://api.useskillhub.com/v1/publisher/payouts" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Request a payout for all currently available publisher balances in a currency:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/publisher/payouts" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"currency":"usd"}'
 ```
@@ -285,14 +323,14 @@ Read the admin payout queue:
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/payouts?limit=50" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Record a payout decision:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"action":"approve","reason":"KYC and balance review passed."}'
 ```
@@ -314,14 +352,14 @@ Read the admin refund queue:
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/finance/refunds?limit=50" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Request a refund against a positive usage or subscription transaction:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/refunds" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "transactionId": "TRANSACTION_ID",
@@ -334,7 +372,7 @@ Record a refund decision:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/refunds/$REFUND_ID/decision" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"action":"post","reason":"Approved after usage review."}'
 ```
@@ -350,14 +388,14 @@ Read the admin dispute queue:
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/finance/disputes?limit=50" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Open a dispute:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/disputes" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "transactionId": "TRANSACTION_ID",
@@ -371,7 +409,7 @@ Resolve or update a dispute:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/finance/disputes/$DISPUTE_ID/decision" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"status":"lost","reason":"Evidence window expired.","postRefund":true}'
 ```
@@ -384,7 +422,7 @@ Notification events are recorded before the final email provider is connected. A
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
@@ -395,21 +433,21 @@ Submit a skill for review:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/submit" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Read the admin review queue:
 
 ```bash
 curl "https://api.useskillhub.com/v1/admin/reviews" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Record a review decision:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/admin/reviews/$REVIEW_ID/decision" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"status":"approved","notes":"Manifest, runtime, permissions, and examples accepted."}'
 ```
@@ -422,11 +460,11 @@ Decision status can be:
 
 ## Publish Skill
 
-Publishing requires `SKILLHUB_ADMIN_TOKEN` on the server.
+Publishing requires a user token with `publisher`, `owner`, `admin`, or `super_admin`.
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/skills" \
-  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"manifest": { ... }}'
 ```
