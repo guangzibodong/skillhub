@@ -8,6 +8,7 @@ import {
   History,
   KeyRound,
   PackageCheck,
+  PackageSearch,
   ShieldCheck,
   Star,
   Terminal,
@@ -19,7 +20,7 @@ import { SkillProjectActionPanel } from "@/components/skill-project-action-panel
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
-import { getPublicMarketplaceSkill } from "@/lib/public-marketplace";
+import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,10 @@ const copy = {
     changelog: "Changelog",
     reviews: "Operator notes",
     permissions: "Permissions",
+    related: "Alternatives and replacements",
+    relatedBody: "Compare similar skills before installing, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
+    relatedReasons: "Why it matches",
+    relatedDetails: "Open details",
     lastReviewed: "Last reviewed",
     success: "Success rate",
     latency: "Median latency",
@@ -67,6 +72,10 @@ const copy = {
     changelog: "更新记录",
     reviews: "运营备注",
     permissions: "权限",
+    related: "替代和相似技能",
+    relatedBody: "安装前先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
+    relatedReasons: "推荐原因",
+    relatedDetails: "打开详情",
     lastReviewed: "最近审核",
     success: "成功率",
     latency: "中位延迟",
@@ -94,7 +103,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [skill, projects] = await Promise.all([getPublicMarketplaceSkill(slug), getDeveloperProjects()]);
+  const [skill, projects, relatedSkills] = await Promise.all([getPublicMarketplaceSkill(slug), getDeveloperProjects(), getRelatedMarketplaceSkills(slug)]);
   const labels = copy[locale];
 
   if (!skill) {
@@ -246,6 +255,53 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               ))}
             </div>
           </article>
+
+          {relatedSkills.length > 0 ? (
+            <article className="skill-detail-panel">
+              <div className="card-kicker">
+                <PackageSearch size={16} aria-hidden="true" />
+                <span>{labels.related}</span>
+              </div>
+              <p className="related-skill-intro">{labels.relatedBody}</p>
+              <div className="related-skill-list">
+                {relatedSkills.map((suggestion) => (
+                  <section className="related-skill-row" key={suggestion.skill.slug}>
+                    <header className="related-skill-row__head">
+                      <div>
+                        <strong>{localizeText(suggestion.skill.name, locale)}</strong>
+                        <span>{localizeText(suggestion.skill.summary, locale)}</span>
+                      </div>
+                      <span className={`risk-badge risk-badge--${suggestion.skill.risk}`}>{suggestion.skill.risk}</span>
+                    </header>
+
+                    <div className="related-skill-meta">
+                      <span>{localizeText(suggestion.skill.category, locale)}</span>
+                      <span>{suggestion.skill.runtime}</span>
+                      <span>{suggestion.skill.price[locale]}</span>
+                      <span>{localizeText(suggestion.skill.verification, locale)}</span>
+                    </div>
+
+                    <div className="related-skill-reasons" aria-label={labels.relatedReasons}>
+                      {suggestion.reasons[locale].map((reason) => (
+                        <span key={reason}>
+                          <BadgeCheck size={13} aria-hidden="true" />
+                          {reason}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="related-skill-command">
+                      <code>{suggestion.skill.installsCommand.cli}</code>
+                      <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${suggestion.skill.slug}`, locale)}>
+                        <ShieldCheck size={15} aria-hidden="true" />
+                        <span>{labels.relatedDetails}</span>
+                      </a>
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </article>
+          ) : null}
 
           <SkillAbuseReportForm
             locale={locale}

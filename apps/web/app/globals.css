@@ -3570,10 +3570,110 @@ a {
 .permission-row span,
 .changelog-row span,
 .price-block span,
-.support-list span {
+.support-list span,
+.related-skill-intro,
+.related-skill-row__head span {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.related-skill-intro {
+  margin: 14px 0 0;
+}
+
+.related-skill-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.related-skill-row {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 14px;
+}
+
+.related-skill-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.related-skill-row__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.related-skill-row__head div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.related-skill-row__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.related-skill-meta,
+.related-skill-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-skill-meta span,
+.related-skill-reasons span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 9px;
+}
+
+.related-skill-reasons span {
+  gap: 6px;
+  border-color: rgba(155, 226, 141, 0.16);
+  background: rgba(155, 226, 141, 0.07);
+  color: var(--signal);
+}
+
+.related-skill-reasons svg {
+  flex: 0 0 auto;
+}
+
+.related-skill-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.related-skill-command code {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: #0b0e0a;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 11px 12px;
 }
 
 .skill-report-panel {
@@ -5631,16 +5731,20 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .related-skill-row__head,
+  .related-skill-command,
   .admin-adjustment-action-form,
   .admin-adjustment-action-form--dispute {
     grid-template-columns: 1fr;
   }
 
+  .related-skill-command .secondary-button,
   .admin-payout-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     width: 100%;
   }
 
+  .related-skill-command .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     justify-content: center;
   }

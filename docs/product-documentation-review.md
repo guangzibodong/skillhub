@@ -376,6 +376,13 @@ Added admin refund and dispute operations, covering:
 - Decisions call the adjustment workflow API, which preserves the immutable ledger model by creating adjustment transactions and reversed publisher balances instead of editing historical revenue.
 - This strengthens developer billing trust and publisher revenue trust because both sides can see that disputed money follows a controlled, auditable path before final payment-provider APIs are connected.
 
+Added public skill replacement discovery, covering:
+
+- Skill detail pages now show similar and replacement skills instead of leaving each listing as an isolated page.
+- Suggestions are scored by category, shared tags, runtime, permission risk, pricing model, free fallback status, and verified listing state.
+- Each suggestion explains why it matches, exposes risk, price, runtime, verification, install command, and a direct detail link.
+- This strengthens developer first-visit value because users can compare choices before installing, and repeat-use value because deprecated, suspended, or high-risk skills have a visible replacement path.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

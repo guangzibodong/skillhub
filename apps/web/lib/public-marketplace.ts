@@ -15,6 +15,12 @@ type SkillPriceRecord = {
   createdAt: string;
 };
 
+export type MarketplaceSkillSuggestion = {
+  reasons: Record<"en" | "zh", string[]>;
+  score: number;
+  skill: MarketplaceSkill;
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 export async function getPublicMarketplaceSkills(): Promise<MarketplaceSkill[]> {
@@ -57,6 +63,21 @@ export async function getPublicMarketplaceSkill(slug: string): Promise<Marketpla
   } catch {
     return staticSkill ?? null;
   }
+}
+
+export async function getRelatedMarketplaceSkills(slug: string, limit = 3): Promise<MarketplaceSkillSuggestion[]> {
+  const [current, skills] = await Promise.all([getPublicMarketplaceSkill(slug), getPublicMarketplaceSkills()]);
+
+  if (!current) {
+    return [];
+  }
+
+  return skills
+    .filter((skill) => skill.slug !== current.slug)
+    .map((skill) => scoreRelatedSkill(current, skill))
+    .filter((suggestion) => suggestion.score > 0)
+    .sort((first, second) => second.score - first.score || first.skill.slug.localeCompare(second.skill.slug))
+    .slice(0, limit);
 }
 
 async function hydrateMarketplaceSkill(summary: SkillSummary) {
@@ -377,4 +398,102 @@ function schemaExample(schema: SkillManifest["inputSchema"] | undefined, label: 
   }
 
   return JSON.stringify(schema, null, 2);
+}
+
+function scoreRelatedSkill(current: MarketplaceSkill, skill: MarketplaceSkill): MarketplaceSkillSuggestion {
+  let score = 0;
+  let relevanceSignals = 0;
+  const reasons: MarketplaceSkillSuggestion["reasons"] = {
+    en: [],
+    zh: []
+  };
+
+  if (skill.categoryKey === current.categoryKey) {
+    score += 5;
+    relevanceSignals += 1;
+    reasons.en.push(`Same ${skill.category.en.toLowerCase()} category`);
+    reasons.zh.push(`同属${skill.category.zh}类别`);
+  }
+
+  const sharedTags = sharedLocalizedTags(current, skill);
+
+  if (sharedTags.en.length > 0) {
+    score += Math.min(sharedTags.en.length, 3) * 2;
+    relevanceSignals += 1;
+    reasons.en.push(`Shares ${sharedTags.en.slice(0, 2).join(", ")} signals`);
+    reasons.zh.push(`共享${sharedTags.zh.slice(0, 2).join("、")}信号`);
+  }
+
+  if (skill.runtime === current.runtime) {
+    score += 1;
+    reasons.en.push(`Same ${skill.runtime} runtime`);
+    reasons.zh.push(`同为 ${skill.runtime} 运行时`);
+  }
+
+  if (riskRank(skill.risk) < riskRank(current.risk)) {
+    score += 3;
+    reasons.en.push("Lower permission risk");
+    reasons.zh.push("权限风险更低");
+  } else if (skill.risk === current.risk) {
+    score += 1;
+  }
+
+  if (skill.billing === current.billing) {
+    score += 1;
+  } else if (skill.billing === "free") {
+    score += 2;
+    reasons.en.push("Free fallback option");
+    reasons.zh.push("可作为免费备选");
+  }
+
+  if (skill.verification.en.toLowerCase().includes("verified")) {
+    score += 2;
+    reasons.en.push("Verified listing");
+    reasons.zh.push("已验证上架");
+  }
+
+  if (relevanceSignals === 0) {
+    score = 0;
+  }
+
+  if (score > 0 && reasons.en.length === 0) {
+    reasons.en.push("Comparable marketplace capability");
+    reasons.zh.push("可比较的市场技能");
+  }
+
+  return {
+    reasons: {
+      en: reasons.en.slice(0, 4),
+      zh: reasons.zh.slice(0, 4)
+    },
+    score,
+    skill
+  };
+}
+
+function sharedLocalizedTags(current: MarketplaceSkill, skill: MarketplaceSkill) {
+  const currentTags = new Set(current.tags.en.map((tag) => tag.toLowerCase()));
+  const en: string[] = [];
+  const zh: string[] = [];
+
+  skill.tags.en.forEach((tag, index) => {
+    if (!currentTags.has(tag.toLowerCase())) {
+      return;
+    }
+
+    en.push(tag);
+    zh.push(skill.tags.zh[index] ?? tag);
+  });
+
+  return { en, zh };
+}
+
+function riskRank(risk: MarketplaceSkill["risk"]) {
+  const ranks = {
+    high: 3,
+    low: 1,
+    medium: 2
+  } satisfies Record<MarketplaceSkill["risk"], number>;
+
+  return ranks[risk];
 }
