@@ -51,6 +51,16 @@ If developers do not see safety, installability, quality, and operational contro
 
 The documents now explicitly define first-visit and repeat-visit value for both sides.
 
+## Notification Preference Value
+
+Notification preferences are part of the repeat-use loop, not a cosmetic setting.
+
+- Developers return when installed skills change, incidents affect a project, invoices are ready, or account actions need approval.
+- Publishers return when reviews finish, buyer requests match their skills, payout status changes, or quality issues need repair.
+- Operators return when billing, dispute, payout, and risk events need human action.
+
+The product now treats in-app, email, and webhook choices as user-owned state before the final email provider is connected. That keeps the platform ready for real operations without hard-coding one noisy notification behavior for every user.
+
 ## What Was Added
 
 Added [User Value And Retention Strategy](./user-value-and-retention.md), covering:

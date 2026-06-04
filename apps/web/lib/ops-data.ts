@@ -36,6 +36,17 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type NotificationPreferenceRecord = {
+  category: string;
+  description: string;
+  emailEnabled: boolean;
+  eventType: string;
+  inAppEnabled: boolean;
+  label: string;
+  updatedAt: string | null;
+  webhookEnabled: boolean;
+};
+
 export type PayoutRecord = {
   id: string;
   publisherProfileId: string;
@@ -522,6 +533,79 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackNotificationPreferences: NotificationPreferenceRecord[] = [
+  {
+    category: "trust",
+    description: "Review decisions, rejection notes, and verification state changes.",
+    emailEnabled: true,
+    eventType: "skill.review",
+    inAppEnabled: true,
+    label: "Skill review",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "operations",
+    description: "New versions, deprecations, security notices, and project update inbox events.",
+    emailEnabled: true,
+    eventType: "skill.update",
+    inAppEnabled: true,
+    label: "Skill updates",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "runtime",
+    description: "Runtime incidents, blocked calls, and quality signals that need operator attention.",
+    emailEnabled: true,
+    eventType: "runtime.incident",
+    inAppEnabled: true,
+    label: "Runtime incidents",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "finance",
+    description: "Invoice generation, billing profile changes, usage posting, refunds, and disputes.",
+    emailEnabled: true,
+    eventType: "finance.billing",
+    inAppEnabled: true,
+    label: "Billing and disputes",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "publisher",
+    description: "Payout account onboarding, payout review decisions, blocked payouts, and balance milestones.",
+    emailEnabled: true,
+    eventType: "publisher.payout",
+    inAppEnabled: true,
+    label: "Payouts",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "marketplace",
+    description: "Buyer request claims, submissions, matches, cancellations, and demand updates.",
+    emailEnabled: true,
+    eventType: "buyer.request",
+    inAppEnabled: true,
+    label: "Buyer requests",
+    updatedAt: null,
+    webhookEnabled: false
+  },
+  {
+    category: "account",
+    description: "API keys, organization billing readiness, and sensitive account operations.",
+    emailEnabled: true,
+    eventType: "account.security",
+    inAppEnabled: true,
+    label: "Account and security",
+    updatedAt: null,
+    webhookEnabled: false
   }
 ];
 
@@ -1284,6 +1368,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getNotificationPreferences(): Promise<NotificationPreferenceRecord[]> {
+  const token = process.env.SKILLHUB_USER_TOKEN;
+
+  if (!token) {
+    return fallbackNotificationPreferences;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/notifications/preferences`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Notification preferences failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { preferences: NotificationPreferenceRecord[] };
+    return payload.preferences;
+  } catch {
+    return fallbackNotificationPreferences;
   }
 }
 

@@ -760,6 +760,33 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/disputes?limit=20" 
 
 These endpoints return transaction, skill, project, amount, status, reason, and provider/reference fields. They do not create money movement; finance users still operate refund and dispute decisions through `/v1/admin/finance/*`.
 
+## Notification Preferences
+
+Notification preferences are user-scoped settings for the event topics that keep developers, publishers, and operators returning to SkillHub: review decisions, skill updates, runtime incidents, billing events, payouts, buyer requests, and sensitive account changes.
+
+Read the active user's preferences:
+
+```bash
+curl "https://api.useskillhub.com/v1/notifications/preferences" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Update one topic:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/notifications/preferences" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventType": "skill.update",
+    "inAppEnabled": true,
+    "emailEnabled": true,
+    "webhookEnabled": false
+  }'
+```
+
+These endpoints require a user-scoped token because preferences belong to a user, not the deployment service token. They persist channel state and audit records now; actual email-provider delivery is still deferred to the final provider integration phase.
+
 ## Admin Notifications
 
 Notification events are recorded before the final email provider is connected. Admin can inspect queued, sent, failed, and skipped events:

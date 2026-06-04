@@ -16,6 +16,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
+import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
@@ -23,6 +24,7 @@ import {
   formatMoney,
   formatPercent,
   getDeveloperProjects,
+  getNotificationPreferences,
   getOrganizationBillingSummary,
   getPublisherAccountSummary,
   getPublisherBuyerRequests,
@@ -119,7 +121,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     developerProjects,
     publisherRefunds,
     publisherDisputes,
-    organizationBilling
+    organizationBilling,
+    notificationPreferences
   ] = await Promise.all([
     getPlatformOverview(),
     getPublisherFinanceLedger(),
@@ -130,7 +133,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getDeveloperProjects(),
     getPublisherRefunds(),
     getPublisherDisputes(),
-    getOrganizationBillingSummary()
+    getOrganizationBillingSummary(),
+    getNotificationPreferences()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
@@ -414,6 +418,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </article>
 
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+
+          <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
         </aside>
       </section>
 

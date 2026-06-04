@@ -56,6 +56,10 @@ import {
   setSkillPrice
 } from "./billing.js";
 import { listAdminNotifications } from "./notifications.js";
+import {
+  listNotificationPreferences,
+  upsertNotificationPreference
+} from "./notification-preferences.js";
 import { listPublisherSkills } from "./publisher-insights.js";
 import {
   decidePayout,
@@ -991,6 +995,45 @@ app.get("/v1/admin/notifications", async (c) => {
   return c.json({
     notifications: await listAdminNotifications(limit)
   });
+});
+
+app.get("/v1/notifications/preferences", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Notification preferences require a user-scoped token." }, 403);
+  }
+
+  return c.json({
+    preferences: await listNotificationPreferences(authorization.subject.userId)
+  });
+});
+
+app.put("/v1/notifications/preferences", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Notification preferences require a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json({
+      preference: await upsertNotificationPreference(
+        authorization.subject.userId,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update notification preference." }, 400);
+  }
 });
 
 app.get("/v1/publisher/payouts", async (c) => {
