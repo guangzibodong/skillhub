@@ -4,7 +4,6 @@ import {
   BriefcaseBusiness,
   CircleDollarSign,
   CreditCard,
-  FileClock,
   KeyRound,
   LockKeyhole,
   PackageCheck,
@@ -20,6 +19,7 @@ import { NotificationPreferenceManager } from "@/components/notification-prefere
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { PublisherAccountManager } from "@/components/publisher-account-manager";
 import { PublisherPayoutManager } from "@/components/publisher-payout-manager";
+import { PublisherSkillManager } from "@/components/publisher-skill-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -27,7 +27,6 @@ import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i
 import {
   formatCompactNumber,
   formatMoney,
-  formatPercent,
   getDeveloperBuyerRequests,
   getDeveloperProjects,
   getNotificationPreferences,
@@ -167,15 +166,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
     [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
   ];
-  const publisherPipelineRows =
-    publisherSkills.length > 0
-      ? publisherSkills.slice(0, 6).map((skill) => [
-          skill.displayName,
-          `${skill.verificationStatus} / ${skill.review.status ?? "no review"}`,
-          `${skill.analytics.installCount} installs / ${formatPercent(skill.analytics.successRate)}`,
-          getPublisherNextStep(skill.runtime.health, skill.pricing.status, skill.analytics.callCount, locale)
-        ])
-      : ops.pipelineRows;
   const developerProjectRows =
     developerProjects.length > 0
       ? developerProjects.slice(0, 6).map((project) => ({
@@ -286,27 +276,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
 
       <section className="workspace-ops-layout">
-        <article className="ops-panel work-table-panel">
-          <div className="card-kicker">
-            <FileClock size={16} aria-hidden="true" />
-            <span>{ops.pipelineTitle}</span>
-          </div>
-          <div className="work-table">
-            <div className="work-table__row work-table__row--head">
-              {ops.pipelineHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
-            </div>
-            {publisherPipelineRows.map(([skill, stage, reviewer, next]) => (
-              <div className="work-table__row" key={skill}>
-                <strong>{skill}</strong>
-                <span>{stage}</span>
-                <span>{reviewer}</span>
-                <span>{next}</span>
-              </div>
-            ))}
-          </div>
-        </article>
+        <PublisherSkillManager locale={locale} skills={publisherSkills} />
 
         <article className="ops-panel work-table-panel">
           <div className="card-kicker">
@@ -437,29 +407,4 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
-}
-
-function getPublisherNextStep(
-  runtimeHealth: "healthy" | "warning" | "needs_attention" | "not_checked",
-  priceStatus: "draft" | "active" | "archived",
-  callCount: number,
-  locale: "en" | "zh"
-) {
-  if (runtimeHealth === "needs_attention") {
-    return locale === "zh" ? "修复运行检查" : "Fix runtime checks";
-  }
-
-  if (runtimeHealth === "not_checked" || runtimeHealth === "warning") {
-    return locale === "zh" ? "完成运行验证" : "Complete runtime verification";
-  }
-
-  if (priceStatus !== "active") {
-    return locale === "zh" ? "确认定价" : "Confirm pricing";
-  }
-
-  if (callCount === 0) {
-    return locale === "zh" ? "提升列表质量" : "Improve listing quality";
-  }
-
-  return locale === "zh" ? "监控用量和反馈" : "Monitor usage and feedback";
 }

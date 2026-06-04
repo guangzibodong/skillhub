@@ -3697,6 +3697,185 @@ a {
   display: inline-flex;
 }
 
+.publisher-skill-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.publisher-skill-panel__head,
+.publisher-skill-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.publisher-skill-list {
+  display: grid;
+  gap: 12px;
+}
+
+.publisher-skill-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.publisher-skill-card__top div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.publisher-skill-card__top strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.publisher-skill-card__top span:not(.status-chip),
+.publisher-skill-quality strong,
+.publisher-skill-review-state,
+.publisher-skill-price-form label span,
+.publisher-skill-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.publisher-skill-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publisher-skill-metrics div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  min-height: 74px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.publisher-skill-metrics svg {
+  color: var(--cyan);
+}
+
+.publisher-skill-metrics span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.publisher-skill-metrics strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.publisher-skill-quality {
+  display: grid;
+  gap: 8px;
+}
+
+.publisher-skill-quality div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.quality-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  padding: 0 8px;
+}
+
+.quality-chip--complete {
+  border-color: rgba(155, 226, 141, 0.2);
+  background: rgba(155, 226, 141, 0.08);
+  color: var(--signal);
+}
+
+.quality-chip--attention {
+  border-color: rgba(215, 168, 76, 0.22);
+  background: rgba(215, 168, 76, 0.08);
+  color: var(--amber);
+}
+
+.publisher-skill-review-form {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.publisher-skill-review-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publisher-skill-review-state svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.publisher-skill-price-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.publisher-skill-price-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.publisher-skill-price-form input,
+.publisher-skill-price-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.publisher-skill-price-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.publisher-skill-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  padding: 13px;
+}
+
 .table-link {
   color: var(--ink);
   text-decoration: none;
@@ -4848,6 +5027,7 @@ a {
   .auth-status-grid,
   .key-create-form,
   .project-create-form,
+  .publisher-skill-price-form,
   .policy-editor {
     grid-template-columns: 1fr;
   }
@@ -4862,8 +5042,14 @@ a {
   }
 
   .project-create-form .primary-button,
+  .publisher-skill-price-form .primary-button,
+  .publisher-skill-review-form .secondary-button,
   .action-message .ghost-button--inline {
     width: 100%;
+  }
+
+  .publisher-skill-review-form {
+    grid-template-columns: 1fr;
   }
 
   .action-message {
@@ -4951,6 +5137,7 @@ a {
 
   .metric-strip,
   .status-grid,
+  .publisher-skill-metrics,
   .publisher-account-status-grid,
   .payout-balance-grid,
   .organization-billing-form,

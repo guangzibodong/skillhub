@@ -463,6 +463,8 @@ The response includes each owned skill's latest version, verification state, lat
 
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
+The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, install/call/success signals, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
+
 ## Buyer Request Board
 
 Buyer requests let developer organizations ask for missing agent skills and let publishers claim demand before building. The workflow is stored before payment and email integrations are connected, and every state change records audit and in-app notification rows.
@@ -546,6 +548,8 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
 ```
 
 Setting a price requires publisher, owner, admin, or super-admin authorization and is scoped to the token organization. Active paid pricing still requires a verified publisher payout state.
+
+When a paid active price is attempted before payout verification, the API rejects the write and the dashboard shows the provider-readiness error instead of silently creating a paid listing.
 
 Supported `billingModel` values:
 

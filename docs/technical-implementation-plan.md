@@ -306,7 +306,7 @@ Completed:
 - Publisher dashboard shows recent refund and dispute activity beside ledger and payout readiness.
 - Publisher skill operations endpoint aggregating owned skills, review state, runtime checks, installs, calls, success rate, latency, billable usage, pricing, and quality checklist.
 - Publisher skill publishing, review submission, and price writes now scope to the authorized subject organization and reject cross-organization slug ownership.
-- Publisher dashboard publishing pipeline reads owned skill operations data instead of static rows.
+- Publisher dashboard publishing pipeline now reads owned skill operations data and exposes review submission plus skill price controls instead of static rows.
 - Developer project operations endpoint aggregating organization-scoped projects, API keys, installs, approvals, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
 - Dashboard buyer project controls now read developer project operations data instead of static rows.
 - Developer project detail endpoint aggregating one organization-scoped project with installed skills, per-skill policies, usage, runtime quality, API key metadata, update inbox, recent invocations, and subscription records.

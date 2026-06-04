@@ -223,7 +223,7 @@ Added publisher skill operations analytics, covering:
 - Publisher read-only skills endpoint scoped by authorized organization.
 - Skill ownership checks for publish/update, review submission, and price writes.
 - Aggregated publisher signals for review, runtime checks, installs, calls, success/error/blocked counts, latency, billable usage, pricing, and quality checklist.
-- Dashboard publishing pipeline now reads owned skill operations data, giving publishers a concrete reason to return and improve listings.
+- Dashboard publishing pipeline now reads owned skill operations data and exposes review submission plus pricing controls, giving publishers a concrete reason to return, improve listings, and move skills toward monetization.
 
 Added developer project operations analytics, covering:
 
