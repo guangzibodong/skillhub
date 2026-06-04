@@ -57,7 +57,7 @@ const filesystemRank: Record<"none" | "read" | "write", number> = {
   write: 2
 };
 
-export async function listProjectApiKeys(projectSlug: string) {
+export async function listProjectApiKeys(projectSlug: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
@@ -75,6 +75,8 @@ export async function listProjectApiKeys(projectSlug: string) {
     ];
   }
 
+  const scopedOrganizationId = organizationId ?? null;
+
   return sql`
     select
       ak.id::text,
@@ -88,6 +90,7 @@ export async function listProjectApiKeys(projectSlug: string) {
     from api_keys ak
     join projects p on p.id = ak.project_id
     where p.slug = ${projectSlug}
+      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     order by ak.created_at desc
   `;
 }
@@ -136,8 +139,9 @@ export async function createProjectApiKey(projectSlug: string, name = "Project A
   };
 }
 
-export async function revokeProjectApiKey(projectSlug: string, keyId: string) {
+export async function revokeProjectApiKey(projectSlug: string, keyId: string, organizationId?: string | null) {
   const sql = await requireSql();
+  const scopedOrganizationId = organizationId ?? null;
 
   const rows = (await sql`
     update api_keys ak
@@ -146,6 +150,7 @@ export async function revokeProjectApiKey(projectSlug: string, keyId: string) {
     where ak.project_id = p.id
       and p.slug = ${projectSlug}
       and ak.id = ${keyId}
+      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     returning
       ak.id::text,
       p.slug as "projectSlug",

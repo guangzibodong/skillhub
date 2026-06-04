@@ -171,6 +171,7 @@ Writes are protected by user access tokens and role checks. Project API keys are
 ## Project API Keys
 
 Project API keys authenticate agent runtime calls. The raw key is returned only once when it is created; SkillHub stores only a hash plus display metadata.
+Project API key management is tenant scoped: project operators can list, create, and revoke keys only for projects in their authorized organization. The project detail console at `/dashboard/projects/[slug]` exposes the same create-and-revoke workflow and shows the raw key only immediately after creation.
 
 Create a project API key:
 

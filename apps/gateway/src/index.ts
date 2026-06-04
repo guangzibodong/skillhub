@@ -327,7 +327,7 @@ app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
   }
 
   return c.json({
-    apiKeys: await listProjectApiKeys(projectSlug)
+    apiKeys: await listProjectApiKeys(projectSlug, authorization.subject.organizationId)
   });
 });
 
@@ -369,7 +369,7 @@ app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
 
   try {
     return c.json({
-      apiKey: await revokeProjectApiKey(projectSlug, c.req.param("keyId"))
+      apiKey: await revokeProjectApiKey(projectSlug, c.req.param("keyId"), authorization.subject.organizationId)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to revoke API key." }, 400);

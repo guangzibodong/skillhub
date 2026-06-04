@@ -11,11 +11,11 @@ import {
   LockKeyhole,
   PackageCheck,
   RadioTower,
-  ShieldAlert,
   ShieldCheck,
   WalletCards,
   Zap
 } from "lucide-react";
+import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
@@ -255,33 +255,16 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         </div>
 
         <aside className="project-detail-side">
-          <section className="ops-panel project-table-panel">
-            <div className="card-kicker">
-              <KeyRound size={16} aria-hidden="true" />
-              <span>{labels.keysTitle}</span>
-            </div>
-            <div className="project-table project-table--compact">
-              <div className="project-table__row project-table__row--head project-key-row">
-                {labels.keyHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
-              </div>
-              {detail.apiKeys.length > 0 ? (
-                detail.apiKeys.map((key) => (
-                  <div className="project-table__row project-key-row" key={key.id}>
-                    <strong>{key.name}</strong>
-                    <code>{key.keyPrefix}...{key.keyLast4}</code>
-                    <span>{formatDateValue(key.lastUsedAt, locale, labels.noDate)}</span>
-                    <span className={key.revokedAt ? "status-chip status-chip--danger" : "status-chip"}>
-                      {key.revokedAt ? labels.revoked : labels.active}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="project-table__row project-table__row--empty">{labels.empty}</div>
-              )}
-            </div>
-          </section>
+          <ProjectApiKeyManager
+            activeLabel={labels.active}
+            emptyLabel={labels.empty}
+            keys={detail.apiKeys}
+            locale={locale}
+            noDateLabel={labels.noDate}
+            projectSlug={project.slug}
+            revokedLabel={labels.revoked}
+            titleLabel={labels.keysTitle}
+          />
 
           <section className="ops-panel project-table-panel">
             <div className="card-kicker">

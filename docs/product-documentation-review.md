@@ -217,6 +217,12 @@ Added developer project command-center depth, covering:
 - Per-project aggregation of installed skills, per-skill policies, budget state, runtime quality, usage cost, API keys, update inbox, recent invocations, and subscriptions.
 - Dashboard project rows now link into `/dashboard/projects/[slug]`, giving developers a repeat-use surface for project risk review, version/update handling, key hygiene, and cost monitoring.
 
+Added first project command-center write action, covering:
+
+- Tenant-scoped project API key list and revoke operations.
+- Project detail UI for creating replacement runtime keys, revealing the raw secret only once, copying it, and revoking old keys.
+- A stronger repeat-use loop for developers who need to rotate runtime credentials without leaving the SkillHub workspace.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
