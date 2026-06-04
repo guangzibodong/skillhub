@@ -8,7 +8,7 @@ services:
     container_name: skillhub-web
     restart: unless-stopped
     env_file:
-      - .env.production
+      - .env
     environment:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.useskillhub.com}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
@@ -26,7 +26,7 @@ services:
     container_name: skillhub-api
     restart: unless-stopped
     env_file:
-      - .env.production
+      - .env
     environment:
       SKILLHUB_ENV: production
       HOST: 0.0.0.0
@@ -34,7 +34,7 @@ services:
       DATABASE_URL: postgres://skillhub:${POSTGRES_PASSWORD}@postgres:5432/skillhub
       REDIS_URL: redis://redis:6379
     ports:
-      - "127.0.0.1:8787:8787"
+      - "127.0.0.1:18787:8787"
     depends_on:
       postgres:
         condition: service_healthy
