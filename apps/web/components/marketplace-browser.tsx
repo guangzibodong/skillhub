@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { BadgeCheck, Copy, ExternalLink, Search, ShieldCheck, Star, Timer, Zap } from "lucide-react";
+import { useMemo, useState, type ReactNode } from "react";
+import { BadgeCheck, Copy, ExternalLink, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Star, Timer, Zap } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import {
@@ -32,6 +32,31 @@ const labels = {
     latency: "latency",
     install: "install",
     catalog: "SkillHub Catalog",
+    filters: "Discovery filters",
+    category: "Category",
+    pricing: "Pricing",
+    permissionRisk: "Permission risk",
+    runtime: "Runtime",
+    verification: "Verification",
+    sort: "Sort",
+    reset: "Reset filters",
+    emptyTitle: "No skills match these filters",
+    emptyBody: "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
+    sortOptions: {
+      adoption: "Most installed",
+      lowRisk: "Lowest risk",
+      recommended: "Recommended",
+      recent: "Recently reviewed",
+      success: "Best runtime success"
+    },
+    allRuntime: "All runtimes",
+    allRisk: "All risk",
+    allVerification: "All verification",
+    verificationLabels: {
+      review: "In review",
+      restricted: "Restricted",
+      verified: "Verified"
+    },
     risk: {
       low: "low",
       medium: "medium",
@@ -53,6 +78,31 @@ const labels = {
     latency: "延迟",
     install: "安装",
     catalog: "SkillHub 技能目录",
+    filters: "发现筛选",
+    category: "类别",
+    pricing: "价格",
+    permissionRisk: "权限风险",
+    runtime: "运行时",
+    verification: "验证状态",
+    sort: "排序",
+    reset: "重置筛选",
+    emptyTitle: "没有符合条件的技能",
+    emptyBody: "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
+    sortOptions: {
+      adoption: "安装最多",
+      lowRisk: "风险最低",
+      recommended: "推荐优先",
+      recent: "最近审核",
+      success: "成功率最高"
+    },
+    allRuntime: "全部运行时",
+    allRisk: "全部风险",
+    allVerification: "全部验证状态",
+    verificationLabels: {
+      review: "审核中",
+      restricted: "受限",
+      verified: "已验证"
+    },
     risk: {
       low: "低风险",
       medium: "中风险",
@@ -68,40 +118,62 @@ const pricingOptions = [
   { key: "subscription", label: { en: "Subscription", zh: "订阅" } }
 ] as const;
 
+const riskOptions = ["all", "low", "medium", "high"] as const;
+const runtimeOptions = ["all", "HTTP", "MCP", "Local"] as const;
+const verificationOptions = ["all", "verified", "review", "restricted"] as const;
+const sortOptions = ["recommended", "adoption", "success", "lowRisk", "recent"] as const;
+
 export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof marketplaceCategories)[number]["key"]>("all");
   const [pricing, setPricing] = useState<(typeof pricingOptions)[number]["key"]>("all");
+  const [risk, setRisk] = useState<(typeof riskOptions)[number]>("all");
+  const [runtime, setRuntime] = useState<(typeof runtimeOptions)[number]>("all");
+  const [verification, setVerification] = useState<(typeof verificationOptions)[number]>("all");
+  const [sort, setSort] = useState<(typeof sortOptions)[number]>("recommended");
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const dictionary = labels[locale];
+  const hasActiveFilters =
+    query.trim().length > 0 ||
+    category !== "all" ||
+    pricing !== "all" ||
+    risk !== "all" ||
+    runtime !== "all" ||
+    verification !== "all" ||
+    sort !== "recommended";
 
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return skills.filter((skill) => {
-      const text = [
-        localizeText(skill.name, locale),
-        localizeText(skill.summary, locale),
-        localizeText(skill.category, locale),
-        skill.author,
-        skill.runtime,
-        ...skill.tags[locale]
-      ]
-        .join(" ")
-        .toLowerCase();
+    return skills
+      .filter((skill) => {
+        const text = searchableText(skill, locale);
+        const queryMatch = normalizedQuery.length === 0 || text.includes(normalizedQuery);
+        const categoryMatch = category === "all" || skill.categoryKey === category;
+        const pricingMatch = pricing === "all" || skill.billing === pricing;
+        const riskMatch = risk === "all" || skill.risk === risk;
+        const runtimeMatch = runtime === "all" || skill.runtime === runtime;
+        const verificationMatch = verification === "all" || verificationKey(skill) === verification;
 
-      const queryMatch = normalizedQuery.length === 0 || text.includes(normalizedQuery);
-      const categoryMatch = category === "all" || skill.categoryKey === category;
-      const pricingMatch = pricing === "all" || skill.billing === pricing;
-
-      return queryMatch && categoryMatch && pricingMatch;
-    });
-  }, [category, locale, pricing, query, skills]);
+        return queryMatch && categoryMatch && pricingMatch && riskMatch && runtimeMatch && verificationMatch;
+      })
+      .sort((first, second) => compareSkills(first, second, sort, normalizedQuery, locale));
+  }, [category, locale, pricing, query, risk, runtime, skills, sort, verification]);
 
   function copyInstall(skill: MarketplaceSkill) {
     void navigator.clipboard.writeText(skill.installsCommand.cli).then(() => {
       setCopiedSlug(skill.slug);
       window.setTimeout(() => setCopiedSlug(null), 1400);
     });
+  }
+
+  function resetFilters() {
+    setQuery("");
+    setCategory("all");
+    setPricing("all");
+    setRisk("all");
+    setRuntime("all");
+    setVerification("all");
+    setSort("recommended");
   }
 
   return (
@@ -120,34 +192,102 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         </label>
       </div>
 
-      <div className="market-filter-row" aria-label="Category filters">
-        {marketplaceCategories.map((item) => (
-          <button
-            className={category === item.key ? "filter-button filter-button--active" : "filter-button"}
-            key={item.key}
-            onClick={() => setCategory(item.key)}
-            type="button"
-          >
-            {localizeText(item.label, locale)}
-          </button>
-        ))}
+      <div className="market-filter-panel" aria-label={dictionary.filters}>
+        <div className="market-filter-panel__head">
+          <span>
+            <SlidersHorizontal size={15} aria-hidden="true" />
+            {dictionary.filters}
+          </span>
+          {hasActiveFilters && (
+            <button className="filter-reset-button" onClick={resetFilters} type="button">
+              <RotateCcw size={14} aria-hidden="true" />
+              {dictionary.reset}
+            </button>
+          )}
+        </div>
+
+        <FilterGroup label={dictionary.category}>
+          {marketplaceCategories.map((item) => (
+            <button
+              className={category === item.key ? "filter-button filter-button--active" : "filter-button"}
+              key={item.key}
+              onClick={() => setCategory(item.key)}
+              type="button"
+            >
+              {localizeText(item.label, locale)}
+            </button>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup label={dictionary.pricing}>
+          {pricingOptions.map((item) => (
+            <button
+              className={pricing === item.key ? "filter-button filter-button--active" : "filter-button"}
+              key={item.key}
+              onClick={() => setPricing(item.key)}
+              type="button"
+            >
+              {localizeText(item.label, locale)}
+            </button>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup label={dictionary.permissionRisk}>
+          {riskOptions.map((item) => (
+            <button
+              className={risk === item ? "filter-button filter-button--active" : "filter-button"}
+              key={item}
+              onClick={() => setRisk(item)}
+              type="button"
+            >
+              {item === "all" ? dictionary.allRisk : dictionary.risk[item]}
+            </button>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup label={dictionary.runtime}>
+          {runtimeOptions.map((item) => (
+            <button
+              className={runtime === item ? "filter-button filter-button--active" : "filter-button"}
+              key={item}
+              onClick={() => setRuntime(item)}
+              type="button"
+            >
+              {item === "all" ? dictionary.allRuntime : item}
+            </button>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup label={dictionary.verification}>
+          {verificationOptions.map((item) => (
+            <button
+              className={verification === item ? "filter-button filter-button--active" : "filter-button"}
+              key={item}
+              onClick={() => setVerification(item)}
+              type="button"
+            >
+              {item === "all" ? dictionary.allVerification : dictionary.verificationLabels[item]}
+            </button>
+          ))}
+        </FilterGroup>
+
+        <FilterGroup label={dictionary.sort}>
+          {sortOptions.map((item) => (
+            <button
+              className={sort === item ? "filter-button filter-button--active" : "filter-button"}
+              key={item}
+              onClick={() => setSort(item)}
+              type="button"
+            >
+              {dictionary.sortOptions[item]}
+            </button>
+          ))}
+        </FilterGroup>
       </div>
 
-      <div className="market-filter-row" aria-label="Pricing filters">
-        {pricingOptions.map((item) => (
-          <button
-            className={pricing === item.key ? "filter-button filter-button--active" : "filter-button"}
-            key={item.key}
-            onClick={() => setPricing(item.key)}
-            type="button"
-          >
-            {localizeText(item.label, locale)}
-          </button>
-        ))}
-      </div>
-
-      <div className="market-card-grid">
-        {filteredSkills.map((skill) => (
+      {filteredSkills.length > 0 ? (
+        <div className="market-card-grid">
+          {filteredSkills.map((skill) => (
           <article className="market-skill-card lift-card" key={skill.slug}>
             <div className="market-skill-card__head">
               <div className="market-skill-card__icon" aria-hidden="true">
@@ -206,8 +346,146 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
               </a>
             </div>
           </article>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="market-empty-state">
+          <Search size={26} aria-hidden="true" />
+          <h3>{dictionary.emptyTitle}</h3>
+          <p>{dictionary.emptyBody}</p>
+          <button className="secondary-button secondary-button--compact" onClick={resetFilters} type="button">
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{dictionary.reset}</span>
+          </button>
+        </div>
+      )}
     </section>
   );
+}
+
+function FilterGroup({ children, label }: { children: ReactNode; label: string }) {
+  return (
+    <div className="market-filter-group">
+      <span>{label}</span>
+      <div className="market-filter-row">{children}</div>
+    </div>
+  );
+}
+
+function searchableText(skill: MarketplaceSkill, locale: Locale) {
+  return [
+    localizeText(skill.name, locale),
+    localizeText(skill.summary, locale),
+    localizeText(skill.category, locale),
+    skill.author,
+    skill.runtime,
+    skill.billing,
+    skill.risk,
+    localizeText(skill.verification, locale),
+    skill.verification.en,
+    ...skill.tags[locale],
+    ...skill.tags.en
+  ]
+    .join(" ")
+    .toLowerCase();
+}
+
+function verificationKey(skill: MarketplaceSkill): "verified" | "review" | "restricted" {
+  const normalized = skill.verification.en.toLowerCase();
+
+  if (normalized.includes("verified")) {
+    return "verified";
+  }
+
+  if (normalized.includes("restricted") || normalized.includes("suspended") || normalized.includes("rejected")) {
+    return "restricted";
+  }
+
+  return "review";
+}
+
+function compareSkills(
+  first: MarketplaceSkill,
+  second: MarketplaceSkill,
+  sort: (typeof sortOptions)[number],
+  query: string,
+  locale: Locale
+) {
+  if (sort === "adoption") {
+    return parseCompactNumber(second.installs) - parseCompactNumber(first.installs) || first.slug.localeCompare(second.slug);
+  }
+
+  if (sort === "success") {
+    return parsePercent(second.successRate) - parsePercent(first.successRate) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+  }
+
+  if (sort === "lowRisk") {
+    return riskRank(first.risk) - riskRank(second.risk) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+  }
+
+  if (sort === "recent") {
+    return parseDate(second.lastReviewed) - parseDate(first.lastReviewed) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+  }
+
+  return recommendedScore(second, query, locale) - recommendedScore(first, query, locale) || first.slug.localeCompare(second.slug);
+}
+
+function recommendedScore(skill: MarketplaceSkill, query: string, locale: Locale) {
+  let score = 0;
+
+  if (query) {
+    const name = localizeText(skill.name, locale).toLowerCase();
+    const tags = skill.tags[locale].join(" ").toLowerCase();
+
+    if (name === query) {
+      score += 120;
+    } else if (name.includes(query)) {
+      score += 70;
+    }
+
+    if (tags.includes(query)) {
+      score += 35;
+    }
+  }
+
+  if (verificationKey(skill) === "verified") {
+    score += 95;
+  } else if (verificationKey(skill) === "review") {
+    score += 35;
+  }
+
+  score += (4 - riskRank(skill.risk)) * 15;
+  score += parsePercent(skill.successRate) * 35;
+  score += Math.min(parseCompactNumber(skill.installs) / 1000, 35);
+  score += Number.isFinite(Number(skill.rating)) ? Number(skill.rating) * 5 : 0;
+  score += Math.min(parseDate(skill.lastReviewed) / 1_000_000_000_000, 2);
+
+  return score;
+}
+
+function parsePercent(value: string) {
+  const parsed = Number(value.replace("%", ""));
+  return Number.isFinite(parsed) ? parsed / 100 : 0;
+}
+
+function parseCompactNumber(value: string) {
+  const normalized = value.trim().toLowerCase();
+  const multiplier = normalized.endsWith("k") ? 1000 : normalized.endsWith("m") ? 1_000_000 : 1;
+  const parsed = Number(normalized.replace(/[km]$/, ""));
+  return Number.isFinite(parsed) ? parsed * multiplier : 0;
+}
+
+function parseDate(value: string) {
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? time : 0;
+}
+
+function riskRank(risk: MarketplaceSkill["risk"]) {
+  const ranks = {
+    high: 3,
+    low: 1,
+    medium: 2
+  } satisfies Record<MarketplaceSkill["risk"], number>;
+
+  return ranks[risk];
 }

@@ -397,6 +397,14 @@ Added the public publisher trust directory, covering:
 - Directory cards rank publishers by trust level, verified skill inventory, install evidence, runtime calls, payout readiness, active paid skills, and average success rate.
 - This improves first-visit trust because buyers can compare suppliers before installing, and improves publisher repeat-use motivation because public quality signals become a distribution surface.
 
+Added marketplace discovery controls, covering:
+
+- The public marketplace browser now filters by category, pricing model, permission risk, runtime, and verification state instead of only category and price.
+- Marketplace sorting now supports recommended ranking, most installed, highest runtime success, lowest risk, and recently reviewed skills.
+- Recommended ranking combines query relevance, verification state, permission risk, success rate, install evidence, rating, and review freshness.
+- Empty-state and reset flows make the catalog usable when buyers combine filters too narrowly.
+- This improves first-visit value because developers can narrow to safe, installable skills faster, and improves publisher motivation because verified, low-risk, reliable skills receive better discovery treatment.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

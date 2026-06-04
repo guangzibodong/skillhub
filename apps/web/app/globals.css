@@ -3008,6 +3008,70 @@ a {
   margin-top: 14px;
 }
 
+.market-filter-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 14px;
+}
+
+.market-filter-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.market-filter-panel__head > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.market-filter-panel__head svg {
+  color: var(--cyan);
+}
+
+.market-filter-group {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+.market-filter-group > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 34px;
+}
+
+.market-filter-group .market-filter-row {
+  margin-top: 0;
+}
+
+.filter-reset-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  border: 1px solid rgba(124, 199, 216, 0.18);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.08);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
 .filter-button {
   min-height: 34px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3023,6 +3087,41 @@ a {
   border-color: rgba(155, 226, 141, 0.28);
   background: rgba(155, 226, 141, 0.12);
   color: var(--signal);
+}
+
+.market-empty-state {
+  display: grid;
+  justify-items: center;
+  min-height: 280px;
+  margin-top: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  padding: 42px 18px;
+  text-align: center;
+}
+
+.market-empty-state svg {
+  color: var(--cyan);
+}
+
+.market-empty-state h3 {
+  margin: 14px 0 0;
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.market-empty-state p {
+  max-width: 520px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.market-empty-state .secondary-button {
+  margin-top: 18px;
 }
 
 .market-card-grid {
@@ -6026,6 +6125,20 @@ a {
 
   .marketplace-ops-strip div:last-child {
     border-bottom: 0;
+  }
+
+  .market-filter-panel__head,
+  .market-filter-group {
+    align-items: flex-start;
+    grid-template-columns: 1fr;
+  }
+
+  .market-filter-panel__head {
+    flex-direction: column;
+  }
+
+  .market-filter-group > span {
+    line-height: 1.2;
   }
 
   .market-publisher-callout,
