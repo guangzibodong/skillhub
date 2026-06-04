@@ -2,7 +2,7 @@
 
 This document is the source of truth for how SkillHub should be built as an operating product.
 
-SkillHub is not only a website. It is a registry, marketplace, runtime gateway, trust system, and payment/ledger system for AI-agent skills.
+SkillHub is not only a website. It is a registry, marketplace, runtime gateway, trust system, notification/event system, and ledger-backed commerce platform for AI-agent skills.
 
 ## Architecture Principles
 
@@ -118,6 +118,20 @@ Owns:
 
 Use a marketplace payment provider such as Stripe Connect for connected accounts and payout movement. SkillHub should record the ledger and state; the provider should handle regulated money movement where possible.
 
+Payment provider API integration should be implemented in the final integration phase. The product and database must still model payment, balance, payout, refund, and dispute states before the provider is connected.
+
+### Notification Domain
+
+Owns:
+
+- Notification events.
+- Email templates.
+- User notification preferences.
+- Review, publish, runtime incident, billing, payout, refund, and dispute notification triggers.
+- Notification delivery state.
+
+Email sending protocol and provider integration should be implemented in the final integration phase. Before that, the system should still record notification events and template state so the product flow is clear.
+
 ## Core Data Model
 
 Already started in migrations:
@@ -149,6 +163,9 @@ payouts
 refunds
 disputes
 admin_audit_logs
+notification_events
+notification_templates
+notification_preferences
 ```
 
 Important rules:
@@ -158,6 +175,7 @@ Important rules:
 - `transactions` are immutable business events. Corrections use `adjustment` or `refund` rows.
 - `publisher_balances` derive from transaction splits and payout state.
 - `admin_audit_logs` must cover skill approvals, takedowns, refunds, disputes, and payout decisions.
+- Notification events should be recorded before an email provider is connected, so business workflows do not depend on a late provider decision.
 
 ## Main User Flows
 
@@ -244,6 +262,7 @@ Target API groups:
 /v1/transactions/*
 /v1/publisher/balances/*
 /v1/payouts/*
+/v1/notifications/*
 /v1/admin/*
 /v1/webhooks/*
 ```
@@ -318,7 +337,9 @@ Future improvements:
 - Add release notes and rollback steps.
 - Add uptime monitoring for app and API health.
 
-## Recommended Build Phases
+## Full Product Build Order
+
+This is not a reduced release plan. It is the order for building the complete product without mixing concerns.
 
 ### Phase 1: Platform Foundation
 
@@ -357,12 +378,25 @@ Future improvements:
 - Publisher balances.
 - Admin finance dashboard.
 
-### Phase 5: Payouts And Compliance
+### Phase 5: Finance, Payout States, And Notifications
+
+- Payment state records.
+- Payout account state.
+- Payout requests.
+- Refund/dispute state.
+- Notification events.
+- Email templates.
+- User notification preferences.
+- Admin finance and notification dashboards.
+
+### Phase 6: Final External Integrations
 
 - Payment provider integration.
 - Connected payout accounts.
 - KYC status.
-- Payout requests.
-- Refunds and disputes.
-- Risk holds.
+- Real payment capture.
+- Real payout movement.
+- Email sending protocol/provider integration.
+- Provider webhook handling.
+- Risk holds from provider signals.
 - Public marketplace terms.

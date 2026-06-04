@@ -169,7 +169,8 @@ Requirements:
 - Usage analytics.
 - Earnings ledger.
 - Payout readiness.
-- Payout history later.
+- Payout history.
+- Notification preferences, with actual email protocol integration deferred until the final integration phase.
 
 ### Developer Dashboard
 
@@ -182,8 +183,9 @@ Requirements:
 - Budgets and rate limits.
 - Usage analytics.
 - Subscriptions.
-- Invoices later.
-- Webhooks later.
+- Invoices.
+- Webhooks.
+- Notification preferences, with actual email protocol integration deferred until the final integration phase.
 
 ### Admin Dashboard
 
@@ -196,8 +198,9 @@ Requirements:
 - Finance ledger.
 - Payout review.
 - Refund/dispute operations.
-- User and org management later.
+- User and org management.
 - Audit stream.
+- Notification/event templates, with actual email protocol integration deferred until the final integration phase.
 
 ## Skill Lifecycle Requirements
 
@@ -343,9 +346,11 @@ High-risk skills require:
 - Clear permission explanation.
 - Stronger audit logging.
 
-## MVP Scope
+## Full Product Scope
 
-The first serious MVP should include:
+SkillHub should be specified as the full operating product from the beginning. We are not defining a reduced version. The implementation can still happen in phases, but the product requirements should remain complete so we do not design ourselves into a corner.
+
+The full product must include:
 
 - Auth.
 - Organizations.
@@ -359,20 +364,45 @@ The first serious MVP should include:
 - Usage event table.
 - Dashboard data from API.
 - Admin review actions.
+- Runtime invocation and metering.
+- Pricing and subscriptions.
+- Transaction ledger.
+- Commission splits.
+- Publisher balances.
+- Payout review.
+- Refunds and disputes.
+- Admin audit logs.
+- Notification/event templates.
 
-MVP can still use mock money movement, but must model the ledger correctly.
+## Deferred Final Integrations
 
-## Not In MVP
+These are product requirements, but the external integrations should be implemented last:
 
-Delay these until the foundation is real:
+- Payment provider API integration.
+- Payment capture.
+- Connected payout account onboarding.
+- Actual provider payout movement.
+- Full tax/KYC automation.
+- Email sending protocol and provider integration.
+
+Even before these integrations are connected, SkillHub must still model:
+
+- Payment states.
+- Payout states.
+- Balance states.
+- Refund/dispute states.
+- Notification triggers.
+- Email template records.
+- Audit logs for every payment, payout, dispute, refund, and notification action.
+
+## Explicit Non-Goals
+
+These should not be part of the first full product build unless we intentionally reopen scope:
 
 - Multi-author revenue splits.
 - Enterprise offline invoicing.
-- Full tax reporting.
-- Automated global payouts.
 - Private enterprise marketplace.
-- Complex agent runtime hosting.
-- Arbitrary local code execution.
+- Arbitrary local code execution without a controlled runtime boundary.
 
 ## Success Metrics
 

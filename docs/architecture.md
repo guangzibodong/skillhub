@@ -6,12 +6,13 @@ Read the full architecture here:
 
 - [Technical Architecture](./technical-architecture.md)
 - [Product Requirements](./product-requirements.md)
+- [Full Build Plan](./full-build-plan.md)
 - [Marketplace Platform Design](./marketplace-platform-design.md)
 - [Marketplace Competitive Research](./marketplace-competitive-research.md)
 
 ## One-Sentence Architecture
 
-SkillHub is a contract-first registry, marketplace, runtime gateway, trust system, and ledger-backed payout platform for AI-agent skills.
+SkillHub is a contract-first registry, marketplace, runtime gateway, trust system, notification/event system, and ledger-backed commerce platform for AI-agent skills.
 
 ## System Layers
 
@@ -37,5 +38,6 @@ Docker Compose on Debian through 1Panel/reverse proxy
 1. Real accounts, organizations, roles, projects, and API keys.
 2. Database-backed skill publishing and review workflow.
 3. Runtime invocation, metering, logs, budgets, and version pins.
-4. Ledger-backed pricing, transactions, splits, and balances.
-5. Payment provider integration, connected payout accounts, refunds, disputes, and payout review.
+4. Ledger-backed pricing, transactions, splits, balances, refunds, and disputes.
+5. Payout and notification states.
+6. Final external integrations: payment provider API and email sending protocol.

@@ -15,19 +15,22 @@ SkillHub is a registry and runtime layer for agent skills. It gives AI agents a 
 - `examples`: reference skill packages.
 - `supabase`: database migrations.
 
-## MVP Scope
+## Product Scope
 
+- Complete product definition first; phased implementation second.
 - Real accounts, organizations, roles, projects, and API keys.
-- Database-backed skill publishing, versions, validation, and review.
+- Database-backed skill publishing, versions, validation, review, and marketplace listings.
 - Search skills by task, tags, permission profile, runtime, and pricing model.
-- Expose agent-friendly discovery and invocation endpoints.
-- Record usage in a ledger-ready way for future billing and payouts.
+- Agent-friendly discovery and invocation endpoints.
+- Usage, transactions, commission splits, balances, payout states, refunds, and disputes.
+- Notification events and templates, with actual email protocol integration handled at the final integration stage.
+- Payment provider and email provider integrations are final-stage external integrations, not early product blockers.
 
 ## Product Documents
 
 - [Product requirements](docs/product-requirements.md)
 - [Technical architecture](docs/technical-architecture.md)
-- [MVP plan](docs/mvp.md)
+- [Full build plan](docs/full-build-plan.md)
 - [Marketplace platform design](docs/marketplace-platform-design.md)
 - [Competitive research](docs/marketplace-competitive-research.md)
 

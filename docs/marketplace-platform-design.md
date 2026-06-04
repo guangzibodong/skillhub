@@ -181,7 +181,11 @@ admin_audit_logs
 webhook_events
 ```
 
-## MVP Order
+## Full Build Order
+
+This is not a reduced release plan. It is the order for building the full platform without mixing product concerns.
+
+Payment provider API integration and email sending protocol integration are intentionally last. The product states, ledger records, payout states, notification events, and admin workflows must still be designed before those providers are connected.
 
 ### Phase 1: Real Platform Foundation
 
@@ -199,20 +203,31 @@ webhook_events
 - Pricing fields on skills.
 - Admin finance dashboard in read-only mode.
 
-### Phase 3: Marketplace Payments
+### Phase 3: Marketplace Finance Model
 
-- Payment provider integration.
-- Connected payout accounts.
 - Platform commission rules.
+- Transactions and transaction splits.
 - Publisher balances.
+- Payout account states.
 - Payout history.
 
-### Phase 4: Production Finance
+### Phase 4: Production Finance And Notifications
 
 - Refunds and disputes.
 - Tax/KYC status.
 - Payout risk review.
 - Automated payout schedule.
+- Notification events and templates.
+- Review, publish, runtime incident, billing, refund, dispute, and payout notification triggers.
+
+### Phase 5: Final External Integrations
+
+- Payment provider API.
+- Connected payout account onboarding.
+- Real payment capture.
+- Real payout movement.
+- Payment provider webhooks.
+- Email sending protocol/provider.
 - Public marketplace terms.
 
 ## Non-Negotiables
