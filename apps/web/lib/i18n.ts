@@ -51,6 +51,7 @@ export const dictionaries = {
       agents: "Agents",
       docs: "Docs",
       dashboard: "Dashboard",
+      publisher: "Publishers",
       admin: "Admin"
     },
     home: {
@@ -402,6 +403,7 @@ export const dictionaries = {
       agents: "智能体",
       docs: "文档",
       dashboard: "工作台",
+      publisher: "发布者",
       admin: "后台"
     },
     home: {

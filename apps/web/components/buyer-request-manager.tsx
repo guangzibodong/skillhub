@@ -14,6 +14,7 @@ import {
 type BuyerRequestManagerProps = {
   developerRequests: BuyerRequestRecord[];
   locale: Locale;
+  mode?: "exchange" | "publisher";
   publisherRequests: BuyerRequestRecord[];
 };
 
@@ -36,6 +37,7 @@ const copy = {
     mine: "My buyer requests",
     noOwner: "Unclaimed",
     publisher: "Demand board",
+    publisherOnlyTitle: "Publisher demand board",
     status: "Status",
     submit: "Submit build",
     title: "Buyer request exchange",
@@ -60,6 +62,7 @@ const copy = {
     mine: "我的买家需求",
     noOwner: "未认领",
     publisher: "需求池",
+    publisherOnlyTitle: "发布者需求池",
     status: "状态",
     submit: "提交构建",
     title: "买家需求交易台",
@@ -92,8 +95,9 @@ const initialState: BuyerRequestActionState = {
   status: "idle"
 };
 
-export function BuyerRequestManager({ developerRequests, locale, publisherRequests }: BuyerRequestManagerProps) {
+export function BuyerRequestManager({ developerRequests, locale, mode = "exchange", publisherRequests }: BuyerRequestManagerProps) {
   const labels = copy[locale];
+  const isPublisherOnly = mode === "publisher";
   const [createState, createAction, isCreating] = useActionState(
     createBuyerRequestAction.bind(null, locale),
     initialState
@@ -112,47 +116,49 @@ export function BuyerRequestManager({ developerRequests, locale, publisherReques
       <div className="buyer-request-manager__head">
         <div className="card-kicker">
           <ClipboardList size={16} aria-hidden="true" />
-          <span>{labels.title}</span>
+          <span>{isPublisherOnly ? labels.publisherOnlyTitle : labels.title}</span>
         </div>
       </div>
 
-      <form action={createAction} className="buyer-request-composer">
-        <label className="buyer-request-composer__wide">
-          <span>{labels.titleField}</span>
-          <input name="title" placeholder="Figma comments to Linear issues" required />
-        </label>
-        <label>
-          <span>{labels.category}</span>
-          <input defaultValue="workflow" name="category" />
-        </label>
-        <label>
-          <span>{labels.bounty}</span>
-          <input defaultValue="600" min="0" name="bounty" step="1" type="number" />
-        </label>
-        <label>
-          <span>{labels.currency}</span>
-          <select defaultValue="usd" name="currency">
-            <option value="usd">USD</option>
-            <option value="cny">CNY</option>
-          </select>
-        </label>
-        <label>
-          <span>{labels.dueAt}</span>
-          <input name="dueAt" type="date" />
-        </label>
-        <label className="buyer-request-composer__wide">
-          <span>{labels.description}</span>
-          <textarea name="description" placeholder="Convert annotated design feedback into scoped engineering tasks." required />
-        </label>
-        <button className="secondary-button" disabled={isCreating} type="submit">
-          <Plus size={15} aria-hidden="true" />
-          <span>{isCreating ? labels.creating : labels.create}</span>
-        </button>
-      </form>
+      {!isPublisherOnly ? (
+        <form action={createAction} className="buyer-request-composer">
+          <label className="buyer-request-composer__wide">
+            <span>{labels.titleField}</span>
+            <input name="title" placeholder="Figma comments to Linear issues" required />
+          </label>
+          <label>
+            <span>{labels.category}</span>
+            <input defaultValue="workflow" name="category" />
+          </label>
+          <label>
+            <span>{labels.bounty}</span>
+            <input defaultValue="600" min="0" name="bounty" step="1" type="number" />
+          </label>
+          <label>
+            <span>{labels.currency}</span>
+            <select defaultValue="usd" name="currency">
+              <option value="usd">USD</option>
+              <option value="cny">CNY</option>
+            </select>
+          </label>
+          <label>
+            <span>{labels.dueAt}</span>
+            <input name="dueAt" type="date" />
+          </label>
+          <label className="buyer-request-composer__wide">
+            <span>{labels.description}</span>
+            <textarea name="description" placeholder="Convert annotated design feedback into scoped engineering tasks." required />
+          </label>
+          <button className="secondary-button" disabled={isCreating} type="submit">
+            <Plus size={15} aria-hidden="true" />
+            <span>{isCreating ? labels.creating : labels.create}</span>
+          </button>
+        </form>
+      ) : null}
 
-      {createState.status !== "idle" ? <ActionMessage state={createState} /> : null}
+      {!isPublisherOnly && createState.status !== "idle" ? <ActionMessage state={createState} /> : null}
 
-      <div className="buyer-request-board">
+      <div className={isPublisherOnly ? "buyer-request-board buyer-request-board--single" : "buyer-request-board"}>
         <section className="buyer-request-board__section">
           <header>
             <strong>{labels.publisher}</strong>
@@ -206,6 +212,7 @@ export function BuyerRequestManager({ developerRequests, locale, publisherReques
           </div>
         </section>
 
+        {!isPublisherOnly ? (
         <section className="buyer-request-board__section">
           <header>
             <strong>{labels.mine}</strong>
@@ -264,6 +271,7 @@ export function BuyerRequestManager({ developerRequests, locale, publisherReques
             )}
           </div>
         </section>
+        ) : null}
       </div>
     </article>
   );

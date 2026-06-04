@@ -244,7 +244,7 @@ Acceptance checks:
 ### Publisher Workspace
 
 - `/publish`: package submission and manifest preflight.
-- Future split: `/publisher`: skills, versions, reviews, runtime checks, analytics, buyer requests, earnings, payout readiness.
+- `/publisher`: dedicated publisher command center for skills, reviews, runtime checks, analytics, buyer requests, earnings, payout readiness, and notification preferences.
 
 ### Platform Admin
 
@@ -345,6 +345,7 @@ Completed:
 - Skill detail pages now expose project-scoped save and install controls, letting developers move a discovered skill into a selected project collection or installed-skill inventory without retyping the slug in the project console.
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 - Developer project creation now lets organization-scoped users create new agent projects from the dashboard, with explicit API validation, organization-local slug uniqueness, audit logging, and in-app notification records.
+- `/publisher` now gives skill authors a dedicated operations workspace for owned skills, review submission, pricing, buyer demand, publisher revenue, refund/dispute watch, payout readiness, account onboarding, and notifications.
 
 Next:
 

@@ -340,6 +340,13 @@ Added tenant-scoped publisher overview, covering:
 - Review pipeline, runtime-check, buyer-request, and balance signals are composed from organization-scoped publisher skill, finance ledger, and buyer-request data.
 - This strengthens publisher trust because a repeat-use dashboard summary now reflects the publisher's own operating backlog, demand opportunities, and revenue state.
 
+Added dedicated publisher workspace, covering:
+
+- `/publisher` now separates skill-author operations from the mixed developer/publisher dashboard.
+- Publishers can manage owned skills, submit reviews, set pricing, claim buyer demand, inspect revenue, watch refunds/disputes, prepare payout accounts, request withdrawals, read notifications, and tune notification preferences from one page.
+- The buyer request exchange now has a publisher-only mode, so skill authors see demand-side actions without developer request creation controls mixed into the workflow.
+- This strengthens repeat visits because publishers have a clear home for "what needs action today" across review, demand, revenue, payout, and trust states.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
