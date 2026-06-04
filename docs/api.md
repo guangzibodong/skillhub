@@ -250,6 +250,8 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/saved-skill
   }'
 ```
 
+The public skill detail page exposes the same project-scoped workflow: developers can choose one of their projects, save the current listing into a named evaluation collection, or install the skill directly into the project's installed-skill inventory. The install action calls `/v1/projects/:projectSlug/installed-skills`; high-permission skills still enter owner-review policy state through the existing project install rules.
+
 Remove a saved skill:
 
 ```bash

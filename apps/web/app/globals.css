@@ -2561,6 +2561,127 @@ a {
   white-space: nowrap;
 }
 
+.skill-project-action-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 18px;
+}
+
+.skill-project-action-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.skill-project-action-panel__title {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.skill-project-action-panel__title strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.skill-project-action-panel__title span,
+.skill-project-action-footnote,
+.skill-project-empty span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.skill-project-action-panel__badges,
+.skill-project-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-project-action-panel__badges {
+  justify-content: flex-end;
+}
+
+.skill-project-action-form {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.3fr) minmax(130px, 0.9fr) minmax(130px, 0.9fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.skill-project-action-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.skill-project-action-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.skill-project-action-form input,
+.skill-project-action-form select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 11px;
+}
+
+.skill-project-action-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.skill-project-action-form input::placeholder {
+  color: #7d8476;
+}
+
+.skill-project-action-buttons {
+  grid-column: 1 / -1;
+}
+
+.skill-project-action-buttons .primary-button,
+.skill-project-action-buttons .secondary-button {
+  min-height: 40px;
+}
+
+.skill-project-empty {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.skill-project-empty svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.skill-project-action-footnote {
+  margin: 0;
+}
+
+.skill-project-action-footnote code {
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+
 .use-case-row {
   display: flex;
   gap: 10px;
@@ -4365,10 +4486,21 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .skill-project-action-form,
   .skill-report-form {
     grid-template-columns: 1fr;
   }
 
+  .skill-project-action-panel__head {
+    flex-direction: column;
+  }
+
+  .skill-project-action-panel__badges {
+    justify-content: flex-start;
+  }
+
+  .skill-project-action-buttons .primary-button,
+  .skill-project-action-buttons .secondary-button,
   .skill-report-form .secondary-button {
     width: 100%;
     justify-content: center;

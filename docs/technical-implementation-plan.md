@@ -340,6 +340,7 @@ Completed:
 - Admin risk operations now expose a trust and takedown queue with decision controls so operators can act on quality, security, privacy, spam, billing, and malicious-runtime reports.
 - Skill detail pages now expose a user-scoped trust report form so security, privacy, quality, billing, malicious-runtime, copyright, spam, and other reports can enter the takedown queue from the public listing.
 - Public marketplace and skill detail pages now read live registry search, manifest, and price endpoints with bundled marketplace content as a safe fallback.
+- Skill detail pages now expose project-scoped save and install controls, letting developers move a discovered skill into a selected project collection or installed-skill inventory without retyping the slug in the project console.
 
 Next:
 

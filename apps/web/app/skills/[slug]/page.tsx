@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
+import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
+import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicMarketplaceSkill } from "@/lib/public-marketplace";
 
 export const dynamic = "force-dynamic";
@@ -92,12 +94,14 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const skill = await getPublicMarketplaceSkill(slug);
+  const [skill, projects] = await Promise.all([getPublicMarketplaceSkill(slug), getDeveloperProjects()]);
   const labels = copy[locale];
 
   if (!skill) {
     notFound();
   }
+
+  const latestVersion = skill.changelog[0]?.version;
 
   const installRows = [
     [labels.cli, skill.installsCommand.cli],
@@ -176,6 +180,14 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 </div>
               ))}
             </div>
+            <SkillProjectActionPanel
+              dashboardHref={localizedHref("/dashboard", locale)}
+              latestVersion={latestVersion}
+              locale={locale}
+              projects={projects}
+              skillName={localizeText(skill.name, locale)}
+              skillSlug={skill.slug}
+            />
           </article>
 
           <article className="skill-detail-panel">

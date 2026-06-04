@@ -291,6 +291,12 @@ Added project saved skills, covering:
 - Each save or removal writes audit and in-app notification records before email delivery exists.
 - This strengthens developer repeat visits because teams can build and revisit evaluation shortlists instead of losing discovery work between sessions.
 
+Added skill detail project actions, covering:
+
+- Developers can choose a project from a public skill detail page and either save the skill for evaluation or install it into the project's installed-skill inventory.
+- The listing-to-project path uses the same organization-scoped saved-skill and install APIs as the project command center, so discovery becomes an operational state change rather than a static marketplace view.
+- This improves second-visit value because a developer's marketplace decisions reappear later in project policy, budget, update, invoice, and runtime-control surfaces.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.
