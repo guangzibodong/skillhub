@@ -323,13 +323,15 @@ Completed:
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
 - Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes update handling controls with notes and schedule dates; adopted and ignored updates leave the active inbox and project update counts.
+- Project invoice endpoints now let project operators list, generate, inspect, and download CSV invoices generated from posted project transactions under organization-scoped authorization.
+- Project detail console now exposes invoice generation, totals, due dates, line item counts, and CSV download links so project finance history is visible before payment-provider invoice APIs are connected.
 
 Next:
 
 - Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project invoice detail views and downloadable invoice records.
+- Organization billing profile and payment-method state modeling.
 
 ## Engineering Acceptance Standard
 

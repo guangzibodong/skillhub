@@ -368,6 +368,25 @@ export type DeveloperProjectSubscriptionRecord = {
   createdAt: string;
 };
 
+export type DeveloperProjectInvoiceRecord = {
+  id: string;
+  projectSlug: string;
+  invoiceNumber: string;
+  status: string;
+  currency: string;
+  periodStart: string;
+  periodEnd: string;
+  subtotalCents: number;
+  taxCents: number;
+  totalCents: number;
+  issuedAt: string | null;
+  dueAt: string | null;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lineItemCount: number;
+};
+
 export type DeveloperProjectDetail = {
   project: DeveloperProjectRecord;
   installedSkills: DeveloperProjectSkillRecord[];
@@ -375,6 +394,7 @@ export type DeveloperProjectDetail = {
   updateInbox: DeveloperProjectUpdateRecord[];
   recentInvocations: DeveloperProjectInvocationRecord[];
   subscriptions: DeveloperProjectSubscriptionRecord[];
+  invoices: DeveloperProjectInvoiceRecord[];
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
@@ -1017,6 +1037,26 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         canceledAt: null,
         updatedAt: "demo",
         createdAt: "demo"
+      }
+    ],
+    invoices: [
+      {
+        id: `demo-invoice-${project.slug}-june`,
+        projectSlug: project.slug,
+        invoiceNumber: `SH-DEMO-${isResearch ? "RESEARCH" : "SUPPORT"}-202606`,
+        status: "issued",
+        currency: "usd",
+        periodStart: "2026-06-01T00:00:00.000Z",
+        periodEnd: "2026-07-01T00:00:00.000Z",
+        subtotalCents: isResearch ? 248000 : 76000,
+        taxCents: 0,
+        totalCents: isResearch ? 248000 : 76000,
+        issuedAt: "demo",
+        dueAt: "demo",
+        paidAt: null,
+        createdAt: "demo",
+        updatedAt: "demo",
+        lineItemCount: isResearch ? 2 : 1
       }
     ]
   };

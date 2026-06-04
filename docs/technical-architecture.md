@@ -154,6 +154,8 @@ publisher_profiles
 skill_reviews
 skill_prices
 subscriptions
+project_invoices
+project_invoice_line_items
 commission_rules
 transactions
 transaction_splits

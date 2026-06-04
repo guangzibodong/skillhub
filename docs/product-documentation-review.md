@@ -265,6 +265,13 @@ Added project update-inbox handling controls, covering:
 - Each update action writes audit and in-app notification records before email delivery exists.
 - Project detail now gives developers and agent operators a concrete repeat-use loop for handling new versions, security notices, deprecations, and incidents instead of letting update warnings become static dashboard noise.
 
+Added project invoice records, covering:
+
+- Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.
+- Invoices are generated from posted `transactions`, not raw usage logs, so finance views remain tied to the immutable ledger.
+- Each invoice generation writes audit and in-app notification records before payment-provider invoice APIs are connected.
+- Project detail now gives developers, finance operators, and organization owners a concrete repeat-use loop for reconciling agent spend, archiving cost records, and preparing internal approvals.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

@@ -120,7 +120,7 @@ curl "https://api.useskillhub.com/v1/developer/projects/research-agent" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, and subscription records. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints.
+The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, subscription records, and invoice summaries. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints.
 
 Read installed skills:
 
@@ -226,6 +226,43 @@ Allowed update action statuses:
 Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Update actions write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
 
 The project detail console at `/dashboard/projects/[slug]` exposes the same policy, install, and update-inbox controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, handle version/security/incidents updates, or remove skills without leaving the workspace.
+
+List generated project invoices:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/invoices" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Generate or refresh an invoice from posted project transactions:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/invoices/generate" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "usd",
+    "periodStart": "2026-06-01T00:00:00.000Z",
+    "periodEnd": "2026-07-01T00:00:00.000Z"
+  }'
+```
+
+Read an invoice with line items:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/invoices/INVOICE_ID" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Download an invoice CSV:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/invoices/INVOICE_ID/download" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -o skillhub-invoice.csv
+```
+
+Invoices are generated from immutable posted `transactions`, not raw invocation logs. Regenerating the same project, period, and currency refreshes the same invoice totals and line items. Generation writes an audit record and in-app notification before payment-provider invoice APIs are connected.
 
 ## Project API Keys
 

@@ -1,5 +1,6 @@
 import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
 import { getSql } from "./registry.js";
+import { listProjectInvoices } from "./project-invoices.js";
 
 type ProjectRow = {
   id: string;
@@ -326,12 +327,13 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
     return null;
   }
 
-  const [installedSkills, apiKeys, updateInbox, recentInvocations, subscriptions] = await Promise.all([
+  const [installedSkills, apiKeys, updateInbox, recentInvocations, subscriptions, invoices] = await Promise.all([
     listProjectSkillDetails(project.slug, scopedOrganizationId),
     listProjectApiKeyDetails(project.slug, scopedOrganizationId),
     listProjectUpdateDetails(project.slug, scopedOrganizationId),
     listRecentProjectInvocations(project.slug, scopedOrganizationId),
-    listProjectSubscriptions(project.slug, scopedOrganizationId)
+    listProjectSubscriptions(project.slug, scopedOrganizationId),
+    listProjectInvoices(project.slug, scopedOrganizationId)
   ]);
 
   return {
@@ -340,7 +342,8 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
     apiKeys,
     updateInbox,
     recentInvocations,
-    subscriptions
+    subscriptions,
+    invoices
   };
 }
 
@@ -637,6 +640,26 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         canceledAt: null,
         updatedAt: "demo",
         createdAt: "demo"
+      }
+    ],
+    invoices: [
+      {
+        id: "demo-invoice-june",
+        projectSlug: project.slug,
+        invoiceNumber: "SH-DEMO-202606",
+        status: "issued",
+        currency: "usd",
+        periodStart: "2026-06-01T00:00:00.000Z",
+        periodEnd: "2026-07-01T00:00:00.000Z",
+        subtotalCents: isResearch ? 248000 : 76000,
+        taxCents: 0,
+        totalCents: isResearch ? 248000 : 76000,
+        issuedAt: "demo",
+        dueAt: "demo",
+        paidAt: null,
+        createdAt: "demo",
+        updatedAt: "demo",
+        lineItemCount: isResearch ? 2 : 1
       }
     ]
   };

@@ -28,6 +28,12 @@ import {
 } from "./runtime.js";
 import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
 import { upsertProjectUpdateAction } from "./project-updates.js";
+import {
+  generateProjectInvoice,
+  getProjectInvoice,
+  invoiceToCsv,
+  listProjectInvoices
+} from "./project-invoices.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
@@ -458,6 +464,91 @@ app.get("/v1/projects/:projectSlug/disputes", async (c) => {
 
   return c.json({
     disputes: await listProjectDisputes(projectSlug, authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.get("/v1/projects/:projectSlug/invoices", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    invoices: await listProjectInvoices(projectSlug, authorization.subject.organizationId, Number(c.req.query("limit") ?? "20"))
+  });
+});
+
+app.post("/v1/projects/:projectSlug/invoices/generate", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        invoice: await generateProjectInvoice(
+          projectSlug,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.organizationId
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to generate project invoice." }, 400);
+  }
+});
+
+app.get("/v1/projects/:projectSlug/invoices/:invoiceId", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const invoice = await getProjectInvoice(projectSlug, c.req.param("invoiceId"), authorization.subject.organizationId);
+
+  if (!invoice) {
+    return c.json({ error: "Invoice not found." }, 404);
+  }
+
+  return c.json({ invoice });
+});
+
+app.get("/v1/projects/:projectSlug/invoices/:invoiceId/download", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const invoice = await getProjectInvoice(projectSlug, c.req.param("invoiceId"), authorization.subject.organizationId);
+
+  if (!invoice) {
+    return c.json({ error: "Invoice not found." }, 404);
+  }
+
+  return new Response(invoiceToCsv(invoice), {
+    headers: {
+      "Content-Disposition": `attachment; filename="${invoice.invoice.invoiceNumber}.csv"`,
+      "Content-Type": "text/csv; charset=utf-8"
+    },
+    status: 200
   });
 });
 

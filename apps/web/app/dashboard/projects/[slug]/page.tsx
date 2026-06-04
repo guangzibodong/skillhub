@@ -14,6 +14,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
+import { ProjectInvoiceManager } from "@/components/project-invoice-manager";
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
 import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
@@ -59,6 +60,7 @@ const copy = {
     callHeaders: ["Skill", "Status", "Latency", "Error"],
     billingTitle: "Subscriptions and billing",
     billingHeaders: ["Skill", "Status", "Model", "Period"],
+    invoicesTitle: "Invoices",
     empty: "No records yet",
     noDate: "n/a",
     approved: "Approved",
@@ -90,6 +92,7 @@ const copy = {
     callHeaders: ["技能", "状态", "延迟", "错误"],
     billingTitle: "订阅与计费",
     billingHeaders: ["技能", "状态", "模式", "周期"],
+    invoicesTitle: "发票",
     empty: "暂无记录",
     noDate: "暂无",
     approved: "已批准",
@@ -251,6 +254,15 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             projectSlug={project.slug}
             subscriptions={detail.subscriptions}
             titleLabel={labels.billingTitle}
+          />
+
+          <ProjectInvoiceManager
+            emptyLabel={labels.empty}
+            invoices={detail.invoices}
+            locale={locale}
+            noDateLabel={labels.noDate}
+            projectSlug={project.slug}
+            titleLabel={labels.invoicesTitle}
           />
         </aside>
       </section>
