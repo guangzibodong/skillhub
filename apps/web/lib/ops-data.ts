@@ -200,6 +200,49 @@ export type PublisherSkillRecord = {
   updatedAt: string;
 };
 
+export type DeveloperProjectRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  apiKeys: {
+    activeCount: number;
+    revokedCount: number;
+  };
+  installs: {
+    installedSkillCount: number;
+    approvedSkillCount: number;
+    ownerRequiredCount: number;
+    suspendedInstallCount: number;
+  };
+  policy: {
+    policyCount: number;
+    approvalRequiredCount: number;
+    monthlyBudgetCents: number;
+    state: "approved" | "owner_review" | "suspended";
+  };
+  runtime: {
+    callCount: number;
+    successCount: number;
+    errorCount: number;
+    blockedCount: number;
+    successRate: number | null;
+    avgLatencyMs: number | null;
+  };
+  usage: {
+    billableUsageCount: number;
+    grossCents: number;
+    currency: string;
+  };
+  subscriptions: {
+    activeCount: number;
+  };
+  updates: {
+    count: number;
+    latestAt: string | null;
+  };
+  createdAt: string;
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackLedger: FinanceLedger = {
@@ -495,6 +538,93 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
   }
 ];
 
+const fallbackDeveloperProjects: DeveloperProjectRecord[] = [
+  {
+    id: "demo-project-research",
+    slug: "research-agent",
+    name: "Research Agent",
+    apiKeys: {
+      activeCount: 2,
+      revokedCount: 1
+    },
+    installs: {
+      installedSkillCount: 8,
+      approvedSkillCount: 7,
+      ownerRequiredCount: 1,
+      suspendedInstallCount: 0
+    },
+    policy: {
+      policyCount: 8,
+      approvalRequiredCount: 1,
+      monthlyBudgetCents: 48000,
+      state: "owner_review"
+    },
+    runtime: {
+      callCount: 18400,
+      successCount: 17664,
+      errorCount: 642,
+      blockedCount: 94,
+      successRate: 0.96,
+      avgLatencyMs: 1280
+    },
+    usage: {
+      billableUsageCount: 12400,
+      grossCents: 248000,
+      currency: "usd"
+    },
+    subscriptions: {
+      activeCount: 3
+    },
+    updates: {
+      count: 2,
+      latestAt: "demo"
+    },
+    createdAt: "demo"
+  },
+  {
+    id: "demo-project-support",
+    slug: "support-agent",
+    name: "Support Agent",
+    apiKeys: {
+      activeCount: 1,
+      revokedCount: 0
+    },
+    installs: {
+      installedSkillCount: 5,
+      approvedSkillCount: 5,
+      ownerRequiredCount: 0,
+      suspendedInstallCount: 0
+    },
+    policy: {
+      policyCount: 5,
+      approvalRequiredCount: 0,
+      monthlyBudgetCents: 12000,
+      state: "approved"
+    },
+    runtime: {
+      callCount: 9200,
+      successCount: 8832,
+      errorCount: 318,
+      blockedCount: 50,
+      successRate: 0.96,
+      avgLatencyMs: 940
+    },
+    usage: {
+      billableUsageCount: 0,
+      grossCents: 0,
+      currency: "usd"
+    },
+    subscriptions: {
+      activeCount: 1
+    },
+    updates: {
+      count: 1,
+      latestAt: "demo"
+    },
+    createdAt: "demo"
+  }
+];
+
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 
@@ -648,6 +778,32 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
   }
 }
 
+export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackDeveloperProjects;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/developer/projects?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Developer projects failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { projects: DeveloperProjectRecord[] };
+    return payload.projects;
+  } catch {
+    return fallbackDeveloperProjects;
+  }
+}
+
 export async function getPublisherRefunds(): Promise<RefundRecord[]> {
   const token = getWorkspaceToken();
 
@@ -769,6 +925,13 @@ export function formatPercent(value: number | null | undefined) {
     maximumFractionDigits: 0,
     style: "percent"
   }).format(value);
+}
+
+export function formatCompactNumber(value: number | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    notation: "compact"
+  }).format(value ?? 0);
 }
 
 function getWorkspaceToken() {

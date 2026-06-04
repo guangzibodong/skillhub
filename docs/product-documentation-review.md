@@ -205,6 +205,12 @@ Added publisher skill operations analytics, covering:
 - Aggregated publisher signals for review, runtime checks, installs, calls, success/error/blocked counts, latency, billable usage, pricing, and quality checklist.
 - Dashboard publishing pipeline now reads owned skill operations data, giving publishers a concrete reason to return and improve listings.
 
+Added developer project operations analytics, covering:
+
+- Developer read-only projects endpoint scoped by authorized organization.
+- Aggregated project signals for API keys, installed skills, approvals, policies, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
+- Dashboard buyer project controls now read project operations data, giving developers a concrete reason to return and manage agent project risk and cost.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

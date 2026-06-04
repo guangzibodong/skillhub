@@ -305,13 +305,15 @@ Completed:
 - Publisher skill operations endpoint aggregating owned skills, review state, runtime checks, installs, calls, success rate, latency, billable usage, pricing, and quality checklist.
 - Publisher skill publishing, review submission, and price writes now scope to the authorized subject organization and reject cross-organization slug ownership.
 - Publisher dashboard publishing pipeline reads owned skill operations data instead of static rows.
+- Developer project operations endpoint aggregating organization-scoped projects, API keys, installs, approvals, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
+- Dashboard buyer project controls now read developer project operations data instead of static rows.
 
 Next:
 
 - Tenant-scoped ownership enforcement for remaining publisher read and write surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Developer project analytics views for installs, calls, errors, latency, budgets, subscriptions, and update handling.
+- Project detail pages for per-skill budgets, version pins, API key rotation, update handling, invoices, and runtime logs.
 
 ## Engineering Acceptance Standard
 

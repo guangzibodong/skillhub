@@ -104,6 +104,15 @@ Project writes are organization scoped. When a user token installs a skill, upda
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.
 
+Read the developer project operations view:
+
+```bash
+curl "https://api.useskillhub.com/v1/developer/projects?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The response is scoped to the token organization and includes each project with active/revoked API key counts, installed/approved/owner-review skill counts, policy count, monthly budget, runtime calls, success/error/blocked counts, average latency, billable usage, gross usage cost, active subscriptions, and update-inbox count.
+
 Read installed skills:
 
 ```bash

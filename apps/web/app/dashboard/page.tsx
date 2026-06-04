@@ -17,8 +17,10 @@ import {
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
+  formatCompactNumber,
   formatMoney,
   formatPercent,
+  getDeveloperProjects,
   getFinanceLedger,
   getPublisherAccountSummary,
   getPublisherDisputes,
@@ -97,12 +99,22 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const [overview, financeLedger, payoutSummary, publisherAccount, publisherSkills, publisherRefunds, publisherDisputes] = await Promise.all([
+  const [
+    overview,
+    financeLedger,
+    payoutSummary,
+    publisherAccount,
+    publisherSkills,
+    developerProjects,
+    publisherRefunds,
+    publisherDisputes
+  ] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
     getPublisherPayoutSummary(),
     getPublisherAccountSummary(),
     getPublisherSkills(),
+    getDeveloperProjects(),
     getPublisherRefunds(),
     getPublisherDisputes()
   ]);
@@ -147,6 +159,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           getPublisherNextStep(skill.runtime.health, skill.pricing.status, skill.analytics.callCount, locale)
         ])
       : ops.pipelineRows;
+  const developerProjectRows =
+    developerProjects.length > 0
+      ? developerProjects.slice(0, 6).map((project) => [
+          project.name,
+          `${formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)} / ${formatCompactNumber(project.runtime.callCount)} calls`,
+          `${project.apiKeys.activeCount} active / ${project.apiKeys.revokedCount} revoked`,
+          `${project.policy.state} / ${project.updates.count} updates`
+        ])
+      : ops.projectRows;
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
@@ -272,7 +293,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {ops.projectRows.map(([project, budget, keys, policy]) => (
+            {developerProjectRows.map(([project, budget, keys, policy]) => (
               <div className="work-table__row" key={project}>
                 <strong>{project}</strong>
                 <span>{budget}</span>
