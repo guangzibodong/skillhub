@@ -347,6 +347,13 @@ Added dedicated publisher workspace, covering:
 - The buyer request exchange now has a publisher-only mode, so skill authors see demand-side actions without developer request creation controls mixed into the workflow.
 - This strengthens repeat visits because publishers have a clear home for "what needs action today" across review, demand, revenue, payout, and trust states.
 
+Added dedicated developer workspace, covering:
+
+- `/developer` now separates agent-operator workflows from the mixed developer/publisher dashboard.
+- Developers can create projects, drill into project command centers, monitor installed-skill/key/budget/runtime signals, create and manage buyer requests, maintain billing readiness, read notifications, and tune notification preferences from one page.
+- The buyer request exchange now has a developer-only mode, so skill buyers can publish demand and decide their own requests without publisher claim controls mixed into the workflow.
+- This strengthens repeat visits because developers have a clear home for "what needs action today" across projects, keys, approvals, usage, demand, billing, and notifications.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

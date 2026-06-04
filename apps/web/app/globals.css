@@ -1232,6 +1232,10 @@ a {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.trust-requirement-grid--single {
+  grid-template-columns: 1fr;
+}
+
 .marketplace-layout,
 .auth-layout,
 .console-board,
@@ -1527,6 +1531,7 @@ a {
   min-width: 0;
 }
 
+.developer-command-layout,
 .publisher-command-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(370px, 410px);
@@ -1536,6 +1541,8 @@ a {
   margin: 18px auto 72px;
 }
 
+.developer-command-main,
+.developer-command-side,
 .publisher-command-main,
 .publisher-command-side {
   display: grid;
@@ -1543,16 +1550,19 @@ a {
   min-width: 0;
 }
 
+.developer-command-side,
 .publisher-command-side {
   align-content: start;
 }
 
+.developer-metric,
 .publisher-metric {
   display: grid;
   gap: 7px;
   align-content: center;
 }
 
+.developer-metric svg,
 .publisher-metric svg {
   color: var(--cyan);
 }
@@ -1588,6 +1598,21 @@ a {
 }
 
 .ledger-row--empty {
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+
+.developer-project-row {
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(150px, 0.72fr)
+    minmax(136px, 0.58fr)
+    minmax(108px, 0.42fr)
+    minmax(150px, 0.72fr);
+  min-width: 840px;
+}
+
+.developer-project-row--empty {
   grid-template-columns: 1fr;
   min-width: 0;
 }
@@ -4813,6 +4838,7 @@ a {
   .market-operations-layout,
   .skill-detail-layout,
   .project-detail-layout,
+  .developer-command-layout,
   .publisher-command-layout,
   .schema-grid,
   .security-grid,
@@ -4919,6 +4945,7 @@ a {
   .skill-detail-layout,
   .project-detail-hero,
   .project-detail-layout,
+  .developer-command-layout,
   .publisher-command-layout,
   .workspace-ops-layout {
     width: min(100% - 28px, 1220px);

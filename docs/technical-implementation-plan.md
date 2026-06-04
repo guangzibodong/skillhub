@@ -239,6 +239,7 @@ Acceptance checks:
 ### Developer Workspace
 
 - `/dashboard`: project list, installed skills, budgets, API keys, usage, invoices, update inbox.
+- `/developer`: dedicated developer command center for projects, runtime keys, installed skills, budgets, buyer requests, billing readiness, and notifications.
 - `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, update inbox, recent runtime calls, subscriptions, and operational next actions.
 
 ### Publisher Workspace
@@ -346,6 +347,7 @@ Completed:
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 - Developer project creation now lets organization-scoped users create new agent projects from the dashboard, with explicit API validation, organization-local slug uniqueness, audit logging, and in-app notification records.
 - `/publisher` now gives skill authors a dedicated operations workspace for owned skills, review submission, pricing, buyer demand, publisher revenue, refund/dispute watch, payout readiness, account onboarding, and notifications.
+- `/developer` now gives skill buyers and agent operators a dedicated workspace for project creation, project drill-down, installed-skill/key/budget signals, buyer requests, billing readiness, notification inbox, and next operational actions.
 
 Next:
 

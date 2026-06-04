@@ -14,7 +14,7 @@ import {
 type BuyerRequestManagerProps = {
   developerRequests: BuyerRequestRecord[];
   locale: Locale;
-  mode?: "exchange" | "publisher";
+  mode?: "developer" | "exchange" | "publisher";
   publisherRequests: BuyerRequestRecord[];
 };
 
@@ -30,6 +30,7 @@ const copy = {
     currency: "Currency",
     decideReason: "Decision note",
     description: "Outcome",
+    developerOnlyTitle: "Developer request board",
     dueAt: "Due date",
     emptyDeveloper: "No buyer requests opened by this workspace.",
     emptyPublisher: "No open or assigned buyer requests.",
@@ -55,6 +56,7 @@ const copy = {
     currency: "币种",
     decideReason: "处理备注",
     description: "交付结果",
+    developerOnlyTitle: "开发者需求板",
     dueAt: "截止日期",
     emptyDeveloper: "当前工作区还没有发布买家需求。",
     emptyPublisher: "暂无开放或已分配的买家需求。",
@@ -97,7 +99,9 @@ const initialState: BuyerRequestActionState = {
 
 export function BuyerRequestManager({ developerRequests, locale, mode = "exchange", publisherRequests }: BuyerRequestManagerProps) {
   const labels = copy[locale];
+  const isDeveloperOnly = mode === "developer";
   const isPublisherOnly = mode === "publisher";
+  const title = isPublisherOnly ? labels.publisherOnlyTitle : isDeveloperOnly ? labels.developerOnlyTitle : labels.title;
   const [createState, createAction, isCreating] = useActionState(
     createBuyerRequestAction.bind(null, locale),
     initialState
@@ -116,7 +120,7 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
       <div className="buyer-request-manager__head">
         <div className="card-kicker">
           <ClipboardList size={16} aria-hidden="true" />
-          <span>{isPublisherOnly ? labels.publisherOnlyTitle : labels.title}</span>
+          <span>{title}</span>
         </div>
       </div>
 
@@ -158,7 +162,8 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
 
       {!isPublisherOnly && createState.status !== "idle" ? <ActionMessage state={createState} /> : null}
 
-      <div className={isPublisherOnly ? "buyer-request-board buyer-request-board--single" : "buyer-request-board"}>
+      <div className={isPublisherOnly || isDeveloperOnly ? "buyer-request-board buyer-request-board--single" : "buyer-request-board"}>
+        {!isDeveloperOnly ? (
         <section className="buyer-request-board__section">
           <header>
             <strong>{labels.publisher}</strong>
@@ -211,6 +216,7 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
             )}
           </div>
         </section>
+        ) : null}
 
         {!isPublisherOnly ? (
         <section className="buyer-request-board__section">
