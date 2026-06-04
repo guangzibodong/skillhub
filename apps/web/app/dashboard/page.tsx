@@ -10,6 +10,8 @@ import {
   LockKeyhole,
   PackageCheck,
   RadioTower,
+  RotateCcw,
+  ShieldAlert,
   WalletCards
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -18,7 +20,9 @@ import {
   formatMoney,
   getFinanceLedger,
   getPublisherAccountSummary,
-  getPublisherPayoutSummary
+  getPublisherDisputes,
+  getPublisherPayoutSummary,
+  getPublisherRefunds
 } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
@@ -52,7 +56,10 @@ const opsCopy = {
       ["Rate limits", "Project-scoped keys with monthly budgets"],
       ["Version pinning", "Agents can pin exact skill versions before execution"],
       ["Webhook events", "Skill review, billing, payout, and runtime incident events"]
-    ]
+    ],
+    adjustmentTitle: "Revenue adjustments",
+    adjustmentHeaders: ["Type", "Skill", "Project", "Amount", "Status"],
+    adjustmentEmpty: "No recent refund or dispute activity"
   },
   zh: {
     pipelineTitle: "发布流水线",
@@ -74,7 +81,10 @@ const opsCopy = {
       ["速率限制", "项目级 API Key 和月度预算"],
       ["版本固定", "智能体执行前可固定具体技能版本"],
       ["Webhook 事件", "技能审核、计费、提现和运行事故事件"]
-    ]
+    ],
+    adjustmentTitle: "收入调整",
+    adjustmentHeaders: ["类型", "技能", "项目", "金额", "状态"],
+    adjustmentEmpty: "暂无退款或争议记录"
   }
 } as const;
 
@@ -85,11 +95,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const [overview, financeLedger, payoutSummary, publisherAccount] = await Promise.all([
+  const [overview, financeLedger, payoutSummary, publisherAccount, publisherRefunds, publisherDisputes] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
     getPublisherPayoutSummary(),
-    getPublisherAccountSummary()
+    getPublisherAccountSummary(),
+    getPublisherRefunds(),
+    getPublisherDisputes()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
@@ -123,6 +135,26 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
     ]
   ];
+  const adjustmentRows = [
+    ...publisherRefunds.slice(0, 4).map((refund) => ({
+      amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
+      id: refund.id,
+      project: refund.projectSlug ?? "unknown-project",
+      reason: refund.reason ?? refund.providerReference ?? "Refund review",
+      skill: refund.skillName ?? refund.transactionId ?? refund.id,
+      status: refund.status,
+      type: "Refund"
+    })),
+    ...publisherDisputes.slice(0, 4).map((dispute) => ({
+      amount: formatMoney(dispute.amountCents, dispute.currency),
+      id: dispute.id,
+      project: dispute.projectSlug ?? "unknown-project",
+      reason: dispute.reason ?? dispute.externalReference ?? "Dispute review",
+      skill: dispute.skillName ?? dispute.transactionId ?? dispute.id,
+      status: dispute.status,
+      type: "Dispute"
+    }))
+  ].slice(0, 6);
 
   return (
     <main className="product-shell">
@@ -279,6 +311,46 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             ))}
           </div>
         </aside>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom workspace-ops-layout--adjustments">
+        <article className="ops-panel work-table-panel">
+          <div className="card-kicker">
+            <RotateCcw size={16} aria-hidden="true" />
+            <span>{ops.adjustmentTitle}</span>
+          </div>
+          <div className="work-table work-table--adjustments">
+            <div className="work-table__row work-table__row--head adjustment-row">
+              {ops.adjustmentHeaders.map((header) => (
+                <span key={header}>{header}</span>
+              ))}
+            </div>
+            {adjustmentRows.length > 0 ? (
+              adjustmentRows.map((adjustment) => {
+                const Icon = adjustment.type === "Refund" ? RotateCcw : ShieldAlert;
+
+                return (
+                  <div className="work-table__row adjustment-row" key={`${adjustment.type}-${adjustment.id}`}>
+                    <strong className="adjustment-kind">
+                      <Icon size={15} aria-hidden="true" />
+                      <span>{adjustment.type}</span>
+                    </strong>
+                    <span>{adjustment.skill}</span>
+                    <span>{adjustment.project}</span>
+                    <span>{adjustment.amount}</span>
+                    <span className="status-chip" title={adjustment.reason}>
+                      {adjustment.status}
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="work-table__row adjustment-row adjustment-row--empty">
+                <strong>{ops.adjustmentEmpty}</strong>
+              </div>
+            )}
+          </div>
+        </article>
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">

@@ -223,6 +223,7 @@ Requirements:
 - Pricing setup.
 - Usage analytics.
 - Earnings ledger.
+- Refund and dispute impact history.
 - Payout readiness.
 - Payout history.
 - Notification preferences, with actual email protocol integration deferred until the final integration phase.
@@ -243,6 +244,7 @@ Requirements:
 - Usage analytics.
 - Subscriptions.
 - Invoices.
+- Project-level refund and dispute history.
 - Webhooks.
 - Notification preferences, with actual email protocol integration deferred until the final integration phase.
 - Installed skills by project.

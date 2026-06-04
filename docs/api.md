@@ -456,6 +456,24 @@ curl -X POST "https://api.useskillhub.com/v1/admin/finance/disputes/$DISPUTE_ID/
 
 If a dispute is marked `lost` and `postRefund` is not false, SkillHub creates and posts the corresponding refund adjustment automatically. Every refund and dispute state change records admin audit and queued notification events.
 
+Publisher and developer-facing history is read-only and tenant scoped. Publishers see adjustment records for skills owned by their organization; project operators see adjustment records for their own project.
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/refunds?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl "https://api.useskillhub.com/v1/publisher/disputes?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl "https://api.useskillhub.com/v1/projects/research-agent/refunds?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl "https://api.useskillhub.com/v1/projects/research-agent/disputes?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+These endpoints return transaction, skill, project, amount, status, reason, and provider/reference fields. They do not create money movement; finance users still operate refund and dispute decisions through `/v1/admin/finance/*`.
+
 ## Admin Notifications
 
 Notification events are recorded before the final email provider is connected. Admin can inspect queued, sent, failed, and skipped events:

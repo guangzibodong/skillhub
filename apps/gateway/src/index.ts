@@ -51,7 +51,11 @@ import {
   decideDispute,
   decideRefund,
   listAdminDisputes,
-  listAdminRefunds
+  listAdminRefunds,
+  listProjectDisputes,
+  listProjectRefunds,
+  listPublisherDisputes,
+  listPublisherRefunds
 } from "./adjustments.js";
 import {
   authorize,
@@ -242,6 +246,38 @@ app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
 app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
   return c.json({
     updates: await listProjectUpdateInbox(c.req.param("projectSlug"))
+  });
+});
+
+app.get("/v1/projects/:projectSlug/refunds", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    refunds: await listProjectRefunds(projectSlug, authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.get("/v1/projects/:projectSlug/disputes", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    disputes: await listProjectDisputes(projectSlug, authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
 });
 
@@ -496,6 +532,34 @@ app.get("/v1/publisher/payouts", async (c) => {
   return c.json(
     await getPublisherPayoutSummary(c.req.query("publisherProfileId") ?? undefined, authorization.subject.organizationId)
   );
+});
+
+app.get("/v1/publisher/refunds", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    refunds: await listPublisherRefunds(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.get("/v1/publisher/disputes", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    disputes: await listPublisherDisputes(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
 });
 
 app.post("/v1/publisher/payouts", async (c) => {

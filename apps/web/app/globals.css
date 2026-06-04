@@ -2264,6 +2264,10 @@ a {
   margin-bottom: 72px;
 }
 
+.workspace-ops-layout--adjustments {
+  margin-bottom: 18px;
+}
+
 .work-table,
 .money-table {
   display: grid;
@@ -2285,6 +2289,36 @@ a {
 .work-table__row {
   grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.55fr) minmax(110px, 0.42fr) minmax(190px, 0.8fr);
   min-width: 760px;
+}
+
+.adjustment-row {
+  grid-template-columns:
+    minmax(120px, 0.45fr)
+    minmax(180px, 1fr)
+    minmax(140px, 0.55fr)
+    minmax(100px, 0.4fr)
+    minmax(130px, 0.45fr);
+  min-width: 820px;
+}
+
+.adjustment-kind {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.adjustment-kind svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.adjustment-row--empty {
+  grid-template-columns: 1fr;
+  min-width: 0;
+}
+
+.adjustment-row--empty strong {
+  white-space: normal;
 }
 
 .money-table__row {

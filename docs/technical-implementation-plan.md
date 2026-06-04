@@ -299,13 +299,16 @@ Completed:
 - Publisher profile and payout-account onboarding endpoints.
 - Provider-deferred onboarding session records for payout handoff, completion, blocking, audit, and notifications.
 - Publisher dashboard reads payout account and onboarding state.
+- Publisher-scoped refund and dispute history endpoints.
+- Project-scoped refund and dispute history endpoints for developer operators.
+- Publisher dashboard shows recent refund and dispute activity beside ledger and payout readiness.
 
 Next:
 
 - Tenant-scoped route ownership enforcement for publisher resources and read surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Publisher/developer-facing refund and dispute history views.
+- Publisher and developer analytics views for installs, calls, errors, latency, demand signals, and listing quality.
 
 ## Engineering Acceptance Standard
 

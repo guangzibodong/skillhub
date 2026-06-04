@@ -36,6 +36,14 @@ type DisputeDecisionInput = {
   postRefund?: boolean;
 };
 
+type AdjustmentListFilter = {
+  refundId?: string;
+  disputeId?: string;
+  publisherOrganizationId?: string | null;
+  projectOrganizationId?: string | null;
+  projectSlug?: string | null;
+};
+
 type SourceTransaction = {
   id: string;
   projectId: string | null;
@@ -71,6 +79,7 @@ const fallbackRefunds = [
     transactionId: "demo-usage-browser-research",
     adjustmentTransactionId: null,
     skillName: "Browser Research",
+    projectSlug: "research-agent",
     amountCents: 9600,
     currency: "usd",
     status: "requested",
@@ -88,6 +97,7 @@ const fallbackDisputes = [
     id: "demo-dispute-warning",
     transactionId: "demo-usage-support-triage",
     skillName: "Support Triage",
+    projectSlug: "support-agent",
     amountCents: 7600,
     currency: "usd",
     status: "warning_needs_response",
@@ -108,6 +118,26 @@ export async function listAdminRefunds(limit = 50) {
   }
 
   return listRefundRows(sql, limit);
+}
+
+export async function listPublisherRefunds(organizationId: string | null | undefined, limit = 50) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return fallbackRefunds;
+  }
+
+  return listRefundRows(sql, limit, { publisherOrganizationId: organizationId });
+}
+
+export async function listProjectRefunds(projectSlug: string, organizationId: string | null | undefined, limit = 50) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return fallbackRefunds.filter((refund) => refund.projectSlug === projectSlug);
+  }
+
+  return listRefundRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });
 }
 
 export async function createRefundRequest(input: RefundInput) {
@@ -157,7 +187,7 @@ export async function createRefundRequest(input: RefundInput) {
       currency: transaction.currency
     });
 
-    const refundRows = await listRefundRows(tx, 1, refundId);
+    const refundRows = await listRefundRows(tx, 1, { refundId });
     return refundRows[0];
   });
 }
@@ -225,7 +255,7 @@ export async function decideRefund(refundId: string, input: RefundDecisionInput)
       providerReference: input.providerReference ?? null
     });
 
-    const refundRows = await listRefundRows(tx, 1, refundId);
+    const refundRows = await listRefundRows(tx, 1, { refundId });
     return refundRows[0];
   });
 }
@@ -238,6 +268,26 @@ export async function listAdminDisputes(limit = 50) {
   }
 
   return listDisputeRows(sql, limit);
+}
+
+export async function listPublisherDisputes(organizationId: string | null | undefined, limit = 50) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return fallbackDisputes;
+  }
+
+  return listDisputeRows(sql, limit, { publisherOrganizationId: organizationId });
+}
+
+export async function listProjectDisputes(projectSlug: string, organizationId: string | null | undefined, limit = 50) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return fallbackDisputes.filter((dispute) => dispute.projectSlug === projectSlug);
+  }
+
+  return listDisputeRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });
 }
 
 export async function createDispute(input: DisputeInput) {
@@ -295,7 +345,7 @@ export async function createDispute(input: DisputeInput) {
       status
     });
 
-    const disputeRows = await listDisputeRows(tx, 1, disputeId);
+    const disputeRows = await listDisputeRows(tx, 1, { disputeId });
     return disputeRows[0];
   });
 }
@@ -372,7 +422,7 @@ export async function decideDispute(disputeId: string, input: DisputeDecisionInp
       refundId
     });
 
-    const rows = await listDisputeRows(tx, 1, disputeId);
+    const rows = await listDisputeRows(tx, 1, { disputeId });
     return {
       ...rows[0],
       refundId
@@ -544,8 +594,12 @@ async function postRefundAdjustment(
   return adjustmentTransactionId;
 }
 
-async function listRefundRows(sql: Sql, limit = 50, refundId?: string) {
+async function listRefundRows(sql: Sql, limit = 50, filter: AdjustmentListFilter = {}) {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  const refundId = filter.refundId ?? null;
+  const publisherOrganizationId = filter.publisherOrganizationId ?? null;
+  const projectOrganizationId = filter.projectOrganizationId ?? null;
+  const projectSlug = filter.projectSlug ?? null;
 
   return sql`
     select
@@ -553,6 +607,7 @@ async function listRefundRows(sql: Sql, limit = 50, refundId?: string) {
       r.transaction_id::text as "transactionId",
       r.adjustment_transaction_id::text as "adjustmentTransactionId",
       s.display_name as "skillName",
+      p.slug as "projectSlug",
       r.amount_cents as "amountCents",
       r.currency,
       r.status,
@@ -565,20 +620,29 @@ async function listRefundRows(sql: Sql, limit = 50, refundId?: string) {
     from refunds r
     left join transactions t on t.id = r.transaction_id
     left join skills s on s.id = t.skill_id
-    where (${refundId ?? null}::uuid is null or r.id = ${refundId ?? null})
+    left join projects p on p.id = t.project_id
+    where (${refundId}::uuid is null or r.id = ${refundId})
+      and (${publisherOrganizationId}::uuid is null or s.organization_id = ${publisherOrganizationId})
+      and (${projectOrganizationId}::uuid is null or p.organization_id = ${projectOrganizationId})
+      and (${projectSlug}::text is null or p.slug = ${projectSlug})
     order by r.created_at desc
     limit ${safeLimit}
   `;
 }
 
-async function listDisputeRows(sql: Sql, limit = 50, disputeId?: string) {
+async function listDisputeRows(sql: Sql, limit = 50, filter: AdjustmentListFilter = {}) {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  const disputeId = filter.disputeId ?? null;
+  const publisherOrganizationId = filter.publisherOrganizationId ?? null;
+  const projectOrganizationId = filter.projectOrganizationId ?? null;
+  const projectSlug = filter.projectSlug ?? null;
 
   return sql`
     select
       d.id::text,
       d.transaction_id::text as "transactionId",
       s.display_name as "skillName",
+      p.slug as "projectSlug",
       d.amount_cents as "amountCents",
       d.currency,
       d.status,
@@ -591,7 +655,11 @@ async function listDisputeRows(sql: Sql, limit = 50, disputeId?: string) {
     from disputes d
     left join transactions t on t.id = d.transaction_id
     left join skills s on s.id = t.skill_id
-    where (${disputeId ?? null}::uuid is null or d.id = ${disputeId ?? null})
+    left join projects p on p.id = t.project_id
+    where (${disputeId}::uuid is null or d.id = ${disputeId})
+      and (${publisherOrganizationId}::uuid is null or s.organization_id = ${publisherOrganizationId})
+      and (${projectOrganizationId}::uuid is null or p.organization_id = ${projectOrganizationId})
+      and (${projectSlug}::text is null or p.slug = ${projectSlug})
     order by d.created_at desc
     limit ${safeLimit}
   `;

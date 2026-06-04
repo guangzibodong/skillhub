@@ -120,6 +120,7 @@ export type RefundRecord = {
   transactionId: string | null;
   adjustmentTransactionId: string | null;
   skillName: string | null;
+  projectSlug: string | null;
   amountCents: number;
   currency: string;
   status: "requested" | "approved" | "posted" | "rejected" | "failed";
@@ -135,6 +136,7 @@ export type DisputeRecord = {
   id: string;
   transactionId: string | null;
   skillName: string | null;
+  projectSlug: string | null;
   amountCents: number;
   currency: string;
   status: "open" | "won" | "lost" | "warning_needs_response";
@@ -301,6 +303,7 @@ const fallbackRefunds: RefundRecord[] = [
     transactionId: "demo-usage-browser-research",
     adjustmentTransactionId: null,
     skillName: "Browser Research",
+    projectSlug: "research-agent",
     amountCents: 9600,
     currency: "usd",
     status: "requested",
@@ -318,6 +321,7 @@ const fallbackDisputes: DisputeRecord[] = [
     id: "demo-dispute-warning",
     transactionId: "demo-usage-support-triage",
     skillName: "Support Triage",
+    projectSlug: "support-agent",
     amountCents: 7600,
     currency: "usd",
     status: "warning_needs_response",
@@ -408,7 +412,7 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
 }
 
 export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummary> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = getWorkspaceToken();
 
   if (!token) {
     return fallbackPublisherPayoutSummary;
@@ -433,7 +437,7 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
 }
 
 export async function getPublisherAccountSummary(): Promise<PublisherAccountSummary> {
-  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+  const token = getWorkspaceToken();
 
   if (!token) {
     return fallbackPublisherAccountSummary;
@@ -454,6 +458,58 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
     return (await response.json()) as PublisherAccountSummary;
   } catch {
     return fallbackPublisherAccountSummary;
+  }
+}
+
+export async function getPublisherRefunds(): Promise<RefundRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackRefunds;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/refunds?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher refunds failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { refunds: RefundRecord[] };
+    return payload.refunds;
+  } catch {
+    return fallbackRefunds;
+  }
+}
+
+export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackDisputes;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/disputes?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher disputes failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { disputes: DisputeRecord[] };
+    return payload.disputes;
+  } catch {
+    return fallbackDisputes;
   }
 }
 
@@ -515,4 +571,8 @@ export function formatMoney(cents: number | null | undefined, currency = "usd") 
     maximumFractionDigits: 0,
     style: "currency"
   }).format((cents ?? 0) / 100);
+}
+
+function getWorkspaceToken() {
+  return process.env.SKILLHUB_USER_TOKEN ?? process.env.SKILLHUB_ADMIN_TOKEN;
 }

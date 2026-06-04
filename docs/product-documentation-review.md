@@ -191,6 +191,13 @@ Added provider-deferred payout account onboarding, covering:
 - Onboarding completion can mark payout accounts verified, verification-required, blocked, or not configured.
 - Publisher payout readiness now reads payout account and onboarding session state in the dashboard.
 
+Added tenant-scoped refund and dispute history, covering:
+
+- Publisher read-only refund and dispute history scoped by owned skill organization.
+- Project read-only refund and dispute history scoped by project organization and slug.
+- Dashboard revenue-adjustment panel so publishers can see which skills, projects, amounts, and statuses affected earnings.
+- Clear separation between finance-admin decision endpoints and publisher/developer visibility endpoints.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
