@@ -223,6 +223,21 @@ SKILLHUB_API_KEY="$SKILLHUB_PROJECT_API_KEY" \
   skillhub run browser-research '{"query":"MCP server registry trends"}'
 ```
 
+## Publisher Skill Operations
+
+Publisher skill writes are organization scoped. A publisher token can publish, submit for review, and price only skills owned by its organization. The deployment service token can still perform controlled bootstrap operations, but product writes should use `SKILLHUB_USER_TOKEN`.
+
+Read the publisher skill operations view:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, and listing checklist.
+
+If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
+
 ## Skill Pricing
 
 Read skill prices:
@@ -245,13 +260,15 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
   }'
 ```
 
+Setting a price requires publisher, owner, admin, or super-admin authorization and is scoped to the token organization. Active paid pricing still requires a verified publisher payout state.
+
 Supported `billingModel` values:
 
 - `free`
 - `per_call`
 - `subscription`
 
-Active paid pricing requires a verified publisher payout state. Until final payment-provider onboarding is connected, the internal publisher and payout states are still modeled in the database so pricing, metering, and ledger behavior can be tested safely.
+Until final payment-provider onboarding is connected, the internal publisher and payout states are still modeled in the database so pricing, metering, and ledger behavior can be tested safely.
 
 ## Finance Ledger
 
@@ -494,6 +511,8 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/submit" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+Publisher review submission is scoped to the token organization. A publisher cannot submit another organization's skill by slug.
+
 Read the admin review queue:
 
 ```bash
@@ -518,7 +537,7 @@ Decision status can be:
 
 ## Publish Skill
 
-Publishing requires a user token with `publisher`, `owner`, `admin`, or `super_admin`.
+Publishing requires a user token with `publisher`, `owner`, `admin`, or `super_admin`. The skill is created or updated under the token organization, and existing slugs cannot be reassigned across organizations.
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/skills" \

@@ -148,6 +148,58 @@ export type DisputeRecord = {
   updatedAt: string;
 };
 
+export type PublisherSkillRecord = {
+  id: string;
+  slug: string;
+  displayName: string;
+  description: string;
+  version: string | null;
+  visibility: "public" | "private" | "unlisted";
+  verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected" | "suspended";
+  permissionLevel: "low" | "medium" | "high";
+  review: {
+    status: string | null;
+    riskLevel: "low" | "medium" | "high" | null;
+    notes: string | null;
+    decidedAt: string | null;
+  };
+  runtime: {
+    checkCount: number;
+    passedCount: number;
+    failedCount: number;
+    warningCount: number;
+    health: "healthy" | "warning" | "needs_attention" | "not_checked";
+  };
+  analytics: {
+    installCount: number;
+    callCount: number;
+    successCount: number;
+    errorCount: number;
+    blockedCount: number;
+    successRate: number | null;
+    avgLatencyMs: number | null;
+    billableUsageCount: number;
+    grossCents: number;
+    currency: string;
+  };
+  pricing: {
+    billingModel: "free" | "per_call" | "subscription";
+    unitAmountCents: number;
+    status: "draft" | "active" | "archived";
+  };
+  quality: {
+    score: number | null;
+    installSuccessRate: number | null;
+    incidentCount: number;
+    checklist: Array<{
+      key: string;
+      label: string;
+      status: "complete" | "missing" | "needs_attention" | "waiting";
+    }>;
+  };
+  updatedAt: string;
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackLedger: FinanceLedger = {
@@ -334,6 +386,115 @@ const fallbackDisputes: DisputeRecord[] = [
   }
 ];
 
+const fallbackPublisherSkills: PublisherSkillRecord[] = [
+  {
+    id: "browser-research",
+    slug: "browser-research",
+    displayName: "Browser Research",
+    description: "Research a web topic and return concise findings with source URLs.",
+    version: "0.1.0",
+    visibility: "public",
+    verificationStatus: "verified",
+    permissionLevel: "medium",
+    review: {
+      status: "approved",
+      riskLevel: "medium",
+      notes: "Manifest, runtime, and examples accepted.",
+      decidedAt: "demo"
+    },
+    runtime: {
+      checkCount: 4,
+      passedCount: 4,
+      failedCount: 0,
+      warningCount: 0,
+      health: "healthy"
+    },
+    analytics: {
+      installCount: 46,
+      callCount: 18400,
+      successCount: 17664,
+      errorCount: 736,
+      blockedCount: 0,
+      successRate: 0.96,
+      avgLatencyMs: 1280,
+      billableUsageCount: 12400,
+      grossCents: 248000,
+      currency: "usd"
+    },
+    pricing: {
+      billingModel: "per_call",
+      unitAmountCents: 2,
+      status: "active"
+    },
+    quality: {
+      score: 86,
+      installSuccessRate: 0.96,
+      incidentCount: 0,
+      checklist: [
+        { key: "manifest", label: "Manifest", status: "complete" },
+        { key: "review", label: "Review signal", status: "complete" },
+        { key: "runtime", label: "Runtime health", status: "complete" },
+        { key: "pricing", label: "Pricing", status: "complete" },
+        { key: "usage", label: "Usage signal", status: "complete" }
+      ]
+    },
+    updatedAt: "demo"
+  },
+  {
+    id: "dataset-summarizer",
+    slug: "dataset-summarizer",
+    displayName: "Dataset Summarizer",
+    description: "Summarize structured datasets with typed output.",
+    version: "0.1.0",
+    visibility: "public",
+    verificationStatus: "submitted",
+    permissionLevel: "medium",
+    review: {
+      status: "queued",
+      riskLevel: "medium",
+      notes: "Needs data retention review.",
+      decidedAt: null
+    },
+    runtime: {
+      checkCount: 4,
+      passedCount: 2,
+      failedCount: 1,
+      warningCount: 0,
+      health: "needs_attention"
+    },
+    analytics: {
+      installCount: 12,
+      callCount: 9200,
+      successCount: 8832,
+      errorCount: 368,
+      blockedCount: 0,
+      successRate: 0.96,
+      avgLatencyMs: 1420,
+      billableUsageCount: 0,
+      grossCents: 0,
+      currency: "usd"
+    },
+    pricing: {
+      billingModel: "free",
+      unitAmountCents: 0,
+      status: "active"
+    },
+    quality: {
+      score: 64,
+      installSuccessRate: 0.96,
+      incidentCount: 1,
+      checklist: [
+        { key: "manifest", label: "Manifest", status: "complete" },
+        { key: "review", label: "Review signal", status: "complete" },
+        { key: "runtime", label: "Runtime health", status: "needs_attention" },
+        { key: "pricing", label: "Pricing", status: "complete" },
+        { key: "usage", label: "Usage signal", status: "complete" }
+      ]
+    },
+    updatedAt: "demo"
+  }
+];
+
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 
@@ -461,6 +622,32 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
   }
 }
 
+export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackPublisherSkills;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/skills?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher skills failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { skills: PublisherSkillRecord[] };
+    return payload.skills;
+  } catch {
+    return fallbackPublisherSkills;
+  }
+}
+
 export async function getPublisherRefunds(): Promise<RefundRecord[]> {
   const token = getWorkspaceToken();
 
@@ -571,6 +758,17 @@ export function formatMoney(cents: number | null | undefined, currency = "usd") 
     maximumFractionDigits: 0,
     style: "currency"
   }).format((cents ?? 0) / 100);
+}
+
+export function formatPercent(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "n/a";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 0,
+    style: "percent"
+  }).format(value);
 }
 
 function getWorkspaceToken() {

@@ -72,7 +72,7 @@ export async function listSkillPrices(slug: string) {
   `;
 }
 
-export async function setSkillPrice(slug: string, input: PriceInput) {
+export async function setSkillPrice(slug: string, input: PriceInput, organizationId?: string | null) {
   const sql = await requireSql();
   await seedRegistry();
 
@@ -80,7 +80,7 @@ export async function setSkillPrice(slug: string, input: PriceInput) {
   const currency = normalizeCurrency(input.currency);
   const unitAmountCents = normalizeAmount(input.unitAmountCents, billingModel);
   const status = input.status ?? "active";
-  const skill = await getSkillBySlug(sql, slug);
+  const skill = await getSkillBySlug(sql, slug, organizationId);
   const publisher = await ensurePublisherProfile(sql, skill.organization_id);
 
   if (status === "active" && billingModel !== "free" && publisher.payout_status !== "verified") {
@@ -384,16 +384,17 @@ async function seedRegistry() {
   await searchSkills({ limit: 1 });
 }
 
-async function getSkillBySlug(sql: Sql, slug: string) {
+async function getSkillBySlug(sql: Sql, slug: string, organizationId?: string | null) {
   const rows = (await sql`
     select id::text, organization_id::text
     from skills
     where slug = ${slug}
+      and (${organizationId ?? null}::uuid is null or organization_id = ${organizationId ?? null})
     limit 1
   `) as Array<{ id: string; organization_id: string }>;
 
   if (!rows[0]) {
-    throw new Error("Skill not found.");
+    throw new Error(organizationId ? "Skill not found for this organization." : "Skill not found.");
   }
 
   return rows[0];

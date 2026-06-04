@@ -334,11 +334,11 @@ export async function listProjectUpdateInbox(projectSlug: string) {
   `;
 }
 
-export async function submitSkillForReview(slug: string) {
+export async function submitSkillForReview(slug: string, organizationId?: string | null) {
   const sql = await requireSql();
   await seedRegistry(sql);
 
-  const skill = await getSkillRecord(sql, slug);
+  const skill = await getSkillRecord(sql, slug, undefined, organizationId);
   const riskLevel = getPermissionLevel(skill.manifest.permissions);
   const existing = (await sql`
     select id::text, status
@@ -570,7 +570,12 @@ async function upsertProject(sql: Sql, organizationId: string, projectSlug: stri
   return rows[0];
 }
 
-async function getSkillRecord(sql: Sql, slug: string, version?: string): Promise<SkillRecord> {
+async function getSkillRecord(
+  sql: Sql,
+  slug: string,
+  version?: string,
+  organizationId?: string | null
+): Promise<SkillRecord> {
   const rows = (await sql`
     select
       s.id::text,
@@ -584,12 +589,13 @@ async function getSkillRecord(sql: Sql, slug: string, version?: string): Promise
     join skill_versions sv on sv.skill_id = s.id
     where s.slug = ${slug}
       and (${version ?? null}::text is null or sv.version = ${version ?? null})
+      and (${organizationId ?? null}::uuid is null or s.organization_id = ${organizationId ?? null})
     order by sv.created_at desc
     limit 1
   `) as SkillRecord[];
 
   if (!rows[0]) {
-    throw new Error("Skill or version not found.");
+    throw new Error(organizationId ? "Skill or version not found for this organization." : "Skill or version not found.");
   }
 
   return rows[0];

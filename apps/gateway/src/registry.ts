@@ -117,7 +117,10 @@ export async function getSkillManifest(slug: string): Promise<SkillManifest | un
   return rows[0]?.manifest;
 }
 
-export async function publishSkill(manifest: unknown): Promise<{ id: string; slug: string; status: string }> {
+export async function publishSkill(
+  manifest: unknown,
+  organizationId?: string | null
+): Promise<{ id: string; slug: string; status: string }> {
   assertSkillManifest(manifest);
 
   const sql = await getSql();
@@ -128,7 +131,18 @@ export async function publishSkill(manifest: unknown): Promise<{ id: string; slu
 
   await seedDemoData(sql);
 
-  const organization = await upsertDefaultOrganization(sql);
+  const ownerOrganizationId = organizationId ?? (await upsertDefaultOrganization(sql)).id;
+  const existingRows = (await sql`
+    select organization_id::text as "organizationId"
+    from skills
+    where slug = ${manifest.name}
+    limit 1
+  `) as Array<{ organizationId: string }>;
+
+  if (existingRows[0] && existingRows[0].organizationId !== ownerOrganizationId) {
+    throw new Error("Skill slug is already owned by another organization.");
+  }
+
   const skillRows = (await sql`
     insert into skills (
       organization_id,
@@ -141,7 +155,7 @@ export async function publishSkill(manifest: unknown): Promise<{ id: string; slu
       updated_at
     )
     values (
-      ${organization.id},
+      ${ownerOrganizationId},
       ${manifest.name},
       ${manifest.displayName},
       ${manifest.description},

@@ -18,11 +18,13 @@ import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
   formatMoney,
+  formatPercent,
   getFinanceLedger,
   getPublisherAccountSummary,
   getPublisherDisputes,
   getPublisherPayoutSummary,
-  getPublisherRefunds
+  getPublisherRefunds,
+  getPublisherSkills
 } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
@@ -38,7 +40,7 @@ const buyerIcons = [BriefcaseBusiness, CreditCard, Activity] as const;
 const opsCopy = {
   en: {
     pipelineTitle: "Publishing pipeline",
-    pipelineHeaders: ["Skill", "Stage", "Reviewer", "Next step"],
+    pipelineHeaders: ["Skill", "Stage", "Signals", "Next step"],
     pipelineRows: [
       ["browser-research-pro", "Pricing approval", "Mira", "Confirm per-call cap"],
       ["crm-enrichment", "Data policy", "Nolan", "Review CRM token scope"],
@@ -63,7 +65,7 @@ const opsCopy = {
   },
   zh: {
     pipelineTitle: "发布流水线",
-    pipelineHeaders: ["技能", "阶段", "审核人", "下一步"],
+    pipelineHeaders: ["技能", "阶段", "信号", "下一步"],
     pipelineRows: [
       ["browser-research-pro", "价格批准", "Mira", "确认按次调用上限"],
       ["crm-enrichment", "数据政策", "Nolan", "审核 CRM token 范围"],
@@ -95,11 +97,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const [overview, financeLedger, payoutSummary, publisherAccount, publisherRefunds, publisherDisputes] = await Promise.all([
+  const [overview, financeLedger, payoutSummary, publisherAccount, publisherSkills, publisherRefunds, publisherDisputes] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
     getPublisherPayoutSummary(),
     getPublisherAccountSummary(),
+    getPublisherSkills(),
     getPublisherRefunds(),
     getPublisherDisputes()
   ]);
@@ -135,6 +138,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
     ]
   ];
+  const publisherPipelineRows =
+    publisherSkills.length > 0
+      ? publisherSkills.slice(0, 6).map((skill) => [
+          skill.displayName,
+          `${skill.verificationStatus} / ${skill.review.status ?? "no review"}`,
+          `${skill.analytics.installCount} installs / ${formatPercent(skill.analytics.successRate)}`,
+          getPublisherNextStep(skill.runtime.health, skill.pricing.status, skill.analytics.callCount, locale)
+        ])
+      : ops.pipelineRows;
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
@@ -238,7 +250,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {ops.pipelineRows.map(([skill, stage, reviewer, next]) => (
+            {publisherPipelineRows.map(([skill, stage, reviewer, next]) => (
               <div className="work-table__row" key={skill}>
                 <strong>{skill}</strong>
                 <span>{stage}</span>
@@ -371,4 +383,29 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
+}
+
+function getPublisherNextStep(
+  runtimeHealth: "healthy" | "warning" | "needs_attention" | "not_checked",
+  priceStatus: "draft" | "active" | "archived",
+  callCount: number,
+  locale: "en" | "zh"
+) {
+  if (runtimeHealth === "needs_attention") {
+    return locale === "zh" ? "修复运行检查" : "Fix runtime checks";
+  }
+
+  if (runtimeHealth === "not_checked" || runtimeHealth === "warning") {
+    return locale === "zh" ? "完成运行验证" : "Complete runtime verification";
+  }
+
+  if (priceStatus !== "active") {
+    return locale === "zh" ? "确认定价" : "Confirm pricing";
+  }
+
+  if (callCount === 0) {
+    return locale === "zh" ? "提升列表质量" : "Improve listing quality";
+  }
+
+  return locale === "zh" ? "监控用量和反馈" : "Monitor usage and feedback";
 }

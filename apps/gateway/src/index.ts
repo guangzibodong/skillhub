@@ -33,6 +33,7 @@ import {
   setSkillPrice
 } from "./billing.js";
 import { listAdminNotifications } from "./notifications.js";
+import { listPublisherSkills } from "./publisher-insights.js";
 import {
   decidePayout,
   getPublisherPayoutSummary,
@@ -361,7 +362,9 @@ app.get("/v1/skills/:slug/prices", async (c) => {
 });
 
 app.post("/v1/skills/:slug/prices", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -370,7 +373,11 @@ app.post("/v1/skills/:slug/prices", async (c) => {
   try {
     return c.json(
       {
-        price: await setSkillPrice(c.req.param("slug"), (await c.req.json()) as Record<string, unknown>)
+        price: await setSkillPrice(
+          c.req.param("slug"),
+          (await c.req.json()) as Record<string, unknown>,
+          authorization.subject.organizationId
+        )
       },
       201
     );
@@ -534,6 +541,20 @@ app.get("/v1/publisher/payouts", async (c) => {
   );
 });
 
+app.get("/v1/publisher/skills", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    skills: await listPublisherSkills(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
+  });
+});
+
 app.get("/v1/publisher/refunds", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
     requireOrganization: true
@@ -690,14 +711,21 @@ app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
 });
 
 app.post("/v1/skills/:slug/submit", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
   try {
-    return c.json({ review: await submitSkillForReview(c.req.param("slug")) }, 201);
+    return c.json(
+      {
+        review: await submitSkillForReview(c.req.param("slug"), authorization.subject.organizationId)
+      },
+      201
+    );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to submit skill." }, 400);
   }
@@ -749,7 +777,9 @@ app.get("/v1/skills/:slug", async (c) => {
 });
 
 app.post("/v1/skills", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -762,7 +792,7 @@ app.post("/v1/skills", async (c) => {
   }
 
   try {
-    return c.json(await publishSkill(body.manifest), 201);
+    return c.json(await publishSkill(body.manifest, authorization.subject.organizationId), 201);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to publish skill." }, 400);
   }
