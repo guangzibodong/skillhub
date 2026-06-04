@@ -295,6 +295,7 @@ Completed:
 - Admin refund request, refund decision, dispute open, and dispute decision endpoints.
 - Dispute-lost flow can post refund adjustment records automatically.
 - Admin risk table reads refund and dispute queues with safe fallback states.
+- Admin refund and dispute console now lets finance operators approve, reject, post, fail, warn, win, or lose adjustment records with required reasons and optional provider references.
 - User access token table and bootstrap flow for initial operator identities.
 - Gateway role checks for project, publisher, reviewer, finance, and admin operations.
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.

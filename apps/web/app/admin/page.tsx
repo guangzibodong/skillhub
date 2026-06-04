@@ -11,6 +11,7 @@ import {
   Siren
 } from "lucide-react";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
+import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { SiteHeader } from "@/components/site-header";
@@ -195,6 +196,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
         <AbuseReportManager locale={locale} reports={abuseReports} />
+        <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
       </section>
 
       <section className="admin-layout">

@@ -368,6 +368,14 @@ Added admin payout operations, covering:
 - Decisions call the payout workflow API, which updates payout state, linked publisher balance state, audit records, and notification events before final payment-provider APIs are connected.
 - This strengthens marketplace trust because publisher withdrawals now have a controlled finance path from request to processing, paid, failed, or blocked state.
 
+Added admin refund and dispute operations, covering:
+
+- `/admin` now exposes refund requests and payment disputes as a finance decision surface instead of only showing them in the risk summary.
+- Finance operators can approve, reject, post, or fail refunds with required reasons and optional provider references.
+- Trust and finance operators can move disputes through open, warning-needs-response, won, or lost states, including optional refund posting when a dispute is lost.
+- Decisions call the adjustment workflow API, which preserves the immutable ledger model by creating adjustment transactions and reversed publisher balances instead of editing historical revenue.
+- This strengthens developer billing trust and publisher revenue trust because both sides can see that disputed money follows a controlled, auditable path before final payment-provider APIs are connected.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
