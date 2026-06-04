@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
-import { formatMoney, getFinanceLedger } from "@/lib/ops-data";
+import { formatMoney, getFinanceLedger, getPublisherPayoutSummary } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -80,7 +80,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
-  const [overview, financeLedger] = await Promise.all([getPlatformOverview(), getFinanceLedger()]);
+  const [overview, financeLedger, payoutSummary] = await Promise.all([
+    getPlatformOverview(),
+    getFinanceLedger(),
+    getPublisherPayoutSummary()
+  ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
       ? financeLedger.recentTransactions.slice(0, 5).map((transaction) => [
@@ -96,6 +100,19 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
     [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
     [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
+  ];
+  const payoutAccount = payoutSummary.payoutAccounts[0];
+  const latestPayout = payoutSummary.payouts[0];
+  const payoutItems = [
+    [labels.payoutItems[0][0], payoutAccount?.status ?? "not configured"],
+    [labels.payoutItems[1][0], payoutSummary.publisherProfile?.payoutStatus ?? "not configured"],
+    [labels.payoutItems[2][0], formatMoney(payoutSummary.balances.minPayoutCents, payoutSummary.balances.currency)],
+    [
+      labels.payoutItems[3][0],
+      latestPayout
+        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} · ${latestPayout.status}`
+        : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
+    ]
   ];
 
   return (
@@ -244,7 +261,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             <span>{labels.payoutTitle}</span>
           </div>
           <div className="payout-list">
-            {labels.payoutItems.map(([label, value]) => (
+            {payoutItems.map(([label, value]) => (
               <div className="payout-row" key={label}>
                 <CheckCircle2 size={16} aria-hidden="true" />
                 <span>{label}</span>

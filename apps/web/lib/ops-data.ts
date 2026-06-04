@@ -36,6 +36,51 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type PayoutRecord = {
+  id: string;
+  publisherProfileId: string;
+  publisherName: string;
+  amountCents: number;
+  currency: string;
+  status: "requested" | "review" | "processing" | "paid" | "failed" | "blocked";
+  balanceCount: number;
+  provider: string | null;
+  accountStatus: string | null;
+  requestedAt: string;
+  reviewedAt: string | null;
+  paidAt: string | null;
+  reviewReason: string | null;
+  failureReason: string | null;
+  providerReference: string | null;
+};
+
+export type PublisherPayoutSummary = {
+  publisherProfile: {
+    id: string;
+    displayName: string;
+    status: string;
+    payoutStatus: string;
+  } | null;
+  balances: {
+    pendingCents: number;
+    availableCents: number;
+    blockedCents: number;
+    paidCents: number;
+    currency: string;
+    minPayoutCents: number;
+    reviewThresholdCents: number;
+  };
+  payoutAccounts: Array<{
+    id: string;
+    provider: string;
+    providerAccountId: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  payouts: PayoutRecord[];
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackLedger: FinanceLedger = {
@@ -98,6 +143,55 @@ const fallbackNotifications: AdminNotification[] = [
   }
 ];
 
+const fallbackPayouts: PayoutRecord[] = [
+  {
+    id: "demo-payout-review",
+    publisherProfileId: "demo-publisher",
+    publisherName: "SkillHub Publisher",
+    amountCents: 480000,
+    currency: "usd",
+    status: "review",
+    balanceCount: 4,
+    provider: "manual_deferred",
+    accountStatus: "verified",
+    requestedAt: "demo",
+    reviewedAt: null,
+    paidAt: null,
+    reviewReason: "High-value payout queued for manual review.",
+    failureReason: null,
+    providerReference: null
+  }
+];
+
+const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
+  publisherProfile: {
+    id: "demo-publisher",
+    displayName: "SkillHub Publisher",
+    status: "active",
+    payoutStatus: "verified"
+  },
+  balances: {
+    pendingCents: 126000,
+    availableCents: 482000,
+    blockedCents: 480000,
+    paidCents: 940000,
+    currency: "usd",
+    minPayoutCents: 1000,
+    reviewThresholdCents: 50000
+  },
+  payoutAccounts: [
+    {
+      id: "demo-payout-account",
+      provider: "manual_deferred",
+      providerAccountId: "manual_deferred_demo",
+      status: "verified",
+      createdAt: "demo",
+      updatedAt: "demo"
+    }
+  ],
+  payouts: fallbackPayouts
+};
+
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 
@@ -146,6 +240,57 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getAdminPayouts(): Promise<PayoutRecord[]> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackPayouts;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/payouts?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin payouts failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { payouts: PayoutRecord[] };
+    return payload.payouts;
+  } catch {
+    return fallbackPayouts;
+  }
+}
+
+export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummary> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackPublisherPayoutSummary;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/payouts`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher payouts failed: ${response.status}`);
+    }
+
+    return (await response.json()) as PublisherPayoutSummary;
+  } catch {
+    return fallbackPublisherPayoutSummary;
   }
 }
 

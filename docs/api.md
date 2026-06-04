@@ -259,6 +259,53 @@ curl -X POST "https://api.useskillhub.com/v1/admin/finance/release-balances" \
 
 Balances start as `pending` and become `available` only after their risk/refund window has elapsed. The default balance delay is 14 days and can be configured with `SKILLHUB_BALANCE_DELAY_DAYS`.
 
+## Payout Workflow
+
+Payout provider movement is still deferred, but SkillHub now models the internal payout state machine and reserves exact balance rows before a payout can be marked paid.
+
+Read publisher payout readiness:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/payouts" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Request a payout for all currently available publisher balances in a currency:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/payouts" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"currency":"usd"}'
+```
+
+The current provider-deferred workflow requests all available balances by currency. This avoids partial balance mutation until the final payment provider is connected.
+
+Read the admin payout queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/payouts?limit=50" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Record a payout decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"approve","reason":"KYC and balance review passed."}'
+```
+
+Supported payout actions:
+
+- `approve`: moves `requested` or `review` payouts to `processing`.
+- `mark_paid`: marks the payout paid and moves linked publisher balances to `paid`.
+- `fail`: marks the payout failed and releases linked balances back to `available`.
+- `block`: blocks the payout and keeps linked balances blocked until finance review resolves it.
+
+Every payout request and decision records an audit log and a queued in-app notification event.
+
 ## Admin Notifications
 
 Notification events are recorded before the final email provider is connected. Admin can inspect queued, sent, failed, and skipped events:

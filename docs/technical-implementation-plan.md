@@ -283,12 +283,16 @@ Completed:
 - Finance ledger read endpoint and matured balance release endpoint.
 - Admin notification list endpoint.
 - Dashboard and admin pages reading finance ledger and notification event data with safe fallback states.
+- Payout workflow migration linking payouts to reserved publisher balance rows.
+- Publisher payout readiness and request endpoints.
+- Admin payout queue and payout decision endpoints.
+- Dashboard and admin pages reading payout readiness and payout queue data.
 
 Next:
 
 - Auth and role enforcement to replace temporary operator-token write protection.
 - Refund and dispute state actions.
-- Payout account and payout request workflows.
+- Payout account onboarding screens and provider handoff state.
 
 ## Engineering Acceptance Standard
 

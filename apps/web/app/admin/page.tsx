@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
-import { formatMoney, getAdminNotifications, getFinanceLedger } from "@/lib/ops-data";
+import { formatMoney, getAdminNotifications, getAdminPayouts, getFinanceLedger } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
@@ -89,10 +89,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [overview, financeLedger, notifications] = await Promise.all([
+  const [overview, financeLedger, notifications, payouts] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
-    getAdminNotifications()
+    getAdminNotifications(),
+    getAdminPayouts()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -112,6 +113,17 @@ export default async function AdminPage({ searchParams }: PageProps) {
           notification.status
         ])
       : labels.auditRows.map((item) => [item, "system", "queued"]);
+  const payoutRows =
+    payouts.length > 0
+      ? payouts.slice(0, 4).map((payout) => [
+          formatMoney(payout.amountCents, payout.currency),
+          `${payout.status} · ${payout.publisherName}`
+        ])
+      : [
+          [formatMoney(financeLedger.summary.pendingBalanceCents), "pending balance"],
+          [formatMoney(financeLedger.summary.availableBalanceCents), "available balance"],
+          [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
+        ];
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
@@ -256,11 +268,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <span>{labels.metrics[2][0]}</span>
           </div>
           <div className="payout-list">
-            {[
-              [formatMoney(financeLedger.summary.pendingBalanceCents), "pending"],
-              [formatMoney(financeLedger.summary.availableBalanceCents), "available"],
-              [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
-            ].map(([label, state], index) => {
+            {payoutRows.map(([label, state], index) => {
               const Icon = index === 0 ? AlertTriangle : index === 1 ? ShieldCheck : Banknote;
               return (
                 <div className="payout-row" key={label}>

@@ -33,6 +33,12 @@ import {
   setSkillPrice
 } from "./billing.js";
 import { listAdminNotifications } from "./notifications.js";
+import {
+  decidePayout,
+  getPublisherPayoutSummary,
+  listAdminPayouts,
+  requestPublisherPayout
+} from "./payouts.js";
 
 type Env = {
   Bindings: {
@@ -300,6 +306,62 @@ app.get("/v1/admin/notifications", async (c) => {
   return c.json({
     notifications: await listAdminNotifications(limit)
   });
+});
+
+app.get("/v1/publisher/payouts", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json(
+    await getPublisherPayoutSummary(c.req.query("publisherProfileId") ?? undefined)
+  );
+});
+
+app.post("/v1/publisher/payouts", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { publisherProfileId?: string; currency?: string };
+
+  try {
+    return c.json({ payout: await requestPublisherPayout(body) }, 201);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to request payout." }, 400);
+  }
+});
+
+app.get("/v1/admin/payouts", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    payouts: await listAdminPayouts(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      payout: await decidePayout(c.req.param("payoutId"), (await c.req.json()) as Record<string, unknown>)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update payout." }, 400);
+  }
 });
 
 app.post("/v1/skills/:slug/submit", async (c) => {

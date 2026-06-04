@@ -154,6 +154,14 @@ Connected the operating UI to live platform data, covering:
 - Admin notification/audit stream from notification events.
 - Dashboard publisher balances and revenue ledger from the same finance source.
 
+Added payout workflow states, covering:
+
+- Payout requests reserve concrete publisher balance rows.
+- Admin can approve, mark paid, fail, or block payout requests.
+- Failed payouts release balances back to available; paid payouts mark balances paid.
+- Every payout state change creates audit and notification records before the final provider integration.
+- Admin and publisher dashboards read payout queue/readiness data with fallback states.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
