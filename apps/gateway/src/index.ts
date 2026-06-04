@@ -9,6 +9,16 @@ import {
   searchSkills
 } from "./registry.js";
 import { getPlatformOverview } from "./platform-overview.js";
+import {
+  decideReview,
+  installSkill,
+  listProjectInstalls,
+  listProjectPolicies,
+  listProjectUpdateInbox,
+  listReviewQueue,
+  submitSkillForReview,
+  upsertProjectPolicy
+} from "./operations.js";
 
 type Env = {
   Bindings: {
@@ -31,7 +41,7 @@ app.use(
   cors({
     origin: ["http://localhost:3000", "https://useskillhub.com", "https://app.useskillhub.com"],
     allowHeaders: ["Authorization", "Content-Type"],
-    allowMethods: ["GET", "POST", "OPTIONS"]
+    allowMethods: ["GET", "POST", "PUT", "OPTIONS"]
   })
 );
 
@@ -70,6 +80,119 @@ app.get("/v1/publisher/overview", async (c) => {
 app.get("/v1/admin/overview", async (c) => {
   const overview = await getPlatformOverview();
   return c.json(overview.admin);
+});
+
+app.get("/v1/projects/:projectSlug/installed-skills", async (c) => {
+  return c.json({
+    installedSkills: await listProjectInstalls(c.req.param("projectSlug"))
+  });
+});
+
+app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json()) as { skillSlug?: string; version?: string };
+
+  if (!body.skillSlug) {
+    return c.json({ error: "Missing skillSlug." }, 400);
+  }
+
+  try {
+    const install = await installSkill({
+      projectSlug: c.req.param("projectSlug"),
+      skillSlug: body.skillSlug,
+      version: body.version
+    });
+
+    return c.json({ install }, 201);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to install skill." }, 400);
+  }
+});
+
+app.get("/v1/projects/:projectSlug/policies", async (c) => {
+  return c.json({
+    policies: await listProjectPolicies(c.req.param("projectSlug"))
+  });
+});
+
+app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    const policy = await upsertProjectPolicy(
+      c.req.param("projectSlug"),
+      c.req.param("skillSlug"),
+      (await c.req.json()) as Record<string, unknown>
+    );
+
+    return c.json({ policy });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update policy." }, 400);
+  }
+});
+
+app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
+  return c.json({
+    updates: await listProjectUpdateInbox(c.req.param("projectSlug"))
+  });
+});
+
+app.post("/v1/skills/:slug/submit", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({ review: await submitSkillForReview(c.req.param("slug")) }, 201);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to submit skill." }, 400);
+  }
+});
+
+app.get("/v1/admin/reviews", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({ reviews: await listReviewQueue() });
+});
+
+app.post("/v1/admin/reviews/:reviewId/decision", async (c) => {
+  const authorization = requireAdminToken(c.req.header("Authorization"));
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json()) as { status?: "approved" | "rejected" | "blocked"; notes?: string };
+
+  if (!body.status || !["approved", "rejected", "blocked"].includes(body.status)) {
+    return c.json({ error: "Decision status must be approved, rejected, or blocked." }, 400);
+  }
+
+  try {
+    return c.json({
+      review: await decideReview(c.req.param("reviewId"), {
+        status: body.status,
+        notes: body.notes
+      })
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to record review decision." }, 400);
+  }
 });
 
 app.get("/v1/skills/:slug", async (c) => {

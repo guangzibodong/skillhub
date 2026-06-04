@@ -263,6 +263,27 @@ Acceptance checks:
 9. Connect auth and role enforcement.
 10. Integrate payment and email providers last.
 
+## Current Implementation Progress
+
+Completed:
+
+- Retention and operations tables through migration `003_retention_operations.sql`.
+- Platform, developer, publisher, and admin overview API endpoints.
+- Dashboard and admin metric loading from the platform overview API with safe fallback data.
+- Project installed-skill API endpoints.
+- Project skill-policy API endpoints.
+- Installed-skill update inbox API endpoint.
+- Skill review submission endpoint.
+- Admin review queue and review decision endpoints.
+
+Next:
+
+- Runtime invocation policy gate.
+- Usage event recording.
+- Billable usage to ledger transaction creation.
+- Notification event rendering in dashboard/admin.
+- Auth and role enforcement to replace temporary operator-token write protection.
+
 ## Engineering Acceptance Standard
 
 Before a feature is considered complete, it must answer:

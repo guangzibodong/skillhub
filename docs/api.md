@@ -60,6 +60,87 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
+## Developer Project Operations
+
+These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.
+
+Read installed skills:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/installed-skills"
+```
+
+Install or update a skill version for a project:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/installed-skills" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"skillSlug":"browser-research","version":"0.1.0"}'
+```
+
+Read project skill policies:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/policies"
+```
+
+Update a project skill policy:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/policies/browser-research" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "maxPermissionLevel": "medium",
+    "allowNetwork": true,
+    "allowBrowser": true,
+    "filesystemAccess": "none",
+    "monthlyBudgetCents": 48000,
+    "rateLimitPerMinute": 60,
+    "approvalRequired": false
+  }'
+```
+
+Read the installed-skill update inbox:
+
+```bash
+curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox"
+```
+
+Writes are temporarily protected by the operator token until full account auth and role checks are connected.
+
+## Review Workflow
+
+Submit a skill for review:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/submit" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Read the admin review queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/reviews" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Record a review decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/reviews/$REVIEW_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"approved","notes":"Manifest, runtime, permissions, and examples accepted."}'
+```
+
+Decision status can be:
+
+- `approved`: skill becomes verified.
+- `rejected`: skill becomes rejected and keeps reviewer notes.
+- `blocked`: skill becomes suspended and writes risk/audit events.
+
 ## Publish Skill
 
 Publishing requires `SKILLHUB_ADMIN_TOKEN` on the server.

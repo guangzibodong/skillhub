@@ -120,6 +120,15 @@ Added the first retention operations migration, covering:
 - Usage events.
 - Notification templates, events, and preferences.
 
+Added first operational API endpoints, covering:
+
+- Project installed skills.
+- Project skill policies.
+- Installed-skill update inbox.
+- Skill review submission.
+- Admin review queue.
+- Admin review decisions and audit/event recording.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
