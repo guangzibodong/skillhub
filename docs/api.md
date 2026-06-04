@@ -768,6 +768,22 @@ These endpoints return transaction, skill, project, amount, status, reason, and 
 
 Notification preferences are user-scoped settings for the event topics that keep developers, publishers, and operators returning to SkillHub: review decisions, skill updates, runtime incidents, billing events, payouts, buyer requests, and sensitive account changes.
 
+Read the active user's organization-scoped in-app notification inbox:
+
+```bash
+curl "https://api.useskillhub.com/v1/notifications?limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The inbox returns `channel=in_app` events addressed to the active user or their token organization. `queued` events are unread; `sent` events are already read/delivered.
+
+Mark one notification as read:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/notifications/$NOTIFICATION_ID/read" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
 Read the active user's preferences:
 
 ```bash

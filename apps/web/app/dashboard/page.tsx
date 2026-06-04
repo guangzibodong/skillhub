@@ -15,6 +15,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
+import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SiteHeader } from "@/components/site-header";
@@ -33,7 +34,8 @@ import {
   getPublisherFinanceLedger,
   getPublisherPayoutSummary,
   getPublisherRefunds,
-  getPublisherSkills
+  getPublisherSkills,
+  getUserNotifications
 } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
@@ -124,6 +126,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherRefunds,
     publisherDisputes,
     organizationBilling,
+    userNotifications,
     notificationPreferences
   ] = await Promise.all([
     getPlatformOverview(),
@@ -137,6 +140,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getPublisherRefunds(),
     getPublisherDisputes(),
     getOrganizationBillingSummary(),
+    getUserNotifications(),
     getNotificationPreferences()
   ]);
   const ledgerRows =
@@ -385,6 +389,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </article>
 
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+
+          <NotificationInboxManager locale={locale} notifications={userNotifications} />
 
           <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
         </aside>

@@ -1681,6 +1681,82 @@ a {
   margin-top: 0;
 }
 
+.notification-inbox-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.notification-inbox-list {
+  display: grid;
+  gap: 10px;
+}
+
+.notification-inbox-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.notification-inbox-card--unread {
+  border-color: rgba(215, 168, 76, 0.2);
+  background: rgba(215, 168, 76, 0.055);
+}
+
+.notification-inbox-card__head,
+.notification-inbox-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-inbox-card__head > span:last-child {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.notification-inbox-card strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.notification-inbox-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notification-inbox-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.notification-inbox-card form {
+  display: inline-flex;
+}
+
+.notification-inbox-card .action-message {
+  margin-top: 0;
+}
+
+.notification-inbox-empty {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 13px;
+  padding: 12px;
+}
+
 .admin-layout {
   grid-template-columns: minmax(0, 1fr) 380px;
   align-items: start;

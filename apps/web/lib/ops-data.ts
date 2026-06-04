@@ -36,6 +36,17 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type UserNotificationRecord = {
+  id: string;
+  eventType: string;
+  channel: "email" | "in_app" | "webhook";
+  subject: string | null;
+  payload: Record<string, unknown>;
+  status: "queued" | "sent" | "failed" | "skipped";
+  createdAt: string;
+  deliveredAt: string | null;
+};
+
 export type NotificationPreferenceRecord = {
   category: string;
   description: string;
@@ -554,6 +565,48 @@ const fallbackNotifications: AdminNotification[] = [
     eventType: "skill.review.approved",
     channel: "in_app",
     subject: "Skill review approved",
+    status: "queued",
+    createdAt: "demo",
+    deliveredAt: null
+  }
+];
+
+const fallbackUserNotifications: UserNotificationRecord[] = [
+  {
+    id: "demo-buyer-request-claimed",
+    eventType: "buyer_request.claimed",
+    channel: "in_app",
+    subject: "Your buyer request was claimed",
+    payload: {
+      requestId: "demo-request-figma-linear",
+      title: "Figma change request to Linear issue"
+    },
+    status: "queued",
+    createdAt: "demo",
+    deliveredAt: null
+  },
+  {
+    id: "demo-skill-update",
+    eventType: "skill.update",
+    channel: "in_app",
+    subject: "New citation freshness scoring available",
+    payload: {
+      projectSlug: "research-agent",
+      skillSlug: "browser-research"
+    },
+    status: "sent",
+    createdAt: "demo",
+    deliveredAt: "demo"
+  },
+  {
+    id: "demo-payout-review",
+    eventType: "publisher.payout",
+    channel: "in_app",
+    subject: "Payout request entered review",
+    payload: {
+      amountCents: 480000,
+      currency: "usd"
+    },
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
@@ -1441,6 +1494,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getUserNotifications(): Promise<UserNotificationRecord[]> {
+  const token = process.env.SKILLHUB_USER_TOKEN;
+
+  if (!token) {
+    return fallbackUserNotifications;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/notifications?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`User notifications failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { notifications: UserNotificationRecord[] };
+    return payload.notifications;
+  } catch {
+    return fallbackUserNotifications;
   }
 }
 

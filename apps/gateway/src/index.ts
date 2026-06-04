@@ -55,7 +55,11 @@ import {
   releaseAvailableBalances,
   setSkillPrice
 } from "./billing.js";
-import { listAdminNotifications } from "./notifications.js";
+import {
+  listAdminNotifications,
+  listUserNotifications,
+  markUserNotificationRead
+} from "./notifications.js";
 import {
   listNotificationPreferences,
   upsertNotificationPreference
@@ -1001,6 +1005,54 @@ app.get("/v1/admin/notifications", async (c) => {
   return c.json({
     notifications: await listAdminNotifications(limit)
   });
+});
+
+app.get("/v1/notifications", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId || !authorization.subject.organizationId) {
+    return c.json({ error: "Notification inbox requires an organization-scoped user token." }, 403);
+  }
+
+  return c.json({
+    notifications: await listUserNotifications(
+      authorization.subject.userId,
+      authorization.subject.organizationId,
+      Number(c.req.query("limit") ?? "25")
+    )
+  });
+});
+
+app.post("/v1/notifications/:notificationId/read", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId || !authorization.subject.organizationId) {
+    return c.json({ error: "Notification inbox requires an organization-scoped user token." }, 403);
+  }
+
+  try {
+    return c.json({
+      notification: await markUserNotificationRead(
+        authorization.subject.userId,
+        authorization.subject.organizationId,
+        c.req.param("notificationId")
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to mark notification read." }, 400);
+  }
 });
 
 app.get("/v1/admin/abuse-reports", async (c) => {
