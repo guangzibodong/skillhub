@@ -1,0 +1,14 @@
+.git
+.next
+.turbo
+.playwright-cli
+node_modules
+output
+dist
+coverage
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+!.env.production.example

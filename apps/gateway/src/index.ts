@@ -110,7 +110,7 @@ app.get("/health", (c) =>
   c.json({
     ok: true,
     service: "skillhub-gateway",
-    env: c.env.SKILLHUB_ENV ?? "development"
+    env: c.env?.SKILLHUB_ENV ?? getProcessEnv("SKILLHUB_ENV") ?? "development"
   })
 );
 
@@ -260,6 +260,14 @@ function rpcError(id: JsonRpcRequest["id"], code: number, message: string) {
     id: id ?? null,
     error: { code, message }
   });
+}
+
+function getProcessEnv(key: string): string | undefined {
+  if (typeof process === "undefined") {
+    return undefined;
+  }
+
+  return process.env[key];
 }
 
 export default app;

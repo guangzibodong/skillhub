@@ -1,0 +1,81 @@
+name: skillhub
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: deploy/docker/web.Dockerfile
+    container_name: skillhub-web
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.useskillhub.com}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
+    ports:
+      - "127.0.0.1:3100:3000"
+    depends_on:
+      - api
+    networks:
+      - skillhub
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/gateway.Dockerfile
+    container_name: skillhub-api
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      SKILLHUB_ENV: production
+      HOST: 0.0.0.0
+      PORT: 8787
+      DATABASE_URL: postgres://skillhub:${POSTGRES_PASSWORD}@postgres:5432/skillhub
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:8787:8787"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - skillhub
+
+  postgres:
+    image: postgres:16-bookworm
+    container_name: skillhub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillhub
+      POSTGRES_USER: skillhub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - skillhub-postgres:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillhub -d skillhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skillhub
+
+  redis:
+    image: redis:7-bookworm
+    container_name: skillhub-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - skillhub-redis:/data
+    networks:
+      - skillhub
+
+volumes:
+  skillhub-postgres:
+  skillhub-redis:
+
+networks:
+  skillhub:
+    name: skillhub
