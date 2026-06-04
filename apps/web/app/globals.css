@@ -1740,6 +1740,138 @@ a {
   line-height: 1.35;
 }
 
+.abuse-report-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.abuse-report-list {
+  display: grid;
+  gap: 12px;
+}
+
+.abuse-report-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.abuse-report-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.abuse-report-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.abuse-report-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.abuse-report-card__head span:not(.status-chip),
+.abuse-report-card p,
+.abuse-report-meta,
+.abuse-report-decision {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.abuse-report-card p {
+  margin: 0;
+}
+
+.abuse-report-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.abuse-report-meta span,
+.abuse-report-decision span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.abuse-report-meta strong,
+.abuse-report-decision strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.abuse-report-meta a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--cyan);
+}
+
+.abuse-report-decision {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.07);
+  padding: 9px 10px;
+}
+
+.abuse-report-decision svg {
+  flex: 0 0 auto;
+  color: var(--amber);
+}
+
+.abuse-report-action-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.abuse-report-action-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.abuse-report-action-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.abuse-report-action-form input,
+.abuse-report-action-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.abuse-report-action-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
 .admin-finance-section {
   margin-bottom: 72px;
 }
@@ -3911,6 +4043,20 @@ a {
 
   .review-queue__row strong {
     white-space: normal;
+  }
+
+  .abuse-report-meta,
+  .abuse-report-action-form {
+    grid-template-columns: 1fr;
+  }
+
+  .abuse-report-card__head {
+    grid-template-columns: 1fr;
+  }
+
+  .abuse-report-card__head .status-chip,
+  .abuse-report-action-form .secondary-button {
+    justify-self: start;
   }
 
   .risk-badge,

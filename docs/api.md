@@ -798,6 +798,38 @@ curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
 
 Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
 
+## Abuse Reports And Takedowns
+
+Developers and project operators can report a skill when runtime behavior, security, privacy, billing, quality, or spam signals need trust review:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/skills/browser-research-pro/abuse-reports" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "category": "security",
+    "severity": "high",
+    "title": "Unexpected outbound domain during runtime",
+    "description": "The skill called an undeclared analytics endpoint.",
+    "projectSlug": "research-agent",
+    "evidenceUrl": "https://example.com/evidence/runtime-domain-log"
+  }'
+```
+
+Platform trust operators can read and decide the queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/abuse-reports?limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/admin/abuse-reports/$REPORT_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"restrict","reason":"Unverified outbound domain until publisher submits a fixed runtime manifest."}'
+```
+
+Decision actions are `triage`, `dismiss`, `warn`, `restrict`, `suspend`, and `resolve`. `restrict` moves the listing to `unlisted`; `suspend` also sets `verification_status` to `suspended`. Every decision records a takedown action, admin audit log, skill update event when relevant, and queued notification event before any external support/legal provider is connected.
+
 ## Review Workflow
 
 Submit a skill for review:

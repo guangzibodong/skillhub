@@ -12,10 +12,12 @@ import {
   Siren,
   WalletCards
 } from "lucide-react";
+import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
   formatMoney,
+  getAdminAbuseReports,
   getAdminDisputes,
   getAdminNotifications,
   getAdminPayouts,
@@ -96,13 +98,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [overview, financeLedger, notifications, payouts, refunds, disputes] = await Promise.all([
+  const [overview, financeLedger, notifications, payouts, refunds, disputes, abuseReports] = await Promise.all([
     getPlatformOverview(),
     getFinanceLedger(),
     getAdminNotifications(),
     getAdminPayouts(),
     getAdminRefunds(),
-    getAdminDisputes()
+    getAdminDisputes(),
+    getAdminAbuseReports()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -134,8 +137,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
           [String(financeLedger.summary.unprocessedUsageCount), "unprocessed usage"]
         ];
   const riskRows =
-    refunds.length + disputes.length > 0
+    abuseReports.length + refunds.length + disputes.length > 0
       ? [
+          ...abuseReports.slice(0, 3).map((report) => [
+            `${report.severity} ${report.category}`,
+            report.skillName,
+            report.status === "open" ? "Triage or restrict listing" : report.decisionReason ?? "Follow up trust action",
+            "Trust"
+          ]),
           ...refunds.slice(0, 3).map((refund) => [
             `Refund ${refund.status}`,
             refund.skillName ?? refund.transactionId ?? refund.id,
@@ -220,6 +229,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
             ))}
           </div>
         </aside>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AbuseReportManager locale={locale} reports={abuseReports} />
       </section>
 
       <section className="admin-layout">

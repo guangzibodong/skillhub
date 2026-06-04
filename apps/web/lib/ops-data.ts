@@ -204,6 +204,30 @@ export type DisputeRecord = {
   updatedAt: string;
 };
 
+export type AbuseReportRecord = {
+  id: string;
+  skillId: string;
+  skillSlug: string;
+  skillName: string;
+  skillVisibility: string;
+  skillVerificationStatus: string;
+  category: "malicious" | "security" | "privacy" | "copyright" | "spam" | "quality" | "billing" | "other";
+  severity: "low" | "medium" | "high" | "critical";
+  status: "open" | "triaged" | "dismissed" | "warning_sent" | "restricted" | "suspended" | "resolved";
+  title: string;
+  description: string;
+  evidenceUrl: string | null;
+  reporterEmail: string | null;
+  reporterOrganizationName: string | null;
+  projectSlug: string | null;
+  decisionReason: string | null;
+  decidedAt: string | null;
+  latestAction: "triage" | "dismiss" | "warn" | "restrict" | "suspend" | "resolve" | null;
+  latestActionAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PublisherSkillRecord = {
   id: string;
   slug: string;
@@ -771,6 +795,55 @@ const fallbackDisputes: DisputeRecord[] = [
     externalReference: "dp_demo_warning",
     dueAt: "demo",
     resolvedAt: null,
+    createdAt: "demo",
+    updatedAt: "demo"
+  }
+];
+
+const fallbackAbuseReports: AbuseReportRecord[] = [
+  {
+    id: "demo-abuse-security",
+    skillId: "demo-skill-browser-research",
+    skillSlug: "browser-research-pro",
+    skillName: "Browser Research Pro",
+    skillVisibility: "public",
+    skillVerificationStatus: "verified",
+    category: "security",
+    severity: "high",
+    status: "open",
+    title: "Unexpected outbound domain during runtime",
+    description: "A project operator reported calls to an undeclared analytics endpoint during citation extraction.",
+    evidenceUrl: "https://example.com/evidence/runtime-domain-log",
+    reporterEmail: "security@example.com",
+    reporterOrganizationName: "Research Agent",
+    projectSlug: "research-agent",
+    decisionReason: null,
+    decidedAt: null,
+    latestAction: null,
+    latestActionAt: null,
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-abuse-quality",
+    skillId: "demo-skill-support-triage",
+    skillSlug: "support-triage",
+    skillName: "Support Triage",
+    skillVisibility: "public",
+    skillVerificationStatus: "verified",
+    category: "quality",
+    severity: "medium",
+    status: "triaged",
+    title: "Repeated low-confidence classifications",
+    description: "Three projects reported misrouted tickets after the last model prompt update.",
+    evidenceUrl: null,
+    reporterEmail: "ops@example.com",
+    reporterOrganizationName: "Support Agent",
+    projectSlug: "support-agent",
+    decisionReason: "Publisher asked to submit a runtime fix and examples.",
+    decidedAt: "demo",
+    latestAction: "triage",
+    latestActionAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
   }
@@ -1709,6 +1782,32 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
     return payload.disputes;
   } catch {
     return fallbackDisputes;
+  }
+}
+
+export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
+  const token = process.env.SKILLHUB_ADMIN_TOKEN;
+
+  if (!token) {
+    return fallbackAbuseReports;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/abuse-reports?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin abuse reports failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { reports: AbuseReportRecord[] };
+    return payload.reports;
+  } catch {
+    return fallbackAbuseReports;
   }
 }
 

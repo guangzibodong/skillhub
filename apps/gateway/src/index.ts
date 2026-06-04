@@ -94,6 +94,11 @@ import {
   submitBuyerRequestBuild
 } from "./buyer-requests.js";
 import {
+  createAbuseReport,
+  decideAbuseReport,
+  listAdminAbuseReports
+} from "./trust-safety.js";
+import {
   authorize,
   createBootstrapUserToken,
   publicSubject,
@@ -134,6 +139,7 @@ const reviewOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
 const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "finance"];
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
+const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "support"];
 
 app.use(
   "*",
@@ -997,6 +1003,38 @@ app.get("/v1/admin/notifications", async (c) => {
   });
 });
 
+app.get("/v1/admin/abuse-reports", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    reports: await listAdminAbuseReports(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/abuse-reports/:reportId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      report: await decideAbuseReport(
+        c.req.param("reportId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update abuse report." }, 400);
+  }
+});
+
 app.get("/v1/notifications/preferences", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
 
@@ -1033,6 +1071,33 @@ app.put("/v1/notifications/preferences", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update notification preference." }, 400);
+  }
+});
+
+app.post("/v1/skills/:slug/abuse-reports", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Abuse reports require a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        report: await createAbuseReport((await c.req.json().catch(() => ({}))) as Record<string, unknown>, {
+          organizationId: authorization.subject.organizationId,
+          skillSlug: c.req.param("slug"),
+          userId: authorization.subject.userId
+        })
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create abuse report." }, 400);
   }
 });
 
