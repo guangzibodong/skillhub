@@ -412,6 +412,14 @@ Added API-backed marketplace discovery, covering:
 - API recommended ranking uses query relevance, verification state, permission risk, install evidence, invocation volume, runtime success, and update freshness.
 - The web marketplace uses recommended API search as its first source, so the browser, CLI, SDK, and agents can converge on the same public discovery contract.
 
+Added skill feedback and review moderation, covering:
+
+- `skill_feedback` stores rating, public title/body, use case, reviewer organization, project context, moderation status, moderation reason, and publish timestamp.
+- Public skill detail pages read published feedback and rating summaries from the API, with fallback demo data when the API is unavailable.
+- Signed-in developers can submit feedback from the skill detail page; new feedback enters moderation instead of becoming public immediately.
+- Trust operators can publish, hide, reject, or reopen feedback from `/admin`, with required reasons, audit logs, and queued publisher notifications.
+- This strengthens developer trust because listings now show real usage signals, and strengthens publisher retention because feedback creates a concrete improvement loop.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

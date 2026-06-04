@@ -108,6 +108,12 @@ import {
   listAdminAbuseReports
 } from "./trust-safety.js";
 import {
+  createSkillFeedback,
+  decideSkillFeedback,
+  listAdminSkillFeedback,
+  listPublicSkillFeedback
+} from "./skill-feedback.js";
+import {
   authorize,
   createBootstrapUserToken,
   publicSubject,
@@ -1138,6 +1144,38 @@ app.post("/v1/admin/abuse-reports/:reportId/decision", async (c) => {
   }
 });
 
+app.get("/v1/admin/skill-feedback", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    feedback: await listAdminSkillFeedback(c.req.query("status"), Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/skill-feedback/:feedbackId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      feedback: await decideSkillFeedback(
+        c.req.param("feedbackId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update skill feedback." }, 400);
+  }
+});
+
 app.get("/v1/notifications/preferences", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
 
@@ -1174,6 +1212,37 @@ app.put("/v1/notifications/preferences", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update notification preference." }, 400);
+  }
+});
+
+app.get("/v1/skills/:slug/feedback", async (c) => {
+  return c.json(await listPublicSkillFeedback(c.req.param("slug"), Number(c.req.query("limit") ?? "12")));
+});
+
+app.post("/v1/skills/:slug/feedback", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Skill feedback requires a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        feedback: await createSkillFeedback((await c.req.json().catch(() => ({}))) as Record<string, unknown>, {
+          organizationId: authorization.subject.organizationId,
+          skillSlug: c.req.param("slug"),
+          userId: authorization.subject.userId
+        })
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create skill feedback." }, 400);
   }
 });
 

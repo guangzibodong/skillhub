@@ -8,6 +8,7 @@ import {
   FileJson,
   History,
   KeyRound,
+  MessageSquareText,
   PackageCheck,
   PackageSearch,
   ShieldCheck,
@@ -17,12 +18,14 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
+import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
+import { getSkillFeedback } from "@/lib/skill-feedback";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +44,14 @@ const copy = {
     contract: "Runtime contract",
     useCases: "Production use cases",
     changelog: "Changelog",
+    feedback: "User feedback",
+    feedbackBody: "Published feedback from teams that installed or evaluated this skill.",
+    feedbackEmpty: "No published feedback yet.",
+    feedbackProject: "Project",
+    feedbackUseCase: "Use case",
+    averageRating: "Average rating",
+    publishedFeedback: "Published feedback",
+    anonymousReviewer: "Verified user",
     reviews: "Operator notes",
     permissions: "Permissions",
     publisher: "Publisher",
@@ -82,6 +93,14 @@ const copy = {
     contract: "运行协议",
     useCases: "生产使用场景",
     changelog: "更新记录",
+    feedback: "用户反馈",
+    feedbackBody: "来自已安装或评估该技能团队的公开反馈。",
+    feedbackEmpty: "暂时还没有公开反馈。",
+    feedbackProject: "项目",
+    feedbackUseCase: "使用场景",
+    averageRating: "平均评分",
+    publishedFeedback: "公开反馈",
+    anonymousReviewer: "已验证用户",
     reviews: "运营备注",
     permissions: "权限",
     publisher: "发布者",
@@ -125,7 +144,12 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [skill, projects, relatedSkills] = await Promise.all([getPublicMarketplaceSkill(slug), getDeveloperProjects(), getRelatedMarketplaceSkills(slug)]);
+  const [skill, projects, relatedSkills, feedbackData] = await Promise.all([
+    getPublicMarketplaceSkill(slug),
+    getDeveloperProjects(),
+    getRelatedMarketplaceSkills(slug),
+    getSkillFeedback(slug)
+  ]);
   const labels = copy[locale];
 
   if (!skill) {
@@ -278,6 +302,69 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               ))}
             </div>
           </article>
+
+          <article className="skill-detail-panel">
+            <div className="card-kicker">
+              <MessageSquareText size={16} aria-hidden="true" />
+              <span>{labels.feedback}</span>
+            </div>
+            <p className="skill-feedback-intro">{labels.feedbackBody}</p>
+            <div className="skill-feedback-summary-grid">
+              <div>
+                <strong>{feedbackData.summary.averageRating ? `${feedbackData.summary.averageRating}/5` : "n/a"}</strong>
+                <span>{labels.averageRating}</span>
+              </div>
+              <div>
+                <strong>{feedbackData.summary.publishedCount}</strong>
+                <span>{labels.publishedFeedback}</span>
+              </div>
+            </div>
+            <div className="skill-feedback-list">
+              {feedbackData.feedback.length > 0 ? (
+                feedbackData.feedback.map((feedback) => (
+                  <section className="skill-feedback-row" key={feedback.id}>
+                    <header>
+                      <div>
+                        <strong>{feedback.title}</strong>
+                        <span>
+                          {feedback.reviewerOrganizationName ?? feedback.reviewerDisplayName ?? labels.anonymousReviewer}
+                        </span>
+                      </div>
+                      <div className="skill-feedback-stars" aria-label={`${feedback.rating} / 5`}>
+                        {Array.from({ length: 5 }, (_, index) => (
+                          <Star
+                            key={index}
+                            size={15}
+                            aria-hidden="true"
+                            fill={index < feedback.rating ? "currentColor" : "none"}
+                          />
+                        ))}
+                      </div>
+                    </header>
+                    <p>{feedback.body}</p>
+                    <div className="skill-feedback-meta">
+                      <span>
+                        <strong>{labels.feedbackUseCase}</strong>
+                        {feedback.useCase ?? "n/a"}
+                      </span>
+                      <span>
+                        <strong>{labels.feedbackProject}</strong>
+                        {feedback.projectSlug ?? "n/a"}
+                      </span>
+                    </div>
+                  </section>
+                ))
+              ) : (
+                <p className="skill-feedback-empty">{labels.feedbackEmpty}</p>
+              )}
+            </div>
+          </article>
+
+          <SkillFeedbackForm
+            locale={locale}
+            skillName={localizeText(skill.name, locale)}
+            skillSlug={skill.slug}
+          />
 
           {relatedSkills.length > 0 ? (
             <article className="skill-detail-panel">

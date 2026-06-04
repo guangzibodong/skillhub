@@ -1,3 +1,5 @@
+import type { SkillFeedbackRecord } from "@/lib/skill-feedback";
+
 type FinanceLedgerSummary = {
   grossCents: number;
   platformFeeCents: number;
@@ -945,6 +947,49 @@ const fallbackAbuseReports: AbuseReportRecord[] = [
     decidedAt: "demo",
     latestAction: "triage",
     latestActionAt: "demo",
+    createdAt: "demo",
+    updatedAt: "demo"
+  }
+];
+
+const fallbackSkillFeedback: SkillFeedbackRecord[] = [
+  {
+    id: "demo-feedback-pending",
+    skillId: "demo-skill-browser-research",
+    skillSlug: "browser-research",
+    skillName: "Browser Research",
+    reviewerEmail: "ops@example.com",
+    reviewerDisplayName: "Ops Reviewer",
+    reviewerOrganizationName: "Research Agent",
+    projectSlug: "research-agent",
+    rating: 3,
+    title: "Needs citation metadata before broader rollout",
+    body: "The browser workflow is useful, but our compliance agent needs source timestamps and confidence fields before we can use it for regulated reports.",
+    useCase: "Compliance-heavy research briefings",
+    status: "pending",
+    moderationReason: null,
+    moderatedAt: null,
+    publishedAt: null,
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-feedback-published",
+    skillId: "demo-skill-manifest-review",
+    skillSlug: "manifest-review",
+    skillName: "Manifest Review",
+    reviewerEmail: null,
+    reviewerDisplayName: "Platform Reviewer",
+    reviewerOrganizationName: "SkillHub Demo Org",
+    projectSlug: "publisher-workbench",
+    rating: 5,
+    title: "Good publisher preflight",
+    body: "It catches missing examples and permission mismatches before a skill enters formal review.",
+    useCase: "Publisher preflight checks",
+    status: "published",
+    moderationReason: "Approved as useful implementation feedback.",
+    moderatedAt: "demo",
+    publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
   }
@@ -1987,6 +2032,32 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
     return payload.reports;
   } catch {
     return fallbackAbuseReports;
+  }
+}
+
+export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackSkillFeedback;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/skill-feedback?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin skill feedback failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { feedback: SkillFeedbackRecord[] };
+    return payload.feedback;
+  } catch {
+    return fallbackSkillFeedback;
   }
 }
 

@@ -2670,6 +2670,128 @@ a {
   padding: 12px;
 }
 
+.skill-feedback-review-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.skill-feedback-review-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.skill-feedback-review-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.skill-feedback-review-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.skill-feedback-review-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.skill-feedback-review-card__head span:not(.status-chip),
+.skill-feedback-review-card p,
+.skill-feedback-review-meta,
+.skill-feedback-decision {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.skill-feedback-review-card p {
+  margin: 0;
+}
+
+.skill-feedback-review-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.skill-feedback-review-meta span,
+.skill-feedback-decision span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.skill-feedback-review-meta strong,
+.skill-feedback-decision strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.skill-feedback-decision {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.07);
+  padding: 9px 10px;
+}
+
+.skill-feedback-decision svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.skill-feedback-action-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.skill-feedback-action-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.skill-feedback-action-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.skill-feedback-action-form input,
+.skill-feedback-action-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.skill-feedback-action-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
 .abuse-report-card__head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -3817,6 +3939,135 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 11px 12px;
+}
+
+.skill-feedback-intro,
+.skill-feedback-empty {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.skill-feedback-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.skill-feedback-summary-grid div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.skill-feedback-summary-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.skill-feedback-summary-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.skill-feedback-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.skill-feedback-row {
+  display: grid;
+  gap: 11px;
+  min-width: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 14px;
+}
+
+.skill-feedback-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.skill-feedback-row header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.skill-feedback-row header div:first-child {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.skill-feedback-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.skill-feedback-row header span,
+.skill-feedback-row p,
+.skill-feedback-meta {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.skill-feedback-row p {
+  margin: 0;
+}
+
+.skill-feedback-stars,
+.skill-feedback-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--amber);
+}
+
+.skill-feedback-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-feedback-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0 9px;
+}
+
+.skill-feedback-meta strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.skill-feedback-submit-panel {
+  border-color: rgba(124, 199, 216, 0.18);
+  background: rgba(124, 199, 216, 0.045);
 }
 
 .skill-report-panel {
@@ -6319,12 +6570,14 @@ a {
   .related-skill-command .secondary-button,
   .publisher-public-command .secondary-button,
   .admin-payout-action-form .secondary-button,
+  .skill-feedback-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     width: 100%;
   }
 
   .related-skill-command .secondary-button,
   .publisher-public-command .secondary-button,
+  .skill-feedback-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     justify-content: center;
   }
@@ -6370,11 +6623,20 @@ a {
   }
 
   .abuse-report-meta,
+  .skill-feedback-review-meta,
   .abuse-report-action-form {
     grid-template-columns: 1fr;
   }
 
+  .skill-feedback-action-form {
+    grid-template-columns: 1fr;
+  }
+
   .abuse-report-card__head {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-feedback-review-card__head {
     grid-template-columns: 1fr;
   }
 
@@ -6383,6 +6645,8 @@ a {
   }
 
   .abuse-report-card__head .status-chip,
+  .skill-feedback-review-card__head .status-chip,
+  .skill-feedback-action-form .secondary-button,
   .abuse-report-action-form .secondary-button {
     justify-self: start;
   }
@@ -6418,6 +6682,7 @@ a {
 
   .metric-strip,
   .status-grid,
+  .skill-feedback-summary-grid,
   .admin-review-meta,
   .admin-payout-metrics,
   .admin-adjustment-metrics,

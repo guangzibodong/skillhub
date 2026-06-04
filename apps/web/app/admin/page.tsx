@@ -14,6 +14,7 @@ import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
+import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
@@ -24,6 +25,7 @@ import {
   getAdminPayouts,
   getAdminReviews,
   getAdminRefunds,
+  getAdminSkillFeedback,
   getFinanceLedger
 } from "@/lib/ops-data";
 
@@ -89,13 +91,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, reviews] = await Promise.all([
+  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, skillFeedback, reviews] = await Promise.all([
     getFinanceLedger(),
     getAdminNotifications(),
     getAdminPayouts(),
     getAdminRefunds(),
     getAdminDisputes(),
     getAdminAbuseReports(),
+    getAdminSkillFeedback(),
     getAdminReviews()
   ]);
   const financeRows =
@@ -117,12 +120,18 @@ export default async function AdminPage({ searchParams }: PageProps) {
         ])
       : labels.auditRows.map((item) => [item, "system", "queued"]);
   const riskRows =
-    abuseReports.length + refunds.length + disputes.length > 0
+    abuseReports.length + skillFeedback.length + refunds.length + disputes.length > 0
       ? [
           ...abuseReports.slice(0, 3).map((report) => [
             `${report.severity} ${report.category}`,
             report.skillName,
             report.status === "open" ? "Triage or restrict listing" : report.decisionReason ?? "Follow up trust action",
+            "Trust"
+          ]),
+          ...skillFeedback.slice(0, 3).map((feedback) => [
+            `Feedback ${feedback.status}`,
+            feedback.skillName,
+            feedback.status === "pending" ? "Publish, hide, or reject review" : feedback.moderationReason ?? "Monitor public quality signal",
             "Trust"
           ]),
           ...refunds.slice(0, 3).map((refund) => [
@@ -143,7 +152,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
     [labels.metrics[2][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
-    [labels.metrics[3][0], String(reviews.length)]
+    [labels.metrics[3][0], String(reviews.length + skillFeedback.filter((feedback) => feedback.status === "pending").length)]
   ];
 
   return (
@@ -195,6 +204,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
         <AbuseReportManager locale={locale} reports={abuseReports} />
         <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
       </section>

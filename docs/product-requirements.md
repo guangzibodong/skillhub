@@ -92,6 +92,7 @@ Repeat-visit value:
 
 - Track review status, runtime checks, installs, calls, errors, and latency.
 - Improve versions based on usage and feedback.
+- See moderated user feedback and rating signals that explain what buyers trust or dislike.
 - Respond to buyer requests, incidents, and review notes.
 - Track revenue ledger, balance, and payout readiness.
 
@@ -161,6 +162,7 @@ Requirements:
 - Link to skill detail.
 - Show installed state for signed-in developers.
 - Show update/deprecation/incident state for installed skills.
+- Show published user feedback and rating summary as marketplace trust signals.
 
 Skill card must include:
 
@@ -205,6 +207,8 @@ Requirements:
 - Use cases.
 - Changelog.
 - Operator notes or reviews.
+- Published user feedback, rating summary, use case, project context, and reviewer organization where safe.
+- Feedback submission for signed-in developers, with moderation before public display.
 - Deprecation and support expectations.
 - Installed projects.
 - Version pin options.
@@ -271,6 +275,7 @@ Requirements:
 - Publisher quality dashboard.
 - Ranking/featured listing controls.
 - Abuse report and takedown queue.
+- Skill feedback moderation queue for publishing, hiding, rejecting, or reopening user feedback.
 
 ## User Value And Retention Requirements
 
@@ -296,6 +301,7 @@ Publisher retention is driven by:
 
 - Review pipeline.
 - Runtime check feedback.
+- User feedback moderation outcomes and public rating signals.
 - Usage and install analytics.
 - Buyer request board.
 - Listing improvement checklist.
@@ -347,6 +353,7 @@ Acceptance criteria:
 - A new version does not silently replace a verified version without review.
 - Rejected and suspended skills record a reason.
 - Public marketplace should show only allowed public listings.
+- Public reviews and feedback should show only moderated `published` entries.
 
 ## Runtime Requirements
 
@@ -442,6 +449,7 @@ SkillHub must track:
 - Publisher identity.
 - Review decisions.
 - Abuse reports later.
+- User feedback status, moderation reasons, and public/private separation.
 
 High-risk examples:
 
@@ -521,6 +529,7 @@ The full product must include:
 - Refunds and disputes.
 - Admin audit logs.
 - Notification/event templates.
+- Skill feedback, rating summaries, and moderation workflow.
 
 ## Deferred Final Integrations
 
@@ -561,6 +570,7 @@ Product metrics:
 - Active publishers.
 - Active developer projects.
 - Skill installs.
+- Published feedback count and average skill rating.
 - Agent invocations.
 - Successful invocation rate.
 - Median runtime latency.

@@ -597,6 +597,53 @@ Supported `billingModel` values:
 
 Until final payment-provider onboarding is connected, the internal publisher and payout states are still modeled in the database so pricing, metering, and ledger behavior can be tested safely.
 
+## Skill Feedback And Reviews
+
+Public skill feedback is a marketplace trust signal. Anyone can read published feedback, while submission requires a user-scoped token and starts in moderation.
+
+Read published feedback and rating summary:
+
+```bash
+curl "https://api.useskillhub.com/v1/skills/browser-research/feedback?limit=12"
+```
+
+Submit feedback for moderation:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/feedback" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rating": 5,
+    "title": "Reliable for daily research agents",
+    "body": "The manifest is clear, permissions match the workflow, and the output schema is stable.",
+    "useCase": "Daily market research",
+    "projectSlug": "research-agent"
+  }'
+```
+
+Feedback fields:
+
+- `rating`: integer from 1 to 5.
+- `title`: short public summary.
+- `body`: operational detail for developers and publishers.
+- `useCase`: optional context that helps future buyers evaluate fit.
+- `projectSlug`: optional organization-scoped project link when the reviewer used the skill inside a project.
+
+Platform trust operators can read and decide the queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/skill-feedback?status=pending&limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/admin/skill-feedback/$FEEDBACK_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"publish","reason":"Useful implementation feedback from a verified project operator."}'
+```
+
+Decision actions are `publish`, `hide`, `reject`, and `reopen`. Decisions update moderation state, write an admin audit log, and queue an in-app notification for the skill publisher. The public skill detail page shows only `published` feedback and the rating summary.
+
 ## Finance Ledger
 
 SkillHub never pays publishers from raw usage logs. Billable usage must be posted into the ledger first:

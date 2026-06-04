@@ -94,6 +94,7 @@ Core tables:
 - `skill_update_events`
 - `skill_incidents`
 - `saved_skills`
+- `skill_feedback`
 
 API groups:
 
@@ -101,6 +102,8 @@ API groups:
 - `/v1/projects/:projectId/policies`
 - `/v1/projects/:projectId/update-inbox`
 - `/v1/projects/:projectId/saved-skills`
+- `/v1/skills/:slug/feedback`
+- `/v1/admin/skill-feedback`
 
 Acceptance checks:
 
@@ -108,6 +111,7 @@ Acceptance checks:
 - High-risk skills require owner approval before invocation.
 - Developers can see updates, deprecations, incidents, and replacements for installed skills.
 - Saved skills and collections exist before purchase flows are added.
+- Published feedback is public, new feedback starts in moderation, and admin decisions are audited.
 
 ### 4. Publisher Retention
 
@@ -123,6 +127,7 @@ Core tables:
 - `usage_events`
 - `buyer_requests`
 - `publisher_quality_scores`
+- `skill_feedback`
 
 API groups:
 
@@ -138,6 +143,7 @@ Acceptance checks:
 - Runtime checks expose pass/fail state and next action.
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
+- Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
 
 ### 5. Runtime And Metering
 
@@ -233,7 +239,7 @@ Acceptance checks:
 
 - `/`: product value, trust model, registry preview.
 - `/marketplace`: searchable catalog with filters, install commands, trust, pricing, and request board.
-- `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support.
+- `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support, published feedback, and feedback submission.
 - `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
 - `/publishers/[slug]`: public publisher trust profile with marketplace-safe skill and operating signals.
 - `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
@@ -251,7 +257,7 @@ Acceptance checks:
 
 ### Platform Admin
 
-- `/admin`: review queue, risk command center, finance ledger, payout review, incidents, audit stream.
+- `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream.
 
 ## Near-Term Build Sequence
 
@@ -358,6 +364,11 @@ Completed:
 - Developer project creation now lets organization-scoped users create new agent projects from the dashboard, with explicit API validation, organization-local slug uniqueness, audit logging, and in-app notification records.
 - `/publisher` now gives skill authors a dedicated operations workspace for owned skills, review submission, pricing, buyer demand, publisher revenue, refund/dispute watch, payout readiness, account onboarding, and notifications.
 - `/developer` now gives skill buyers and agent operators a dedicated workspace for project creation, project drill-down, installed-skill/key/budget signals, buyer requests, billing readiness, notification inbox, and next operational actions.
+- Skill feedback storage is now modeled in migration `016_skill_feedback.sql`, with rating, title, body, use case, reviewer/project context, moderation status, audit reason, and published timestamp.
+- Public feedback APIs now expose published feedback plus full published-rating summary for each skill, while user-scoped submissions enter moderation.
+- Admin skill feedback APIs now let trust operators publish, hide, reject, or reopen feedback with required reasons, audit logs, and queued publisher notifications.
+- Skill detail pages now show published user feedback, average rating, reviewer organization, use case, project context, and a signed-in feedback submission form before the trust report flow.
+- `/admin` now includes a skill feedback moderation queue beside trust, finance, and review operations so marketplace quality signals have an operator-owned path.
 
 Next:
 
