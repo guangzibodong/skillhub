@@ -14,6 +14,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getPublicMarketplaceSkill } from "@/lib/public-marketplace";
@@ -233,6 +234,12 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               ))}
             </div>
           </article>
+
+          <SkillAbuseReportForm
+            locale={locale}
+            skillName={localizeText(skill.name, locale)}
+            skillSlug={skill.slug}
+          />
         </div>
 
         <aside className="skill-detail-side">

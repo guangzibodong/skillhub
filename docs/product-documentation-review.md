@@ -175,6 +175,7 @@ Added trust and takedown operations, covering:
 - User-scoped skill abuse reports for security, privacy, quality, spam, billing, malicious runtime, and other trust issues.
 - Admin trust queue for triage, dismissal, publisher warning, listing restriction, suspension, and resolution.
 - Takedown history, audit logs, skill update events, and queued notifications so trust decisions are durable before external support/legal tooling is integrated.
+- Skill detail pages now expose the report flow directly, giving developers and project operators a clear way to send listing/runtime problems into the trust queue.
 - Failed payouts release balances back to available; paid payouts mark balances paid.
 - Every payout state change creates audit and notification records before the final provider integration.
 - Admin and publisher dashboards read payout queue/readiness data with fallback states.

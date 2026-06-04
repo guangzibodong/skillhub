@@ -836,6 +836,8 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research-pro/abuse-r
   }'
 ```
 
+The skill detail page exposes the same report flow so a signed-in operator can submit security, privacy, quality, billing, malicious-behavior, copyright, spam, or other trust reports directly from the listing.
+
 Platform trust operators can read and decide the queue:
 
 ```bash

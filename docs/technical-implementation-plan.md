@@ -338,6 +338,7 @@ Completed:
 - Trust and safety migration now stores skill abuse reports plus takedown action history for triage, warning, restriction, suspension, dismissal, and resolution decisions.
 - Abuse report APIs now let user-scoped reporters submit skill reports while trust operators list and decide the queue with audit logs, skill update events, notification records, and listing restriction/suspension state changes.
 - Admin risk operations now expose a trust and takedown queue with decision controls so operators can act on quality, security, privacy, spam, billing, and malicious-runtime reports.
+- Skill detail pages now expose a user-scoped trust report form so security, privacy, quality, billing, malicious-runtime, copyright, spam, and other reports can enter the takedown queue from the public listing.
 - Public marketplace and skill detail pages now read live registry search, manifest, and price endpoints with bundled marketplace content as a safe fallback.
 
 Next:

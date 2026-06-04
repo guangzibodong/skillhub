@@ -2621,6 +2621,67 @@ a {
   line-height: 1.5;
 }
 
+.skill-report-panel {
+  border-color: rgba(215, 168, 76, 0.18);
+  background: rgba(215, 168, 76, 0.045);
+}
+
+.skill-report-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.skill-report-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.skill-report-form__wide {
+  grid-column: 1 / -1;
+}
+
+.skill-report-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.skill-report-form input,
+.skill-report-form select,
+.skill-report-form textarea {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 11px;
+}
+
+.skill-report-form textarea {
+  min-height: 92px;
+  padding: 10px 11px;
+  resize: vertical;
+}
+
+.skill-report-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.skill-report-form input::placeholder,
+.skill-report-form textarea::placeholder {
+  color: #7d8476;
+}
+
+.skill-report-form .secondary-button {
+  justify-self: start;
+}
+
 .price-block {
   display: grid;
   gap: 12px;
@@ -4302,6 +4363,15 @@ a {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .skill-report-form {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-report-form .secondary-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .key-create-form,
