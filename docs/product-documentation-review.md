@@ -383,6 +383,13 @@ Added public skill replacement discovery, covering:
 - Each suggestion explains why it matches, exposes risk, price, runtime, verification, install command, and a direct detail link.
 - This strengthens developer first-visit value because users can compare choices before installing, and repeat-use value because deprecated, suspended, or high-risk skills have a visible replacement path.
 
+Added public publisher trust profiles, covering:
+
+- Public API endpoints now expose publisher profiles and public publisher detail by slug without requiring a user token.
+- `/publishers/[slug]` shows publisher status, payout readiness state, derived trust level, public skill count, verified skills, install evidence, runtime calls, active paid skills, and average success rate.
+- Marketplace cards and skill detail pages now link to the publisher profile, so a developer can evaluate the supplier behind a skill before installing it.
+- This strengthens developer first-visit trust and publisher repeat-use motivation because publisher profile quality becomes part of marketplace credibility and distribution.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

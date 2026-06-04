@@ -3038,6 +3038,22 @@ a {
   font-weight: 720;
 }
 
+.market-skill-card__publisher {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+.market-skill-card__publisher:hover {
+  color: var(--signal);
+}
+
 .market-skill-card h2 {
   margin: 5px 0 0;
   color: var(--ink);
@@ -3778,6 +3794,191 @@ a {
 
 .support-list span:last-child {
   border-bottom: 0;
+}
+
+.skill-publisher-card {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.skill-publisher-card strong {
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.skill-publisher-card > span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.skill-publisher-card__badges,
+.publisher-public-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.publisher-public-hero {
+  padding-bottom: 20px;
+}
+
+.publisher-public-board {
+  margin-top: 0;
+}
+
+.publisher-public-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto 72px;
+}
+
+.publisher-public-main,
+.publisher-public-side,
+.publisher-public-skill-list {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.publisher-public-skills > p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.publisher-public-skill {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 16px;
+}
+
+.publisher-public-skill:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.publisher-public-skill__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.publisher-public-skill__head div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.publisher-public-skill__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.publisher-public-skill__head span:not(.status-chip) {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.publisher-public-skill__meta,
+.publisher-public-skill__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.publisher-public-skill__meta span:not(.risk-badge),
+.publisher-public-skill__signals span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 9px;
+}
+
+.publisher-public-skill__signals span {
+  gap: 6px;
+}
+
+.publisher-public-skill__signals svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.publisher-public-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.publisher-public-command code {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: #0b0e0a;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 11px 12px;
+}
+
+.publisher-trust-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.publisher-trust-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.publisher-trust-row:last-child {
+  border-bottom: 0;
+}
+
+.publisher-trust-row svg {
+  color: var(--signal);
+}
+
+.publisher-trust-row span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.publisher-trust-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  text-align: right;
 }
 
 .project-health-panel {
@@ -5425,6 +5626,7 @@ a {
   .market-operations-layout,
   .skill-detail-layout,
   .project-detail-layout,
+  .publisher-public-layout,
   .developer-command-layout,
   .publisher-command-layout,
   .schema-grid,
@@ -5533,6 +5735,7 @@ a {
   .skill-detail-layout,
   .project-detail-hero,
   .project-detail-layout,
+  .publisher-public-layout,
   .developer-command-layout,
   .publisher-command-layout,
   .workspace-ops-layout {
@@ -5733,18 +5936,22 @@ a {
 
   .related-skill-row__head,
   .related-skill-command,
+  .publisher-public-skill__head,
+  .publisher-public-command,
   .admin-adjustment-action-form,
   .admin-adjustment-action-form--dispute {
     grid-template-columns: 1fr;
   }
 
   .related-skill-command .secondary-button,
+  .publisher-public-command .secondary-button,
   .admin-payout-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     width: 100%;
   }
 
   .related-skill-command .secondary-button,
+  .publisher-public-command .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     justify-content: center;
   }

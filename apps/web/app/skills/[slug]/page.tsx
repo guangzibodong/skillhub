@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import {
   BadgeCheck,
   BookOpenCheck,
+  Building2,
   CheckCircle2,
   Code2,
   FileJson,
@@ -20,6 +21,7 @@ import { SkillProjectActionPanel } from "@/components/skill-project-action-panel
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
+import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +43,16 @@ const copy = {
     changelog: "Changelog",
     reviews: "Operator notes",
     permissions: "Permissions",
+    publisher: "Publisher",
+    publisherTrust: "Publisher trust",
+    trustLevels: {
+      active: "active",
+      blocked: "blocked",
+      limited: "limited",
+      verified: "verified"
+    },
+    viewPublisher: "Open publisher profile",
+    verifiedSkills: "verified skills",
     related: "Alternatives and replacements",
     relatedBody: "Compare similar skills before installing, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
     relatedReasons: "Why it matches",
@@ -72,6 +84,16 @@ const copy = {
     changelog: "更新记录",
     reviews: "运营备注",
     permissions: "权限",
+    publisher: "发布者",
+    publisherTrust: "发布者信任",
+    trustLevels: {
+      active: "活跃",
+      blocked: "已阻断",
+      limited: "受限",
+      verified: "已验证"
+    },
+    viewPublisher: "打开发布者档案",
+    verifiedSkills: "已验证技能",
     related: "替代和相似技能",
     relatedBody: "安装前先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
     relatedReasons: "推荐原因",
@@ -110,6 +132,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     notFound();
   }
 
+  const publisherProfile = await getPublicPublisherProfile(publisherSlugFromName(skill.author));
   const latestVersion = skill.changelog[0]?.version;
 
   const installRows = [
@@ -313,6 +336,27 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         <aside className="skill-detail-side">
           <section className="skill-detail-panel">
             <div className="card-kicker">
+              <Building2 size={16} aria-hidden="true" />
+              <span>{labels.publisher}</span>
+            </div>
+            <div className="skill-publisher-card">
+              <strong>{publisherProfile?.displayName ?? skill.author}</strong>
+              <span>{labels.publisherTrust}</span>
+              <div className="skill-publisher-card__badges">
+                {publisherProfile ? <span className={publisherTrustClass(publisherProfile.trustLevel)}>{labels.trustLevels[publisherProfile.trustLevel]}</span> : null}
+                {publisherProfile ? <span className="status-chip status-chip--neutral">{publisherProfile.metrics.verifiedSkillCount} {labels.verifiedSkills}</span> : null}
+              </div>
+              {publisherProfile ? (
+                <a className="ghost-button ghost-button--inline" href={localizedHref(`/publishers/${publisherProfile.slug}`, locale)}>
+                  <Building2 size={15} aria-hidden="true" />
+                  <span>{labels.viewPublisher}</span>
+                </a>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="skill-detail-panel">
+            <div className="card-kicker">
               <CircleDollarSignIcon />
               <span>{labels.pricing}</span>
             </div>
@@ -384,4 +428,20 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
 function CircleDollarSignIcon() {
   return <WalletCards size={16} aria-hidden="true" />;
+}
+
+function publisherTrustClass(trustLevel: "verified" | "active" | "limited" | "blocked") {
+  if (trustLevel === "verified") {
+    return "status-chip";
+  }
+
+  if (trustLevel === "blocked") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (trustLevel === "limited") {
+    return "status-chip status-chip--warning";
+  }
+
+  return "status-chip status-chip--neutral";
 }

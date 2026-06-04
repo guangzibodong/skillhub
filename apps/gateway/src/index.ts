@@ -8,6 +8,10 @@ import {
   publishSkill,
   searchSkills
 } from "./registry.js";
+import {
+  getPublicPublisherProfile,
+  listPublicPublishers
+} from "./public-publishers.js";
 import { getPlatformOverview } from "./platform-overview.js";
 import {
   decideReview,
@@ -287,6 +291,20 @@ app.get("/v1/skills/search", async (c) => {
   const skills = await searchSkills({ query, tags, limit, permissionLevel });
 
   return c.json({ skills });
+});
+
+app.get("/v1/publishers", async (c) => {
+  return c.json({ publishers: await listPublicPublishers(Number(c.req.query("limit") ?? "20")) });
+});
+
+app.get("/v1/publishers/:slug", async (c) => {
+  const publisher = await getPublicPublisherProfile(c.req.param("slug"));
+
+  if (!publisher) {
+    return c.json({ error: "Publisher not found." }, 404);
+  }
+
+  return c.json({ publisher });
 });
 
 app.get("/v1/stats", async (c) => c.json(await getRegistryStats()));

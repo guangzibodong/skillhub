@@ -39,6 +39,23 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 
 The public marketplace and skill detail pages now read these registry endpoints first, then fall back to bundled demo content if the API is unavailable. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`.
 
+## Public Publishers
+
+Public publisher profiles expose marketplace trust signals without revealing private organization billing, user, or payout-account details.
+
+```bash
+curl "https://api.useskillhub.com/v1/publishers"
+curl "https://api.useskillhub.com/v1/publishers/skillhub"
+```
+
+The response includes:
+
+- Publisher display name, public slug, profile status, payout readiness state, and derived trust level.
+- Public skill count, verified skill count, install count, runtime call count, active paid skill count, and average success rate.
+- Public skill rows with verification status, permission risk, pricing model, install count, call count, success rate, and version.
+
+The web app uses this data for `/publishers/[slug]`, marketplace publisher links, and skill-detail publisher trust panels. If the API is unavailable, the same pages fall back to bundled marketplace publisher data.
+
 ## Registry Stats
 
 ```bash

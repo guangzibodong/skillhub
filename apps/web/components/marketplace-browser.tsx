@@ -9,6 +9,7 @@ import {
   marketplaceCategories,
   type MarketplaceSkill
 } from "@/lib/marketplace-data";
+import { publisherSlugFromName } from "@/lib/public-publishers";
 
 type MarketplaceBrowserProps = {
   locale: Locale;
@@ -22,6 +23,7 @@ const labels = {
     copy: "Copy install",
     copied: "Copied",
     details: "Details",
+    by: "by",
     allPricing: "All pricing",
     free: "Free",
     perCall: "Per call",
@@ -42,6 +44,7 @@ const labels = {
     copy: "复制安装",
     copied: "已复制",
     details: "详情",
+    by: "来自",
     allPricing: "全部价格",
     free: "免费",
     perCall: "按次调用",
@@ -153,6 +156,9 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
               <div>
                 <span>{localizeText(skill.category, locale)}</span>
                 <h2>{localizeText(skill.name, locale)}</h2>
+                <a className="market-skill-card__publisher" href={localizedHref(`/publishers/${publisherSlugFromName(skill.author)}`, locale)}>
+                  {dictionary.by} {skill.author}
+                </a>
               </div>
               <span className={`risk-badge risk-badge--${skill.risk}`}>{dictionary.risk[skill.risk]}</span>
             </div>
