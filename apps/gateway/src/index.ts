@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getPermissionLevel, type SkillSummary } from "@useskillhub/schema";
+import { getPermissionLevel, type SkillBillingModel, type SkillRuntime, type SkillSummary } from "@useskillhub/schema";
 import {
   getRegistryStats,
   getSkillManifest,
@@ -287,8 +287,12 @@ app.get("/v1/skills/search", async (c) => {
   const query = c.req.query("q")?.toLowerCase() ?? "";
   const tags = c.req.query("tags")?.split(",").filter(Boolean) ?? [];
   const limit = Number(c.req.query("limit") ?? "20");
-  const permissionLevel = c.req.query("permissionLevel") as SkillSummary["permissionLevel"] | undefined;
-  const skills = await searchSkills({ query, tags, limit, permissionLevel });
+  const permissionLevel = parsePermissionLevel(c.req.query("permissionLevel"));
+  const runtimeType = parseRuntimeType(c.req.query("runtimeType") ?? c.req.query("runtime"));
+  const billingModel = parseBillingModel(c.req.query("billingModel") ?? c.req.query("pricing"));
+  const verificationStatus = parseVerificationStatus(c.req.query("verificationStatus") ?? c.req.query("verification"));
+  const sort = parseSearchSort(c.req.query("sort"));
+  const skills = await searchSkills({ billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
 
   return c.json({ skills });
 });
@@ -1612,6 +1616,55 @@ function getProcessEnv(key: string): string | undefined {
   }
 
   return process.env[key];
+}
+
+function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {
+  return value === "low" || value === "medium" || value === "high" ? value : undefined;
+}
+
+function parseRuntimeType(value: string | undefined): SkillRuntime["type"] | undefined {
+  const normalized = value?.toLowerCase();
+
+  if (normalized === "http" || normalized === "mcp" || normalized === "local") {
+    return normalized;
+  }
+
+  return undefined;
+}
+
+function parseBillingModel(value: string | undefined): SkillBillingModel | undefined {
+  if (value === "free" || value === "per_call" || value === "subscription") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseVerificationStatus(value: string | undefined): SkillSummary["verificationStatus"] | undefined {
+  if (
+    value === "deprecated" ||
+    value === "draft" ||
+    value === "rejected" ||
+    value === "submitted" ||
+    value === "suspended" ||
+    value === "verified"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseSearchSort(value: string | undefined): "adoption" | "low_risk" | "recommended" | "recent" | "success" | undefined {
+  if (value === "adoption" || value === "recommended" || value === "recent" || value === "success") {
+    return value;
+  }
+
+  if (value === "lowRisk" || value === "low-risk" || value === "low_risk") {
+    return "low_risk";
+  }
+
+  return undefined;
 }
 
 export default app;

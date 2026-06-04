@@ -405,6 +405,13 @@ Added marketplace discovery controls, covering:
 - Empty-state and reset flows make the catalog usable when buyers combine filters too narrowly.
 - This improves first-visit value because developers can narrow to safe, installable skills faster, and improves publisher motivation because verified, low-risk, reliable skills receive better discovery treatment.
 
+Added API-backed marketplace discovery, covering:
+
+- `/v1/skills/search` now accepts runtime, billing model, verification status, permission level, tag, query, limit, and sort parameters.
+- Search summaries now include marketplace-safe runtime type, billing model, install count, invocation count, success rate, average latency, and freshness fields when available.
+- API recommended ranking uses query relevance, verification state, permission risk, install evidence, invocation volume, runtime success, and update freshness.
+- The web marketplace uses recommended API search as its first source, so the browser, CLI, SDK, and agents can converge on the same public discovery contract.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

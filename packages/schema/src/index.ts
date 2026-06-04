@@ -26,6 +26,8 @@ export type SkillRuntime =
       args?: string[];
     };
 
+export type SkillBillingModel = "free" | "per_call" | "subscription";
+
 export type SkillPermissions = {
   network: boolean;
   browser: boolean;
@@ -59,6 +61,13 @@ export type SkillSummary = {
   version: string;
   verificationStatus: "draft" | "submitted" | "verified" | "deprecated" | "rejected" | "suspended";
   permissionLevel: "low" | "medium" | "high";
+  runtimeType?: SkillRuntime["type"];
+  billingModel?: SkillBillingModel;
+  installCount?: number;
+  invocationCount?: number;
+  successRate?: number | null;
+  avgLatencyMs?: number | null;
+  updatedAt?: string;
 };
 
 export const skillManifestJsonSchema = {

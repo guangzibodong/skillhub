@@ -315,7 +315,7 @@ export const dictionaries = {
         },
         {
           title: "Search API",
-          description: "Use /v1/skills/search to list packages by query, tag, limit, and permission level."
+          description: "Use /v1/skills/search to list packages by query, tag, permission, runtime, billing model, verification state, and ranking sort."
         },
         {
           title: "Manifest API",
@@ -667,7 +667,7 @@ export const dictionaries = {
         },
         {
           title: "搜索 API",
-          description: "使用 /v1/skills/search 按查询词、标签、数量和权限等级列出技能包。"
+          description: "使用 /v1/skills/search 按查询词、标签、权限、运行时、价格模型、验证状态和排序方式列出技能包。"
         },
         {
           title: "Manifest API",

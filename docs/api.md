@@ -10,7 +10,19 @@ https://api.useskillhub.com
 
 ```bash
 curl "https://api.useskillhub.com/v1/skills/search?q=research"
+curl "https://api.useskillhub.com/v1/skills/search?runtimeType=http&billingModel=per_call&verificationStatus=verified&sort=recommended"
 ```
+
+Supported public discovery parameters:
+
+- `q`: free-text search across slug, display name, description, and tags.
+- `tags`: comma-separated exact tag filters.
+- `limit`: result count, capped at 100.
+- `permissionLevel`: `low`, `medium`, or `high`.
+- `runtimeType` or `runtime`: `http`, `mcp`, or `local`.
+- `billingModel` or `pricing`: `free`, `per_call`, or `subscription`.
+- `verificationStatus` or `verification`: `draft`, `submitted`, `verified`, `deprecated`, `rejected`, or `suspended`.
+- `sort`: `recommended`, `adoption`, `success`, `low_risk`, or `recent`.
 
 Response:
 
@@ -25,11 +37,20 @@ Response:
       "tags": ["research", "browser", "citations"],
       "version": "0.1.0",
       "verificationStatus": "verified",
-      "permissionLevel": "medium"
+      "permissionLevel": "medium",
+      "runtimeType": "http",
+      "billingModel": "per_call",
+      "installCount": 1280,
+      "invocationCount": 8400,
+      "successRate": 0.982,
+      "avgLatencyMs": 1800,
+      "updatedAt": "2026-06-05T00:00:00.000Z"
     }
   ]
 }
 ```
+
+Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, and freshness. Search remains public because it returns marketplace-safe discovery metadata only.
 
 ## Get Skill Manifest
 
@@ -37,7 +58,7 @@ Response:
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 ```
 
-The public marketplace and skill detail pages now read these registry endpoints first, then fall back to bundled demo content if the API is unavailable. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`.
+The public marketplace and skill detail pages now read these registry endpoints first, then fall back to bundled demo content if the API is unavailable. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`. The marketplace uses `/v1/skills/search?sort=recommended` as the first discovery source before local interactive filtering.
 
 ## Public Publishers
 

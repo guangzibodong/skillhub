@@ -15,6 +15,16 @@ type SkillPriceRecord = {
   createdAt: string;
 };
 
+type PublicMarketplaceSearchOptions = {
+  billingModel?: MarketplaceSkill["billing"];
+  limit?: number;
+  permissionLevel?: MarketplaceSkill["risk"];
+  query?: string;
+  runtimeType?: "http" | "mcp" | "local";
+  sort?: "adoption" | "low_risk" | "recommended" | "recent" | "success";
+  verificationStatus?: SkillSummary["verificationStatus"];
+};
+
 export type MarketplaceSkillSuggestion = {
   reasons: Record<"en" | "zh", string[]>;
   score: number;
@@ -23,9 +33,20 @@ export type MarketplaceSkillSuggestion = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
-export async function getPublicMarketplaceSkills(): Promise<MarketplaceSkill[]> {
+export async function getPublicMarketplaceSkills(options: PublicMarketplaceSearchOptions = {}): Promise<MarketplaceSkill[]> {
   try {
-    const response = await fetch(`${apiUrl}/v1/skills/search?limit=50`, {
+    const searchParams = new URLSearchParams({
+      limit: String(options.limit ?? 50),
+      sort: options.sort ?? "recommended"
+    });
+
+    appendSearchParam(searchParams, "billingModel", options.billingModel);
+    appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
+    appendSearchParam(searchParams, "q", options.query);
+    appendSearchParam(searchParams, "runtimeType", options.runtimeType);
+    appendSearchParam(searchParams, "verificationStatus", options.verificationStatus);
+
+    const response = await fetch(`${apiUrl}/v1/skills/search?${searchParams.toString()}`, {
       cache: "no-store"
     });
 
@@ -142,8 +163,8 @@ function manifestToMarketplaceSkill(
   staticSkill?: MarketplaceSkill
 ): MarketplaceSkill {
   const activePrice = prices.find((price) => price.status === "active") ?? prices[0];
-  const billing = activePrice?.billingModel ?? staticSkill?.billing ?? "free";
-  const runtime = manifest ? runtimeLabel(manifest.runtime.type) : staticSkill?.runtime ?? "HTTP";
+  const billing = activePrice?.billingModel ?? summary.billingModel ?? staticSkill?.billing ?? "free";
+  const runtime = manifest ? runtimeLabel(manifest.runtime.type) : summary.runtimeType ? runtimeLabel(summary.runtimeType) : staticSkill?.runtime ?? "HTTP";
   const categoryKey = inferCategoryKey(summary.tags);
   const category = categoryLabel(categoryKey);
   const author = manifest?.author?.name ?? staticSkill?.author ?? "SkillHub Publisher";
@@ -163,13 +184,13 @@ function manifestToMarketplaceSkill(
       }
     ],
     inputExample: staticSkill?.inputExample ?? schemaExample(manifest?.inputSchema, "input"),
-    installs: staticSkill?.installs ?? "registry",
+    installs: staticSkill?.installs ?? formatCompactCount(summary.installCount),
     installsCommand: {
       cli: `skillhub install ${summary.slug}`,
       mcp: `${apiUrl}/mcp/${summary.slug}`,
       sdk: `await skillhub.run("${summary.slug}", input)`
     },
-    latency: staticSkill?.latency ?? "n/a",
+    latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),
     name: {
       en: summary.displayName,
       zh: staticSkill?.name.zh ?? summary.displayName
@@ -191,7 +212,7 @@ function manifestToMarketplaceSkill(
     runtime,
     securityReport: manifest ? securityRows(manifest, summary) : staticSkill?.securityReport ?? securityRows(null, summary),
     slug: summary.slug,
-    successRate: staticSkill?.successRate ?? "n/a",
+    successRate: staticSkill?.successRate ?? formatSuccessRate(summary.successRate),
     summary: {
       en: summary.description,
       zh: staticSkill?.summary.zh ?? summary.description
@@ -289,7 +310,19 @@ function runtimeLabel(runtime: SkillManifest["runtime"]["type"]): MarketplaceSki
 
 function formatPrice(price: SkillPriceRecord | undefined, billing: MarketplaceSkill["billing"], staticSkill?: MarketplaceSkill) {
   if (!price) {
-    return staticSkill?.price ?? { en: "Free", zh: "免费" };
+    if (staticSkill?.price) {
+      return staticSkill.price;
+    }
+
+    if (billing === "per_call") {
+      return { en: "Per-call pricing", zh: "按次调用价格" };
+    }
+
+    if (billing === "subscription") {
+      return { en: "Subscription pricing", zh: "订阅价格" };
+    }
+
+    return { en: "Free", zh: "免费" };
   }
 
   if (price.billingModel === "free" || price.unitAmountCents <= 0) {
@@ -398,6 +431,44 @@ function schemaExample(schema: SkillManifest["inputSchema"] | undefined, label: 
   }
 
   return JSON.stringify(schema, null, 2);
+}
+
+function appendSearchParam(params: URLSearchParams, key: string, value: string | number | undefined) {
+  if (value === undefined || value === "") {
+    return;
+  }
+
+  params.set(key, String(value));
+}
+
+function formatCompactCount(value: number | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    notation: "compact"
+  }).format(value ?? 0);
+}
+
+function formatLatency(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "n/a";
+  }
+
+  if (value >= 1000) {
+    return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(value / 1000)}s`;
+  }
+
+  return `${Math.round(value)}ms`;
+}
+
+function formatSuccessRate(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "n/a";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    style: "percent"
+  }).format(value);
 }
 
 function scoreRelatedSkill(current: MarketplaceSkill, skill: MarketplaceSkill): MarketplaceSkillSuggestion {
