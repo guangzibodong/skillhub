@@ -28,6 +28,7 @@ import {
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
+  getPublisherFinanceLedger,
   listSkillPrices,
   processBillableUsage,
   releaseAvailableBalances,
@@ -631,6 +632,21 @@ app.get("/v1/publisher/disputes", async (c) => {
   return c.json({
     disputes: await listPublisherDisputes(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.get("/v1/publisher/finance/ledger", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    publisherProfileId: c.req.query("publisherProfileId") ?? undefined,
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json(
+    await getPublisherFinanceLedger(authorization.subject.organizationId, c.req.query("publisherProfileId") ?? undefined)
+  );
 });
 
 app.post("/v1/publisher/payouts", async (c) => {

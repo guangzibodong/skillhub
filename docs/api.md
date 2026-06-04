@@ -312,6 +312,15 @@ curl "https://api.useskillhub.com/v1/admin/finance/ledger" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+Read the current publisher's scoped revenue ledger:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/finance/ledger" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The publisher ledger is read-only and scoped to the token organization. It returns the same summary and recent transaction shape as the admin finance ledger, but only for transaction splits and balances attached to the current publisher profile. This is the source for the dashboard revenue ledger shown to publishers.
+
 Post unprocessed billable usage into the ledger:
 
 ```bash

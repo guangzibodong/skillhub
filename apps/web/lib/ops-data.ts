@@ -946,6 +946,31 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
   }
 }
 
+export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackLedger;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/publisher/finance/ledger`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Publisher finance ledger failed: ${response.status}`);
+    }
+
+    return (await response.json()) as FinanceLedger;
+  } catch {
+    return fallbackLedger;
+  }
+}
+
 export async function getAdminNotifications(): Promise<AdminNotification[]> {
   const token = process.env.SKILLHUB_ADMIN_TOKEN;
 

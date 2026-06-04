@@ -21,9 +21,9 @@ import {
   formatMoney,
   formatPercent,
   getDeveloperProjects,
-  getFinanceLedger,
   getPublisherAccountSummary,
   getPublisherDisputes,
+  getPublisherFinanceLedger,
   getPublisherPayoutSummary,
   getPublisherRefunds,
   getPublisherSkills
@@ -110,7 +110,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherDisputes
   ] = await Promise.all([
     getPlatformOverview(),
-    getFinanceLedger(),
+    getPublisherFinanceLedger(),
     getPublisherPayoutSummary(),
     getPublisherAccountSummary(),
     getPublisherSkills(),

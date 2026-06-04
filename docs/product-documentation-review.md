@@ -229,6 +229,13 @@ Added project policy operations depth, covering:
 - Project detail UI for editing per-skill permission level, network/browser/filesystem/secret access, monthly budget, rate limit, and owner approval state.
 - A concrete developer retention loop around approving risky skills, lowering permission exposure, and controlling spend before agents execute skills.
 
+Added publisher-scoped revenue ledger depth, covering:
+
+- Publisher finance ledger reads scoped to the authorized organization and publisher profile.
+- Summary of gross revenue, platform fee, publisher share, pending balance, available balance, and unprocessed billable usage for the current publisher.
+- Recent transaction rows limited to the current publisher's transaction splits and balance rows.
+- Dashboard revenue ledger now reads the publisher-scoped ledger instead of the admin global finance ledger, giving publishers a trustworthy repeat-use earnings view.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

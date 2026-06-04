@@ -300,17 +300,7 @@ export async function getFinanceLedger() {
   const sql = await getSql();
 
   if (!sql) {
-    return {
-      summary: {
-        grossCents: 0,
-        platformFeeCents: 0,
-        publisherShareCents: 0,
-        pendingBalanceCents: 0,
-        availableBalanceCents: 0,
-        unprocessedUsageCount: 0
-      },
-      recentTransactions: []
-    };
+    return emptyLedger();
   }
 
   const [summaryRows, recentTransactions, unprocessedRows] = await Promise.all([
@@ -352,6 +342,85 @@ export async function getFinanceLedger() {
       where billable = true
         and amount_cents > 0
         and transaction_id is null
+    `
+  ]);
+
+  const summary = summaryRows[0] ?? {};
+
+  return {
+    summary: {
+      grossCents: Number(summary.gross_cents ?? 0),
+      platformFeeCents: Number(summary.platform_fee_cents ?? 0),
+      publisherShareCents: Number(summary.publisher_share_cents ?? 0),
+      pendingBalanceCents: Number(summary.pending_balance_cents ?? 0),
+      availableBalanceCents: Number(summary.available_balance_cents ?? 0),
+      unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0)
+    },
+    recentTransactions
+  };
+}
+
+export async function getPublisherFinanceLedger(
+  organizationId?: string | null,
+  publisherProfileId?: string | null
+) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return emptyLedger();
+  }
+
+  const scopedOrganizationId = organizationId ?? null;
+  const scopedPublisherProfileId = publisherProfileId ?? null;
+
+  const [summaryRows, recentTransactions, unprocessedRows] = await Promise.all([
+    sql`
+      select
+        coalesce(sum(t.amount_cents), 0)::int as gross_cents,
+        coalesce(sum(ts.platform_fee_cents), 0)::int as platform_fee_cents,
+        coalesce(sum(ts.publisher_share_cents), 0)::int as publisher_share_cents,
+        coalesce(sum(pb.amount_cents) filter (where pb.state = 'pending'), 0)::int as pending_balance_cents,
+        coalesce(sum(pb.amount_cents) filter (where pb.state = 'available'), 0)::int as available_balance_cents
+      from transaction_splits ts
+      join transactions t on t.id = ts.transaction_id
+      left join publisher_balances pb on pb.transaction_split_id = ts.id
+      join publisher_profiles pp on pp.id = coalesce(ts.publisher_profile_id, pb.publisher_profile_id)
+      where (${scopedOrganizationId}::uuid is null or pp.organization_id = ${scopedOrganizationId})
+        and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
+    `,
+    sql`
+      select
+        t.id::text,
+        s.slug as "skillSlug",
+        s.display_name as "skillName",
+        t.amount_cents as "grossCents",
+        t.currency,
+        t.status,
+        ts.platform_fee_cents as "platformFeeCents",
+        ts.publisher_share_cents as "publisherShareCents",
+        pb.state as "balanceState",
+        pb.available_at as "availableAt",
+        t.created_at as "createdAt"
+      from transaction_splits ts
+      join transactions t on t.id = ts.transaction_id
+      left join skills s on s.id = t.skill_id
+      left join publisher_balances pb on pb.transaction_split_id = ts.id
+      join publisher_profiles pp on pp.id = coalesce(ts.publisher_profile_id, pb.publisher_profile_id)
+      where (${scopedOrganizationId}::uuid is null or pp.organization_id = ${scopedOrganizationId})
+        and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
+      order by t.created_at desc
+      limit 50
+    `,
+    sql`
+      select count(*)::int as count
+      from usage_events ue
+      join skills s on s.id = ue.skill_id
+      left join publisher_profiles pp on pp.organization_id = s.organization_id
+      where ue.billable = true
+        and ue.amount_cents > 0
+        and ue.transaction_id is null
+        and (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
+        and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
     `
   ]);
 
@@ -524,6 +593,20 @@ function getBalanceDelayDays() {
   const raw = getProcessEnv("SKILLHUB_BALANCE_DELAY_DAYS");
   const parsed = Number(raw ?? "14");
   return Number.isFinite(parsed) && parsed >= 0 ? Math.trunc(parsed) : 14;
+}
+
+function emptyLedger() {
+  return {
+    summary: {
+      grossCents: 0,
+      platformFeeCents: 0,
+      publisherShareCents: 0,
+      pendingBalanceCents: 0,
+      availableBalanceCents: 0,
+      unprocessedUsageCount: 0
+    },
+    recentTransactions: []
+  };
 }
 
 function getProcessEnv(key: string): string | undefined {
