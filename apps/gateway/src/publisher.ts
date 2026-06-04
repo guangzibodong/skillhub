@@ -137,7 +137,7 @@ export async function upsertPublisherProfile(organizationId: string | null | und
   const sql = await requireSql();
   const scopedOrganizationId = requireOrganizationId(organizationId);
   const displayName = normalizeDisplay(input.displayName, "SkillHub Publisher");
-  const status = normalizePublisherStatus(input.status ?? "active");
+  const status = input.status ? normalizePublisherStatus(input.status) : null;
 
   const rows = (await sql`
     insert into publisher_profiles (
@@ -150,13 +150,13 @@ export async function upsertPublisherProfile(organizationId: string | null | und
     values (
       ${scopedOrganizationId},
       ${displayName},
-      ${status},
+      ${status ?? "active"},
       'not_configured',
       now()
     )
     on conflict (organization_id) do update set
       display_name = excluded.display_name,
-      status = excluded.status,
+      status = coalesce(${status}, publisher_profiles.status),
       updated_at = now()
     returning
       id::text,

@@ -628,6 +628,8 @@ curl -X PUT "https://api.useskillhub.com/v1/publisher/profile" \
   -d '{"displayName":"SkillHub Publisher","status":"active"}'
 ```
 
+If `status` is omitted, the existing publisher status is preserved. This lets the dashboard update the public display name without accidentally restoring a restricted or suspended publisher profile.
+
 Create a payout-account onboarding handoff:
 
 ```bash
@@ -651,6 +653,8 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding
 ```
 
 Current onboarding sessions are provider-deferred records. They model provider handoff URLs, session status, payout account status, publisher payout readiness, audit logs, and notification events before the final payment provider API is connected.
+
+The dashboard publisher account panel uses these same endpoints. Publishers can edit the public publisher name, create a deferred payout-account handoff, open the handoff URL, and record a readiness decision against the latest onboarding session or payout account. The final Stripe/Connect-style provider integration can replace the manual provider handoff without changing the surrounding dashboard state model.
 
 Read publisher payout readiness:
 

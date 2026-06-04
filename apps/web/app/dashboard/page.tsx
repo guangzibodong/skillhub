@@ -19,6 +19,7 @@ import { NotificationInboxManager } from "@/components/notification-inbox-manage
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { ProjectCreateForm } from "@/components/project-create-form";
+import { PublisherAccountManager } from "@/components/publisher-account-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -115,6 +116,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.useskillhub.com";
+  const dashboardReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/dashboard", locale)}`;
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
   const [
@@ -380,6 +383,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </article>
 
         <aside className="finance-side">
+          <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
+
           <article className="ops-panel payout-panel">
             <div className="card-kicker">
               <WalletCards size={16} aria-hidden="true" />

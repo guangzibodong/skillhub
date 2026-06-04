@@ -1704,6 +1704,139 @@ a {
   overflow-wrap: anywhere;
 }
 
+.publisher-account-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.publisher-account-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.publisher-account-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.publisher-account-status-tile {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  min-height: 96px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.publisher-account-status-tile svg {
+  color: var(--cyan);
+}
+
+.publisher-account-status-tile span,
+.publisher-profile-form label span,
+.publisher-onboarding-form label span,
+.publisher-readiness-form label span,
+.publisher-account-foot span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.publisher-account-status-tile strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.publisher-profile-form,
+.publisher-onboarding-form,
+.publisher-readiness-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.publisher-profile-form strong,
+.publisher-onboarding-form strong,
+.publisher-readiness-form strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.publisher-profile-form label,
+.publisher-onboarding-form label,
+.publisher-readiness-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.publisher-profile-form input,
+.publisher-onboarding-form input,
+.publisher-readiness-form input,
+.publisher-readiness-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.publisher-profile-form input::placeholder,
+.publisher-onboarding-form input::placeholder,
+.publisher-readiness-form input::placeholder {
+  color: #7d8476;
+}
+
+.publisher-readiness-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.publisher-onboarding-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(124, 199, 216, 0.22);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.08);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
+.publisher-account-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.publisher-account-foot strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 12px;
+}
+
 .notification-preference-panel {
   display: grid;
   gap: 14px;
@@ -4768,9 +4901,14 @@ a {
 
   .metric-strip,
   .status-grid,
+  .publisher-account-status-grid,
   .organization-billing-form,
   .organization-payment-form {
     grid-template-columns: 1fr;
+  }
+
+  .publisher-onboarding-link {
+    width: 100%;
   }
 
   .metric {

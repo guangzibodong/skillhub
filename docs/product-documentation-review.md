@@ -208,6 +208,7 @@ Added provider-deferred payout account onboarding, covering:
 - Payout account onboarding session creation with provider handoff URL, return URL, refresh URL, status, expiry, and audit trail.
 - Onboarding completion can mark payout accounts verified, verification-required, blocked, or not configured.
 - Publisher payout readiness now reads payout account and onboarding session state in the dashboard.
+- Dashboard publisher account operations now expose public publisher profile editing, payout handoff creation, handoff link access, and readiness decisions. This gives publishers a concrete setup loop before real payment-provider onboarding is connected.
 
 Added tenant-scoped refund and dispute history, covering:
 

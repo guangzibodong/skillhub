@@ -299,6 +299,7 @@ Completed:
 - Publisher profile and payout-account onboarding endpoints.
 - Provider-deferred onboarding session records for payout handoff, completion, blocking, audit, and notifications.
 - Publisher dashboard reads payout account and onboarding state.
+- Dashboard publisher account panel now lets publishers update their public profile name, create deferred payout onboarding sessions, open the provider handoff link, and record payout readiness decisions while preserving existing restricted/suspended publisher status when no status change is requested.
 - Publisher-scoped refund and dispute history endpoints.
 - Project-scoped refund and dispute history endpoints for developer operators.
 - Publisher dashboard shows recent refund and dispute activity beside ledger and payout readiness.
