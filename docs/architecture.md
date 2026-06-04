@@ -1,28 +1,41 @@
 # SkillHub Architecture
 
-SkillHub has three layers:
+This file is now the short architecture index.
 
-1. Registry: stores skills, manifests, versions, verification status, ownership, package assets, and search metadata.
-2. Runtime gateway: lets agents discover and invoke skills through HTTP and MCP-compatible endpoints.
-3. Trust layer: validates manifests, enforces permissions, logs calls, supports reviews, and tracks verification state.
+Read the full architecture here:
 
-## Core Services
+- [Technical Architecture](./technical-architecture.md)
+- [Product Requirements](./product-requirements.md)
+- [Marketplace Platform Design](./marketplace-platform-design.md)
+- [Marketplace Competitive Research](./marketplace-competitive-research.md)
 
-- Web app: Next.js dashboard for developers and organizations.
-- Gateway: Cloudflare Workers API for low-latency discovery and runtime calls.
-- Database: Supabase Postgres for registry data, organizations, projects, keys, and audit logs.
-- Package storage: Cloudflare R2 for signed skill package uploads.
-- Async jobs: Cloudflare Queues for verification, indexing, and package scans.
+## One-Sentence Architecture
 
-## First Public API
+SkillHub is a contract-first registry, marketplace, runtime gateway, trust system, and ledger-backed payout platform for AI-agent skills.
 
-- `GET /health`
-- `GET /v1/skills/search?q=...`
-- `GET /v1/skills/:slug`
-- `POST /v1/skills`
-- `POST /v1/skills/:slug/versions`
-- `POST /mcp`
+## System Layers
 
-## Trust Model
+```text
+Public web and dashboards
+-> Gateway API
+-> Registry, runtime, trust, metering, billing, payout domains
+-> Postgres, Redis, object storage later, payment provider later
+```
 
-Every skill declares permissions in its manifest. Runtime callers can filter by permission level before loading a skill. Verified skills require passing schema validation, examples, evals, and manual review.
+## Current Production Stack
+
+```text
+Next.js web app
+Hono gateway API
+Postgres
+Redis
+Docker Compose on Debian through 1Panel/reverse proxy
+```
+
+## Build Direction
+
+1. Real accounts, organizations, roles, projects, and API keys.
+2. Database-backed skill publishing and review workflow.
+3. Runtime invocation, metering, logs, budgets, and version pins.
+4. Ledger-backed pricing, transactions, splits, and balances.
+5. Payment provider integration, connected payout accounts, refunds, disputes, and payout review.
