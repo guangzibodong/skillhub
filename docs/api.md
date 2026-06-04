@@ -674,6 +674,8 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payouts" \
 
 The current provider-deferred workflow requests all available balances by currency. This avoids partial balance mutation until the final payment provider is connected.
 
+The dashboard withdrawal panel calls this endpoint directly when the publisher has a verified payout account and available balance above the configured threshold. The request reserves all eligible available balances and moves them into the finance payout queue.
+
 Read the admin payout queue:
 
 ```bash

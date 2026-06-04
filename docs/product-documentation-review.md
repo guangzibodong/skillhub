@@ -169,6 +169,7 @@ Added payout workflow states, covering:
 
 - Payout requests reserve concrete publisher balance rows.
 - Admin can approve, mark paid, fail, or block payout requests.
+- Dashboard withdrawal operations now let verified publishers request payout for eligible available balances, turning earnings visibility into an actual payout workflow before provider money movement is connected.
 
 Added trust and takedown operations, covering:
 

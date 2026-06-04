@@ -2,7 +2,6 @@ import {
   Activity,
   BarChart3,
   BriefcaseBusiness,
-  CheckCircle2,
   CircleDollarSign,
   CreditCard,
   FileClock,
@@ -20,6 +19,7 @@ import { OrganizationBillingManager } from "@/components/organization-billing-ma
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { PublisherAccountManager } from "@/components/publisher-account-manager";
+import { PublisherPayoutManager } from "@/components/publisher-payout-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -166,22 +166,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
     [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
     [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
-  ];
-  const payoutAccount = publisherAccount.payoutAccounts[0] ?? payoutSummary.payoutAccounts[0];
-  const latestOnboarding = publisherAccount.onboardingSessions[0];
-  const latestPayout = payoutSummary.payouts[0];
-  const payoutItems = [
-    [labels.payoutItems[0][0], payoutAccount?.status ?? "not configured"],
-    [labels.payoutItems[1][0], publisherAccount.publisherProfile?.payoutStatus ?? payoutSummary.publisherProfile?.payoutStatus ?? "not configured"],
-    [labels.payoutItems[2][0], formatMoney(payoutSummary.balances.minPayoutCents, payoutSummary.balances.currency)],
-    [
-      labels.payoutItems[3][0],
-      latestOnboarding
-        ? `${latestOnboarding.provider} / ${latestOnboarding.status}`
-        : latestPayout
-        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${latestPayout.status}`
-        : `${formatMoney(payoutSummary.balances.availableCents, payoutSummary.balances.currency)} available`
-    ]
   ];
   const publisherPipelineRows =
     publisherSkills.length > 0
@@ -385,21 +369,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         <aside className="finance-side">
           <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
 
-          <article className="ops-panel payout-panel">
-            <div className="card-kicker">
-              <WalletCards size={16} aria-hidden="true" />
-              <span>{labels.payoutTitle}</span>
-            </div>
-            <div className="payout-list">
-              {payoutItems.map(([label, value]) => (
-                <div className="payout-row" key={label}>
-                  <CheckCircle2 size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
+          <PublisherPayoutManager locale={locale} summary={payoutSummary} />
 
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
 

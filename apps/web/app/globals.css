@@ -1837,6 +1837,56 @@ a {
   font-size: 12px;
 }
 
+.payout-request-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.payout-balance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.payout-balance-tile {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  min-height: 86px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.payout-balance-tile svg {
+  color: var(--signal);
+}
+
+.payout-balance-tile span,
+.payout-request-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.payout-balance-tile strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.publisher-payout-request-form {
+  display: grid;
+}
+
+.payout-request-hint {
+  margin: 0;
+}
+
 .notification-preference-panel {
   display: grid;
   gap: 14px;
@@ -4902,6 +4952,7 @@ a {
   .metric-strip,
   .status-grid,
   .publisher-account-status-grid,
+  .payout-balance-grid,
   .organization-billing-form,
   .organization-payment-form {
     grid-template-columns: 1fr;
