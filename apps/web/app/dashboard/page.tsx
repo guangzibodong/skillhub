@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   WalletCards
 } from "lucide-react";
+import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
@@ -22,6 +23,7 @@ import {
   formatMoney,
   formatPercent,
   getDeveloperProjects,
+  getOrganizationBillingSummary,
   getPublisherAccountSummary,
   getPublisherBuyerRequests,
   getPublisherDisputes,
@@ -116,7 +118,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherBuyerRequests,
     developerProjects,
     publisherRefunds,
-    publisherDisputes
+    publisherDisputes,
+    organizationBilling
   ] = await Promise.all([
     getPlatformOverview(),
     getPublisherFinanceLedger(),
@@ -126,7 +129,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getPublisherBuyerRequests(),
     getDeveloperProjects(),
     getPublisherRefunds(),
-    getPublisherDisputes()
+    getPublisherDisputes(),
+    getOrganizationBillingSummary()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
@@ -392,20 +396,24 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </div>
         </article>
 
-        <aside className="ops-panel payout-panel">
-          <div className="card-kicker">
-            <WalletCards size={16} aria-hidden="true" />
-            <span>{labels.payoutTitle}</span>
-          </div>
-          <div className="payout-list">
-            {payoutItems.map(([label, value]) => (
-              <div className="payout-row" key={label}>
-                <CheckCircle2 size={16} aria-hidden="true" />
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
+        <aside className="finance-side">
+          <article className="ops-panel payout-panel">
+            <div className="card-kicker">
+              <WalletCards size={16} aria-hidden="true" />
+              <span>{labels.payoutTitle}</span>
+            </div>
+            <div className="payout-list">
+              {payoutItems.map(([label, value]) => (
+                <div className="payout-row" key={label}>
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <OrganizationBillingManager billing={organizationBilling} locale={locale} />
         </aside>
       </section>
 

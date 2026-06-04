@@ -34,6 +34,12 @@ import {
   invoiceToCsv,
   listProjectInvoices
 } from "./project-invoices.js";
+import {
+  getOrganizationBillingSummary,
+  updateOrganizationPaymentMethodStatus,
+  upsertOrganizationBillingProfile,
+  upsertOrganizationPaymentMethod
+} from "./organization-billing.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
@@ -116,6 +122,7 @@ const projectOperatorRoles: AuthRole[] = ["super_admin", "admin", "owner", "deve
 const publisherOperatorRoles: AuthRole[] = ["super_admin", "admin", "owner", "publisher"];
 const reviewOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
+const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "finance"];
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
 
 app.use(
@@ -163,6 +170,91 @@ app.post("/v1/auth/bootstrap-token", async (c) => {
     );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to create bootstrap user token." }, 400);
+  }
+});
+
+app.get("/v1/organization/billing", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationBillingRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      billing: await getOrganizationBillingSummary(authorization.subject.organizationId)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to read organization billing." }, 400);
+  }
+});
+
+app.put("/v1/organization/billing/profile", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationBillingRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      billingProfile: await upsertOrganizationBillingProfile(
+        authorization.subject.organizationId,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update organization billing profile." }, 400);
+  }
+});
+
+app.post("/v1/organization/billing/payment-methods", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationBillingRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        paymentMethod: await upsertOrganizationPaymentMethod(
+          authorization.subject.organizationId,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to add organization payment method." }, 400);
+  }
+});
+
+app.put("/v1/organization/billing/payment-methods/:paymentMethodId", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationBillingRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      paymentMethod: await updateOrganizationPaymentMethodStatus(
+        authorization.subject.organizationId,
+        c.req.param("paymentMethodId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update organization payment method." }, 400);
   }
 });
 

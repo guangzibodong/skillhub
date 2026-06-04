@@ -272,6 +272,13 @@ Added project invoice records, covering:
 - Each invoice generation writes audit and in-app notification records before payment-provider invoice APIs are connected.
 - Project detail now gives developers, finance operators, and organization owners a concrete repeat-use loop for reconciling agent spend, archiving cost records, and preparing internal approvals.
 
+Added organization billing readiness, covering:
+
+- Organization owners, admins, and finance operators can maintain invoice profile data and payment method state records inside their own organization scope.
+- Payment method records store provider references and status metadata only, keeping raw card or bank credentials out of SkillHub until the final payment-provider integration.
+- Each billing profile or payment method state change writes audit and in-app notification records.
+- Dashboard finance operations now gives organization owners and finance users a concrete repeat-use loop for keeping billing details complete, preparing provider onboarding, and ensuring invoices are operationally usable.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

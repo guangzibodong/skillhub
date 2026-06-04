@@ -325,13 +325,15 @@ Completed:
 - Project detail console now exposes update handling controls with notes and schedule dates; adopted and ignored updates leave the active inbox and project update counts.
 - Project invoice endpoints now let project operators list, generate, inspect, and download CSV invoices generated from posted project transactions under organization-scoped authorization.
 - Project detail console now exposes invoice generation, totals, due dates, line item counts, and CSV download links so project finance history is visible before payment-provider invoice APIs are connected.
+- Organization billing endpoints now let owner/admin/finance operators read and update billing profile data plus payment method state records under organization-scoped authorization, with audit and notification records.
+- Dashboard finance operations now exposes billing readiness, invoice profile editing, manual/provider payment method status, and default payment method controls before payment-provider APIs are connected.
 
 Next:
 
 - Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Organization billing profile and payment-method state modeling.
+- Payment-provider customer/session integration after billing states are stable.
 
 ## Engineering Acceptance Standard
 

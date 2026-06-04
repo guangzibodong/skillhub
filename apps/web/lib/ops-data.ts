@@ -115,6 +115,51 @@ export type PublisherAccountSummary = {
   }>;
 };
 
+export type OrganizationBillingProfile = {
+  id: string;
+  organizationId: string;
+  billingName: string;
+  billingEmail: string | null;
+  taxId: string | null;
+  country: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  region: string | null;
+  postalCode: string | null;
+  invoiceNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OrganizationPaymentMethod = {
+  id: string;
+  organizationId: string;
+  provider: string;
+  providerCustomerId: string | null;
+  providerPaymentMethodId: string | null;
+  methodType: "bank_account" | "card" | "external" | "invoice";
+  brand: string | null;
+  last4: string | null;
+  expMonth: number | null;
+  expYear: number | null;
+  status: "not_configured" | "pending" | "ready" | "requires_action" | "failed" | "disabled";
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OrganizationBillingSummary = {
+  billingProfile: OrganizationBillingProfile | null;
+  paymentMethods: OrganizationPaymentMethod[];
+  summary: {
+    defaultPaymentMethodStatus: string;
+    invoiceReady: boolean;
+    paymentMethodCount: number;
+    profileComplete: boolean;
+  };
+};
+
 export type RefundRecord = {
   id: string;
   transactionId: string | null;
@@ -544,6 +589,49 @@ const fallbackPublisherAccountSummary: PublisherAccountSummary = {
       updatedAt: "demo"
     }
   ]
+};
+
+const fallbackOrganizationBillingSummary: OrganizationBillingSummary = {
+  billingProfile: {
+    id: "demo-billing-profile",
+    organizationId: "demo-org",
+    billingName: "SkillHub Demo Org",
+    billingEmail: "billing@example.com",
+    taxId: null,
+    country: "US",
+    addressLine1: "Demo billing address",
+    addressLine2: null,
+    city: "San Francisco",
+    region: "CA",
+    postalCode: "94105",
+    invoiceNotes: "Demo billing profile for local development.",
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  paymentMethods: [
+    {
+      id: "demo-payment-method",
+      organizationId: "demo-org",
+      provider: "manual",
+      providerCustomerId: null,
+      providerPaymentMethodId: null,
+      methodType: "invoice",
+      brand: "manual",
+      last4: null,
+      expMonth: null,
+      expYear: null,
+      status: "ready",
+      isDefault: true,
+      createdAt: "demo",
+      updatedAt: "demo"
+    }
+  ],
+  summary: {
+    defaultPaymentMethodStatus: "ready",
+    invoiceReady: true,
+    paymentMethodCount: 1,
+    profileComplete: true
+  }
 };
 
 const fallbackRefunds: RefundRecord[] = [
@@ -1211,6 +1299,32 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
     return (await response.json()) as PublisherAccountSummary;
   } catch {
     return fallbackPublisherAccountSummary;
+  }
+}
+
+export async function getOrganizationBillingSummary(): Promise<OrganizationBillingSummary> {
+  const token = getWorkspaceToken();
+
+  if (!token) {
+    return fallbackOrganizationBillingSummary;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/organization/billing`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Organization billing failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { billing: OrganizationBillingSummary };
+    return payload.billing;
+  } catch {
+    return fallbackOrganizationBillingSummary;
   }
 }
 

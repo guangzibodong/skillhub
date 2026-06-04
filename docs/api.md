@@ -264,6 +264,61 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/invoices/INVOICE_ID
 
 Invoices are generated from immutable posted `transactions`, not raw invocation logs. Regenerating the same project, period, and currency refreshes the same invoice totals and line items. Generation writes an audit record and in-app notification before payment-provider invoice APIs are connected.
 
+## Organization Billing
+
+Read the current organization billing readiness state:
+
+```bash
+curl "https://api.useskillhub.com/v1/organization/billing" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Update invoice billing profile:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/organization/billing/profile" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "billingName": "Acme AI Ops",
+    "billingEmail": "billing@example.com",
+    "taxId": "US-123456",
+    "country": "US",
+    "addressLine1": "123 Market Street",
+    "city": "San Francisco",
+    "region": "CA",
+    "postalCode": "94105",
+    "invoiceNotes": "Route invoices to AI operations cost center."
+  }'
+```
+
+Add or update a payment method state record. `providerPaymentMethodId` is a provider reference only; send no raw card or bank credentials to SkillHub:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/organization/billing/payment-methods" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "manual",
+    "providerCustomerId": "cus_manual_demo",
+    "providerPaymentMethodId": "pm_manual_invoice",
+    "methodType": "invoice",
+    "status": "pending",
+    "isDefault": true
+  }'
+```
+
+Update an existing payment method state:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/organization/billing/payment-methods/PAYMENT_METHOD_ID" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"ready","isDefault":true}'
+```
+
+Organization billing is scoped to the token organization and available to owner/admin/finance roles. Payment method records store provider references, status, brand, and last4-style metadata only; raw card or bank credentials must stay with the final payment provider integration. Every billing profile or payment method state change writes audit and in-app notification records.
+
 ## Project API Keys
 
 Project API keys authenticate agent runtime calls. The raw key is returned only once when it is created; SkillHub stores only a hash plus display metadata.

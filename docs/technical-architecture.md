@@ -150,6 +150,8 @@ Marketplace and operations migrations add:
 ```text
 users
 organization_members
+organization_billing_profiles
+organization_payment_methods
 publisher_profiles
 skill_reviews
 skill_prices

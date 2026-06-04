@@ -244,12 +244,14 @@ a {
   transform: translateY(-1px);
 }
 
-.primary-button:disabled {
+.primary-button:disabled,
+.secondary-button:disabled {
   cursor: not-allowed;
   opacity: 0.52;
 }
 
-.primary-button:disabled:hover {
+.primary-button:disabled:hover,
+.secondary-button:disabled:hover {
   transform: none;
 }
 
@@ -1410,9 +1412,15 @@ a {
 }
 
 .finance-layout {
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) minmax(390px, 420px);
   align-items: start;
   margin-bottom: 72px;
+}
+
+.finance-side {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
 }
 
 .ledger-table {
@@ -1479,6 +1487,117 @@ a {
 
 .payout-row {
   grid-template-columns: auto minmax(0, 1fr) minmax(86px, auto);
+}
+
+.organization-billing-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.organization-billing-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.organization-billing-form,
+.organization-payment-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.organization-billing-form strong,
+.organization-payment-section > strong {
+  grid-column: 1 / -1;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.organization-billing-form label,
+.organization-payment-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.organization-billing-form label span,
+.organization-payment-form label span,
+.organization-payment-card span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.organization-billing-form input,
+.organization-payment-form input,
+.organization-payment-form select,
+.organization-payment-card select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.organization-billing-form select option,
+.organization-payment-form select option,
+.organization-payment-card select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.organization-billing-form__wide,
+.organization-payment-form__submit,
+.organization-payment-form__default,
+.organization-payment-form__wide {
+  grid-column: 1 / -1;
+}
+
+.organization-payment-section,
+.organization-payment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.organization-payment-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 11px;
+}
+
+.organization-payment-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.organization-payment-card div {
+  display: grid;
+  gap: 4px;
+}
+
+.organization-payment-card strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.organization-payment-card span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-layout {
@@ -2931,8 +3050,8 @@ a {
 }
 
 .work-table__row {
-  grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.55fr) minmax(110px, 0.42fr) minmax(190px, 0.8fr);
-  min-width: 760px;
+  grid-template-columns: minmax(150px, 1fr) minmax(100px, 0.55fr) minmax(96px, 0.42fr) minmax(140px, 0.8fr);
+  min-width: 0;
 }
 
 .adjustment-row {
@@ -3571,6 +3690,10 @@ a {
     width: 100%;
   }
 
+  .work-table__row {
+    min-width: 760px;
+  }
+
   .metric-strip,
   .status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3670,7 +3793,9 @@ a {
   }
 
   .metric-strip,
-  .status-grid {
+  .status-grid,
+  .organization-billing-form,
+  .organization-payment-form {
     grid-template-columns: 1fr;
   }
 
