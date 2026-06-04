@@ -327,10 +327,10 @@ Completed:
 - Project detail console now exposes invoice generation, totals, due dates, line item counts, and CSV download links so project finance history is visible before payment-provider invoice APIs are connected.
 - Organization billing endpoints now let owner/admin/finance operators read and update billing profile data plus payment method state records under organization-scoped authorization, with audit and notification records.
 - Dashboard finance operations now exposes billing readiness, invoice profile editing, manual/provider payment method status, and default payment method controls before payment-provider APIs are connected.
+- Publisher overview endpoint now requires publisher/owner/admin authorization and returns organization-scoped review, runtime-check, buyer-request, and publisher balance signals instead of global marketplace aggregates.
 
 Next:
 
-- Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.

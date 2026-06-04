@@ -279,6 +279,12 @@ Added organization billing readiness, covering:
 - Each billing profile or payment method state change writes audit and in-app notification records.
 - Dashboard finance operations now gives organization owners and finance users a concrete repeat-use loop for keeping billing details complete, preparing provider onboarding, and ensuring invoices are operationally usable.
 
+Added tenant-scoped publisher overview, covering:
+
+- Publisher overview now requires publisher, owner, or admin authorization instead of serving global marketplace aggregates publicly.
+- Review pipeline, runtime-check, buyer-request, and balance signals are composed from organization-scoped publisher skill, finance ledger, and buyer-request data.
+- This strengthens publisher trust because a repeat-use dashboard summary now reflects the publisher's own operating backlog, demand opportunities, and revenue state.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

@@ -41,6 +41,7 @@ import {
   upsertOrganizationPaymentMethod
 } from "./organization-billing.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
+import { getPublisherOverview } from "./publisher-overview.js";
 import {
   getFinanceLedger,
   getPublisherFinanceLedger,
@@ -370,8 +371,19 @@ app.post("/v1/developer/buyer-requests/:requestId/decision", async (c) => {
 });
 
 app.get("/v1/publisher/overview", async (c) => {
-  const overview = await getPlatformOverview();
-  return c.json(overview.publisher);
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.organizationId) {
+    return c.json({ error: "Publisher overview requires an organization-scoped user token." }, 403);
+  }
+
+  return c.json(await getPublisherOverview(authorization.subject.organizationId));
 });
 
 app.get("/v1/admin/overview", async (c) => {

@@ -50,14 +50,20 @@ These endpoints expose the first real operating shape for the two-sided marketpl
 ```bash
 curl "https://api.useskillhub.com/v1/platform/overview"
 curl "https://api.useskillhub.com/v1/developer/overview"
-curl "https://api.useskillhub.com/v1/publisher/overview"
 curl "https://api.useskillhub.com/v1/admin/overview"
+```
+
+Publisher overview is organization scoped and requires a publisher, owner, or admin user token:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/overview" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 The overview includes:
 
 - Developer installed-skill and update-inbox signals.
-- Publisher review, runtime-check, buyer-request, and balance signals.
+- Publisher review, runtime-check, buyer-request, and balance signals scoped to the token organization.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
 ## Identity And RBAC
