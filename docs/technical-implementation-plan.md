@@ -317,13 +317,15 @@ Completed:
 - Dashboard revenue ledger now reads the publisher-scoped finance ledger instead of the admin global finance ledger, so publishers see their own earnings state.
 - Buyer request board endpoints now let developer organizations create and decide requests while publishers can view open demand, claim requests, and submit builds under organization-scoped authorization.
 - Dashboard publisher workspace now shows a buyer request board with request, category, bounty, status, requester, due date, and next action signals.
+- Project installed-skill status endpoint now lets project operators restore, suspend, or remove installs under organization-scoped authorization, with audit and notification records.
+- Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
 
 Next:
 
 - Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project write workflows for update handling actions, invoice detail views, subscription lifecycle actions, and installed-skill removal/suspension.
+- Project write workflows for update handling actions, invoice detail views, and subscription lifecycle actions.
 
 ## Engineering Acceptance Standard
 

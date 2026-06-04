@@ -10,6 +10,8 @@ type ProjectInstallInput = {
   version?: string;
 };
 
+type ProjectInstallStatus = "installed" | "suspended" | "removed";
+
 type PolicyInput = {
   maxPermissionLevel?: SkillSummary["permissionLevel"];
   allowNetwork?: boolean;
@@ -202,6 +204,94 @@ export async function installSkill(input: ProjectInstallInput) {
     permissionLevel,
     installedAt: installRows[0].installedAt
   };
+}
+
+export async function updateProjectInstallStatus(
+  projectSlug: string,
+  skillSlug: string,
+  status: ProjectInstallStatus,
+  organizationId?: string | null
+) {
+  const sql = await requireSql();
+  await seedRegistry(sql);
+
+  if (!["installed", "suspended", "removed"].includes(status)) {
+    throw new Error("Install status must be installed, suspended, or removed.");
+  }
+
+  const scopedOrganizationId = organizationId ?? null;
+
+  return sql.begin(async (tx: Sql) => {
+    const rows = (await tx`
+      update project_skill_installs psi
+      set
+        status = ${status},
+        updated_at = now()
+      from projects p, skills s
+      where psi.project_id = p.id
+        and psi.skill_id = s.id
+        and p.slug = ${projectSlug}
+        and s.slug = ${skillSlug}
+        and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
+      returning
+        psi.id::text,
+        p.slug as "projectSlug",
+        p.organization_id::text as "organizationId",
+        s.slug as "skillSlug",
+        s.display_name as "displayName",
+        psi.status,
+        psi.approval_state as "approvalState",
+        psi.updated_at as "updatedAt"
+    `) as Array<{
+      id: string;
+      projectSlug: string;
+      organizationId: string;
+      skillSlug: string;
+      displayName: string;
+      status: ProjectInstallStatus;
+      approvalState: string;
+      updatedAt: string;
+    }>;
+    const install = rows[0];
+
+    if (!install) {
+      throw new Error("Installed skill not found for this project.");
+    }
+
+    await tx`
+      insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
+      values (
+        ${`project_install.${status}`},
+        'project_skill_install',
+        ${install.id},
+        ${`Project skill install marked ${status}.`},
+        ${tx.json({
+          projectSlug,
+          skillSlug,
+          status,
+          organizationId: install.organizationId
+        })}
+      )
+    `;
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${install.organizationId},
+        ${`project_install.${status}`},
+        'in_app',
+        ${`Project skill ${status}`},
+        ${tx.json({
+          projectSlug,
+          skillSlug,
+          displayName: install.displayName,
+          status
+        })},
+        'queued'
+      )
+    `;
+
+    return install;
+  });
 }
 
 export async function listProjectPolicies(projectSlug: string, organizationId?: string | null) {

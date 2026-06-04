@@ -17,6 +17,7 @@ import {
   listProjectUpdateInbox,
   listReviewQueue,
   submitSkillForReview,
+  updateProjectInstallStatus,
   upsertProjectPolicy
 } from "./operations.js";
 import {
@@ -319,6 +320,35 @@ app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
     return c.json({ install }, 201);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to install skill." }, 400);
+  }
+});
+
+app.put("/v1/projects/:projectSlug/installed-skills/:skillSlug/status", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { status?: "installed" | "suspended" | "removed" };
+
+  if (!body.status) {
+    return c.json({ error: "Missing install status." }, 400);
+  }
+
+  try {
+    return c.json({
+      install: await updateProjectInstallStatus(
+        c.req.param("projectSlug"),
+        c.req.param("skillSlug"),
+        body.status,
+        authorization.subject.organizationId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update install status." }, 400);
   }
 });
 

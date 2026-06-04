@@ -2429,6 +2429,16 @@ a {
   padding: 0 10px;
 }
 
+.secondary-button--danger {
+  border-color: rgba(255, 133, 111, 0.24);
+  color: var(--coral);
+}
+
+.secondary-button--danger:hover {
+  background: rgba(255, 133, 111, 0.08);
+  color: var(--coral);
+}
+
 .policy-editor {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2488,6 +2498,17 @@ a {
 
 .policy-editor__save {
   align-self: end;
+}
+
+.skill-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.skill-status-action-form {
+  display: inline-flex;
 }
 
 .project-call-row {

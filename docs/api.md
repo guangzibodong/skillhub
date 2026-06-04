@@ -138,6 +138,23 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/installed-s
   -d '{"skillSlug":"browser-research","version":"0.1.0"}'
 ```
 
+Pause, restore, or remove an installed skill:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/installed-skills/browser-research/status" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"suspended"}'
+```
+
+Allowed install statuses:
+
+- `installed`: active and eligible for runtime policy checks.
+- `suspended`: visible in the project console but blocked at runtime.
+- `removed`: retained for audit and restoration, but blocked at runtime.
+
+Install status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects any install that is not `installed`.
+
 Read project skill policies:
 
 ```bash
@@ -171,7 +188,7 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox" \
 
 Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Project API keys are separate runtime credentials and cannot manage project policy.
 
-The project detail console at `/dashboard/projects/[slug]` exposes the same policy controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, and update monthly budget caps without leaving the workspace.
+The project detail console at `/dashboard/projects/[slug]` exposes the same policy and install controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, or remove skills without leaving the workspace.
 
 ## Project API Keys
 

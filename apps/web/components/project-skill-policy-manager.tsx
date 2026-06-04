@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CheckCircle2, ChevronDown, ChevronUp, Save, SlidersHorizontal, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp, PauseCircle, RotateCcw, Save, SlidersHorizontal, Trash2, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { updateProjectSkillInstallStatusAction, type ProjectInstallActionState } from "@/lib/project-install-actions";
 import { updateProjectSkillPolicyAction, type ProjectPolicyActionState } from "@/lib/project-policy-actions";
 import type { DeveloperProjectSkillRecord } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-data";
@@ -30,8 +31,11 @@ const copy = {
     monthlyBudgetDollars: "Monthly budget",
     noSensitiveAccess: "no sensitive access",
     rateLimitPerMinute: "Rate / min",
+    remove: "Remove",
+    restore: "Restore",
     save: "Save policy",
     saving: "Saving",
+    suspend: "Suspend",
     title: "Policy editor"
   },
   zh: {
@@ -46,13 +50,21 @@ const copy = {
     monthlyBudgetDollars: "月预算",
     noSensitiveAccess: "无敏感权限",
     rateLimitPerMinute: "每分钟限制",
+    remove: "移除",
+    restore: "恢复",
     save: "保存策略",
     saving: "保存中",
+    suspend: "暂停",
     title: "策略编辑"
   }
 } as const;
 
 const initialPolicyState: ProjectPolicyActionState = {
+  message: "",
+  status: "idle"
+};
+
+const initialInstallState: ProjectInstallActionState = {
   message: "",
   status: "idle"
 };
@@ -72,6 +84,10 @@ export function ProjectSkillPolicyManager({
     updateProjectSkillPolicyAction.bind(null, projectSlug, locale),
     initialPolicyState
   );
+  const [installState, installAction, isInstallPending] = useActionState(
+    updateProjectSkillInstallStatusAction.bind(null, projectSlug, locale),
+    initialInstallState
+  );
 
   return (
     <article className="ops-panel project-table-panel">
@@ -90,6 +106,7 @@ export function ProjectSkillPolicyManager({
           skills.map((skill) => {
             const isEditing = editingSlug === skill.skillSlug;
             const statusMessage = policyState.updatedSkillSlug === skill.skillSlug ? policyState : null;
+            const installStatusMessage = installState.updatedSkillSlug === skill.skillSlug ? installState : null;
 
             return (
               <div className="policy-skill-block" key={skill.skillSlug}>
@@ -101,7 +118,9 @@ export function ProjectSkillPolicyManager({
                     </small>
                   </strong>
                   <span>
-                    <b className={statusChipClass(skill.policy.state)}>{policyStateLabel(skill.policy.state, locale)}</b>
+                    <b className={statusChipClass(skill.status === "installed" ? skill.policy.state : skill.status)}>
+                      {installStateLabel(skill, locale)}
+                    </b>
                     <small>{formatCapabilities(skill, locale)}</small>
                   </span>
                   <span>
@@ -113,15 +132,54 @@ export function ProjectSkillPolicyManager({
                     <small>{pricingLabel(skill, locale)}</small>
                   </span>
                   <span>{skillAction(skill, locale)}</span>
-                  <button
-                    className="secondary-button secondary-button--compact"
-                    onClick={() => setEditingSlug(isEditing ? null : skill.skillSlug)}
-                    type="button"
-                  >
-                    {isEditing ? <ChevronUp size={15} aria-hidden="true" /> : <ChevronDown size={15} aria-hidden="true" />}
-                    <span>{isEditing ? labels.close : labels.edit}</span>
-                  </button>
+                  <span className="skill-status-actions">
+                    <button
+                      className="secondary-button secondary-button--compact"
+                      onClick={() => setEditingSlug(isEditing ? null : skill.skillSlug)}
+                      type="button"
+                    >
+                      {isEditing ? <ChevronUp size={15} aria-hidden="true" /> : <ChevronDown size={15} aria-hidden="true" />}
+                      <span>{isEditing ? labels.close : labels.edit}</span>
+                    </button>
+                    {skill.status === "installed" ? (
+                      <>
+                        <InstallStatusButton
+                          action={installAction}
+                          disabled={isInstallPending}
+                          icon="suspend"
+                          label={labels.suspend}
+                          skillSlug={skill.skillSlug}
+                          status="suspended"
+                        />
+                        <InstallStatusButton
+                          action={installAction}
+                          danger
+                          disabled={isInstallPending}
+                          icon="remove"
+                          label={labels.remove}
+                          skillSlug={skill.skillSlug}
+                          status="removed"
+                        />
+                      </>
+                    ) : (
+                      <InstallStatusButton
+                        action={installAction}
+                        disabled={isInstallPending}
+                        icon="restore"
+                        label={labels.restore}
+                        skillSlug={skill.skillSlug}
+                        status="installed"
+                      />
+                    )}
+                  </span>
                 </div>
+
+                {installStatusMessage && installStatusMessage.status !== "idle" ? (
+                  <div className={installStatusMessage.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
+                    {installStatusMessage.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+                    <span>{installStatusMessage.message}</span>
+                  </div>
+                ) : null}
 
                 {statusMessage && statusMessage.status !== "idle" ? (
                   <div className={statusMessage.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
@@ -202,8 +260,55 @@ export function ProjectSkillPolicyManager({
   );
 }
 
+function InstallStatusButton({
+  action,
+  danger = false,
+  disabled,
+  icon,
+  label,
+  skillSlug,
+  status
+}: {
+  action: (payload: FormData) => void;
+  danger?: boolean;
+  disabled: boolean;
+  icon: "remove" | "restore" | "suspend";
+  label: string;
+  skillSlug: string;
+  status: "installed" | "suspended" | "removed";
+}) {
+  const Icon = icon === "remove" ? Trash2 : icon === "restore" ? RotateCcw : PauseCircle;
+
+  return (
+    <form action={action} className="skill-status-action-form">
+      <input name="skillSlug" type="hidden" value={skillSlug} />
+      <input name="status" type="hidden" value={status} />
+      <button
+        className={danger ? "secondary-button secondary-button--compact secondary-button--danger" : "secondary-button secondary-button--compact"}
+        disabled={disabled}
+        type="submit"
+      >
+        <Icon size={15} aria-hidden="true" />
+        <span>{label}</span>
+      </button>
+    </form>
+  );
+}
+
 function PackageShieldIcon() {
   return <SlidersHorizontal size={16} aria-hidden="true" />;
+}
+
+function installStateLabel(skill: DeveloperProjectSkillRecord, locale: Locale) {
+  if (skill.status === "suspended") {
+    return locale === "zh" ? "安装已暂停" : "Install suspended";
+  }
+
+  if (skill.status === "removed") {
+    return locale === "zh" ? "已移除" : "Removed";
+  }
+
+  return policyStateLabel(skill.policy.state, locale);
 }
 
 function policyStateLabel(state: "approved" | "owner_review" | "suspended", locale: Locale) {

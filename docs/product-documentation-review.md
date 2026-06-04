@@ -244,6 +244,13 @@ Added buyer request board depth, covering:
 - Every buyer request state change writes audit and in-app notification records before email delivery exists.
 - Dashboard now shows buyer request status, bounty, requester, due date, and next action, giving publishers a concrete demand loop.
 
+Added project installed-skill lifecycle controls, covering:
+
+- Project operators can mark installed skills as `installed`, `suspended`, or `removed` inside their own organization scope.
+- Runtime invocation blocks any install that is not active, so pause/remove controls have real operational effect.
+- Each install status change writes audit and in-app notification records.
+- Project detail now gives developers a concrete repeat-use loop for disabling risky skills, restoring safe skills, and preserving an audit trail.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
