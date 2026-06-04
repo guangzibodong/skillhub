@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import {
   Activity,
   ArrowLeft,
-  Bell,
   CheckCircle2,
   Clock3,
   CreditCard,
@@ -17,6 +16,7 @@ import {
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
+import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
@@ -55,7 +55,6 @@ const copy = {
     keysTitle: "Runtime API keys",
     keyHeaders: ["Name", "Key", "Last used", "State"],
     updatesTitle: "Update inbox",
-    updateHeaders: ["Skill", "Severity", "Event", "Date"],
     callsTitle: "Recent runtime calls",
     callHeaders: ["Skill", "Status", "Latency", "Error"],
     billingTitle: "Subscriptions and billing",
@@ -87,7 +86,6 @@ const copy = {
     keysTitle: "运行 API Key",
     keyHeaders: ["名称", "Key", "最近使用", "状态"],
     updatesTitle: "更新收件箱",
-    updateHeaders: ["技能", "级别", "事件", "日期"],
     callsTitle: "最近运行调用",
     callHeaders: ["技能", "状态", "延迟", "错误"],
     billingTitle: "订阅与计费",
@@ -236,34 +234,14 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             titleLabel={labels.keysTitle}
           />
 
-          <section className="ops-panel project-table-panel">
-            <div className="card-kicker">
-              <Bell size={16} aria-hidden="true" />
-              <span>{labels.updatesTitle}</span>
-            </div>
-            <div className="project-table project-table--compact">
-              <div className="project-table__row project-table__row--head project-update-row">
-                {labels.updateHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
-              </div>
-              {detail.updateInbox.length > 0 ? (
-                detail.updateInbox.map((update) => (
-                  <div className="project-table__row project-update-row" key={update.id}>
-                    <strong>
-                      {update.displayName}
-                      <small>{update.skillSlug}</small>
-                    </strong>
-                    <span className={severityClass(update.severity)}>{update.severity}</span>
-                    <span>{update.title}</span>
-                    <span>{formatDateValue(update.createdAt, locale, labels.noDate)}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="project-table__row project-table__row--empty">{labels.empty}</div>
-              )}
-            </div>
-          </section>
+          <ProjectUpdateInboxManager
+            emptyLabel={labels.empty}
+            locale={locale}
+            noDateLabel={labels.noDate}
+            projectSlug={project.slug}
+            titleLabel={labels.updatesTitle}
+            updates={detail.updateInbox}
+          />
 
           <ProjectSubscriptionManager
             emptyLabel={labels.empty}
@@ -302,18 +280,6 @@ function statusChipClass(status: string) {
   }
 
   return "status-chip";
-}
-
-function severityClass(severity: string) {
-  if (["high", "critical"].includes(severity)) {
-    return "status-chip status-chip--danger";
-  }
-
-  if (["medium", "warning"].includes(severity)) {
-    return "status-chip status-chip--warning";
-  }
-
-  return "status-chip status-chip--neutral";
 }
 
 function formatVersion(version: string | null) {

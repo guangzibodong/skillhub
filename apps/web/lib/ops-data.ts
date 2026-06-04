@@ -333,6 +333,11 @@ export type DeveloperProjectUpdateRecord = {
   severity: string;
   title: string;
   body: string | null;
+  actionStatus: string;
+  actionNote: string | null;
+  scheduledFor: string | null;
+  resolvedAt: string | null;
+  actionUpdatedAt: string | null;
   createdAt: string;
 };
 
@@ -952,6 +957,11 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         severity: "info",
         title: "New citation freshness scoring available",
         body: "Version 0.1.1 adds fresher source ranking for research agents.",
+        actionStatus: "open",
+        actionNote: null,
+        scheduledFor: null,
+        resolvedAt: null,
+        actionUpdatedAt: null,
         createdAt: "demo"
       },
       {
@@ -962,6 +972,11 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         severity: "medium",
         title: "File-retention policy requires review",
         body: "Project owner approval is required before broad file reads are enabled.",
+        actionStatus: isResearch ? "scheduled" : "open",
+        actionNote: isResearch ? "Review during weekly agent safety window." : null,
+        scheduledFor: isResearch ? "demo" : null,
+        resolvedAt: null,
+        actionUpdatedAt: isResearch ? "demo" : null,
         createdAt: "demo"
       }
     ],

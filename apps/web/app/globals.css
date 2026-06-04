@@ -2531,6 +2531,89 @@ a {
   min-width: 640px;
 }
 
+.project-update-list {
+  display: grid;
+  gap: 13px;
+  margin-top: 16px;
+}
+
+.project-update-card {
+  display: grid;
+  gap: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.project-update-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.project-update-card__head strong,
+.project-update-card__body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.project-update-card__head strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.project-update-card__head small,
+.project-update-card__body small,
+.project-update-action-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.project-update-card__body p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.project-update-card__body .status-chip {
+  width: max-content;
+}
+
+.project-update-action-form {
+  display: grid;
+  gap: 9px;
+}
+
+.project-update-action-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.project-update-action-form input {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.project-update-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .project-billing-row {
   grid-template-columns: minmax(150px, 1fr) 92px minmax(110px, 0.75fr) 110px;
   min-width: 560px;

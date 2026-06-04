@@ -173,6 +173,7 @@ The implementation plan expands this into the next retention and operations tabl
 ```text
 project_skill_installs
 project_skill_policies
+project_update_actions
 skill_runtime_checks
 skill_update_events
 skill_incidents

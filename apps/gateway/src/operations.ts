@@ -78,19 +78,33 @@ const fallbackPolicies = [
 
 const fallbackUpdateInbox = [
   {
+    id: "demo-update-browser-research",
     skillSlug: "browser-research",
     displayName: "Browser Research",
     eventType: "new_version",
     severity: "info",
     title: "New citation freshness scoring available",
+    body: null,
+    actionStatus: "open",
+    actionNote: null,
+    scheduledFor: null,
+    resolvedAt: null,
+    actionUpdatedAt: null,
     createdAt: "demo"
   },
   {
+    id: "demo-update-dataset-summarizer",
     skillSlug: "dataset-summarizer",
     displayName: "Dataset Summarizer",
     eventType: "security",
     severity: "medium",
     title: "File-retention policy requires review",
+    body: null,
+    actionStatus: "open",
+    actionNote: null,
+    scheduledFor: null,
+    resolvedAt: null,
+    actionUpdatedAt: null,
     createdAt: "demo"
   }
 ] as const;
@@ -415,19 +429,27 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
 
   return sql`
     select
+      sue.id::text,
       s.slug as "skillSlug",
       s.display_name as "displayName",
       sue.event_type as "eventType",
       sue.severity,
       sue.title,
       sue.body,
-      sue.created_at as "createdAt"
+      sue.created_at as "createdAt",
+      coalesce(pua.status, 'open') as "actionStatus",
+      pua.note as "actionNote",
+      pua.scheduled_for as "scheduledFor",
+      pua.resolved_at as "resolvedAt",
+      pua.updated_at as "actionUpdatedAt"
     from project_skill_installs psi
     join projects p on p.id = psi.project_id
     join skills s on s.id = psi.skill_id
     join skill_update_events sue on sue.skill_id = s.id
+    left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
     where p.slug = ${projectSlug}
       and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
+      and coalesce(pua.status, 'open') not in ('adopted', 'ignored')
     order by sue.created_at desc
     limit 50
   `;

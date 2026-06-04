@@ -203,9 +203,29 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Project API keys are separate runtime credentials and cannot manage project policy.
+Handle an update inbox item:
 
-The project detail console at `/dashboard/projects/[slug]` exposes the same policy and install controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, or remove skills without leaving the workspace.
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/update-inbox/demo-update-browser-research/action" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "scheduled",
+    "scheduledFor": "2026-06-05T14:00:00.000Z",
+    "note": "Review in the next agent release window."
+  }'
+```
+
+Allowed update action statuses:
+
+- `acknowledged`: the project operator has seen the update and left it in the queue.
+- `scheduled`: the update has an owner-visible planned handling time.
+- `adopted`: the update has been handled and leaves the active inbox.
+- `ignored`: the project intentionally dismissed the update and it leaves the active inbox.
+
+Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Update actions write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
+
+The project detail console at `/dashboard/projects/[slug]` exposes the same policy, install, and update-inbox controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, handle version/security/incidents updates, or remove skills without leaving the workspace.
 
 ## Project API Keys
 

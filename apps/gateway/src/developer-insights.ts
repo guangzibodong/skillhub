@@ -84,6 +84,11 @@ type ProjectUpdateRow = {
   severity: string;
   title: string;
   body: string | null;
+  actionStatus: string;
+  actionNote: string | null;
+  scheduledFor: string | null;
+  resolvedAt: string | null;
+  actionUpdatedAt: string | null;
   createdAt: string;
 };
 
@@ -205,7 +210,9 @@ export async function listDeveloperProjects(organizationId: string | null | unde
         max(sue.created_at) as latest_update_at
       from project_skill_installs psi
       join skill_update_events sue on sue.skill_id = psi.skill_id
+      left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
       where psi.project_id = p.id
+        and coalesce(pua.status, 'open') not in ('adopted', 'ignored')
     ) updates on true
     where (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     order by p.created_at desc
@@ -305,7 +312,9 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
         max(sue.created_at) as latest_update_at
       from project_skill_installs psi
       join skill_update_events sue on sue.skill_id = psi.skill_id
+      left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
       where psi.project_id = p.id
+        and coalesce(pua.status, 'open') not in ('adopted', 'ignored')
     ) updates on true
     where p.slug = ${projectSlug}
       and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
@@ -568,6 +577,11 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         severity: "info",
         title: "New citation freshness scoring available",
         body: "Version 0.1.1 adds fresher source ranking for research agents.",
+        actionStatus: "open",
+        actionNote: null,
+        scheduledFor: null,
+        resolvedAt: null,
+        actionUpdatedAt: null,
         createdAt: "demo"
       },
       {
@@ -578,6 +592,11 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         severity: "medium",
         title: "File-retention policy requires review",
         body: "Project owner approval is required before broad file reads are enabled.",
+        actionStatus: isResearch ? "scheduled" : "open",
+        actionNote: isResearch ? "Review during weekly agent safety window." : null,
+        scheduledFor: isResearch ? "demo" : null,
+        resolvedAt: null,
+        actionUpdatedAt: isResearch ? "demo" : null,
         createdAt: "demo"
       }
     ],
@@ -754,9 +773,11 @@ async function listProjectSkillDetails(projectSlug: string, organizationId: stri
     left join lateral (
       select
         count(*) as update_count,
-        max(created_at) as latest_update_at
-      from skill_update_events
-      where skill_id = s.id
+        max(sue.created_at) as latest_update_at
+      from skill_update_events sue
+      left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
+      where sue.skill_id = s.id
+        and coalesce(pua.status, 'open') not in ('adopted', 'ignored')
     ) updates on true
     left join lateral (
       select count(*) as open_count
@@ -874,13 +895,20 @@ async function listProjectUpdateDetails(projectSlug: string, organizationId: str
       sue.severity,
       sue.title,
       sue.body,
+      coalesce(pua.status, 'open') as "actionStatus",
+      pua.note as "actionNote",
+      pua.scheduled_for as "scheduledFor",
+      pua.resolved_at as "resolvedAt",
+      pua.updated_at as "actionUpdatedAt",
       sue.created_at as "createdAt"
     from project_skill_installs psi
     join projects p on p.id = psi.project_id
     join skills s on s.id = psi.skill_id
     join skill_update_events sue on sue.skill_id = s.id
+    left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
     where p.slug = ${projectSlug}
       and (${organizationId}::uuid is null or p.organization_id = ${organizationId})
+      and coalesce(pua.status, 'open') not in ('adopted', 'ignored')
     order by sue.created_at desc
     limit 50
   `) as ProjectUpdateRow[];

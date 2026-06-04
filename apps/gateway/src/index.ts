@@ -27,6 +27,7 @@ import {
   revokeProjectApiKey
 } from "./runtime.js";
 import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
+import { upsertProjectUpdateAction } from "./project-updates.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import {
   getFinanceLedger,
@@ -403,6 +404,31 @@ app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
   return c.json({
     updates: await listProjectUpdateInbox(c.req.param("projectSlug"), authorization.subject.organizationId)
   });
+});
+
+app.put("/v1/projects/:projectSlug/update-inbox/:updateId/action", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      action: await upsertProjectUpdateAction(
+        projectSlug,
+        c.req.param("updateId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.organizationId,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update project update action." }, 400);
+  }
 });
 
 app.get("/v1/projects/:projectSlug/refunds", async (c) => {

@@ -321,13 +321,15 @@ Completed:
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
 - Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
+- Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.
+- Project detail console now exposes update handling controls with notes and schedule dates; adopted and ignored updates leave the active inbox and project update counts.
 
 Next:
 
 - Tenant-scoped ownership enforcement for the remaining publisher overview surface.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project write workflows for update handling actions and invoice detail views.
+- Project invoice detail views and downloadable invoice records.
 
 ## Engineering Acceptance Standard
 

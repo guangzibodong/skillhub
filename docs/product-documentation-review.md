@@ -258,6 +258,13 @@ Added project subscription lifecycle controls, covering:
 - Each subscription status change writes audit and in-app notification records before payment provider webhooks are connected.
 - Project detail now gives developers and agent operators a concrete repeat-use loop for controlling recurring spend, pausing risky paid skills, and restoring required skills without losing the billing history.
 
+Added project update-inbox handling controls, covering:
+
+- Project operators can acknowledge, schedule, adopt, or ignore installed-skill update events inside their own organization scope.
+- Adopted and ignored updates leave the active inbox and project update counts, while the project-scoped decision record remains available for audit and future operational history.
+- Each update action writes audit and in-app notification records before email delivery exists.
+- Project detail now gives developers and agent operators a concrete repeat-use loop for handling new versions, security notices, deprecations, and incidents instead of letting update warnings become static dashboard noise.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
