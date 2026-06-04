@@ -309,6 +309,8 @@ Completed:
 - Dashboard buyer project controls now read developer project operations data instead of static rows.
 - Developer project detail endpoint aggregating one organization-scoped project with installed skills, per-skill policies, usage, runtime quality, API key metadata, update inbox, recent invocations, and subscription records.
 - `/dashboard/projects/[slug]` now exposes a project command center with drill-down links from the dashboard project list.
+- Project installed-skill, project policy, and update-inbox read endpoints now require project-operator authorization and filter by the authorized organization.
+- `/dashboard/projects/[slug]` now includes per-skill policy editing for permission level, network/browser/filesystem/secret access, monthly budget, rate limit, and owner approval state.
 - Project API key list and revoke operations now accept the authorized organization scope to prevent cross-tenant slug collisions.
 - `/dashboard/projects/[slug]` now includes runtime key rotation UX: create a replacement key, reveal the raw key once, copy it, and revoke old keys.
 
@@ -317,7 +319,7 @@ Next:
 - Tenant-scoped ownership enforcement for remaining publisher read and write surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
-- Project write workflows for update handling actions, invoice detail views, and subscription lifecycle actions.
+- Project write workflows for update handling actions, invoice detail views, subscription lifecycle actions, and installed-skill removal/suspension.
 
 ## Engineering Acceptance Standard
 

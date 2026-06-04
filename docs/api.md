@@ -125,7 +125,8 @@ The response is scoped to the token organization and returns the project summary
 Read installed skills:
 
 ```bash
-curl "https://api.useskillhub.com/v1/projects/research-agent/installed-skills"
+curl "https://api.useskillhub.com/v1/projects/research-agent/installed-skills" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Install or update a skill version for a project:
@@ -140,7 +141,8 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/installed-s
 Read project skill policies:
 
 ```bash
-curl "https://api.useskillhub.com/v1/projects/research-agent/policies"
+curl "https://api.useskillhub.com/v1/projects/research-agent/policies" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
 Update a project skill policy:
@@ -163,10 +165,13 @@ curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/policies/bro
 Read the installed-skill update inbox:
 
 ```bash
-curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox"
+curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Writes are protected by user access tokens and role checks. Project API keys are separate runtime credentials and cannot manage project policy.
+Project installed skills, project policies, and update inbox reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Project API keys are separate runtime credentials and cannot manage project policy.
+
+The project detail console at `/dashboard/projects/[slug]` exposes the same policy controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, and update monthly budget caps without leaving the workspace.
 
 ## Project API Keys
 

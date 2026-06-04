@@ -2400,6 +2400,96 @@ a {
   min-width: 920px;
 }
 
+.project-skill-row--actions {
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(180px, 0.78fr)
+    minmax(150px, 0.55fr)
+    minmax(130px, 0.48fr)
+    minmax(160px, 0.58fr)
+    minmax(128px, 0.46fr);
+  min-width: 1080px;
+}
+
+.policy-skill-block {
+  min-width: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.policy-skill-block:last-child {
+  border-bottom: 0;
+}
+
+.policy-skill-block .project-table__row {
+  border-bottom: 0;
+}
+
+.secondary-button--compact {
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.policy-editor {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.policy-editor label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.policy-editor label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.policy-editor input,
+.policy-editor select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.policy-editor select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.policy-checkbox {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 0 10px;
+}
+
+.policy-checkbox input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: var(--signal);
+  padding: 0;
+}
+
+.policy-editor__save {
+  align-self: end;
+}
+
 .project-call-row {
   grid-template-columns: minmax(180px, 1fr) 110px 110px minmax(170px, 0.8fr);
   min-width: 680px;
@@ -3084,6 +3174,10 @@ a {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  .policy-editor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .publish-hero {
     align-items: flex-start;
     flex-direction: column;
@@ -3246,6 +3340,11 @@ a {
   }
 
   .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .key-create-form,
+  .policy-editor {
     grid-template-columns: 1fr;
   }
 

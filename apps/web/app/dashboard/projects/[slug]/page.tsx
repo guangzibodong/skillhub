@@ -16,6 +16,7 @@ import {
   Zap
 } from "lucide-react";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
+import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
@@ -183,46 +184,15 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
       <section className="project-detail-layout">
         <div className="project-detail-main">
-          <article className="ops-panel project-table-panel">
-            <div className="card-kicker">
-              <PackageCheck size={16} aria-hidden="true" />
-              <span>{labels.skillTitle}</span>
-            </div>
-            <div className="project-table">
-              <div className="project-table__row project-table__row--head project-skill-row">
-                {labels.skillHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
-              </div>
-              {detail.installedSkills.length > 0 ? (
-                detail.installedSkills.map((skill) => (
-                  <div className="project-table__row project-skill-row" key={skill.skillSlug}>
-                    <strong>
-                      {skill.displayName}
-                      <small>
-                        {skill.skillSlug} / {formatVersion(skill.version)}
-                      </small>
-                    </strong>
-                    <span>
-                      <b className={statusChipClass(skill.policy.state)}>{policyStateLabel(skill.policy.state, locale)}</b>
-                      <small>{formatCapabilities(skill, locale)}</small>
-                    </span>
-                    <span>
-                      {formatCompactNumber(skill.runtime.callCount)} / {formatPercent(skill.runtime.successRate)}
-                      <small>{formatLatency(skill.runtime.avgLatencyMs, labels.noDate)}</small>
-                    </span>
-                    <span>
-                      {formatMoney(skill.usage.grossCents, skill.usage.currency)}
-                      <small>{pricingLabel(skill, locale)}</small>
-                    </span>
-                    <span>{skillAction(skill, locale)}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="project-table__row project-table__row--empty">{labels.empty}</div>
-              )}
-            </div>
-          </article>
+          <ProjectSkillPolicyManager
+            emptyLabel={labels.empty}
+            headers={labels.skillHeaders}
+            locale={locale}
+            noDateLabel={labels.noDate}
+            projectSlug={project.slug}
+            skills={detail.installedSkills}
+            titleLabel={labels.skillTitle}
+          />
 
           <article className="ops-panel project-table-panel">
             <div className="card-kicker">

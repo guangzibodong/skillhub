@@ -118,7 +118,7 @@ const fallbackReviewQueue = [
   }
 ] as const;
 
-export async function listProjectInstalls(projectSlug: string) {
+export async function listProjectInstalls(projectSlug: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
@@ -126,6 +126,8 @@ export async function listProjectInstalls(projectSlug: string) {
   }
 
   await seedRegistry(sql);
+
+  const scopedOrganizationId = organizationId ?? null;
 
   return sql`
     select
@@ -142,6 +144,7 @@ export async function listProjectInstalls(projectSlug: string) {
     join skills s on s.id = psi.skill_id
     left join skill_versions sv on sv.id = psi.skill_version_id
     where p.slug = ${projectSlug}
+      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     order by psi.updated_at desc
   `.then((rows: Array<any>) =>
     rows.map((row) => ({
@@ -201,7 +204,7 @@ export async function installSkill(input: ProjectInstallInput) {
   };
 }
 
-export async function listProjectPolicies(projectSlug: string) {
+export async function listProjectPolicies(projectSlug: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
@@ -209,6 +212,8 @@ export async function listProjectPolicies(projectSlug: string) {
   }
 
   await seedRegistry(sql);
+
+  const scopedOrganizationId = organizationId ?? null;
 
   return sql`
     select
@@ -228,6 +233,7 @@ export async function listProjectPolicies(projectSlug: string) {
     join projects p on p.id = psp.project_id
     join skills s on s.id = psp.skill_id
     where p.slug = ${projectSlug}
+      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     order by psp.updated_at desc
   `;
 }
@@ -306,7 +312,7 @@ export async function upsertProjectPolicy(
   };
 }
 
-export async function listProjectUpdateInbox(projectSlug: string) {
+export async function listProjectUpdateInbox(projectSlug: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
@@ -314,6 +320,8 @@ export async function listProjectUpdateInbox(projectSlug: string) {
   }
 
   await seedRegistry(sql);
+
+  const scopedOrganizationId = organizationId ?? null;
 
   return sql`
     select
@@ -329,6 +337,7 @@ export async function listProjectUpdateInbox(projectSlug: string) {
     join skills s on s.id = psi.skill_id
     join skill_update_events sue on sue.skill_id = s.id
     where p.slug = ${projectSlug}
+      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
     order by sue.created_at desc
     limit 50
   `;

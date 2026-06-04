@@ -223,6 +223,12 @@ Added first project command-center write action, covering:
 - Project detail UI for creating replacement runtime keys, revealing the raw secret only once, copying it, and revoking old keys.
 - A stronger repeat-use loop for developers who need to rotate runtime credentials without leaving the SkillHub workspace.
 
+Added project policy operations depth, covering:
+
+- Tenant-scoped project installed-skill, policy, and update-inbox reads.
+- Project detail UI for editing per-skill permission level, network/browser/filesystem/secret access, monthly budget, rate limit, and owner approval state.
+- A concrete developer retention loop around approving risky skills, lowering permission exposure, and controlling spend before agents execute skills.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
