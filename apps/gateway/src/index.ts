@@ -173,7 +173,10 @@ app.get("/v1/projects/:projectSlug/installed-skills", async (c) => {
 
 app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
   const projectSlug = c.req.param("projectSlug");
-  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -187,6 +190,7 @@ app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
 
   try {
     const install = await installSkill({
+      organizationId: authorization.subject.organizationId,
       projectSlug,
       skillSlug: body.skillSlug,
       version: body.version
@@ -206,7 +210,10 @@ app.get("/v1/projects/:projectSlug/policies", async (c) => {
 
 app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
   const projectSlug = c.req.param("projectSlug");
-  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -216,7 +223,8 @@ app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
     const policy = await upsertProjectPolicy(
       projectSlug,
       c.req.param("skillSlug"),
-      (await c.req.json()) as Record<string, unknown>
+      (await c.req.json()) as Record<string, unknown>,
+      authorization.subject.organizationId
     );
 
     return c.json({ policy });
@@ -233,7 +241,10 @@ app.get("/v1/projects/:projectSlug/update-inbox", async (c) => {
 
 app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
   const projectSlug = c.req.param("projectSlug");
-  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -246,7 +257,10 @@ app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
 
 app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
   const projectSlug = c.req.param("projectSlug");
-  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -257,7 +271,7 @@ app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
   try {
     return c.json(
       {
-        apiKey: await createProjectApiKey(projectSlug, body.name)
+        apiKey: await createProjectApiKey(projectSlug, body.name, authorization.subject.organizationId)
       },
       201
     );
@@ -268,7 +282,10 @@ app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
 
 app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
   const projectSlug = c.req.param("projectSlug");
-  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, { projectSlug });
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    projectSlug,
+    requireOrganization: true
+  });
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);

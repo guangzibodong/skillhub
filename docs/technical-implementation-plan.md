@@ -294,10 +294,12 @@ Completed:
 - User access token table and bootstrap flow for initial operator identities.
 - Gateway role checks for project, publisher, reviewer, finance, and admin operations.
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.
+- Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
+- Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 
 Next:
 
-- Tenant-scoped route ownership enforcement for every publisher and project mutation.
+- Tenant-scoped route ownership enforcement for publisher resources and read surfaces.
 - Full login/session provider integration to replace bootstrap-created user access tokens.
 - Payout account onboarding screens and provider handoff state.
 - Publisher/developer-facing refund and dispute history views.

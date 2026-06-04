@@ -177,6 +177,13 @@ Added the first role-based access layer, covering:
 - Active subject inspection through `/v1/auth/me`.
 - Gateway role checks for developer project operations, publisher operations, review actions, finance actions, and admin read operations.
 
+Added first tenant-scoped project write enforcement, covering:
+
+- Project installs, project policy updates, and project API key creation receive the authorized subject organization.
+- User tokens must be organization scoped before project writes are allowed.
+- New project records are created under the user token organization instead of the demo fallback.
+- Service tokens keep the demo fallback for bootstrap and controlled operator flows.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

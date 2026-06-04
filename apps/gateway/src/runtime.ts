@@ -92,10 +92,10 @@ export async function listProjectApiKeys(projectSlug: string) {
   `;
 }
 
-export async function createProjectApiKey(projectSlug: string, name = "Project API key") {
+export async function createProjectApiKey(projectSlug: string, name = "Project API key", organizationId?: string | null) {
   const sql = await requireSql();
-  const organization = await upsertDefaultOrganization(sql);
-  const project = await upsertProject(sql, organization.id, projectSlug);
+  const writeOrganizationId = await resolveWriteOrganizationId(sql, organizationId);
+  const project = await upsertProject(sql, writeOrganizationId, projectSlug);
   const rawKey = `skh_${randomToken(32)}`;
   const keyHash = await sha256Hex(rawKey);
   const keyLast4 = rawKey.slice(-4);
@@ -646,6 +646,15 @@ async function upsertDefaultOrganization(sql: Sql): Promise<{ id: string }> {
   `) as Array<{ id: string }>;
 
   return rows[0];
+}
+
+async function resolveWriteOrganizationId(sql: Sql, organizationId?: string | null) {
+  if (organizationId) {
+    return organizationId;
+  }
+
+  const organization = await upsertDefaultOrganization(sql);
+  return organization.id;
 }
 
 async function upsertProject(sql: Sql, organizationId: string, projectSlug: string): Promise<{ id: string }> {

@@ -4,6 +4,7 @@ import { getSql, searchSkills } from "./registry.js";
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
 type ProjectInstallInput = {
+  organizationId?: string | null;
   projectSlug: string;
   skillSlug: string;
   version?: string;
@@ -154,8 +155,8 @@ export async function installSkill(input: ProjectInstallInput) {
   const sql = await requireSql();
   await seedRegistry(sql);
 
-  const organization = await upsertDefaultOrganization(sql);
-  const project = await upsertProject(sql, organization.id, input.projectSlug);
+  const organizationId = await resolveWriteOrganizationId(sql, input.organizationId);
+  const project = await upsertProject(sql, organizationId, input.projectSlug);
   const skill = await getSkillRecord(sql, input.skillSlug, input.version);
   const permissionLevel = getPermissionLevel(skill.manifest.permissions);
   const approvalState = permissionLevel === "high" ? "owner_required" : "approved";
@@ -231,12 +232,17 @@ export async function listProjectPolicies(projectSlug: string) {
   `;
 }
 
-export async function upsertProjectPolicy(projectSlug: string, skillSlug: string, input: PolicyInput) {
+export async function upsertProjectPolicy(
+  projectSlug: string,
+  skillSlug: string,
+  input: PolicyInput,
+  organizationId?: string | null
+) {
   const sql = await requireSql();
   await seedRegistry(sql);
 
-  const organization = await upsertDefaultOrganization(sql);
-  const project = await upsertProject(sql, organization.id, projectSlug);
+  const writeOrganizationId = await resolveWriteOrganizationId(sql, organizationId);
+  const project = await upsertProject(sql, writeOrganizationId, projectSlug);
   const skill = await getSkillRecord(sql, skillSlug);
   const defaults = policyDefaults(skill.manifest);
 
@@ -536,6 +542,15 @@ async function upsertDefaultOrganization(sql: Sql): Promise<{ id: string }> {
   `) as Array<{ id: string }>;
 
   return rows[0];
+}
+
+async function resolveWriteOrganizationId(sql: Sql, organizationId?: string | null) {
+  if (organizationId) {
+    return organizationId;
+  }
+
+  const organization = await upsertDefaultOrganization(sql);
+  return organization.id;
 }
 
 async function upsertProject(sql: Sql, organizationId: string, projectSlug: string): Promise<{ id: string; slug: string }> {

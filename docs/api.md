@@ -98,6 +98,8 @@ Role boundaries:
 - Finance, refunds, disputes, and payouts require `finance`, `admin`, or `super_admin`.
 - Platform admin read operations require `support`, `admin`, or `super_admin`.
 
+Project writes are organization scoped. When a user token installs a skill, updates a project policy, creates a project API key, or revokes a project API key, the gateway resolves the project organization and requires a matching organization membership. New project records are created under the user token's organization, not a global demo organization.
+
 ## Developer Project Operations
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.

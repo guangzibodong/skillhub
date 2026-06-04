@@ -25,6 +25,7 @@ type AuthorizationScope = {
   organizationId?: string;
   projectSlug?: string;
   publisherProfileId?: string;
+  requireOrganization?: boolean;
 };
 
 type BootstrapTokenInput = {
@@ -80,6 +81,14 @@ export async function authorize(
       ok: false,
       error: "Invalid or revoked user token.",
       status: 401
+    };
+  }
+
+  if (scope.requireOrganization && !subject.organizationId) {
+    return {
+      ok: false,
+      error: "This operation requires an organization-scoped user token.",
+      status: 403
     };
   }
 
