@@ -14,8 +14,8 @@ import {
   getDeveloperBuyerRequests,
   getDeveloperProjects,
   getNotificationPreferences,
+  getUserNotificationInbox,
   getOrganizationBillingSummary,
-  getUserNotifications
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -63,12 +63,12 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [developerProjects, developerBuyerRequests, organizationBilling, userNotifications, notificationPreferences, session] =
+  const [developerProjects, developerBuyerRequests, organizationBilling, userNotificationInbox, notificationPreferences, session] =
     await Promise.all([
       getDeveloperProjects(),
       getDeveloperBuyerRequests(),
       getOrganizationBillingSummary(),
-      getUserNotifications(),
+      getUserNotificationInbox(),
       getNotificationPreferences(),
       getWorkspaceSession()
     ]);
@@ -169,7 +169,11 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         <aside className="developer-command-side">
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
 
-          <NotificationInboxManager locale={locale} notifications={userNotifications} />
+          <NotificationInboxManager
+            locale={locale}
+            notifications={userNotificationInbox.notifications}
+            summary={userNotificationInbox.summary}
+          />
 
           <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
 

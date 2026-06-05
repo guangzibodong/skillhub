@@ -893,7 +893,7 @@ curl "https://api.useskillhub.com/v1/notifications?limit=25" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The inbox returns `channel=in_app` events addressed to the active user or their token organization. `queued` events are unread; `sent` events are already read/delivered.
+The inbox returns `channel=in_app` events addressed to the active user or their token organization. `queued` events are unread; `sent` events are already read/delivered. The response also includes a `summary` object with `total`, `unread`, `read`, `failed`, `skipped`, and per-topic counts so dashboards can show action pressure without fetching every event.
 
 Mark one notification as read:
 
@@ -901,6 +901,15 @@ Mark one notification as read:
 curl -X POST "https://api.useskillhub.com/v1/notifications/$NOTIFICATION_ID/read" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
+
+Mark every unread organization-scoped in-app notification as read:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/notifications/read-all" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+This returns `updatedCount` plus the refreshed inbox `summary`.
 
 Read the active user's preferences:
 

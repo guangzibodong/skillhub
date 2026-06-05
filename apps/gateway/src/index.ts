@@ -62,7 +62,8 @@ import {
 } from "./billing.js";
 import {
   listAdminNotifications,
-  listUserNotifications,
+  listUserNotificationInbox,
+  markAllUserNotificationsRead,
   markUserNotificationRead
 } from "./notifications.js";
 import {
@@ -1077,13 +1078,38 @@ app.get("/v1/notifications", async (c) => {
     return c.json({ error: "Notification inbox requires an organization-scoped user token." }, 403);
   }
 
-  return c.json({
-    notifications: await listUserNotifications(
+  return c.json(
+    await listUserNotificationInbox(
       authorization.subject.userId,
       authorization.subject.organizationId,
       Number(c.req.query("limit") ?? "25")
     )
+  );
+});
+
+app.post("/v1/notifications/read-all", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole, {
+    requireOrganization: true
   });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId || !authorization.subject.organizationId) {
+    return c.json({ error: "Notification inbox requires an organization-scoped user token." }, 403);
+  }
+
+  try {
+    return c.json(
+      await markAllUserNotificationsRead(
+        authorization.subject.userId,
+        authorization.subject.organizationId
+      )
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to mark notifications read." }, 400);
+  }
 });
 
 app.post("/v1/notifications/:notificationId/read", async (c) => {

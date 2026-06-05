@@ -22,14 +22,14 @@ import {
   formatCompactNumber,
   formatMoney,
   getNotificationPreferences,
+  getUserNotificationInbox,
   getPublisherAccountSummary,
   getPublisherBuyerRequests,
   getPublisherDisputes,
   getPublisherFinanceLedger,
   getPublisherPayoutSummary,
   getPublisherRefunds,
-  getPublisherSkills,
-  getUserNotifications
+  getPublisherSkills
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -93,7 +93,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     publisherBuyerRequests,
     publisherRefunds,
     publisherDisputes,
-    userNotifications,
+    userNotificationInbox,
     notificationPreferences,
     session
   ] = await Promise.all([
@@ -104,7 +104,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     getPublisherBuyerRequests(),
     getPublisherRefunds(),
     getPublisherDisputes(),
-    getUserNotifications(),
+    getUserNotificationInbox(),
     getNotificationPreferences(),
     getWorkspaceSession()
   ]);
@@ -266,7 +266,11 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
           <PublisherPayoutManager locale={locale} summary={payoutSummary} />
 
-          <NotificationInboxManager locale={locale} notifications={userNotifications} />
+          <NotificationInboxManager
+            locale={locale}
+            notifications={userNotificationInbox.notifications}
+            summary={userNotificationInbox.summary}
+          />
 
           <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
         </aside>

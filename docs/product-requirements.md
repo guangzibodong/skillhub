@@ -231,7 +231,7 @@ Requirements:
 - Refund and dispute impact history.
 - Payout readiness.
 - Payout history.
-- Notification preferences, with actual email protocol integration deferred until the final integration phase.
+- Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Buyer request board.
 - Listing quality checklist.
 - Publisher quality score.
@@ -252,7 +252,7 @@ Requirements:
 - Invoices.
 - Project-level refund and dispute history.
 - Webhooks.
-- Notification preferences, with actual email protocol integration deferred until the final integration phase.
+- Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Installed skills by project.
 - Skill update and deprecation inbox.
 - Project permission approvals.

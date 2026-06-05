@@ -30,6 +30,7 @@ import {
   getDeveloperBuyerRequests,
   getDeveloperProjects,
   getNotificationPreferences,
+  getUserNotificationInbox,
   getOrganizationBillingSummary,
   getPublisherAccountSummary,
   getPublisherBuyerRequests,
@@ -38,7 +39,6 @@ import {
   getPublisherPayoutSummary,
   getPublisherRefunds,
   getPublisherSkills,
-  getUserNotifications
 } from "@/lib/ops-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
@@ -131,7 +131,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     publisherRefunds,
     publisherDisputes,
     organizationBilling,
-    userNotifications,
+    userNotificationInbox,
     notificationPreferences,
     session
   ] = await Promise.all([
@@ -146,7 +146,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getPublisherRefunds(),
     getPublisherDisputes(),
     getOrganizationBillingSummary(),
-    getUserNotifications(),
+    getUserNotificationInbox(),
     getNotificationPreferences(),
     getWorkspaceSession()
   ]);
@@ -343,7 +343,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
 
-          <NotificationInboxManager locale={locale} notifications={userNotifications} />
+          <NotificationInboxManager
+            locale={locale}
+            notifications={userNotificationInbox.notifications}
+            summary={userNotificationInbox.summary}
+          />
 
           <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
         </aside>

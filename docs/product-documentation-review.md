@@ -317,6 +317,7 @@ Added user notification inbox, covering:
 
 - Organization-scoped users can read in-app notification events addressed to themselves or their organization.
 - Users can mark unread notification events as read, using existing `queued` and `sent` states before external delivery providers are connected.
+- Users can see unread/read totals and per-topic counts, then mark all unread in-app notifications as read when the current action queue is cleared.
 - Dashboard now surfaces notification context and links to the relevant project, skill, dashboard, or admin view.
 - This turns audit/event recording into a user-visible repeat-use loop instead of leaving notifications as admin-only operational logs.
 

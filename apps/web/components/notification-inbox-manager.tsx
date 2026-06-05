@@ -4,28 +4,39 @@ import { useActionState } from "react";
 import { BellRing, CheckCircle2, Circle, ExternalLink, MailCheck, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
-import { markNotificationReadAction, type NotificationInboxActionState } from "@/lib/notification-inbox-actions";
-import type { UserNotificationRecord } from "@/lib/ops-data";
+import {
+  markAllNotificationsReadAction,
+  markNotificationReadAction,
+  type NotificationInboxActionState
+} from "@/lib/notification-inbox-actions";
+import type { UserNotificationRecord, UserNotificationSummary } from "@/lib/ops-data";
 
 type NotificationInboxManagerProps = {
   locale: Locale;
   notifications: UserNotificationRecord[];
+  summary?: UserNotificationSummary;
 };
 
 const copy = {
   en: {
     empty: "No in-app notifications yet.",
+    markAllRead: "Mark all read",
     markRead: "Mark read",
     read: "Read",
     title: "Notification inbox",
+    topics: "Topics",
+    total: "Total",
     unread: "Unread",
     view: "Open"
   },
   zh: {
     empty: "暂无站内通知。",
+    markAllRead: "全部已读",
     markRead: "标记已读",
     read: "已读",
     title: "通知收件箱",
+    topics: "主题",
+    total: "总数",
     unread: "未读",
     view: "打开"
   }
@@ -59,16 +70,45 @@ const initialState: NotificationInboxActionState = {
   status: "idle"
 };
 
-export function NotificationInboxManager({ locale, notifications }: NotificationInboxManagerProps) {
+export function NotificationInboxManager({ locale, notifications, summary }: NotificationInboxManagerProps) {
   const labels = copy[locale];
+  const inboxSummary = summary ?? summarizeNotifications(notifications);
   const [state, action, isPending] = useActionState(markNotificationReadAction.bind(null, locale), initialState);
+  const [allState, markAllAction, isMarkAllPending] = useActionState(markAllNotificationsReadAction.bind(null, locale), initialState);
 
   return (
     <article className="ops-panel notification-inbox-panel">
-      <div className="card-kicker">
-        <BellRing size={16} aria-hidden="true" />
-        <span>{labels.title}</span>
+      <div className="notification-inbox-panel__head">
+        <div className="card-kicker">
+          <BellRing size={16} aria-hidden="true" />
+          <span>{labels.title}</span>
+        </div>
+        <form action={markAllAction}>
+          <button className="secondary-button secondary-button--compact" disabled={inboxSummary.unread === 0 || isMarkAllPending} type="submit">
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{labels.markAllRead}</span>
+          </button>
+        </form>
       </div>
+
+      <div className="notification-inbox-summary" aria-label={labels.title}>
+        <span>
+          <strong>{inboxSummary.unread}</strong>
+          {labels.unread}
+        </span>
+        <span>
+          <strong>{inboxSummary.total}</strong>
+          {labels.total}
+        </span>
+        {inboxSummary.topics.length > 0 ? (
+          <span className="notification-inbox-summary__topics">
+            <strong>{labels.topics}</strong>
+            {inboxSummary.topics.slice(0, 3).map((topic) => `${topicLabel(topic.topic, locale)} ${topic.unreadCount}/${topic.count}`).join(" · ")}
+          </span>
+        ) : null}
+      </div>
+
+      {allState.status !== "idle" ? <ActionMessage state={allState} /> : null}
 
       <div className="notification-inbox-list">
         {notifications.length > 0 ? (
@@ -127,8 +167,8 @@ function ActionMessage({ state }: { state: NotificationInboxActionState }) {
   );
 }
 
-function topicLabel(eventType: string, locale: Locale) {
-  const topic = topicFromEvent(eventType);
+function topicLabel(value: string, locale: Locale) {
+  const topic = value in topicCopy.en ? (value as keyof (typeof topicCopy)["en"]) : topicFromEvent(value);
   return topicCopy[locale][topic];
 }
 
@@ -145,7 +185,7 @@ function topicFromEvent(eventType: string): keyof (typeof topicCopy)["en"] {
     return "billing";
   }
 
-  if (eventType.includes("review")) {
+  if (eventType.includes("review") || eventType.includes("feedback")) {
     return "review";
   }
 
@@ -231,4 +271,44 @@ function formatMoney(cents: number, currency = "usd") {
     maximumFractionDigits: 0,
     style: "currency"
   }).format(cents / 100);
+}
+
+function summarizeNotifications(notifications: UserNotificationRecord[]): UserNotificationSummary {
+  const topics = new Map<string, UserNotificationSummary["topics"][number]>();
+  const summary: UserNotificationSummary = {
+    failed: 0,
+    read: 0,
+    skipped: 0,
+    topics: [],
+    total: notifications.length,
+    unread: 0
+  };
+
+  for (const notification of notifications) {
+    if (notification.status === "queued") {
+      summary.unread += 1;
+    } else if (notification.status === "sent") {
+      summary.read += 1;
+    } else if (notification.status === "failed") {
+      summary.failed += 1;
+    } else if (notification.status === "skipped") {
+      summary.skipped += 1;
+    }
+
+    const topic = topicFromEvent(notification.eventType);
+    const current = topics.get(topic) ?? {
+      count: 0,
+      topic,
+      unreadCount: 0
+    };
+    current.count += 1;
+    current.unreadCount += notification.status === "queued" ? 1 : 0;
+    topics.set(topic, current);
+  }
+
+  summary.topics = Array.from(topics.values()).sort(
+    (first, second) => second.unreadCount - first.unreadCount || second.count - first.count || first.topic.localeCompare(second.topic)
+  );
+
+  return summary;
 }

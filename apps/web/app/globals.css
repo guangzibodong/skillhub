@@ -2033,6 +2033,47 @@ a {
   gap: 14px;
 }
 
+.notification-inbox-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-inbox-panel__head form {
+  display: inline-flex;
+}
+
+.notification-inbox-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
+  gap: 8px;
+}
+
+.notification-inbox-summary > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 8px;
+}
+
+.notification-inbox-summary strong {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.notification-inbox-summary__topics {
+  grid-column: 1 / -1;
+}
+
 .notification-inbox-list {
   display: grid;
   gap: 10px;

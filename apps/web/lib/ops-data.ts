@@ -61,6 +61,24 @@ export type UserNotificationRecord = {
   deliveredAt: string | null;
 };
 
+export type UserNotificationSummary = {
+  failed: number;
+  read: number;
+  skipped: number;
+  topics: Array<{
+    count: number;
+    topic: string;
+    unreadCount: number;
+  }>;
+  total: number;
+  unread: number;
+};
+
+export type UserNotificationInbox = {
+  notifications: UserNotificationRecord[];
+  summary: UserNotificationSummary;
+};
+
 export type NotificationPreferenceRecord = {
   category: string;
   description: string;
@@ -667,6 +685,10 @@ const fallbackUserNotifications: UserNotificationRecord[] = [
     deliveredAt: null
   }
 ];
+const fallbackUserNotificationInbox: UserNotificationInbox = {
+  notifications: fallbackUserNotifications,
+  summary: summarizeUserNotifications(fallbackUserNotifications)
+};
 
 const fallbackNotificationPreferences: NotificationPreferenceRecord[] = [
   {
@@ -1632,10 +1654,14 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
 }
 
 export async function getUserNotifications(): Promise<UserNotificationRecord[]> {
+  return (await getUserNotificationInbox()).notifications;
+}
+
+export async function getUserNotificationInbox(): Promise<UserNotificationInbox> {
   const token = await readUserToken();
 
   if (!token) {
-    return fallbackUserNotifications;
+    return fallbackUserNotificationInbox;
   }
 
   try {
@@ -1650,11 +1676,88 @@ export async function getUserNotifications(): Promise<UserNotificationRecord[]> 
       throw new Error(`User notifications failed: ${response.status}`);
     }
 
-    const payload = (await response.json()) as { notifications: UserNotificationRecord[] };
-    return payload.notifications;
+    const payload = (await response.json()) as Partial<UserNotificationInbox> & { notifications: UserNotificationRecord[] };
+    const notifications = payload.notifications ?? [];
+
+    return {
+      notifications,
+      summary: payload.summary ?? summarizeUserNotifications(notifications)
+    };
   } catch {
-    return fallbackUserNotifications;
+    return fallbackUserNotificationInbox;
   }
+}
+
+function summarizeUserNotifications(notifications: UserNotificationRecord[]): UserNotificationSummary {
+  const topicMap = new Map<string, { count: number; topic: string; unreadCount: number }>();
+  const summary: UserNotificationSummary = {
+    failed: 0,
+    read: 0,
+    skipped: 0,
+    topics: [],
+    total: notifications.length,
+    unread: 0
+  };
+
+  for (const notification of notifications) {
+    if (notification.status === "queued") {
+      summary.unread += 1;
+    } else if (notification.status === "sent") {
+      summary.read += 1;
+    } else if (notification.status === "failed") {
+      summary.failed += 1;
+    } else if (notification.status === "skipped") {
+      summary.skipped += 1;
+    }
+
+    const topic = topicFromNotificationEvent(notification.eventType);
+    const current = topicMap.get(topic) ?? {
+      count: 0,
+      topic,
+      unreadCount: 0
+    };
+    current.count += 1;
+    current.unreadCount += notification.status === "queued" ? 1 : 0;
+    topicMap.set(topic, current);
+  }
+
+  summary.topics = Array.from(topicMap.values()).sort(
+    (first, second) => second.unreadCount - first.unreadCount || second.count - first.count || first.topic.localeCompare(second.topic)
+  );
+
+  return summary;
+}
+
+function topicFromNotificationEvent(eventType: string) {
+  if (eventType.includes("buyer_request") || eventType.includes("buyer.request")) {
+    return "buyer";
+  }
+
+  if (eventType.includes("payout")) {
+    return "payout";
+  }
+
+  if (eventType.includes("billing") || eventType.includes("invoice") || eventType.includes("refund") || eventType.includes("dispute")) {
+    return "billing";
+  }
+
+  if (eventType.includes("review") || eventType.includes("feedback")) {
+    return "review";
+  }
+
+  if (eventType.includes("runtime") || eventType.includes("incident")) {
+    return "runtime";
+  }
+
+  if (eventType.includes("trust") || eventType.includes("abuse")) {
+    return "trust";
+  }
+
+  if (eventType.includes("account") || eventType.includes("api_key")) {
+    return "account";
+  }
+
+  return "skill";
 }
 
 export async function getNotificationPreferences(): Promise<NotificationPreferenceRecord[]> {
