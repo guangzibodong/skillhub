@@ -403,6 +403,8 @@ Completed:
 - Organization webhook migration `017_organization_webhooks.sql` now stores webhook endpoint configuration plus future delivery outbox records.
 - Organization webhook APIs now let owner/admin/developer users list endpoints, create HTTPS callback endpoints, update subscribed event topics and status, and rotate one-time-visible signing secrets.
 - `/developer` now exposes webhook endpoint management beside team, billing, inbox, and notification preferences, so webhook preferences have a concrete integration surface before final delivery workers/providers are connected.
+- Project runtime test invocation APIs now let signed-in developers run an installed skill through the same runtime policy, subscription, budget, invocation-log, and execution path as agent API-key calls while keeping console tests non-billable.
+- Skill detail project actions now expose a JSON test input and runtime result panel beside save/install, giving developers an immediate install-to-test loop before they hand a project key to an agent.
 
 Next:
 

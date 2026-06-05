@@ -5034,7 +5034,8 @@ a {
 }
 
 .skill-project-action-form input,
-.skill-project-action-form select {
+.skill-project-action-form select,
+.skill-project-action-form textarea {
   width: 100%;
   min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -5045,12 +5046,26 @@ a {
   padding: 0 11px;
 }
 
+.skill-project-action-form textarea {
+  min-height: 112px;
+  resize: vertical;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 11px;
+}
+
+.skill-project-action-form__wide {
+  grid-column: 1 / -1;
+}
+
 .skill-project-action-form select option {
   background: var(--panel);
   color: var(--ink);
 }
 
-.skill-project-action-form input::placeholder {
+.skill-project-action-form input::placeholder,
+.skill-project-action-form textarea::placeholder {
   color: #7d8476;
 }
 
@@ -5087,6 +5102,70 @@ a {
   color: #cce7c2;
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 12px;
+}
+
+.skill-test-result {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.055);
+  padding: 12px;
+}
+
+.skill-test-result--blocked {
+  border-color: rgba(255, 133, 111, 0.24);
+  background: rgba(255, 133, 111, 0.06);
+}
+
+.skill-test-result__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.skill-test-result__head strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.skill-test-result__head span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-test-result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-test-result__meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+  padding: 0 9px;
+}
+
+.skill-test-result__output {
+  margin-top: 0;
+}
+
+.skill-test-result__output pre {
+  max-height: 320px;
 }
 
 .use-case-row {

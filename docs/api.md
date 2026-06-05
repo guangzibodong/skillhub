@@ -592,6 +592,22 @@ Every allowed call writes a `skill_invocations` row. Successful calls also write
 
 External runtime proxying is disabled by default. When `SKILLHUB_RUNTIME_PROXY=enabled`, HTTP runtime skills can be proxied to their manifest entrypoint. Otherwise the gateway returns a metered contract response so policy, logging, and billing paths can be tested safely.
 
+Signed-in developers can run a non-billable project test invocation from the web console before handing a project API key to an agent:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/runtime/test" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "browser-research",
+    "input": {
+      "query": "MCP server registry trends"
+    }
+  }'
+```
+
+The test endpoint requires an organization-scoped developer/owner/admin token and the target project must belong to that organization. It reuses the same install, version, verification, approval, policy, subscription, rate-limit, budget, invocation-log, and runtime execution path as `/v1/runtime/invoke`, but marks successful usage events as non-billable so console tests do not create payable ledger activity.
+
 SDK:
 
 ```ts

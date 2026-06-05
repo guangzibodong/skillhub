@@ -238,6 +238,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
             <SkillProjectActionPanel
               dashboardHref={localizedHref("/dashboard", locale)}
+              inputExample={skill.inputExample}
               latestVersion={latestVersion}
               locale={locale}
               projects={projects}

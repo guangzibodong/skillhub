@@ -38,6 +38,12 @@ type RuntimeInvokeInput = {
   input?: unknown;
 };
 
+type RuntimeProjectRecord = {
+  project_id: string;
+  project_slug: string;
+  organization_id: string;
+};
+
 type PriceRecord = {
   id: string | null;
   billing_model: "free" | "per_call" | "subscription";
@@ -210,16 +216,106 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
     };
   }
 
-  const skill = await findInstalledSkill(sql, apiKeyRecord.project_id, input.skillSlug, input.version);
+  const result = await invokeInstalledProjectSkill(
+    sql,
+    startedAt,
+    {
+      project_id: apiKeyRecord.project_id,
+      project_slug: apiKeyRecord.project_slug,
+      organization_id: apiKeyRecord.organization_id
+    },
+    input,
+    {
+      mode: "agent_runtime",
+      meterBillableUsage: true
+    }
+  );
+
+  if (result.body.status === "success" || result.body.status === "error") {
+    await sql`
+      update api_keys
+      set last_used_at = now()
+      where id = ${apiKeyRecord.id}
+    `;
+  }
+
+  return result;
+}
+
+export async function testInvokeProjectSkill(projectSlug: string, organizationId: string | null | undefined, input: RuntimeInvokeInput) {
+  const startedAt = Date.now();
+
+  if (!organizationId) {
+    return {
+      status: 403,
+      body: {
+        error: "Project test invocation requires an organization-scoped user token.",
+        code: "organization_required"
+      }
+    };
+  }
+
+  if (!projectSlug) {
+    return {
+      status: 400,
+      body: {
+        error: "Missing projectSlug.",
+        code: "missing_project_slug"
+      }
+    };
+  }
+
+  if (!input.skillSlug) {
+    return {
+      status: 400,
+      body: {
+        error: "Missing skillSlug.",
+        code: "missing_skill_slug"
+      }
+    };
+  }
+
+  const sql = await requireSql();
+  await seedRegistry();
+  const project = await findProjectForOrganization(sql, projectSlug, organizationId);
+
+  if (!project) {
+    return {
+      status: 404,
+      body: {
+        error: "Project not found.",
+        code: "project_not_found"
+      }
+    };
+  }
+
+  return invokeInstalledProjectSkill(sql, startedAt, project, input, {
+    mode: "console_test",
+    meterBillableUsage: false
+  });
+}
+
+async function invokeInstalledProjectSkill(
+  sql: Sql,
+  startedAt: number,
+  project: RuntimeProjectRecord,
+  input: RuntimeInvokeInput,
+  options: {
+    meterBillableUsage: boolean;
+    mode: "agent_runtime" | "console_test";
+  }
+) {
+  const skill = await findInstalledSkill(sql, project.project_id, input.skillSlug ?? "", input.version);
 
   if (!skill) {
     const invocation = await recordInvocation(sql, {
-      projectId: apiKeyRecord.project_id,
+      projectId: project.project_id,
       status: "blocked",
       latencyMs: Date.now() - startedAt,
       errorCode: "skill_not_installed",
       policyResult: {
-        projectSlug: apiKeyRecord.project_slug,
+        mode: options.mode,
+        projectSlug: project.project_slug,
         skillSlug: input.skillSlug
       },
       inputSummary: summarizeValue(input.input)
@@ -230,7 +326,8 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
       body: {
         error: "Skill is not installed for this project.",
         code: "skill_not_installed",
-        invocationId: invocation.id
+        invocationId: invocation.id,
+        mode: options.mode
       }
     };
   }
@@ -239,13 +336,16 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
 
   if (!policy.ok) {
     const invocation = await recordInvocation(sql, {
-      projectId: apiKeyRecord.project_id,
+      projectId: project.project_id,
       skillId: skill.skill_id,
       skillVersionId: skill.skill_version_id,
       status: "blocked",
       latencyMs: Date.now() - startedAt,
       errorCode: policy.code,
-      policyResult: policy,
+      policyResult: {
+        ...policy,
+        mode: options.mode
+      },
       inputSummary: summarizeValue(input.input)
     });
 
@@ -255,6 +355,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
         error: policy.message,
         code: policy.code,
         invocationId: invocation.id,
+        mode: options.mode,
         policy
       }
     };
@@ -265,7 +366,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
 
   if (!subscription.ok) {
     const invocation = await recordInvocation(sql, {
-      projectId: apiKeyRecord.project_id,
+      projectId: project.project_id,
       skillId: skill.skill_id,
       skillVersionId: skill.skill_version_id,
       status: "blocked",
@@ -273,6 +374,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
       errorCode: subscription.code,
       policyResult: {
         ...policy,
+        mode: options.mode,
         subscription
       },
       inputSummary: summarizeValue(input.input)
@@ -284,6 +386,7 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
         error: subscription.message,
         code: subscription.code,
         invocationId: invocation.id,
+        mode: options.mode,
         policy: {
           ...policy,
           subscription
@@ -295,9 +398,10 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
   const execution = await executeSkill(skill.manifest, input.input);
   const latencyMs = Date.now() - startedAt;
   const status = execution.ok ? "success" : "error";
-  const amountCents = status === "success" && price.billing_model === "per_call" ? price.unit_amount_cents : 0;
+  const amountCents =
+    options.meterBillableUsage && status === "success" && price.billing_model === "per_call" ? price.unit_amount_cents : 0;
   const invocation = await recordInvocation(sql, {
-    projectId: apiKeyRecord.project_id,
+    projectId: project.project_id,
     skillId: skill.skill_id,
     skillVersionId: skill.skill_version_id,
     status,
@@ -305,17 +409,12 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
     errorCode: execution.ok ? undefined : execution.errorCode,
     policyResult: {
       ...policy,
+      mode: options.mode,
       subscription
     },
     inputSummary: summarizeValue(input.input),
     outputSummary: summarizeValue(execution.output)
   });
-
-  await sql`
-    update api_keys
-    set last_used_at = now()
-    where id = ${apiKeyRecord.id}
-  `;
 
   if (status === "success") {
     await sql`
@@ -333,13 +432,13 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
       )
       values (
         ${invocation.id},
-        ${apiKeyRecord.project_id},
+        ${project.project_id},
         ${skill.skill_id},
         ${skill.skill_version_id},
         ${price.id},
         'invocation_success',
         1,
-        ${amountCents > 0},
+        ${options.meterBillableUsage && amountCents > 0},
         ${amountCents},
         ${price.currency}
       )
@@ -350,18 +449,38 @@ export async function invokeSkill(authorizationHeader: string | undefined, input
     status: execution.ok ? 200 : 502,
     body: {
       invocationId: invocation.id,
-      projectSlug: apiKeyRecord.project_slug,
+      mode: options.mode,
+      projectSlug: project.project_slug,
       skillSlug: skill.skill_slug,
       version: skill.version,
       status,
       latencyMs,
-      billable: amountCents > 0,
+      billable: options.meterBillableUsage && amountCents > 0,
       amountCents,
       currency: price.currency,
       output: execution.output,
       error: execution.ok ? undefined : execution.error
     }
   };
+}
+
+async function findProjectForOrganization(
+  sql: Sql,
+  projectSlug: string,
+  organizationId: string
+): Promise<RuntimeProjectRecord | undefined> {
+  const rows = (await sql`
+    select
+      id::text as project_id,
+      slug as project_slug,
+      organization_id::text
+    from projects
+    where slug = ${projectSlug}
+      and organization_id = ${organizationId}
+    limit 1
+  `) as RuntimeProjectRecord[];
+
+  return rows[0];
 }
 
 async function findProjectApiKey(sql: Sql, apiKey: string): Promise<ApiKeyRecord | undefined> {

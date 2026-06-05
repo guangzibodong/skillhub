@@ -28,7 +28,8 @@ import {
   createProjectApiKey,
   invokeSkill,
   listProjectApiKeys,
-  revokeProjectApiKey
+  revokeProjectApiKey,
+  testInvokeProjectSkill
 } from "./runtime.js";
 import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
 import { upsertProjectUpdateAction } from "./project-updates.js";
@@ -1102,6 +1103,27 @@ app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to revoke API key." }, 400);
+  }
+});
+
+app.post("/v1/projects/:projectSlug/runtime/test", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    const result = await testInvokeProjectSkill(
+      c.req.param("projectSlug"),
+      authorization.subject.organizationId,
+      (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+    );
+    return c.json(result.body, result.status as 200 | 400 | 403 | 404 | 502);
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to test skill invocation." }, 503);
   }
 });
 
