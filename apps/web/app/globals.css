@@ -2659,6 +2659,163 @@ a {
   padding: 11px;
 }
 
+.admin-identity-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.admin-identity-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-identity-summary div {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  min-height: 92px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.admin-identity-summary svg {
+  color: var(--cyan);
+}
+
+.admin-identity-summary span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.admin-identity-summary strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.admin-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-identity-column,
+.admin-identity-list,
+.admin-identity-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-identity-column__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.admin-identity-column__head svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.admin-identity-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.admin-identity-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.admin-identity-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-identity-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.admin-identity-card__head span:not(.status-chip),
+.admin-identity-meta,
+.admin-identity-memberships,
+.admin-identity-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-identity-card__head span:not(.status-chip) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-identity-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-identity-meta--six {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.admin-identity-meta span,
+.admin-identity-memberships span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-identity-meta strong,
+.admin-identity-memberships strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.admin-identity-memberships {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-identity-memberships span {
+  border: 1px solid rgba(155, 226, 141, 0.13);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.045);
+  padding: 8px;
+}
+
+.admin-identity-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  padding: 11px;
+}
+
 .admin-layout {
   grid-template-columns: minmax(0, 1fr) 380px;
   align-items: start;
@@ -7231,6 +7388,13 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .admin-identity-summary,
+  .admin-identity-meta,
+  .admin-identity-meta--six,
+  .admin-identity-memberships {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-review-action-form {
     grid-template-columns: 1fr;
   }
@@ -7256,6 +7420,8 @@ a {
   .publisher-public-command,
   .admin-adjustment-action-form,
   .admin-adjustment-action-form--dispute,
+  .admin-identity-card__head,
+  .admin-identity-grid,
   .incident-create-form,
   .incident-action-form,
   .notification-template-card__head,
@@ -7375,6 +7541,7 @@ a {
   }
 
   .abuse-report-card__head .status-chip,
+  .admin-identity-card__head .status-chip,
   .incident-card__head .status-chip,
   .notification-template-card__head .status-chip,
   .organization-team-card__head .status-chip,
@@ -7421,6 +7588,10 @@ a {
   .metric-strip,
   .status-grid,
   .skill-feedback-summary-grid,
+  .admin-identity-summary,
+  .admin-identity-meta,
+  .admin-identity-meta--six,
+  .admin-identity-memberships,
   .admin-review-meta,
   .admin-payout-metrics,
   .admin-adjustment-metrics,

@@ -55,6 +55,7 @@ import {
   rotateOrganizationWebhookSecret,
   updateOrganizationWebhookEndpoint
 } from "./organization-webhooks.js";
+import { getAdminIdentityDirectory } from "./admin-identity.js";
 import {
   createOrganizationTeamMemberToken,
   listOrganizationTeamMembers,
@@ -1254,6 +1255,18 @@ app.get("/v1/admin/notifications", async (c) => {
 
   return c.json({
     notifications: await listAdminNotifications(limit)
+  });
+});
+
+app.get("/v1/admin/identity", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    identity: await getAdminIdentityDirectory(Number(c.req.query("limit") ?? "12"))
   });
 });
 

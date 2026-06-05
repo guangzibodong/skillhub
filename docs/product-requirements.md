@@ -270,7 +270,7 @@ Requirements:
 - Finance ledger.
 - Payout review.
 - Refund/dispute operations.
-- User and org management.
+- User and org management, including a read-only platform identity directory for user count, organization count, admin/support users, active tokens, organization activity, memberships, and last token use before final auth-provider tooling is connected.
 - Organization member and role operations, including owner/admin/developer/publisher/reviewer/finance assignments, organization-scoped token issuance, and access-removal audit trails.
 - Audit stream.
 - Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.

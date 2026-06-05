@@ -13,6 +13,7 @@ import {
 import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
+import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
@@ -23,6 +24,7 @@ import {
   formatMoney,
   getAdminAbuseReports,
   getAdminDisputes,
+  getAdminIdentityDirectory,
   getAdminIncidents,
   getAdminNotifications,
   getAdminNotificationTemplates,
@@ -99,6 +101,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     financeLedger,
     notifications,
     notificationTemplates,
+    identityDirectory,
     payouts,
     refunds,
     disputes,
@@ -110,6 +113,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getFinanceLedger(),
     getAdminNotifications(),
     getAdminNotificationTemplates(),
+    getAdminIdentityDirectory(),
     getAdminPayouts(),
     getAdminRefunds(),
     getAdminDisputes(),
@@ -225,6 +229,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
             ))}
           </div>
         </aside>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">

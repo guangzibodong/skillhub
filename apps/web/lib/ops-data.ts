@@ -49,6 +49,50 @@ export type NotificationTemplateRecord = {
   updatedAt: string;
 };
 
+export type AdminIdentityDirectory = {
+  organizations: AdminIdentityOrganization[];
+  summary: {
+    activeTokenCount: number;
+    adminUserCount: number;
+    organizationCount: number;
+    userCount: number;
+  };
+  users: AdminIdentityUser[];
+};
+
+export type AdminIdentityOrganization = {
+  id: string;
+  name: string;
+  slug: string;
+  memberCount: number;
+  projectCount: number;
+  skillCount: number;
+  publisherProfileCount: number;
+  activeTokenCount: number;
+  invocationCount: number;
+  ledgerCents: number;
+  lastTokenUsedAt: string | null;
+  createdAt: string;
+};
+
+export type AdminIdentityUser = {
+  id: string;
+  email: string;
+  displayName: string | null;
+  platformRole: string;
+  organizationCount: number;
+  memberships: Array<{
+    organizationId: string;
+    organizationName: string;
+    organizationSlug: string;
+    role: string;
+  }>;
+  tokenCount: number;
+  activeTokenCount: number;
+  lastTokenUsedAt: string | null;
+  createdAt: string;
+};
+
 export type OrganizationRole = "owner" | "admin" | "developer" | "publisher" | "reviewer" | "finance";
 
 export type OrganizationTeamMember = {
@@ -697,6 +741,85 @@ const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
     updatedAt: "demo"
   }
 ];
+
+const fallbackAdminIdentityDirectory: AdminIdentityDirectory = {
+  organizations: [
+    {
+      id: "demo-org-skillhub",
+      name: "SkillHub Demo Org",
+      slug: "skillhub-demo",
+      memberCount: 3,
+      projectCount: 2,
+      skillCount: 4,
+      publisherProfileCount: 1,
+      activeTokenCount: 2,
+      invocationCount: 1840,
+      ledgerCents: 1860000,
+      lastTokenUsedAt: "demo",
+      createdAt: "demo"
+    },
+    {
+      id: "demo-org-agent-lab",
+      name: "Agent Lab",
+      slug: "agent-lab",
+      memberCount: 2,
+      projectCount: 1,
+      skillCount: 1,
+      publisherProfileCount: 1,
+      activeTokenCount: 1,
+      invocationCount: 320,
+      ledgerCents: 76000,
+      lastTokenUsedAt: "demo",
+      createdAt: "demo"
+    }
+  ],
+  summary: {
+    activeTokenCount: 3,
+    adminUserCount: 2,
+    organizationCount: 2,
+    userCount: 5
+  },
+  users: [
+    {
+      id: "demo-user-owner",
+      email: "owner@useskillhub.com",
+      displayName: "SkillHub Owner",
+      platformRole: "admin",
+      organizationCount: 1,
+      memberships: [
+        {
+          organizationId: "demo-org-skillhub",
+          organizationName: "SkillHub Demo Org",
+          organizationSlug: "skillhub-demo",
+          role: "owner"
+        }
+      ],
+      tokenCount: 2,
+      activeTokenCount: 2,
+      lastTokenUsedAt: "demo",
+      createdAt: "demo"
+    },
+    {
+      id: "demo-user-finance",
+      email: "finance@useskillhub.com",
+      displayName: "Finance Operator",
+      platformRole: "finance",
+      organizationCount: 1,
+      memberships: [
+        {
+          organizationId: "demo-org-skillhub",
+          organizationName: "SkillHub Demo Org",
+          organizationSlug: "skillhub-demo",
+          role: "finance"
+        }
+      ],
+      tokenCount: 1,
+      activeTokenCount: 0,
+      lastTokenUsedAt: null,
+      createdAt: "demo"
+    }
+  ]
+};
 
 const fallbackOrganizationTeam: OrganizationTeamMember[] = [
   {
@@ -1842,6 +1965,32 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
     return payload.templates;
   } catch {
     return fallbackNotificationTemplates;
+  }
+}
+
+export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirectory> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackAdminIdentityDirectory;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/identity?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin identity directory failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { identity: AdminIdentityDirectory };
+    return payload.identity;
+  } catch {
+    return fallbackAdminIdentityDirectory;
   }
 }
 

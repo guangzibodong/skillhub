@@ -138,6 +138,15 @@ curl "https://api.useskillhub.com/v1/auth/me" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+Admin/support operators can inspect the platform identity directory:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/identity?limit=12" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The directory returns summary counts for users, organizations, admin users, and active tokens, plus organization rows with member/project/skill/publisher/invocation/ledger signals and user rows with platform roles, memberships, token counts, and last token use. It is read-only so platform operators can understand adoption and access health before final OAuth/passwordless provider integration is connected.
+
 Web console session:
 
 - `/login` lets an operator paste a user access token created by the bootstrap flow.

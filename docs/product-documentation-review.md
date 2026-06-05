@@ -349,6 +349,12 @@ Added organization team access management, covering:
 - Every team access change writes an admin audit record and queues an in-app account notification for the organization.
 - This strengthens repeat-use value because real teams can divide project operations, publishing, finance, and trust responsibilities instead of sharing one bootstrap token.
 
+Added admin identity directory, covering:
+
+- Admin/support operators can inspect users, organizations, platform roles, memberships, token counts, active token counts, and last token use from `/admin`.
+- Organization rows include member, project, skill, publisher-profile, invocation, and posted-ledger signals so platform operators can see which accounts are actually adopting the marketplace.
+- The endpoint is read-only, giving safe operational visibility before final OAuth/passwordless user-management tooling is connected.
+
 Added organization webhook endpoint management, covering:
 
 - Owner/admin/developer users can configure HTTPS callback URLs, event-topic subscriptions, and active/paused/disabled state from `/developer`.
