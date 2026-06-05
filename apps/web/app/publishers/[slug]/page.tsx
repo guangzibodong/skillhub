@@ -31,6 +31,7 @@ const copy = {
     calls: "Calls",
     details: "Skill details",
     installs: "Installs",
+    latest: "Latest",
     metricCalls: "Runtime calls",
     metricInstalls: "Installs",
     metricPublic: "Public skills",
@@ -48,6 +49,36 @@ const copy = {
       blocked: "Blocked publisher",
       limited: "Limited publisher",
       verified: "Verified publisher"
+    },
+    billingModels: {
+      free: "Free",
+      per_call: "Per call",
+      subscription: "Subscription"
+    },
+    payoutStatuses: {
+      blocked: "Blocked",
+      not_configured: "Not configured",
+      verification_required: "Verification required",
+      verified: "Verified"
+    },
+    permissionLevels: {
+      high: "High risk",
+      low: "Low risk",
+      medium: "Medium risk"
+    },
+    publisherStatuses: {
+      active: "Active",
+      pending: "Pending",
+      restricted: "Restricted",
+      suspended: "Suspended"
+    },
+    verificationStatuses: {
+      deprecated: "Deprecated",
+      draft: "Draft",
+      rejected: "Rejected",
+      submitted: "Submitted",
+      suspended: "Suspended",
+      verified: "Verified"
     }
   },
   zh: {
@@ -56,6 +87,7 @@ const copy = {
     calls: "调用",
     details: "技能详情",
     installs: "安装",
+    latest: "最新",
     metricCalls: "运行调用",
     metricInstalls: "安装量",
     metricPublic: "公开技能",
@@ -73,6 +105,36 @@ const copy = {
       blocked: "已阻断发布者",
       limited: "受限发布者",
       verified: "已验证发布者"
+    },
+    billingModels: {
+      free: "免费",
+      per_call: "按次调用",
+      subscription: "订阅"
+    },
+    payoutStatuses: {
+      blocked: "已阻断",
+      not_configured: "未配置",
+      verification_required: "需要验证",
+      verified: "已验证"
+    },
+    permissionLevels: {
+      high: "高风险",
+      low: "低风险",
+      medium: "中风险"
+    },
+    publisherStatuses: {
+      active: "活跃",
+      pending: "待完善",
+      restricted: "受限",
+      suspended: "已暂停"
+    },
+    verificationStatuses: {
+      deprecated: "已弃用",
+      draft: "草稿",
+      rejected: "已拒绝",
+      submitted: "已提交",
+      suspended: "已暂停",
+      verified: "已验证"
     }
   }
 } as const;
@@ -120,8 +182,8 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
               <BadgeCheck size={14} aria-hidden="true" />
               {labels.trustLevels[publisher.trustLevel]}
             </span>
-            <span className={publisher.status === "active" ? "status-chip" : "status-chip status-chip--warning"}>{publisher.status}</span>
-            <span className={publisher.payoutStatus === "verified" ? "status-chip" : "status-chip status-chip--neutral"}>{publisher.payoutStatus}</span>
+            <span className={publisher.status === "active" ? "status-chip" : "status-chip status-chip--warning"}>{labels.publisherStatuses[publisher.status]}</span>
+            <span className={publisher.payoutStatus === "verified" ? "status-chip" : "status-chip status-chip--neutral"}>{labels.payoutStatuses[publisher.payoutStatus]}</span>
           </div>
         </div>
       </section>
@@ -154,14 +216,14 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                       <strong>{localizeText(skill.displayName, locale)}</strong>
                       <span>{localizeText(skill.description, locale)}</span>
                     </div>
-                    <span className={verificationClass(skill.verificationStatus)}>{skill.verificationStatus}</span>
+                    <span className={verificationClass(skill.verificationStatus)}>{labels.verificationStatuses[skill.verificationStatus]}</span>
                   </header>
 
                   <div className="publisher-public-skill__meta">
-                    <span className={`risk-badge risk-badge--${skill.permissionLevel}`}>{skill.permissionLevel}</span>
+                    <span className={`risk-badge risk-badge--${skill.permissionLevel}`}>{labels.permissionLevels[skill.permissionLevel]}</span>
                     <span>{skill.price[locale]}</span>
-                    <span>{skill.billing}</span>
-                    <span>{skill.version ?? "latest"}</span>
+                    <span>{labels.billingModels[skill.billing]}</span>
+                    <span>{skill.version ?? labels.latest}</span>
                   </div>
 
                   <div className="publisher-public-skill__signals">
@@ -200,8 +262,8 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
               <span>{labels.trust}</span>
             </div>
             <div className="publisher-trust-list">
-              <TrustRow icon={<BadgeCheck size={15} aria-hidden="true" />} label={labels.status} value={publisher.status} />
-              <TrustRow icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.payout} value={publisher.payoutStatus} />
+              <TrustRow icon={<BadgeCheck size={15} aria-hidden="true" />} label={labels.status} value={labels.publisherStatuses[publisher.status]} />
+              <TrustRow icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.payout} value={labels.payoutStatuses[publisher.payoutStatus]} />
               <TrustRow icon={<PackageCheck size={15} aria-hidden="true" />} label={labels.metricVerified} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
               <TrustRow icon={<Star size={15} aria-hidden="true" />} label={labels.success} value={formatPercent(publisher.metrics.avgSuccessRate)} />
               <TrustRow icon={<Terminal size={15} aria-hidden="true" />} label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />

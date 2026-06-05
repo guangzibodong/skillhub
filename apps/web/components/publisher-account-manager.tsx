@@ -53,6 +53,22 @@ const copy = {
     saveProfile: "Save profile",
     saving: "Saving",
     status: "Status",
+    providers: {
+      manual_deferred: "Manual payout handoff"
+    },
+    statuses: {
+      blocked: "Blocked",
+      canceled: "Canceled",
+      completed: "Completed",
+      created: "Created",
+      expired: "Expired",
+      not_configured: "Not configured",
+      opened: "Opened",
+      pending: "Pending",
+      ready: "Ready",
+      verification_required: "Needs verification",
+      verified: "Verified"
+    },
     title: "Publisher account",
     updateTitle: "Readiness decision"
   },
@@ -80,6 +96,22 @@ const copy = {
     saveProfile: "保存资料",
     saving: "保存中",
     status: "状态",
+    providers: {
+      manual_deferred: "人工提现交接"
+    },
+    statuses: {
+      blocked: "已阻断",
+      canceled: "已取消",
+      completed: "已完成",
+      created: "已创建",
+      expired: "已过期",
+      not_configured: "未配置",
+      opened: "已打开",
+      pending: "待处理",
+      ready: "可用",
+      verification_required: "需要验证",
+      verified: "已验证"
+    },
     title: "发布者账户",
     updateTitle: "准备状态处理"
   }
@@ -132,17 +164,25 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         <StatusTile
           icon={<BadgeCheck size={16} aria-hidden="true" />}
           label={labels.payoutReadiness}
-          value={profile?.payoutStatus ?? labels.requiresSetup}
+          value={profile?.payoutStatus ? formatStatusLabel(profile.payoutStatus, labels.statuses) : labels.requiresSetup}
         />
         <StatusTile
           icon={<ShieldCheck size={16} aria-hidden="true" />}
           label={labels.accountStatus}
-          value={payoutAccount ? `${payoutAccount.provider} / ${payoutAccount.status}` : labels.noAccount}
+          value={
+            payoutAccount
+              ? `${formatProviderLabel(payoutAccount.provider, labels.providers)} / ${formatStatusLabel(payoutAccount.status, labels.statuses)}`
+              : labels.noAccount
+          }
         />
         <StatusTile
           icon={<Clock3 size={16} aria-hidden="true" />}
           label={labels.latestSession}
-          value={latestSession ? `${latestSession.provider} / ${latestSession.status}` : labels.noSession}
+          value={
+            latestSession
+              ? `${formatProviderLabel(latestSession.provider, labels.providers)} / ${formatStatusLabel(latestSession.status, labels.statuses)}`
+              : labels.noSession
+          }
         />
       </div>
 
@@ -165,7 +205,9 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         <input name="refreshUrl" type="hidden" value={returnUrl} />
         <label>
           <span>{labels.onboardingProvider}</span>
-          <input defaultValue={payoutAccount?.provider ?? "manual_deferred"} name="provider" />
+          <select defaultValue={payoutAccount?.provider ?? "manual_deferred"} name="provider">
+            <option value="manual_deferred">{labels.providers.manual_deferred}</option>
+          </select>
         </label>
         <button className="secondary-button" disabled={isOnboardingPending} type="submit">
           <Link2 size={16} aria-hidden="true" />
@@ -188,10 +230,10 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         <label>
           <span>{labels.status}</span>
           <select defaultValue={profile?.payoutStatus === "verified" ? "verified" : "verification_required"} name="status">
-            <option value="verified">verified</option>
-            <option value="verification_required">verification_required</option>
-            <option value="blocked">blocked</option>
-            <option value="not_configured">not_configured</option>
+            <option value="verified">{labels.statuses.verified}</option>
+            <option value="verification_required">{labels.statuses.verification_required}</option>
+            <option value="blocked">{labels.statuses.blocked}</option>
+            <option value="not_configured">{labels.statuses.not_configured}</option>
           </select>
         </label>
         <label>
@@ -221,6 +263,14 @@ function StatusTile({ icon, label, value }: { icon: ReactNode; label: string; va
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatProviderLabel(provider: string, labels: Record<string, string>) {
+  return labels[provider] ?? provider.replaceAll("_", " ");
+}
+
+function formatStatusLabel(status: string, labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
 }
 
 function ActionMessage({ state }: { state: PublisherAccountActionState }) {

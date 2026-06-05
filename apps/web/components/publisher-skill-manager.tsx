@@ -43,6 +43,32 @@ const copy = {
     submitReview: "Submit review",
     submitting: "Submitting",
     successRate: "Success",
+    billingModels: {
+      free: "Free",
+      per_call: "Per call",
+      subscription: "Subscription"
+    },
+    priceStatuses: {
+      active: "Active",
+      archived: "Archived",
+      draft: "Draft"
+    },
+    reviewStatuses: {
+      approved: "Approved",
+      blocked: "Blocked",
+      in_review: "In review",
+      no_review: "No review",
+      queued: "Queued",
+      rejected: "Rejected"
+    },
+    verificationStatuses: {
+      deprecated: "Deprecated",
+      draft: "Draft",
+      rejected: "Rejected",
+      submitted: "Submitted",
+      suspended: "Suspended",
+      verified: "Verified"
+    },
     title: "Publisher skill operations",
     unitAmount: "Unit amount (cents)"
   },
@@ -61,6 +87,32 @@ const copy = {
     submitReview: "提交审核",
     submitting: "提交中",
     successRate: "成功率",
+    billingModels: {
+      free: "免费",
+      per_call: "按次调用",
+      subscription: "订阅"
+    },
+    priceStatuses: {
+      active: "启用",
+      archived: "归档",
+      draft: "草稿"
+    },
+    reviewStatuses: {
+      approved: "已批准",
+      blocked: "已阻断",
+      in_review: "审核中",
+      no_review: "未提交审核",
+      queued: "排队中",
+      rejected: "已拒绝"
+    },
+    verificationStatuses: {
+      deprecated: "已弃用",
+      draft: "草稿",
+      rejected: "已拒绝",
+      submitted: "已提交",
+      suspended: "已暂停",
+      verified: "已验证"
+    },
     title: "发布者技能运营",
     unitAmount: "单价（分）"
   }
@@ -124,10 +176,10 @@ function PublisherSkillCard({
         <div>
           <strong>{skill.displayName}</strong>
           <span>
-            {skill.slug} / {skill.version ?? "draft"}
+            {skill.slug} / {skill.version ?? labels.verificationStatuses.draft}
           </span>
         </div>
-        <span className={statusClass(skill.verificationStatus)}>{skill.verificationStatus}</span>
+        <span className={statusClass(skill.verificationStatus)}>{formatVerificationStatus(skill.verificationStatus, labels.verificationStatuses)}</span>
       </div>
 
       <div className="publisher-skill-metrics">
@@ -158,7 +210,7 @@ function PublisherSkillCard({
         </button>
         <span className="publisher-skill-review-state">
           <ClipboardCheck size={15} aria-hidden="true" />
-          {skill.review.status ?? "no_review"}
+          {formatReviewStatus(skill.review.status, labels.reviewStatuses)}
         </span>
       </form>
 
@@ -169,9 +221,9 @@ function PublisherSkillCard({
         <label>
           <span>{labels.billingModel}</span>
           <select defaultValue={skill.pricing.billingModel} name="billingModel">
-            <option value="free">free</option>
-            <option value="per_call">per_call</option>
-            <option value="subscription">subscription</option>
+            <option value="free">{labels.billingModels.free}</option>
+            <option value="per_call">{labels.billingModels.per_call}</option>
+            <option value="subscription">{labels.billingModels.subscription}</option>
           </select>
         </label>
         <label>
@@ -185,9 +237,9 @@ function PublisherSkillCard({
         <label>
           <span>{labels.priceStatus}</span>
           <select defaultValue={skill.pricing.status} name="status">
-            <option value="draft">draft</option>
-            <option value="active">active</option>
-            <option value="archived">archived</option>
+            <option value="draft">{labels.priceStatuses.draft}</option>
+            <option value="active">{labels.priceStatuses.active}</option>
+            <option value="archived">{labels.priceStatuses.archived}</option>
           </select>
         </label>
         <button className="primary-button" disabled={isPricePending} type="submit">
@@ -228,6 +280,14 @@ function formatFeedbackCounts(feedback: PublisherSkillRecord["feedback"]) {
   }
 
   return `${formatCompactNumber(feedback.publishedCount)} / ${formatCompactNumber(feedback.pendingCount)}`;
+}
+
+function formatReviewStatus(status: string | null, labels: Record<string, string>) {
+  return labels[status ?? "no_review"] ?? (status ?? "no_review").replaceAll("_", " ");
+}
+
+function formatVerificationStatus(status: string, labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
 }
 
 function ActionMessage({ state }: { state: PublisherSkillActionState }) {

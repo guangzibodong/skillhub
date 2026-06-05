@@ -55,6 +55,10 @@ const opsCopy = {
     pipelineTitle: "Publishing pipeline",
     pipelineHeaders: ["Skill", "Stage", "Signals", "Next step"],
     pipelineRows: [],
+    activeKeys: "active",
+    calls: "calls",
+    revokedKeys: "revoked",
+    updates: "updates",
     projectTitle: "Buyer project controls",
     projectHeaders: ["Project", "Budget", "Keys", "Policy"],
     projectRows: [],
@@ -67,6 +71,39 @@ const opsCopy = {
     adjustmentTitle: "Revenue adjustments",
     adjustmentHeaders: ["Type", "Skill", "Project", "Amount", "Status"],
     adjustmentEmpty: "No recent refund or dispute activity",
+    disputeReview: "Dispute review",
+    refundReview: "Refund review",
+    unknownProject: "unknown-project",
+    adjustmentTypes: {
+      dispute: "Dispute",
+      refund: "Refund"
+    },
+    disputeStatuses: {
+      lost: "Lost",
+      open: "Open",
+      warning_needs_response: "Needs response",
+      won: "Won"
+    },
+    ledgerStatuses: {
+      available: "Available",
+      blocked: "Blocked",
+      pending: "Pending",
+      posted: "Posted",
+      released: "Released",
+      reserved: "Reserved"
+    },
+    projectPolicyStates: {
+      approved: "Approved",
+      owner_review: "Owner review",
+      suspended: "Suspended"
+    },
+    refundStatuses: {
+      approved: "Approved",
+      failed: "Failed",
+      posted: "Posted",
+      rejected: "Rejected",
+      requested: "Requested"
+    },
     buyerRequestTitle: "Buyer request board",
     buyerRequestHeaders: ["Request", "Category", "Bounty", "Status", "Next"],
     buyerRequestEmpty: "No open or claimed buyer requests"
@@ -77,14 +114,18 @@ const opsCopy = {
     pipelineRows: [
       ["browser-research-pro", "价格批准", "Mira", "确认按次调用上限"],
       ["crm-enrichment", "数据政策", "Nolan", "审核 CRM token 范围"],
-      ["codebase-risk-scanner", "受限上线", "Asha", "需要 owner 批准"]
+      ["codebase-risk-scanner", "受限上线", "Asha", "需要负责人批准"]
     ],
+    activeKeys: "活跃",
+    calls: "次调用",
+    revokedKeys: "已撤销",
+    updates: "次更新",
     projectTitle: "购买方项目控制",
     projectHeaders: ["项目", "预算", "Key", "策略"],
     projectRows: [
       ["Research Agent", "$480 / 月", "2 个活跃", "已批准中风险技能"],
       ["Support Agent", "$120 / 月", "1 个轮换中", "仅允许免费技能"],
-      ["Finance Ops", "$900 / 月", "3 个活跃", "$50 以上人工批准"]
+      ["财务运营", "$900 / 月", "3 个活跃", "$50 以上人工批准"]
     ],
     apiTitle: "运行时运营",
     apiRows: [
@@ -95,6 +136,39 @@ const opsCopy = {
     adjustmentTitle: "收入调整",
     adjustmentHeaders: ["类型", "技能", "项目", "金额", "状态"],
     adjustmentEmpty: "暂无退款或争议记录",
+    disputeReview: "争议复核",
+    refundReview: "退款复核",
+    unknownProject: "未知项目",
+    adjustmentTypes: {
+      dispute: "争议",
+      refund: "退款"
+    },
+    disputeStatuses: {
+      lost: "已败诉",
+      open: "处理中",
+      warning_needs_response: "需要响应",
+      won: "已胜诉"
+    },
+    ledgerStatuses: {
+      available: "可用",
+      blocked: "已锁定",
+      pending: "待结算",
+      posted: "已入账",
+      released: "已释放",
+      reserved: "已预留"
+    },
+    projectPolicyStates: {
+      approved: "已批准",
+      owner_review: "负责人审核",
+      suspended: "已暂停"
+    },
+    refundStatuses: {
+      approved: "已批准",
+      failed: "失败",
+      posted: "已入账",
+      rejected: "已拒绝",
+      requested: "已申请"
+    },
     buyerRequestTitle: "买方需求池",
     buyerRequestHeaders: ["需求", "分类", "赏金", "状态", "下一步"],
     buyerRequestEmpty: "暂无开放或已认领需求"
@@ -146,7 +220,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           formatMoney(transaction.grossCents, transaction.currency),
           formatMoney(transaction.platformFeeCents, transaction.currency),
           formatMoney(transaction.publisherShareCents, transaction.currency),
-          transaction.balanceState ?? transaction.status
+          formatLedgerStatus(transaction.balanceState ?? transaction.status, ops)
         ])
       : [];
   const totalBillableCalls = developerProjects.reduce((sum, project) => sum + project.usage.billableUsageCount, 0);
@@ -160,10 +234,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const developerProjectRows =
     developerProjects.length > 0
       ? developerProjects.slice(0, 6).map((project) => ({
-          budget: `${formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)} / ${formatCompactNumber(project.runtime.callCount)} calls`,
-          keys: `${project.apiKeys.activeCount} active / ${project.apiKeys.revokedCount} revoked`,
+          budget: `${formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)} / ${formatCompactNumber(project.runtime.callCount)} ${ops.calls}`,
+          keys: `${project.apiKeys.activeCount} ${ops.activeKeys} / ${project.apiKeys.revokedCount} ${ops.revokedKeys}`,
           name: project.name,
-          policy: `${project.policy.state} / ${project.updates.count} updates`,
+          policy: `${formatProjectPolicyState(project.policy.state, ops)} / ${project.updates.count} ${ops.updates}`,
           slug: project.slug
         }))
       : [];
@@ -171,20 +245,22 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
       id: refund.id,
-      project: refund.projectSlug ?? "unknown-project",
-      reason: refund.reason ?? refund.providerReference ?? "Refund review",
+      project: refund.projectSlug ?? ops.unknownProject,
+      reason: refund.reason ?? refund.providerReference ?? ops.refundReview,
       skill: refund.skillName ?? refund.transactionId ?? refund.id,
-      status: refund.status,
-      type: "Refund"
+      status: formatRefundStatus(refund.status, ops),
+      type: ops.adjustmentTypes.refund,
+      typeKey: "refund"
     })),
     ...publisherDisputes.slice(0, 4).map((dispute) => ({
       amount: formatMoney(dispute.amountCents, dispute.currency),
       id: dispute.id,
-      project: dispute.projectSlug ?? "unknown-project",
-      reason: dispute.reason ?? dispute.externalReference ?? "Dispute review",
+      project: dispute.projectSlug ?? ops.unknownProject,
+      reason: dispute.reason ?? dispute.externalReference ?? ops.disputeReview,
       skill: dispute.skillName ?? dispute.transactionId ?? dispute.id,
-      status: dispute.status,
-      type: "Dispute"
+      status: formatDisputeStatus(dispute.status, ops),
+      type: ops.adjustmentTypes.dispute,
+      typeKey: "dispute"
     }))
   ].slice(0, 6);
 
@@ -361,7 +437,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </div>
             {adjustmentRows.length > 0 ? (
               adjustmentRows.map((adjustment) => {
-                const Icon = adjustment.type === "Refund" ? RotateCcw : ShieldAlert;
+                const Icon = adjustment.typeKey === "refund" ? RotateCcw : ShieldAlert;
 
                 return (
                   <div className="work-table__row adjustment-row" key={`${adjustment.type}-${adjustment.id}`}>
@@ -405,4 +481,22 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
+}
+
+type DashboardOpsCopy = (typeof opsCopy)["en"] | (typeof opsCopy)["zh"];
+
+function formatLedgerStatus(value: string, ops: DashboardOpsCopy) {
+  return ops.ledgerStatuses[value as keyof typeof ops.ledgerStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatProjectPolicyState(value: string, ops: DashboardOpsCopy) {
+  return ops.projectPolicyStates[value as keyof typeof ops.projectPolicyStates] ?? value.replaceAll("_", " ");
+}
+
+function formatRefundStatus(value: string, ops: DashboardOpsCopy) {
+  return ops.refundStatuses[value as keyof typeof ops.refundStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatDisputeStatus(value: string, ops: DashboardOpsCopy) {
+  return ops.disputeStatuses[value as keyof typeof ops.disputeStatuses] ?? value.replaceAll("_", " ");
 }

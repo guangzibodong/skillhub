@@ -49,6 +49,60 @@ const adminOpsCopy = {
     riskTitle: "Risk command center",
     riskHeaders: ["Signal", "Scope", "Action", "Owner"],
     riskRows: [],
+    owners: {
+      finance: "Finance",
+      platform: "Platform",
+      trust: "Trust"
+    },
+    riskSignals: {
+      abuseActionFollowup: "Follow up trust action",
+      abuseActionOpen: "Triage or restrict listing",
+      disputeActionDefault: "Resolve dispute evidence",
+      disputeLabel: "Dispute",
+      feedbackActionMonitor: "Monitor public quality signal",
+      feedbackActionPending: "Publish, hide, or reject review",
+      feedbackLabel: "Feedback",
+      incidentActionOpen: "Move to monitoring or resolve",
+      incidentActionRecovery: "Track runtime recovery",
+      incidentLabel: "incident",
+      refundActionDefault: "Review refund adjustment",
+      refundLabel: "Refund",
+      abuseCategories: {
+        billing: "billing",
+        copyright: "copyright",
+        malicious: "malicious",
+        other: "other",
+        privacy: "privacy",
+        quality: "quality",
+        security: "security",
+        spam: "spam"
+      },
+      disputeStatuses: {
+        lost: "lost",
+        open: "open",
+        warning_needs_response: "needs response",
+        won: "won"
+      },
+      feedbackStatuses: {
+        hidden: "hidden",
+        pending: "pending",
+        published: "published",
+        rejected: "rejected"
+      },
+      refundStatuses: {
+        approved: "approved",
+        failed: "failed",
+        posted: "posted",
+        rejected: "rejected",
+        requested: "requested"
+      },
+      severities: {
+        critical: "critical",
+        high: "high",
+        low: "low",
+        medium: "medium"
+      }
+    },
     moneyTitle: "Money ledger controls",
     moneyHeaders: ["Batch", "Gross", "Platform fee", "Publisher share", "State"],
     moneyRows: [],
@@ -63,10 +117,64 @@ const adminOpsCopy = {
     riskTitle: "风险指挥台",
     riskHeaders: ["信号", "范围", "动作", "负责人"],
     riskRows: [
-      ["高风险文件系统技能", "codebase-risk-scanner", "要求 owner 批准", "Trust"],
-      ["异常提现请求", "$4,800 请求", "暂停并做 KYC 审核", "Finance"],
-      ["运行错误激增", "browser-research-pro", "限流并通知发布者", "Platform"]
+      ["高风险文件系统技能", "codebase-risk-scanner", "要求负责人批准", "信任安全"],
+      ["异常提现请求", "$4,800 请求", "暂停并做 KYC 审核", "财务"],
+      ["运行错误激增", "browser-research-pro", "限流并通知发布者", "平台"]
     ],
+    owners: {
+      finance: "财务",
+      platform: "平台",
+      trust: "信任安全"
+    },
+    riskSignals: {
+      abuseActionFollowup: "跟进信任安全处理",
+      abuseActionOpen: "分诊或限制上架",
+      disputeActionDefault: "处理争议证据",
+      disputeLabel: "争议",
+      feedbackActionMonitor: "观察公开质量信号",
+      feedbackActionPending: "发布、隐藏或拒绝评价",
+      feedbackLabel: "评价",
+      incidentActionOpen: "转入监控或解决",
+      incidentActionRecovery: "跟踪运行恢复",
+      incidentLabel: "事故",
+      refundActionDefault: "复核退款调整",
+      refundLabel: "退款",
+      abuseCategories: {
+        billing: "账单",
+        copyright: "版权",
+        malicious: "恶意",
+        other: "其他",
+        privacy: "隐私",
+        quality: "质量",
+        security: "安全",
+        spam: "垃圾内容"
+      },
+      disputeStatuses: {
+        lost: "已败诉",
+        open: "处理中",
+        warning_needs_response: "需要响应",
+        won: "已胜诉"
+      },
+      feedbackStatuses: {
+        hidden: "已隐藏",
+        pending: "待处理",
+        published: "已发布",
+        rejected: "已拒绝"
+      },
+      refundStatuses: {
+        approved: "已批准",
+        failed: "失败",
+        posted: "已入账",
+        rejected: "已拒绝",
+        requested: "已申请"
+      },
+      severities: {
+        critical: "严重",
+        high: "高",
+        low: "低",
+        medium: "中"
+      }
+    },
     moneyTitle: "资金账本控制",
     moneyHeaders: ["批次", "总额", "平台佣金", "发布者收入", "状态"],
     moneyRows: [
@@ -131,34 +239,34 @@ export default async function AdminPage({ searchParams }: PageProps) {
     abuseReports.length + incidents.length + skillFeedback.length + refunds.length + disputes.length > 0
       ? [
           ...incidents.slice(0, 3).map((incident) => [
-            `${incident.severity} incident`,
+            `${formatRiskSeverity(incident.severity, ops)} ${ops.riskSignals.incidentLabel}`,
             incident.skillName,
-            incident.status === "open" ? "Move to monitoring or resolve" : incident.summary ?? "Track runtime recovery",
-            "Platform"
+            incident.status === "open" ? ops.riskSignals.incidentActionOpen : incident.summary ?? ops.riskSignals.incidentActionRecovery,
+            ops.owners.platform
           ]),
           ...abuseReports.slice(0, 3).map((report) => [
-            `${report.severity} ${report.category}`,
+            `${formatRiskSeverity(report.severity, ops)} ${formatAbuseCategory(report.category, ops)}`,
             report.skillName,
-            report.status === "open" ? "Triage or restrict listing" : report.decisionReason ?? "Follow up trust action",
-            "Trust"
+            report.status === "open" ? ops.riskSignals.abuseActionOpen : report.decisionReason ?? ops.riskSignals.abuseActionFollowup,
+            ops.owners.trust
           ]),
           ...skillFeedback.slice(0, 3).map((feedback) => [
-            `Feedback ${feedback.status}`,
+            `${ops.riskSignals.feedbackLabel} ${formatFeedbackStatus(feedback.status, ops)}`,
             feedback.skillName,
-            feedback.status === "pending" ? "Publish, hide, or reject review" : feedback.moderationReason ?? "Monitor public quality signal",
-            "Trust"
+            feedback.status === "pending" ? ops.riskSignals.feedbackActionPending : feedback.moderationReason ?? ops.riskSignals.feedbackActionMonitor,
+            ops.owners.trust
           ]),
           ...refunds.slice(0, 3).map((refund) => [
-            `Refund ${refund.status}`,
+            `${ops.riskSignals.refundLabel} ${formatRefundStatus(refund.status, ops)}`,
             refund.skillName ?? refund.transactionId ?? refund.id,
-            refund.reason ?? "Review refund adjustment",
-            "Finance"
+            refund.reason ?? ops.riskSignals.refundActionDefault,
+            ops.owners.finance
           ]),
           ...disputes.slice(0, 3).map((dispute) => [
-            `Dispute ${dispute.status}`,
+            `${ops.riskSignals.disputeLabel} ${formatDisputeStatus(dispute.status, ops)}`,
             dispute.skillName ?? dispute.transactionId ?? dispute.id,
-            dispute.reason ?? "Resolve dispute evidence",
-            "Trust"
+            dispute.reason ?? ops.riskSignals.disputeActionDefault,
+            ops.owners.trust
           ])
         ].slice(0, 5)
       : [];
@@ -324,4 +432,26 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
+}
+
+type AdminOpsCopy = (typeof adminOpsCopy)["en"] | (typeof adminOpsCopy)["zh"];
+
+function formatRiskSeverity(value: string, ops: AdminOpsCopy) {
+  return ops.riskSignals.severities[value as keyof typeof ops.riskSignals.severities] ?? value.replaceAll("_", " ");
+}
+
+function formatAbuseCategory(value: string, ops: AdminOpsCopy) {
+  return ops.riskSignals.abuseCategories[value as keyof typeof ops.riskSignals.abuseCategories] ?? value.replaceAll("_", " ");
+}
+
+function formatFeedbackStatus(value: string, ops: AdminOpsCopy) {
+  return ops.riskSignals.feedbackStatuses[value as keyof typeof ops.riskSignals.feedbackStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatRefundStatus(value: string, ops: AdminOpsCopy) {
+  return ops.riskSignals.refundStatuses[value as keyof typeof ops.riskSignals.refundStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatDisputeStatus(value: string, ops: AdminOpsCopy) {
+  return ops.riskSignals.disputeStatuses[value as keyof typeof ops.riskSignals.disputeStatuses] ?? value.replaceAll("_", " ");
 }

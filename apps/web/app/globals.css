@@ -2306,6 +2306,7 @@ a {
 
 .publisher-profile-form input,
 .publisher-onboarding-form input,
+.publisher-onboarding-form select,
 .publisher-readiness-form input,
 .publisher-readiness-form select {
   width: 100%;
@@ -2324,6 +2325,7 @@ a {
   color: #7d8476;
 }
 
+.publisher-onboarding-form select option,
 .publisher-readiness-form select option {
   background: var(--panel);
   color: var(--ink);

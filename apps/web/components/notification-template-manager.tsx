@@ -28,6 +28,14 @@ const copy = {
     templateKey: "Template key",
     title: "Notification templates",
     updated: "Updated",
+    templateKeyPlaceholder: "skill.review.approved",
+    subjectPlaceholder: "Skill review approved",
+    bodyPlaceholder: "Use {{skillSlug}}, {{projectSlug}}, {{amountCents}}, and other event payload fields.",
+    channels: {
+      email: "Email",
+      in_app: "In-app",
+      webhook: "Webhook"
+    },
     statuses: {
       active: "Active",
       archived: "Archived",
@@ -47,6 +55,14 @@ const copy = {
     templateKey: "模板 key",
     title: "通知模板",
     updated: "更新时间",
+    templateKeyPlaceholder: "skill.review.approved",
+    subjectPlaceholder: "技能审核已通过",
+    bodyPlaceholder: "可使用 {{skillSlug}}、{{projectSlug}}、{{amountCents}} 等事件字段。",
+    channels: {
+      email: "邮件",
+      in_app: "站内通知",
+      webhook: "Webhook"
+    },
     statuses: {
       active: "启用",
       archived: "归档",
@@ -78,14 +94,14 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
       <form action={createAction} className="notification-template-form">
         <label>
           <span>{labels.templateKey}</span>
-          <input name="templateKey" placeholder="skill.review.approved" />
+          <input name="templateKey" placeholder={labels.templateKeyPlaceholder} />
         </label>
         <label>
           <span>{labels.channel}</span>
           <select defaultValue="in_app" name="channel">
             {channels.map((channel) => (
               <option key={channel} value={channel}>
-                {channel}
+                {labels.channels[channel]}
               </option>
             ))}
           </select>
@@ -106,11 +122,11 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
         </label>
         <label className="notification-template-form__wide">
           <span>{labels.subject}</span>
-          <input name="subject" placeholder="Skill review approved" />
+          <input name="subject" placeholder={labels.subjectPlaceholder} />
         </label>
         <label className="notification-template-form__wide">
           <span>{labels.body}</span>
-          <textarea name="body" placeholder="Use {{skillSlug}}, {{projectSlug}}, {{amountCents}}, and other event payload fields." rows={4} />
+          <textarea name="body" placeholder={labels.bodyPlaceholder} rows={4} />
         </label>
         <button className="secondary-button secondary-button--compact" disabled={isCreating} type="submit">
           <FilePenLine size={15} aria-hidden="true" />
@@ -131,7 +147,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                   <div>
                     <strong>{template.templateKey}</strong>
                     <span>
-                      {template.channel} / {template.locale} / {labels.updated}: {formatDate(template.updatedAt, locale)}
+                      {labels.channels[template.channel]} / {template.locale} / {labels.updated}: {formatDate(template.updatedAt, locale)}
                     </span>
                   </div>
                   <span className={statusClass(template.status)}>{labels.statuses[template.status]}</span>
@@ -147,7 +163,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                     <select defaultValue={template.channel} name="channel">
                       {channels.map((channel) => (
                         <option key={channel} value={channel}>
-                          {channel}
+                          {labels.channels[channel]}
                         </option>
                       ))}
                     </select>

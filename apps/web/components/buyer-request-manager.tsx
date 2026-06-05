@@ -43,6 +43,9 @@ const copy = {
     submit: "Submit build",
     title: "Buyer request exchange",
     titleField: "Request title",
+    titlePlaceholder: "Describe the skill you need",
+    categoryPlaceholder: "workflow",
+    descriptionPlaceholder: "What should the delivered skill do, and how will you evaluate it?",
     cancel: "Cancel"
   },
   zh: {
@@ -69,6 +72,9 @@ const copy = {
     submit: "提交构建",
     title: "买家需求交易台",
     titleField: "需求标题",
+    titlePlaceholder: "描述你需要的技能",
+    categoryPlaceholder: "工作流",
+    descriptionPlaceholder: "说明交付的技能要做什么，以及你会如何验收。",
     cancel: "取消"
   }
 } as const;
@@ -128,11 +134,11 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
         <form action={createAction} className="buyer-request-composer">
           <label className="buyer-request-composer__wide">
             <span>{labels.titleField}</span>
-            <input name="title" placeholder="Describe the skill you need" required />
+            <input name="title" placeholder={labels.titlePlaceholder} required />
           </label>
           <label>
             <span>{labels.category}</span>
-            <input name="category" placeholder="workflow" />
+            <input name="category" placeholder={labels.categoryPlaceholder} />
           </label>
           <label>
             <span>{labels.bounty}</span>
@@ -151,7 +157,7 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
           </label>
           <label className="buyer-request-composer__wide">
             <span>{labels.description}</span>
-            <textarea name="description" placeholder="What should the delivered skill do, and how will you evaluate it?" required />
+            <textarea name="description" placeholder={labels.descriptionPlaceholder} required />
           </label>
           <button className="secondary-button" disabled={isCreating} type="submit">
             <Plus size={15} aria-hidden="true" />

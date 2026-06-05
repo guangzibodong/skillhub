@@ -31,7 +31,16 @@ const copy = {
     save: "Record decision",
     saving: "Saving",
     status: "Status",
-    title: "Payout review queue"
+    title: "Payout review queue",
+    statuses: {
+      blocked: "Blocked",
+      failed: "Failed",
+      paid: "Paid",
+      processing: "Processing",
+      requested: "Requested",
+      review: "In review",
+      verified: "Verified"
+    }
   },
   zh: {
     account: "账户",
@@ -50,7 +59,16 @@ const copy = {
     save: "记录决策",
     saving: "保存中",
     status: "状态",
-    title: "提现审核队列"
+    title: "提现审核队列",
+    statuses: {
+      blocked: "已阻断",
+      failed: "失败",
+      paid: "已打款",
+      processing: "处理中",
+      requested: "已申请",
+      review: "审核中",
+      verified: "已验证"
+    }
   }
 } as const;
 
@@ -87,13 +105,17 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                     <strong>{latest.publisherName}</strong>
                     <span>{latest.id}</span>
                   </div>
-                  <span className={statusClass(latest.status)}>{latest.status}</span>
+                  <span className={statusClass(latest.status)}>{labels.statuses[latest.status]}</span>
                 </header>
 
                 <div className="admin-payout-metrics">
                   <StatusTile icon={<Banknote size={15} aria-hidden="true" />} label={labels.amount} value={formatMoney(latest.amountCents, latest.currency)} />
                   <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.balanceCount} value={String(latest.balanceCount)} />
-                  <StatusTile icon={<WalletCards size={15} aria-hidden="true" />} label={labels.account} value={`${latest.provider ?? "n/a"} / ${latest.accountStatus ?? "n/a"}`} />
+                  <StatusTile
+                    icon={<WalletCards size={15} aria-hidden="true" />}
+                    label={labels.account}
+                    value={`${latest.provider ?? "n/a"} / ${formatStatusLabel(latest.accountStatus ?? "n/a", labels.statuses)}`}
+                  />
                   <StatusTile icon={<Clock3 size={15} aria-hidden="true" />} label={labels.requested} value={formatDate(latest.requestedAt, locale)} />
                 </div>
 
@@ -226,6 +248,10 @@ function terminalLabel(status: PayoutRecord["status"], locale: Locale) {
   }
 
   return locale === "zh" ? "已阻断，需后续财务复核。" : "Blocked pending follow-up finance review.";
+}
+
+function formatStatusLabel(status: string, labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {

@@ -26,10 +26,20 @@ const copy = {
     resolved: "Resolved",
     severity: "Severity",
     skillSlug: "Skill slug",
+    skillSlugPlaceholder: "skill-slug",
     status: "Status",
     summary: "Summary",
+    summaryPlaceholder: "What changed, who is affected, and what operators should watch.",
     title: "Runtime incident queue",
     newTitle: "New incident title",
+    newTitlePlaceholder: "Incident title",
+    notAvailable: "n/a",
+    severityLabels: {
+      critical: "Critical",
+      high: "High",
+      low: "Low",
+      medium: "Medium"
+    },
     statuses: {
       monitoring: "Monitoring",
       open: "Open",
@@ -47,10 +57,20 @@ const copy = {
     resolved: "解决时间",
     severity: "严重级别",
     skillSlug: "技能 slug",
+    skillSlugPlaceholder: "skill-slug",
     status: "状态",
     summary: "摘要",
+    summaryPlaceholder: "说明变更内容、影响范围，以及运营需要持续观察的信号。",
     title: "运行事故队列",
     newTitle: "新事故标题",
+    newTitlePlaceholder: "事故标题",
+    notAvailable: "暂无",
+    severityLabels: {
+      critical: "严重",
+      high: "高",
+      low: "低",
+      medium: "中"
+    },
     statuses: {
       monitoring: "监控中",
       open: "打开",
@@ -83,25 +103,25 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
       <form action={createAction} className="incident-create-form">
         <label>
           <span>{labels.skillSlug}</span>
-          <input name="skillSlug" placeholder="skill-slug" />
+          <input name="skillSlug" placeholder={labels.skillSlugPlaceholder} />
         </label>
         <label>
           <span>{labels.newTitle}</span>
-          <input name="title" placeholder="Incident title" />
+          <input name="title" placeholder={labels.newTitlePlaceholder} />
         </label>
         <label>
           <span>{labels.severity}</span>
           <select defaultValue="medium" name="severity">
             {severities.map((severity) => (
               <option key={severity} value={severity}>
-                {severity}
+                {labels.severityLabels[severity]}
               </option>
             ))}
           </select>
         </label>
         <label className="incident-create-form__summary">
           <span>{labels.summary}</span>
-          <input name="summary" placeholder="What changed, who is affected, and what operators should watch." />
+          <input name="summary" placeholder={labels.summaryPlaceholder} />
         </label>
         <button className="secondary-button secondary-button--compact" disabled={isCreatePending} type="submit">
           <RadioTower size={15} aria-hidden="true" />
@@ -124,7 +144,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                       {incident.skillName} / {incident.skillSlug}
                     </span>
                   </div>
-                  <span className={severityClass(incident.severity)}>{incident.severity}</span>
+                  <span className={severityClass(incident.severity)}>{labels.severityLabels[incident.severity]}</span>
                 </header>
 
                 <p>{incident.summary ?? labels.empty}</p>
@@ -140,7 +160,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                   </span>
                   <span>
                     <strong>{labels.resolved}</strong>
-                    {incident.resolvedAt ? formatDate(incident.resolvedAt, locale) : "n/a"}
+                    {incident.resolvedAt ? formatDate(incident.resolvedAt, locale) : labels.notAvailable}
                   </span>
                 </div>
 
@@ -161,7 +181,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                     <select defaultValue={incident.severity} name="severity">
                       {severities.map((severity) => (
                         <option key={severity} value={severity}>
-                          {severity}
+                          {labels.severityLabels[severity]}
                         </option>
                       ))}
                     </select>

@@ -53,12 +53,40 @@ const copy = {
     adjustmentEmpty: "No recent refund or dispute activity",
     adjustmentHeaders: ["Type", "Skill", "Project", "Amount", "Status"],
     adjustmentTitle: "Refund and dispute watch",
+    disputeReview: "Dispute review",
     description:
       "A focused workspace for skill publishers to move packages through review, price verified listings, respond to buyer demand, and prepare revenue for payout.",
     eyebrow: "Publisher workspace",
     ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
     ledgerEmpty: "No posted publisher revenue yet",
     ledgerTitle: "Publisher revenue ledger",
+    refundReview: "Refund review",
+    unknownProject: "unknown-project",
+    adjustmentTypes: {
+      dispute: "Dispute",
+      refund: "Refund"
+    },
+    disputeStatuses: {
+      lost: "Lost",
+      open: "Open",
+      warning_needs_response: "Needs response",
+      won: "Won"
+    },
+    ledgerStatuses: {
+      available: "Available",
+      blocked: "Blocked",
+      pending: "Pending",
+      posted: "Posted",
+      released: "Released",
+      reserved: "Reserved"
+    },
+    refundStatuses: {
+      approved: "Approved",
+      failed: "Failed",
+      posted: "Posted",
+      rejected: "Rejected",
+      requested: "Requested"
+    },
     metrics: {
       available: "Available balance",
       demand: "Open demand",
@@ -85,12 +113,40 @@ const copy = {
     adjustmentEmpty: "暂无退款或争议记录",
     adjustmentHeaders: ["类型", "技能", "项目", "金额", "状态"],
     adjustmentTitle: "退款与争议跟进",
+    disputeReview: "争议复核",
     description:
       "给技能发布者使用的独立工作台：推进技能审核、设置已验证技能价格、响应买方需求，并把收入准备到可提现状态。",
     eyebrow: "发布者工作台",
     ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
     ledgerEmpty: "暂无已入账的发布者收入",
     ledgerTitle: "发布者收入账本",
+    refundReview: "退款复核",
+    unknownProject: "未知项目",
+    adjustmentTypes: {
+      dispute: "争议",
+      refund: "退款"
+    },
+    disputeStatuses: {
+      lost: "已败诉",
+      open: "处理中",
+      warning_needs_response: "需要响应",
+      won: "已胜诉"
+    },
+    ledgerStatuses: {
+      available: "可用",
+      blocked: "已锁定",
+      pending: "待结算",
+      posted: "已入账",
+      released: "已释放",
+      reserved: "已预留"
+    },
+    refundStatuses: {
+      approved: "已批准",
+      failed: "失败",
+      posted: "已入账",
+      rejected: "已拒绝",
+      requested: "已申请"
+    },
     metrics: {
       available: "可提现余额",
       demand: "开放需求",
@@ -167,6 +223,20 @@ function buildReadinessTasks(
   ];
 }
 
+type PublisherPageCopy = (typeof copy)["en"] | (typeof copy)["zh"];
+
+function formatLedgerStatus(value: string, labels: PublisherPageCopy) {
+  return labels.ledgerStatuses[value as keyof typeof labels.ledgerStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatRefundStatus(value: string, labels: PublisherPageCopy) {
+  return labels.refundStatuses[value as keyof typeof labels.refundStatuses] ?? value.replaceAll("_", " ");
+}
+
+function formatDisputeStatus(value: string, labels: PublisherPageCopy) {
+  return labels.disputeStatuses[value as keyof typeof labels.disputeStatuses] ?? value.replaceAll("_", " ");
+}
+
 export default async function PublisherPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
@@ -235,27 +305,29 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           formatMoney(transaction.grossCents, transaction.currency),
           formatMoney(transaction.platformFeeCents, transaction.currency),
           formatMoney(transaction.publisherShareCents, transaction.currency),
-          transaction.balanceState ?? transaction.status
+          formatLedgerStatus(transaction.balanceState ?? transaction.status, labels)
         ])
       : [];
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
       id: refund.id,
-      project: refund.projectSlug ?? "unknown-project",
-      reason: refund.reason ?? refund.providerReference ?? "Refund review",
+      project: refund.projectSlug ?? labels.unknownProject,
+      reason: refund.reason ?? refund.providerReference ?? labels.refundReview,
       skill: refund.skillName ?? refund.transactionId ?? refund.id,
-      status: refund.status,
-      type: locale === "zh" ? "退款" : "Refund"
+      status: formatRefundStatus(refund.status, labels),
+      type: labels.adjustmentTypes.refund,
+      typeKey: "refund"
     })),
     ...publisherDisputes.slice(0, 4).map((dispute) => ({
       amount: formatMoney(dispute.amountCents, dispute.currency),
       id: dispute.id,
-      project: dispute.projectSlug ?? "unknown-project",
-      reason: dispute.reason ?? dispute.externalReference ?? "Dispute review",
+      project: dispute.projectSlug ?? labels.unknownProject,
+      reason: dispute.reason ?? dispute.externalReference ?? labels.disputeReview,
       skill: dispute.skillName ?? dispute.transactionId ?? dispute.id,
-      status: dispute.status,
-      type: locale === "zh" ? "争议" : "Dispute"
+      status: formatDisputeStatus(dispute.status, labels),
+      type: labels.adjustmentTypes.dispute,
+      typeKey: "dispute"
     }))
   ].slice(0, 6);
 
@@ -345,7 +417,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
               </div>
               {adjustmentRows.length > 0 ? (
                 adjustmentRows.map((adjustment) => {
-                  const Icon = adjustment.type === "Refund" || adjustment.type === "退款" ? RotateCcw : ShieldAlert;
+                  const Icon = adjustment.typeKey === "refund" ? RotateCcw : ShieldAlert;
 
                   return (
                     <div className="work-table__row adjustment-row" key={`${adjustment.type}-${adjustment.id}`}>

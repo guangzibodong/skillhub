@@ -48,7 +48,20 @@ const copy = {
     save: "Record decision",
     saving: "Saving",
     title: "Refund and dispute queue",
-    transaction: "Transaction"
+    transaction: "Transaction",
+    disputeStatuses: {
+      lost: "Lost",
+      open: "Open",
+      warning_needs_response: "Needs response",
+      won: "Won"
+    },
+    refundStatuses: {
+      approved: "Approved",
+      failed: "Failed",
+      posted: "Posted",
+      rejected: "Rejected",
+      requested: "Requested"
+    }
   },
   zh: {
     amount: "金额",
@@ -72,7 +85,20 @@ const copy = {
     save: "记录决策",
     saving: "保存中",
     title: "退款与争议队列",
-    transaction: "交易"
+    transaction: "交易",
+    disputeStatuses: {
+      lost: "已败诉",
+      open: "处理中",
+      warning_needs_response: "需要响应",
+      won: "已胜诉"
+    },
+    refundStatuses: {
+      approved: "已批准",
+      failed: "失败",
+      posted: "已入账",
+      rejected: "已拒绝",
+      requested: "已申请"
+    }
   }
 } as const;
 
@@ -119,7 +145,7 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
                   <section className="admin-adjustment-card" key={refund.id}>
                     <AdjustmentHeader
                       id={latest.id}
-                      status={latest.status}
+                      status={labels.refundStatuses[latest.status]}
                       statusClassName={refundStatusClass(latest.status)}
                       title={latest.skillName ?? latest.transactionId ?? latest.id}
                     />
@@ -190,7 +216,7 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
                   <section className="admin-adjustment-card" key={dispute.id}>
                     <AdjustmentHeader
                       id={latest.id}
-                      status={latest.status}
+                      status={labels.disputeStatuses[latest.status]}
                       statusClassName={disputeStatusClass(latest.status)}
                       title={latest.skillName ?? latest.transactionId ?? latest.id}
                     />
@@ -209,10 +235,10 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
                       <label>
                         <span>{labels.disputeStatus}</span>
                         <select defaultValue={suggestedDisputeStatus(latest)} name="status">
-                          <option value="open">open</option>
-                          <option value="warning_needs_response">warning_needs_response</option>
-                          <option value="won">won</option>
-                          <option value="lost">lost</option>
+                          <option value="open">{labels.disputeStatuses.open}</option>
+                          <option value="warning_needs_response">{labels.disputeStatuses.warning_needs_response}</option>
+                          <option value="won">{labels.disputeStatuses.won}</option>
+                          <option value="lost">{labels.disputeStatuses.lost}</option>
                         </select>
                       </label>
                       <label>

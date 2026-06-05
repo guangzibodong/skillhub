@@ -47,7 +47,24 @@ const copy = {
     status: "Status",
     taxId: "Tax ID",
     title: "Organization billing",
-    updateStatus: "Update"
+    updateStatus: "Update",
+    methodTypes: {
+      bank_account: "Bank account",
+      card: "Card",
+      external: "External",
+      invoice: "Invoice"
+    },
+    providers: {
+      manual: "Manual"
+    },
+    statuses: {
+      disabled: "Disabled",
+      failed: "Failed",
+      not_configured: "Not configured",
+      pending: "Pending",
+      ready: "Ready",
+      requires_action: "Requires action"
+    }
   },
   zh: {
     addMethod: "添加付款状态",
@@ -79,7 +96,24 @@ const copy = {
     status: "状态",
     taxId: "税号",
     title: "组织账单",
-    updateStatus: "更新"
+    updateStatus: "更新",
+    methodTypes: {
+      bank_account: "银行账户",
+      card: "银行卡",
+      external: "外部方式",
+      invoice: "发票"
+    },
+    providers: {
+      manual: "人工处理"
+    },
+    statuses: {
+      disabled: "已停用",
+      failed: "失败",
+      not_configured: "未配置",
+      pending: "待处理",
+      ready: "可用",
+      requires_action: "需要操作"
+    }
   }
 } as const;
 
@@ -176,7 +210,9 @@ export function OrganizationBillingManager({ billing, locale }: OrganizationBill
       <form action={paymentAction} className="organization-payment-form">
         <label>
           <span>{labels.provider}</span>
-          <input defaultValue="manual" name="provider" />
+          <select defaultValue="manual" name="provider">
+            <option value="manual">{labels.providers.manual}</option>
+          </select>
         </label>
         <label>
           <span>{labels.providerCustomerId}</span>
@@ -189,21 +225,21 @@ export function OrganizationBillingManager({ billing, locale }: OrganizationBill
         <label>
           <span>{labels.methodType}</span>
           <select defaultValue="invoice" name="methodType">
-            <option value="invoice">invoice</option>
-            <option value="card">card</option>
-            <option value="bank_account">bank_account</option>
-            <option value="external">external</option>
+            <option value="invoice">{labels.methodTypes.invoice}</option>
+            <option value="card">{labels.methodTypes.card}</option>
+            <option value="bank_account">{labels.methodTypes.bank_account}</option>
+            <option value="external">{labels.methodTypes.external}</option>
           </select>
         </label>
         <label>
           <span>{labels.status}</span>
           <select defaultValue="pending" name="status">
-            <option value="not_configured">not_configured</option>
-            <option value="pending">pending</option>
-            <option value="ready">ready</option>
-            <option value="requires_action">requires_action</option>
-            <option value="failed">failed</option>
-            <option value="disabled">disabled</option>
+            <option value="not_configured">{labels.statuses.not_configured}</option>
+            <option value="pending">{labels.statuses.pending}</option>
+            <option value="ready">{labels.statuses.ready}</option>
+            <option value="requires_action">{labels.statuses.requires_action}</option>
+            <option value="failed">{labels.statuses.failed}</option>
+            <option value="disabled">{labels.statuses.disabled}</option>
           </select>
         </label>
         <label>
@@ -253,7 +289,7 @@ function PaymentMethodCard({
       <input name="paymentMethodId" type="hidden" value={method.id} />
       <div>
         <strong>
-          {method.methodType} / {method.provider}
+          {formatMethodType(method.methodType, labels.methodTypes)} / {formatProvider(method.provider, labels.providers)}
         </strong>
         <span>
           {method.brand ?? "manual"}
@@ -263,12 +299,12 @@ function PaymentMethodCard({
         </span>
       </div>
       <select defaultValue={method.status} name="status">
-        <option value="not_configured">not_configured</option>
-        <option value="pending">pending</option>
-        <option value="ready">ready</option>
-        <option value="requires_action">requires_action</option>
-        <option value="failed">failed</option>
-        <option value="disabled">disabled</option>
+        <option value="not_configured">{labels.statuses.not_configured}</option>
+        <option value="pending">{labels.statuses.pending}</option>
+        <option value="ready">{labels.statuses.ready}</option>
+        <option value="requires_action">{labels.statuses.requires_action}</option>
+        <option value="failed">{labels.statuses.failed}</option>
+        <option value="disabled">{labels.statuses.disabled}</option>
       </select>
       <label className="policy-checkbox">
         <input name="isDefault" type="checkbox" />
@@ -280,6 +316,14 @@ function PaymentMethodCard({
       </button>
     </form>
   );
+}
+
+function formatMethodType(value: OrganizationPaymentMethod["methodType"], labels: Record<string, string>) {
+  return labels[value] ?? value.replaceAll("_", " ");
+}
+
+function formatProvider(value: string, labels: Record<string, string>) {
+  return labels[value] ?? value.replaceAll("_", " ");
 }
 
 function ActionMessage({ state }: { state: OrganizationBillingActionState }) {

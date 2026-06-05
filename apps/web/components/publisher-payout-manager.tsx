@@ -23,7 +23,18 @@ const copy = {
     request: "Request payout",
     requesting: "Requesting",
     status: "Readiness",
-    title: "Withdrawal readiness"
+    title: "Withdrawal readiness",
+    statuses: {
+      blocked: "Blocked",
+      failed: "Failed",
+      not_configured: "Not configured",
+      paid: "Paid",
+      processing: "Processing",
+      requested: "Requested",
+      review: "In review",
+      verification_required: "Needs verification",
+      verified: "Verified"
+    }
   },
   zh: {
     account: "提现账户",
@@ -35,7 +46,18 @@ const copy = {
     request: "申请提现",
     requesting: "申请中",
     status: "准备状态",
-    title: "提现准备"
+    title: "提现准备",
+    statuses: {
+      blocked: "已阻断",
+      failed: "失败",
+      not_configured: "未配置",
+      paid: "已打款",
+      processing: "处理中",
+      requested: "已申请",
+      review: "审核中",
+      verification_required: "需要验证",
+      verified: "已验证"
+    }
   }
 } as const;
 
@@ -60,12 +82,12 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
     [labels.minimum, formatMoney(summary.balances.minPayoutCents, summary.balances.currency)]
   ];
   const statusRows = [
-    [labels.account, payoutAccount?.status ?? "not_configured"],
-    [labels.status, profile?.payoutStatus ?? "not_configured"],
+    [labels.account, formatStatusLabel(payoutAccount?.status ?? "not_configured", labels.statuses)],
+    [labels.status, formatStatusLabel(profile?.payoutStatus ?? "not_configured", labels.statuses)],
     [
       labels.request,
       latestPayout
-        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${latestPayout.status}`
+        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${formatStatusLabel(latestPayout.status, labels.statuses)}`
         : formatMoney(summary.balances.availableCents, summary.balances.currency)
     ]
   ];
@@ -128,4 +150,8 @@ function ActionMessage({ state }: { state: PublisherPayoutActionState }) {
       <span>{state.message}</span>
     </div>
   );
+}
+
+function formatStatusLabel(status: string, labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
 }
