@@ -79,6 +79,7 @@ type DatabaseReadiness = {
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   payoutTables: boolean;
+  publisherTermsAcceptanceColumns: boolean;
   userAuthIdentities: boolean;
   webhookDeliveryWorker: boolean;
 };
@@ -343,6 +344,16 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.payoutTables ? "ready" : "blocker"
     },
     {
+      action: database.publisherTermsAcceptanceColumns ? "No action needed." : "Run migration 024_publisher_terms_acceptance.sql.",
+      description: "Paid publishing needs a durable record of the accepted operating terms version and accepting user.",
+      detail: database.publisherTermsAcceptanceColumns
+        ? "Publisher terms acceptance columns are available."
+        : "Publisher terms acceptance columns are missing.",
+      key: "publisher_terms_acceptance",
+      label: "Publisher terms acceptance",
+      status: database.publisherTermsAcceptanceColumns ? "ready" : "blocker"
+    },
+    {
       action: "Choose and connect the final payment provider after internal billing states are stable.",
       description: "Provider payment capture, connected payout onboarding, and tax/KYC automation remain intentionally deferred.",
       detail: "Provider API integration is deferred by product scope.",
@@ -427,6 +438,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
+      publisherTermsAcceptanceColumns: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
     };
@@ -477,8 +489,35 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'webhook_delivery_events'
             and column_name = 'last_attempted_at'
-        ) as "webhookLastAttemptedAt"
-    `) as Array<{ notificationDeliveryColumns: boolean; webhookLastAttemptedAt: boolean }>;
+        ) as "webhookLastAttemptedAt",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'publisher_profiles'
+            and column_name = 'terms_accepted_at'
+        ) as "publisherTermsAcceptedAt",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'publisher_profiles'
+            and column_name = 'terms_version'
+        ) as "publisherTermsVersion",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'publisher_profiles'
+            and column_name = 'terms_accepted_by_user_id'
+        ) as "publisherTermsAcceptedByUserId"
+    `) as Array<{
+      notificationDeliveryColumns: boolean;
+      publisherTermsAcceptedAt: boolean;
+      publisherTermsAcceptedByUserId: boolean;
+      publisherTermsVersion: boolean;
+      webhookLastAttemptedAt: boolean;
+    }>;
     const columns = columnRows[0];
     const activeCommissionRules = tables.commissionRules ? await countActiveCommissionRules(sql) : null;
     const activeNotificationTemplates = tables.notificationTemplates ? await countActiveNotificationTemplates(sql) : null;
@@ -496,6 +535,10 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         tables.organizationWebhookEndpoints &&
         tables.notificationEvents,
       payoutTables: tables.payoutAccounts && tables.payouts,
+      publisherTermsAcceptanceColumns:
+        columns.publisherTermsAcceptedAt &&
+        columns.publisherTermsVersion &&
+        columns.publisherTermsAcceptedByUserId,
       userAuthIdentities: tables.userAuthIdentities,
       webhookDeliveryWorker: tables.webhookDeliveryEvents && columns.webhookLastAttemptedAt
     };
@@ -508,6 +551,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
+      publisherTermsAcceptanceColumns: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
     };

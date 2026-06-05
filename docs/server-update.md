@@ -23,6 +23,10 @@ docker compose -f docker-compose.1panel.yml up -d postgres
 docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/018_marketplace_curation.sql
 docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/019_marketplace_curation_appeals.sql
 docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/020_user_auth_identities.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/021_email_login_challenges.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/022_notification_delivery_operations.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/023_webhook_delivery_worker.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/024_publisher_terms_acceptance.sql
 
 docker compose -f docker-compose.1panel.yml up -d --build
 

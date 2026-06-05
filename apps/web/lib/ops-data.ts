@@ -430,6 +430,9 @@ export type PublisherAccountSummary = {
     displayName: string;
     status: string;
     payoutStatus: string;
+    termsAcceptedAt: string | null;
+    termsAcceptedByUserId: string | null;
+    termsVersion: string | null;
     createdAt: string;
     updatedAt: string;
   } | null;
@@ -1711,6 +1714,9 @@ const fallbackPublisherAccountSummary: PublisherAccountSummary = {
     displayName: "SkillHub Publisher",
     status: "active",
     payoutStatus: "verification_required",
+    termsAcceptedAt: null,
+    termsAcceptedByUserId: null,
+    termsVersion: null,
     createdAt: "demo",
     updatedAt: "demo"
   },

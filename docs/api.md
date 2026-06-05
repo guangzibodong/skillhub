@@ -206,6 +206,40 @@ The terms page is not an API endpoint. It documents the current operating policy
 
 Final legal terms can replace or extend this page before paid marketplace launch without changing the API state machines for reviews, installs, runtime invocations, ledger posting, payout requests, adjustment records, notification events, or audit logs.
 
+## Publisher Operating Terms Acceptance
+
+Publisher terms acceptance is a durable commercial-readiness record. It stores the accepted public operating terms version, acceptance timestamp, and accepting user id on the publisher profile.
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/terms/accept" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"termsVersion":"2026-06-05-prelaunch-operating-terms"}'
+```
+
+`POST /v1/publisher/terms/accept` requires a publisher, owner, admin, or super-admin organization-scoped user token. If the organization does not yet have a publisher profile, the API creates one using the organization name, then records the acceptance.
+
+The response returns the updated `publisherProfile`:
+
+```json
+{
+  "publisherProfile": {
+    "id": "PUBLISHER_PROFILE_ID",
+    "organizationId": "ORGANIZATION_ID",
+    "displayName": "SkillHub Publisher",
+    "status": "active",
+    "payoutStatus": "verification_required",
+    "termsAcceptedAt": "2026-06-05T00:00:00.000Z",
+    "termsAcceptedByUserId": "USER_ID",
+    "termsVersion": "2026-06-05-prelaunch-operating-terms",
+    "createdAt": "2026-06-05T00:00:00.000Z",
+    "updatedAt": "2026-06-05T00:00:00.000Z"
+  }
+}
+```
+
+Every acceptance writes `publisher.terms.accepted` to `admin_audit_logs` and queues a publisher in-app notification. Raw tokens, OAuth secrets, payment-provider credentials, and email-provider credentials are never involved in or exposed by this endpoint.
+
 ## Platform Overview
 
 These endpoints expose the first real operating shape for the two-sided marketplace. They are safe to use before payment and email providers are connected because they read product states, not external provider movement.
@@ -1239,6 +1273,8 @@ curl -X PUT "https://api.useskillhub.com/v1/publisher/profile" \
 
 If `status` is omitted, the existing publisher status is preserved. This lets the dashboard update the public display name without accidentally restoring a restricted or suspended publisher profile.
 
+The profile response includes `termsAcceptedAt`, `termsAcceptedByUserId`, and `termsVersion`, so publisher dashboards can block paid-publishing readiness until the current operating terms are accepted.
+
 Create a payout-account onboarding handoff:
 
 ```bash
@@ -1589,7 +1625,7 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
 - Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, commercial readiness, and production guardrails.
-- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration state, active templates, runtime API-key salt, commission rules, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration state, active templates, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
 
 The endpoint reports only configured/missing state, URLs, counts, and next actions. It never returns OAuth secrets, Resend keys, service tokens, API-key salts, webhook signing secrets, raw email verification codes, user tokens, or passwords.
 

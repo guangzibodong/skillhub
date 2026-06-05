@@ -23,15 +23,24 @@ type CompleteOnboardingInput = {
   reason?: string;
 };
 
+type AcceptTermsInput = {
+  termsVersion?: unknown;
+};
+
 type PublisherProfile = {
   id: string;
   organizationId: string;
   displayName: string;
   status: PublisherStatus;
   payoutStatus: PayoutStatus;
+  termsAcceptedAt: string | null;
+  termsAcceptedByUserId: string | null;
+  termsVersion: string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+const DEFAULT_PUBLISHER_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
 
 const fallbackPublisherAccountSummary = {
   publisherProfile: {
@@ -40,6 +49,9 @@ const fallbackPublisherAccountSummary = {
     displayName: "SkillHub Publisher",
     status: "active",
     payoutStatus: "verification_required",
+    termsAcceptedAt: null,
+    termsAcceptedByUserId: null,
+    termsVersion: null,
     createdAt: "demo",
     updatedAt: "demo"
   },
@@ -164,11 +176,78 @@ export async function upsertPublisherProfile(organizationId: string | null | und
       display_name as "displayName",
       status,
       payout_status as "payoutStatus",
+      terms_accepted_at as "termsAcceptedAt",
+      terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+      terms_version as "termsVersion",
       created_at as "createdAt",
       updated_at as "updatedAt"
   `) as PublisherProfile[];
 
   return rows[0];
+}
+
+export async function acceptPublisherTerms(
+  organizationId: string | null | undefined,
+  input: AcceptTermsInput,
+  actorUserId?: string | null
+) {
+  const sql = await requireSql();
+  const scopedOrganizationId = requireOrganizationId(organizationId);
+  const termsVersion = normalizeTermsVersion(input.termsVersion);
+
+  return sql.begin(async (tx: Sql) => {
+    const publisher = await ensurePublisherProfile(tx, scopedOrganizationId);
+    const rows = (await tx`
+      update publisher_profiles
+      set
+        terms_accepted_at = now(),
+        terms_version = ${termsVersion},
+        terms_accepted_by_user_id = ${actorUserId ?? null},
+        updated_at = now()
+      where id = ${publisher.id}
+      returning
+        id::text,
+        organization_id::text as "organizationId",
+        display_name as "displayName",
+        status,
+        payout_status as "payoutStatus",
+        terms_accepted_at as "termsAcceptedAt",
+        terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+        terms_version as "termsVersion",
+        created_at as "createdAt",
+        updated_at as "updatedAt"
+    `) as PublisherProfile[];
+    const acceptedProfile = rows[0];
+
+    await recordPublisherAudit(
+      tx,
+      "publisher.terms.accepted",
+      "publisher_profile",
+      acceptedProfile.id,
+      "Publisher accepted SkillHub operating terms.",
+      {
+        actorUserId: actorUserId ?? null,
+        organizationId: scopedOrganizationId,
+        termsAcceptedAt: acceptedProfile.termsAcceptedAt,
+        termsVersion
+      },
+      actorUserId
+    );
+    await recordPublisherNotification(
+      tx,
+      scopedOrganizationId,
+      "publisher.terms.accepted",
+      "Publisher operating terms accepted",
+      {
+        actorUserId: actorUserId ?? null,
+        publisherProfileId: acceptedProfile.id,
+        termsAcceptedAt: acceptedProfile.termsAcceptedAt,
+        termsVersion
+      }
+    );
+
+    return acceptedProfile;
+  });
 }
 
 export async function createPayoutAccountOnboarding(organizationId: string | null | undefined, input: OnboardingInput) {
@@ -373,6 +452,9 @@ async function findPublisherProfile(
           display_name as "displayName",
           status,
           payout_status as "payoutStatus",
+          terms_accepted_at as "termsAcceptedAt",
+          terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+          terms_version as "termsVersion",
           created_at as "createdAt",
           updated_at as "updatedAt"
         from publisher_profiles
@@ -388,6 +470,9 @@ async function findPublisherProfile(
             display_name as "displayName",
             status,
             payout_status as "payoutStatus",
+            terms_accepted_at as "termsAcceptedAt",
+            terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+            terms_version as "termsVersion",
             created_at as "createdAt",
             updated_at as "updatedAt"
           from publisher_profiles
@@ -402,6 +487,9 @@ async function findPublisherProfile(
             display_name as "displayName",
             status,
             payout_status as "payoutStatus",
+            terms_accepted_at as "termsAcceptedAt",
+            terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+            terms_version as "termsVersion",
             created_at as "createdAt",
             updated_at as "updatedAt"
           from publisher_profiles
@@ -448,6 +536,9 @@ async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise
       display_name as "displayName",
       status,
       payout_status as "payoutStatus",
+      terms_accepted_at as "termsAcceptedAt",
+      terms_accepted_by_user_id::text as "termsAcceptedByUserId",
+      terms_version as "termsVersion",
       created_at as "createdAt",
       updated_at as "updatedAt"
   `) as PublisherProfile[];
@@ -499,11 +590,12 @@ async function recordPublisherAudit(
   entityType: string,
   entityId: string,
   reason: string | null | undefined,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  actorUserId?: string | null
 ) {
   await sql`
-    insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
-    values (${action}, ${entityType}, ${entityId}, ${reason ?? null}, ${sql.json(metadata)})
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${actorUserId ?? null}, ${action}, ${entityType}, ${entityId}, ${reason ?? null}, ${sql.json(metadata)})
   `;
 }
 
@@ -560,6 +652,11 @@ function normalizePayoutStatus(status: PayoutStatus) {
   }
 
   return status;
+}
+
+function normalizeTermsVersion(value: unknown) {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized || DEFAULT_PUBLISHER_TERMS_VERSION;
 }
 
 function randomToken(byteLength: number) {

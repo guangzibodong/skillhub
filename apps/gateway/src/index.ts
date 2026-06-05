@@ -120,6 +120,7 @@ import {
   requestPublisherPayout
 } from "./payouts.js";
 import {
+  acceptPublisherTerms,
   completePayoutAccountOnboarding,
   createPayoutAccountOnboarding,
   getPublisherAccountSummary,
@@ -2423,6 +2424,28 @@ app.put("/v1/publisher/profile", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update publisher profile." }, 400);
+  }
+});
+
+app.post("/v1/publisher/terms/accept", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      publisherProfile: await acceptPublisherTerms(
+        authorization.subject.organizationId,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to accept publisher terms." }, 400);
   }
 });
 

@@ -67,11 +67,52 @@ export async function updatePublisherProfileAction(
       throw new Error(payload.error ?? labels.unableProfile);
     }
 
-    revalidatePath("/dashboard");
+    revalidatePublisherPaths();
 
     return { message: labels.profileSaved, status: "success" };
   } catch (error) {
     return { message: error instanceof Error ? error.message : labels.unableProfile, status: "error" };
+  }
+}
+
+export async function acceptPublisherTermsAction(
+  locale: Locale,
+  _previousState: PublisherAccountActionState,
+  formData: FormData
+): Promise<PublisherAccountActionState> {
+  const token = await getWorkspaceToken();
+  const labels = actionCopy[locale];
+  const acceptedTerms =
+    locale === "zh" ? "\u53d1\u5e03\u8005\u8fd0\u8425\u6761\u6b3e\u5df2\u63a5\u53d7\u3002" : "Publisher operating terms accepted.";
+  const unableAcceptTerms =
+    locale === "zh" ? "\u65e0\u6cd5\u63a5\u53d7\u53d1\u5e03\u8005\u8fd0\u8425\u6761\u6b3e\u3002" : "Unable to accept publisher operating terms.";
+
+  if (!token) {
+    return { message: labels.missingToken, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/publisher/terms/accept`, {
+      body: JSON.stringify({
+        termsVersion: String(formData.get("termsVersion") ?? "").trim() || undefined
+      }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? unableAcceptTerms);
+    }
+
+    revalidatePublisherPaths();
+
+    return { message: acceptedTerms, status: "success" };
+  } catch (error) {
+    return { message: error instanceof Error ? error.message : unableAcceptTerms, status: "error" };
   }
 }
 
@@ -114,7 +155,7 @@ export async function createPayoutOnboardingAction(
       };
     };
 
-    revalidatePath("/dashboard");
+    revalidatePublisherPaths();
 
     return {
       message: labels.onboardingCreated,
@@ -164,12 +205,17 @@ export async function completePayoutOnboardingAction(
       throw new Error(payload.error ?? labels.unableReadiness);
     }
 
-    revalidatePath("/dashboard");
+    revalidatePublisherPaths();
 
     return { message: labels.onboardingUpdated, status: "success" };
   } catch (error) {
     return { message: error instanceof Error ? error.message : labels.unableReadiness, status: "error" };
   }
+}
+
+function revalidatePublisherPaths() {
+  revalidatePath("/dashboard");
+  revalidatePath("/publisher");
 }
 
 function getApiUrl() {

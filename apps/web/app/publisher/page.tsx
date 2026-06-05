@@ -25,14 +25,14 @@ import {
   formatCompactNumber,
   formatMoney,
   getNotificationPreferences,
-  getUserNotificationInbox,
   getPublisherAccountSummary,
   getPublisherBuyerRequests,
   getPublisherDisputes,
   getPublisherFinanceLedger,
   getPublisherPayoutSummary,
   getPublisherRefunds,
-  getPublisherSkills
+  getPublisherSkills,
+  getUserNotificationInbox
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -43,10 +43,12 @@ type PageProps = {
 
 type ReadinessTask = {
   detail: string;
-  id: "session" | "profile" | "publish" | "verified" | "payout";
+  id: "session" | "profile" | "terms" | "publish" | "verified" | "payout";
   status: "blocked" | "current" | "done";
   title: string;
 };
+
+const CURRENT_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
 
 const copy = {
   en: {
@@ -57,8 +59,8 @@ const copy = {
     description:
       "A focused workspace for skill publishers to move packages through review, price verified listings, respond to buyer demand, and prepare revenue for payout.",
     eyebrow: "Publisher workspace",
-    ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
     ledgerEmpty: "No posted publisher revenue yet",
+    ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
     ledgerTitle: "Publisher revenue ledger",
     refundReview: "Refund review",
     unknownProject: "unknown-project",
@@ -102,6 +104,7 @@ const copy = {
       tasks: {
         session: ["Connect workspace session", "Sign in with an organization token so publishing, pricing, payouts, and notifications are scoped."],
         profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
+        terms: ["Accept operating terms", "Record the current refund, dispute, takedown, data, notification, and payout policy before paid publishing."],
         publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],
         verified: ["Reach verified listing status", "Complete review and activate pricing so buyers can trust and install the skill."],
         payout: ["Prepare payout readiness", "Connect payout details before revenue matures into a withdrawal request."]
@@ -115,10 +118,10 @@ const copy = {
     adjustmentTitle: "退款与争议跟进",
     disputeReview: "争议复核",
     description:
-      "给技能发布者使用的独立工作台：推进技能审核、设置已验证技能价格、响应买方需求，并把收入准备到可提现状态。",
+      "给技能发布者使用的独立工作台：推进技能审核，设置已验证技能价格，响应买方需求，并把收入准备到可提现状态。",
     eyebrow: "发布者工作台",
-    ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
     ledgerEmpty: "暂无已入账的发布者收入",
+    ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
     ledgerTitle: "发布者收入账本",
     refundReview: "退款复核",
     unknownProject: "未知项目",
@@ -162,6 +165,7 @@ const copy = {
       tasks: {
         session: ["连接工作区会话", "使用组织 token 登录，让发布、定价、提现和通知都归属到当前组织。"],
         profile: ["创建发布者档案", "设置买家安装技能前会看到的公开发布者名称。"],
+        terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和提现政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],
         verified: ["获得已验证上架状态", "完成审核并启用价格，让买家可以信任并安装技能。"],
         payout: ["准备提现资料", "在收入成熟并发起提现前，先完成提现账户和资料状态。"]
@@ -175,6 +179,7 @@ function buildReadinessTasks(
   taskCopy: Record<ReadinessTask["id"], readonly [string, string]>,
   flags: {
     hasActiveVerifiedListing: boolean;
+    hasAcceptedCurrentTerms: boolean;
     hasPublishedSkill: boolean;
     hasPayoutReady: boolean;
     hasPublisherProfile: boolean;
@@ -203,9 +208,15 @@ function buildReadinessTasks(
       title: taskCopy.profile[0]
     },
     {
+      detail: taskCopy.terms[1],
+      id: "terms",
+      status: statusFor(flags.hasAcceptedCurrentTerms, flags.hasPublisherProfile),
+      title: taskCopy.terms[0]
+    },
+    {
       detail: taskCopy.publish[1],
       id: "publish",
-      status: statusFor(flags.hasPublishedSkill, flags.hasPublisherProfile),
+      status: statusFor(flags.hasPublishedSkill, flags.hasPublisherProfile && flags.hasAcceptedCurrentTerms),
       title: taskCopy.publish[0]
     },
     {
@@ -280,6 +291,9 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   ];
   const hasWorkspaceSession = session.source !== "none" && Boolean(session.subject);
   const hasPublisherProfile = Boolean(publisherAccount.publisherProfile);
+  const hasAcceptedCurrentTerms =
+    Boolean(publisherAccount.publisherProfile?.termsAcceptedAt) &&
+    publisherAccount.publisherProfile?.termsVersion === CURRENT_TERMS_VERSION;
   const hasPublishedSkill = publisherSkills.length > 0;
   const hasActiveVerifiedListing = publisherSkills.some(
     (skill) => skill.verificationStatus === "verified" && skill.pricing.status === "active"
@@ -290,6 +304,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     publisherAccount.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready") ||
     payoutSummary.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready");
   const readinessTasks = buildReadinessTasks(labels.readiness.tasks, {
+    hasAcceptedCurrentTerms,
     hasActiveVerifiedListing,
     hasPublishedSkill,
     hasPayoutReady,

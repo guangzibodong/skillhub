@@ -2838,6 +2838,60 @@ a {
   padding: 0 10px;
 }
 
+.publisher-terms-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.publisher-terms-card__head,
+.publisher-terms-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.publisher-terms-card__head strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.publisher-terms-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publisher-terms-meta span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.publisher-terms-meta strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.publisher-terms-card__actions form {
+  min-width: min(100%, 160px);
+}
+
+.publisher-terms-card__actions .primary-button,
+.publisher-terms-card__actions .secondary-button {
+  width: 100%;
+}
+
 .publisher-account-foot {
   display: flex;
   flex-wrap: wrap;
@@ -9988,6 +10042,7 @@ a {
   .publisher-skill-metrics,
   .publisher-skill-check-list,
   .publisher-account-status-grid,
+  .publisher-terms-meta,
   .payout-balance-grid,
   .organization-billing-form,
   .organization-payment-form {

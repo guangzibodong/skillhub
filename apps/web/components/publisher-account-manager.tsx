@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock3,
   ExternalLink,
+  FileCheck,
   Link2,
   Save,
   ShieldCheck,
@@ -13,9 +14,10 @@ import {
   WalletCards,
   XCircle
 } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/i18n";
 import type { PublisherAccountSummary } from "@/lib/ops-data";
 import {
+  acceptPublisherTermsAction,
   completePayoutOnboardingAction,
   createPayoutOnboardingAction,
   updatePublisherProfileAction,
@@ -28,9 +30,14 @@ type PublisherAccountManagerProps = {
   returnUrl: string;
 };
 
+const CURRENT_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
+
 const copy = {
   en: {
     accountStatus: "Account",
+    acceptTerms: "Accept terms",
+    acceptedAt: "Accepted at",
+    accepting: "Accepting",
     complete: "Update readiness",
     completing: "Updating",
     createdAt: "Created",
@@ -39,6 +46,7 @@ const copy = {
     noAccount: "No payout account yet",
     noProfile: "Create publisher profile",
     noSession: "No onboarding session",
+    notAccepted: "Not accepted",
     notAvailable: "n/a",
     onboarding: "Create payout onboarding",
     onboardingProvider: "Provider",
@@ -46,6 +54,7 @@ const copy = {
     openOnboarding: "Open handoff link",
     payoutReadiness: "Payout readiness",
     profile: "Publisher profile",
+    readTerms: "Read terms",
     reason: "Decision note",
     reasonPlaceholder: "Provider check passed, documents pending, or block reason",
     ready: "Ready for payouts",
@@ -53,6 +62,12 @@ const copy = {
     saveProfile: "Save profile",
     saving: "Saving",
     status: "Status",
+    termsAccepted: "Accepted",
+    termsCurrent: "Current terms accepted",
+    termsRequired: "Required before paid publishing",
+    termsStatus: "Terms status",
+    termsTitle: "Operating terms",
+    termsVersion: "Version",
     providers: {
       manual_deferred: "Manual payout handoff"
     },
@@ -73,47 +88,58 @@ const copy = {
     updateTitle: "Readiness decision"
   },
   zh: {
-    accountStatus: "收款账户",
-    complete: "更新准备状态",
-    completing: "更新中",
-    createdAt: "创建时间",
-    displayName: "公开发布者名称",
-    latestSession: "最近入驻会话",
-    noAccount: "还没有收款账户",
-    noProfile: "创建发布者资料",
-    noSession: "还没有入驻会话",
-    notAvailable: "暂无",
-    onboarding: "创建收款入驻",
-    onboardingProvider: "服务商",
-    onboardingTitle: "收款入驻",
-    openOnboarding: "打开入驻链接",
-    payoutReadiness: "提现准备",
-    profile: "发布者资料",
-    reason: "处理说明",
-    reasonPlaceholder: "服务商验证通过、资料待补充或阻断原因",
-    ready: "可提现",
-    requiresSetup: "需要完成收款设置",
-    saveProfile: "保存资料",
-    saving: "保存中",
-    status: "状态",
+    accountStatus: "\u6536\u6b3e\u8d26\u6237",
+    acceptTerms: "\u63a5\u53d7\u6761\u6b3e",
+    acceptedAt: "\u63a5\u53d7\u65f6\u95f4",
+    accepting: "\u63d0\u4ea4\u4e2d",
+    complete: "\u66f4\u65b0\u51c6\u5907\u72b6\u6001",
+    completing: "\u66f4\u65b0\u4e2d",
+    createdAt: "\u521b\u5efa\u65f6\u95f4",
+    displayName: "\u516c\u5f00\u53d1\u5e03\u8005\u540d\u79f0",
+    latestSession: "\u6700\u8fd1\u5165\u9a7b\u4f1a\u8bdd",
+    noAccount: "\u8fd8\u6ca1\u6709\u6536\u6b3e\u8d26\u6237",
+    noProfile: "\u521b\u5efa\u53d1\u5e03\u8005\u8d44\u6599",
+    noSession: "\u8fd8\u6ca1\u6709\u5165\u9a7b\u4f1a\u8bdd",
+    notAccepted: "\u672a\u63a5\u53d7",
+    notAvailable: "\u6682\u65e0",
+    onboarding: "\u521b\u5efa\u6536\u6b3e\u5165\u9a7b",
+    onboardingProvider: "\u670d\u52a1\u5546",
+    onboardingTitle: "\u6536\u6b3e\u5165\u9a7b",
+    openOnboarding: "\u6253\u5f00\u5165\u9a7b\u94fe\u63a5",
+    payoutReadiness: "\u63d0\u73b0\u51c6\u5907",
+    profile: "\u53d1\u5e03\u8005\u8d44\u6599",
+    readTerms: "\u67e5\u770b\u6761\u6b3e",
+    reason: "\u5904\u7406\u8bf4\u660e",
+    reasonPlaceholder: "\u670d\u52a1\u5546\u9a8c\u8bc1\u901a\u8fc7\u3001\u8d44\u6599\u5f85\u8865\u5145\u6216\u963b\u65ad\u539f\u56e0",
+    ready: "\u53ef\u63d0\u73b0",
+    requiresSetup: "\u9700\u8981\u5b8c\u6210\u6536\u6b3e\u8bbe\u7f6e",
+    saveProfile: "\u4fdd\u5b58\u8d44\u6599",
+    saving: "\u4fdd\u5b58\u4e2d",
+    status: "\u72b6\u6001",
+    termsAccepted: "\u5df2\u63a5\u53d7",
+    termsCurrent: "\u5f53\u524d\u6761\u6b3e\u5df2\u63a5\u53d7",
+    termsRequired: "\u4ed8\u8d39\u53d1\u5e03\u524d\u9700\u8981\u5b8c\u6210",
+    termsStatus: "\u6761\u6b3e\u72b6\u6001",
+    termsTitle: "\u8fd0\u8425\u6761\u6b3e",
+    termsVersion: "\u6761\u6b3e\u7248\u672c",
     providers: {
-      manual_deferred: "人工提现交接"
+      manual_deferred: "\u4eba\u5de5\u63d0\u73b0\u4ea4\u63a5"
     },
     statuses: {
-      blocked: "已阻断",
-      canceled: "已取消",
-      completed: "已完成",
-      created: "已创建",
-      expired: "已过期",
-      not_configured: "未配置",
-      opened: "已打开",
-      pending: "待处理",
-      ready: "可用",
-      verification_required: "需要验证",
-      verified: "已验证"
+      blocked: "\u5df2\u963b\u65ad",
+      canceled: "\u5df2\u53d6\u6d88",
+      completed: "\u5df2\u5b8c\u6210",
+      created: "\u5df2\u521b\u5efa",
+      expired: "\u5df2\u8fc7\u671f",
+      not_configured: "\u672a\u914d\u7f6e",
+      opened: "\u5df2\u6253\u5f00",
+      pending: "\u5f85\u5904\u7406",
+      ready: "\u53ef\u7528",
+      verification_required: "\u9700\u8981\u9a8c\u8bc1",
+      verified: "\u5df2\u9a8c\u8bc1"
     },
-    title: "发布者账户",
-    updateTitle: "准备状态处理"
+    title: "\u53d1\u5e03\u8005\u8d26\u6237",
+    updateTitle: "\u51c6\u5907\u72b6\u6001\u5904\u7406"
   }
 } as const;
 
@@ -126,6 +152,10 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
   const labels = copy[locale];
   const [profileState, profileAction, isProfilePending] = useActionState(
     updatePublisherProfileAction.bind(null, locale),
+    initialActionState
+  );
+  const [termsState, termsAction, isTermsPending] = useActionState(
+    acceptPublisherTermsAction.bind(null, locale),
     initialActionState
   );
   const [onboardingState, onboardingAction, isOnboardingPending] = useActionState(
@@ -146,6 +176,13 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
   const canUpdateReadiness = Boolean(completionSessionId || completionAccountId);
   const handoffUrl = onboardingState.onboardingUrl ?? latestSession?.onboardingUrl;
   const payoutReady = profile?.payoutStatus === "verified" || payoutAccount?.status === "verified";
+  const acceptedCurrentTerms =
+    Boolean(profile?.termsAcceptedAt) && profile?.termsVersion === CURRENT_TERMS_VERSION;
+  const termsStatus = acceptedCurrentTerms
+    ? labels.termsCurrent
+    : profile?.termsAcceptedAt
+      ? labels.termsAccepted
+      : labels.notAccepted;
 
   return (
     <article className="ops-panel publisher-account-panel">
@@ -161,6 +198,11 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
 
       <div className="publisher-account-status-grid">
         <StatusTile icon={<UserRound size={16} aria-hidden="true" />} label={labels.profile} value={profile?.displayName ?? labels.noProfile} />
+        <StatusTile
+          icon={<FileCheck size={16} aria-hidden="true" />}
+          label={labels.termsStatus}
+          value={termsStatus}
+        />
         <StatusTile
           icon={<BadgeCheck size={16} aria-hidden="true" />}
           label={labels.payoutReadiness}
@@ -198,6 +240,39 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         </button>
       </form>
       {profileState.status !== "idle" ? <ActionMessage state={profileState} /> : null}
+
+      <section className="publisher-terms-card">
+        <div className="publisher-terms-card__head">
+          <strong>{labels.termsTitle}</strong>
+          <span className={acceptedCurrentTerms ? "status-chip" : "status-chip status-chip--warning"}>
+            {acceptedCurrentTerms ? labels.termsAccepted : labels.termsRequired}
+          </span>
+        </div>
+        <div className="publisher-terms-meta">
+          <span>
+            <strong>{labels.termsVersion}</strong>
+            {profile?.termsVersion ?? CURRENT_TERMS_VERSION}
+          </span>
+          <span>
+            <strong>{labels.acceptedAt}</strong>
+            {formatDate(profile?.termsAcceptedAt, labels.notAvailable, locale)}
+          </span>
+        </div>
+        <div className="publisher-terms-card__actions">
+          <a className="secondary-button secondary-button--compact" href={localizedHref("/terms", locale)}>
+            <ExternalLink size={15} aria-hidden="true" />
+            <span>{labels.readTerms}</span>
+          </a>
+          <form action={termsAction}>
+            <input name="termsVersion" type="hidden" value={CURRENT_TERMS_VERSION} />
+            <button className="primary-button" disabled={isTermsPending || acceptedCurrentTerms} type="submit">
+              <FileCheck size={16} aria-hidden="true" />
+              <span>{isTermsPending ? labels.accepting : labels.acceptTerms}</span>
+            </button>
+          </form>
+        </div>
+      </section>
+      {termsState.status !== "idle" ? <ActionMessage state={termsState} /> : null}
 
       <form action={onboardingAction} className="publisher-onboarding-form">
         <strong>{labels.onboardingTitle}</strong>

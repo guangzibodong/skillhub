@@ -622,6 +622,13 @@ Added public operating terms, covering:
 - The page is bilingual and explicitly separates current operating policy from final legal terms, which can be finalized once provider, tax/KYC, refund-window, payout-threshold, and paid-launch decisions are locked.
 - This improves launch credibility because developers and publishers can understand what happens after install, billing, dispute, incident, or takedown events before money movement is fully connected.
 
+Added publisher terms acceptance, covering:
+
+- `024_publisher_terms_acceptance.sql` adds accepted terms timestamp, terms version, and accepting user id to publisher profiles.
+- `/v1/publisher/terms/accept` records acceptance for publisher, owner, admin, or super-admin organization-scoped users, then writes audit and publisher notification events.
+- `/publisher` now includes current terms acceptance in the launch checklist, and publisher account panels show the accepted version and timestamp beside payout readiness.
+- Launch readiness now reports whether the publisher terms acceptance columns exist, so missing migration state is visible before paid publishing goes live.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
