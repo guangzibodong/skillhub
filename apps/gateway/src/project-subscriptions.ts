@@ -3,7 +3,15 @@ import { getSql } from "./registry.js";
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
 type ProjectSubscriptionStatus = "trialing" | "active" | "past_due" | "paused" | "canceled";
+type ProjectSubscriptionCreateStatus = "active" | "trialing";
 type ProjectManagedSubscriptionStatus = "active" | "paused" | "canceled";
+
+type ProjectSubscriptionCreateInput = {
+  skillSlug?: unknown;
+  priceId?: unknown;
+  status?: unknown;
+  trialDays?: unknown;
+};
 
 type ProjectSubscriptionRow = {
   id: string;
@@ -24,6 +32,212 @@ type ProjectSubscriptionRow = {
 };
 
 const projectManagedStatuses: ProjectManagedSubscriptionStatus[] = ["active", "paused", "canceled"];
+const projectCreateStatuses: ProjectSubscriptionCreateStatus[] = ["active", "trialing"];
+
+export async function createProjectSubscription(
+  projectSlug: string,
+  input: ProjectSubscriptionCreateInput,
+  organizationId?: string | null,
+  actorUserId?: string | null
+) {
+  const sql = await requireSql();
+  const scopedOrganizationId = organizationId ?? null;
+  const skillSlug = normalizeRequiredText(input.skillSlug, "skillSlug", 120);
+  const requestedPriceId = normalizeOptionalText(input.priceId, 120);
+  const status = normalizeCreateStatus(input.status);
+  const trialDays = normalizeTrialDays(input.trialDays, status);
+
+  return sql.begin(async (tx: Sql) => {
+    const rows = (await tx`
+      select
+        p.id::text as "projectId",
+        p.slug as "projectSlug",
+        p.organization_id::text as "organizationId",
+        s.id::text as "skillId",
+        s.slug as "skillSlug",
+        s.display_name as "displayName",
+        s.visibility,
+        s.verification_status as "verificationStatus",
+        sp.id::text as "priceId",
+        sp.billing_model as "billingModel",
+        sp.unit_amount_cents as "unitAmountCents",
+        sp.currency
+      from projects p
+      join skills s on s.slug = ${skillSlug}
+      join lateral (
+        select id, billing_model, unit_amount_cents, currency, status, created_at
+        from skill_prices
+        where skill_id = s.id
+          and status = 'active'
+          and (${requestedPriceId}::uuid is null or id = ${requestedPriceId})
+        order by created_at desc
+        limit 1
+      ) sp on true
+      where p.slug = ${projectSlug}
+        and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
+      limit 1
+      for update of p
+    `) as Array<{
+      projectId: string;
+      projectSlug: string;
+      organizationId: string;
+      skillId: string;
+      skillSlug: string;
+      displayName: string;
+      visibility: string;
+      verificationStatus: string;
+      priceId: string;
+      billingModel: "free" | "per_call" | "subscription";
+      unitAmountCents: number;
+      currency: string;
+    }>;
+    const target = rows[0];
+
+    if (!target) {
+      throw new Error("Project, skill, or active price not found.");
+    }
+
+    if (target.billingModel !== "subscription") {
+      throw new Error("Only subscription-priced skills can create project subscriptions.");
+    }
+
+    if (target.visibility !== "public" || target.verificationStatus !== "verified") {
+      throw new Error("Project subscriptions require a public verified skill.");
+    }
+
+    const periodStart = new Date();
+    const periodEnd = addDays(periodStart, status === "trialing" ? trialDays : 30);
+
+    const existingRows = (await tx`
+      select id::text
+      from subscriptions
+      where project_id = ${target.projectId}
+        and skill_id = ${target.skillId}
+      order by created_at desc
+      limit 1
+      for update
+    `) as Array<{ id: string }>;
+    const existingSubscriptionId = existingRows[0]?.id ?? null;
+
+    const subscriptionRows = existingSubscriptionId
+      ? ((await tx`
+          update subscriptions
+          set
+            price_id = ${target.priceId},
+            status = ${status},
+            current_period_start = ${periodStart.toISOString()}::timestamptz,
+            current_period_end = ${periodEnd.toISOString()}::timestamptz,
+            paused_at = null,
+            canceled_at = null,
+            updated_at = now()
+          where id = ${existingSubscriptionId}
+          returning
+            id::text,
+            ${target.projectSlug} as "projectSlug",
+            ${target.organizationId} as "organizationId",
+            ${target.skillSlug} as "skillSlug",
+            ${target.displayName} as "displayName",
+            status,
+            ${target.billingModel} as "billingModel",
+            ${target.unitAmountCents}::int as "unitAmountCents",
+            ${target.currency} as currency,
+            current_period_start as "currentPeriodStart",
+            current_period_end as "currentPeriodEnd",
+            paused_at as "pausedAt",
+            canceled_at as "canceledAt",
+            updated_at as "updatedAt",
+            created_at as "createdAt"
+        `) as ProjectSubscriptionRow[])
+      : ((await tx`
+          insert into subscriptions (
+            project_id,
+            skill_id,
+            price_id,
+            status,
+            current_period_start,
+            current_period_end,
+            paused_at,
+            canceled_at,
+            updated_at
+          )
+          values (
+            ${target.projectId},
+            ${target.skillId},
+            ${target.priceId},
+            ${status},
+            ${periodStart.toISOString()}::timestamptz,
+            ${periodEnd.toISOString()}::timestamptz,
+            null,
+            null,
+            now()
+          )
+          returning
+            id::text,
+            ${target.projectSlug} as "projectSlug",
+            ${target.organizationId} as "organizationId",
+            ${target.skillSlug} as "skillSlug",
+            ${target.displayName} as "displayName",
+            status,
+            ${target.billingModel} as "billingModel",
+            ${target.unitAmountCents}::int as "unitAmountCents",
+            ${target.currency} as currency,
+            current_period_start as "currentPeriodStart",
+            current_period_end as "currentPeriodEnd",
+            paused_at as "pausedAt",
+            canceled_at as "canceledAt",
+            updated_at as "updatedAt",
+            created_at as "createdAt"
+        `) as ProjectSubscriptionRow[]);
+    const subscription = subscriptionRows[0];
+    const auditAction = existingSubscriptionId ? "project_subscription.refreshed" : "project_subscription.created";
+    const auditVerb = existingSubscriptionId ? "refreshed" : "created";
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${actorUserId ?? null},
+        ${auditAction},
+        'subscription',
+        ${subscription.id},
+        ${`Project subscription ${auditVerb} with ${status} provider-deferred state.`},
+        ${tx.json({
+          projectSlug,
+          skillSlug: subscription.skillSlug,
+          status,
+          refreshedExistingSubscription: Boolean(existingSubscriptionId),
+          organizationId: subscription.organizationId,
+          priceId: target.priceId,
+          billingModel: target.billingModel,
+          unitAmountCents: target.unitAmountCents,
+          currency: target.currency
+        })}
+      )
+    `;
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${subscription.organizationId},
+        ${auditAction},
+        'in_app',
+        ${`Project subscription ${auditVerb}`},
+        ${tx.json({
+          projectSlug,
+          skillSlug: subscription.skillSlug,
+          displayName: subscription.displayName,
+          status,
+          refreshedExistingSubscription: Boolean(existingSubscriptionId),
+          priceId: target.priceId,
+          unitAmountCents: target.unitAmountCents,
+          currency: target.currency,
+          providerDeferred: true
+        })},
+        'queued'
+      )
+    `;
+
+    return subscription;
+  });
+}
 
 export async function updateProjectSubscriptionStatus(
   projectSlug: string,
@@ -154,6 +368,46 @@ function normalizeProjectManagedStatus(value: string): ProjectManagedSubscriptio
   }
 
   return value as ProjectManagedSubscriptionStatus;
+}
+
+function normalizeCreateStatus(value: unknown): ProjectSubscriptionCreateStatus {
+  const normalized = String(value ?? "trialing").trim().toLowerCase();
+
+  if (!projectCreateStatuses.includes(normalized as ProjectSubscriptionCreateStatus)) {
+    throw new Error("Subscription status must be trialing or active.");
+  }
+
+  return normalized as ProjectSubscriptionCreateStatus;
+}
+
+function normalizeTrialDays(value: unknown, status: ProjectSubscriptionCreateStatus) {
+  const fallback = status === "trialing" ? 14 : 30;
+  const parsed = Number(value ?? fallback);
+
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  return Math.min(Math.max(Math.trunc(parsed), 1), 90);
+}
+
+function normalizeRequiredText(value: unknown, fieldName: string, maxLength: number) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    throw new Error(`${fieldName} is required.`);
+  }
+
+  return text.slice(0, maxLength);
+}
+
+function normalizeOptionalText(value: unknown, maxLength: number) {
+  const text = String(value ?? "").trim();
+  return text ? text.slice(0, maxLength) : null;
+}
+
+function addDays(date: Date, days: number) {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
 function validateSubscriptionTransition(current: ProjectSubscriptionStatus, next: ProjectManagedSubscriptionStatus) {

@@ -407,6 +407,8 @@ Completed:
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
 - Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
+- Project subscription creation endpoint now lets project operators start a `trialing` or `active` provider-deferred subscription for a public verified subscription-priced skill with an active price, scoped to their organization and backed by audit plus notification records.
+- Skill detail project actions now show a subscription-trial action for subscription skills, so discovery can move into save, subscribe, install, and non-billable runtime test loops from one project-scoped surface.
 - Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.
 - Project update adoption now changes the installed skill's pinned version for approved `new_version` events, blocks unreviewed target versions, and resets high-permission updates into owner-review state.
 - Project detail console now exposes update handling controls with notes, schedule dates, current version, target version, and target review state; adopted and ignored updates leave the active inbox and project update counts.

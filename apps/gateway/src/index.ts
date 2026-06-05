@@ -31,7 +31,7 @@ import {
   revokeProjectApiKey,
   testInvokeProjectSkill
 } from "./runtime.js";
-import { updateProjectSubscriptionStatus } from "./project-subscriptions.js";
+import { createProjectSubscription, updateProjectSubscriptionStatus } from "./project-subscriptions.js";
 import { upsertProjectUpdateAction } from "./project-updates.js";
 import {
   listProjectSavedSkills,
@@ -1286,6 +1286,33 @@ app.put("/v1/projects/:projectSlug/subscriptions/:subscriptionId/status", async 
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update subscription status." }, 400);
+  }
+});
+
+app.post("/v1/projects/:projectSlug/subscriptions", async (c) => {
+  const projectSlug = c.req.param("projectSlug");
+  const authorization = await authorize(c.req.header("Authorization"), projectOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        subscription: await createProjectSubscription(
+          projectSlug,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.organizationId,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create project subscription." }, 400);
   }
 });
 

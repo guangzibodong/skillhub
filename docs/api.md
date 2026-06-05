@@ -565,6 +565,20 @@ Allowed install statuses:
 
 Install status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects any install that is not `installed`.
 
+Create a project subscription from a subscription-priced skill:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/subscriptions" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "crm-enrichment",
+    "status": "trialing"
+  }'
+```
+
+`POST /v1/projects/:projectSlug/subscriptions` requires an organization-scoped project operator token. The project must belong to the token organization. The skill must be public, verified, priced as `subscription`, and have an active price. Optional request fields are `priceId`, `status` (`trialing` or `active`), and `trialDays` (clamped to 1-90 days). If a project already has a subscription row for the skill, SkillHub refreshes the latest row with the current active price and period instead of creating duplicate active billing state. Creation is provider-deferred until payment checkout is connected, but it still writes `subscriptions`, `admin_audit_logs`, and an in-app `project_subscription.created` or `project_subscription.refreshed` notification so runtime governance, project dashboards, and future payment reconciliation have durable state.
+
 Pause, restore, or cancel a project subscription:
 
 ```bash

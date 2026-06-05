@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
-export type SkillProjectActionIntent = "install" | "save" | "test";
+export type SkillProjectActionIntent = "install" | "save" | "subscribe" | "test";
 
 export type SkillProjectActionState = {
   intent?: SkillProjectActionIntent;
@@ -28,31 +28,35 @@ export type SkillProjectActionState = {
 const copy = {
   en: {
     installed: "Skill installed to the selected project. Review policy, budget, and runtime approval before production use.",
-    invalidIntent: "Choose whether to save or install this skill.",
+    invalidIntent: "Choose whether to save, install, test, or subscribe to this skill.",
     invalidJson: "Test input must be valid JSON.",
     missingProject: "Choose a project before continuing.",
     missingSkill: "Missing skill slug.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before saving or installing skills.",
+    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing project skills.",
     saved: "Skill saved to the selected project collection.",
-    testPassed: "Test invocation completed. Review the runtime output and project log before production use.",
+    subscribed: "Project subscription created. Install the skill and review policy before production runtime use.",
     testBlocked: "Test invocation did not pass the project runtime gate.",
+    testPassed: "Test invocation completed. Review the runtime output and project log before production use.",
     unableInstall: "Unable to install skill.",
     unableSave: "Unable to save skill.",
+    unableSubscribe: "Unable to create project subscription.",
     unableTest: "Unable to test skill invocation."
   },
   zh: {
-    installed: "技能已安装到所选项目。生产使用前请在项目后台确认策略、预算和运行审批。",
-    invalidIntent: "请选择保存技能或安装技能。",
-    invalidJson: "测试输入必须是有效 JSON。",
-    missingProject: "请先选择一个项目。",
-    missingSkill: "缺少技能 slug。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能保存或安装技能。",
-    saved: "技能已保存到所选项目集合。",
-    testPassed: "测试调用已完成。生产使用前请检查运行输出和项目日志。",
-    testBlocked: "测试调用未通过项目运行网关。",
-    unableInstall: "无法安装技能。",
-    unableSave: "无法保存技能。",
-    unableTest: "无法测试技能调用。"
+    installed: "\u6280\u80fd\u5df2\u5b89\u88c5\u5230\u6240\u9009\u9879\u76ee\u3002\u751f\u4ea7\u4f7f\u7528\u524d\u8bf7\u5728\u9879\u76ee\u540e\u53f0\u786e\u8ba4\u7b56\u7565\u3001\u9884\u7b97\u548c\u8fd0\u884c\u5ba1\u6279\u3002",
+    invalidIntent: "\u8bf7\u9009\u62e9\u4fdd\u5b58\u3001\u5b89\u88c5\u3001\u6d4b\u8bd5\u6216\u8ba2\u9605\u8fd9\u4e2a\u6280\u80fd\u3002",
+    invalidJson: "\u6d4b\u8bd5\u8f93\u5165\u5fc5\u987b\u662f\u6709\u6548 JSON\u3002",
+    missingProject: "\u8bf7\u5148\u9009\u62e9\u4e00\u4e2a\u9879\u76ee\u3002",
+    missingSkill: "\u7f3a\u5c11\u6280\u80fd slug\u3002",
+    missingToken: "\u8bf7\u5148\u7528 SkillHub \u7528\u6237 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e\u670d\u52a1\u7aef\u5907\u7528 token\uff0c\u624d\u80fd\u7ba1\u7406\u9879\u76ee\u6280\u80fd\u3002",
+    saved: "\u6280\u80fd\u5df2\u4fdd\u5b58\u5230\u6240\u9009\u9879\u76ee\u96c6\u5408\u3002",
+    subscribed: "\u9879\u76ee\u8ba2\u9605\u5df2\u521b\u5efa\u3002\u751f\u4ea7\u8fd0\u884c\u524d\u8bf7\u7ee7\u7eed\u5b89\u88c5\u6280\u80fd\u5e76\u68c0\u67e5\u7b56\u7565\u3002",
+    testBlocked: "\u6d4b\u8bd5\u8c03\u7528\u672a\u901a\u8fc7\u9879\u76ee\u8fd0\u884c\u7f51\u5173\u3002",
+    testPassed: "\u6d4b\u8bd5\u8c03\u7528\u5df2\u5b8c\u6210\u3002\u751f\u4ea7\u4f7f\u7528\u524d\u8bf7\u68c0\u67e5\u8fd0\u884c\u8f93\u51fa\u548c\u9879\u76ee\u65e5\u5fd7\u3002",
+    unableInstall: "\u65e0\u6cd5\u5b89\u88c5\u6280\u80fd\u3002",
+    unableSave: "\u65e0\u6cd5\u4fdd\u5b58\u6280\u80fd\u3002",
+    unableSubscribe: "\u65e0\u6cd5\u521b\u5efa\u9879\u76ee\u8ba2\u9605\u3002",
+    unableTest: "\u65e0\u6cd5\u6d4b\u8bd5\u6280\u80fd\u8c03\u7528\u3002"
   }
 } as const;
 
@@ -67,7 +71,7 @@ export async function submitSkillProjectAction(
   const projectSlug = String(formData.get("projectSlug") ?? "").trim();
   const normalizedSkillSlug = skillSlug.trim();
 
-  if (!["install", "save", "test"].includes(intent)) {
+  if (!["install", "save", "subscribe", "test"].includes(intent)) {
     return { message: labels.invalidIntent, status: "error" };
   }
 
@@ -91,6 +95,10 @@ export async function submitSkillProjectAction(
 
   if (intent === "test") {
     return testSkillInProject({ labels, projectSlug, skillSlug: normalizedSkillSlug, token, formData });
+  }
+
+  if (intent === "subscribe") {
+    return subscribeProjectSkill({ labels, projectSlug, skillSlug: normalizedSkillSlug, token });
   }
 
   return installSkillToProject({ labels, projectSlug, skillSlug: normalizedSkillSlug, token, formData });
@@ -178,6 +186,48 @@ async function installSkillToProject(input: {
     return {
       intent: "install",
       message: error instanceof Error ? error.message : input.labels.unableInstall,
+      projectSlug: input.projectSlug,
+      status: "error"
+    };
+  }
+}
+
+async function subscribeProjectSkill(input: {
+  labels: (typeof copy)[Locale];
+  projectSlug: string;
+  skillSlug: string;
+  token: string;
+}): Promise<SkillProjectActionState> {
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/projects/${encodeURIComponent(input.projectSlug)}/subscriptions`, {
+      body: JSON.stringify({
+        skillSlug: input.skillSlug,
+        status: "trialing"
+      }),
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? input.labels.unableSubscribe);
+    }
+
+    revalidateProjectPaths(input.projectSlug, input.skillSlug);
+
+    return {
+      intent: "subscribe",
+      message: input.labels.subscribed,
+      projectSlug: input.projectSlug,
+      status: "success"
+    };
+  } catch (error) {
+    return {
+      intent: "subscribe",
+      message: error instanceof Error ? error.message : input.labels.unableSubscribe,
       projectSlug: input.projectSlug,
       status: "error"
     };

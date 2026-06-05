@@ -1,12 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { BookmarkPlus, CheckCircle2, Folder, PackageCheck, PlayCircle, XCircle } from "lucide-react";
+import { BookmarkPlus, CheckCircle2, CreditCard, Folder, PackageCheck, PlayCircle, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectRecord } from "@/lib/ops-data";
 import { submitSkillProjectAction, type SkillProjectActionState } from "@/lib/skill-project-actions";
 
 type SkillProjectActionPanelProps = {
+  billingModel: "free" | "per_call" | "subscription";
   dashboardHref: string;
   inputExample?: string;
   latestVersion?: string;
@@ -21,7 +22,7 @@ const copy = {
     badges: ["Project scoped", "Policy gate", "Audit logged"],
     collection: "Collection",
     collectionPlaceholder: "evaluation",
-    emptyBody: "Create or connect a developer project before saving and installing skills.",
+    emptyBody: "Create or connect a developer project before saving, subscribing, or installing skills.",
     emptyCta: "Open dashboard",
     heading: "Add this skill to a project",
     install: "Install to project",
@@ -33,6 +34,8 @@ const copy = {
     project: "Target project",
     save: "Save for evaluation",
     saving: "Working",
+    subscribe: "Start subscription trial",
+    subscribing: "Working",
     subheading: "Move from discovery into a real agent workspace with policy, budget, and update tracking.",
     test: "Test invocation",
     testInput: "Test JSON input",
@@ -44,30 +47,32 @@ const copy = {
     versionPlaceholder: "Use latest"
   },
   zh: {
-    badges: ["项目隔离", "策略网关", "审计记录"],
-    collection: "集合",
+    badges: ["\u9879\u76ee\u9694\u79bb", "\u7b56\u7565\u7f51\u5173", "\u5ba1\u8ba1\u8bb0\u5f55"],
+    collection: "\u96c6\u5408",
     collectionPlaceholder: "evaluation",
-    emptyBody: "请先创建或连接一个开发者项目，再保存和安装技能。",
-    emptyCta: "打开工作台",
-    heading: "把这个技能加入项目",
-    install: "安装到项目",
-    installing: "处理中",
-    latestVersion: "当前注册表版本",
-    nonBillableTest: "非计费测试",
-    noOutput: "没有返回输出。",
-    notBillable: "未计费",
-    project: "目标项目",
-    save: "保存用于评估",
-    saving: "处理中",
-    subheading: "从发现进入真实智能体项目，并接入策略、预算和更新跟踪。",
-    test: "测试调用",
-    testInput: "测试 JSON 输入",
-    testInputPlaceholder: '{ "query": "总结这个线索" }',
-    testOutput: "运行输出",
-    testResult: "测试结果",
-    testing: "测试中",
-    version: "固定版本",
-    versionPlaceholder: "使用最新版"
+    emptyBody: "\u8bf7\u5148\u521b\u5efa\u6216\u8fde\u63a5\u4e00\u4e2a\u5f00\u53d1\u8005\u9879\u76ee\uff0c\u518d\u4fdd\u5b58\u3001\u8ba2\u9605\u6216\u5b89\u88c5\u6280\u80fd\u3002",
+    emptyCta: "\u6253\u5f00\u5de5\u4f5c\u53f0",
+    heading: "\u628a\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
+    install: "\u5b89\u88c5\u5230\u9879\u76ee",
+    installing: "\u5904\u7406\u4e2d",
+    latestVersion: "\u5f53\u524d\u6ce8\u518c\u8868\u7248\u672c",
+    nonBillableTest: "\u975e\u8ba1\u8d39\u6d4b\u8bd5",
+    noOutput: "\u6ca1\u6709\u8fd4\u56de\u8f93\u51fa\u3002",
+    notBillable: "\u672a\u8ba1\u8d39",
+    project: "\u76ee\u6807\u9879\u76ee",
+    save: "\u4fdd\u5b58\u7528\u4e8e\u8bc4\u4f30",
+    saving: "\u5904\u7406\u4e2d",
+    subscribe: "\u5f00\u59cb\u8ba2\u9605\u8bd5\u7528",
+    subscribing: "\u5904\u7406\u4e2d",
+    subheading: "\u4ece\u53d1\u73b0\u8fdb\u5165\u771f\u5b9e\u667a\u80fd\u4f53\u9879\u76ee\uff0c\u5e76\u63a5\u5165\u7b56\u7565\u3001\u9884\u7b97\u548c\u66f4\u65b0\u8ddf\u8e2a\u3002",
+    test: "\u6d4b\u8bd5\u8c03\u7528",
+    testInput: "\u6d4b\u8bd5 JSON \u8f93\u5165",
+    testInputPlaceholder: '{ "query": "\u603b\u7ed3\u8fd9\u4e2a\u7ebf\u7d22" }',
+    testOutput: "\u8fd0\u884c\u8f93\u51fa",
+    testResult: "\u6d4b\u8bd5\u7ed3\u679c",
+    testing: "\u6d4b\u8bd5\u4e2d",
+    version: "\u56fa\u5b9a\u7248\u672c",
+    versionPlaceholder: "\u4f7f\u7528\u6700\u65b0\u7248"
   }
 } as const;
 
@@ -77,6 +82,7 @@ const initialState: SkillProjectActionState = {
 };
 
 export function SkillProjectActionPanel({
+  billingModel,
   dashboardHref,
   inputExample,
   latestVersion,
@@ -91,6 +97,7 @@ export function SkillProjectActionPanel({
     initialState
   );
   const hasProjects = projects.length > 0;
+  const isSubscriptionSkill = billingModel === "subscription";
 
   return (
     <div className="skill-project-action-panel">
@@ -129,7 +136,7 @@ export function SkillProjectActionPanel({
             <input
               aria-label={`${labels.version}: ${skillName}`}
               name="version"
-              placeholder={latestVersion ? `${latestVersion} · ${labels.versionPlaceholder}` : labels.versionPlaceholder}
+              placeholder={latestVersion ? `${latestVersion} / ${labels.versionPlaceholder}` : labels.versionPlaceholder}
             />
           </label>
           <label className="skill-project-action-form__wide">
@@ -150,6 +157,12 @@ export function SkillProjectActionPanel({
               <PlayCircle size={15} aria-hidden="true" />
               <span>{isPending ? labels.testing : labels.test}</span>
             </button>
+            {isSubscriptionSkill ? (
+              <button className="secondary-button" disabled={isPending} name="intent" type="submit" value="subscribe">
+                <CreditCard size={15} aria-hidden="true" />
+                <span>{isPending ? labels.subscribing : labels.subscribe}</span>
+              </button>
+            ) : null}
             <button className="primary-button" disabled={isPending} name="intent" type="submit" value="install">
               <PackageCheck size={15} aria-hidden="true" />
               <span>{isPending ? labels.installing : labels.install}</span>

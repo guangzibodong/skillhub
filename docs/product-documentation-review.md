@@ -300,6 +300,13 @@ Added skill detail project actions, covering:
 - The listing-to-project path uses the same organization-scoped saved-skill and install APIs as the project command center, so discovery becomes an operational state change rather than a static marketplace view.
 - This improves second-visit value because a developer's marketplace decisions reappear later in project policy, budget, update, invoice, and runtime-control surfaces.
 
+Added developer-side subscription creation, covering:
+
+- Developers can start a provider-deferred subscription trial from the skill detail project action panel for subscription-priced skills.
+- The API requires an organization-scoped project operator, a public verified skill, and an active subscription price before it writes subscription state.
+- Existing project-skill subscription rows are refreshed instead of creating duplicate current-state rows, while every create or refresh writes audit and in-app notification records.
+- This closes the paid discovery gap before payment-provider checkout is connected: subscription skills can now move from discovery to subscription state, install, policy review, and non-billable runtime test instead of only being blocked by the runtime gate.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.

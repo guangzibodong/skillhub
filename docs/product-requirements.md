@@ -56,6 +56,7 @@ Needs:
 - Inspect manifest, schemas, examples, and permissions before installing.
 - Install by CLI, SDK, or MCP.
 - Manage projects, API keys, budgets, subscriptions, and usage.
+- Start a provider-deferred subscription trial for subscription-priced skills from discovery, then install and test inside a project before production agent use.
 - Pin versions for predictable agent behavior.
 
 First-visit value:
@@ -327,6 +328,7 @@ Requirements:
 - Budgets and rate limits.
 - Usage analytics.
 - Subscriptions.
+- Subscription creation from marketplace skill detail for public verified subscription listings, with provider-deferred `trialing` or `active` state, audit logging, and in-app notification records before payment-provider checkout is connected.
 - Invoices.
 - Project-level refund and dispute history.
 - Webhook endpoints with HTTPS URL validation, event-topic subscriptions, active/paused/disabled state, one-time signing-secret creation/rotation, delivery-status history fields, signed HTTP delivery, response capture, retry backoff, audit events, and organization notifications.
@@ -493,6 +495,7 @@ Money requirements:
 
 - Usage logs do not pay publishers directly.
 - Billable usage creates transactions.
+- Subscription-priced skills require a project subscription before runtime invocation; before payment-provider checkout is connected, subscription creation still stores project, skill, active price, period, provider-deferred status, audit, and notification state.
 - Transactions create transaction splits.
 - Splits create publisher balance entries.
 - Balance starts pending.
