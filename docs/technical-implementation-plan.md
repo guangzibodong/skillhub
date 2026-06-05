@@ -349,6 +349,8 @@ Completed:
 - Project detail console now exposes invoice generation, totals, due dates, line item counts, and CSV download links so project finance history is visible before payment-provider invoice APIs are connected.
 - Organization billing endpoints now let owner/admin/finance operators read and update billing profile data plus payment method state records under organization-scoped authorization, with audit and notification records.
 - Notification preference endpoints now let authenticated users read and update channel choices for review, update, runtime, billing, payout, buyer-request, and account-security topics, with user-scoped authorization and audit records.
+- Admin audit log APIs now expose `admin_audit_logs` with actor, action, entity, reason, metadata, and timestamp fields for the `/admin` audit stream.
+- `/admin` now separates governance audit history from notification delivery events, so operators can inspect true audit records for review, finance, trust, access, incident, and template changes.
 - Admin notification template APIs now let admin/support operators list, create, and update `notification_templates` records across `in_app`, `email`, and `webhook` channels with `draft`, `active`, and `archived` lifecycle states.
 - `/admin` now exposes notification template management beside the audit stream, so operators can maintain reusable communication copy before final email and webhook provider delivery is connected.
 - Notification template updates write admin audit records and queued in-app platform notifications, making copy/configuration changes visible in the operations trail.

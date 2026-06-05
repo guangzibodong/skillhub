@@ -38,6 +38,19 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type AdminAuditLogRecord = {
+  id: string;
+  action: string;
+  actorDisplayName: string | null;
+  actorEmail: string | null;
+  actorUserId: string | null;
+  createdAt: string;
+  entityId: string | null;
+  entityType: string;
+  metadata: Record<string, unknown>;
+  reason: string | null;
+};
+
 export type NotificationTemplateRecord = {
   id: string;
   templateKey: string;
@@ -706,6 +719,56 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackAdminAuditLogs: AdminAuditLogRecord[] = [
+  {
+    id: "demo-audit-review",
+    action: "skill.review.decided",
+    actorDisplayName: "SkillHub Reviewer",
+    actorEmail: "reviewer@useskillhub.com",
+    actorUserId: "demo-user-reviewer",
+    createdAt: "demo",
+    entityId: "demo-review-browser-research",
+    entityType: "skill_review",
+    metadata: {
+      riskLevel: "low",
+      skillSlug: "browser-research",
+      status: "approved"
+    },
+    reason: "Approved verified marketplace listing."
+  },
+  {
+    id: "demo-audit-payout",
+    action: "payout.decided",
+    actorDisplayName: "Finance Operator",
+    actorEmail: "finance@useskillhub.com",
+    actorUserId: "demo-user-finance",
+    createdAt: "demo",
+    entityId: "demo-payout-001",
+    entityType: "payout",
+    metadata: {
+      amountCents: 482000,
+      currency: "usd",
+      status: "processing"
+    },
+    reason: "Payout approved for provider processing."
+  },
+  {
+    id: "demo-audit-team",
+    action: "organization.member.token_created",
+    actorDisplayName: "SkillHub Owner",
+    actorEmail: "owner@useskillhub.com",
+    actorUserId: "demo-user-owner",
+    createdAt: "demo",
+    entityId: "demo-user-developer",
+    entityType: "organization_member",
+    metadata: {
+      role: "developer",
+      tokenName: "Developer workspace access"
+    },
+    reason: "Organization team access changed."
   }
 ];
 
@@ -1939,6 +2002,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackAdminAuditLogs;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/audit-logs?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin audit logs failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { auditLogs: AdminAuditLogRecord[] };
+    return payload.auditLogs;
+  } catch {
+    return fallbackAdminAuditLogs;
   }
 }
 

@@ -3362,6 +3362,78 @@ a {
   line-height: 1.35;
 }
 
+.admin-audit-log-list {
+  gap: 12px;
+}
+
+.admin-audit-log-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.admin-audit-log-row > div {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.admin-audit-log-row header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+
+.admin-audit-log-row header strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-audit-log-row header span {
+  justify-self: end;
+  font-size: 11px;
+  text-align: right;
+}
+
+.admin-audit-log-row dl {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+}
+
+.admin-audit-log-row dl div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-audit-log-row dt {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.admin-audit-log-row dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.admin-audit-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 11px;
+}
+
 .abuse-report-panel {
   display: grid;
   gap: 14px;

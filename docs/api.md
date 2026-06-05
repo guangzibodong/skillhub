@@ -1043,6 +1043,15 @@ curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
 
 Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
 
+Admin/support operators can inspect the immutable admin audit trail:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/audit-logs?limit=30" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Audit rows return `action`, `entityType`, `entityId`, `reason`, `metadata`, actor identity when available, and `createdAt`. The `/admin` console uses this endpoint for the audit stream, while `/v1/admin/notifications` remains the delivery-event queue for in-app/email/webhook state.
+
 Admin/support operators can also manage reusable notification templates:
 
 ```bash

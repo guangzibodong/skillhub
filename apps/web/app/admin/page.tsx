@@ -1,15 +1,14 @@
 import {
   AlertTriangle,
   Banknote,
-  FileClock,
   Gavel,
   ListChecks,
   LockKeyhole,
   ReceiptText,
   Scale,
-  ShieldCheck,
   Siren
 } from "lucide-react";
+import { AdminAuditLogPanel } from "@/components/admin-audit-log-panel";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
@@ -23,10 +22,10 @@ import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
   formatMoney,
   getAdminAbuseReports,
+  getAdminAuditLogs,
   getAdminDisputes,
   getAdminIdentityDirectory,
   getAdminIncidents,
-  getAdminNotifications,
   getAdminNotificationTemplates,
   getAdminPayouts,
   getAdminReviews,
@@ -99,7 +98,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const ops = adminOpsCopy[locale];
   const [
     financeLedger,
-    notifications,
+    auditLogs,
     notificationTemplates,
     identityDirectory,
     payouts,
@@ -111,7 +110,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     reviews
   ] = await Promise.all([
     getFinanceLedger(),
-    getAdminNotifications(),
+    getAdminAuditLogs(),
     getAdminNotificationTemplates(),
     getAdminIdentityDirectory(),
     getAdminPayouts(),
@@ -132,14 +131,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
           transaction.balanceState ?? transaction.status
         ])
       : ops.moneyRows;
-  const notificationRows =
-    notifications.length > 0
-      ? notifications.slice(0, 5).map((notification) => [
-          notification.subject ?? notification.eventType,
-          notification.eventType,
-          notification.status
-        ])
-      : labels.auditRows.map((item) => [item, "system", "queued"]);
   const riskRows =
     abuseReports.length + incidents.length + skillFeedback.length + refunds.length + disputes.length > 0
       ? [
@@ -212,23 +203,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
       <section className="admin-layout">
         <AdminReviewManager locale={locale} reviews={reviews} />
 
-        <aside className="ops-panel admin-audit-panel">
-          <div className="card-kicker">
-            <FileClock size={16} aria-hidden="true" />
-            <span>{labels.auditTitle}</span>
-          </div>
-          <div className="audit-list">
-            {notificationRows.map(([subject, eventType, status]) => (
-              <div className="audit-row" key={`${subject}-${eventType}`}>
-                <ShieldCheck size={16} aria-hidden="true" />
-                <span>
-                  <strong>{subject}</strong>
-                  <small>{eventType} / {status}</small>
-                </span>
-              </div>
-            ))}
-          </div>
-        </aside>
+        <AdminAuditLogPanel locale={locale} logs={auditLogs} />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
@@ -277,7 +252,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <div className="ops-list">
             {ops.actionRows.map(([title, detail]) => (
               <div className="ops-row" key={title}>
-                <ShieldCheck size={18} aria-hidden="true" />
+                <Scale size={18} aria-hidden="true" />
                 <div>
                   <strong>{title}</strong>
                   <span>{detail}</span>

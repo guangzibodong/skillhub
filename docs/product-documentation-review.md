@@ -328,6 +328,12 @@ Added admin notification template management, covering:
 - Template lifecycle states are `draft`, `active`, and `archived`, allowing operators to stage copy before final email or webhook providers are connected.
 - Each template change writes an admin audit log and queues an in-app platform notification, keeping communication changes reviewable instead of hidden in code.
 
+Added true admin audit stream, covering:
+
+- Admin/support operators can read recent `admin_audit_logs` through `/v1/admin/audit-logs`.
+- `/admin` now shows actor, action, entity, reason, metadata summary, and timestamp from audit records instead of using notification delivery events as a stand-in.
+- This separates governance history from in-app/email/webhook delivery state, making review, finance, access, incident, template, and trust actions easier to inspect during operations.
+
 Added runtime incident operations, covering:
 
 - Trust and platform operators can list active incidents, open a new incident by skill slug, assign severity, and move incidents through monitoring, resolution, and postmortem states from `/admin`.
