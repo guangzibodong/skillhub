@@ -78,7 +78,7 @@ a {
   top: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) auto minmax(190px, 1fr);
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr) auto;
   gap: 18px;
   align-items: center;
   min-height: 76px;
@@ -149,6 +149,8 @@ a {
   justify-content: center;
   gap: 6px;
   min-width: 0;
+  max-width: 100%;
+  justify-self: center;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.035);
@@ -165,7 +167,7 @@ a {
   color: var(--muted);
   font-size: 13px;
   font-weight: 640;
-  padding: 0 13px;
+  padding: 0 clamp(8px, 0.82vw, 13px);
   white-space: nowrap;
   transition:
     background 150ms ease,
@@ -1406,6 +1408,16 @@ a {
   margin-bottom: 72px;
 }
 
+.auth-layout--signup {
+  grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.78fr);
+}
+
+.auth-side-stack {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
 .metric-strip--standalone {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.11);
@@ -1445,11 +1457,30 @@ a {
   line-height: 1.6;
 }
 
+.auth-card--signup {
+  gap: 16px;
+}
+
 .auth-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: end;
+}
+
+.auth-form--stack {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.auth-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.auth-form-grid__wide {
+  grid-column: 1 / -1;
 }
 
 .auth-form label {
@@ -1467,7 +1498,9 @@ a {
   line-height: 1.45;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select,
+.auth-token-result input {
   width: 100%;
   min-height: 42px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1478,8 +1511,38 @@ a {
   padding: 0 12px;
 }
 
+.auth-form select {
+  appearance: none;
+  cursor: pointer;
+}
+
 .auth-form input::placeholder {
   color: #7d8476;
+}
+
+.auth-role-hints {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.auth-role-hints span {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 9px;
+}
+
+.auth-role-hints svg {
+  flex: 0 0 auto;
+  color: var(--signal);
 }
 
 .auth-subject,
@@ -1490,6 +1553,21 @@ a {
   border-radius: var(--radius);
   background: rgba(155, 226, 141, 0.055);
   padding: 12px;
+}
+
+.auth-token-result {
+  gap: 9px;
+}
+
+.auth-token-result label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.auth-token-result input {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
 }
 
 .auth-subject strong,
@@ -7778,6 +7856,8 @@ a {
   }
 
   .auth-form,
+  .auth-form-grid,
+  .auth-role-hints,
   .auth-status-grid,
   .key-create-form,
   .project-create-form,

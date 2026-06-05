@@ -39,8 +39,17 @@ type BootstrapTokenInput = {
   scopes?: string[];
 };
 
+type SignupTokenInput = {
+  email?: unknown;
+  displayName?: unknown;
+  organizationSlug?: unknown;
+  organizationName?: unknown;
+  role?: unknown;
+};
+
 const organizationRoles: OrganizationRole[] = ["owner", "admin", "developer", "publisher", "reviewer", "finance"];
 const platformRoles: PlatformRole[] = ["user", "support", "reviewer", "finance", "admin", "super_admin"];
+const signupRoles: OrganizationRole[] = ["owner", "developer", "publisher"];
 
 export async function authorize(
   authorizationHeader: string | undefined,
@@ -182,6 +191,109 @@ export async function createBootstrapUserToken(input: BootstrapTokenInput) {
         token_last4 as "tokenLast4",
         created_at as "createdAt"
     `) as Array<{ id: string; name: string; tokenPrefix: string; tokenLast4: string; createdAt: string }>;
+
+    return {
+      user,
+      organization,
+      membership: {
+        role
+      },
+      accessToken: {
+        ...tokenRows[0],
+        token: rawToken
+      }
+    };
+  });
+}
+
+export async function createSignupUserToken(input: SignupTokenInput) {
+  const sql = await requireSql();
+  const email = normalizeEmail(String(input.email ?? ""));
+  const displayName = normalizeDisplay(String(input.displayName ?? ""), email);
+  const organizationName = normalizeDisplay(String(input.organizationName ?? ""), `${displayName}'s workspace`);
+  const organizationSlug = normalizeSignupSlug(String(input.organizationSlug ?? ""), organizationName);
+  const role = normalizeSignupRole(input.role);
+  const scopes: string[] = [];
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+
+  return sql.begin(async (tx: Sql) => {
+    const userRows = (await tx`
+      insert into users (email, display_name, platform_role)
+      values (${email}, ${displayName}, 'user')
+      on conflict (email) do update set
+        display_name = coalesce(excluded.display_name, users.display_name)
+      returning id::text, email, display_name as "displayName", platform_role as "platformRole"
+    `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+    const user = userRows[0];
+    const existingOrganizationRows = (await tx`
+      select id::text
+      from organizations
+      where slug = ${organizationSlug}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (existingOrganizationRows.length > 0) {
+      throw new Error("Workspace slug is already taken.");
+    }
+
+    const organizationRows = (await tx`
+      insert into organizations (name, slug)
+      values (${organizationName}, ${organizationSlug})
+      returning id::text, name, slug
+    `) as Array<{ id: string; name: string; slug: string }>;
+    const organization = organizationRows[0];
+
+    await tx`
+      insert into organization_members (organization_id, user_id, role)
+      values (${organization.id}, ${user.id}, ${role})
+    `;
+
+    const tokenRows = (await tx`
+      insert into user_access_tokens (
+        user_id,
+        organization_id,
+        name,
+        token_hash,
+        token_prefix,
+        token_last4,
+        scopes
+      )
+      values (
+        ${user.id},
+        ${organization.id},
+        'SkillHub onboarding session',
+        ${tokenHash},
+        'shub_user',
+        ${rawToken.slice(-4)},
+        ${scopes}
+      )
+      returning
+        id::text,
+        name,
+        token_prefix as "tokenPrefix",
+        token_last4 as "tokenLast4",
+        created_at as "createdAt"
+    `) as Array<{ id: string; name: string; tokenPrefix: string; tokenLast4: string; createdAt: string }>;
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${user.id}, 'auth.signup.created', 'organization', ${organization.id}, 'Self-service workspace signup.', ${tx.json({
+        email,
+        organizationSlug,
+        role,
+        tokenId: tokenRows[0].id
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (${organization.id}, 'auth.signup.created', 'in_app', 'SkillHub workspace created', ${tx.json({
+        organizationSlug,
+        role,
+        userId: user.id
+      })}, 'queued')
+    `;
 
     return {
       user,
@@ -387,6 +499,16 @@ function normalizeDisplay(value: string | undefined, fallback: string) {
   return value?.trim() || fallback;
 }
 
+function normalizeSignupSlug(value: string, fallback: string) {
+  const slug = (value.trim() || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || `workspace-${randomToken(4)}`;
+}
+
 function normalizeOrganizationRole(role: OrganizationRole) {
   if (!organizationRoles.includes(role)) {
     throw new Error("Invalid organization role.");
@@ -401,6 +523,16 @@ function normalizePlatformRole(role: PlatformRole) {
   }
 
   return role;
+}
+
+function normalizeSignupRole(value: unknown): OrganizationRole {
+  const role = String(value ?? "owner").trim();
+
+  if (!signupRoles.includes(role as OrganizationRole)) {
+    throw new Error("Signup role must be owner, developer, or publisher.");
+  }
+
+  return role as OrganizationRole;
 }
 
 function getProcessEnv(key: string): string | undefined {

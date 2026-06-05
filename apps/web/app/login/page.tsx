@@ -2,6 +2,7 @@ import { KeyRound } from "lucide-react";
 import { SessionLoginForm } from "@/components/session-login-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
+import { WorkspaceSignupForm } from "@/components/workspace-signup-form";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 
@@ -13,14 +14,14 @@ type PageProps = {
 
 const copy = {
   en: {
-    body: "Connect a user-scoped SkillHub token so the web console reads and writes as the active organization member instead of relying only on server environment tokens.",
+    body: "Create an organization-scoped account or connect an existing user token. Projects, publishing, billing, team, and notification operations run as the active member.",
     eyebrow: "Access control",
-    title: "Sign in to your SkillHub workspace."
+    title: "Create or sign in to SkillHub."
   },
   zh: {
-    body: "连接一个用户级 SkillHub token，让网页控制台按当前组织成员身份读写，而不只是依赖服务器环境变量 token。",
+    body: "创建一个组织级账号，或连接已有用户 token。进入工作区后，项目、发布、账单、团队和通知都会按当前成员权限执行。",
     eyebrow: "访问控制",
-    title: "登录你的 SkillHub 工作区"
+    title: "创建或登录 SkillHub"
   }
 } as const;
 
@@ -47,9 +48,12 @@ export default async function LoginPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="auth-layout">
-        <SessionLoginForm locale={locale} />
-        <SessionStatusPanel locale={locale} session={session} />
+      <section className="auth-layout auth-layout--signup">
+        <WorkspaceSignupForm locale={locale} />
+        <div className="auth-side-stack">
+          <SessionLoginForm locale={locale} />
+          <SessionStatusPanel locale={locale} session={session} />
+        </div>
       </section>
     </main>
   );

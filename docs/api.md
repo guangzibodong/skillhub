@@ -175,6 +175,22 @@ curl -X POST "https://api.useskillhub.com/v1/auth/bootstrap-token" \
 
 The raw user token is returned only once. SkillHub stores only the token hash, prefix, and last four characters.
 
+Create a public self-service workspace:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/auth/signup" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "builder@example.com",
+    "displayName": "Agent Builder",
+    "organizationName": "Agent Builder Lab",
+    "organizationSlug": "agent-builder-lab",
+    "role": "owner"
+  }'
+```
+
+The signup flow creates a user, organization, membership, user token, audit log, and in-app notification event in one transaction. Set `SKILLHUB_DISABLE_PUBLIC_SIGNUP=true` to turn this endpoint off for invite-only deployments.
+
 Inspect the current token subject:
 
 ```bash
@@ -193,7 +209,7 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` lets an operator paste a user access token created by the bootstrap flow.
+- `/login` lets a new user create a workspace or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.

@@ -12,21 +12,21 @@ type SessionLoginFormProps = {
 
 const copy = {
   en: {
-    helper: "Use the user access token created by the bootstrap flow. It is stored in an httpOnly browser cookie for this app.",
+    helper: "Use a token from signup, an invite, or the team console. It is stored in an httpOnly browser cookie for this app.",
     label: "User access token",
-    placeholder: "skh_user_...",
+    placeholder: "shub_user_...",
     submit: "Connect workspace",
     submitting: "Verifying",
-    title: "Workspace sign in",
+    title: "Already have a token?",
     workspace: "Open dashboard"
   },
   zh: {
-    helper: "使用 bootstrap 流程创建的用户访问 token。它会保存在本站的 httpOnly 浏览器 cookie 中。",
+    helper: "使用注册、邀请或团队控制台生成的用户 token。它会保存在本站的 httpOnly 浏览器 cookie 中。",
     label: "用户访问 token",
-    placeholder: "skh_user_...",
+    placeholder: "shub_user_...",
     submit: "连接工作区",
     submitting: "验证中",
-    title: "工作区登录",
+    title: "已有 token？",
     workspace: "打开工作台"
   }
 } as const;

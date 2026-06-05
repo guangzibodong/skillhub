@@ -144,6 +144,7 @@ import {
 import {
   authorize,
   createBootstrapUserToken,
+  createSignupUserToken,
   publicSubject,
   requireServiceAuthorization,
   type AuthRole
@@ -152,6 +153,7 @@ import {
 type Env = {
   Bindings: {
     SKILLHUB_ENV: string;
+    SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
     PACKAGES?: R2Bucket;
   };
 };
@@ -232,6 +234,23 @@ app.post("/v1/auth/bootstrap-token", async (c) => {
     );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to create bootstrap user token." }, 400);
+  }
+});
+
+app.post("/v1/auth/signup", async (c) => {
+  if (isPublicSignupDisabled(c.env)) {
+    return c.json({ error: "Public signup is disabled for this deployment." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        signup: await createSignupUserToken((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: signupErrorMessage(error) }, 400);
   }
 });
 
@@ -2066,6 +2085,25 @@ function getProcessEnv(key: string): string | undefined {
   }
 
   return process.env[key];
+}
+
+function isPublicSignupDisabled(env: Env["Bindings"] | undefined) {
+  const value = (env?.SKILLHUB_DISABLE_PUBLIC_SIGNUP ?? getProcessEnv("SKILLHUB_DISABLE_PUBLIC_SIGNUP"))?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes";
+}
+
+function signupErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "Unable to create workspace signup.";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("organizations_slug") || (message.includes("duplicate") && message.includes("slug"))) {
+    return "Workspace slug is already taken.";
+  }
+
+  return error.message || "Unable to create workspace signup.";
 }
 
 function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {
