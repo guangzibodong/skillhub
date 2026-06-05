@@ -3,6 +3,7 @@ import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
+import { OrganizationTeamManager } from "@/components/organization-team-manager";
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -16,6 +17,7 @@ import {
   getNotificationPreferences,
   getUserNotificationInbox,
   getOrganizationBillingSummary,
+  getOrganizationTeamMembers,
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -63,11 +65,12 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [developerProjects, developerBuyerRequests, organizationBilling, userNotificationInbox, notificationPreferences, session] =
+  const [developerProjects, developerBuyerRequests, organizationBilling, organizationTeamMembers, userNotificationInbox, notificationPreferences, session] =
     await Promise.all([
       getDeveloperProjects(),
       getDeveloperBuyerRequests(),
       getOrganizationBillingSummary(),
+      getOrganizationTeamMembers(),
       getUserNotificationInbox(),
       getNotificationPreferences(),
       getWorkspaceSession()
@@ -167,6 +170,8 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         </div>
 
         <aside className="developer-command-side">
+          <OrganizationTeamManager locale={locale} members={organizationTeamMembers} />
+
           <OrganizationBillingManager billing={organizationBilling} locale={locale} />
 
           <NotificationInboxManager

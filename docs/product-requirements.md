@@ -252,6 +252,7 @@ Requirements:
 - Invoices.
 - Project-level refund and dispute history.
 - Webhooks.
+- Organization team access with member list, role assignment, member token issuance, member removal, token visibility/revocation, audit events, and organization notifications before the final auth provider is connected.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Installed skills by project.
 - Skill update and deprecation inbox.
@@ -270,6 +271,7 @@ Requirements:
 - Payout review.
 - Refund/dispute operations.
 - User and org management.
+- Organization member and role operations, including owner/admin/developer/publisher/reviewer/finance assignments, organization-scoped token issuance, and access-removal audit trails.
 - Audit stream.
 - Notification/event templates, with actual email protocol integration deferred until the final integration phase.
 - Marketplace quality dashboard.

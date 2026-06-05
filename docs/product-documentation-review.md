@@ -335,6 +335,13 @@ Added web console token session, covering:
 - Dashboard now shows session source, organization scope, role summary, and masked token label, making it clearer whether operations are running as a real user or an environment fallback.
 - This strengthens the product's operational value because project, publisher, billing, notification, trust, and invoice flows can be exercised by different organization-scoped users instead of one deployment-wide operator token.
 
+Added organization team access management, covering:
+
+- Owners and admins can list organization members, add or update a member by email, assign `owner`, `admin`, `developer`, `publisher`, `reviewer`, or `finance`, generate a one-time-visible organization-scoped login token, and remove access from `/developer`.
+- Removing a member also revokes organization-scoped user access tokens, so the visible team list and token counts have real operational effect before a final auth provider is connected.
+- Every team access change writes an admin audit record and queues an in-app account notification for the organization.
+- This strengthens repeat-use value because real teams can divide project operations, publishing, finance, and trust responsibilities instead of sharing one bootstrap token.
+
 Added developer project creation, covering:
 
 - Organization-scoped users can create a new agent project from `/dashboard` without relying on implicit project upserts from API-key or install actions.

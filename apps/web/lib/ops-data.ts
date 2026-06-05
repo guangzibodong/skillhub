@@ -38,6 +38,20 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type OrganizationRole = "owner" | "admin" | "developer" | "publisher" | "reviewer" | "finance";
+
+export type OrganizationTeamMember = {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  platformRole: string;
+  role: OrganizationRole;
+  tokenCount: number;
+  activeTokenCount: number;
+  lastTokenUsedAt: string | null;
+  memberSince: string;
+};
+
 export type AdminReviewRecord = {
   id: string;
   skillSlug: string;
@@ -621,6 +635,42 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackOrganizationTeam: OrganizationTeamMember[] = [
+  {
+    userId: "demo-user-owner",
+    email: "owner@useskillhub.com",
+    displayName: "SkillHub Owner",
+    platformRole: "admin",
+    role: "owner",
+    tokenCount: 2,
+    activeTokenCount: 2,
+    lastTokenUsedAt: "demo",
+    memberSince: "demo"
+  },
+  {
+    userId: "demo-user-developer",
+    email: "developer@useskillhub.com",
+    displayName: "Agent Developer",
+    platformRole: "user",
+    role: "developer",
+    tokenCount: 1,
+    activeTokenCount: 1,
+    lastTokenUsedAt: "demo",
+    memberSince: "demo"
+  },
+  {
+    userId: "demo-user-finance",
+    email: "finance@useskillhub.com",
+    displayName: "Finance Operator",
+    platformRole: "finance",
+    role: "finance",
+    tokenCount: 1,
+    activeTokenCount: 0,
+    lastTokenUsedAt: null,
+    memberSince: "demo"
   }
 ];
 
@@ -1673,6 +1723,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMember[]> {
+  const token = await readWorkspaceToken();
+
+  if (!token) {
+    return fallbackOrganizationTeam;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/organization/team`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Organization team failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { members: OrganizationTeamMember[] };
+    return payload.members;
+  } catch {
+    return fallbackOrganizationTeam;
   }
 }
 

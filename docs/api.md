@@ -156,6 +156,28 @@ Role boundaries:
 
 Project writes are organization scoped. When a user token installs a skill, updates a project policy, creates a project API key, or revokes a project API key, the gateway resolves the project organization and requires a matching organization membership. New project records are created under the user token's organization, not a global demo organization.
 
+Organization owners and admins can manage team access before a full OAuth/passwordless provider is connected:
+
+```bash
+curl "https://api.useskillhub.com/v1/organization/team" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/organization/team/members" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"finance@example.com","displayName":"Finance Operator","role":"finance"}'
+
+curl -X POST "https://api.useskillhub.com/v1/organization/team/members/$USER_ID/tokens" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"tokenName":"Finance console access"}'
+
+curl -X POST "https://api.useskillhub.com/v1/organization/team/members/$USER_ID/remove" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Member roles are `owner`, `admin`, `developer`, `publisher`, `reviewer`, and `finance`. Adding a member creates or reuses the user record and upserts the organization membership. Token creation returns the raw `shub_user_*` token once, stores only the hash/prefix/last4, and lets that member sign in through `/login` before a final auth provider is connected. Removing a member deletes the organization membership and revokes that member's organization-scoped user access tokens. Each change records an admin audit log and queues an in-app account notification for the organization.
+
 ## Developer Project Operations
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.

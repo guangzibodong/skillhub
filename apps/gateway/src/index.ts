@@ -49,6 +49,12 @@ import {
   upsertOrganizationBillingProfile,
   upsertOrganizationPaymentMethod
 } from "./organization-billing.js";
+import {
+  createOrganizationTeamMemberToken,
+  listOrganizationTeamMembers,
+  removeOrganizationTeamMember,
+  upsertOrganizationTeamMember
+} from "./organization-team.js";
 import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-insights.js";
 import { createDeveloperProject } from "./developer-projects.js";
 import { getPublisherOverview } from "./publisher-overview.js";
@@ -159,6 +165,7 @@ const publisherOperatorRoles: AuthRole[] = ["super_admin", "admin", "owner", "pu
 const reviewOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
 const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "finance"];
+const organizationAdminRoles: AuthRole[] = ["super_admin", "admin", "owner"];
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
 const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "support"];
 
@@ -207,6 +214,95 @@ app.post("/v1/auth/bootstrap-token", async (c) => {
     );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to create bootstrap user token." }, 400);
+  }
+});
+
+app.get("/v1/organization/team", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationAdminRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      members: await listOrganizationTeamMembers(authorization.subject.organizationId)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to read organization team." }, 400);
+  }
+});
+
+app.post("/v1/organization/team/members", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationAdminRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        member: await upsertOrganizationTeamMember(
+          authorization.subject.organizationId,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to save organization member." }, 400);
+  }
+});
+
+app.post("/v1/organization/team/members/:userId/remove", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationAdminRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      await removeOrganizationTeamMember(
+        authorization.subject.organizationId,
+        c.req.param("userId"),
+        authorization.subject.userId
+      )
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to remove organization member." }, 400);
+  }
+});
+
+app.post("/v1/organization/team/members/:userId/tokens", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationAdminRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      await createOrganizationTeamMemberToken(
+        authorization.subject.organizationId,
+        c.req.param("userId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      ),
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create organization member token." }, 400);
   }
 });
 

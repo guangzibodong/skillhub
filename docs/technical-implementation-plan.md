@@ -223,6 +223,7 @@ API groups:
 
 - `/v1/payouts/*`
 - `/v1/notifications/*`
+- `/v1/organization/team/*`
 - `/v1/admin/incidents/*`
 - `/v1/admin/payouts/*`
 - `/v1/admin/notifications/*`
@@ -376,6 +377,8 @@ Completed:
 - Admin runtime incident APIs now let trust/platform operators list incidents, open a skill-scoped incident, update severity, and move incidents through `open`, `monitoring`, `resolved`, and `postmortem` with required reasons.
 - Incident decisions now write skill update events, admin audit logs, and publisher in-app notifications, so developer update inboxes and publisher notifications reflect operational recovery before email delivery exists.
 - `/admin` now includes a runtime incident operations queue and folds active incidents into risk metrics and command-center rows beside feedback, abuse, refund, dispute, and payout workflows.
+- Organization team APIs now let owners/admins list members, add or update a member role, issue a one-time-visible organization-scoped user token, and remove a member while revoking organization-scoped access tokens.
+- `/developer` now includes team access management beside organization billing and notifications, so multi-person teams can split developer, publisher, finance, review, admin, and owner responsibilities before final auth-provider integration.
 
 Next:
 
