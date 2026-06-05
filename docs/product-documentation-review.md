@@ -535,6 +535,15 @@ Added publisher skill version management, covering:
 - The publisher skill operations UI now includes a version manager with version history, manifest editor, save-version action, and per-version review submission.
 - This strengthens publisher retention because authors can keep improving skills after first upload, and it strengthens developer trust because verified behavior remains stable while new versions move through review.
 
+Added developer project version adoption, covering:
+
+- Project update inbox rows now expose current installed version, target version, target review status, and adoption readiness.
+- Marking a `new_version` update as adopted now changes the project's pinned installed skill version only when the target version has an approved review.
+- Draft, queued, rejected, blocked, missing, or removed-install updates are blocked from adoption so agents cannot run unreviewed contracts by clicking through an inbox item.
+- High-permission target versions reset the install approval state to owner review, preserving runtime governance after version changes.
+- `/dashboard/projects/[slug]` now shows version transition state in the update inbox and disables adoption until the target version is review-ready.
+- This closes the publisher-to-developer version loop: publishers can ship reviewed updates, and developers can deliberately move agent projects onto those versions without losing policy protection.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

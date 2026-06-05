@@ -473,6 +473,28 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/update-inbox" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+Each update item includes the installed version, target version, target review status, and an adoption state:
+
+```json
+{
+  "id": "update-id",
+  "skillSlug": "browser-research",
+  "eventType": "new_version",
+  "currentVersion": "0.1.0",
+  "targetVersion": "0.2.0",
+  "targetReviewStatus": "approved",
+  "adoptionState": "ready"
+}
+```
+
+`adoptionState` values are:
+
+- `ready`: a reviewed target version can be adopted.
+- `awaiting_review`: the target version exists but has not been approved.
+- `missing_version`: the update does not point to a version record.
+- `removed_install`: the project removed the install and must reinstall before adopting.
+- `not_version_update`: security, incident, deprecation, or operational updates can be acknowledged, scheduled, marked handled, or ignored but do not switch version pins.
+
 Handle an update inbox item:
 
 ```bash
@@ -490,7 +512,7 @@ Allowed update action statuses:
 
 - `acknowledged`: the project operator has seen the update and left it in the queue.
 - `scheduled`: the update has an owner-visible planned handling time.
-- `adopted`: the update has been handled and leaves the active inbox.
+- `adopted`: for `new_version` events, SkillHub updates the project's installed `skill_version_id` to the approved target version, recalculates install approval state from the target manifest, and then removes the update from the active inbox. If the target version is draft, queued, rejected, blocked, missing, or belongs to a removed install, the API rejects adoption. For non-version operational events, `adopted` means the update has been handled and leaves the active inbox.
 - `ignored`: the project intentionally dismissed the update and it leaves the active inbox.
 
 List project saved skills:

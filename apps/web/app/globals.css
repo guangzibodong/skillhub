@@ -6609,6 +6609,25 @@ a {
   width: max-content;
 }
 
+.project-update-version-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.project-update-version-line span,
+.project-update-action-hint {
+  border: 1px solid rgba(145, 230, 139, 0.18);
+  border-radius: 999px;
+  background: rgba(145, 230, 139, 0.08);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  padding: 4px 8px;
+}
+
 .project-update-action-form {
   display: grid;
   gap: 9px;
@@ -6636,6 +6655,11 @@ a {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.project-update-action-buttons button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .project-billing-row {

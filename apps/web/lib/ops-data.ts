@@ -712,6 +712,10 @@ export type DeveloperProjectUpdateRecord = {
   severity: string;
   title: string;
   body: string | null;
+  currentVersion: string | null;
+  targetVersion: string | null;
+  targetReviewStatus: string | null;
+  adoptionState: "awaiting_review" | "missing_version" | "not_version_update" | "ready" | "removed_install" | string;
   actionStatus: string;
   actionNote: string | null;
   scheduledFor: string | null;
@@ -2185,6 +2189,10 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         severity: "info",
         title: "New citation freshness scoring available",
         body: "Version 0.1.1 adds fresher source ranking for research agents.",
+        currentVersion: "0.1.0",
+        targetVersion: "0.1.1",
+        targetReviewStatus: "approved",
+        adoptionState: "ready",
         actionStatus: "open",
         actionNote: null,
         scheduledFor: null,
@@ -2200,6 +2208,10 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         severity: "medium",
         title: "File-retention policy requires review",
         body: "Project owner approval is required before broad file reads are enabled.",
+        currentVersion: "0.1.0",
+        targetVersion: null,
+        targetReviewStatus: null,
+        adoptionState: "not_version_update",
         actionStatus: isResearch ? "scheduled" : "open",
         actionNote: isResearch ? "Review during weekly agent safety window." : null,
         scheduledFor: isResearch ? "demo" : null,

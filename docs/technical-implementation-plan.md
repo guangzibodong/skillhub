@@ -127,6 +127,8 @@ Acceptance checks:
 - An installed skill records project, skill, version pin, approval state, and permission policy.
 - High-risk skills require owner approval before invocation.
 - Developers can see updates, deprecations, incidents, and replacements for installed skills.
+- Adopting a `new_version` update changes the project install's pinned `skill_version_id` only when the target version has an approved review; draft, queued, rejected, blocked, or missing versions cannot be adopted into runtime.
+- Version adoption recalculates install approval state from the target manifest, so high-permission updates return to owner review before agents can invoke them.
 - Saved skills and collections exist before purchase flows are added.
 - Published feedback is public, new feedback starts in moderation, and admin decisions are audited.
 - Marketplace recommendation can be curated through featured, standard, or suppressed rules with bounded boost, required reason, optional expiry, and audit logs.
@@ -380,7 +382,8 @@ Completed:
 - Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
 - Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.
-- Project detail console now exposes update handling controls with notes and schedule dates; adopted and ignored updates leave the active inbox and project update counts.
+- Project update adoption now changes the installed skill's pinned version for approved `new_version` events, blocks unreviewed target versions, and resets high-permission updates into owner-review state.
+- Project detail console now exposes update handling controls with notes, schedule dates, current version, target version, and target review state; adopted and ignored updates leave the active inbox and project update counts.
 - Project saved-skill endpoints now let project operators list, save, and remove candidate skills in named collections under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes saved skills beside update and billing operations so developers can keep evaluation shortlists before installing or buying.
 - Project invoice endpoints now let project operators list, generate, inspect, and download CSV invoices generated from posted project transactions under organization-scoped authorization.

@@ -20,7 +20,7 @@ const actionCopy = {
   },
   zh: {
     invalidStatus: "更新处理状态必须是 acknowledged、scheduled、adopted 或 ignored。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能处理项目更新。",
+    missingToken: "请先使用 SkillHub 用户 token 登录，或配置服务端备用 token，才能处理项目更新。",
     missingUpdate: "缺少更新 ID。",
     saved: "更新处理状态已保存。",
     unableSave: "无法保存更新处理状态。"

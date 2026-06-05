@@ -95,6 +95,10 @@ const fallbackUpdateInbox = [
     severity: "info",
     title: "New citation freshness scoring available",
     body: null,
+    currentVersion: "0.1.0",
+    targetVersion: "0.1.1",
+    targetReviewStatus: "approved",
+    adoptionState: "ready",
     actionStatus: "open",
     actionNote: null,
     scheduledFor: null,
@@ -110,6 +114,10 @@ const fallbackUpdateInbox = [
     severity: "medium",
     title: "File-retention policy requires review",
     body: null,
+    currentVersion: "0.1.0",
+    targetVersion: null,
+    targetReviewStatus: null,
+    adoptionState: "not_version_update",
     actionStatus: "open",
     actionNote: null,
     scheduledFor: null,
@@ -446,6 +454,16 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
       sue.severity,
       sue.title,
       sue.body,
+      current_version.version as "currentVersion",
+      target_version.version as "targetVersion",
+      target_review.status as "targetReviewStatus",
+      case
+        when sue.event_type <> 'new_version' then 'not_version_update'
+        when psi.status = 'removed' then 'removed_install'
+        when sue.skill_version_id is null or target_version.id is null then 'missing_version'
+        when target_review.status = 'approved' then 'ready'
+        else 'awaiting_review'
+      end as "adoptionState",
       sue.created_at as "createdAt",
       coalesce(pua.status, 'open') as "actionStatus",
       pua.note as "actionNote",
@@ -456,6 +474,15 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
     join projects p on p.id = psi.project_id
     join skills s on s.id = psi.skill_id
     join skill_update_events sue on sue.skill_id = s.id
+    left join skill_versions current_version on current_version.id = psi.skill_version_id
+    left join skill_versions target_version on target_version.id = sue.skill_version_id
+    left join lateral (
+      select status
+      from skill_reviews
+      where skill_version_id = target_version.id
+      order by created_at desc
+      limit 1
+    ) target_review on true
     left join project_update_actions pua on pua.project_id = p.id and pua.skill_update_event_id = sue.id
     where p.slug = ${projectSlug}
       and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})

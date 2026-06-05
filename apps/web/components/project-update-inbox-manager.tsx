@@ -19,30 +19,48 @@ const copy = {
   en: {
     acknowledge: "Acknowledge",
     acknowledged: "Acknowledged",
+    adoptVersion: "Adopt version",
     adopted: "Adopted",
+    adoptionReady: "Ready to adopt",
+    awaitingReview: "Awaiting review",
+    currentVersion: "Current",
     ignore: "Ignore",
     ignored: "Ignored",
+    markHandled: "Mark handled",
+    missingVersion: "Missing target version",
     note: "Decision note",
+    notVersionUpdate: "Operational update",
     open: "Open",
+    removedInstall: "Removed install",
     scheduled: "Scheduled",
     scheduledFor: "Scheduled for",
     schedule: "Schedule",
     saving: "Saving",
-    markAdopted: "Adopted"
+    targetReview: "Review",
+    targetVersion: "Target"
   },
   zh: {
     acknowledge: "确认",
     acknowledged: "已确认",
+    adoptVersion: "采用版本",
     adopted: "已采用",
+    adoptionReady: "可采用",
+    awaitingReview: "等待审核",
+    currentVersion: "当前",
     ignore: "忽略",
     ignored: "已忽略",
+    markHandled: "标记已处理",
+    missingVersion: "缺少目标版本",
     note: "处理备注",
+    notVersionUpdate: "运营更新",
     open: "待处理",
+    removedInstall: "安装已移除",
     scheduled: "已安排",
     scheduledFor: "计划时间",
     schedule: "安排",
     saving: "保存中",
-    markAdopted: "已采用"
+    targetReview: "审核",
+    targetVersion: "目标"
   }
 } as const;
 
@@ -75,6 +93,9 @@ export function ProjectUpdateInboxManager({
         {updates.length > 0 ? (
           updates.map((update) => {
             const statusMessage = updateState.updatedUpdateId === update.id ? updateState : null;
+            const isVersionUpdate = update.eventType === "new_version";
+            const canAdopt = !isVersionUpdate || update.adoptionState === "ready";
+            const adoptLabel = isVersionUpdate ? labels.adoptVersion : labels.markHandled;
 
             return (
               <article className="project-update-card" key={update.id}>
@@ -89,6 +110,17 @@ export function ProjectUpdateInboxManager({
                   <span className={actionStatusClass(update.actionStatus)}>{actionStatusLabel(update.actionStatus, locale)}</span>
                   <p>{update.title}</p>
                   {update.body ? <small>{update.body}</small> : null}
+                  <div className="project-update-version-line">
+                    <span>
+                      {labels.currentVersion}: {update.currentVersion ?? "-"}
+                    </span>
+                    <span>
+                      {labels.targetVersion}: {update.targetVersion ?? "-"}
+                    </span>
+                    <span>
+                      {labels.targetReview}: {update.targetReviewStatus ?? adoptionStatusLabel(update.adoptionState, labels)}
+                    </span>
+                  </div>
                   <small>
                     {formatDateValue(update.createdAt, locale, noDateLabel)}
                     {update.scheduledFor ? ` / ${labels.scheduledFor}: ${formatDateValue(update.scheduledFor, locale, noDateLabel)}` : ""}
@@ -108,9 +140,12 @@ export function ProjectUpdateInboxManager({
                   <div className="project-update-action-buttons">
                     <ActionButton disabled={isUpdatePending} icon="acknowledge" label={labels.acknowledge} status="acknowledged" />
                     <ActionButton disabled={isUpdatePending} icon="schedule" label={labels.schedule} status="scheduled" />
-                    <ActionButton disabled={isUpdatePending} icon="adopted" label={labels.markAdopted} status="adopted" />
+                    <ActionButton disabled={isUpdatePending || !canAdopt} icon="adopted" label={adoptLabel} status="adopted" />
                     <ActionButton danger disabled={isUpdatePending} icon="ignore" label={labels.ignore} status="ignored" />
                   </div>
+                  {isVersionUpdate && !canAdopt ? (
+                    <small className="project-update-action-hint">{adoptionStatusLabel(update.adoptionState, labels)}</small>
+                  ) : null}
                 </form>
 
                 {statusMessage && statusMessage.status !== "idle" ? (
@@ -207,6 +242,26 @@ function actionStatusLabel(status: string, locale: Locale) {
   }
 
   return labels.open;
+}
+
+function adoptionStatusLabel(status: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  if (status === "ready") {
+    return labels.adoptionReady;
+  }
+
+  if (status === "awaiting_review") {
+    return labels.awaitingReview;
+  }
+
+  if (status === "missing_version") {
+    return labels.missingVersion;
+  }
+
+  if (status === "removed_install") {
+    return labels.removedInstall;
+  }
+
+  return labels.notVersionUpdate;
 }
 
 function formatDateValue(value: string | null | undefined, locale: Locale, fallback: string) {

@@ -69,6 +69,7 @@ Repeat-visit value:
 - Manage installed skills per project.
 - Monitor usage, cost, failures, latency, and version changes.
 - Approve or reject high-risk skills for projects.
+- Adopt reviewed skill-version updates into a project version pin without exposing agents to unreviewed drafts.
 - Discover newly verified or better alternatives.
 
 ### Publisher / Skill Author
