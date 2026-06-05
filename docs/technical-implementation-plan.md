@@ -231,6 +231,7 @@ Acceptance checks:
 - Posted transactions create immutable splits.
 - Active subscription periods create posted `subscription` transactions through an idempotent `source_reference`; `trialing` subscriptions remain runtime access state and do not produce revenue ledger rows.
 - Subscription period renewal advances only expired `active` periods that already have a posted transaction for the previous period, then writes audit and notification records before the next period can be posted.
+- Developer project command-center subscription rows expose buyer-safe ledger state for the current period, including trial access, awaiting-post, posted, renewal-ready, linked transaction metadata, and invoice-line linkage.
 - Commission rules are versioned.
 - Finance admins can list active, scheduled, and ended commission rules from the admin console.
 - Creating a new commission rule requires a reason, keeps platform and publisher bps totaling 10000, closes overlapping open rules, and writes audit plus notification records.
@@ -411,6 +412,7 @@ Completed:
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
 - Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
+- Project detail console now exposes current subscription-period ledger state, linked transaction amount/id, invoice-line count, and renewal readiness, so developers can reconcile trialing, posted, unposted, and renewal-due subscription states without opening the admin finance console.
 - Project subscription creation endpoint now lets project operators start a `trialing` or `active` provider-deferred subscription for a public verified subscription-priced skill with an active price, scoped to their organization and backed by audit plus notification records.
 - Skill detail project actions now show a subscription-trial action for subscription skills, so discovery can move into save, subscribe, install, and non-billable runtime test loops from one project-scoped surface.
 - Project update-inbox action endpoint now lets project operators acknowledge, schedule, adopt, or ignore installed-skill update events under organization-scoped authorization, with audit and notification records.

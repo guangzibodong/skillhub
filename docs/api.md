@@ -532,6 +532,15 @@ curl "https://api.useskillhub.com/v1/developer/projects/research-agent" \
 
 The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, subscription records, and invoice summaries. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints.
 
+Subscription records in this response include buyer-safe ledger visibility for the current period:
+
+- `ledgerState`: `trial_access`, `awaiting_post`, `posted`, `renewal_due`, `not_billable`, or `not_postable`.
+- `ledgerTransactionId`, `ledgerSourceReference`, `ledgerGrossCents`, `ledgerCurrency`, `ledgerStatus`, and `ledgerPostedAt` when the active subscription period has been posted to `transactions`.
+- `ledgerInvoiceCount`, the count of generated invoice line items already linked to that subscription-period transaction.
+- `renewalReady`, true only when the active subscription period has expired and its positive subscription transaction is already posted, allowing the admin renewal processor to advance the period without skipping revenue.
+
+This keeps project operators from treating subscriptions as a black box: trialing access, unposted active periods, posted billable periods, invoice linkage, and renewal readiness are visible from the same project command-center payload.
+
 Read installed skills:
 
 ```bash

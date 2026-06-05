@@ -322,6 +322,12 @@ Added subscription-period renewal operations, covering:
 - The admin finance console now shows renewable subscription periods and gives finance operators a renew action beside posting and balance-release jobs.
 - This keeps subscription runtime access and recurring revenue aligned: operators can catch up by posting the current period, renewing it, then posting the next period without skipping a month.
 
+Added developer-visible subscription ledger diagnostics, covering:
+
+- `/v1/developer/projects/:projectSlug` subscription rows now expose the current period's ledger state, linked posted subscription transaction, gross amount, invoice-line count, and renewal readiness.
+- `/dashboard/projects/[slug]` shows trial access, awaiting-post, posted, renewal-due, not-billable, and not-postable states beside subscription pause/restore/cancel controls.
+- This strengthens developer repeat-use value because project operators can reconcile runtime access, subscription billing, generated invoices, and admin renewal state from the project command center instead of guessing from a plain subscription status.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.

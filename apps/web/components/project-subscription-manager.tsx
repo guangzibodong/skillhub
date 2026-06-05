@@ -20,30 +20,62 @@ type ProjectSubscriptionManagerProps = {
   titleLabel: string;
 };
 
+type SubscriptionLedgerState = DeveloperProjectSubscriptionRecord["ledgerState"];
+
 const copy = {
   en: {
     action: "Action",
     cancel: "Cancel",
     canceledAt: "Canceled",
     canceling: "Canceling",
+    currentPeriod: "Current period",
+    gross: "Gross",
+    invoiceLines: "Invoice lines",
+    ledger: "Ledger",
+    ledgerStates: {
+      awaiting_post: "Needs posting",
+      not_billable: "Not billable",
+      not_postable: "Not postable",
+      posted: "Posted",
+      renewal_due: "Renewal due",
+      trial_access: "Trial access"
+    },
     noSensitiveAction: "No action",
     pause: "Pause",
     pausedAt: "Paused",
     pausing: "Pausing",
+    postedAt: "Posted",
     resume: "Resume",
-    resuming: "Resuming"
+    resuming: "Resuming",
+    transaction: "Transaction",
+    unavailable: "n/a"
   },
   zh: {
     action: "操作",
     cancel: "取消",
     canceledAt: "已取消",
     canceling: "取消中",
+    currentPeriod: "当前周期",
+    gross: "总额",
+    invoiceLines: "发票行",
+    ledger: "账本",
+    ledgerStates: {
+      awaiting_post: "待入账",
+      not_billable: "不计费",
+      not_postable: "不可入账",
+      posted: "已入账",
+      renewal_due: "可续期",
+      trial_access: "试用访问"
+    },
     noSensitiveAction: "无需操作",
     pause: "暂停",
     pausedAt: "已暂停",
     pausing: "暂停中",
+    postedAt: "入账时间",
     resume: "恢复",
-    resuming: "恢复中"
+    resuming: "恢复中",
+    transaction: "交易",
+    unavailable: "暂无"
   }
 } as const;
 
@@ -140,6 +172,13 @@ export function ProjectSubscriptionManager({
                     <span>{statusMessage.message}</span>
                   </div>
                 ) : null}
+
+                <SubscriptionLedgerSummary
+                  labels={labels}
+                  locale={locale}
+                  noDateLabel={noDateLabel}
+                  subscription={subscription}
+                />
               </div>
             );
           })
@@ -148,6 +187,63 @@ export function ProjectSubscriptionManager({
         )}
       </div>
     </section>
+  );
+}
+
+function SubscriptionLedgerSummary({
+  labels,
+  locale,
+  noDateLabel,
+  subscription
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  noDateLabel: string;
+  subscription: DeveloperProjectSubscriptionRecord;
+}) {
+  const ledgerState = subscription.ledgerState ?? fallbackLedgerState(subscription);
+  const transactionLabel = subscription.ledgerTransactionId
+    ? `...${subscription.ledgerTransactionId.slice(-8)}`
+    : labels.unavailable;
+  const grossCents = subscription.ledgerGrossCents ?? (ledgerState === "posted" || ledgerState === "renewal_due" ? subscription.unitAmountCents : null);
+  const grossCurrency = subscription.ledgerCurrency ?? subscription.currency ?? "usd";
+
+  return (
+    <div className="subscription-ledger-grid">
+      <div>
+        <span>{labels.currentPeriod}</span>
+        <strong>
+          {formatDateValue(subscription.currentPeriodStart, locale, noDateLabel)}
+          {" - "}
+          {formatDateValue(subscription.currentPeriodEnd, locale, noDateLabel)}
+        </strong>
+      </div>
+      <div>
+        <span>{labels.ledger}</span>
+        <strong>
+          <b className={ledgerChipClass(ledgerState)}>
+            {formatLedgerState(ledgerState, labels.ledgerStates)}
+          </b>
+        </strong>
+        {subscription.ledgerPostedAt ? (
+          <small>
+            {labels.postedAt}: {formatDateValue(subscription.ledgerPostedAt, locale, noDateLabel)}
+          </small>
+        ) : null}
+      </div>
+      <div>
+        <span>{labels.gross}</span>
+        <strong>{grossCents === null ? labels.unavailable : formatMoney(grossCents, grossCurrency)}</strong>
+        {subscription.renewalReady ? <small>{formatLedgerState("renewal_due", labels.ledgerStates)}</small> : null}
+      </div>
+      <div title={subscription.ledgerSourceReference ?? undefined}>
+        <span>{labels.transaction}</span>
+        <strong>{transactionLabel}</strong>
+        <small>
+          {labels.invoiceLines}: {subscription.ledgerInvoiceCount ?? 0}
+        </small>
+      </div>
+    </div>
   );
 }
 
@@ -184,6 +280,46 @@ function SubscriptionStatusButton({
       </button>
     </form>
   );
+}
+
+function fallbackLedgerState(subscription: DeveloperProjectSubscriptionRecord): SubscriptionLedgerState {
+  if (subscription.status === "trialing") {
+    return "trial_access";
+  }
+
+  if (subscription.billingModel !== "subscription" || !subscription.unitAmountCents) {
+    return "not_billable";
+  }
+
+  if (subscription.status === "active") {
+    if (subscription.renewalReady) {
+      return "renewal_due";
+    }
+
+    return subscription.ledgerTransactionId ? "posted" : "awaiting_post";
+  }
+
+  return "not_postable";
+}
+
+function ledgerChipClass(state: SubscriptionLedgerState) {
+  if (state === "posted") {
+    return "status-chip";
+  }
+
+  if (state === "awaiting_post" || state === "renewal_due" || state === "trial_access") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (state === "not_postable") {
+    return "status-chip status-chip--danger";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
+function formatLedgerState(state: SubscriptionLedgerState, labels: Record<string, string>) {
+  return labels[state] ?? state.replaceAll("_", " ");
 }
 
 function statusChipClass(status: string) {

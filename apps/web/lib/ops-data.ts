@@ -880,6 +880,15 @@ export type DeveloperProjectSubscriptionRecord = {
   currency: string | null;
   currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
+  ledgerState: "awaiting_post" | "not_billable" | "not_postable" | "posted" | "renewal_due" | "trial_access";
+  ledgerTransactionId: string | null;
+  ledgerSourceReference: string | null;
+  ledgerGrossCents: number | null;
+  ledgerCurrency: string | null;
+  ledgerStatus: string | null;
+  ledgerPostedAt: string | null;
+  ledgerInvoiceCount: number;
+  renewalReady: boolean;
   pausedAt: string | null;
   canceledAt: string | null;
   updatedAt: string | null;
@@ -2577,11 +2586,20 @@ const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDevelo
         skillSlug: "browser-research",
         displayName: "Browser Research",
         status: isResearch ? "active" : "trialing",
-        billingModel: isResearch ? "per_call" : "free",
-        unitAmountCents: isResearch ? 2 : 0,
+        billingModel: "subscription",
+        unitAmountCents: isResearch ? 4900 : 0,
         currency: "usd",
         currentPeriodStart: "demo",
         currentPeriodEnd: "demo",
+        ledgerState: isResearch ? "posted" : "trial_access",
+        ledgerTransactionId: isResearch ? `demo-transaction-${project.slug}-subscription` : null,
+        ledgerSourceReference: isResearch ? `subscription:demo-subscription-${project.slug}-browser-research:demo` : null,
+        ledgerGrossCents: isResearch ? 4900 : null,
+        ledgerCurrency: isResearch ? "usd" : null,
+        ledgerStatus: isResearch ? "posted" : null,
+        ledgerPostedAt: isResearch ? "demo" : null,
+        ledgerInvoiceCount: isResearch ? 1 : 0,
+        renewalReady: false,
         pausedAt: null,
         canceledAt: null,
         updatedAt: "demo",

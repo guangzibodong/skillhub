@@ -119,6 +119,15 @@ type ProjectSubscriptionRow = {
   currency: string | null;
   currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
+  ledgerState: "awaiting_post" | "not_billable" | "not_postable" | "posted" | "renewal_due" | "trial_access";
+  ledgerTransactionId: string | null;
+  ledgerSourceReference: string | null;
+  ledgerGrossCents: number | null;
+  ledgerCurrency: string | null;
+  ledgerStatus: string | null;
+  ledgerPostedAt: string | null;
+  ledgerInvoiceCount: number;
+  renewalReady: boolean;
   pausedAt: string | null;
   canceledAt: string | null;
   updatedAt: string | null;
@@ -646,11 +655,20 @@ function fallbackDeveloperProjectDetail(projectSlug: string) {
         skillSlug: "browser-research",
         displayName: "Browser Research",
         status: isResearch ? "active" : "trialing",
-        billingModel: isResearch ? "per_call" : "free",
-        unitAmountCents: isResearch ? 2 : 0,
+        billingModel: "subscription",
+        unitAmountCents: isResearch ? 4900 : 0,
         currency: "usd",
         currentPeriodStart: "demo",
         currentPeriodEnd: "demo",
+        ledgerState: isResearch ? "posted" : "trial_access",
+        ledgerTransactionId: isResearch ? `demo-transaction-${project.slug}-subscription` : null,
+        ledgerSourceReference: isResearch ? `subscription:demo-subscription-${project.slug}-browser-research:demo` : null,
+        ledgerGrossCents: isResearch ? 4900 : null,
+        ledgerCurrency: isResearch ? "usd" : null,
+        ledgerStatus: isResearch ? "posted" : null,
+        ledgerPostedAt: isResearch ? "demo" : null,
+        ledgerInvoiceCount: isResearch ? 1 : 0,
+        renewalReady: false,
         pausedAt: null,
         canceledAt: null,
         updatedAt: "demo",
@@ -1057,6 +1075,38 @@ async function listProjectSubscriptions(projectSlug: string, organizationId: str
       sp.currency,
       sub.current_period_start as "currentPeriodStart",
       sub.current_period_end as "currentPeriodEnd",
+      case
+        when sub.status = 'trialing' then 'trial_access'
+        when coalesce(sp.billing_model, 'free') <> 'subscription' or coalesce(sp.unit_amount_cents, 0) <= 0 then 'not_billable'
+        when ledger.transaction_id is not null
+          and ledger.status = 'posted'
+          and coalesce(ledger.amount_cents, 0) > 0
+          and sub.status = 'active'
+          and sub.current_period_end <= now()
+          then 'renewal_due'
+        when ledger.transaction_id is not null then 'posted'
+        when sub.status = 'active'
+          and sub.current_period_start is not null
+          and sub.current_period_end is not null
+          and sub.current_period_end > sub.current_period_start
+          then 'awaiting_post'
+        else 'not_postable'
+      end as "ledgerState",
+      ledger.transaction_id as "ledgerTransactionId",
+      ledger.source_reference as "ledgerSourceReference",
+      ledger.amount_cents as "ledgerGrossCents",
+      ledger.currency as "ledgerCurrency",
+      ledger.status as "ledgerStatus",
+      ledger.created_at as "ledgerPostedAt",
+      coalesce(ledger.invoice_count, 0)::int as "ledgerInvoiceCount",
+      (
+        sub.status = 'active'
+        and sub.current_period_end is not null
+        and sub.current_period_end <= now()
+        and ledger.transaction_id is not null
+        and ledger.status = 'posted'
+        and coalesce(ledger.amount_cents, 0) > 0
+      ) as "renewalReady",
       sub.paused_at as "pausedAt",
       sub.canceled_at as "canceledAt",
       sub.updated_at as "updatedAt",
@@ -1065,6 +1115,33 @@ async function listProjectSubscriptions(projectSlug: string, organizationId: str
     join projects p on p.id = sub.project_id
     join skills s on s.id = sub.skill_id
     left join skill_prices sp on sp.id = sub.price_id
+    left join lateral (
+      select
+        t.id::text as transaction_id,
+        t.source_reference,
+        t.amount_cents,
+        t.currency,
+        t.status,
+        t.created_at,
+        coalesce(invoice_stats.invoice_count, 0)::int as invoice_count
+      from transactions t
+      left join lateral (
+        select count(*)::int as invoice_count
+        from project_invoice_line_items pili
+        join project_invoices pi on pi.id = pili.invoice_id
+        where pili.transaction_id = t.id
+          and pi.project_id = p.id
+      ) invoice_stats on true
+      where t.source_type = 'subscription'
+        and t.source_reference = concat(
+          'subscription:',
+          sub.id::text,
+          ':',
+          to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        )
+      order by t.created_at desc
+      limit 1
+    ) ledger on true
     where p.slug = ${projectSlug}
       and (${organizationId}::uuid is null or p.organization_id = ${organizationId})
     order by sub.created_at desc
