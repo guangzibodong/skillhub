@@ -1216,7 +1216,7 @@ Incident statuses are `open`, `monitoring`, `resolved`, and `postmortem`. Severi
 
 ## Finance Ledger
 
-SkillHub never pays publishers from raw usage logs. Billable usage must be posted into the ledger first:
+SkillHub never pays publishers from raw usage logs or raw subscription rows. Billable usage and active paid subscription periods must be posted into the ledger first:
 
 ```text
 usage_events
@@ -1224,6 +1224,8 @@ usage_events
 -> transaction_splits
 -> publisher_balances
 ```
+
+Subscription transactions use `transactions.source_type = 'subscription'` plus a durable `source_reference` in the form `subscription:<subscription_id>:<period_start>`. The reference is unique for subscription transactions, so a finance job can be retried without posting the same subscription period twice. `trialing` subscriptions can unlock runtime testing during a valid period, but only `active` subscription periods create revenue ledger entries.
 
 Read the finance ledger:
 
@@ -1281,6 +1283,24 @@ Ledger posting:
 - Creates a pending `publisher_balances` row.
 - Links the `usage_events` row to the transaction.
 - Records a queued in-app notification event.
+
+Post unprocessed active subscription periods into the ledger:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/process-subscriptions" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":50}'
+```
+
+Subscription ledger posting requires `finance`, `admin`, or `super_admin` and:
+
+- Selects `active` subscription rows whose current period has started, whose period range is valid, and whose attached price is a positive subscription price.
+- Skips `trialing`, `paused`, `past_due`, `canceled`, missing-price, free, and already-posted periods.
+- Creates one posted `transactions` row with `source_type='subscription'` and an idempotent `source_reference`.
+- Creates a `transaction_splits` row using the active commission rule.
+- Creates a pending `publisher_balances` row.
+- Records in-app billing notifications for the publisher organization and, when different, the project organization.
 
 Release matured pending balances:
 

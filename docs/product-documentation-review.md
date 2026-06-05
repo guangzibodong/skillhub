@@ -307,6 +307,14 @@ Added developer-side subscription creation, covering:
 - Existing project-skill subscription rows are refreshed instead of creating duplicate current-state rows, while every create or refresh writes audit and in-app notification records.
 - This closes the paid discovery gap before payment-provider checkout is connected: subscription skills can now move from discovery to subscription state, install, policy review, and non-billable runtime test instead of only being blocked by the runtime gate.
 
+Added subscription-period ledger posting, covering:
+
+- Active paid subscription periods now post into immutable `transactions` with `source_type='subscription'` and a unique period `source_reference`.
+- Trialing subscriptions remain a runtime testing/unlock state and do not create revenue until they are moved to `active`.
+- Subscription posting creates commission splits, pending publisher balances, and billing notifications for publisher and project organizations before payment-provider checkout is connected.
+- The admin finance console now shows unposted usage, unposted subscription periods, pending balances, and available balances beside actions for usage posting, subscription posting, and balance release.
+- This closes the commercial gap where a developer could subscribe to a skill but the platform had no durable revenue record for commission, invoice, refund, dispute, publisher-balance, or payout workflows.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.

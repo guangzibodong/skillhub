@@ -15,6 +15,7 @@ import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminCommissionRuleManager } from "@/components/admin-commission-rule-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
 import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
+import { AdminLedgerProcessor } from "@/components/admin-ledger-processor";
 import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-curation-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
@@ -244,7 +245,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const financeRows =
     financeLedger.recentTransactions.length > 0
       ? financeLedger.recentTransactions.slice(0, 5).map((transaction) => [
-          transaction.skillName ?? transaction.skillSlug ?? transaction.id,
+          `${formatSourceType(transaction.sourceType)} ${transaction.skillName ?? transaction.skillSlug ?? transaction.id}`.trim(),
           formatMoney(transaction.grossCents, transaction.currency),
           formatMoney(transaction.platformFeeCents, transaction.currency),
           formatMoney(transaction.publisherShareCents, transaction.currency),
@@ -439,6 +440,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AdminLedgerProcessor ledger={financeLedger} locale={locale} />
         <AdminCommissionRuleManager locale={locale} rules={commissionRules} />
       </section>
 
@@ -471,6 +473,10 @@ type AdminOpsCopy = (typeof adminOpsCopy)["en"] | (typeof adminOpsCopy)["zh"];
 
 function formatRiskSeverity(value: string, ops: AdminOpsCopy) {
   return ops.riskSignals.severities[value as keyof typeof ops.riskSignals.severities] ?? value.replaceAll("_", " ");
+}
+
+function formatSourceType(sourceType: string | undefined) {
+  return sourceType ? `[${sourceType}]` : "";
 }
 
 function formatAbuseCategory(value: string, ops: AdminOpsCopy) {

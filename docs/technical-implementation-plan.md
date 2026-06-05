@@ -229,6 +229,7 @@ Acceptance checks:
 
 - Usage logs never pay publishers directly.
 - Posted transactions create immutable splits.
+- Active subscription periods create posted `subscription` transactions through an idempotent `source_reference`; `trialing` subscriptions remain runtime access state and do not produce revenue ledger rows.
 - Commission rules are versioned.
 - Finance admins can list active, scheduled, and ended commission rules from the admin console.
 - Creating a new commission rule requires a reason, keeps platform and publisher bps totaling 10000, closes overlapping open rules, and writes audit plus notification records.
@@ -339,6 +340,7 @@ Completed:
 - SDK and CLI runtime invocation helpers.
 - Skill price setup and listing endpoints.
 - Billable usage ledger posting from `usage_events` into `transactions`, `transaction_splits`, and pending `publisher_balances`.
+- Active subscription-period ledger posting now creates exactly one posted `subscription` transaction per subscription period, then creates commission splits, pending publisher balances, and publisher/developer billing notifications through the admin finance processor.
 - Finance ledger read endpoint and matured balance release endpoint.
 - Admin notification list endpoint.
 - Dashboard and admin pages reading finance ledger and notification event data with safe fallback states.

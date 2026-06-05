@@ -79,6 +79,7 @@ import {
   listCommissionRules,
   listSkillPrices,
   processBillableUsage,
+  processSubscriptionPeriods,
   releaseAvailableBalances,
   setSkillPrice
 } from "./billing.js";
@@ -1492,6 +1493,22 @@ app.post("/v1/admin/finance/process-usage", async (c) => {
     return c.json(await processBillableUsage(body.limit));
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to process billable usage." }, 400);
+  }
+});
+
+app.post("/v1/admin/finance/process-subscriptions", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+
+  try {
+    return c.json(await processSubscriptionPeriods(body.limit));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to process subscription periods." }, 400);
   }
 });
 

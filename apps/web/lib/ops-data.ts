@@ -7,10 +7,13 @@ type FinanceLedgerSummary = {
   pendingBalanceCents: number;
   availableBalanceCents: number;
   unprocessedUsageCount: number;
+  unprocessedSubscriptionCount: number;
 };
 
 export type FinanceLedgerTransaction = {
   id: string;
+  sourceType?: "usage" | "subscription" | "refund" | "adjustment";
+  sourceReference?: string | null;
   skillSlug: string | null;
   skillName: string | null;
   grossCents: number;
@@ -971,7 +974,8 @@ const emptyLedger: FinanceLedger = {
     publisherShareCents: 0,
     pendingBalanceCents: 0,
     availableBalanceCents: 0,
-    unprocessedUsageCount: 0
+    unprocessedUsageCount: 0,
+    unprocessedSubscriptionCount: 0
   },
   recentTransactions: []
 };
@@ -1058,11 +1062,14 @@ const fallbackLedger: FinanceLedger = {
     publisherShareCents: 1488000,
     pendingBalanceCents: 126000,
     availableBalanceCents: 482000,
-    unprocessedUsageCount: 0
+    unprocessedUsageCount: 0,
+    unprocessedSubscriptionCount: 1
   },
   recentTransactions: [
     {
       id: "demo-usage-browser-research",
+      sourceType: "usage",
+      sourceReference: null,
       skillSlug: "browser-research",
       skillName: "Browser Research",
       grossCents: 124000,
@@ -1076,6 +1083,8 @@ const fallbackLedger: FinanceLedger = {
     },
     {
       id: "demo-usage-support-triage",
+      sourceType: "subscription",
+      sourceReference: "demo-subscription-period",
       skillSlug: "support-triage",
       skillName: "Support Triage",
       grossCents: 76000,

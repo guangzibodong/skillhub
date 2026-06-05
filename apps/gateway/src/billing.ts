@@ -25,6 +25,22 @@ type UsageEventRow = {
   skill_name: string;
 };
 
+type SubscriptionPeriodRow = {
+  id: string;
+  project_id: string;
+  project_organization_id: string;
+  project_slug: string;
+  skill_id: string;
+  price_id: string;
+  amount_cents: number;
+  currency: string;
+  organization_id: string;
+  skill_name: string;
+  current_period_start: string;
+  current_period_end: string;
+  source_reference: string;
+};
+
 type CommissionRule = {
   id: string;
   platform_fee_bps: number;
@@ -287,6 +303,196 @@ export async function processBillableUsage(limit = 50) {
   };
 }
 
+export async function processSubscriptionPeriods(limit = 50) {
+  const sql = await requireSql();
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 250);
+  const processed: Array<Record<string, unknown>> = [];
+
+  await sql.begin(async (tx: Sql) => {
+    const subscriptionPeriods = (await tx`
+      select
+        sub.id::text,
+        sub.project_id::text,
+        p.organization_id::text as project_organization_id,
+        p.slug as project_slug,
+        sub.skill_id::text,
+        sub.price_id::text,
+        sp.unit_amount_cents as amount_cents,
+        sp.currency,
+        s.organization_id::text,
+        s.display_name as skill_name,
+        sub.current_period_start::text,
+        sub.current_period_end::text,
+        concat(
+          'subscription:',
+          sub.id::text,
+          ':',
+          to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        ) as source_reference
+      from subscriptions sub
+      join projects p on p.id = sub.project_id
+      join skills s on s.id = sub.skill_id
+      join skill_prices sp on sp.id = sub.price_id
+      where sub.status = 'active'
+        and sub.current_period_start is not null
+        and sub.current_period_start <= now()
+        and sub.current_period_end is not null
+        and sub.current_period_end > sub.current_period_start
+        and sp.billing_model = 'subscription'
+        and sp.unit_amount_cents > 0
+        and not exists (
+          select 1
+          from transactions t
+          where t.source_type = 'subscription'
+            and t.source_reference = concat(
+              'subscription:',
+              sub.id::text,
+              ':',
+              to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+            )
+        )
+      order by sub.current_period_start asc, sub.created_at asc
+      limit ${safeLimit}
+      for update of sub skip locked
+    `) as SubscriptionPeriodRow[];
+
+    for (const period of subscriptionPeriods) {
+      const publisher = await ensurePublisherProfile(tx, period.organization_id);
+      const commissionRule = await getActiveCommissionRule(tx);
+      const split = calculateSplit(period.amount_cents, commissionRule);
+
+      const transactionRows = (await tx`
+        insert into transactions (
+          project_id,
+          skill_id,
+          price_id,
+          source_type,
+          source_reference,
+          amount_cents,
+          currency,
+          status
+        )
+        values (
+          ${period.project_id},
+          ${period.skill_id},
+          ${period.price_id},
+          'subscription',
+          ${period.source_reference},
+          ${period.amount_cents},
+          ${period.currency},
+          'posted'
+        )
+        on conflict do nothing
+        returning id::text
+      `) as Array<{ id: string }>;
+
+      if (!transactionRows[0]) {
+        continue;
+      }
+
+      const transactionId = transactionRows[0].id;
+
+      const splitRows = (await tx`
+        insert into transaction_splits (
+          transaction_id,
+          commission_rule_id,
+          publisher_profile_id,
+          platform_fee_cents,
+          publisher_share_cents,
+          processing_fee_cents
+        )
+        values (
+          ${transactionId},
+          ${commissionRule.id},
+          ${publisher.id},
+          ${split.platformFeeCents},
+          ${split.publisherShareCents},
+          0
+        )
+        returning id::text
+      `) as Array<{ id: string }>;
+      const splitId = splitRows[0].id;
+
+      await tx`
+        insert into publisher_balances (
+          publisher_profile_id,
+          transaction_split_id,
+          amount_cents,
+          currency,
+          state,
+          available_at
+        )
+        values (
+          ${publisher.id},
+          ${splitId},
+          ${split.publisherShareCents},
+          ${period.currency},
+          'pending',
+          now() + (${getBalanceDelayDays()}::int * interval '1 day')
+        )
+      `;
+
+      const payload = {
+        subscriptionId: period.id,
+        transactionId,
+        transactionSplitId: splitId,
+        sourceReference: period.source_reference,
+        projectSlug: period.project_slug,
+        skillName: period.skill_name,
+        periodStart: period.current_period_start,
+        periodEnd: period.current_period_end,
+        grossCents: period.amount_cents,
+        platformFeeCents: split.platformFeeCents,
+        publisherShareCents: split.publisherShareCents
+      };
+
+      await tx`
+        insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+        values (
+          ${period.organization_id},
+          'billing.subscription_posted',
+          'in_app',
+          'Subscription period posted to ledger',
+          ${tx.json(payload)},
+          'queued'
+        )
+      `;
+
+      if (period.project_organization_id !== period.organization_id) {
+        await tx`
+          insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+          values (
+            ${period.project_organization_id},
+            'billing.subscription_posted',
+            'in_app',
+            'Subscription period posted to ledger',
+            ${tx.json(payload)},
+            'queued'
+          )
+        `;
+      }
+
+      processed.push({
+        subscriptionId: period.id,
+        transactionId,
+        transactionSplitId: splitId,
+        publisherProfileId: publisher.id,
+        sourceReference: period.source_reference,
+        projectSlug: period.project_slug,
+        grossCents: period.amount_cents,
+        platformFeeCents: split.platformFeeCents,
+        publisherShareCents: split.publisherShareCents,
+        currency: period.currency
+      });
+    }
+  });
+
+  return {
+    processedCount: processed.length,
+    processed
+  };
+}
+
 export async function releaseAvailableBalances(limit = 100) {
   const sql = await requireSql();
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
@@ -484,7 +690,7 @@ export async function getFinanceLedger() {
     return emptyLedger();
   }
 
-  const [summaryRows, recentTransactions, unprocessedRows] = await Promise.all([
+  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows] = await Promise.all([
     sql`
       select
         coalesce(sum(t.amount_cents), 0)::int as gross_cents,
@@ -495,11 +701,15 @@ export async function getFinanceLedger() {
       from transactions t
       left join transaction_splits ts on ts.transaction_id = t.id
       left join publisher_balances pb on pb.transaction_split_id = ts.id
-      where t.source_type = 'usage'
+      where t.source_type in ('usage', 'subscription')
+        and t.amount_cents > 0
+        and t.status = 'posted'
     `,
     sql`
       select
         t.id::text,
+        t.source_type as "sourceType",
+        t.source_reference as "sourceReference",
         s.slug as "skillSlug",
         s.display_name as "skillName",
         t.amount_cents as "grossCents",
@@ -523,6 +733,29 @@ export async function getFinanceLedger() {
       where billable = true
         and amount_cents > 0
         and transaction_id is null
+    `,
+    sql`
+      select count(*)::int as count
+      from subscriptions sub
+      join skill_prices sp on sp.id = sub.price_id
+      where sub.status = 'active'
+        and sub.current_period_start is not null
+        and sub.current_period_start <= now()
+        and sub.current_period_end is not null
+        and sub.current_period_end > sub.current_period_start
+        and sp.billing_model = 'subscription'
+        and sp.unit_amount_cents > 0
+        and not exists (
+          select 1
+          from transactions t
+          where t.source_type = 'subscription'
+            and t.source_reference = concat(
+              'subscription:',
+              sub.id::text,
+              ':',
+              to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+            )
+        )
     `
   ]);
 
@@ -535,7 +768,8 @@ export async function getFinanceLedger() {
       publisherShareCents: Number(summary.publisher_share_cents ?? 0),
       pendingBalanceCents: Number(summary.pending_balance_cents ?? 0),
       availableBalanceCents: Number(summary.available_balance_cents ?? 0),
-      unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0)
+      unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0),
+      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0)
     },
     recentTransactions
   };
@@ -554,7 +788,7 @@ export async function getPublisherFinanceLedger(
   const scopedOrganizationId = organizationId ?? null;
   const scopedPublisherProfileId = publisherProfileId ?? null;
 
-  const [summaryRows, recentTransactions, unprocessedRows] = await Promise.all([
+  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows] = await Promise.all([
     sql`
       select
         coalesce(sum(t.amount_cents), 0)::int as gross_cents,
@@ -572,6 +806,8 @@ export async function getPublisherFinanceLedger(
     sql`
       select
         t.id::text,
+        t.source_type as "sourceType",
+        t.source_reference as "sourceReference",
         s.slug as "skillSlug",
         s.display_name as "skillName",
         t.amount_cents as "grossCents",
@@ -602,6 +838,33 @@ export async function getPublisherFinanceLedger(
         and ue.transaction_id is null
         and (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
         and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
+    `,
+    sql`
+      select count(*)::int as count
+      from subscriptions sub
+      join skills s on s.id = sub.skill_id
+      join skill_prices sp on sp.id = sub.price_id
+      left join publisher_profiles pp on pp.organization_id = s.organization_id
+      where sub.status = 'active'
+        and sub.current_period_start is not null
+        and sub.current_period_start <= now()
+        and sub.current_period_end is not null
+        and sub.current_period_end > sub.current_period_start
+        and sp.billing_model = 'subscription'
+        and sp.unit_amount_cents > 0
+        and (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
+        and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
+        and not exists (
+          select 1
+          from transactions t
+          where t.source_type = 'subscription'
+            and t.source_reference = concat(
+              'subscription:',
+              sub.id::text,
+              ':',
+              to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+            )
+        )
     `
   ]);
 
@@ -614,7 +877,8 @@ export async function getPublisherFinanceLedger(
       publisherShareCents: Number(summary.publisher_share_cents ?? 0),
       pendingBalanceCents: Number(summary.pending_balance_cents ?? 0),
       availableBalanceCents: Number(summary.available_balance_cents ?? 0),
-      unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0)
+      unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0),
+      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0)
     },
     recentTransactions
   };
@@ -901,7 +1165,8 @@ function emptyLedger() {
       publisherShareCents: 0,
       pendingBalanceCents: 0,
       availableBalanceCents: 0,
-      unprocessedUsageCount: 0
+      unprocessedUsageCount: 0,
+      unprocessedSubscriptionCount: 0
     },
     recentTransactions: []
   };

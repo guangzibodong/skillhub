@@ -4224,6 +4224,84 @@ a {
   padding: 13px;
 }
 
+.admin-ledger-processor {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-ledger-processor__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-ledger-processor__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-ledger-processor__metrics div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.admin-ledger-processor__metrics svg {
+  color: var(--cyan);
+}
+
+.admin-ledger-processor__metrics span,
+.admin-ledger-processor__form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-ledger-processor__metrics strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.admin-ledger-processor__form {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.25fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.admin-ledger-processor__form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-ledger-processor__form input {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.admin-ledger-processor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .admin-commission-manager {
   display: grid;
   gap: 14px;
@@ -9832,6 +9910,23 @@ a {
 
   .admin-payout-action-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-ledger-processor__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-ledger-processor__form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-ledger-processor__actions,
+  .admin-ledger-processor__actions .secondary-button {
+    width: 100%;
+  }
+
+  .admin-ledger-processor__actions .secondary-button {
+    justify-content: center;
   }
 
   .admin-commission-form,

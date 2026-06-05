@@ -496,6 +496,8 @@ Money requirements:
 - Usage logs do not pay publishers directly.
 - Billable usage creates transactions.
 - Subscription-priced skills require a project subscription before runtime invocation; before payment-provider checkout is connected, subscription creation still stores project, skill, active price, period, provider-deferred status, audit, and notification state.
+- `trialing` subscriptions can unlock runtime testing inside a valid period, but they do not create revenue ledger entries until the subscription is moved to `active`.
+- Each active paid subscription period must post exactly one positive `subscription` transaction with an idempotent period reference before it can appear in invoice, commission, publisher balance, refund, dispute, or payout workflows.
 - Transactions create transaction splits.
 - Splits create publisher balance entries.
 - Balance starts pending.
