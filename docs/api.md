@@ -1302,6 +1302,25 @@ Subscription ledger posting requires `finance`, `admin`, or `super_admin` and:
 - Creates a pending `publisher_balances` row.
 - Records in-app billing notifications for the publisher organization and, when different, the project organization.
 
+Renew posted, expired active subscription periods:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/renew-subscriptions" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":50}'
+```
+
+Subscription renewal requires `finance`, `admin`, or `super_admin` and:
+
+- Selects `active` subscription rows whose current period has expired.
+- Requires the expiring period to already have a posted positive `subscription` transaction with the matching `source_reference`.
+- Advances `current_period_start` to the previous `current_period_end` and advances `current_period_end` by one month.
+- Skips unposted expired periods so finance can run `process-subscriptions` first instead of silently losing revenue.
+- Writes `billing.subscription_period.renewed` audit and in-app notification records for the publisher organization and, when different, the project organization.
+
+After renewal, the new period can be posted through `POST /v1/admin/finance/process-subscriptions`. If a deployment is catching up multiple missed months, operators should alternate subscription posting and renewal batches until both unposted and renewable counts reach zero.
+
 Release matured pending balances:
 
 ```bash

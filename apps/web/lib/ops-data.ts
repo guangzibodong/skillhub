@@ -8,6 +8,7 @@ type FinanceLedgerSummary = {
   availableBalanceCents: number;
   unprocessedUsageCount: number;
   unprocessedSubscriptionCount: number;
+  renewableSubscriptionCount: number;
 };
 
 export type FinanceLedgerTransaction = {
@@ -975,7 +976,8 @@ const emptyLedger: FinanceLedger = {
     pendingBalanceCents: 0,
     availableBalanceCents: 0,
     unprocessedUsageCount: 0,
-    unprocessedSubscriptionCount: 0
+    unprocessedSubscriptionCount: 0,
+    renewableSubscriptionCount: 0
   },
   recentTransactions: []
 };
@@ -1063,7 +1065,8 @@ const fallbackLedger: FinanceLedger = {
     pendingBalanceCents: 126000,
     availableBalanceCents: 482000,
     unprocessedUsageCount: 0,
-    unprocessedSubscriptionCount: 1
+    unprocessedSubscriptionCount: 1,
+    renewableSubscriptionCount: 1
   },
   recentTransactions: [
     {

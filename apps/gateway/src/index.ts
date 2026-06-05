@@ -81,6 +81,7 @@ import {
   processBillableUsage,
   processSubscriptionPeriods,
   releaseAvailableBalances,
+  renewSubscriptionPeriods,
   setSkillPrice
 } from "./billing.js";
 import {
@@ -1509,6 +1510,22 @@ app.post("/v1/admin/finance/process-subscriptions", async (c) => {
     return c.json(await processSubscriptionPeriods(body.limit));
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to process subscription periods." }, 400);
+  }
+});
+
+app.post("/v1/admin/finance/renew-subscriptions", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+
+  try {
+    return c.json(await renewSubscriptionPeriods(body.limit, authorization.subject.userId));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to renew subscription periods." }, 400);
   }
 });
 

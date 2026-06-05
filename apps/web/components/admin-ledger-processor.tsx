@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState } from "react";
-import { CheckCircle2, Coins, Play, ReceiptText, Repeat, RotateCcw, WalletCards, XCircle } from "lucide-react";
+import { CalendarClock, CheckCircle2, Coins, Play, ReceiptText, Repeat, RotateCcw, WalletCards, XCircle } from "lucide-react";
 import { processAdminLedgerAction, type AdminLedgerActionState } from "@/lib/admin-ledger-actions";
 import type { Locale } from "@/lib/i18n";
 import type { FinanceLedger } from "@/lib/ops-data";
@@ -18,10 +18,12 @@ const copy = {
     availableBalances: "Available balance",
     limit: "Batch limit",
     pendingBalances: "Pending balance",
+    processRenewals: "Renew periods",
     processSubscriptions: "Post subscriptions",
     processUsage: "Post usage",
     releaseBalances: "Release balances",
     running: "Processing",
+    subscriptionsRenewable: "Renewable subscription periods",
     subscriptionsQueued: "Unposted subscription periods",
     summary: "Finance jobs",
     title: "Ledger processing",
@@ -31,10 +33,12 @@ const copy = {
     availableBalances: "\u53ef\u63d0\u4f59\u989d",
     limit: "\u6279\u6b21\u6570\u91cf",
     pendingBalances: "\u5f85\u91ca\u653e\u4f59\u989d",
+    processRenewals: "\u7eed\u671f\u8d26\u671f",
     processSubscriptions: "\u8ba2\u9605\u5165\u8d26",
     processUsage: "\u6309\u6b21\u5165\u8d26",
     releaseBalances: "\u91ca\u653e\u4f59\u989d",
     running: "\u5904\u7406\u4e2d",
+    subscriptionsRenewable: "\u53ef\u7eed\u671f\u8ba2\u9605\u5468\u671f",
     subscriptionsQueued: "\u672a\u5165\u8d26\u8ba2\u9605\u5468\u671f",
     summary: "\u8d22\u52a1\u4efb\u52a1",
     title: "\u8d26\u672c\u5904\u7406",
@@ -68,6 +72,11 @@ export function AdminLedgerProcessor({ ledger, locale }: AdminLedgerProcessorPro
           label={labels.subscriptionsQueued}
           value={String(ledger.summary.unprocessedSubscriptionCount)}
         />
+        <LedgerTile
+          icon={<CalendarClock size={16} aria-hidden="true" />}
+          label={labels.subscriptionsRenewable}
+          value={String(ledger.summary.renewableSubscriptionCount)}
+        />
         <LedgerTile icon={<Coins size={16} aria-hidden="true" />} label={labels.pendingBalances} value={formatMoney(ledger.summary.pendingBalanceCents)} />
         <LedgerTile
           icon={<WalletCards size={16} aria-hidden="true" />}
@@ -89,6 +98,10 @@ export function AdminLedgerProcessor({ ledger, locale }: AdminLedgerProcessorPro
           <button className="secondary-button secondary-button--compact" disabled={isPending} name="operation" type="submit" value="subscriptions">
             <Repeat size={15} aria-hidden="true" />
             <span>{isPending && state.operation === "subscriptions" ? labels.running : labels.processSubscriptions}</span>
+          </button>
+          <button className="secondary-button secondary-button--compact" disabled={isPending} name="operation" type="submit" value="renewals">
+            <CalendarClock size={15} aria-hidden="true" />
+            <span>{isPending && state.operation === "renewals" ? labels.running : labels.processRenewals}</span>
           </button>
           <button className="secondary-button secondary-button--compact" disabled={isPending} name="operation" type="submit" value="release">
             <RotateCcw size={15} aria-hidden="true" />

@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { getAdminOperatorToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
-type LedgerOperation = "usage" | "subscriptions" | "release";
+type LedgerOperation = "usage" | "subscriptions" | "renewals" | "release";
 
 export type AdminLedgerActionState = {
   message: string;
   operation?: LedgerOperation;
   processedCount?: number;
   releasedCount?: number;
+  renewedCount?: number;
   status: "idle" | "success" | "error";
 };
 
@@ -21,6 +22,7 @@ const copy = {
     processedSubscriptions: "Subscription periods posted to the ledger.",
     processedUsage: "Billable usage posted to the ledger.",
     releasedBalances: "Matured publisher balances released.",
+    renewedSubscriptions: "Subscription periods renewed.",
     unable: "Unable to process the selected ledger job.",
     unknownOperation: "Choose a ledger job to process."
   },
@@ -30,6 +32,7 @@ const copy = {
     processedSubscriptions: "\u8ba2\u9605\u5468\u671f\u5df2\u5199\u5165\u8d26\u672c\u3002",
     processedUsage: "\u6309\u6b21\u8c03\u7528\u5df2\u5199\u5165\u8d26\u672c\u3002",
     releasedBalances: "\u6210\u719f\u7684\u53d1\u5e03\u8005\u4f59\u989d\u5df2\u91ca\u653e\u3002",
+    renewedSubscriptions: "\u8ba2\u9605\u8d26\u671f\u5df2\u7eed\u671f\u3002",
     unable: "\u65e0\u6cd5\u5904\u7406\u9009\u4e2d\u7684\u8d26\u672c\u4efb\u52a1\u3002",
     unknownOperation: "\u8bf7\u9009\u62e9\u8981\u5904\u7406\u7684\u8d26\u672c\u4efb\u52a1\u3002"
   }
@@ -72,7 +75,7 @@ export async function processAdminLedgerAction(
       throw new Error(payload.error ?? labels.unable);
     }
 
-    const payload = (await response.json()) as { processedCount?: number; releasedCount?: number };
+    const payload = (await response.json()) as { processedCount?: number; releasedCount?: number; renewedCount?: number };
 
     revalidatePath("/admin");
 
@@ -81,6 +84,7 @@ export async function processAdminLedgerAction(
       operation,
       processedCount: payload.processedCount,
       releasedCount: payload.releasedCount,
+      renewedCount: payload.renewedCount,
       status: "success"
     };
   } catch (error) {
@@ -95,7 +99,7 @@ export async function processAdminLedgerAction(
 function normalizeOperation(value: FormDataEntryValue | null): LedgerOperation | null {
   const operation = String(value ?? "").trim();
 
-  if (operation === "usage" || operation === "subscriptions" || operation === "release") {
+  if (operation === "usage" || operation === "subscriptions" || operation === "renewals" || operation === "release") {
     return operation;
   }
 
@@ -117,6 +121,10 @@ function endpointForOperation(operation: LedgerOperation) {
     return "/v1/admin/finance/process-subscriptions";
   }
 
+  if (operation === "renewals") {
+    return "/v1/admin/finance/renew-subscriptions";
+  }
+
   if (operation === "release") {
     return "/v1/admin/finance/release-balances";
   }
@@ -126,11 +134,15 @@ function endpointForOperation(operation: LedgerOperation) {
 
 function messageForOperation(
   operation: LedgerOperation,
-  payload: { processedCount?: number; releasedCount?: number },
+  payload: { processedCount?: number; releasedCount?: number; renewedCount?: number },
   labels: (typeof copy)["en"] | (typeof copy)["zh"]
 ) {
   if (operation === "subscriptions") {
     return `${labels.processedSubscriptions} (${payload.processedCount ?? 0})`;
+  }
+
+  if (operation === "renewals") {
+    return `${labels.renewedSubscriptions} (${payload.renewedCount ?? 0})`;
   }
 
   if (operation === "release") {

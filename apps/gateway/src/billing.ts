@@ -41,6 +41,19 @@ type SubscriptionPeriodRow = {
   source_reference: string;
 };
 
+type RenewableSubscriptionRow = {
+  id: string;
+  projectOrganizationId: string;
+  publisherOrganizationId: string;
+  projectSlug: string;
+  skillName: string;
+  previousPeriodStart: string;
+  previousPeriodEnd: string;
+  nextPeriodStart: string;
+  nextPeriodEnd: string;
+  transactionId: string;
+};
+
 type CommissionRule = {
   id: string;
   platform_fee_bps: number;
@@ -493,6 +506,138 @@ export async function processSubscriptionPeriods(limit = 50) {
   };
 }
 
+export async function renewSubscriptionPeriods(limit = 50, actorUserId?: string | null) {
+  const sql = await requireSql();
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 250);
+  const renewed: Array<Record<string, unknown>> = [];
+
+  await sql.begin(async (tx: Sql) => {
+    const rows = (await tx`
+      with due as (
+        select
+          sub.id,
+          p.organization_id::text as project_organization_id,
+          p.slug as project_slug,
+          s.organization_id::text as publisher_organization_id,
+          s.display_name as skill_name,
+          sub.current_period_start,
+          sub.current_period_end,
+          sub.current_period_end as next_period_start,
+          sub.current_period_end + interval '1 month' as next_period_end,
+          t.id::text as transaction_id
+        from subscriptions sub
+        join projects p on p.id = sub.project_id
+        join skills s on s.id = sub.skill_id
+        join skill_prices sp on sp.id = sub.price_id
+        join transactions t on t.source_type = 'subscription'
+          and t.status = 'posted'
+          and t.amount_cents > 0
+          and t.source_reference = concat(
+            'subscription:',
+            sub.id::text,
+            ':',
+            to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+          )
+        where sub.status = 'active'
+          and sub.current_period_start is not null
+          and sub.current_period_end is not null
+          and sub.current_period_end <= now()
+          and sub.current_period_end > sub.current_period_start
+          and sp.billing_model = 'subscription'
+          and sp.unit_amount_cents > 0
+        order by sub.current_period_end asc, sub.created_at asc
+        limit ${safeLimit}
+        for update of sub skip locked
+      )
+      update subscriptions sub
+      set
+        current_period_start = due.next_period_start,
+        current_period_end = due.next_period_end,
+        updated_at = now()
+      from due
+      where sub.id = due.id
+      returning
+        sub.id::text,
+        due.project_organization_id as "projectOrganizationId",
+        due.publisher_organization_id as "publisherOrganizationId",
+        due.project_slug as "projectSlug",
+        due.skill_name as "skillName",
+        due.current_period_start::text as "previousPeriodStart",
+        due.current_period_end::text as "previousPeriodEnd",
+        due.next_period_start::text as "nextPeriodStart",
+        due.next_period_end::text as "nextPeriodEnd",
+        due.transaction_id as "transactionId"
+    `) as RenewableSubscriptionRow[];
+
+    for (const subscription of rows) {
+      const payload = {
+        subscriptionId: subscription.id,
+        projectSlug: subscription.projectSlug,
+        skillName: subscription.skillName,
+        previousPeriodStart: subscription.previousPeriodStart,
+        previousPeriodEnd: subscription.previousPeriodEnd,
+        nextPeriodStart: subscription.nextPeriodStart,
+        nextPeriodEnd: subscription.nextPeriodEnd,
+        previousTransactionId: subscription.transactionId
+      };
+
+      await tx`
+        insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+        values (
+          ${actorUserId ?? null},
+          'billing.subscription_period.renewed',
+          'subscription',
+          ${subscription.id},
+          'Advanced active subscription to the next provider-deferred billing period after the previous period was posted.',
+          ${tx.json(payload)}
+        )
+      `;
+
+      await tx`
+        insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+        values (
+          ${subscription.publisherOrganizationId},
+          'billing.subscription_period.renewed',
+          'in_app',
+          'Subscription advanced to next billing period',
+          ${tx.json(payload)},
+          'queued'
+        )
+      `;
+
+      if (subscription.projectOrganizationId !== subscription.publisherOrganizationId) {
+        await tx`
+          insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+          values (
+            ${subscription.projectOrganizationId},
+            'billing.subscription_period.renewed',
+            'in_app',
+            'Subscription advanced to next billing period',
+            ${tx.json(payload)},
+            'queued'
+          )
+        `;
+      }
+
+      renewed.push({
+        subscriptionId: subscription.id,
+        projectSlug: subscription.projectSlug,
+        skillName: subscription.skillName,
+        previousPeriodStart: subscription.previousPeriodStart,
+        previousPeriodEnd: subscription.previousPeriodEnd,
+        nextPeriodStart: subscription.nextPeriodStart,
+        nextPeriodEnd: subscription.nextPeriodEnd,
+        previousTransactionId: subscription.transactionId
+      });
+    }
+  });
+
+  return {
+    renewedCount: renewed.length,
+    renewed
+  };
+}
+
 export async function releaseAvailableBalances(limit = 100) {
   const sql = await requireSql();
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
@@ -690,7 +835,7 @@ export async function getFinanceLedger() {
     return emptyLedger();
   }
 
-  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows] = await Promise.all([
+  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows, renewableSubscriptionRows] = await Promise.all([
     sql`
       select
         coalesce(sum(t.amount_cents), 0)::int as gross_cents,
@@ -756,6 +901,27 @@ export async function getFinanceLedger() {
               to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
             )
         )
+    `,
+    sql`
+      select count(*)::int as count
+      from subscriptions sub
+      join skill_prices sp on sp.id = sub.price_id
+      join transactions t on t.source_type = 'subscription'
+        and t.status = 'posted'
+        and t.amount_cents > 0
+        and t.source_reference = concat(
+          'subscription:',
+          sub.id::text,
+          ':',
+          to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        )
+      where sub.status = 'active'
+        and sub.current_period_start is not null
+        and sub.current_period_end is not null
+        and sub.current_period_end <= now()
+        and sub.current_period_end > sub.current_period_start
+        and sp.billing_model = 'subscription'
+        and sp.unit_amount_cents > 0
     `
   ]);
 
@@ -769,7 +935,8 @@ export async function getFinanceLedger() {
       pendingBalanceCents: Number(summary.pending_balance_cents ?? 0),
       availableBalanceCents: Number(summary.available_balance_cents ?? 0),
       unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0),
-      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0)
+      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0),
+      renewableSubscriptionCount: Number(renewableSubscriptionRows[0]?.count ?? 0)
     },
     recentTransactions
   };
@@ -788,7 +955,7 @@ export async function getPublisherFinanceLedger(
   const scopedOrganizationId = organizationId ?? null;
   const scopedPublisherProfileId = publisherProfileId ?? null;
 
-  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows] = await Promise.all([
+  const [summaryRows, recentTransactions, unprocessedRows, unprocessedSubscriptionRows, renewableSubscriptionRows] = await Promise.all([
     sql`
       select
         coalesce(sum(t.amount_cents), 0)::int as gross_cents,
@@ -865,6 +1032,31 @@ export async function getPublisherFinanceLedger(
               to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
             )
         )
+    `,
+    sql`
+      select count(*)::int as count
+      from subscriptions sub
+      join skills s on s.id = sub.skill_id
+      join skill_prices sp on sp.id = sub.price_id
+      left join publisher_profiles pp on pp.organization_id = s.organization_id
+      join transactions t on t.source_type = 'subscription'
+        and t.status = 'posted'
+        and t.amount_cents > 0
+        and t.source_reference = concat(
+          'subscription:',
+          sub.id::text,
+          ':',
+          to_char(date_trunc('milliseconds', sub.current_period_start at time zone 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        )
+      where sub.status = 'active'
+        and sub.current_period_start is not null
+        and sub.current_period_end is not null
+        and sub.current_period_end <= now()
+        and sub.current_period_end > sub.current_period_start
+        and sp.billing_model = 'subscription'
+        and sp.unit_amount_cents > 0
+        and (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
+        and (${scopedPublisherProfileId}::uuid is null or pp.id = ${scopedPublisherProfileId})
     `
   ]);
 
@@ -878,7 +1070,8 @@ export async function getPublisherFinanceLedger(
       pendingBalanceCents: Number(summary.pending_balance_cents ?? 0),
       availableBalanceCents: Number(summary.available_balance_cents ?? 0),
       unprocessedUsageCount: Number(unprocessedRows[0]?.count ?? 0),
-      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0)
+      unprocessedSubscriptionCount: Number(unprocessedSubscriptionRows[0]?.count ?? 0),
+      renewableSubscriptionCount: Number(renewableSubscriptionRows[0]?.count ?? 0)
     },
     recentTransactions
   };
@@ -1166,7 +1359,8 @@ function emptyLedger() {
       pendingBalanceCents: 0,
       availableBalanceCents: 0,
       unprocessedUsageCount: 0,
-      unprocessedSubscriptionCount: 0
+      unprocessedSubscriptionCount: 0,
+      renewableSubscriptionCount: 0
     },
     recentTransactions: []
   };

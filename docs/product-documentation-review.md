@@ -315,6 +315,13 @@ Added subscription-period ledger posting, covering:
 - The admin finance console now shows unposted usage, unposted subscription periods, pending balances, and available balances beside actions for usage posting, subscription posting, and balance release.
 - This closes the commercial gap where a developer could subscribe to a skill but the platform had no durable revenue record for commission, invoice, refund, dispute, publisher-balance, or payout workflows.
 
+Added subscription-period renewal operations, covering:
+
+- Expired active subscriptions can advance to the next monthly period only after the expiring period has a posted positive subscription transaction.
+- Renewal writes admin audit and in-app billing notifications for publisher and project organizations before payment-provider webhooks are connected.
+- The admin finance console now shows renewable subscription periods and gives finance operators a renew action beside posting and balance-release jobs.
+- This keeps subscription runtime access and recurring revenue aligned: operators can catch up by posting the current period, renewing it, then posting the next period without skipping a month.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.
