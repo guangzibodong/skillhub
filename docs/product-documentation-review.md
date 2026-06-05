@@ -521,9 +521,17 @@ Added account center implementation foundation, covering:
 
 - `/v1/auth/providers` exposes email, Google, GitHub, and token login-method readiness so the UI can show real provider state instead of decorative OAuth buttons.
 - `/v1/account` aggregates the active user's profile, organization membership, token-session metadata, login-method states, team/token/project/skill counts, unread notifications, notification preference count, billing readiness, publisher profile status, and payout status.
-- `/login` now presents email registration, Google OAuth, GitHub OAuth, and token fallback as one coherent product entry; Google/GitHub remain clearly provider-deferred until final OAuth credentials and callbacks are connected.
+- `/login` now presents email registration, Google OAuth, GitHub OAuth, and token fallback as one coherent product entry; Google/GitHub are clearly configuration-required until credentials are present, then become real provider redirects.
 - `/account` now gives users a personal center for profile, connected login methods, organization roles, session/token security, workspace readiness, workspace shortcuts, and notification preferences.
 - This strengthens first-visit value because a new user can create a real workspace with email registration, and repeat-visit value because account readiness, notifications, billing, payout, and role context are visible from one page.
+
+Added OAuth login foundation, covering:
+
+- Google and GitHub start endpoints create signed short-lived OAuth state with a safe `returnTo` path and redirect to the provider.
+- Callback endpoints exchange provider codes, require verified email/profile data, upsert SkillHub users by email, reuse existing organization membership when available, or create a new owner workspace for first-time users.
+- Successful callbacks mint a 14-day user access token, set it as the same httpOnly `skillhub_user_token` browser session used by the web console, record audit and in-app notification events, and return users to `/account`.
+- OAuth remains environment-driven: provider secrets are never committed, and the login UI stays in configuration-required mode until the deployment supplies callback base URL, client ids, client secrets, and state secret.
+- This removes the biggest normal-user onboarding gap after token login: developers and publishers can enter the same real dashboard surfaces through a standard identity provider once production credentials are configured.
 
 Added publisher skill version management, covering:
 

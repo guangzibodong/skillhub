@@ -47,6 +47,41 @@ type SignupTokenInput = {
   role?: unknown;
 };
 
+export type OAuthProvider = "github" | "google";
+
+type OAuthProviderConfig = {
+  authorizationUrl: string;
+  callbackBaseUrl: string;
+  clientId: string;
+  clientSecret: string;
+  provider: OAuthProvider;
+  scope: string;
+  tokenUrl: string;
+};
+
+type OAuthProfile = {
+  displayName: string | null;
+  email: string;
+  providerUserId: string;
+};
+
+type OAuthRuntimeEnv = {
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  NEXT_PUBLIC_APP_URL?: string;
+  SESSION_SECRET?: string;
+  SKILLHUB_AUTH_BASE_URL?: string;
+  SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
+  SKILLHUB_AUTH_COOKIE_DOMAIN?: string;
+  SKILLHUB_GITHUB_CLIENT_ID?: string;
+  SKILLHUB_GITHUB_CLIENT_SECRET?: string;
+  SKILLHUB_GOOGLE_CLIENT_ID?: string;
+  SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+  SKILLHUB_OAUTH_STATE_SECRET?: string;
+};
+
 const organizationRoles: OrganizationRole[] = ["owner", "admin", "developer", "publisher", "reviewer", "finance"];
 const platformRoles: PlatformRole[] = ["user", "support", "reviewer", "finance", "admin", "super_admin"];
 const signupRoles: OrganizationRole[] = ["owner", "developer", "publisher"];
@@ -322,6 +357,198 @@ export function publicSubject(subject: AuthSubject) {
   };
 }
 
+export async function createOAuthAuthorizationUrl(provider: OAuthProvider, env?: OAuthRuntimeEnv, returnTo?: string) {
+  const config = getOAuthConfig(provider, env);
+  const state = await signOAuthState(
+    {
+      exp: Date.now() + 10 * 60 * 1000,
+      provider,
+      returnTo: normalizeReturnTo(returnTo)
+    },
+    getOAuthStateSecret(env)
+  );
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: oauthRedirectUri(config),
+    response_type: "code",
+    scope: config.scope,
+    state
+  });
+
+  if (provider === "google") {
+    params.set("access_type", "online");
+    params.set("prompt", "select_account");
+  }
+
+  return `${config.authorizationUrl}?${params.toString()}`;
+}
+
+export async function completeOAuthLogin(provider: OAuthProvider, input: { code?: unknown; state?: unknown }, env?: OAuthRuntimeEnv) {
+  const code = String(input.code ?? "").trim();
+  const state = String(input.state ?? "").trim();
+
+  if (!code || !state) {
+    throw new Error("OAuth callback is missing code or state.");
+  }
+
+  const statePayload = await verifyOAuthState(state, getOAuthStateSecret(env));
+
+  if (statePayload.provider !== provider) {
+    throw new Error("OAuth state provider mismatch.");
+  }
+
+  const config = getOAuthConfig(provider, env);
+  const profile = await fetchOAuthProfile(config, code);
+  const sql = await requireSql();
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+  const providerName = provider === "google" ? "Google" : "GitHub";
+
+  return sql.begin(async (tx: Sql) => {
+    const userRows = (await tx`
+      insert into users (email, display_name, platform_role)
+      values (${profile.email}, ${profile.displayName ?? profile.email}, 'user')
+      on conflict (email) do update set
+        display_name = coalesce(users.display_name, excluded.display_name)
+      returning id::text, email, display_name as "displayName", platform_role as "platformRole"
+    `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+    const user = userRows[0];
+    const membershipRows = (await tx`
+      select
+        om.organization_id::text as "organizationId",
+        o.name,
+        o.slug,
+        om.role
+      from organization_members om
+      join organizations o on o.id = om.organization_id
+      where om.user_id = ${user.id}
+      order by om.created_at asc
+      limit 1
+    `) as Array<{ organizationId: string; name: string; role: OrganizationRole; slug: string }>;
+    let membership = membershipRows[0];
+
+    if (!membership) {
+      const organizationName = `${profile.displayName ?? profile.email.split("@")[0]}'s workspace`;
+      const organizationSlug = await uniqueOrganizationSlug(tx, normalizeSlug(organizationName));
+      const organizationRows = (await tx`
+        insert into organizations (name, slug)
+        values (${organizationName}, ${organizationSlug})
+        returning id::text as "organizationId", name, slug
+      `) as Array<{ organizationId: string; name: string; slug: string }>;
+      const organization = organizationRows[0];
+
+      await tx`
+        insert into organization_members (organization_id, user_id, role)
+        values (${organization.organizationId}, ${user.id}, 'owner')
+      `;
+
+      membership = {
+        ...organization,
+        role: "owner"
+      };
+    }
+
+    const tokenRows = (await tx`
+      insert into user_access_tokens (
+        user_id,
+        organization_id,
+        name,
+        token_hash,
+        token_prefix,
+        token_last4,
+        scopes,
+        expires_at
+      )
+      values (
+        ${user.id},
+        ${membership.organizationId},
+        ${`${providerName} OAuth session`},
+        ${tokenHash},
+        'shub_user',
+        ${rawToken.slice(-4)},
+        ${[] as string[]},
+        now() + interval '14 days'
+      )
+      returning
+        id::text,
+        name,
+        token_prefix as "tokenPrefix",
+        token_last4 as "tokenLast4",
+        expires_at as "expiresAt",
+        created_at as "createdAt"
+    `) as Array<{ createdAt: string; expiresAt: string | null; id: string; name: string; tokenLast4: string; tokenPrefix: string }>;
+    const token = tokenRows[0];
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${user.id}, ${`auth.oauth.${provider}.login`}, 'user', ${user.id}, ${`${providerName} OAuth login completed.`}, ${tx.json({
+        organizationId: membership.organizationId,
+        provider,
+        providerUserId: profile.providerUserId,
+        tokenId: token.id
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (${membership.organizationId}, ${`auth.oauth.${provider}.login`}, 'in_app', ${`${providerName} login connected`}, ${tx.json({
+        provider,
+        userId: user.id
+      })}, 'queued')
+    `;
+
+    return {
+      accessToken: {
+        ...token,
+        token: rawToken
+      },
+      organization: {
+        id: membership.organizationId,
+        name: membership.name,
+        slug: membership.slug
+      },
+      returnTo: statePayload.returnTo,
+      user
+    };
+  });
+}
+
+export function oauthSuccessRedirectUrl(returnTo: string | null | undefined, env?: OAuthRuntimeEnv) {
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://app.useskillhub.com";
+  const url = new URL(normalizeReturnTo(returnTo), appUrl);
+  url.searchParams.set("oauth", "connected");
+  return url.toString();
+}
+
+export function oauthErrorRedirectUrl(message: string, env?: OAuthRuntimeEnv) {
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://app.useskillhub.com";
+  const url = new URL("/login", appUrl);
+  url.searchParams.set("oauth", "error");
+  url.searchParams.set("message", message.slice(0, 160));
+  return url.toString();
+}
+
+export function sessionCookieHeader(token: string, env?: OAuthRuntimeEnv) {
+  const parts = [
+    `skillhub_user_token=${encodeURIComponent(token)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${60 * 60 * 24 * 14}`
+  ];
+  const domain = getConfiguredValue(env?.SKILLHUB_AUTH_COOKIE_DOMAIN, "SKILLHUB_AUTH_COOKIE_DOMAIN") ?? inferredCookieDomain(env);
+
+  if (domain) {
+    parts.push(`Domain=${domain}`);
+  }
+
+  if ((getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "").startsWith("https://")) {
+    parts.push("Secure");
+  }
+
+  return parts.join("; ");
+}
+
 function roleResult(subject: AuthSubject, allowedRoles: AuthRole[]): AuthorizationResult {
   const allowed = new Set<AuthRole>(allowedRoles);
 
@@ -533,6 +760,274 @@ function normalizeSignupRole(value: unknown): OrganizationRole {
   }
 
   return role as OrganizationRole;
+}
+
+function getOAuthConfig(provider: OAuthProvider, env?: OAuthRuntimeEnv): OAuthProviderConfig {
+  const callbackBaseUrl = getConfiguredValue(
+    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL,
+    "SKILLHUB_AUTH_CALLBACK_BASE_URL",
+    "SKILLHUB_AUTH_BASE_URL"
+  );
+  const googleClientId = getConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID, "SKILLHUB_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID");
+  const googleClientSecret = getConfiguredValue(
+    env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET,
+    "SKILLHUB_GOOGLE_CLIENT_SECRET",
+    "GOOGLE_CLIENT_SECRET"
+  );
+  const githubClientId = getConfiguredValue(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID, "SKILLHUB_GITHUB_CLIENT_ID", "GITHUB_CLIENT_ID");
+  const githubClientSecret = getConfiguredValue(
+    env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET,
+    "SKILLHUB_GITHUB_CLIENT_SECRET",
+    "GITHUB_CLIENT_SECRET"
+  );
+
+  if (!callbackBaseUrl) {
+    throw new Error("OAuth callback base URL is not configured.");
+  }
+
+  if (provider === "google") {
+    if (!googleClientId || !googleClientSecret) {
+      throw new Error("Google OAuth client id or secret is not configured.");
+    }
+
+    return {
+      authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+      callbackBaseUrl,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
+      provider,
+      scope: "openid email profile",
+      tokenUrl: "https://oauth2.googleapis.com/token"
+    };
+  }
+
+  if (!githubClientId || !githubClientSecret) {
+    throw new Error("GitHub OAuth client id or secret is not configured.");
+  }
+
+  return {
+    authorizationUrl: "https://github.com/login/oauth/authorize",
+    callbackBaseUrl,
+    clientId: githubClientId,
+    clientSecret: githubClientSecret,
+    provider,
+    scope: "read:user user:email",
+    tokenUrl: "https://github.com/login/oauth/access_token"
+  };
+}
+
+function oauthRedirectUri(config: OAuthProviderConfig) {
+  return `${config.callbackBaseUrl.replace(/\/+$/, "")}/v1/auth/oauth/${config.provider}/callback`;
+}
+
+async function fetchOAuthProfile(config: OAuthProviderConfig, code: string): Promise<OAuthProfile> {
+  const tokenResponse = await fetch(config.tokenUrl, {
+    body: new URLSearchParams({
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      code,
+      grant_type: "authorization_code",
+      redirect_uri: oauthRedirectUri(config)
+    }),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    method: "POST"
+  });
+  const tokenPayload = (await tokenResponse.json().catch(() => ({}))) as { access_token?: string; error?: string; error_description?: string };
+  const accessToken = tokenPayload.access_token;
+
+  if (!tokenResponse.ok || !accessToken) {
+    throw new Error(tokenPayload.error_description ?? tokenPayload.error ?? "OAuth token exchange failed.");
+  }
+
+  return config.provider === "google" ? fetchGoogleProfile(accessToken) : fetchGitHubProfile(accessToken);
+}
+
+async function fetchGoogleProfile(accessToken: string): Promise<OAuthProfile> {
+  const response = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  });
+  const profile = (await response.json().catch(() => ({}))) as { email?: string; id?: string; name?: string; verified_email?: boolean };
+
+  if (!response.ok || !profile.email || !profile.id) {
+    throw new Error("Unable to read Google OAuth profile.");
+  }
+
+  if (profile.verified_email === false) {
+    throw new Error("Google email must be verified before signing in.");
+  }
+
+  return {
+    displayName: profile.name ?? null,
+    email: normalizeEmail(profile.email),
+    providerUserId: profile.id
+  };
+}
+
+async function fetchGitHubProfile(accessToken: string): Promise<OAuthProfile> {
+  const userResponse = await fetch("https://api.github.com/user", {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "SkillHub OAuth"
+    }
+  });
+  const user = (await userResponse.json().catch(() => ({}))) as { email?: string | null; id?: number; login?: string; name?: string | null };
+
+  if (!userResponse.ok || !user.id) {
+    throw new Error("Unable to read GitHub OAuth profile.");
+  }
+
+  const email = await fetchPrimaryGitHubEmail(accessToken);
+
+  if (!email) {
+    throw new Error("GitHub account must expose a verified primary email before signing in.");
+  }
+
+  return {
+    displayName: user.name ?? user.login ?? null,
+    email: normalizeEmail(email),
+    providerUserId: String(user.id)
+  };
+}
+
+async function fetchPrimaryGitHubEmail(accessToken: string) {
+  const response = await fetch("https://api.github.com/user/emails", {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "SkillHub OAuth"
+    }
+  });
+  const emails = (await response.json().catch(() => [])) as Array<{ email?: string; primary?: boolean; verified?: boolean }>;
+  const primary = emails.find((email) => email.primary && email.verified) ?? emails.find((email) => email.verified);
+  return primary?.email ?? null;
+}
+
+async function signOAuthState(payload: { exp: number; provider: OAuthProvider; returnTo: string }, secret: string) {
+  const body = base64UrlEncode(JSON.stringify(payload));
+  const signature = await hmacSha256Hex(`${body}`, secret);
+  return `${body}.${signature}`;
+}
+
+async function verifyOAuthState(state: string, secret: string) {
+  const [body, signature] = state.split(".");
+
+  if (!body || !signature || (await hmacSha256Hex(body, secret)) !== signature) {
+    throw new Error("OAuth state is invalid.");
+  }
+
+  const payload = JSON.parse(base64UrlDecode(body)) as { exp?: number; provider?: OAuthProvider; returnTo?: string };
+
+  if (payload.provider !== "google" && payload.provider !== "github") {
+    throw new Error("OAuth state provider is invalid.");
+  }
+
+  if (!payload.exp || payload.exp < Date.now()) {
+    throw new Error("OAuth state has expired.");
+  }
+
+  return {
+    provider: payload.provider,
+    returnTo: normalizeReturnTo(payload.returnTo)
+  };
+}
+
+async function hmacSha256Hex(value: string, secret: string) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { hash: "SHA-256", name: "HMAC" }, false, ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  const bytes = new Uint8Array(signature);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function base64UrlEncode(value: string) {
+  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function base64UrlDecode(value: string) {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return atob(base64);
+}
+
+function getOAuthStateSecret(env?: OAuthRuntimeEnv) {
+  const secret =
+    getConfiguredValue(env?.SKILLHUB_OAUTH_STATE_SECRET, "SKILLHUB_OAUTH_STATE_SECRET") ??
+    getConfiguredValue(env?.SESSION_SECRET, "SESSION_SECRET") ??
+    getProcessEnv("SKILLHUB_ADMIN_TOKEN");
+
+  if (!secret) {
+    throw new Error("OAuth state secret is not configured.");
+  }
+
+  return secret;
+}
+
+function normalizeReturnTo(value: unknown) {
+  const raw = String(value ?? "/account").trim();
+
+  if (!raw.startsWith("/") || raw.startsWith("//")) {
+    return "/account";
+  }
+
+  return raw.slice(0, 200);
+}
+
+async function uniqueOrganizationSlug(sql: Sql, baseSlug: string) {
+  const base = baseSlug || `workspace-${randomToken(4)}`;
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const candidate = attempt === 0 ? base : `${base}-${randomToken(2)}`;
+    const rows = (await sql`
+      select id::text
+      from organizations
+      where slug = ${candidate}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (rows.length === 0) {
+      return candidate;
+    }
+  }
+
+  return `${base}-${randomToken(4)}`;
+}
+
+function inferredCookieDomain(env?: OAuthRuntimeEnv) {
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL");
+
+  if (!appUrl) {
+    return null;
+  }
+
+  try {
+    const hostname = new URL(appUrl).hostname;
+    return hostname.endsWith("useskillhub.com") ? ".useskillhub.com" : null;
+  } catch {
+    return null;
+  }
+}
+
+function getConfiguredValue(value: string | undefined, ...keys: string[]) {
+  const direct = value?.trim();
+
+  if (direct) {
+    return direct;
+  }
+
+  for (const key of keys) {
+    const fallback = getProcessEnv(key)?.trim();
+
+    if (fallback) {
+      return fallback;
+    }
+  }
+
+  return undefined;
 }
 
 function getProcessEnv(key: string): string | undefined {

@@ -5,11 +5,17 @@ type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
 type AccountProviderEnv = {
   GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  SESSION_SECRET?: string;
   SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
   SKILLHUB_AUTH_BASE_URL?: string;
   SKILLHUB_GITHUB_CLIENT_ID?: string;
+  SKILLHUB_GITHUB_CLIENT_SECRET?: string;
   SKILLHUB_GOOGLE_CLIENT_ID?: string;
+  SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+  SKILLHUB_OAUTH_STATE_SECRET?: string;
 };
 
 type UserProfile = {
@@ -151,10 +157,21 @@ export function getAuthProviderStatuses(
   options: { emailConnected?: boolean; tokenConnected?: boolean } = {}
 ): AuthProviderStatus[] {
   const googleConfigured = hasConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID ?? getProcessEnv("SKILLHUB_GOOGLE_CLIENT_ID") ?? getProcessEnv("GOOGLE_CLIENT_ID"));
+  const googleSecretConfigured = hasConfiguredValue(
+    env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET ?? getProcessEnv("SKILLHUB_GOOGLE_CLIENT_SECRET") ?? getProcessEnv("GOOGLE_CLIENT_SECRET")
+  );
   const githubConfigured = hasConfiguredValue(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID ?? getProcessEnv("SKILLHUB_GITHUB_CLIENT_ID") ?? getProcessEnv("GITHUB_CLIENT_ID"));
+  const githubSecretConfigured = hasConfiguredValue(
+    env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET ?? getProcessEnv("SKILLHUB_GITHUB_CLIENT_SECRET") ?? getProcessEnv("GITHUB_CLIENT_SECRET")
+  );
   const callbackConfigured = hasConfiguredValue(
     env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? getProcessEnv("SKILLHUB_AUTH_CALLBACK_BASE_URL") ?? getProcessEnv("SKILLHUB_AUTH_BASE_URL")
   );
+  const stateSecretConfigured = hasConfiguredValue(
+    env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET ?? getProcessEnv("SKILLHUB_OAUTH_STATE_SECRET") ?? getProcessEnv("SESSION_SECRET")
+  );
+  const googleReady = googleConfigured && googleSecretConfigured && callbackConfigured && stateSecretConfigured;
+  const githubReady = githubConfigured && githubSecretConfigured && callbackConfigured && stateSecretConfigured;
 
   return [
     {
@@ -166,23 +183,23 @@ export function getAuthProviderStatuses(
       type: "email"
     },
     {
-      description: googleConfigured && callbackConfigured
-        ? "Google OAuth credentials are configured; connect the provider callback before production passwordless rollout."
-        : "Google OAuth is modeled and visible in product UI; configure client id, secret, and callback before enabling the live redirect.",
+      description: googleReady
+        ? "Google OAuth is configured and ready to start a provider login redirect."
+        : "Configure Google client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
       label: "Google",
       provider: "google",
-      startUrl: googleConfigured && callbackConfigured ? "/v1/auth/oauth/google/start" : null,
-      status: googleConfigured && callbackConfigured ? "deferred" : "configuration_required",
+      startUrl: googleReady ? "/v1/auth/oauth/google/start" : null,
+      status: googleReady ? "active" : "configuration_required",
       type: "oauth"
     },
     {
-      description: githubConfigured && callbackConfigured
-        ? "GitHub OAuth credentials are configured; connect the provider callback before production passwordless rollout."
-        : "GitHub OAuth is modeled and visible in product UI; configure client id, secret, and callback before enabling the live redirect.",
+      description: githubReady
+        ? "GitHub OAuth is configured and ready to start a provider login redirect."
+        : "Configure GitHub client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
       label: "GitHub",
       provider: "github",
-      startUrl: githubConfigured && callbackConfigured ? "/v1/auth/oauth/github/start" : null,
-      status: githubConfigured && callbackConfigured ? "deferred" : "configuration_required",
+      startUrl: githubReady ? "/v1/auth/oauth/github/start" : null,
+      status: githubReady ? "active" : "configuration_required",
       type: "oauth"
     },
     {

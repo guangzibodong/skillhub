@@ -155,11 +155,17 @@ import {
 } from "./skill-feedback.js";
 import {
   authorize,
+  completeOAuthLogin,
   createBootstrapUserToken,
+  createOAuthAuthorizationUrl,
   createSignupUserToken,
+  oauthErrorRedirectUrl,
+  oauthSuccessRedirectUrl,
   publicSubject,
   requireServiceAuthorization,
-  type AuthRole
+  sessionCookieHeader,
+  type AuthRole,
+  type OAuthProvider
 } from "./auth.js";
 import {
   getAccountSummary,
@@ -169,11 +175,19 @@ import {
 type Env = {
   Bindings: {
     GITHUB_CLIENT_ID?: string;
+    GITHUB_CLIENT_SECRET?: string;
     GOOGLE_CLIENT_ID?: string;
+    GOOGLE_CLIENT_SECRET?: string;
+    NEXT_PUBLIC_APP_URL?: string;
+    SESSION_SECRET?: string;
     SKILLHUB_AUTH_BASE_URL?: string;
     SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
+    SKILLHUB_AUTH_COOKIE_DOMAIN?: string;
     SKILLHUB_GITHUB_CLIENT_ID?: string;
+    SKILLHUB_GITHUB_CLIENT_SECRET?: string;
     SKILLHUB_GOOGLE_CLIENT_ID?: string;
+    SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+    SKILLHUB_OAUTH_STATE_SECRET?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
     PACKAGES?: R2Bucket;
@@ -244,6 +258,50 @@ app.get("/v1/auth/providers", (c) => {
   return c.json({
     providers: getAuthProviderStatuses(c.env)
   });
+});
+
+app.get("/v1/auth/oauth/:provider/start", async (c) => {
+  const provider = parseOAuthProvider(c.req.param("provider"));
+
+  if (!provider) {
+    return c.json({ error: "OAuth provider must be google or github." }, 400);
+  }
+
+  try {
+    return c.redirect(await createOAuthAuthorizationUrl(provider, c.env, c.req.query("returnTo")));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "OAuth provider is not configured." }, 400);
+  }
+});
+
+app.get("/v1/auth/oauth/:provider/callback", async (c) => {
+  const provider = parseOAuthProvider(c.req.param("provider"));
+
+  if (!provider) {
+    return c.redirect(oauthErrorRedirectUrl("OAuth provider must be google or github.", c.env));
+  }
+
+  const providerError = c.req.query("error");
+
+  if (providerError) {
+    return c.redirect(oauthErrorRedirectUrl(providerError, c.env));
+  }
+
+  try {
+    const login = await completeOAuthLogin(
+      provider,
+      {
+        code: c.req.query("code"),
+        state: c.req.query("state")
+      },
+      c.env
+    );
+    const response = c.redirect(oauthSuccessRedirectUrl(login.returnTo, c.env));
+    response.headers.append("Set-Cookie", sessionCookieHeader(login.accessToken.token, c.env));
+    return response;
+  } catch (error) {
+    return c.redirect(oauthErrorRedirectUrl(error instanceof Error ? error.message : "OAuth login failed.", c.env));
+  }
 });
 
 app.get("/v1/account", async (c) => {
@@ -2385,6 +2443,10 @@ function isManifestForSkill(value: unknown, skillSlug: string) {
   }
 
   return (value as { name?: unknown }).name === skillSlug;
+}
+
+function parseOAuthProvider(value: string): OAuthProvider | null {
+  return value === "google" || value === "github" ? value : null;
 }
 
 function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {

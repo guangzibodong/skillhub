@@ -3,6 +3,7 @@ import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
 type AuthProviderPanelProps = {
+  apiUrl: string;
   locale: Locale;
   providers: AuthProviderStatus[];
 };
@@ -15,8 +16,9 @@ const copy = {
     deferred: "Provider callback pending",
     emailAction: "Create with email",
     helper:
-      "SkillHub will support the three account paths real teams expect: email signup, Google OAuth, and GitHub OAuth. Email workspace creation is live now; OAuth is ready for final provider credentials and callback wiring.",
-    providerAction: "Coming soon",
+      "SkillHub supports the account paths real teams expect: email workspace registration, Google login, GitHub login, and token fallback for operators or invitations.",
+    oauthAction: "Continue",
+    providerAction: "Configure provider",
     title: "Sign-in methods",
     tokenAction: "Use token fallback"
   },
@@ -26,9 +28,9 @@ const copy = {
     connected: "已连接",
     deferred: "等待回调接入",
     emailAction: "用邮箱注册",
-    helper:
-      "SkillHub 需要支持真实团队常用的三种账号入口：邮箱注册、Google 登录、GitHub 登录。现在邮箱工作区创建已经可用，OAuth 已经预留到最终 provider 凭证和回调接入阶段。",
-    providerAction: "即将接入",
+    helper: "SkillHub 支持真实团队需要的账号入口：邮箱工作区注册、Google 登录、GitHub 登录，以及运营和邀请场景的 token 兜底。",
+    oauthAction: "继续登录",
+    providerAction: "配置 provider",
     title: "登录方式",
     tokenAction: "使用 token 兜底"
   }
@@ -36,7 +38,7 @@ const copy = {
 
 const providerOrder = ["google", "github", "email", "token"] as const;
 
-export function AuthProviderPanel({ locale, providers }: AuthProviderPanelProps) {
+export function AuthProviderPanel({ apiUrl, locale, providers }: AuthProviderPanelProps) {
   const labels = copy[locale];
   const providersById = new Map(providers.map((provider) => [provider.provider, provider]));
   const orderedProviders = providerOrder.flatMap((provider) => {
@@ -53,11 +55,8 @@ export function AuthProviderPanel({ locale, providers }: AuthProviderPanelProps)
       <p>{labels.helper}</p>
       <div className="auth-provider-grid">
         {orderedProviders.map((provider) => {
-          const Icon = provider.provider === "github" ? Github : provider.provider === "google" ? Chrome : provider.provider === "email" ? Mail : KeyRound;
-          const statusLabel = labels[provider.status];
-          const actionHref = provider.provider === "email" ? "#email-registration" : provider.provider === "token" ? "#token-fallback" : null;
-          const actionLabel =
-            provider.provider === "email" ? labels.emailAction : provider.provider === "token" ? labels.tokenAction : labels.providerAction;
+          const Icon = providerIcon(provider.provider);
+          const action = providerAction(provider, apiUrl, locale, labels);
 
           return (
             <div className={`auth-provider-card auth-provider-card--${provider.provider}`} key={provider.provider}>
@@ -65,19 +64,17 @@ export function AuthProviderPanel({ locale, providers }: AuthProviderPanelProps)
                 <span className="auth-provider-card__icon">
                   <Icon size={18} aria-hidden="true" />
                 </span>
-                <span className={`status-chip status-chip--${provider.status === "configuration_required" ? "warning" : provider.status === "connected" ? "success" : "neutral"}`}>
-                  {statusLabel}
-                </span>
+                <span className={statusClass(provider.status)}>{labels[provider.status]}</span>
               </div>
               <strong>{providerLabel(provider, locale)}</strong>
               <p>{localizedDescription(provider, locale)}</p>
-              {actionHref ? (
-                <a className="secondary-button secondary-button--compact" href={actionHref}>
-                  {actionLabel}
+              {action.href ? (
+                <a className="secondary-button secondary-button--compact" href={action.href}>
+                  {action.label}
                 </a>
               ) : (
                 <button className="secondary-button secondary-button--compact" disabled type="button">
-                  {actionLabel}
+                  {action.label}
                 </button>
               )}
             </div>
@@ -88,21 +85,89 @@ export function AuthProviderPanel({ locale, providers }: AuthProviderPanelProps)
   );
 }
 
+function providerAction(
+  provider: AuthProviderStatus,
+  apiUrl: string,
+  locale: Locale,
+  labels: (typeof copy)["en"] | (typeof copy)["zh"]
+) {
+  if (provider.provider === "email") {
+    return {
+      href: "#email-registration",
+      label: labels.emailAction
+    };
+  }
+
+  if (provider.provider === "token") {
+    return {
+      href: "#token-fallback",
+      label: labels.tokenAction
+    };
+  }
+
+  if (provider.startUrl && provider.status === "active") {
+    const url = new URL(provider.startUrl, apiUrl);
+    url.searchParams.set("returnTo", locale === "zh" ? "/account?lang=zh" : "/account?lang=en");
+
+    return {
+      href: url.toString(),
+      label: labels.oauthAction
+    };
+  }
+
+  return {
+    href: null,
+    label: labels.providerAction
+  };
+}
+
+function providerIcon(provider: AuthProviderStatus["provider"]) {
+  if (provider === "github") {
+    return Github;
+  }
+
+  if (provider === "google") {
+    return Chrome;
+  }
+
+  if (provider === "email") {
+    return Mail;
+  }
+
+  return KeyRound;
+}
+
+function statusClass(status: AuthProviderStatus["status"]) {
+  if (status === "configuration_required") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (status === "connected" || status === "active") {
+    return "status-chip";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
 function localizedDescription(provider: AuthProviderStatus, locale: Locale) {
   if (locale !== "zh") {
     return provider.description;
   }
 
   if (provider.provider === "email") {
-    return "邮箱自助注册已经接入，可创建组织、成员身份和浏览器会话。";
+    return "邮箱自助注册已经可用，可以创建组织、成员身份和浏览器会话。";
   }
 
   if (provider.provider === "google") {
-    return "Google OAuth 入口已经建模，等待配置 client、secret 和回调后启用。";
+    return provider.status === "active"
+      ? "Google OAuth 已配置，可以跳转到 Google 完成登录并回到 SkillHub。"
+      : "配置 Google client id、secret 和 API 回调地址后即可启用。";
   }
 
   if (provider.provider === "github") {
-    return "GitHub OAuth 入口已经建模，适合开发者团队登录和后续身份绑定。";
+    return provider.status === "active"
+      ? "GitHub OAuth 已配置，适合开发者团队登录并进入工作区。"
+      : "配置 GitHub client id、secret 和 API 回调地址后即可启用。";
   }
 
   return "团队邀请和运营兜底继续使用一次性用户 token，会存入 httpOnly cookie。";

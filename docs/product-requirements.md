@@ -149,8 +149,8 @@ Account UX is part of the product, not an internal bootstrap console.
 Login/register must support these paths:
 
 - Email registration for a new organization workspace.
-- Google OAuth login once provider credentials, consent screen, server callback, and state validation are connected.
-- GitHub OAuth login once provider credentials, callback, and state validation are connected.
+- Google OAuth login with provider credentials, consent screen, server callback, verified email, state validation, and httpOnly web session.
+- GitHub OAuth login with provider credentials, callback, verified email, state validation, and httpOnly web session.
 - User token fallback for bootstrap, team invitations, and operator recovery.
 
 Personal center requirements:

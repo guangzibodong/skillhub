@@ -17,13 +17,13 @@ type PageProps = {
 const copy = {
   en: {
     account: "Account center",
-    body: "Create a real organization workspace, connect a team token, or prepare OAuth login for Google and GitHub. Projects, publishing, billing, payout, and notifications run as the active member.",
+    body: "Create a real organization workspace, continue with Google or GitHub when configured, or connect a team token. Projects, publishing, billing, payout, and notifications run as the active member.",
     eyebrow: "Account access",
     title: "Sign in, register, and enter your SkillHub workspace."
   },
   zh: {
     account: "个人中心",
-    body: "创建真实组织工作区，连接团队 token，并为 Google / GitHub 登录预留正式入口。项目、发布、账单、提现和通知都会按当前成员身份执行。",
+    body: "创建真实组织工作区，在配置后使用 Google 或 GitHub 登录，或者连接团队 token。项目、发布、账单、提现和通知都会按当前成员身份执行。",
     eyebrow: "账号入口",
     title: "登录、注册并进入你的 SkillHub 工作区。"
   }
@@ -58,7 +58,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
       <section className="auth-layout auth-layout--signup">
         <div className="auth-main-stack">
-          <AuthProviderPanel locale={locale} providers={providers} />
+          <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
           <WorkspaceSignupForm locale={locale} />
         </div>
         <div className="auth-side-stack">

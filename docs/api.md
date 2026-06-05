@@ -261,7 +261,36 @@ Read public login-method readiness:
 curl "https://api.useskillhub.com/v1/auth/providers"
 ```
 
-The response lists `email`, `google`, `github`, and `token` methods. Email self-service registration is active through `/v1/auth/signup`. Google and GitHub are visible as OAuth methods and report whether provider credentials/callback configuration are still required; the final OAuth redirect and callback provider integration remains deferred until the auth-provider phase.
+The response lists `email`, `google`, `github`, and `token` methods. Email self-service registration is active through `/v1/auth/signup`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
+
+Start a provider login:
+
+```bash
+curl -i "https://api.useskillhub.com/v1/auth/oauth/google/start?returnTo=/account"
+curl -i "https://api.useskillhub.com/v1/auth/oauth/github/start?returnTo=/account"
+```
+
+The start endpoint signs a short-lived state payload and redirects to the provider. Register these provider callback URLs:
+
+```txt
+https://api.useskillhub.com/v1/auth/oauth/google/callback
+https://api.useskillhub.com/v1/auth/oauth/github/callback
+```
+
+The callback endpoint exchanges the provider code, reads a verified email/profile, creates or reuses the SkillHub user, reuses the first existing organization membership or creates a new owner workspace, mints a 14-day `shub_user_...` session token, stores it in the `skillhub_user_token` httpOnly cookie, and redirects back to the app `returnTo` URL.
+
+Required OAuth environment:
+
+```env
+NEXT_PUBLIC_APP_URL=https://app.useskillhub.com
+SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com
+SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
+SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-secret
+SKILLHUB_GOOGLE_CLIENT_ID=
+SKILLHUB_GOOGLE_CLIENT_SECRET=
+SKILLHUB_GITHUB_CLIENT_ID=
+SKILLHUB_GITHUB_CLIENT_SECRET=
+```
 
 Inspect the current token subject:
 
@@ -290,7 +319,7 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects remain disabled until the final provider credentials and callbacks are connected.
+- `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` lets a new user create a workspace with email registration or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
 - `/account` centralizes profile, organization role, modeled connected accounts, token security, workspace readiness, and notification preferences for the active user.
 - The web app validates the token with `/v1/auth/me` before storing it.
