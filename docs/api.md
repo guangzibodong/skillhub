@@ -334,6 +334,18 @@ curl -X POST "https://api.useskillhub.com/v1/account/sessions/$TOKEN_ID/revoke" 
 
 `POST /v1/account/sessions/:tokenId/revoke` can revoke only sessions owned by the active user. It refuses to revoke the current request token; users should use `/account` sign out for the current browser session. A successful revocation writes `auth.session.revoked` to `admin_audit_logs` and queues an `account.security.session_revoked` in-app notification.
 
+Disconnect a connected OAuth login identity:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/account/identities/google/disconnect" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/account/identities/github/disconnect" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`POST /v1/account/identities/:provider/disconnect` requires a user-scoped token and accepts only `google` or `github`. The endpoint deletes the connected provider identity only when the user still has another OAuth provider connected or at least one separate active user token. This prevents disconnecting the last practical sign-in path while email/passwordless login remains a deferred provider integration. A successful disconnect writes `auth.identity.disconnected` to `admin_audit_logs` and queues an `account.security.identity_disconnected` in-app notification.
+
 Admin/support operators can inspect the platform identity directory:
 
 ```bash
@@ -347,7 +359,7 @@ Web console session:
 
 - `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` lets a new user create a workspace with email registration or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
-- `/account` centralizes profile, organization role, modeled connected accounts, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
+- `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.

@@ -168,6 +168,7 @@ import {
   type OAuthProvider
 } from "./auth.js";
 import {
+  disconnectAccountAuthIdentity,
   getAccountSummary,
   getAuthProviderStatuses,
   listAccountSessions,
@@ -344,7 +345,7 @@ app.get("/v1/account/sessions", async (c) => {
   } catch (error) {
     return c.json(
       { error: error instanceof Error ? error.message : "Unable to read account sessions." },
-      sessionErrorStatus(error)
+      accountSecurityErrorStatus(error)
     );
   }
 });
@@ -367,7 +368,36 @@ app.post("/v1/account/sessions/:tokenId/revoke", async (c) => {
   } catch (error) {
     return c.json(
       { error: error instanceof Error ? error.message : "Unable to revoke account session." },
-      sessionErrorStatus(error)
+      accountSecurityErrorStatus(error)
+    );
+  }
+});
+
+app.post("/v1/account/identities/:provider/disconnect", async (c) => {
+  const provider = parseOAuthProvider(c.req.param("provider"));
+
+  if (!provider) {
+    return c.json({ error: "Connected login provider must be google or github." }, 400);
+  }
+
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Account identity disconnect requires a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json({
+      identity: await disconnectAccountAuthIdentity(authorization.subject, provider)
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to disconnect login identity." },
+      accountSecurityErrorStatus(error)
     );
   }
 });
@@ -2485,12 +2515,12 @@ function signupErrorMessage(error: unknown) {
   return error.message || "Unable to create workspace signup.";
 }
 
-function sessionErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
+function accountSecurityErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
   if (!(error instanceof Error)) {
     return 400;
   }
 
-  if (error.message.includes("DATABASE_URL")) {
+  if (error.message.includes("DATABASE_URL") || error.message.includes("not available")) {
     return 503;
   }
 
@@ -2498,7 +2528,7 @@ function sessionErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
     return 404;
   }
 
-  if (error.message.includes("current session")) {
+  if (error.message.includes("current session") || error.message.includes("another provider")) {
     return 403;
   }
 

@@ -1,12 +1,9 @@
 import {
   Bell,
   Building2,
-  Chrome,
   CreditCard,
-  Github,
   KeyRound,
   LayoutDashboard,
-  Mail,
   ShieldCheck,
   UploadCloud,
   UserCircle,
@@ -14,6 +11,7 @@ import {
   Wallet
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { AccountLoginMethodManager } from "@/components/account-login-method-manager";
 import { AccountSessionManager } from "@/components/account-session-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
@@ -189,11 +187,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
               <ShieldCheck size={16} aria-hidden="true" />
               <span>{labels.connectedAccounts}</span>
             </div>
-            <div className="account-method-grid">
-              {account.loginMethods.map((method) => (
-                <LoginMethodCard key={method.provider} labels={labels} locale={locale} method={method} />
-              ))}
-            </div>
+            <AccountLoginMethodManager locale={locale} methods={account.loginMethods} />
           </article>
 
           <article className="ops-panel account-workspace-panel">
@@ -257,34 +251,6 @@ export default async function AccountPage({ searchParams }: PageProps) {
         </aside>
       </section>
     </main>
-  );
-}
-
-function LoginMethodCard({
-  labels,
-  locale,
-  method
-}: {
-  labels: (typeof copy)["en"] | (typeof copy)["zh"];
-  locale: Locale;
-  method: AuthProviderStatus;
-}) {
-  const Icon = method.provider === "github" ? Github : method.provider === "google" ? Chrome : method.provider === "email" ? Mail : KeyRound;
-  const emailLine = method.providerEmail
-    ? `${method.emailVerified ? labels.verifiedEmail : labels.email}: ${method.providerEmail}`
-    : localizedMethodDescription(method, locale);
-
-  return (
-    <div className={`account-method-card account-method-card--${method.provider}`}>
-      <div className="account-method-card__icon">
-        <Icon size={18} aria-hidden="true" />
-      </div>
-      <strong>{providerLabel(method, locale)}</strong>
-      <span className={statusClass(method.status)}>{statusText(method.status, locale)}</span>
-      <p>{emailLine}</p>
-      {method.connectedAt ? <small>{`${labels.connectedAt}: ${formatDate(method.connectedAt, locale)}`}</small> : null}
-      {method.lastLoginAt ? <small>{`${labels.lastLogin}: ${formatDate(method.lastLoginAt, locale)}`}</small> : null}
-    </div>
   );
 }
 

@@ -1,8 +1,10 @@
 import { getUserToken } from "@/lib/auth-session";
 
 export type AuthProviderStatus = {
+  canDisconnect?: boolean;
   connectedAt?: string | null;
   description: string;
+  disconnectUrl?: string | null;
   emailVerified?: boolean;
   label: string;
   lastLoginAt?: string | null;

@@ -7740,6 +7740,13 @@ a {
   color: rgba(245, 241, 232, 0.58);
 }
 
+.account-method-disconnect-form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: auto;
+}
+
 .account-session-panel__head,
 .account-session-card__head {
   display: flex;

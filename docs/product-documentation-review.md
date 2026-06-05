@@ -549,6 +549,14 @@ Added account session security management, covering:
 - `/account` now shows a session security panel with current-session state, token fingerprints, last-used signals, and old-session revoke controls.
 - This strengthens repeat-use trust because developers, publishers, finance users, and admins can clean up stale account access before sensitive marketplace actions such as publishing, payout requests, billing changes, and review decisions.
 
+Added connected identity disconnect guardrails, covering:
+
+- `/v1/account/identities/:provider/disconnect` lets users disconnect Google or GitHub identities while requiring another OAuth provider or a separate active user token before deletion.
+- Disconnect decisions remove only the modeled provider identity, not raw sessions; users still manage active token sessions through the session security panel.
+- Identity disconnects write `auth.identity.disconnected` audit logs and queue `account.security.identity_disconnected` notifications before final email/webhook delivery is connected.
+- `/account` connected login cards now show provider-level disconnect controls with inline action feedback.
+- This strengthens account trust because users can remove stale provider connections without accidentally locking themselves out of publisher, developer, finance, or admin operations.
+
 Added publisher skill version management, covering:
 
 - `/v1/publisher/skills` now returns owned skill version history with per-version manifest, review state, runtime checks, install count, call count, and created time.

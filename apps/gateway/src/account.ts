@@ -91,9 +91,26 @@ type AuthIdentityRecord = {
   provider: "email" | "github" | "google";
 };
 
+type AuthIdentityRow = AuthIdentityRecord & {
+  identityId: string;
+  providerUserId: string | null;
+};
+
+export type DisconnectableAuthProvider = "github" | "google";
+
+export type AccountIdentityDisconnectResult = {
+  disconnectedAt: string;
+  otherActiveTokenCount: number;
+  provider: DisconnectableAuthProvider;
+  providerEmail: string;
+  remainingOAuthProviders: DisconnectableAuthProvider[];
+};
+
 export type AuthProviderStatus = {
+  canDisconnect?: boolean;
   connectedAt?: string | null;
   description: string;
+  disconnectUrl?: string | null;
   emailVerified?: boolean;
   label: string;
   lastLoginAt?: string | null;
@@ -322,6 +339,97 @@ export async function revokeAccountSession(subject: AuthSubject, tokenId: string
   });
 }
 
+export async function disconnectAccountAuthIdentity(
+  subject: AuthSubject,
+  provider: DisconnectableAuthProvider
+): Promise<AccountIdentityDisconnectResult> {
+  if (!subject.userId) {
+    throw new Error("Account identity disconnect requires a user-scoped token.");
+  }
+
+  const userId = subject.userId;
+  const sql = await getSql();
+
+  if (!sql) {
+    throw new Error("DATABASE_URL is required for account identity management.");
+  }
+
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(sql);
+
+  if (!authIdentitiesAvailable) {
+    throw new Error("Connected login identity storage is not available.");
+  }
+
+  return sql.begin(async (tx: Sql) => {
+    const identities = await listAuthIdentitiesWithIds(tx, userId);
+    const target = identities.find((identity) => identity.provider === provider);
+
+    if (!target) {
+      throw new Error("Connected login identity was not found.");
+    }
+
+    const remainingOAuthProviders = identities
+      .filter((identity): identity is AuthIdentityRow & { provider: DisconnectableAuthProvider } =>
+        (identity.provider === "google" || identity.provider === "github") && identity.provider !== provider
+      )
+      .map((identity) => identity.provider);
+    const tokenRows = (await tx`
+      select
+        count(*) filter (where id::text != ${subject.tokenId ?? ""})::int as "otherActiveTokenCount"
+      from user_access_tokens
+      where user_id = ${userId}
+        and revoked_at is null
+        and (expires_at is null or expires_at > now())
+    `) as Array<{ otherActiveTokenCount: number }>;
+    const otherActiveTokenCount = tokenRows[0]?.otherActiveTokenCount ?? 0;
+
+    if (remainingOAuthProviders.length === 0 && otherActiveTokenCount < 1) {
+      throw new Error("Connect another provider or create a separate active user token before disconnecting this login method.");
+    }
+
+    const deletedRows = (await tx`
+      delete from user_auth_identities
+      where id = ${target.identityId}
+        and user_id = ${userId}
+        and provider = ${provider}
+      returning now() as "disconnectedAt"
+    `) as Array<{ disconnectedAt: string }>;
+
+    if (!deletedRows[0]) {
+      throw new Error("Connected login identity was not found.");
+    }
+
+    const disconnectedAt = deletedRows[0].disconnectedAt;
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${userId}, 'auth.identity.disconnected', 'user_auth_identity', ${target.identityId}, 'User disconnected an OAuth login identity.', ${tx.json({
+        otherActiveTokenCount,
+        provider,
+        providerEmail: target.email,
+        remainingOAuthProviders
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (${userId}, ${subject.organizationId}, 'account.security.identity_disconnected', 'in_app', 'Login method disconnected', ${tx.json({
+        provider,
+        providerEmail: target.email,
+        remainingOAuthProviders
+      })}, 'queued')
+    `;
+
+    return {
+      disconnectedAt,
+      otherActiveTokenCount,
+      provider,
+      providerEmail: target.email,
+      remainingOAuthProviders
+    };
+  });
+}
+
 export function getAuthProviderStatuses(
   env?: AccountProviderEnv,
   options: { authIdentities?: AuthIdentityRecord[]; emailConnected?: boolean; tokenConnected?: boolean } = {}
@@ -376,7 +484,9 @@ export function getAuthProviderStatuses(
       providerEmail: googleIdentity?.email ?? null,
       startUrl: googleReady ? "/v1/auth/oauth/google/start" : null,
       status: googleIdentity ? "connected" : googleReady ? "active" : "configuration_required",
-      type: "oauth"
+      type: "oauth",
+      canDisconnect: Boolean(googleIdentity),
+      disconnectUrl: googleIdentity ? "/v1/account/identities/google/disconnect" : null
     },
     {
       connectedAt: githubIdentity?.connectedAt ?? null,
@@ -392,7 +502,9 @@ export function getAuthProviderStatuses(
       providerEmail: githubIdentity?.email ?? null,
       startUrl: githubReady ? "/v1/auth/oauth/github/start" : null,
       status: githubIdentity ? "connected" : githubReady ? "active" : "configuration_required",
-      type: "oauth"
+      type: "oauth",
+      canDisconnect: Boolean(githubIdentity),
+      disconnectUrl: githubIdentity ? "/v1/account/identities/github/disconnect" : null
     },
     {
       connectedAt: null,
@@ -522,11 +634,7 @@ function accountSessionStatus(session: Pick<TokenSessionRecord, "expiresAt" | "r
 }
 
 async function listAuthIdentities(sql: Sql, userId: string): Promise<AuthIdentityRecord[]> {
-  const tableRows = (await sql`
-    select to_regclass('public.user_auth_identities') is not null as "exists"
-  `) as Array<{ exists: boolean }>;
-
-  if (tableRows[0]?.exists !== true) {
+  if (!(await isAuthIdentitiesTableAvailable(sql))) {
     return [];
   }
 
@@ -543,6 +651,32 @@ async function listAuthIdentities(sql: Sql, userId: string): Promise<AuthIdentit
     where user_id = ${userId}
     order by connected_at asc
   `) as AuthIdentityRecord[];
+}
+
+async function listAuthIdentitiesWithIds(sql: Sql, userId: string): Promise<AuthIdentityRow[]> {
+  return (await sql`
+    select
+      id::text as "identityId",
+      provider,
+      provider_user_id as "providerUserId",
+      email,
+      email_verified as "emailVerified",
+      display_name as "displayName",
+      avatar_url as "avatarUrl",
+      connected_at as "connectedAt",
+      last_login_at as "lastLoginAt"
+    from user_auth_identities
+    where user_id = ${userId}
+    order by connected_at asc
+  `) as AuthIdentityRow[];
+}
+
+async function isAuthIdentitiesTableAvailable(sql: Sql) {
+  const tableRows = (await sql`
+    select to_regclass('public.user_auth_identities') is not null as "exists"
+  `) as Array<{ exists: boolean }>;
+
+  return tableRows[0]?.exists === true;
 }
 
 async function getWorkspaceReadiness(
