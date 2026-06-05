@@ -13,6 +13,10 @@ git pull --ff-only
 # Add a write-protection token for admin publish endpoints if it is not present.
 grep -q '^SKILLHUB_ADMIN_TOKEN=' .env || echo "SKILLHUB_ADMIN_TOKEN=$(openssl rand -hex 32)" >> .env
 
+# Production consoles must not silently show demo operator data.
+grep -q '^SKILLHUB_ENV=' .env || echo "SKILLHUB_ENV=production" >> .env
+sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
+
 # Existing Postgres volumes do not rerun docker-entrypoint init migrations.
 # Apply the new marketplace curation migration before rebuilding the API.
 docker compose -f docker-compose.1panel.yml up -d postgres

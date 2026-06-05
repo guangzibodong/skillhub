@@ -83,11 +83,11 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
       <form action={createAction} className="incident-create-form">
         <label>
           <span>{labels.skillSlug}</span>
-          <input name="skillSlug" placeholder="browser-research" />
+          <input name="skillSlug" placeholder="skill-slug" />
         </label>
         <label>
           <span>{labels.newTitle}</span>
-          <input name="title" placeholder="Runtime error spike" />
+          <input name="title" placeholder="Incident title" />
         </label>
         <label>
           <span>{labels.severity}</span>

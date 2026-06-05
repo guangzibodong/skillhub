@@ -689,6 +689,105 @@ export type DeveloperProjectDetail = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
+const isProductionLike =
+  process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production" || process.env.SKILLHUB_ENV === "production";
+const allowDemoFallback = !isProductionLike || process.env.SKILLHUB_ENABLE_DEMO_FALLBACK === "true";
+
+function demoFallback<T>(fallback: T, productionValue: T): T {
+  return allowDemoFallback ? fallback : productionValue;
+}
+
+function safeOperationValue<T>(value: T, productionValue: T): T {
+  return allowDemoFallback || !hasDemoSentinel(value) ? value : productionValue;
+}
+
+function hasDemoSentinel(value: unknown): boolean {
+  if (Array.isArray(value)) {
+    return value.some((item) => hasDemoSentinel(item));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).some(([key, item]) => {
+      if (typeof item === "string" && (item === "demo" || item.startsWith("demo-"))) {
+        return key === "id" || key.endsWith("At") || key.endsWith("Id") || key.endsWith("Reference") || key.endsWith("Slug");
+      }
+
+      return hasDemoSentinel(item);
+    });
+  }
+
+  return false;
+}
+
+const emptyLedger: FinanceLedger = {
+  summary: {
+    grossCents: 0,
+    platformFeeCents: 0,
+    publisherShareCents: 0,
+    pendingBalanceCents: 0,
+    availableBalanceCents: 0,
+    unprocessedUsageCount: 0
+  },
+  recentTransactions: []
+};
+
+const emptyAdminIdentityDirectory: AdminIdentityDirectory = {
+  organizations: [],
+  summary: {
+    activeTokenCount: 0,
+    adminUserCount: 0,
+    organizationCount: 0,
+    userCount: 0
+  },
+  users: []
+};
+
+const emptyUserNotificationSummary: UserNotificationSummary = {
+  failed: 0,
+  read: 0,
+  skipped: 0,
+  topics: [],
+  total: 0,
+  unread: 0
+};
+
+const emptyUserNotificationInbox: UserNotificationInbox = {
+  notifications: [],
+  summary: emptyUserNotificationSummary
+};
+
+const emptyPublisherPayoutSummary: PublisherPayoutSummary = {
+  publisherProfile: null,
+  balances: {
+    pendingCents: 0,
+    availableCents: 0,
+    blockedCents: 0,
+    paidCents: 0,
+    currency: "usd",
+    minPayoutCents: 0,
+    reviewThresholdCents: 0
+  },
+  payoutAccounts: [],
+  payouts: []
+};
+
+const emptyPublisherAccountSummary: PublisherAccountSummary = {
+  publisherProfile: null,
+  payoutAccounts: [],
+  onboardingSessions: []
+};
+
+const emptyOrganizationBillingSummary: OrganizationBillingSummary = {
+  billingProfile: null,
+  paymentMethods: [],
+  summary: {
+    defaultPaymentMethodStatus: "not_configured",
+    invoiceReady: false,
+    paymentMethodCount: 0,
+    profileComplete: false
+  }
+};
+
 const fallbackLedger: FinanceLedger = {
   summary: {
     grossCents: 1860000,
@@ -1960,7 +2059,7 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackLedger;
+    return demoFallback(fallbackLedger, emptyLedger);
   }
 
   try {
@@ -1975,9 +2074,9 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
       throw new Error(`Finance ledger failed: ${response.status}`);
     }
 
-    return (await response.json()) as FinanceLedger;
+    return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
   } catch {
-    return fallbackLedger;
+    return demoFallback(fallbackLedger, emptyLedger);
   }
 }
 
@@ -1985,7 +2084,7 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackLedger;
+    return demoFallback(fallbackLedger, emptyLedger);
   }
 
   try {
@@ -2000,9 +2099,9 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
       throw new Error(`Publisher finance ledger failed: ${response.status}`);
     }
 
-    return (await response.json()) as FinanceLedger;
+    return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
   } catch {
-    return fallbackLedger;
+    return demoFallback(fallbackLedger, emptyLedger);
   }
 }
 
@@ -2010,7 +2109,7 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackNotifications;
+    return demoFallback(fallbackNotifications, []);
   }
 
   try {
@@ -2026,9 +2125,9 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     }
 
     const payload = (await response.json()) as { notifications: AdminNotification[] };
-    return payload.notifications;
+    return safeOperationValue(payload.notifications, []);
   } catch {
-    return fallbackNotifications;
+    return demoFallback(fallbackNotifications, []);
   }
 }
 
@@ -2036,7 +2135,7 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackAdminAuditLogs;
+    return demoFallback(fallbackAdminAuditLogs, []);
   }
 
   try {
@@ -2052,9 +2151,9 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
     }
 
     const payload = (await response.json()) as { auditLogs: AdminAuditLogRecord[] };
-    return payload.auditLogs;
+    return safeOperationValue(payload.auditLogs, []);
   } catch {
-    return fallbackAdminAuditLogs;
+    return demoFallback(fallbackAdminAuditLogs, []);
   }
 }
 
@@ -2109,7 +2208,7 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackNotificationTemplates;
+    return demoFallback(fallbackNotificationTemplates, []);
   }
 
   try {
@@ -2125,9 +2224,9 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
     }
 
     const payload = (await response.json()) as { templates: NotificationTemplateRecord[] };
-    return payload.templates;
+    return safeOperationValue(payload.templates, []);
   } catch {
-    return fallbackNotificationTemplates;
+    return demoFallback(fallbackNotificationTemplates, []);
   }
 }
 
@@ -2135,7 +2234,7 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackAdminIdentityDirectory;
+    return demoFallback(fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
   }
 
   try {
@@ -2151,9 +2250,9 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
     }
 
     const payload = (await response.json()) as { identity: AdminIdentityDirectory };
-    return payload.identity;
+    return safeOperationValue(payload.identity, emptyAdminIdentityDirectory);
   } catch {
-    return fallbackAdminIdentityDirectory;
+    return demoFallback(fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
   }
 }
 
@@ -2161,7 +2260,7 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackOrganizationTeam;
+    return demoFallback(fallbackOrganizationTeam, []);
   }
 
   try {
@@ -2177,9 +2276,9 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
     }
 
     const payload = (await response.json()) as { members: OrganizationTeamMember[] };
-    return payload.members;
+    return safeOperationValue(payload.members, []);
   } catch {
-    return fallbackOrganizationTeam;
+    return demoFallback(fallbackOrganizationTeam, []);
   }
 }
 
@@ -2187,7 +2286,7 @@ export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWeb
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackOrganizationWebhookEndpoints;
+    return demoFallback(fallbackOrganizationWebhookEndpoints, []);
   }
 
   try {
@@ -2203,9 +2302,9 @@ export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWeb
     }
 
     const payload = (await response.json()) as { endpoints: OrganizationWebhookEndpoint[] };
-    return payload.endpoints;
+    return safeOperationValue(payload.endpoints, []);
   } catch {
-    return fallbackOrganizationWebhookEndpoints;
+    return demoFallback(fallbackOrganizationWebhookEndpoints, []);
   }
 }
 
@@ -2213,7 +2312,7 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackAdminReviews;
+    return demoFallback(fallbackAdminReviews, []);
   }
 
   try {
@@ -2229,9 +2328,9 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
     }
 
     const payload = (await response.json()) as { reviews: AdminReviewRecord[] };
-    return payload.reviews;
+    return safeOperationValue(payload.reviews, []);
   } catch {
-    return fallbackAdminReviews;
+    return demoFallback(fallbackAdminReviews, []);
   }
 }
 
@@ -2243,7 +2342,7 @@ export async function getUserNotificationInbox(): Promise<UserNotificationInbox>
   const token = await readUserToken();
 
   if (!token) {
-    return fallbackUserNotificationInbox;
+    return demoFallback(fallbackUserNotificationInbox, emptyUserNotificationInbox);
   }
 
   try {
@@ -2261,12 +2360,12 @@ export async function getUserNotificationInbox(): Promise<UserNotificationInbox>
     const payload = (await response.json()) as Partial<UserNotificationInbox> & { notifications: UserNotificationRecord[] };
     const notifications = payload.notifications ?? [];
 
-    return {
+    return safeOperationValue({
       notifications,
       summary: payload.summary ?? summarizeUserNotifications(notifications)
-    };
+    }, emptyUserNotificationInbox);
   } catch {
-    return fallbackUserNotificationInbox;
+    return demoFallback(fallbackUserNotificationInbox, emptyUserNotificationInbox);
   }
 }
 
@@ -2346,7 +2445,7 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
   const token = await readUserToken();
 
   if (!token) {
-    return fallbackNotificationPreferences;
+    return demoFallback(fallbackNotificationPreferences, []);
   }
 
   try {
@@ -2362,9 +2461,9 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
     }
 
     const payload = (await response.json()) as { preferences: NotificationPreferenceRecord[] };
-    return payload.preferences;
+    return safeOperationValue(payload.preferences, []);
   } catch {
-    return fallbackNotificationPreferences;
+    return demoFallback(fallbackNotificationPreferences, []);
   }
 }
 
@@ -2372,7 +2471,7 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackPayouts;
+    return demoFallback(fallbackPayouts, []);
   }
 
   try {
@@ -2388,9 +2487,9 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
     }
 
     const payload = (await response.json()) as { payouts: PayoutRecord[] };
-    return payload.payouts;
+    return safeOperationValue(payload.payouts, []);
   } catch {
-    return fallbackPayouts;
+    return demoFallback(fallbackPayouts, []);
   }
 }
 
@@ -2398,7 +2497,7 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackPublisherPayoutSummary;
+    return demoFallback(fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
   }
 
   try {
@@ -2413,9 +2512,9 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
       throw new Error(`Publisher payouts failed: ${response.status}`);
     }
 
-    return (await response.json()) as PublisherPayoutSummary;
+    return safeOperationValue((await response.json()) as PublisherPayoutSummary, emptyPublisherPayoutSummary);
   } catch {
-    return fallbackPublisherPayoutSummary;
+    return demoFallback(fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
   }
 }
 
@@ -2423,7 +2522,7 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackPublisherAccountSummary;
+    return demoFallback(fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
   }
 
   try {
@@ -2438,9 +2537,9 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
       throw new Error(`Publisher account failed: ${response.status}`);
     }
 
-    return (await response.json()) as PublisherAccountSummary;
+    return safeOperationValue((await response.json()) as PublisherAccountSummary, emptyPublisherAccountSummary);
   } catch {
-    return fallbackPublisherAccountSummary;
+    return demoFallback(fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
   }
 }
 
@@ -2448,7 +2547,7 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackOrganizationBillingSummary;
+    return demoFallback(fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
   }
 
   try {
@@ -2464,9 +2563,9 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
     }
 
     const payload = (await response.json()) as { billing: OrganizationBillingSummary };
-    return payload.billing;
+    return safeOperationValue(payload.billing, emptyOrganizationBillingSummary);
   } catch {
-    return fallbackOrganizationBillingSummary;
+    return demoFallback(fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
   }
 }
 
@@ -2474,7 +2573,7 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackPublisherSkills;
+    return demoFallback(fallbackPublisherSkills, []);
   }
 
   try {
@@ -2490,9 +2589,9 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
     }
 
     const payload = (await response.json()) as { skills: PublisherSkillRecord[] };
-    return payload.skills;
+    return safeOperationValue(payload.skills, []);
   } catch {
-    return fallbackPublisherSkills;
+    return demoFallback(fallbackPublisherSkills, []);
   }
 }
 
@@ -2500,7 +2599,7 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackBuyerRequests;
+    return demoFallback(fallbackBuyerRequests, []);
   }
 
   try {
@@ -2516,9 +2615,9 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
     }
 
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
-    return payload.requests;
+    return safeOperationValue(payload.requests, []);
   } catch {
-    return fallbackBuyerRequests;
+    return demoFallback(fallbackBuyerRequests, []);
   }
 }
 
@@ -2526,7 +2625,7 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackBuyerRequests;
+    return demoFallback(fallbackBuyerRequests, []);
   }
 
   try {
@@ -2542,9 +2641,9 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
     }
 
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
-    return payload.requests;
+    return safeOperationValue(payload.requests, []);
   } catch {
-    return fallbackBuyerRequests;
+    return demoFallback(fallbackBuyerRequests, []);
   }
 }
 
@@ -2552,7 +2651,7 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackDeveloperProjects;
+    return demoFallback(fallbackDeveloperProjects, []);
   }
 
   try {
@@ -2568,14 +2667,15 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
     }
 
     const payload = (await response.json()) as { projects: DeveloperProjectRecord[] };
-    return payload.projects;
+    return safeOperationValue(payload.projects, []);
   } catch {
-    return fallbackDeveloperProjects;
+    return demoFallback(fallbackDeveloperProjects, []);
   }
 }
 
 export async function getDeveloperProjectDetail(projectSlug: string): Promise<DeveloperProjectDetail | null> {
-  const fallback = fallbackDeveloperProjectDetails.find((detail) => detail.project.slug === projectSlug) ?? null;
+  const demoProjectDetail = fallbackDeveloperProjectDetails.find((detail) => detail.project.slug === projectSlug) ?? null;
+  const fallback = demoFallback(demoProjectDetail, null);
   const token = await readWorkspaceToken();
 
   if (!token) {
@@ -2599,7 +2699,7 @@ export async function getDeveloperProjectDetail(projectSlug: string): Promise<De
     }
 
     const payload = (await response.json()) as { project: DeveloperProjectDetail };
-    return payload.project;
+    return safeOperationValue(payload.project, null);
   } catch {
     return fallback;
   }
@@ -2609,7 +2709,7 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackRefunds;
+    return demoFallback(fallbackRefunds, []);
   }
 
   try {
@@ -2625,9 +2725,9 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
     }
 
     const payload = (await response.json()) as { refunds: RefundRecord[] };
-    return payload.refunds;
+    return safeOperationValue(payload.refunds, []);
   } catch {
-    return fallbackRefunds;
+    return demoFallback(fallbackRefunds, []);
   }
 }
 
@@ -2635,7 +2735,7 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallbackDisputes;
+    return demoFallback(fallbackDisputes, []);
   }
 
   try {
@@ -2651,9 +2751,9 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
     }
 
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
-    return payload.disputes;
+    return safeOperationValue(payload.disputes, []);
   } catch {
-    return fallbackDisputes;
+    return demoFallback(fallbackDisputes, []);
   }
 }
 
@@ -2661,7 +2761,7 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackRefunds;
+    return demoFallback(fallbackRefunds, []);
   }
 
   try {
@@ -2677,9 +2777,9 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
     }
 
     const payload = (await response.json()) as { refunds: RefundRecord[] };
-    return payload.refunds;
+    return safeOperationValue(payload.refunds, []);
   } catch {
-    return fallbackRefunds;
+    return demoFallback(fallbackRefunds, []);
   }
 }
 
@@ -2687,7 +2787,7 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackDisputes;
+    return demoFallback(fallbackDisputes, []);
   }
 
   try {
@@ -2703,9 +2803,9 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
     }
 
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
-    return payload.disputes;
+    return safeOperationValue(payload.disputes, []);
   } catch {
-    return fallbackDisputes;
+    return demoFallback(fallbackDisputes, []);
   }
 }
 
@@ -2713,7 +2813,7 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackAbuseReports;
+    return demoFallback(fallbackAbuseReports, []);
   }
 
   try {
@@ -2729,9 +2829,9 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
     }
 
     const payload = (await response.json()) as { reports: AbuseReportRecord[] };
-    return payload.reports;
+    return safeOperationValue(payload.reports, []);
   } catch {
-    return fallbackAbuseReports;
+    return demoFallback(fallbackAbuseReports, []);
   }
 }
 
@@ -2739,7 +2839,7 @@ export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackAdminIncidents;
+    return demoFallback(fallbackAdminIncidents, []);
   }
 
   try {
@@ -2755,9 +2855,9 @@ export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
     }
 
     const payload = (await response.json()) as { incidents: AdminIncidentRecord[] };
-    return payload.incidents;
+    return safeOperationValue(payload.incidents, []);
   } catch {
-    return fallbackAdminIncidents;
+    return demoFallback(fallbackAdminIncidents, []);
   }
 }
 
@@ -2765,7 +2865,7 @@ export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return fallbackSkillFeedback;
+    return demoFallback(fallbackSkillFeedback, []);
   }
 
   try {
@@ -2781,9 +2881,9 @@ export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
     }
 
     const payload = (await response.json()) as { feedback: SkillFeedbackRecord[] };
-    return payload.feedback;
+    return safeOperationValue(payload.feedback, []);
   } catch {
-    return fallbackSkillFeedback;
+    return demoFallback(fallbackSkillFeedback, []);
   }
 }
 

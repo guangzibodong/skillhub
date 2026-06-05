@@ -128,15 +128,15 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
         <form action={createAction} className="buyer-request-composer">
           <label className="buyer-request-composer__wide">
             <span>{labels.titleField}</span>
-            <input name="title" placeholder="Figma comments to Linear issues" required />
+            <input name="title" placeholder="Describe the skill you need" required />
           </label>
           <label>
             <span>{labels.category}</span>
-            <input defaultValue="workflow" name="category" />
+            <input name="category" placeholder="workflow" />
           </label>
           <label>
             <span>{labels.bounty}</span>
-            <input defaultValue="600" min="0" name="bounty" step="1" type="number" />
+            <input min="0" name="bounty" placeholder="0" step="1" type="number" />
           </label>
           <label>
             <span>{labels.currency}</span>
@@ -151,7 +151,7 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
           </label>
           <label className="buyer-request-composer__wide">
             <span>{labels.description}</span>
-            <textarea name="description" placeholder="Convert annotated design feedback into scoped engineering tasks." required />
+            <textarea name="description" placeholder="What should the delivered skill do, and how will you evaluate it?" required />
           </label>
           <button className="secondary-button" disabled={isCreating} type="submit">
             <Plus size={15} aria-hidden="true" />

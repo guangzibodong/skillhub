@@ -15,20 +15,20 @@ const copy = {
     create: "Create project",
     creating: "Creating",
     name: "Project name",
-    namePlaceholder: "Research Agent",
+    namePlaceholder: "Agent project",
     open: "Open project",
     slug: "Slug",
-    slugPlaceholder: "research-agent",
+    slugPlaceholder: "agent-project",
     title: "New agent project"
   },
   zh: {
     create: "创建项目",
     creating: "创建中",
     name: "项目名称",
-    namePlaceholder: "Research Agent",
+    namePlaceholder: "Agent project",
     open: "打开项目",
     slug: "Slug",
-    slugPlaceholder: "research-agent",
+    slugPlaceholder: "agent-project",
     title: "新建智能体项目"
   }
 } as const;

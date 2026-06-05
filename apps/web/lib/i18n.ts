@@ -225,7 +225,7 @@ export const dictionaries = {
         ["Active subscriptions", "126"]
       ],
       publisherCards: [
-        ["Skill pipeline", "3 submitted, 8 verified, 1 needs runtime fix"],
+        ["Skill pipeline", "Submissions, verification state, and runtime fixes"],
         ["Pricing", "Per-call and subscription pricing ready for review"],
         ["Analytics", "Latency, errors, conversion, and top consuming projects"]
       ],

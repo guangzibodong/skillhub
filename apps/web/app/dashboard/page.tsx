@@ -40,7 +40,6 @@ import {
   getPublisherRefunds,
   getPublisherSkills,
 } from "@/lib/ops-data";
-import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 
 export const dynamic = "force-dynamic";
 
@@ -55,18 +54,10 @@ const opsCopy = {
   en: {
     pipelineTitle: "Publishing pipeline",
     pipelineHeaders: ["Skill", "Stage", "Signals", "Next step"],
-    pipelineRows: [
-      ["browser-research-pro", "Pricing approval", "Mira", "Confirm per-call cap"],
-      ["crm-enrichment", "Data policy", "Nolan", "Review CRM token scope"],
-      ["codebase-risk-scanner", "Restricted launch", "Asha", "Owner approval required"]
-    ],
+    pipelineRows: [],
     projectTitle: "Buyer project controls",
     projectHeaders: ["Project", "Budget", "Keys", "Policy"],
-    projectRows: [
-      ["Research Agent", "$480 / mo", "2 active", "Medium risk approved"],
-      ["Support Agent", "$120 / mo", "1 rotating", "Free skills only"],
-      ["Finance Ops", "$900 / mo", "3 active", "Manual approval above $50"]
-    ],
+    projectRows: [],
     apiTitle: "Runtime operations",
     apiRows: [
       ["Rate limits", "Project-scoped keys with monthly budgets"],
@@ -120,7 +111,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const labels = dictionary.dashboardPage;
   const ops = opsCopy[locale];
   const [
-    overview,
     financeLedger,
     payoutSummary,
     publisherAccount,
@@ -135,7 +125,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     notificationPreferences,
     session
   ] = await Promise.all([
-    getPlatformOverview(),
     getPublisherFinanceLedger(),
     getPublisherPayoutSummary(),
     getPublisherAccountSummary(),
@@ -159,12 +148,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           formatMoney(transaction.publisherShareCents, transaction.currency),
           transaction.balanceState ?? transaction.status
         ])
-      : labels.ledgerRows;
+      : [];
+  const totalBillableCalls = developerProjects.reduce((sum, project) => sum + project.usage.billableUsageCount, 0);
+  const totalActiveSubscriptions = developerProjects.reduce((sum, project) => sum + project.subscriptions.activeCount, 0);
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.availableBalanceCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
-    [labels.metrics[2][0], getOverviewMetric(overview.platform.metrics, "API calls", labels.metrics[2][1])],
-    [labels.metrics[3][0], getOverviewMetric(overview.developer.metrics, "Active subscriptions", labels.metrics[3][1])]
+    [labels.metrics[2][0], formatCompactNumber(totalBillableCalls)],
+    [labels.metrics[3][0], formatCompactNumber(totalActiveSubscriptions)]
   ];
   const developerProjectRows =
     developerProjects.length > 0
@@ -175,13 +166,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           policy: `${project.policy.state} / ${project.updates.count} updates`,
           slug: project.slug
         }))
-      : ops.projectRows.map(([name, budget, keys, policy]) => ({
-          budget,
-          keys,
-          name,
-          policy,
-          slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
-        }));
+      : [];
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
       amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
@@ -302,6 +287,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span>{project.policy}</span>
               </div>
             ))}
+            {developerProjectRows.length === 0 ? (
+              <div className="work-table__empty">{locale === "zh" ? "暂无开发者项目。" : "No developer projects yet."}</div>
+            ) : null}
           </div>
         </article>
 
@@ -324,15 +312,21 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <span key={header}>{header}</span>
               ))}
             </div>
-            {ledgerRows.map(([skill, gross, fee, net, status]) => (
-              <div className="ledger-row" key={skill}>
-                <strong>{skill}</strong>
-                <span>{gross}</span>
-                <span>{fee}</span>
-                <span>{net}</span>
-                <span className="status-chip">{status}</span>
+            {ledgerRows.length > 0 ? (
+              ledgerRows.map(([skill, gross, fee, net, status]) => (
+                <div className="ledger-row" key={skill}>
+                  <strong>{skill}</strong>
+                  <span>{gross}</span>
+                  <span>{fee}</span>
+                  <span>{net}</span>
+                  <span className="status-chip">{status}</span>
+                </div>
+              ))
+            ) : (
+              <div className="ledger-row ledger-row--empty">
+                <strong>{locale === "zh" ? "暂无已入账发布者收入。" : "No posted publisher revenue yet"}</strong>
               </div>
-            ))}
+            )}
           </div>
         </article>
 

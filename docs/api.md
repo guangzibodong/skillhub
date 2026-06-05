@@ -198,6 +198,8 @@ Web console session:
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.
 - `SKILLHUB_USER_TOKEN` and `SKILLHUB_ADMIN_TOKEN` remain server-side fallbacks for bootstrap, demos, and emergency operator deployments.
+- Production web consoles treat `NODE_ENV=production`, `VERCEL_ENV=production`, or `SKILLHUB_ENV=production` as production-like. In that mode, admin, finance, trust, publisher, developer, team, billing, notification, and project operations return empty operational states instead of bundled demo rows when a token/API/database is unavailable.
+- `SKILLHUB_ENABLE_DEMO_FALLBACK=true` may be used only for local demos or controlled staging walkthroughs where fake operator data is expected.
 
 Role boundaries:
 

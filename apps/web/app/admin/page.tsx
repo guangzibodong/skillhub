@@ -48,18 +48,10 @@ const adminOpsCopy = {
   en: {
     riskTitle: "Risk command center",
     riskHeaders: ["Signal", "Scope", "Action", "Owner"],
-    riskRows: [
-      ["High-risk filesystem skill", "codebase-risk-scanner", "Require owner approval", "Trust"],
-      ["Unusual payout request", "$4,800 request", "Hold for KYC review", "Finance"],
-      ["Runtime error spike", "browser-research-pro", "Throttle and notify publisher", "Platform"]
-    ],
+    riskRows: [],
     moneyTitle: "Money ledger controls",
     moneyHeaders: ["Batch", "Gross", "Platform fee", "Publisher share", "State"],
-    moneyRows: [
-      ["usage-2026-06-04", "$2,840", "$568", "$2,272", "maturing"],
-      ["sub-2026-06", "$6,300", "$1,260", "$5,040", "available"],
-      ["refund-1820", "-$96", "-$19", "-$77", "adjusted"]
-    ],
+    moneyRows: [],
     actionTitle: "Admin action rules",
     actionRows: [
       ["Approve skill", "Creates audit log and public listing event"],
@@ -134,7 +126,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           formatMoney(transaction.publisherShareCents, transaction.currency),
           transaction.balanceState ?? transaction.status
         ])
-      : ops.moneyRows;
+      : [];
   const riskRows =
     abuseReports.length + incidents.length + skillFeedback.length + refunds.length + disputes.length > 0
       ? [
@@ -169,7 +161,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             "Trust"
           ])
         ].slice(0, 5)
-      : ops.riskRows;
+      : [];
   const activeIncidentCount = incidents.filter((incident) => incident.status === "open" || incident.status === "monitoring").length;
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
@@ -254,6 +246,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span>{owner}</span>
               </div>
             ))}
+            {riskRows.length === 0 ? (
+              <div className="work-table__empty">{locale === "zh" ? "暂无实时风险信号。" : "No live risk signals recorded yet."}</div>
+            ) : null}
           </div>
         </article>
 
@@ -297,6 +292,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span className="status-chip">{state}</span>
               </div>
             ))}
+            {financeRows.length === 0 ? (
+              <div className="money-table__empty">{locale === "zh" ? "暂无已入账资金流水。" : "No posted ledger transactions yet."}</div>
+            ) : null}
           </div>
         </article>
 

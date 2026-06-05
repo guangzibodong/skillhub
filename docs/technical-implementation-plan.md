@@ -272,7 +272,7 @@ Acceptance checks:
 
 1. Add missing retention and operations tables.
 2. Add API overview endpoints for developer, publisher, admin, and platform health data.
-3. Wire dashboards to API-backed data where possible, with safe fallback demo data.
+3. Wire dashboards to API-backed data where possible, with demo fallback allowed only outside production or behind an explicit demo flag.
 4. Add skill install and project policy endpoints.
 5. Add review queue endpoints and admin decision actions.
 6. Add runtime invocation record and policy gate.
@@ -302,6 +302,7 @@ Completed:
 - Finance ledger read endpoint and matured balance release endpoint.
 - Admin notification list endpoint.
 - Dashboard and admin pages reading finance ledger and notification event data with safe fallback states.
+- Production web consoles now suppress demo fallback rows for admin, finance, trust, publisher, developer, team, billing, notification, and project operations unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly set for a controlled demo.
 - Payout workflow migration linking payouts to reserved publisher balance rows.
 - Publisher payout readiness and request endpoints.
 - Admin payout queue and payout decision endpoints.
