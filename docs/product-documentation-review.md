@@ -629,6 +629,13 @@ Added publisher terms acceptance, covering:
 - `/publisher` now includes current terms acceptance in the launch checklist, and publisher account panels show the accepted version and timestamp beside payout readiness.
 - Launch readiness now reports whether the publisher terms acceptance columns exist, so missing migration state is visible before paid publishing goes live.
 
+Added paid pricing commercial-readiness enforcement, covering:
+
+- Active paid price writes now require an existing active publisher profile, verified payout readiness, current accepted operating terms, and verified skill review.
+- The billing service no longer creates a verified payout fallback when a missing publisher profile is discovered during pricing or ledger operations; missing setup remains visible as `not_configured`.
+- `/v1/publisher/skills` returns skill-level commercial blockers, and the publisher skill manager shows those blockers beside pricing so authors know whether review, payout, profile, or terms work is preventing paid activation.
+- This closes a real marketplace safety gap: paid listings cannot become active just because the UI submitted a price, and publishers get a clear return loop for completing commercial setup.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

@@ -7632,6 +7632,7 @@ a {
 .publisher-skill-card__top span:not(.status-chip),
 .publisher-skill-quality strong,
 .publisher-skill-checks > strong,
+.publisher-skill-commercial p,
 .publisher-skill-review-state,
 .publisher-skill-price-form label span,
 .publisher-skill-empty {
@@ -7806,6 +7807,51 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+.publisher-skill-commercial {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.055);
+  padding: 11px;
+}
+
+.publisher-skill-commercial--ready {
+  border-color: rgba(155, 226, 141, 0.18);
+  background: rgba(155, 226, 141, 0.045);
+}
+
+.publisher-skill-commercial__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.publisher-skill-commercial__head strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.publisher-skill-commercial__head svg {
+  flex: 0 0 auto;
+  color: var(--amber);
+}
+
+.publisher-skill-commercial--ready .publisher-skill-commercial__head svg {
+  color: var(--signal);
+}
+
+.publisher-skill-commercial p {
+  margin: 0;
 }
 
 .publisher-skill-version-workbench {

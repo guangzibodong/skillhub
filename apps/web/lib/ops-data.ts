@@ -604,6 +604,14 @@ export type PublisherSkillVersionRecord = {
   version: string;
 };
 
+export type PublisherCommercialBlocker =
+  | "current_terms"
+  | "payout"
+  | "publisher_profile"
+  | "publisher_status"
+  | "review"
+  | "terms";
+
 export type PublisherSkillRecord = {
   id: string;
   slug: string;
@@ -650,6 +658,15 @@ export type PublisherSkillRecord = {
     billingModel: "free" | "per_call" | "subscription";
     unitAmountCents: number;
     status: "draft" | "active" | "archived";
+  };
+  commercial?: {
+    blockers: PublisherCommercialBlocker[];
+    paidActivationReady: boolean;
+    payoutStatus: "not_configured" | "verification_required" | "verified" | "blocked" | null;
+    publisherStatus: "pending" | "active" | "restricted" | "suspended" | null;
+    requiresTermsVersion: string;
+    termsAcceptedAt: string | null;
+    termsVersion: string | null;
   };
   feedback?: {
     averageRating: number | null;
@@ -1999,6 +2016,15 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       unitAmountCents: 2,
       status: "active"
     },
+    commercial: {
+      blockers: [],
+      paidActivationReady: true,
+      payoutStatus: "verified",
+      publisherStatus: "active",
+      requiresTermsVersion: "2026-06-05-prelaunch-operating-terms",
+      termsAcceptedAt: "demo",
+      termsVersion: "2026-06-05-prelaunch-operating-terms"
+    },
     feedback: {
       averageRating: 4.7,
       publishedCount: 18,
@@ -2105,6 +2131,15 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       billingModel: "free",
       unitAmountCents: 0,
       status: "active"
+    },
+    commercial: {
+      blockers: ["review", "payout", "terms"],
+      paidActivationReady: false,
+      payoutStatus: "verification_required",
+      publisherStatus: "active",
+      requiresTermsVersion: "2026-06-05-prelaunch-operating-terms",
+      termsAcceptedAt: null,
+      termsVersion: null
     },
     feedback: {
       averageRating: 4.1,

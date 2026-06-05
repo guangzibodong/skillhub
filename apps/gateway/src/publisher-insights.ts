@@ -1,5 +1,6 @@
 import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
 import { listPublisherCurationAppealSummariesBySkill, type PublisherCurationAppealSummary } from "./marketplace-curation-appeals.js";
+import { CURRENT_PUBLISHER_TERMS_VERSION } from "./publisher-terms.js";
 import { getSql, searchSkills } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
@@ -20,6 +21,8 @@ type MarketplaceImprovementHint = {
   key: string;
   severity: MarketplaceImprovementSeverity;
 };
+
+type CommercialBlocker = "current_terms" | "payout" | "publisher_profile" | "publisher_status" | "review" | "terms";
 
 type PublisherSkillVersionSummary = {
   callCount: number;
@@ -74,6 +77,11 @@ type PublisherSkillRow = {
   billingModel: "free" | "per_call" | "subscription" | null;
   unitAmountCents: number | null;
   priceStatus: "draft" | "active" | "archived" | null;
+  publisherProfileId: string | null;
+  publisherStatus: "pending" | "active" | "restricted" | "suspended" | null;
+  publisherPayoutStatus: "not_configured" | "verification_required" | "verified" | "blocked" | null;
+  publisherTermsAcceptedAt: string | null;
+  publisherTermsVersion: string | null;
   averageRating: number | null;
   publishedFeedbackCount: number;
   pendingFeedbackCount: number;
@@ -132,6 +140,11 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       price.billing_model as "billingModel",
       price.unit_amount_cents as "unitAmountCents",
       price.status as "priceStatus",
+      pp.id::text as "publisherProfileId",
+      pp.status as "publisherStatus",
+      pp.payout_status as "publisherPayoutStatus",
+      pp.terms_accepted_at::text as "publisherTermsAcceptedAt",
+      pp.terms_version as "publisherTermsVersion",
       feedback.average_rating as "averageRating",
       coalesce(feedback.published_count, 0)::int as "publishedFeedbackCount",
       coalesce(feedback.pending_count, 0)::int as "pendingFeedbackCount",
@@ -408,6 +421,15 @@ async function fallbackPublisherSkills(limit: number) {
         unitAmountCents: index === 0 ? 2 : 0,
         status: "active"
       },
+      commercial: {
+        blockers: index === 0 ? [] : (["review", "payout", "terms"] as CommercialBlocker[]),
+        paidActivationReady: index === 0,
+        payoutStatus: index === 0 ? "verified" : "verification_required",
+        publisherStatus: "active",
+        requiresTermsVersion: CURRENT_PUBLISHER_TERMS_VERSION,
+        termsAcceptedAt: index === 0 ? "demo" : null,
+        termsVersion: index === 0 ? CURRENT_PUBLISHER_TERMS_VERSION : null
+      },
       feedback: {
         averageRating: index === 0 ? 4.7 : null,
         publishedCount: index === 0 ? 18 : 0,
@@ -587,6 +609,7 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
           : "not_checked";
   const incidentCount = Number(row.incidentCount ?? row.openIncidentCount ?? row.runtimeFailedCount);
   const marketplacePlacement = row.marketplacePlacement ?? "standard";
+  const commercialBlockers = buildCommercialBlockers(row);
 
   return {
     id: row.id,
@@ -628,6 +651,15 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
       unitAmountCents: row.unitAmountCents ?? 0,
       status: row.priceStatus ?? "draft"
     },
+    commercial: {
+      blockers: commercialBlockers,
+      paidActivationReady: commercialBlockers.length === 0,
+      payoutStatus: row.publisherPayoutStatus,
+      publisherStatus: row.publisherStatus,
+      requiresTermsVersion: CURRENT_PUBLISHER_TERMS_VERSION,
+      termsAcceptedAt: row.publisherTermsAcceptedAt,
+      termsVersion: row.publisherTermsVersion
+    },
     feedback: {
       averageRating: row.averageRating,
       publishedCount: row.publishedFeedbackCount,
@@ -666,6 +698,34 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
     versions: normalizeVersionSummaries(row.versions),
     updatedAt: row.updatedAt
   };
+}
+
+function buildCommercialBlockers(row: PublisherSkillRow): CommercialBlocker[] {
+  const blockers: CommercialBlocker[] = [];
+
+  if (!row.publisherProfileId) {
+    blockers.push("publisher_profile");
+  }
+
+  if (row.publisherProfileId && row.publisherStatus !== "active") {
+    blockers.push("publisher_status");
+  }
+
+  if (row.publisherPayoutStatus !== "verified") {
+    blockers.push("payout");
+  }
+
+  if (!row.publisherTermsAcceptedAt) {
+    blockers.push("terms");
+  } else if (row.publisherTermsVersion !== CURRENT_PUBLISHER_TERMS_VERSION) {
+    blockers.push("current_terms");
+  }
+
+  if (row.verificationStatus !== "verified") {
+    blockers.push("review");
+  }
+
+  return blockers;
 }
 
 function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSummary>> | null): PublisherSkillVersionSummary[] {

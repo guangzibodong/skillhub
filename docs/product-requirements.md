@@ -593,9 +593,17 @@ Paid skills must additionally provide:
 
 - Active publisher profile.
 - Acceptable payout account state.
+- Current accepted publisher operating terms.
+- Verified skill review before paid pricing can be activated.
 - Approved pricing.
 - Accepted refund/dispute terms, stored with acceptance timestamp, accepted terms version, and accepting user id.
 - Ledger configuration.
+
+Paid active pricing rules:
+
+- Publishers may save free prices, draft paid prices, or archived prices while setup is incomplete.
+- A `per_call` or `subscription` price cannot become `active` until the publisher profile exists, is active, has verified payout readiness, has accepted the current operating terms version, and the skill has a verified review.
+- The publisher workspace must show paid-activation blockers beside the pricing form so authors can fix review, payout, profile, or terms issues without guessing from a generic API error.
 
 ## Full Product Scope
 

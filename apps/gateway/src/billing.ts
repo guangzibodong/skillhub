@@ -1,4 +1,5 @@
 import { getSql, searchSkills } from "./registry.js";
+import { CURRENT_PUBLISHER_TERMS_VERSION } from "./publisher-terms.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -45,7 +46,10 @@ type PublisherProfile = {
   id: string;
   organization_id: string;
   display_name: string;
+  status: "pending" | "active" | "restricted" | "suspended";
   payout_status: "not_configured" | "verification_required" | "verified" | "blocked";
+  terms_accepted_at: string | null;
+  terms_version: string | null;
 };
 
 export async function listSkillPrices(slug: string) {
@@ -92,10 +96,13 @@ export async function setSkillPrice(slug: string, input: PriceInput, organizatio
   const unitAmountCents = normalizeAmount(input.unitAmountCents, billingModel);
   const status = input.status ?? "active";
   const skill = await getSkillBySlug(sql, slug, organizationId);
-  const publisher = await ensurePublisherProfile(sql, skill.organization_id);
+  const requiresPaidActivation = status === "active" && billingModel !== "free";
+  const publisher = requiresPaidActivation
+    ? await findPublisherProfile(sql, skill.organization_id)
+    : await ensurePublisherProfile(sql, skill.organization_id);
 
-  if (status === "active" && billingModel !== "free" && publisher.payout_status !== "verified") {
-    throw new Error("Paid active pricing requires a verified publisher payout state.");
+  if (requiresPaidActivation) {
+    assertPaidActivationReady(skill, publisher);
   }
 
   if (status === "active") {
@@ -133,7 +140,7 @@ export async function setSkillPrice(slug: string, input: PriceInput, organizatio
 
   return {
     skillSlug: slug,
-    publisherProfileId: publisher.id,
+    publisherProfileId: publisher?.id ?? null,
     ...rows[0]
   };
 }
@@ -629,12 +636,12 @@ async function seedRegistry() {
 
 async function getSkillBySlug(sql: Sql, slug: string, organizationId?: string | null) {
   const rows = (await sql`
-    select id::text, organization_id::text
+    select id::text, organization_id::text, verification_status
     from skills
     where slug = ${slug}
       and (${organizationId ?? null}::uuid is null or organization_id = ${organizationId ?? null})
     limit 1
-  `) as Array<{ id: string; organization_id: string }>;
+  `) as Array<{ id: string; organization_id: string; verification_status: string }>;
 
   if (!rows[0]) {
     throw new Error(organizationId ? "Skill not found for this organization." : "Skill not found.");
@@ -643,16 +650,30 @@ async function getSkillBySlug(sql: Sql, slug: string, organizationId?: string | 
   return rows[0];
 }
 
-async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise<PublisherProfile> {
-  const existing = (await sql`
-    select id::text, organization_id::text, display_name, payout_status
+async function findPublisherProfile(sql: Sql, organizationId: string): Promise<PublisherProfile | null> {
+  const rows = (await sql`
+    select
+      id::text,
+      organization_id::text,
+      display_name,
+      status,
+      payout_status,
+      terms_accepted_at::text,
+      terms_version
     from publisher_profiles
     where organization_id = ${organizationId}
+    order by created_at asc
     limit 1
   `) as PublisherProfile[];
 
-  if (existing[0]) {
-    return existing[0];
+  return rows[0] ?? null;
+}
+
+async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise<PublisherProfile> {
+  const existing = await findPublisherProfile(sql, organizationId);
+
+  if (existing) {
+    return existing;
   }
 
   const organizationRows = (await sql`
@@ -673,35 +694,47 @@ async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise
       ${organizationId},
       ${displayName},
       'active',
-      'verified'
+      'not_configured'
     )
     on conflict (organization_id) do update set
       display_name = excluded.display_name,
       updated_at = now()
-    returning id::text, organization_id::text, display_name, payout_status
+    returning
+      id::text,
+      organization_id::text,
+      display_name,
+      status,
+      payout_status,
+      terms_accepted_at::text,
+      terms_version
   `) as PublisherProfile[];
 
-  const publisher = publisherRows[0];
+  return publisherRows[0];
+}
 
-  await sql`
-    insert into payout_accounts (
-      publisher_profile_id,
-      provider,
-      provider_account_id,
-      status
-    )
-    values (
-      ${publisher.id},
-      'manual_deferred',
-      ${`manual_deferred_${publisher.id}`},
-      'verified'
-    )
-    on conflict (provider, provider_account_id) do update set
-      status = excluded.status,
-      updated_at = now()
-  `;
+function assertPaidActivationReady(
+  skill: { verification_status: string },
+  publisher: PublisherProfile | null
+) {
+  if (!publisher) {
+    throw new Error("Paid active pricing requires an existing publisher profile.");
+  }
 
-  return publisher;
+  if (publisher.status !== "active") {
+    throw new Error("Paid active pricing requires an active publisher profile.");
+  }
+
+  if (publisher.payout_status !== "verified") {
+    throw new Error("Paid active pricing requires verified payout readiness.");
+  }
+
+  if (!publisher.terms_accepted_at || publisher.terms_version !== CURRENT_PUBLISHER_TERMS_VERSION) {
+    throw new Error("Paid active pricing requires accepting the current publisher operating terms.");
+  }
+
+  if (skill.verification_status !== "verified") {
+    throw new Error("Paid active pricing requires a verified skill review.");
+  }
 }
 
 async function getActiveCommissionRule(sql: Sql): Promise<CommissionRule> {

@@ -352,6 +352,8 @@ Completed:
 - Publisher terms acceptance migration `024_publisher_terms_acceptance.sql` now stores the accepted operating terms version, acceptance timestamp, and accepting user id on `publisher_profiles`.
 - `/v1/publisher/terms/accept` lets publisher, owner, admin, and super-admin users record the current commercial/refund/dispute terms with audit and notification events.
 - `/publisher` now treats current terms acceptance as a publisher launch-checklist step before first paid publishing, and publisher account panels expose the accepted version and timestamp beside payout readiness.
+- Active paid price writes now enforce the commercial-readiness gate: existing active publisher profile, verified payout readiness, current accepted publisher terms, and verified skill review are required before `per_call` or `subscription` pricing can become active.
+- `/v1/publisher/skills` now returns skill-level commercial blockers, and the publisher skill workspace shows a paid-activation gate beside pricing controls so authors can resolve review, payout, profile, or terms issues before attempting paid activation.
 - Refund and dispute workflow migration with adjustment transaction links.
 - Admin refund request, refund decision, dispute open, and dispute decision endpoints.
 - Dispute-lost flow can post refund adjustment records automatically.

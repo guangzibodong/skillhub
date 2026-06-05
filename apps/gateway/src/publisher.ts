@@ -1,4 +1,5 @@
 import { getSql } from "./registry.js";
+import { CURRENT_PUBLISHER_TERMS_VERSION } from "./publisher-terms.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -39,8 +40,6 @@ type PublisherProfile = {
   createdAt: string;
   updatedAt: string;
 };
-
-const DEFAULT_PUBLISHER_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
 
 const fallbackPublisherAccountSummary = {
   publisherProfile: {
@@ -656,7 +655,7 @@ function normalizePayoutStatus(status: PayoutStatus) {
 
 function normalizeTermsVersion(value: unknown) {
   const normalized = typeof value === "string" ? value.trim() : "";
-  return normalized || DEFAULT_PUBLISHER_TERMS_VERSION;
+  return normalized || CURRENT_PUBLISHER_TERMS_VERSION;
 }
 
 function randomToken(byteLength: number) {

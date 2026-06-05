@@ -880,7 +880,25 @@ curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response includes each owned skill's latest version, version history, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, listing checklist, and publisher-visible marketplace distribution signal.
+The response includes each owned skill's latest version, version history, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, commercial paid-activation blockers, quality score, listing checklist, and publisher-visible marketplace distribution signal.
+
+`commercial` explains whether the skill can activate paid pricing and why it is blocked:
+
+```json
+{
+  "commercial": {
+    "paidActivationReady": false,
+    "blockers": ["review", "payout", "terms"],
+    "publisherStatus": "active",
+    "payoutStatus": "verification_required",
+    "termsAcceptedAt": null,
+    "termsVersion": null,
+    "requiresTermsVersion": "2026-06-05-prelaunch-operating-terms"
+  }
+}
+```
+
+Possible blocker values are `publisher_profile`, `publisher_status`, `payout`, `terms`, `current_terms`, and `review`.
 
 `runtime.checks` contains the latest result for each automated review-check type, so publishers can see the exact reason behind pass, warning, failed, queued, or running states without waiting for an admin note:
 
@@ -1075,9 +1093,17 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
   }'
 ```
 
-Setting a price requires publisher, owner, admin, or super-admin authorization and is scoped to the token organization. Active paid pricing still requires a verified publisher payout state.
+Setting a price requires publisher, owner, admin, or super-admin authorization and is scoped to the token organization. Publishers can save free pricing, paid draft pricing, and archived pricing while commercial setup is incomplete.
 
-When a paid active price is attempted before payout verification, the API rejects the write and the dashboard shows the provider-readiness error instead of silently creating a paid listing.
+Active paid pricing is a commercial-readiness gate. A `per_call` or `subscription` price with `status=active` requires:
+
+- An existing publisher profile.
+- Publisher profile status `active`.
+- Publisher payout status `verified`.
+- Current publisher operating terms accepted with the current terms version.
+- Skill verification status `verified`.
+
+If any prerequisite is missing, the API rejects the write with an actionable error such as `Paid active pricing requires verified payout readiness.`, `Paid active pricing requires accepting the current publisher operating terms.`, or `Paid active pricing requires a verified skill review.` The publisher dashboard also reads `/v1/publisher/skills` commercial blockers and shows them beside the pricing controls.
 
 Supported `billingModel` values:
 

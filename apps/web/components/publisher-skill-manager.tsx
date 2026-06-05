@@ -14,11 +14,12 @@ import {
   PackageCheck,
   Save,
   Send,
+  ShieldCheck,
   Star,
   XCircle
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
-import type { PublisherSkillRecord, PublisherSkillVersionRecord } from "@/lib/ops-data";
+import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVersionRecord } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
   requestMarketplaceCurationAppealAction,
@@ -273,6 +274,37 @@ const marketplaceCopy = {
   }
 } as const;
 
+const commercialCopy = {
+  en: {
+    blocked: "Blocked",
+    blockerLabels: {
+      current_terms: "Accept current terms",
+      payout: "Verify payout readiness",
+      publisher_profile: "Create publisher profile",
+      publisher_status: "Reactivate publisher profile",
+      review: "Pass skill review",
+      terms: "Accept operating terms"
+    },
+    help: "Required before a per-call or subscription price can be made active.",
+    ready: "Ready",
+    title: "Paid activation gate"
+  },
+  zh: {
+    blocked: "\u672a\u5c31\u7eea",
+    blockerLabels: {
+      current_terms: "\u63a5\u53d7\u5f53\u524d\u6761\u6b3e",
+      payout: "\u5b8c\u6210\u63d0\u73b0\u9a8c\u8bc1",
+      publisher_profile: "\u521b\u5efa\u53d1\u5e03\u8005\u8d44\u6599",
+      publisher_status: "\u6062\u590d\u53d1\u5e03\u8005\u8d44\u6599",
+      review: "\u901a\u8fc7\u6280\u80fd\u5ba1\u6838",
+      terms: "\u63a5\u53d7\u8fd0\u8425\u6761\u6b3e"
+    },
+    help: "\u6309\u6b21\u8c03\u7528\u6216\u8ba2\u9605\u4ef7\u683c\u542f\u7528\u524d\u5fc5\u987b\u5b8c\u6210\u3002",
+    ready: "\u5df2\u5c31\u7eea",
+    title: "\u4ed8\u8d39\u6fc0\u6d3b\u95e8\u7981"
+  }
+} as const;
+
 const initialState: PublisherSkillActionState = {
   message: "",
   status: "idle"
@@ -330,6 +362,7 @@ function PublisherSkillCard({
     initialState
   );
   const marketplaceLabels = marketplaceCopy[locale];
+  const commercialLabels = commercialCopy[locale];
   const versions = skill.versions ?? [];
   const latestVersion = versions[0];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
@@ -529,6 +562,10 @@ function PublisherSkillCard({
 
       {reviewMessageVisible ? <ActionMessage state={reviewState} /> : null}
 
+      {skill.commercial ? (
+        <CommercialReadinessPanel commercial={skill.commercial} labels={commercialLabels} />
+      ) : null}
+
       <form action={priceAction} className="publisher-skill-price-form">
         <input name="skillSlug" type="hidden" value={skill.slug} />
         <label>
@@ -562,6 +599,42 @@ function PublisherSkillCard({
       </form>
 
       {priceMessageVisible ? <ActionMessage state={priceState} /> : null}
+    </div>
+  );
+}
+
+function CommercialReadinessPanel({
+  commercial,
+  labels
+}: {
+  commercial: NonNullable<PublisherSkillRecord["commercial"]>;
+  labels: (typeof commercialCopy)["en"] | (typeof commercialCopy)["zh"];
+}) {
+  const blockers = commercial.blockers.length > 0 ? commercial.blockers : [];
+
+  return (
+    <div className={commercial.paidActivationReady ? "publisher-skill-commercial publisher-skill-commercial--ready" : "publisher-skill-commercial"}>
+      <div className="publisher-skill-commercial__head">
+        <strong>
+          <ShieldCheck size={15} aria-hidden="true" />
+          {labels.title}
+        </strong>
+        <span className={commercial.paidActivationReady ? "status-chip" : "status-chip status-chip--warning"}>
+          {commercial.paidActivationReady ? labels.ready : labels.blocked}
+        </span>
+      </div>
+      <p>{labels.help}</p>
+      <div className="publisher-skill-hints">
+        {blockers.length > 0 ? (
+          blockers.map((blocker) => (
+            <span className="quality-chip quality-chip--attention" key={blocker}>
+              {formatCommercialBlocker(blocker, labels.blockerLabels)}
+            </span>
+          ))
+        ) : (
+          <span className="quality-chip quality-chip--complete">{labels.ready}</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -729,6 +802,10 @@ function formatAppealStatus(status: NonNullable<NonNullable<PublisherSkillRecord
 
 function formatHintLabel(key: string, labels: Record<string, string>) {
   return labels[key] ?? key.replaceAll("_", " ");
+}
+
+function formatCommercialBlocker(blocker: PublisherCommercialBlocker, labels: Record<string, string>) {
+  return labels[blocker] ?? blocker.replaceAll("_", " ");
 }
 
 function formatCheckType(checkType: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
