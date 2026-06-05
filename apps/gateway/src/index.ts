@@ -68,8 +68,10 @@ import { getDeveloperProjectDetail, listDeveloperProjects } from "./developer-in
 import { createDeveloperProject } from "./developer-projects.js";
 import { getPublisherOverview } from "./publisher-overview.js";
 import {
+  createCommissionRule,
   getFinanceLedger,
   getPublisherFinanceLedger,
+  listCommissionRules,
   listSkillPrices,
   processBillableUsage,
   releaseAvailableBalances,
@@ -1178,6 +1180,37 @@ app.get("/v1/admin/finance/ledger", async (c) => {
   }
 
   return c.json(await getFinanceLedger());
+});
+
+app.get("/v1/admin/finance/commission-rules", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    rules: await listCommissionRules(Number(c.req.query("limit") ?? "30"))
+  });
+});
+
+app.post("/v1/admin/finance/commission-rules", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        rule: await createCommissionRule((await c.req.json()) as Record<string, unknown>, authorization.subject.userId)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create commission rule." }, 400);
+  }
 });
 
 app.post("/v1/admin/finance/process-usage", async (c) => {

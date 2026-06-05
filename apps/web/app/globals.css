@@ -3408,6 +3408,143 @@ a {
   padding: 13px;
 }
 
+.admin-commission-manager {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-commission-manager__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-commission-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-commission-summary div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  min-height: 78px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.admin-commission-summary svg {
+  color: var(--cyan);
+}
+
+.admin-commission-summary span,
+.admin-commission-form label span,
+.admin-commission-form small,
+.admin-commission-rule-row span,
+.admin-commission-rule-row small,
+.admin-commission-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-commission-summary strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.admin-commission-form {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.7fr) minmax(128px, 0.34fr) minmax(160px, 0.45fr) minmax(160px, 0.45fr) auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.admin-commission-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-commission-form__wide {
+  grid-column: 1 / -2;
+}
+
+.admin-commission-form input {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.admin-commission-form input::placeholder {
+  color: rgba(229, 238, 221, 0.38);
+}
+
+.admin-commission-timeline {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.admin-commission-timeline__head,
+.admin-commission-rule-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(92px, auto) minmax(180px, 0.72fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-commission-timeline__head {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-commission-timeline__head strong {
+  color: var(--ink);
+}
+
+.admin-commission-rule-row {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.admin-commission-rule-row div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-commission-rule-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.admin-commission-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  padding: 13px;
+}
+
 .admin-adjustment-manager {
   display: grid;
   gap: 14px;
@@ -8072,6 +8209,16 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .admin-commission-form,
+  .admin-commission-timeline__head,
+  .admin-commission-rule-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-commission-form__wide {
+    grid-column: auto;
+  }
+
   .related-skill-row__head,
   .related-skill-command,
   .publisher-public-skill__head,
@@ -8097,6 +8244,7 @@ a {
   .related-skill-command .secondary-button,
   .publisher-public-command .secondary-button,
   .admin-payout-action-form .secondary-button,
+  .admin-commission-form .secondary-button,
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
@@ -8115,6 +8263,7 @@ a {
 
   .related-skill-command .secondary-button,
   .publisher-public-command .secondary-button,
+  .admin-commission-form .secondary-button,
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
@@ -8283,6 +8432,7 @@ a {
   .admin-identity-memberships,
   .admin-review-meta,
   .admin-review-checks,
+  .admin-commission-summary,
   .admin-payout-metrics,
   .admin-adjustment-metrics,
   .publisher-skill-metrics,

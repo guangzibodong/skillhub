@@ -488,6 +488,14 @@ Added publisher-facing review-check diagnostics, covering:
 - Publisher skill cards show each manifest, runtime, example, and security check with pass/fail/warning state and the exact message.
 - This closes the upload-review-fix loop for publishers because they can repair blocked runtime or example issues before resubmitting, without waiting for a separate admin explanation.
 
+Added admin commission rule management, covering:
+
+- Finance operators can list active, scheduled, and ended commission rules from `/v1/admin/finance/commission-rules` and the `/admin` finance workspace.
+- Creating a rule requires a finance reason, validates that platform and publisher bps total 10000, closes overlapping open rules, and records audit plus notification events.
+- Ledger posting continues to attach each `transaction_splits` row to the active commission rule at posting time, so new rules affect future revenue only.
+- Historical transaction splits are never rewritten when commission settings change, preserving finance traceability before final payment provider integration is connected.
+- This gives SkillHub a real platform-operator control for marketplace monetization instead of hiding the revenue split as an unchangeable code default.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

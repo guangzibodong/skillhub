@@ -30,6 +30,17 @@ type CommissionRule = {
   publisher_share_bps: number;
 };
 
+export type CommissionRuleRecord = {
+  id: string;
+  name: string;
+  platformFeeBps: number;
+  publisherShareBps: number;
+  startsAt: string;
+  endsAt: string | null;
+  createdAt: string;
+  isActive: boolean;
+};
+
 type PublisherProfile = {
   id: string;
   organization_id: string;
@@ -296,6 +307,169 @@ export async function releaseAvailableBalances(limit = 100) {
   };
 }
 
+export async function listCommissionRules(limit = 30): Promise<CommissionRuleRecord[]> {
+  const sql = await getSql();
+
+  if (!sql) {
+    return [demoCommissionRule()];
+  }
+
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  return (await sql`
+    select
+      id::text,
+      name,
+      platform_fee_bps as "platformFeeBps",
+      publisher_share_bps as "publisherShareBps",
+      starts_at::text as "startsAt",
+      ends_at::text as "endsAt",
+      created_at::text as "createdAt",
+      (starts_at <= now() and (ends_at is null or ends_at > now())) as "isActive"
+    from commission_rules
+    order by starts_at desc, created_at desc
+    limit ${safeLimit}
+  `) as CommissionRuleRecord[];
+}
+
+export async function createCommissionRule(
+  input: Record<string, unknown>,
+  actorUserId?: string | null
+): Promise<CommissionRuleRecord> {
+  const sql = await requireSql();
+  const name = normalizeRequiredText(readInput(input, "name"), "name", 120);
+  const platformFeeBps = normalizeBasisPoints(readInput(input, "platformFeeBps", "platform_fee_bps"), "platformFeeBps");
+  const publisherShareInput = readInput(input, "publisherShareBps", "publisher_share_bps");
+  const publisherShareBps =
+    isBlankValue(publisherShareInput) ? 10000 - platformFeeBps : normalizeBasisPoints(publisherShareInput, "publisherShareBps");
+  const startsAt = normalizeTimestamp(readInput(input, "startsAt", "starts_at"), new Date(), "startsAt");
+  const endsAt = normalizeOptionalTimestamp(readInput(input, "endsAt", "ends_at"), "endsAt");
+  const reason = normalizeOptionalText(readInput(input, "reason"), 600) ?? `Commission rule scheduled: ${name}`;
+
+  if (platformFeeBps + publisherShareBps !== 10000) {
+    throw new Error("platformFeeBps and publisherShareBps must total 10000.");
+  }
+
+  if (endsAt && endsAt.getTime() <= startsAt.getTime()) {
+    throw new Error("endsAt must be later than startsAt.");
+  }
+
+  const startsAtIso = startsAt.toISOString();
+  const endsAtIso = endsAt?.toISOString() ?? null;
+
+  return sql.begin(async (tx: Sql) => {
+    const duplicateStarts = (await tx`
+      select id::text
+      from commission_rules
+      where starts_at = ${startsAtIso}::timestamptz
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (duplicateStarts[0]) {
+      throw new Error("A commission rule already starts at this timestamp.");
+    }
+
+    const nextRows = (await tx`
+      select starts_at::text as "startsAt"
+      from commission_rules
+      where starts_at > ${startsAtIso}::timestamptz
+      order by starts_at asc
+      limit 1
+      for update
+    `) as Array<{ startsAt: string }>;
+    const nextStartsAt = nextRows[0]?.startsAt ?? null;
+
+    if (endsAt && nextStartsAt && new Date(nextStartsAt).getTime() < endsAt.getTime()) {
+      throw new Error("endsAt overlaps a later scheduled commission rule.");
+    }
+
+    const previousRows = (await tx`
+      select
+        id::text,
+        name,
+        platform_fee_bps as "platformFeeBps",
+        publisher_share_bps as "publisherShareBps",
+        starts_at::text as "startsAt",
+        ends_at::text as "endsAt",
+        created_at::text as "createdAt",
+        (starts_at <= now() and (ends_at is null or ends_at > now())) as "isActive"
+      from commission_rules
+      where starts_at <= ${startsAtIso}::timestamptz
+        and (ends_at is null or ends_at > ${startsAtIso}::timestamptz)
+      order by starts_at desc
+      limit 1
+      for update
+    `) as CommissionRuleRecord[];
+
+    await tx`
+      update commission_rules
+      set ends_at = ${startsAtIso}::timestamptz
+      where starts_at < ${startsAtIso}::timestamptz
+        and (ends_at is null or ends_at > ${startsAtIso}::timestamptz)
+    `;
+
+    const rows = (await tx`
+      insert into commission_rules (
+        name,
+        platform_fee_bps,
+        publisher_share_bps,
+        starts_at,
+        ends_at
+      )
+      values (
+        ${name},
+        ${platformFeeBps},
+        ${publisherShareBps},
+        ${startsAtIso}::timestamptz,
+        ${endsAtIso ?? nextStartsAt}
+      )
+      returning
+        id::text,
+        name,
+        platform_fee_bps as "platformFeeBps",
+        publisher_share_bps as "publisherShareBps",
+        starts_at::text as "startsAt",
+        ends_at::text as "endsAt",
+        created_at::text as "createdAt",
+        (starts_at <= now() and (ends_at is null or ends_at > now())) as "isActive"
+    `) as CommissionRuleRecord[];
+    const rule = rows[0];
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${actorUserId ?? null},
+        'finance.commission_rule.created',
+        'commission_rule',
+        ${rule.id},
+        ${reason},
+        ${tx.json({
+          next: rule,
+          previous: previousRows[0] ?? null
+        })}
+      )
+    `;
+
+    await tx`
+      insert into notification_events (event_type, channel, subject, payload, status)
+      values (
+        'finance.commission_rule.created',
+        'in_app',
+        'Commission rule scheduled',
+        ${tx.json({
+          name: rule.name,
+          platformFeeBps: rule.platformFeeBps,
+          publisherShareBps: rule.publisherShareBps,
+          startsAt: rule.startsAt,
+          endsAt: rule.endsAt
+        })},
+        'queued'
+      )
+    `;
+
+    return rule;
+  });
+}
+
 export async function getFinanceLedger() {
   const sql = await getSql();
 
@@ -544,21 +718,44 @@ async function getActiveCommissionRule(sql: Sql): Promise<CommissionRule> {
     return existing[0];
   }
 
+  const futureRows = (await sql`
+    select starts_at::text as "startsAt"
+    from commission_rules
+    where starts_at > now()
+    order by starts_at asc
+    limit 1
+  `) as Array<{ startsAt: string }>;
+
   const rows = (await sql`
     insert into commission_rules (
       name,
       platform_fee_bps,
-      publisher_share_bps
+      publisher_share_bps,
+      ends_at
     )
     values (
       'Default 20/80 split',
       2000,
-      8000
+      8000,
+      ${futureRows[0]?.startsAt ?? null}
     )
     returning id::text, platform_fee_bps, publisher_share_bps
   `) as CommissionRule[];
 
   return rows[0];
+}
+
+function demoCommissionRule(): CommissionRuleRecord {
+  return {
+    id: "demo-commission-default",
+    name: "Default 20/80 split",
+    platformFeeBps: 2000,
+    publisherShareBps: 8000,
+    startsAt: "demo",
+    endsAt: null,
+    createdAt: "demo",
+    isActive: true
+  };
 }
 
 function calculateSplit(amountCents: number, commissionRule: CommissionRule) {
@@ -587,6 +784,74 @@ function normalizeAmount(amount: number | undefined, billingModel: BillingModel)
   }
 
   return value;
+}
+
+function readInput(input: Record<string, unknown>, key: string, fallbackKey?: string) {
+  return input[key] ?? (fallbackKey ? input[fallbackKey] : undefined);
+}
+
+function normalizeRequiredText(value: unknown, fieldName: string, maxLength: number) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    throw new Error(`${fieldName} is required.`);
+  }
+
+  if (text.length > maxLength) {
+    throw new Error(`${fieldName} must be ${maxLength} characters or fewer.`);
+  }
+
+  return text;
+}
+
+function normalizeOptionalText(value: unknown, maxLength: number) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    return null;
+  }
+
+  return text.slice(0, maxLength);
+}
+
+function normalizeBasisPoints(value: unknown, fieldName: string) {
+  if (isBlankValue(value)) {
+    throw new Error(`${fieldName} is required.`);
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0 || parsed > 10000) {
+    throw new Error(`${fieldName} must be an integer between 0 and 10000.`);
+  }
+
+  return parsed;
+}
+
+function normalizeTimestamp(value: unknown, fallback: Date, fieldName: string) {
+  if (isBlankValue(value)) {
+    return fallback;
+  }
+
+  const date = new Date(String(value));
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`${fieldName} must be a valid ISO timestamp.`);
+  }
+
+  return date;
+}
+
+function normalizeOptionalTimestamp(value: unknown, fieldName: string) {
+  if (isBlankValue(value)) {
+    return null;
+  }
+
+  return normalizeTimestamp(value, new Date(), fieldName);
+}
+
+function isBlankValue(value: unknown) {
+  return value === null || value === undefined || String(value).trim() === "";
 }
 
 function getBalanceDelayDays() {

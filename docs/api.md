@@ -875,6 +875,30 @@ curl "https://api.useskillhub.com/v1/publisher/finance/ledger" \
 
 The publisher ledger is read-only and scoped to the token organization. It returns the same summary and recent transaction shape as the admin finance ledger, but only for transaction splits and balances attached to the current publisher profile. This is the source for the dashboard revenue ledger shown to publishers.
 
+Read active and historical commission rules:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/finance/commission-rules?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Create a new commission rule version:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/finance/commission-rules" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Public marketplace 20/80 split",
+    "platformFeeBps": 2000,
+    "publisherShareBps": 8000,
+    "startsAt": "2026-06-05T12:00:00.000Z",
+    "reason": "Launch default split approved by finance."
+  }'
+```
+
+Commission rule management requires `finance`, `admin`, or `super_admin`. `publisherShareBps` may be omitted; if omitted, the API sets it to `10000 - platformFeeBps`. The platform and publisher bps must total `10000`. Creating a rule writes an admin audit log, queues an in-app finance notification, and closes any overlapping open rule at the new `startsAt` time. Existing `transaction_splits` keep their original `commission_rule_id`, so new rules affect future ledger posting without rewriting historical money records.
+
 Post unprocessed billable usage into the ledger:
 
 ```bash

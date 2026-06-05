@@ -28,6 +28,17 @@ export type FinanceLedger = {
   recentTransactions: FinanceLedgerTransaction[];
 };
 
+export type CommissionRuleRecord = {
+  id: string;
+  name: string;
+  platformFeeBps: number;
+  publisherShareBps: number;
+  startsAt: string;
+  endsAt: string | null;
+  createdAt: string;
+  isActive: boolean;
+};
+
 export type AdminNotification = {
   id: string;
   eventType: string;
@@ -842,6 +853,19 @@ const fallbackLedger: FinanceLedger = {
     }
   ]
 };
+
+const fallbackCommissionRules: CommissionRuleRecord[] = [
+  {
+    id: "demo-commission-default",
+    name: "Default 20/80 split",
+    platformFeeBps: 2000,
+    publisherShareBps: 8000,
+    startsAt: "demo",
+    endsAt: null,
+    createdAt: "demo",
+    isActive: true
+  }
+];
 
 const fallbackNotifications: AdminNotification[] = [
   {
@@ -2123,6 +2147,32 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
     return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
   } catch {
     return demoFallback(fallbackLedger, emptyLedger);
+  }
+}
+
+export async function getAdminCommissionRules(): Promise<CommissionRuleRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return demoFallback(fallbackCommissionRules, []);
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/finance/commission-rules?limit=20`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Commission rules failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { rules: CommissionRuleRecord[] };
+    return safeOperationValue(payload.rules, []);
+  } catch {
+    return demoFallback(fallbackCommissionRules, []);
   }
 }
 

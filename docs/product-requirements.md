@@ -111,6 +111,7 @@ Needs:
 Needs:
 
 - See GMV, platform fees, publisher shares, refunds, disputes, and payouts.
+- Manage versioned commission rules with required reasons before future ledger posting uses the new split.
 - Review blocked or high-value payouts.
 - Understand why a balance is pending, available, paid, reversed, or blocked.
 - Never edit historical money records directly.

@@ -200,6 +200,7 @@ API groups:
 - `/v1/subscriptions/*`
 - `/v1/transactions/*`
 - `/v1/publisher/balances/*`
+- `/v1/admin/finance/commission-rules`
 - `/v1/admin/finance/*`
 
 Acceptance checks:
@@ -207,6 +208,9 @@ Acceptance checks:
 - Usage logs never pay publishers directly.
 - Posted transactions create immutable splits.
 - Commission rules are versioned.
+- Finance admins can list active, scheduled, and ended commission rules from the admin console.
+- Creating a new commission rule requires a reason, keeps platform and publisher bps totaling 10000, closes overlapping open rules, and writes audit plus notification records.
+- New commission rules affect future ledger posting only; existing `transaction_splits` keep their original `commission_rule_id`.
 - Balance changes use pending, available, paid, reversed, and blocked states.
 - Refunds and disputes add adjustment records instead of editing history.
 

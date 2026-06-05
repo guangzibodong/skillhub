@@ -11,6 +11,7 @@ import {
 import { AdminAuditLogPanel } from "@/components/admin-audit-log-panel";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
+import { AdminCommissionRuleManager } from "@/components/admin-commission-rule-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
 import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
 import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-curation-manager";
@@ -24,6 +25,7 @@ import {
   formatMoney,
   getAdminAbuseReports,
   getAdminAuditLogs,
+  getAdminCommissionRules,
   getAdminDisputes,
   getAdminIdentityDirectory,
   getAdminIncidents,
@@ -205,6 +207,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     notificationTemplates,
     identityDirectory,
     payouts,
+    commissionRules,
     refunds,
     disputes,
     abuseReports,
@@ -218,6 +221,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminNotificationTemplates(),
     getAdminIdentityDirectory(),
     getAdminPayouts(),
+    getAdminCommissionRules(),
     getAdminRefunds(),
     getAdminDisputes(),
     getAdminAbuseReports(),
@@ -407,6 +411,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </article>
 
         <AdminPayoutManager locale={locale} payouts={payouts} />
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AdminCommissionRuleManager locale={locale} rules={commissionRules} />
       </section>
 
       <section className="admin-finance-section">
