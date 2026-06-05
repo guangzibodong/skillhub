@@ -615,6 +615,13 @@ Added admin launch readiness, covering:
 - The readiness report is secret-safe: it exposes only configured/missing state, counts, URLs, and next actions, never raw provider secrets, tokens, salts, webhook secrets, verification codes, or credentials.
 - This improves launch discipline because the team can separate true production blockers from intentional final integrations such as payment-provider onboarding.
 
+Added public operating terms, covering:
+
+- `/terms` gives buyers, publishers, and operators a public rule surface for marketplace use, publishing responsibilities, review/takedown, commission/payout, refunds/disputes, data retention, incidents, notifications/webhooks, and provider-deferred payment/email integrations.
+- The home footer and docs page link to the terms page, so marketplace rules are discoverable from the product instead of hidden inside internal requirements.
+- The page is bilingual and explicitly separates current operating policy from final legal terms, which can be finalized once provider, tax/KYC, refund-window, payout-threshold, and paid-launch decisions are locked.
+- This improves launch credibility because developers and publishers can understand what happens after install, billing, dispute, incident, or takedown events before money movement is fully connected.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

@@ -1,4 +1,4 @@
-import { BookOpen, Braces, FileJson, LockKeyhole, SearchCode, Terminal } from "lucide-react";
+import { BookOpen, Braces, FileJson, LockKeyhole, Scale, SearchCode, Terminal } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 
@@ -101,6 +101,10 @@ export default async function DocsPage({ searchParams }: PageProps) {
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{dictionary.docsPage.publishNote}</span>
           </div>
+          <a className="secondary-button secondary-button--compact docs-terms-link" href={localizedHref("/terms", locale)}>
+            <Scale size={15} aria-hidden="true" />
+            <span>{locale === "zh" ? "\u8fd0\u8425\u6761\u6b3e" : "Operating terms"}</span>
+          </a>
         </aside>
       </section>
     </main>

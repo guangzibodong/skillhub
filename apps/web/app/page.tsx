@@ -273,6 +273,7 @@ tools: skillhub.search, skillhub.get`}</code>
           <a href={`${apiUrl}/health`}>{dictionary.common.health}</a>
           <a href={`${apiUrl}/mcp`}>{dictionary.common.mcp}</a>
           <a href={localizedHref("/publish", locale)}>{dictionary.common.publish}</a>
+          <a href={localizedHref("/terms", locale)}>{locale === "zh" ? "\u6761\u6b3e" : "Terms"}</a>
           <a href="https://github.com/guangzibodong/skillhub">{dictionary.common.github}</a>
         </div>
       </footer>

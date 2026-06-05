@@ -140,7 +140,8 @@ Required pages:
 - Publish entry.
 - Login/register.
 - Personal center.
-- Pricing/terms later.
+- Public operating terms for marketplace use, publishing responsibilities, refunds, disputes, data retention, takedowns, notifications, and provider-deferred payment/email boundaries.
+- Pricing/terms final legal review later.
 
 ### Login/Register And Personal Center
 
@@ -174,6 +175,7 @@ The public website must explain:
 - How developers install and call skills.
 - How publishers earn money.
 - How permissions and trust work.
+- What operating rules apply before and after paid marketplace launch, including refund/dispute handling, data retention, takedown, and payout readiness.
 
 ### Marketplace
 
@@ -627,6 +629,7 @@ The full product must include:
 - Admin audit logs.
 - Notification/event template records and admin template-management workflow.
 - Skill feedback, rating summaries, and moderation workflow.
+- Public operating terms page for buyers, publishers, and operators, with final legal terms replaceable before paid marketplace launch.
 
 ## Deferred Final Integrations
 
@@ -693,7 +696,7 @@ These need final decisions before implementation:
 - Whether paid publishing launches invite-only.
 - Minimum payout threshold.
 - Review SLA for paid skills.
-- Public terms for refunds, disputes, data retention, and takedowns.
+- Final legal review of public terms for refunds, disputes, data retention, takedowns, KYC, tax, and provider-specific payout windows.
 
 ## Phase Plan
 

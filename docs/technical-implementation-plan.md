@@ -287,6 +287,7 @@ Acceptance checks:
 - `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
 - `/publishers/[slug]`: public publisher trust profile with marketplace-safe skill and operating signals.
 - `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
+- `/terms`: public operating terms for buyers, publishers, platform operators, refunds, disputes, data retention, takedown, notifications, and provider-deferred payment/email boundaries.
 
 ### Developer Workspace
 
@@ -428,6 +429,8 @@ Completed:
 - `/admin` now exposes a compact Process due control beside the external delivery queue, so operators can run provider dry-runs or delivery batches from the command center.
 - `/v1/admin/launch-readiness` now returns a secret-safe production readiness report for OAuth, email-code delivery, webhook delivery, database migrations, notification templates, runtime API-key hashing, commission rules, payout state, production guardrails, and intentionally deferred payment-provider work.
 - `/admin` now exposes launch readiness beside the command-center metrics, giving operators a single blocker/warning/ready/deferred view before production rollout.
+- `/terms` now gives SkillHub a public operating-terms surface for buyer use, publisher responsibilities, review/takedown, commission/payout, refunds/disputes, data retention, notifications/webhooks, and deferred provider integrations before final legal terms and paid-marketplace provider contracts are connected.
+- The home footer and docs page now link to `/terms`, so marketplace rules are discoverable from the public site instead of living only in internal docs.
 - User notification inbox endpoints now let organization-scoped users read in-app events and mark unread items as read, so recorded notification events become a repeat-use dashboard surface instead of admin-only logs.
 - User notification inbox responses now include unread/read/failure totals plus per-topic counts, and organization-scoped users can mark all unread in-app events as read from the API and dashboard sidebars.
 - Dashboard organization operations now expose notification preference controls so users can choose in-app, email, and webhook channels before final email-provider delivery is connected.
@@ -481,6 +484,7 @@ Next:
 
 - Provider-specific production OAuth app configuration and callback rollout.
 - Resolve any launch-readiness blockers reported by `/admin` before public launch or paid marketplace rollout.
+- Finalize legal review of `/terms` once payment provider, payout provider, tax/KYC region, refund window, and minimum payout decisions are locked.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
 

@@ -193,6 +193,19 @@ The web app uses this data for `/publishers`, `/publishers/[slug]`, marketplace 
 curl "https://api.useskillhub.com/v1/stats"
 ```
 
+## Public Operating Terms
+
+The web app exposes public marketplace operating terms at:
+
+```txt
+https://app.useskillhub.com/terms
+https://app.useskillhub.com/terms?lang=zh
+```
+
+The terms page is not an API endpoint. It documents the current operating policy for buyer/developer use, publisher responsibilities, review and takedown, commission and payout states, refunds and disputes, data retention, notifications and webhooks, and provider-deferred payment/email integrations. It is intended to make pre-launch marketplace rules visible while final payment provider, payout provider, tax/KYC, refund-window, and minimum-payout decisions remain open.
+
+Final legal terms can replace or extend this page before paid marketplace launch without changing the API state machines for reviews, installs, runtime invocations, ledger posting, payout requests, adjustment records, notification events, or audit logs.
+
 ## Platform Overview
 
 These endpoints expose the first real operating shape for the two-sided marketplace. They are safe to use before payment and email providers are connected because they read product states, not external provider movement.
