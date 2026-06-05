@@ -1034,6 +1034,31 @@ curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
 
 Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
 
+Admin/support operators can also manage reusable notification templates:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/notification-templates?limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Create or update a template by its unique `templateKey`, `channel`, and `locale`:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/notification-templates" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateKey": "skill.review.approved",
+    "channel": "email",
+    "locale": "en",
+    "subject": "Skill review approved",
+    "body": "Your skill {{skillSlug}} has been approved.",
+    "status": "active"
+  }'
+```
+
+Template channels are `in_app`, `email`, and `webhook`. Template statuses are `draft`, `active`, and `archived`. The API validates required `templateKey`, `subject`, and `body` fields, writes an admin audit row, and queues an in-app platform notification so template changes are operationally visible before final email and webhook delivery providers are connected.
+
 ## Abuse Reports And Takedowns
 
 Developers and project operators can report a skill when runtime behavior, security, privacy, billing, quality, or spam signals need trust review:

@@ -2511,6 +2511,154 @@ a {
   padding: 12px;
 }
 
+.notification-template-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.notification-template-form,
+.notification-template-update-form {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.72fr) minmax(110px, 0.32fr) minmax(90px, 0.24fr) minmax(110px, 0.28fr);
+  gap: 9px;
+  align-items: end;
+}
+
+.notification-template-form {
+  border: 1px solid rgba(123, 214, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(123, 214, 255, 0.045);
+  padding: 12px;
+}
+
+.notification-template-form label,
+.notification-template-update-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.notification-template-form label span,
+.notification-template-update-form label span,
+.notification-template-card__head span:not(.status-chip),
+.notification-template-empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notification-template-form input,
+.notification-template-form select,
+.notification-template-form textarea,
+.notification-template-update-form input,
+.notification-template-update-form select,
+.notification-template-update-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+}
+
+.notification-template-form input,
+.notification-template-form select,
+.notification-template-update-form input,
+.notification-template-update-form select {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+.notification-template-form textarea,
+.notification-template-update-form textarea {
+  min-height: 110px;
+  resize: vertical;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  padding: 9px 10px;
+}
+
+.notification-template-form input:focus,
+.notification-template-form select:focus,
+.notification-template-form textarea:focus,
+.notification-template-update-form input:focus,
+.notification-template-update-form select:focus,
+.notification-template-update-form textarea:focus {
+  border-color: rgba(123, 214, 255, 0.46);
+  box-shadow: 0 0 0 3px rgba(123, 214, 255, 0.11);
+}
+
+.notification-template-form select option,
+.notification-template-update-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.notification-template-form__wide {
+  grid-column: 1 / -1;
+}
+
+.notification-template-form .secondary-button,
+.notification-template-update-form .secondary-button {
+  width: min(220px, 100%);
+  justify-content: center;
+}
+
+.notification-template-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-template-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.notification-template-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.notification-template-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notification-template-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.notification-template-card__head span:not(.status-chip) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-template-card .action-message span,
+.notification-template-panel > .action-message span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-template-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  padding: 11px;
+}
+
 .admin-layout {
   grid-template-columns: minmax(0, 1fr) 380px;
   align-items: start;
@@ -7110,6 +7258,9 @@ a {
   .admin-adjustment-action-form--dispute,
   .incident-create-form,
   .incident-action-form,
+  .notification-template-card__head,
+  .notification-template-form,
+  .notification-template-update-form,
   .organization-team-card__head,
   .organization-team-meta,
   .organization-webhook-card__head,
@@ -7125,6 +7276,8 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-template-form .secondary-button,
+  .notification-template-update-form .secondary-button,
   .organization-team-form .secondary-button,
   .organization-team-role-form .secondary-button,
   .organization-team-token-form .secondary-button,
@@ -7141,6 +7294,8 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-template-form .secondary-button,
+  .notification-template-update-form .secondary-button,
   .organization-team-form .secondary-button,
   .organization-team-role-form .secondary-button,
   .organization-team-token-form .secondary-button,
@@ -7221,11 +7376,14 @@ a {
 
   .abuse-report-card__head .status-chip,
   .incident-card__head .status-chip,
+  .notification-template-card__head .status-chip,
   .organization-team-card__head .status-chip,
   .organization-webhook-card__head .status-chip,
   .skill-feedback-review-card__head .status-chip,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-template-form .secondary-button,
+  .notification-template-update-form .secondary-button,
   .skill-feedback-action-form .secondary-button,
   .abuse-report-action-form .secondary-button {
     justify-self: start;

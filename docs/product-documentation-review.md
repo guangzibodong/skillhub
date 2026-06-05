@@ -321,6 +321,13 @@ Added user notification inbox, covering:
 - Dashboard now surfaces notification context and links to the relevant project, skill, dashboard, or admin view.
 - This turns audit/event recording into a user-visible repeat-use loop instead of leaving notifications as admin-only operational logs.
 
+Added admin notification template management, covering:
+
+- Admin/support operators can list, create, and update reusable notification templates from `/admin`.
+- Templates are unique by `templateKey`, `channel`, and `locale`, so SkillHub can maintain separate in-app, email, webhook, English, and Chinese variants.
+- Template lifecycle states are `draft`, `active`, and `archived`, allowing operators to stage copy before final email or webhook providers are connected.
+- Each template change writes an admin audit log and queues an in-app platform notification, keeping communication changes reviewable instead of hidden in code.
+
 Added runtime incident operations, covering:
 
 - Trust and platform operators can list active incidents, open a new incident by skill slug, assign severity, and move incidents through monitoring, resolution, and postmortem states from `/admin`.

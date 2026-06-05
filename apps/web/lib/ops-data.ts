@@ -38,6 +38,17 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type NotificationTemplateRecord = {
+  id: string;
+  templateKey: string;
+  channel: "email" | "in_app" | "webhook";
+  locale: string;
+  subject: string;
+  body: string;
+  status: "active" | "archived" | "draft";
+  updatedAt: string;
+};
+
 export type OrganizationRole = "owner" | "admin" | "developer" | "publisher" | "reviewer" | "finance";
 
 export type OrganizationTeamMember = {
@@ -651,6 +662,39 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
+  {
+    id: "demo-template-skill-review",
+    templateKey: "skill.review.approved",
+    channel: "in_app",
+    locale: "en",
+    subject: "Skill review approved",
+    body: "Your skill {{skillSlug}} has been approved and can appear in marketplace discovery.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-runtime-incident",
+    templateKey: "runtime.incident.opened",
+    channel: "email",
+    locale: "en",
+    subject: "Runtime incident opened for {{skillName}}",
+    body: "SkillHub opened a {{severity}} incident for {{skillName}}. Review the publisher workspace for recovery steps.",
+    status: "draft",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-payout",
+    templateKey: "publisher.payout.review",
+    channel: "webhook",
+    locale: "en",
+    subject: "Payout request entered review",
+    body: "{\"event\":\"publisher.payout.review\",\"payoutId\":\"{{payoutId}}\",\"amountCents\":\"{{amountCents}}\"}",
+    status: "draft",
+    updatedAt: "demo"
   }
 ];
 
@@ -1772,6 +1816,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return payload.notifications;
   } catch {
     return fallbackNotifications;
+  }
+}
+
+export async function getAdminNotificationTemplates(): Promise<NotificationTemplateRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackNotificationTemplates;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/notification-templates?limit=24`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Notification templates failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { templates: NotificationTemplateRecord[] };
+    return payload.templates;
+  } catch {
+    return fallbackNotificationTemplates;
   }
 }
 

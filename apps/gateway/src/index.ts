@@ -79,6 +79,10 @@ import {
   markUserNotificationRead
 } from "./notifications.js";
 import {
+  listNotificationTemplates,
+  upsertNotificationTemplate
+} from "./notification-templates.js";
+import {
   listNotificationPreferences,
   upsertNotificationPreference
 } from "./notification-preferences.js";
@@ -1251,6 +1255,40 @@ app.get("/v1/admin/notifications", async (c) => {
   return c.json({
     notifications: await listAdminNotifications(limit)
   });
+});
+
+app.get("/v1/admin/notification-templates", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    templates: await listNotificationTemplates(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/notification-templates", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        template: await upsertNotificationTemplate(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to save notification template." }, 400);
+  }
 });
 
 app.get("/v1/notifications", async (c) => {

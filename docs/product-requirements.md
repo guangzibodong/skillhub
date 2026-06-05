@@ -273,7 +273,7 @@ Requirements:
 - User and org management.
 - Organization member and role operations, including owner/admin/developer/publisher/reviewer/finance assignments, organization-scoped token issuance, and access-removal audit trails.
 - Audit stream.
-- Notification/event templates, with actual email protocol integration deferred until the final integration phase.
+- Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
 - Ranking/featured listing controls.
@@ -533,7 +533,7 @@ The full product must include:
 - Payout review.
 - Refunds and disputes.
 - Admin audit logs.
-- Notification/event templates.
+- Notification/event template records and admin template-management workflow.
 - Skill feedback, rating summaries, and moderation workflow.
 
 ## Deferred Final Integrations
@@ -554,7 +554,7 @@ Even before these integrations are connected, SkillHub must still model:
 - Balance states.
 - Refund/dispute states.
 - Notification triggers.
-- Email template records.
+- Email, in-app, and webhook template records.
 - Audit logs for every payment, payout, dispute, refund, and notification action.
 
 ## Explicit Non-Goals

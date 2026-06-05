@@ -15,6 +15,7 @@ import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
+import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
@@ -24,6 +25,7 @@ import {
   getAdminDisputes,
   getAdminIncidents,
   getAdminNotifications,
+  getAdminNotificationTemplates,
   getAdminPayouts,
   getAdminReviews,
   getAdminRefunds,
@@ -93,9 +95,21 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, incidents, skillFeedback, reviews] = await Promise.all([
+  const [
+    financeLedger,
+    notifications,
+    notificationTemplates,
+    payouts,
+    refunds,
+    disputes,
+    abuseReports,
+    incidents,
+    skillFeedback,
+    reviews
+  ] = await Promise.all([
     getFinanceLedger(),
     getAdminNotifications(),
+    getAdminNotificationTemplates(),
     getAdminPayouts(),
     getAdminRefunds(),
     getAdminDisputes(),
@@ -211,6 +225,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
             ))}
           </div>
         </aside>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
