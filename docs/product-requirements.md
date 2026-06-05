@@ -157,6 +157,7 @@ Personal center requirements:
 
 - Show profile identity, email, platform role, organization, and membership role.
 - Show connected or available login methods: email, Google, GitHub, and token fallback.
+- Store connected provider identities separately from raw session tokens, including provider user id, verified provider email, connection time, and latest login time.
 - Show token-session metadata without exposing the raw token after first reveal.
 - Show workspace readiness: team members, active tokens, project count, owned skill count, unread notifications, notification preference coverage, billing readiness, invoice readiness, publisher status, and payout status.
 - Let the user reach developer, publisher, dashboard, and admin workspaces from one place.

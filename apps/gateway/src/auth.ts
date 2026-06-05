@@ -60,8 +60,10 @@ type OAuthProviderConfig = {
 };
 
 type OAuthProfile = {
+  avatarUrl: string | null;
   displayName: string | null;
   email: string;
+  emailVerified: boolean;
   providerUserId: string;
 };
 
@@ -165,6 +167,7 @@ export async function requireServiceAuthorization(authorizationHeader: string | 
 
 export async function createBootstrapUserToken(input: BootstrapTokenInput) {
   const sql = await requireSql();
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(sql);
   const email = normalizeEmail(input.email);
   const organizationSlug = normalizeSlug(input.organizationSlug ?? "skillhub-demo");
   const organizationName = normalizeDisplay(input.organizationName, "SkillHub Demo Org");
@@ -186,6 +189,15 @@ export async function createBootstrapUserToken(input: BootstrapTokenInput) {
       returning id::text, email, display_name as "displayName", platform_role as "platformRole"
     `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
     const user = userRows[0];
+
+    if (authIdentitiesAvailable) {
+      await upsertEmailAuthIdentity(tx, {
+        displayName,
+        email,
+        userId: user.id
+      });
+    }
+
     const organizationRows = (await tx`
       insert into organizations (name, slug)
       values (${organizationName}, ${organizationSlug})
@@ -243,6 +255,7 @@ export async function createBootstrapUserToken(input: BootstrapTokenInput) {
 
 export async function createSignupUserToken(input: SignupTokenInput) {
   const sql = await requireSql();
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(sql);
   const email = normalizeEmail(String(input.email ?? ""));
   const displayName = normalizeDisplay(String(input.displayName ?? ""), email);
   const organizationName = normalizeDisplay(String(input.organizationName ?? ""), `${displayName}'s workspace`);
@@ -261,6 +274,15 @@ export async function createSignupUserToken(input: SignupTokenInput) {
       returning id::text, email, display_name as "displayName", platform_role as "platformRole"
     `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
     const user = userRows[0];
+
+    if (authIdentitiesAvailable) {
+      await upsertEmailAuthIdentity(tx, {
+        displayName,
+        email,
+        userId: user.id
+      });
+    }
+
     const existingOrganizationRows = (await tx`
       select id::text
       from organizations
@@ -400,19 +422,14 @@ export async function completeOAuthLogin(provider: OAuthProvider, input: { code?
   const config = getOAuthConfig(provider, env);
   const profile = await fetchOAuthProfile(config, code);
   const sql = await requireSql();
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(sql);
   const rawToken = `shub_user_${randomToken(32)}`;
   const tokenHash = await sha256Hex(rawToken);
   const providerName = provider === "google" ? "Google" : "GitHub";
 
   return sql.begin(async (tx: Sql) => {
-    const userRows = (await tx`
-      insert into users (email, display_name, platform_role)
-      values (${profile.email}, ${profile.displayName ?? profile.email}, 'user')
-      on conflict (email) do update set
-        display_name = coalesce(users.display_name, excluded.display_name)
-      returning id::text, email, display_name as "displayName", platform_role as "platformRole"
-    `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
-    const user = userRows[0];
+    const identityUser = authIdentitiesAvailable ? await findUserByAuthIdentity(tx, provider, profile.providerUserId) : null;
+    const user = identityUser ?? (await upsertOAuthUserByEmail(tx, profile));
     const membershipRows = (await tx`
       select
         om.organization_id::text as "organizationId",
@@ -446,6 +463,10 @@ export async function completeOAuthLogin(provider: OAuthProvider, input: { code?
         ...organization,
         role: "owner"
       };
+    }
+
+    if (authIdentitiesAvailable) {
+      await upsertOAuthAuthIdentity(tx, user.id, provider, profile);
     }
 
     const tokenRows = (await tx`
@@ -685,6 +706,14 @@ async function requireSql(): Promise<Sql> {
   return sql;
 }
 
+async function isAuthIdentitiesTableAvailable(sql: Sql) {
+  const rows = (await sql`
+    select to_regclass('public.user_auth_identities') is not null as "exists"
+  `) as Array<{ exists: boolean }>;
+
+  return rows[0]?.exists === true;
+}
+
 function readBearer(header?: string): string | undefined {
   if (!header?.startsWith("Bearer ")) {
     return undefined;
@@ -760,6 +789,110 @@ function normalizeSignupRole(value: unknown): OrganizationRole {
   }
 
   return role as OrganizationRole;
+}
+
+async function findUserByAuthIdentity(tx: Sql, provider: OAuthProvider, providerUserId: string) {
+  const rows = (await tx`
+    select
+      u.id::text,
+      u.email,
+      u.display_name as "displayName",
+      u.platform_role as "platformRole"
+    from user_auth_identities identity
+    join users u on u.id = identity.user_id
+    where identity.provider = ${provider}
+      and identity.provider_user_id = ${providerUserId}
+    limit 1
+  `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+
+  if (!rows[0]) {
+    return null;
+  }
+
+  return rows[0];
+}
+
+async function upsertOAuthUserByEmail(tx: Sql, profile: OAuthProfile) {
+  const userRows = (await tx`
+    insert into users (email, display_name, platform_role)
+    values (${profile.email}, ${profile.displayName ?? profile.email}, 'user')
+    on conflict (email) do update set
+      display_name = coalesce(users.display_name, excluded.display_name)
+    returning id::text, email, display_name as "displayName", platform_role as "platformRole"
+  `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+
+  return userRows[0];
+}
+
+async function upsertEmailAuthIdentity(tx: Sql, input: { displayName: string | null; email: string; userId: string }) {
+  await tx`
+    insert into user_auth_identities (
+      user_id,
+      provider,
+      provider_user_id,
+      email,
+      email_verified,
+      display_name,
+      metadata,
+      last_login_at
+    )
+    values (
+      ${input.userId},
+      'email',
+      ${input.email},
+      ${input.email},
+      false,
+      ${input.displayName},
+      ${tx.json({ source: "skillhub_email_signup" })},
+      now()
+    )
+    on conflict (user_id, provider) do update set
+      provider_user_id = excluded.provider_user_id,
+      email = excluded.email,
+      display_name = coalesce(excluded.display_name, user_auth_identities.display_name),
+      metadata = user_auth_identities.metadata || excluded.metadata,
+      last_login_at = now(),
+      updated_at = now()
+  `;
+}
+
+async function upsertOAuthAuthIdentity(tx: Sql, userId: string, provider: OAuthProvider, profile: OAuthProfile) {
+  await tx`
+    insert into user_auth_identities (
+      user_id,
+      provider,
+      provider_user_id,
+      email,
+      email_verified,
+      display_name,
+      avatar_url,
+      metadata,
+      last_login_at
+    )
+    values (
+      ${userId},
+      ${provider},
+      ${profile.providerUserId},
+      ${profile.email},
+      ${profile.emailVerified},
+      ${profile.displayName},
+      ${profile.avatarUrl},
+      ${tx.json({
+        providerUserId: profile.providerUserId,
+        source: "oauth_callback"
+      })},
+      now()
+    )
+    on conflict (user_id, provider) do update set
+      provider_user_id = excluded.provider_user_id,
+      email = excluded.email,
+      email_verified = excluded.email_verified,
+      display_name = coalesce(excluded.display_name, user_auth_identities.display_name),
+      avatar_url = coalesce(excluded.avatar_url, user_auth_identities.avatar_url),
+      metadata = user_auth_identities.metadata || excluded.metadata,
+      last_login_at = now(),
+      updated_at = now()
+  `;
 }
 
 function getOAuthConfig(provider: OAuthProvider, env?: OAuthRuntimeEnv): OAuthProviderConfig {
@@ -851,19 +984,29 @@ async function fetchGoogleProfile(accessToken: string): Promise<OAuthProfile> {
       Authorization: `Bearer ${accessToken}`
     }
   });
-  const profile = (await response.json().catch(() => ({}))) as { email?: string; id?: string; name?: string; verified_email?: boolean };
+  const profile = (await response.json().catch(() => ({}))) as {
+    email?: string;
+    id?: string;
+    name?: string;
+    picture?: string;
+    verified_email?: boolean;
+  };
 
   if (!response.ok || !profile.email || !profile.id) {
     throw new Error("Unable to read Google OAuth profile.");
   }
 
-  if (profile.verified_email === false) {
+  const emailVerified = profile.verified_email === true;
+
+  if (!emailVerified) {
     throw new Error("Google email must be verified before signing in.");
   }
 
   return {
+    avatarUrl: profile.picture ?? null,
     displayName: profile.name ?? null,
     email: normalizeEmail(profile.email),
+    emailVerified,
     providerUserId: profile.id
   };
 }
@@ -876,7 +1019,13 @@ async function fetchGitHubProfile(accessToken: string): Promise<OAuthProfile> {
       "User-Agent": "SkillHub OAuth"
     }
   });
-  const user = (await userResponse.json().catch(() => ({}))) as { email?: string | null; id?: number; login?: string; name?: string | null };
+  const user = (await userResponse.json().catch(() => ({}))) as {
+    avatar_url?: string | null;
+    email?: string | null;
+    id?: number;
+    login?: string;
+    name?: string | null;
+  };
 
   if (!userResponse.ok || !user.id) {
     throw new Error("Unable to read GitHub OAuth profile.");
@@ -889,8 +1038,10 @@ async function fetchGitHubProfile(accessToken: string): Promise<OAuthProfile> {
   }
 
   return {
+    avatarUrl: user.avatar_url ?? null,
     displayName: user.name ?? user.login ?? null,
     email: normalizeEmail(email),
+    emailVerified: true,
     providerUserId: String(user.id)
   };
 }

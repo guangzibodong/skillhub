@@ -36,6 +36,7 @@ const copy = {
     admin: "Admin",
     billing: "Billing",
     connectedAccounts: "Connected login methods",
+    connectedAt: "Connected",
     created: "Created",
     dashboard: "Dashboard",
     developer: "Developer workspace",
@@ -46,6 +47,7 @@ const copy = {
     heroEyebrow: "Personal center",
     heroTitle: "Your SkillHub account command center.",
     invoiceReady: "Invoice ready",
+    lastLogin: "Last login",
     lastUsed: "Last used",
     memberSince: "Member since",
     no: "No",
@@ -61,19 +63,22 @@ const copy = {
     signIn: "Sign in",
     skills: "Skills",
     scopes: "Scopes",
+    shortcuts: "Workspace shortcuts",
     team: "Team",
     token: "Token",
     unread: "Unread notifications",
+    verifiedEmail: "Verified email",
     workspace: "Workspace readiness",
     yes: "Yes"
   },
   zh: {
     account: "账号",
-    accountEmpty: "连接工作区会话后，可查看资料、组织、账单、提现和通知准备度。",
+    accountEmpty: "连接工作区会话后，可以查看资料、组织、账单、提现和通知准备度。",
     activeTokens: "有效 token",
     admin: "后台",
     billing: "账单",
-    connectedAccounts: "已建模登录方式",
+    connectedAccounts: "已连接登录方式",
+    connectedAt: "连接时间",
     created: "创建时间",
     dashboard: "综合工作台",
     developer: "开发者工作台",
@@ -83,7 +88,8 @@ const copy = {
     heroEyebrow: "个人中心",
     heroTitle: "你的 SkillHub 账号控制中心。",
     invoiceReady: "发票准备",
-    lastUsed: "最后使用",
+    lastLogin: "最近登录",
+    lastUsed: "最近使用",
     memberSince: "加入时间",
     no: "否",
     notificationPreferences: "通知偏好",
@@ -98,9 +104,11 @@ const copy = {
     signIn: "去登录",
     skills: "技能",
     scopes: "权限范围",
+    shortcuts: "工作入口",
     team: "团队",
     token: "Token",
     unread: "未读通知",
+    verifiedEmail: "已验证邮箱",
     workspace: "工作区准备度",
     yes: "是"
   }
@@ -181,7 +189,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
             </div>
             <div className="account-method-grid">
               {account.loginMethods.map((method) => (
-                <LoginMethodCard key={method.provider} locale={locale} method={method} />
+                <LoginMethodCard key={method.provider} labels={labels} locale={locale} method={method} />
               ))}
             </div>
           </article>
@@ -214,7 +222,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
           <article className="ops-panel account-shortcut-panel">
             <div className="card-kicker">
               <LayoutDashboard size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "工作入口" : "Workspace shortcuts"}</span>
+              <span>{labels.shortcuts}</span>
             </div>
             <div className="account-shortcut-grid">
               <Shortcut href="/developer" icon={LayoutDashboard} label={labels.developer} locale={locale} />
@@ -261,9 +269,19 @@ export default async function AccountPage({ searchParams }: PageProps) {
   );
 }
 
-function LoginMethodCard({ locale, method }: { locale: Locale; method: AuthProviderStatus }) {
+function LoginMethodCard({
+  labels,
+  locale,
+  method
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  method: AuthProviderStatus;
+}) {
   const Icon = method.provider === "github" ? Github : method.provider === "google" ? Chrome : method.provider === "email" ? Mail : KeyRound;
-  const statusLabel = statusText(method.status, locale);
+  const emailLine = method.providerEmail
+    ? `${method.emailVerified ? labels.verifiedEmail : labels.email}: ${method.providerEmail}`
+    : localizedMethodDescription(method, locale);
 
   return (
     <div className={`account-method-card account-method-card--${method.provider}`}>
@@ -271,9 +289,10 @@ function LoginMethodCard({ locale, method }: { locale: Locale; method: AuthProvi
         <Icon size={18} aria-hidden="true" />
       </div>
       <strong>{providerLabel(method, locale)}</strong>
-      <span className={`status-chip status-chip--${method.status === "configuration_required" ? "warning" : method.status === "connected" ? "success" : "neutral"}`}>
-        {statusLabel}
-      </span>
+      <span className={statusClass(method.status)}>{statusText(method.status, locale)}</span>
+      <p>{emailLine}</p>
+      {method.connectedAt ? <small>{`${labels.connectedAt}: ${formatDate(method.connectedAt, locale)}`}</small> : null}
+      {method.lastLoginAt ? <small>{`${labels.lastLogin}: ${formatDate(method.lastLoginAt, locale)}`}</small> : null}
     </div>
   );
 }
@@ -332,6 +351,42 @@ function formatNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function localizedMethodDescription(method: AuthProviderStatus, locale: Locale) {
+  if (locale !== "zh") {
+    return method.description;
+  }
+
+  if (method.provider === "email") {
+    return "邮箱工作区注册可用，正式邮箱验证会在邮件服务接入后补齐。";
+  }
+
+  if (method.provider === "google") {
+    return method.status === "active" ? "Google OAuth 已可用于登录。" : "配置 Google 凭证和回调后启用。";
+  }
+
+  if (method.provider === "github") {
+    return method.status === "active" ? "GitHub OAuth 已可用于登录。" : "配置 GitHub 凭证和回调后启用。";
+  }
+
+  return "团队邀请和运营兜底使用用户 token。";
+}
+
+function statusClass(status: AuthProviderStatus["status"]) {
+  if (status === "connected") {
+    return "status-chip status-chip--success";
+  }
+
+  if (status === "configuration_required") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (status === "active") {
+    return "status-chip";
+  }
+
+  return "status-chip status-chip--neutral";
 }
 
 function statusText(status: AuthProviderStatus["status"], locale: Locale) {

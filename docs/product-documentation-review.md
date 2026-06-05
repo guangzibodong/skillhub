@@ -533,6 +533,14 @@ Added OAuth login foundation, covering:
 - OAuth remains environment-driven: provider secrets are never committed, and the login UI stays in configuration-required mode until the deployment supplies callback base URL, client ids, client secrets, and state secret.
 - This removes the biggest normal-user onboarding gap after token login: developers and publishers can enter the same real dashboard surfaces through a standard identity provider once production credentials are configured.
 
+Added connected auth identity storage, covering:
+
+- `user_auth_identities` stores email, Google, and GitHub identities separately from user access tokens.
+- OAuth callbacks now prefer provider user id lookup before verified-email fallback, which keeps the same SkillHub user when a provider email changes.
+- Account summaries expose provider email, verification state, connection time, and latest login time for the personal center.
+- `/account` Chinese copy was repaired and the connected login-method cards now show real provider identity state instead of only generic provider readiness.
+- This strengthens account trust and retention because users can see how they are connected, while admins gain a future foundation for disconnect, session review, and account-security workflows.
+
 Added publisher skill version management, covering:
 
 - `/v1/publisher/skills` now returns owned skill version history with per-version manifest, review state, runtime checks, install count, call count, and created time.

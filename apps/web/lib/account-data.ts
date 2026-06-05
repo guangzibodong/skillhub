@@ -1,9 +1,13 @@
 import { getUserToken } from "@/lib/auth-session";
 
 export type AuthProviderStatus = {
+  connectedAt?: string | null;
   description: string;
+  emailVerified?: boolean;
   label: string;
+  lastLoginAt?: string | null;
   provider: "email" | "github" | "google" | "token";
+  providerEmail?: string | null;
   startUrl: string | null;
   status: "active" | "configuration_required" | "connected" | "deferred";
   type: "email" | "oauth" | "token";

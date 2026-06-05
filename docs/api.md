@@ -279,6 +279,8 @@ https://api.useskillhub.com/v1/auth/oauth/github/callback
 
 The callback endpoint exchanges the provider code, reads a verified email/profile, creates or reuses the SkillHub user, reuses the first existing organization membership or creates a new owner workspace, mints a 14-day `shub_user_...` session token, stores it in the `skillhub_user_token` httpOnly cookie, and redirects back to the app `returnTo` URL.
 
+Connected login identities are stored in `user_auth_identities`. Google and GitHub callbacks first look up the provider identity by provider user id; if it already exists, SkillHub reuses that user even when the provider email has changed. If no provider identity exists, SkillHub falls back to the verified provider email, then records the connected provider email, verification state, connection time, latest login time, and provider metadata. Email registration also records an `email` identity so the account center can distinguish modeled identity state from a raw token session.
+
 Required OAuth environment:
 
 ```env
@@ -306,7 +308,7 @@ curl "https://api.useskillhub.com/v1/account" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-`GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and payout status. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness.
+`GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and payout status. Login methods include provider connection metadata where available: `providerEmail`, `emailVerified`, `connectedAt`, and `lastLoginAt`. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness.
 
 Admin/support operators can inspect the platform identity directory:
 

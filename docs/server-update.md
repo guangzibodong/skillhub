@@ -18,9 +18,11 @@ grep -q '^SKILLHUB_ENV=' .env || echo "SKILLHUB_ENV=production" >> .env
 sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 
 # Existing Postgres volumes do not rerun docker-entrypoint init migrations.
-# Apply the new marketplace curation migration before rebuilding the API.
+# Apply new idempotent migrations before rebuilding the API.
 docker compose -f docker-compose.1panel.yml up -d postgres
 docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/018_marketplace_curation.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/019_marketplace_curation_appeals.sql
+docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/020_user_auth_identities.sql
 
 docker compose -f docker-compose.1panel.yml up -d --build
 

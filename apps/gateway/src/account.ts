@@ -67,10 +67,24 @@ type WorkspaceReadiness = {
   unreadNotifications: number;
 };
 
+type AuthIdentityRecord = {
+  avatarUrl: string | null;
+  connectedAt: string;
+  displayName: string | null;
+  email: string;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  provider: "email" | "github" | "google";
+};
+
 export type AuthProviderStatus = {
+  connectedAt?: string | null;
   description: string;
+  emailVerified?: boolean;
   label: string;
+  lastLoginAt?: string | null;
   provider: "email" | "github" | "google" | "token";
+  providerEmail?: string | null;
   startUrl: string | null;
   status: "active" | "configuration_required" | "connected" | "deferred";
   type: "email" | "oauth" | "token";
@@ -128,18 +142,20 @@ export async function getAccountSummary(subject: AuthSubject, env?: AccountProvi
     };
   }
 
-  const [profile, organization, memberships, session, workspace] = await Promise.all([
+  const [profile, organization, memberships, session, workspace, authIdentities] = await Promise.all([
     getUserProfile(sql, subject.userId),
     getOrganizationProfile(sql, subject.organizationId),
     listMemberships(sql, subject.userId),
     getTokenSession(sql, subject.tokenId),
-    getWorkspaceReadiness(sql, subject.userId, subject.organizationId)
+    getWorkspaceReadiness(sql, subject.userId, subject.organizationId),
+    listAuthIdentities(sql, subject.userId)
   ]);
   const activeMembership =
     memberships.find((membership) => membership.organizationId === subject.organizationId) ?? memberships[0] ?? null;
 
   return {
     loginMethods: getAuthProviderStatuses(env, {
+      authIdentities,
       emailConnected: Boolean(profile.email),
       tokenConnected: Boolean(session)
     }),
@@ -154,7 +170,7 @@ export async function getAccountSummary(subject: AuthSubject, env?: AccountProvi
 
 export function getAuthProviderStatuses(
   env?: AccountProviderEnv,
-  options: { emailConnected?: boolean; tokenConnected?: boolean } = {}
+  options: { authIdentities?: AuthIdentityRecord[]; emailConnected?: boolean; tokenConnected?: boolean } = {}
 ): AuthProviderStatus[] {
   const googleConfigured = hasConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID ?? getProcessEnv("SKILLHUB_GOOGLE_CLIENT_ID") ?? getProcessEnv("GOOGLE_CLIENT_ID"));
   const googleSecretConfigured = hasConfiguredValue(
@@ -172,40 +188,66 @@ export function getAuthProviderStatuses(
   );
   const googleReady = googleConfigured && googleSecretConfigured && callbackConfigured && stateSecretConfigured;
   const githubReady = githubConfigured && githubSecretConfigured && callbackConfigured && stateSecretConfigured;
+  const identities = new Map((options.authIdentities ?? []).map((identity) => [identity.provider, identity]));
+  const emailIdentity = identities.get("email");
+  const googleIdentity = identities.get("google");
+  const githubIdentity = identities.get("github");
 
   return [
     {
-      description: "Self-service email workspace registration is live. Password/OAuth-provider email verification remains a final auth-provider integration.",
+      connectedAt: emailIdentity?.connectedAt ?? null,
+      description: emailIdentity
+        ? `Email workspace identity is connected for ${emailIdentity.email}.`
+        : "Self-service email workspace registration is live. Password/OAuth-provider email verification remains a final auth-provider integration.",
+      emailVerified: emailIdentity?.emailVerified ?? false,
       label: "Email registration",
+      lastLoginAt: emailIdentity?.lastLoginAt ?? null,
       provider: "email",
+      providerEmail: emailIdentity?.email ?? null,
       startUrl: "/v1/auth/signup",
-      status: options.emailConnected ? "connected" : "active",
+      status: emailIdentity || options.emailConnected ? "connected" : "active",
       type: "email"
     },
     {
-      description: googleReady
-        ? "Google OAuth is configured and ready to start a provider login redirect."
-        : "Configure Google client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
+      connectedAt: googleIdentity?.connectedAt ?? null,
+      description: googleIdentity
+        ? `Google is connected with verified email ${googleIdentity.email}.`
+        : googleReady
+          ? "Google OAuth is configured and ready to start a provider login redirect."
+          : "Configure Google client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
+      emailVerified: googleIdentity?.emailVerified ?? false,
       label: "Google",
+      lastLoginAt: googleIdentity?.lastLoginAt ?? null,
       provider: "google",
+      providerEmail: googleIdentity?.email ?? null,
       startUrl: googleReady ? "/v1/auth/oauth/google/start" : null,
-      status: googleReady ? "active" : "configuration_required",
+      status: googleIdentity ? "connected" : googleReady ? "active" : "configuration_required",
       type: "oauth"
     },
     {
-      description: githubReady
-        ? "GitHub OAuth is configured and ready to start a provider login redirect."
-        : "Configure GitHub client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
+      connectedAt: githubIdentity?.connectedAt ?? null,
+      description: githubIdentity
+        ? `GitHub is connected with verified email ${githubIdentity.email}.`
+        : githubReady
+          ? "GitHub OAuth is configured and ready to start a provider login redirect."
+          : "Configure GitHub client id, client secret, callback base URL, and OAuth state secret before enabling the live redirect.",
+      emailVerified: githubIdentity?.emailVerified ?? false,
       label: "GitHub",
+      lastLoginAt: githubIdentity?.lastLoginAt ?? null,
       provider: "github",
+      providerEmail: githubIdentity?.email ?? null,
       startUrl: githubReady ? "/v1/auth/oauth/github/start" : null,
-      status: githubReady ? "active" : "configuration_required",
+      status: githubIdentity ? "connected" : githubReady ? "active" : "configuration_required",
       type: "oauth"
     },
     {
+      connectedAt: null,
       description: "User access tokens remain the operator and team-invite fallback until OAuth/passwordless sessions are connected.",
+      emailVerified: false,
       label: "User token",
+      lastLoginAt: null,
       provider: "token",
+      providerEmail: null,
       startUrl: null,
       status: options.tokenConnected ? "connected" : "active",
       type: "token"
@@ -298,6 +340,30 @@ async function getTokenSession(sql: Sql, tokenId: string | null | undefined): Pr
   `) as TokenSessionRecord[];
 
   return rows[0] ?? null;
+}
+
+async function listAuthIdentities(sql: Sql, userId: string): Promise<AuthIdentityRecord[]> {
+  const tableRows = (await sql`
+    select to_regclass('public.user_auth_identities') is not null as "exists"
+  `) as Array<{ exists: boolean }>;
+
+  if (tableRows[0]?.exists !== true) {
+    return [];
+  }
+
+  return (await sql`
+    select
+      provider,
+      email,
+      email_verified as "emailVerified",
+      display_name as "displayName",
+      avatar_url as "avatarUrl",
+      connected_at as "connectedAt",
+      last_login_at as "lastLoginAt"
+    from user_auth_identities
+    where user_id = ${userId}
+    order by connected_at asc
+  `) as AuthIdentityRecord[];
 }
 
 async function getWorkspaceReadiness(
