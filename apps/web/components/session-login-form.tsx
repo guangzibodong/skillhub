@@ -14,7 +14,7 @@ type SessionLoginFormProps = {
 const copy = {
   en: {
     helper:
-      "Use a token created by signup, an invite, or the team console. SkillHub stores it in an httpOnly browser cookie for this app.",
+      "Use a token created by an invite or the team console. SkillHub stores it in an httpOnly browser cookie for this app.",
     label: "User access token",
     placeholder: "shub_user_...",
     submit: "Connect workspace",
@@ -23,7 +23,7 @@ const copy = {
     workspace: "Open dashboard"
   },
   zh: {
-    helper: "使用注册、邀请或团队控制台生成的用户 token。SkillHub 会把它存入本站 httpOnly 浏览器 cookie。",
+    helper: "使用邀请或团队控制台生成的用户 token。SkillHub 会把它写入本站 httpOnly 浏览器 cookie。",
     label: "用户访问 token",
     placeholder: "shub_user_...",
     submit: "连接工作区",

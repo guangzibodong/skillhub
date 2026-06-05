@@ -460,13 +460,13 @@ export function getAuthProviderStatuses(
       connectedAt: emailIdentity?.connectedAt ?? null,
       description: emailIdentity
         ? `Email workspace identity is connected for ${emailIdentity.email}.`
-        : "Self-service email workspace registration is live. Password/OAuth-provider email verification remains a final auth-provider integration.",
+        : "Email verification code access is live for workspace signup and existing-user login. Provider delivery can be connected without changing the account model.",
       emailVerified: emailIdentity?.emailVerified ?? false,
-      label: "Email registration",
+      label: "Email code",
       lastLoginAt: emailIdentity?.lastLoginAt ?? null,
       provider: "email",
       providerEmail: emailIdentity?.email ?? null,
-      startUrl: "/v1/auth/signup",
+      startUrl: "/v1/auth/email/request-code",
       status: emailIdentity || options.emailConnected ? "connected" : "active",
       type: "email"
     },

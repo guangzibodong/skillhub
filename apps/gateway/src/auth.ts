@@ -47,6 +47,18 @@ type SignupTokenInput = {
   role?: unknown;
 };
 
+type EmailAccessMode = "login" | "signup";
+
+type EmailAccessStartInput = SignupTokenInput & {
+  mode?: unknown;
+  returnTo?: unknown;
+};
+
+type EmailAccessVerifyInput = {
+  challengeId?: unknown;
+  code?: unknown;
+};
+
 export type OAuthProvider = "github" | "google";
 
 type OAuthProviderConfig = {
@@ -81,6 +93,9 @@ type OAuthRuntimeEnv = {
   SKILLHUB_GITHUB_CLIENT_SECRET?: string;
   SKILLHUB_GOOGLE_CLIENT_ID?: string;
   SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+  SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
+  SKILLHUB_EMAIL_AUTH_SECRET?: string;
+  SKILLHUB_ENV?: string;
   SKILLHUB_OAUTH_STATE_SECRET?: string;
 };
 
@@ -366,6 +381,174 @@ export async function createSignupUserToken(input: SignupTokenInput) {
   });
 }
 
+export async function requestEmailAccessCode(input: EmailAccessStartInput, env?: OAuthRuntimeEnv) {
+  const sql = await requireSql();
+
+  if (!(await isEmailChallengesTableAvailable(sql))) {
+    throw new Error("Email verification challenge storage is not available.");
+  }
+
+  const email = normalizeEmail(String(input.email ?? ""));
+  const mode = normalizeEmailAccessMode(input.mode);
+  const displayName = normalizeDisplay(String(input.displayName ?? ""), email);
+  const organizationName =
+    mode === "signup" ? normalizeDisplay(String(input.organizationName ?? ""), `${displayName}'s workspace`) : null;
+  const organizationSlug = mode === "signup" ? normalizeSignupSlug(String(input.organizationSlug ?? ""), organizationName ?? email) : null;
+  const role = mode === "signup" ? normalizeSignupRole(input.role) : null;
+  const returnTo = normalizeReturnTo(input.returnTo ?? "/account");
+  const code = randomNumericCode();
+  const codeHash = await emailCodeHash(email, code, env);
+  const exposeCode = shouldExposeEmailDebugCode(env);
+
+  const rows = (await sql`
+    insert into email_login_challenges (
+      email,
+      mode,
+      code_hash,
+      expires_at,
+      display_name,
+      organization_name,
+      organization_slug,
+      role,
+      return_to,
+      delivery_channel,
+      delivery_status,
+      metadata
+    )
+    values (
+      ${email},
+      ${mode},
+      ${codeHash},
+      now() + interval '10 minutes',
+      ${displayName},
+      ${organizationName},
+      ${organizationSlug},
+      ${role},
+      ${returnTo},
+      'email',
+      'queued',
+      ${sql.json({
+        source: "email_access_code_request"
+      })}
+    )
+    returning id::text as "challengeId", expires_at as "expiresAt", created_at as "createdAt"
+  `) as Array<{ challengeId: string; createdAt: string; expiresAt: string }>;
+  const challenge = rows[0];
+
+  await sql`
+    insert into notification_events (event_type, channel, subject, payload, status)
+    values ('auth.email.code.requested', 'email', 'SkillHub verification code', ${sql.json({
+      code,
+      challengeId: challenge.challengeId,
+      email,
+      expiresAt: challenge.expiresAt,
+      mode
+    })}, 'queued')
+  `;
+
+  return {
+    challengeId: challenge.challengeId,
+    createdAt: challenge.createdAt,
+    delivery: {
+      channel: "email",
+      status: "queued"
+    },
+    deliveryPreviewCode: exposeCode ? code : null,
+    email,
+    expiresAt: challenge.expiresAt,
+    mode,
+    organizationSlug,
+    returnTo
+  };
+}
+
+export async function verifyEmailAccessCode(input: EmailAccessVerifyInput, env?: OAuthRuntimeEnv) {
+  const sql = await requireSql();
+
+  if (!(await isEmailChallengesTableAvailable(sql))) {
+    throw new Error("Email verification challenge storage is not available.");
+  }
+
+  const challengeId = normalizeUuid(String(input.challengeId ?? ""));
+  const code = normalizeEmailCode(input.code);
+
+  return sql.begin(async (tx: Sql) => {
+    const challengeRows = (await tx`
+      select
+        id::text as "challengeId",
+        email,
+        mode,
+        code_hash as "codeHash",
+        attempts,
+        max_attempts as "maxAttempts",
+        expires_at as "expiresAt",
+        consumed_at as "consumedAt",
+        display_name as "displayName",
+        organization_name as "organizationName",
+        organization_slug as "organizationSlug",
+        role,
+        return_to as "returnTo"
+      from email_login_challenges
+      where id = ${challengeId}
+      for update
+    `) as Array<{
+      attempts: number;
+      challengeId: string;
+      codeHash: string;
+      consumedAt: string | null;
+      displayName: string | null;
+      email: string;
+      expiresAt: string;
+      maxAttempts: number;
+      mode: EmailAccessMode;
+      organizationName: string | null;
+      organizationSlug: string | null;
+      returnTo: string | null;
+      role: OrganizationRole | null;
+    }>;
+    const challenge = challengeRows[0];
+
+    if (!challenge) {
+      throw new Error("Email verification challenge was not found.");
+    }
+
+    if (challenge.consumedAt) {
+      throw new Error("Email verification code has already been used.");
+    }
+
+    if (new Date(challenge.expiresAt).getTime() < Date.now()) {
+      throw new Error("Email verification code has expired.");
+    }
+
+    if (challenge.attempts >= challenge.maxAttempts) {
+      throw new Error("Email verification code has too many failed attempts.");
+    }
+
+    const codeHash = await emailCodeHash(challenge.email, code, env);
+
+    if (codeHash !== challenge.codeHash) {
+      await tx`
+        update email_login_challenges
+        set attempts = attempts + 1,
+            updated_at = now()
+        where id = ${challenge.challengeId}
+      `;
+      throw new Error("Email verification code is invalid.");
+    }
+
+    await tx`
+      update email_login_challenges
+      set consumed_at = now(),
+          updated_at = now()
+      where id = ${challenge.challengeId}
+    `;
+
+    return challenge.mode === "signup"
+      ? completeEmailSignup(tx, challenge)
+      : completeEmailLogin(tx, challenge);
+  });
+}
+
 export function publicSubject(subject: AuthSubject) {
   return {
     type: subject.type,
@@ -570,6 +753,245 @@ export function sessionCookieHeader(token: string, env?: OAuthRuntimeEnv) {
   return parts.join("; ");
 }
 
+async function completeEmailSignup(
+  tx: Sql,
+  challenge: {
+    challengeId: string;
+    displayName: string | null;
+    email: string;
+    organizationName: string | null;
+    organizationSlug: string | null;
+    returnTo: string | null;
+    role: OrganizationRole | null;
+  }
+) {
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(tx);
+  const displayName = challenge.displayName ?? challenge.email;
+  const organizationName = challenge.organizationName ?? `${displayName}'s workspace`;
+  const organizationSlug = challenge.organizationSlug ?? normalizeSignupSlug("", organizationName);
+  const role = challenge.role ?? "owner";
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+
+  const existingOrganizationRows = (await tx`
+    select id::text
+    from organizations
+    where slug = ${organizationSlug}
+    limit 1
+  `) as Array<{ id: string }>;
+
+  if (existingOrganizationRows.length > 0) {
+    throw new Error("Workspace slug is already taken.");
+  }
+
+  const userRows = (await tx`
+    insert into users (email, display_name, platform_role)
+    values (${challenge.email}, ${displayName}, 'user')
+    on conflict (email) do update set
+      display_name = coalesce(users.display_name, excluded.display_name)
+    returning id::text, email, display_name as "displayName", platform_role as "platformRole"
+  `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+  const user = userRows[0];
+  const organizationRows = (await tx`
+    insert into organizations (name, slug)
+    values (${organizationName}, ${organizationSlug})
+    returning id::text, name, slug
+  `) as Array<{ id: string; name: string; slug: string }>;
+  const organization = organizationRows[0];
+
+  await tx`
+    insert into organization_members (organization_id, user_id, role)
+    values (${organization.id}, ${user.id}, ${role})
+    on conflict (organization_id, user_id) do update set role = excluded.role
+  `;
+
+  if (authIdentitiesAvailable) {
+    await upsertEmailAuthIdentity(tx, {
+      displayName,
+      email: challenge.email,
+      emailVerified: true,
+      source: "email_code_signup",
+      userId: user.id
+    });
+  }
+
+  const tokenRows = (await tx`
+    insert into user_access_tokens (
+      user_id,
+      organization_id,
+      name,
+      token_hash,
+      token_prefix,
+      token_last4,
+      scopes,
+      expires_at
+    )
+    values (
+      ${user.id},
+      ${organization.id},
+      'Email verification session',
+      ${tokenHash},
+      'shub_user',
+      ${rawToken.slice(-4)},
+      ${[] as string[]},
+      now() + interval '14 days'
+    )
+    returning
+      id::text,
+      name,
+      token_prefix as "tokenPrefix",
+      token_last4 as "tokenLast4",
+      expires_at as "expiresAt",
+      created_at as "createdAt"
+  `) as Array<{ createdAt: string; expiresAt: string | null; id: string; name: string; tokenLast4: string; tokenPrefix: string }>;
+  const token = tokenRows[0];
+
+  await tx`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${user.id}, 'auth.email.signup.verified', 'organization', ${organization.id}, 'Email verification completed for workspace signup.', ${tx.json({
+      challengeId: challenge.challengeId,
+      email: challenge.email,
+      organizationSlug,
+      role,
+      tokenId: token.id
+    })})
+  `;
+
+  await tx`
+    insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+    values (${user.id}, ${organization.id}, 'auth.email.signup.verified', 'in_app', 'Email workspace signup verified', ${tx.json({
+      challengeId: challenge.challengeId,
+      organizationSlug,
+      role
+    })}, 'queued')
+  `;
+
+  return {
+    accessToken: {
+      ...token,
+      token: rawToken
+    },
+    organization,
+    returnTo: normalizeReturnTo(challenge.returnTo),
+    user
+  };
+}
+
+async function completeEmailLogin(
+  tx: Sql,
+  challenge: {
+    challengeId: string;
+    displayName: string | null;
+    email: string;
+    returnTo: string | null;
+  }
+) {
+  const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(tx);
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+  const userRows = (await tx`
+    select id::text, email, display_name as "displayName", platform_role as "platformRole"
+    from users
+    where email = ${challenge.email}
+    limit 1
+  `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+  const user = userRows[0];
+
+  if (!user) {
+    throw new Error("No SkillHub workspace was found for this verified email.");
+  }
+
+  const membershipRows = (await tx`
+    select
+      om.organization_id::text as "organizationId",
+      o.name,
+      o.slug,
+      om.role
+    from organization_members om
+    join organizations o on o.id = om.organization_id
+    where om.user_id = ${user.id}
+    order by om.created_at asc
+    limit 1
+  `) as Array<{ organizationId: string; name: string; role: OrganizationRole; slug: string }>;
+  const membership = membershipRows[0];
+
+  if (!membership) {
+    throw new Error("No SkillHub workspace was found for this verified email.");
+  }
+
+  if (authIdentitiesAvailable) {
+    await upsertEmailAuthIdentity(tx, {
+      displayName: challenge.displayName ?? user.displayName,
+      email: challenge.email,
+      emailVerified: true,
+      source: "email_code_login",
+      userId: user.id
+    });
+  }
+
+  const tokenRows = (await tx`
+    insert into user_access_tokens (
+      user_id,
+      organization_id,
+      name,
+      token_hash,
+      token_prefix,
+      token_last4,
+      scopes,
+      expires_at
+    )
+    values (
+      ${user.id},
+      ${membership.organizationId},
+      'Email verification session',
+      ${tokenHash},
+      'shub_user',
+      ${rawToken.slice(-4)},
+      ${[] as string[]},
+      now() + interval '14 days'
+    )
+    returning
+      id::text,
+      name,
+      token_prefix as "tokenPrefix",
+      token_last4 as "tokenLast4",
+      expires_at as "expiresAt",
+      created_at as "createdAt"
+  `) as Array<{ createdAt: string; expiresAt: string | null; id: string; name: string; tokenLast4: string; tokenPrefix: string }>;
+  const token = tokenRows[0];
+
+  await tx`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${user.id}, 'auth.email.login.verified', 'user', ${user.id}, 'Email verification completed for login.', ${tx.json({
+      challengeId: challenge.challengeId,
+      organizationId: membership.organizationId,
+      tokenId: token.id
+    })})
+  `;
+
+  await tx`
+    insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+    values (${user.id}, ${membership.organizationId}, 'auth.email.login.verified', 'in_app', 'Email login verified', ${tx.json({
+      challengeId: challenge.challengeId,
+      organizationSlug: membership.slug
+    })}, 'queued')
+  `;
+
+  return {
+    accessToken: {
+      ...token,
+      token: rawToken
+    },
+    organization: {
+      id: membership.organizationId,
+      name: membership.name,
+      slug: membership.slug
+    },
+    returnTo: normalizeReturnTo(challenge.returnTo),
+    user
+  };
+}
+
 function roleResult(subject: AuthSubject, allowedRoles: AuthRole[]): AuthorizationResult {
   const allowed = new Set<AuthRole>(allowedRoles);
 
@@ -714,12 +1136,26 @@ async function isAuthIdentitiesTableAvailable(sql: Sql) {
   return rows[0]?.exists === true;
 }
 
+async function isEmailChallengesTableAvailable(sql: Sql) {
+  const rows = (await sql`
+    select to_regclass('public.email_login_challenges') is not null as "exists"
+  `) as Array<{ exists: boolean }>;
+
+  return rows[0]?.exists === true;
+}
+
 function readBearer(header?: string): string | undefined {
   if (!header?.startsWith("Bearer ")) {
     return undefined;
   }
 
   return header.slice("Bearer ".length).trim();
+}
+
+function randomNumericCode() {
+  const bytes = new Uint32Array(1);
+  crypto.getRandomValues(bytes);
+  return String(bytes[0] % 1_000_000).padStart(6, "0");
 }
 
 function randomToken(byteLength: number) {
@@ -733,6 +1169,24 @@ async function sha256Hex(value: string) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function emailCodeHash(email: string, code: string, env?: OAuthRuntimeEnv) {
+  return hmacSha256Hex(`${email}:${code}`, getEmailAuthSecret(env));
+}
+
+function getEmailAuthSecret(env?: OAuthRuntimeEnv) {
+  const secret =
+    getConfiguredValue(env?.SKILLHUB_EMAIL_AUTH_SECRET, "SKILLHUB_EMAIL_AUTH_SECRET") ??
+    getConfiguredValue(env?.SKILLHUB_OAUTH_STATE_SECRET, "SKILLHUB_OAUTH_STATE_SECRET") ??
+    getConfiguredValue(env?.SESSION_SECRET, "SESSION_SECRET") ??
+    getProcessEnv("SKILLHUB_ADMIN_TOKEN");
+
+  if (!secret) {
+    throw new Error("Email verification secret is not configured.");
+  }
+
+  return secret;
+}
+
 function normalizeEmail(email?: string) {
   const value = email?.trim().toLowerCase();
 
@@ -741,6 +1195,36 @@ function normalizeEmail(email?: string) {
   }
 
   return value;
+}
+
+function normalizeEmailAccessMode(value: unknown): EmailAccessMode {
+  const mode = String(value ?? "signup").trim();
+
+  if (mode !== "login" && mode !== "signup") {
+    throw new Error("Email access mode must be login or signup.");
+  }
+
+  return mode;
+}
+
+function normalizeEmailCode(value: unknown) {
+  const code = String(value ?? "").replace(/\D/g, "");
+
+  if (!/^\d{6}$/.test(code)) {
+    throw new Error("Email verification code must be 6 digits.");
+  }
+
+  return code;
+}
+
+function normalizeUuid(value: string) {
+  const normalized = value.trim();
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) {
+    throw new Error("Email verification challenge id is invalid.");
+  }
+
+  return normalized;
 }
 
 function normalizeSlug(value: string) {
@@ -824,7 +1308,12 @@ async function upsertOAuthUserByEmail(tx: Sql, profile: OAuthProfile) {
   return userRows[0];
 }
 
-async function upsertEmailAuthIdentity(tx: Sql, input: { displayName: string | null; email: string; userId: string }) {
+async function upsertEmailAuthIdentity(
+  tx: Sql,
+  input: { displayName: string | null; email: string; emailVerified?: boolean; source?: string; userId: string }
+) {
+  const emailVerified = input.emailVerified ?? false;
+
   await tx`
     insert into user_auth_identities (
       user_id,
@@ -841,14 +1330,15 @@ async function upsertEmailAuthIdentity(tx: Sql, input: { displayName: string | n
       'email',
       ${input.email},
       ${input.email},
-      false,
+      ${emailVerified},
       ${input.displayName},
-      ${tx.json({ source: "skillhub_email_signup" })},
+      ${tx.json({ source: input.source ?? "skillhub_email_signup" })},
       now()
     )
     on conflict (user_id, provider) do update set
       provider_user_id = excluded.provider_user_id,
       email = excluded.email,
+      email_verified = user_auth_identities.email_verified or excluded.email_verified,
       display_name = coalesce(excluded.display_name, user_auth_identities.display_name),
       metadata = user_auth_identities.metadata || excluded.metadata,
       last_login_at = now(),
@@ -1161,6 +1651,17 @@ function inferredCookieDomain(env?: OAuthRuntimeEnv) {
   } catch {
     return null;
   }
+}
+
+function shouldExposeEmailDebugCode(env?: OAuthRuntimeEnv) {
+  const configured = getConfiguredValue(env?.SKILLHUB_EMAIL_AUTH_DEBUG_CODES, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES")?.toLowerCase();
+
+  if (configured) {
+    return configured === "1" || configured === "true" || configured === "yes";
+  }
+
+  const runtimeEnv = getConfiguredValue(env?.SKILLHUB_ENV, "SKILLHUB_ENV")?.toLowerCase();
+  return runtimeEnv !== "production";
 }
 
 function getConfiguredValue(value: string | undefined, ...keys: string[]) {

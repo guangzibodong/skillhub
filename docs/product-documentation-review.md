@@ -557,6 +557,15 @@ Added connected identity disconnect guardrails, covering:
 - `/account` connected login cards now show provider-level disconnect controls with inline action feedback.
 - This strengthens account trust because users can remove stale provider connections without accidentally locking themselves out of publisher, developer, finance, or admin operations.
 
+Added email verification-code access, covering:
+
+- `email_login_challenges` stores email signup/login challenges with HMAC-hashed 6-digit codes, expiry, attempt limits, delivery status, metadata, and single-use consumption.
+- `/v1/auth/email/request-code` queues an email notification event for signup or login without issuing a session token.
+- `/v1/auth/email/verify-code` consumes the challenge in a transaction, verifies the email identity, creates or logs into the correct workspace, mints a 14-day user session, writes audit and in-app notification events, and lets the web app store the token in an httpOnly cookie without showing a long-lived token on screen.
+- `/login` now has a two-step email-code form for creating a workspace or logging into an existing workspace, while token fallback remains for invitations and operators.
+- The legacy `/v1/auth/signup` direct-token endpoint is disabled by default, reducing the biggest remaining account-onboarding shortcut before production OAuth and email-provider delivery are fully configured.
+- This strengthens first-visit trust because normal users can enter through an expected email-code flow instead of copying a raw token, and it strengthens launch readiness because the email-provider worker can attach to existing queued email events.
+
 Added publisher skill version management, covering:
 
 - `/v1/publisher/skills` now returns owned skill version history with per-version manifest, review state, runtime checks, install count, call count, and created time.

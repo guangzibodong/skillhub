@@ -91,10 +91,10 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackProviders: AuthProviderStatus[] = [
   {
-    description: "Self-service email workspace registration is live.",
-    label: "Email registration",
+    description: "Email code access is live for workspace signup and existing-user login.",
+    label: "Email code",
     provider: "email",
-    startUrl: "/v1/auth/signup",
+    startUrl: "/v1/auth/email/request-code",
     status: "active",
     type: "email"
   },

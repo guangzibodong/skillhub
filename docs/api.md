@@ -239,12 +239,13 @@ curl -X POST "https://api.useskillhub.com/v1/auth/bootstrap-token" \
 
 The raw user token is returned only once. SkillHub stores only the token hash, prefix, and last four characters.
 
-Create a public self-service workspace:
+Request an email verification code for public signup or existing-user login:
 
 ```bash
-curl -X POST "https://api.useskillhub.com/v1/auth/signup" \
+curl -X POST "https://api.useskillhub.com/v1/auth/email/request-code" \
   -H "Content-Type: application/json" \
   -d '{
+    "mode": "signup",
     "email": "builder@example.com",
     "displayName": "Agent Builder",
     "organizationName": "Agent Builder Lab",
@@ -253,7 +254,27 @@ curl -X POST "https://api.useskillhub.com/v1/auth/signup" \
   }'
 ```
 
-The signup flow creates a user, organization, membership, user token, audit log, and in-app notification event in one transaction. Set `SKILLHUB_DISABLE_PUBLIC_SIGNUP=true` to turn this endpoint off for invite-only deployments.
+For an existing user:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/auth/email/request-code" \
+  -H "Content-Type: application/json" \
+  -d '{"mode":"login","email":"builder@example.com"}'
+```
+
+`POST /v1/auth/email/request-code` creates an `email_login_challenges` record with a 10-minute HMAC-hashed 6-digit code, queues an `auth.email.code.requested` email notification event, and returns a challenge id. In non-production or when `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true`, the response may include `deliveryPreviewCode` for provider-deferred testing before the email provider is connected. Production email delivery should send the queued notification payload and keep code preview disabled.
+
+Verify the code and create the browser/session token:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/auth/email/verify-code" \
+  -H "Content-Type: application/json" \
+  -d '{"challengeId":"CHALLENGE_ID","code":"123456"}'
+```
+
+`POST /v1/auth/email/verify-code` locks and consumes the challenge in one transaction, enforces expiry and attempt limits, then either creates the new user/workspace membership for `signup` or logs an existing user into their first workspace for `login`. Successful verification writes the `email` identity with verified state, creates a 14-day `shub_user_...` session token, records audit logs, queues in-app notifications, and returns the token once so the web app can store it in the `skillhub_user_token` httpOnly cookie without showing it on the page.
+
+Set `SKILLHUB_DISABLE_PUBLIC_SIGNUP=true` to turn public email workspace creation off for invite-only deployments; existing users can still request `mode=login` codes. The old `/v1/auth/signup` direct-token endpoint is legacy and disabled by default; it only works when `SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN=true` is explicitly set.
 
 Read public login-method readiness:
 
@@ -261,7 +282,7 @@ Read public login-method readiness:
 curl "https://api.useskillhub.com/v1/auth/providers"
 ```
 
-The response lists `email`, `google`, `github`, and `token` methods. Email self-service registration is active through `/v1/auth/signup`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
+The response lists `email`, `google`, `github`, and `token` methods. Email code signup/login is active through `/v1/auth/email/request-code` and `/v1/auth/email/verify-code`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
 
 Start a provider login:
 
@@ -288,6 +309,8 @@ NEXT_PUBLIC_APP_URL=https://app.useskillhub.com
 SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com
 SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
 SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-secret
+SKILLHUB_EMAIL_AUTH_SECRET=replace-with-a-different-long-random-secret
+SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false
 SKILLHUB_GOOGLE_CLIENT_ID=
 SKILLHUB_GOOGLE_CLIENT_SECRET=
 SKILLHUB_GITHUB_CLIENT_ID=
@@ -357,8 +380,8 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
-- `/login` lets a new user create a workspace with email registration or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
+- `/login` is now a product account entry. It shows email-code access, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
+- `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.

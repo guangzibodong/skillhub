@@ -17,15 +17,16 @@ type PageProps = {
 const copy = {
   en: {
     account: "Account center",
-    body: "Create a real organization workspace, continue with Google or GitHub when configured, or connect a team token. Projects, publishing, billing, payout, and notifications run as the active member.",
+    body:
+      "Enter with an email verification code, continue with Google or GitHub when configured, or connect a team token. Projects, publishing, billing, payout, and notifications run as the active member.",
     eyebrow: "Account access",
     title: "Sign in, register, and enter your SkillHub workspace."
   },
   zh: {
     account: "个人中心",
-    body: "创建真实组织工作区，在配置后使用 Google 或 GitHub 登录，或者连接团队 token。项目、发布、账单、提现和通知都会按当前成员身份执行。",
+    body: "使用邮箱验证码进入工作区；Google/GitHub 配置后可直接登录；团队邀请和运营仍可使用 token 兜底。项目、发布、账单、提现和通知都会按当前成员身份执行。",
     eyebrow: "账号入口",
-    title: "登录、注册并进入你的 SkillHub 工作区。"
+    title: "登录、注册，并进入你的 SkillHub 工作区。"
   }
 } as const;
 

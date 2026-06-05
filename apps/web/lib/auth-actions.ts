@@ -12,10 +12,14 @@ export type AuthActionState = {
 };
 
 export type SignupActionState = AuthActionState & {
-  accessToken?: {
-    token: string;
-    tokenLast4: string;
-    tokenPrefix: string;
+  challenge?: {
+    challengeId: string;
+    deliveryPreviewCode?: string | null;
+    email: string;
+    expiresAt: string;
+    mode: "login" | "signup";
+    organizationName?: string;
+    organizationSlug?: string | null;
   };
   organization?: {
     name: string;
@@ -25,28 +29,32 @@ export type SignupActionState = AuthActionState & {
 
 const copy = {
   en: {
+    codeRequired: "Enter the 6-digit email verification code.",
+    codeSent: "Verification code queued for email delivery.",
     emailRequired: "Enter a valid email address.",
     invalidToken: "Enter a valid SkillHub user access token.",
     organizationRequired: "Enter an organization or workspace name.",
-    publicSignupDisabled: "Public workspace signup is disabled for this deployment.",
+    publicSignupDisabled: "Public email access is disabled for this deployment.",
     signedIn: "Workspace session connected.",
     signedOut: "Workspace session cleared.",
-    signedUp: "Workspace created and connected. Copy the token now; it will not be shown again.",
+    signedUp: "Email verified. Workspace session connected.",
     slugTaken: "This workspace slug is already taken.",
-    unableSignIn: "Unable to verify this token.",
-    unableSignup: "Unable to create this workspace."
+    unableEmail: "Unable to complete email verification.",
+    unableSignIn: "Unable to verify this token."
   },
   zh: {
+    codeRequired: "请输入 6 位邮箱验证码。",
+    codeSent: "验证码已进入邮件发送队列。",
     emailRequired: "请输入有效的邮箱地址。",
     invalidToken: "请输入有效的 SkillHub 用户访问 token。",
     organizationRequired: "请输入组织或工作区名称。",
-    publicSignupDisabled: "当前部署已关闭公开创建工作区。",
+    publicSignupDisabled: "当前部署已关闭公开邮箱访问。",
     signedIn: "工作区会话已连接。",
     signedOut: "工作区会话已清除。",
-    signedUp: "工作区已创建并连接。请现在保存 token，之后不会再次显示。",
+    signedUp: "邮箱已验证，工作区会话已连接。",
     slugTaken: "这个工作区 slug 已被使用。",
-    unableSignIn: "无法验证这个 token。",
-    unableSignup: "无法创建这个工作区。"
+    unableEmail: "无法完成邮箱验证。",
+    unableSignIn: "无法验证这个 token。"
   }
 } as const;
 
@@ -69,13 +77,7 @@ export async function signInAction(
   }
 
   await setSessionCookie(token);
-  revalidatePath("/");
-  revalidatePath("/dashboard");
-  revalidatePath("/developer");
-  revalidatePath("/publisher");
-  revalidatePath("/admin");
-  revalidatePath("/account");
-  revalidatePath("/publish");
+  revalidateWorkspace();
 
   return {
     message: labels.signedIn,
@@ -86,10 +88,27 @@ export async function signInAction(
 
 export async function signUpAction(
   locale: Locale,
-  _previousState: SignupActionState,
+  previousState: SignupActionState,
   formData: FormData
 ): Promise<SignupActionState> {
+  const intent = String(formData.get("intent") ?? "request").trim();
+
+  if (intent === "verify") {
+    return verifyEmailCodeAction(locale, previousState, formData);
+  }
+
+  return requestEmailCodeAction(locale, formData);
+}
+
+export async function signOutAction(locale: Locale) {
+  await clearSessionCookie();
+  revalidateWorkspace();
+  redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
+}
+
+async function requestEmailCodeAction(locale: Locale, formData: FormData): Promise<SignupActionState> {
   const labels = copy[locale];
+  const mode = normalizeEmailMode(formData.get("mode"));
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const displayName = String(formData.get("displayName") ?? "").trim();
   const organizationName = String(formData.get("organizationName") ?? "").trim();
@@ -100,17 +119,19 @@ export async function signUpAction(
     return { message: labels.emailRequired, status: "error" };
   }
 
-  if (!organizationName) {
+  if (mode === "signup" && !organizationName) {
     return { message: labels.organizationRequired, status: "error" };
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/v1/auth/signup`, {
+    const response = await fetch(`${getApiUrl()}/v1/auth/email/request-code`, {
       body: JSON.stringify({
         displayName,
         email,
+        mode,
         organizationName,
         organizationSlug,
+        returnTo: locale === "zh" ? "/account?lang=zh" : "/account?lang=en",
         role
       }),
       cache: "no-store",
@@ -120,12 +141,74 @@ export async function signUpAction(
       method: "POST"
     });
     const payload = (await response.json().catch(() => ({}))) as {
+      challenge?: {
+        challengeId?: string;
+        deliveryPreviewCode?: string | null;
+        email?: string;
+        expiresAt?: string;
+        mode?: "login" | "signup";
+        organizationSlug?: string | null;
+      };
       error?: string;
-      signup?: {
+    };
+    const challenge = payload.challenge;
+
+    if (!response.ok || !challenge?.challengeId || !challenge.email || !challenge.expiresAt || !challenge.mode) {
+      return { message: emailErrorMessage(payload.error, labels), status: "error" };
+    }
+
+    return {
+      challenge: {
+        challengeId: challenge.challengeId,
+        deliveryPreviewCode: challenge.deliveryPreviewCode ?? null,
+        email: challenge.email,
+        expiresAt: challenge.expiresAt,
+        mode: challenge.mode,
+        organizationName,
+        organizationSlug: challenge.organizationSlug ?? organizationSlug
+      },
+      message: labels.codeSent,
+      status: "success"
+    };
+  } catch {
+    return { message: labels.unableEmail, status: "error" };
+  }
+}
+
+async function verifyEmailCodeAction(
+  locale: Locale,
+  previousState: SignupActionState,
+  formData: FormData
+): Promise<SignupActionState> {
+  const labels = copy[locale];
+  const challengeId = String(formData.get("challengeId") ?? previousState.challenge?.challengeId ?? "").trim();
+  const code = String(formData.get("code") ?? "").trim();
+
+  if (!challengeId || !/^\d{6}$/.test(code.replace(/\D/g, ""))) {
+    return {
+      ...previousState,
+      message: labels.codeRequired,
+      status: "error"
+    };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/auth/email/verify-code`, {
+      body: JSON.stringify({
+        challengeId,
+        code
+      }),
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      login?: {
         accessToken?: {
           token?: string;
-          tokenLast4?: string;
-          tokenPrefix?: string;
         };
         organization?: {
           name?: string;
@@ -133,43 +216,39 @@ export async function signUpAction(
         };
       };
     };
-    const token = payload.signup?.accessToken?.token;
+    const token = payload.login?.accessToken?.token;
 
     if (!response.ok || !token) {
-      return { message: signupErrorMessage(payload.error, labels), status: "error" };
+      return {
+        ...previousState,
+        message: emailErrorMessage(payload.error, labels),
+        status: "error"
+      };
     }
 
     await setSessionCookie(token);
     const subject = await fetchSessionSubject(token);
-    revalidatePath("/");
-    revalidatePath("/dashboard");
-    revalidatePath("/developer");
-    revalidatePath("/publisher");
-    revalidatePath("/admin");
-    revalidatePath("/account");
-    revalidatePath("/publish");
+    revalidateWorkspace();
 
     return {
-      accessToken: {
-        token,
-        tokenLast4: payload.signup?.accessToken?.tokenLast4 ?? token.slice(-4),
-        tokenPrefix: payload.signup?.accessToken?.tokenPrefix ?? "shub_user"
-      },
       message: labels.signedUp,
       organization: {
-        name: payload.signup?.organization?.name ?? organizationName,
-        slug: payload.signup?.organization?.slug ?? organizationSlug
+        name: payload.login?.organization?.name ?? previousState.challenge?.organizationName ?? "SkillHub workspace",
+        slug: payload.login?.organization?.slug ?? previousState.challenge?.organizationSlug ?? ""
       },
       status: "success",
       subject: subject ?? undefined
     };
   } catch {
-    return { message: labels.unableSignup, status: "error" };
+    return {
+      ...previousState,
+      message: labels.unableEmail,
+      status: "error"
+    };
   }
 }
 
-export async function signOutAction(locale: Locale) {
-  await clearSessionCookie();
+function revalidateWorkspace() {
   revalidatePath("/");
   revalidatePath("/dashboard");
   revalidatePath("/developer");
@@ -177,23 +256,26 @@ export async function signOutAction(locale: Locale) {
   revalidatePath("/admin");
   revalidatePath("/account");
   revalidatePath("/publish");
-  redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
+}
+
+function normalizeEmailMode(value: FormDataEntryValue | null): "login" | "signup" {
+  return value === "login" ? "login" : "signup";
 }
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 }
 
-function signupErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+function emailErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
   const message = error?.toLowerCase() ?? "";
 
   if (message.includes("slug") && message.includes("taken")) {
     return labels.slugTaken;
   }
 
-  if (message.includes("public signup") && message.includes("disabled")) {
+  if (message.includes("public") && message.includes("disabled")) {
     return labels.publicSignupDisabled;
   }
 
-  return error || labels.unableSignup;
+  return error || labels.unableEmail;
 }

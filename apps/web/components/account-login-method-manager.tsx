@@ -128,7 +128,7 @@ function localizedMethodDescription(method: AuthProviderStatus, locale: Locale) 
   }
 
   if (method.provider === "email") {
-    return "邮箱工作区注册可用，正式邮箱验证会在邮件服务接入后补齐。";
+    return "邮箱验证码可用于创建工作区或登录已有工作区。";
   }
 
   if (method.provider === "google") {
@@ -178,11 +178,11 @@ function statusText(status: AuthProviderStatus["status"], locale: Locale) {
 
 function providerLabel(provider: AuthProviderStatus, locale: Locale) {
   if (locale !== "zh") {
-    return provider.label;
+    return provider.provider === "email" ? "Email code" : provider.label;
   }
 
   if (provider.provider === "email") {
-    return "邮箱注册";
+    return "邮箱验证码";
   }
 
   if (provider.provider === "token") {

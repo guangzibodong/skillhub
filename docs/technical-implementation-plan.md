@@ -39,6 +39,7 @@ Core tables:
 - `api_keys`
 - `user_access_tokens`
 - `user_auth_identities`
+- `email_login_challenges`
 - Final auth-provider identities for Google, GitHub, and email login
 
 API groups:
@@ -57,6 +58,7 @@ Acceptance checks:
 - Publisher actions require publisher or owner role.
 - Admin actions require reviewer, finance, or super admin role.
 - Login/register UI supports Google OAuth, GitHub OAuth, and email registration/login once the final provider is connected.
+- Email verification-code login stores HMAC-hashed short-lived challenges, consumes them once, limits attempts, and creates httpOnly web sessions only after verification.
 - Personal center exposes profile, connected accounts, organization membership, roles, notification preferences, session/token security, billing profile, and payout readiness links.
 
 ### 2. Skill Registry And Publishing
@@ -347,6 +349,8 @@ Completed:
 - Gateway role checks for project, publisher, reviewer, finance, and admin operations.
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.
 - `/v1/auth/providers` endpoint now exposes product-visible login-method readiness for email registration, Google OAuth, GitHub OAuth, and token fallback, activating provider redirects only when credentials, callback base URL, and state secret are configured.
+- Email verification-code access is modeled through migration `021_email_login_challenges.sql`, `/v1/auth/email/request-code`, and `/v1/auth/email/verify-code`, with HMAC-hashed 6-digit codes, 10-minute expiry, attempt limits, single-use transaction consumption, queued email notification events, verified email identity updates, 14-day user session tokens, audit logs, and httpOnly web-session storage.
+- The legacy `/v1/auth/signup` direct-token endpoint is disabled by default and requires `SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN=true`, so public users no longer bypass email verification through the product login flow.
 - Google and GitHub OAuth start/callback endpoints now sign state, exchange provider codes, require verified email, create or reuse the user and organization membership, mint a 14-day user session token, set the httpOnly `skillhub_user_token` cookie, and redirect back to the app account flow.
 - `user_auth_identities` migration `020_user_auth_identities.sql` now records email, Google, and GitHub login identities with provider user id, verified provider email, connection time, latest login time, avatar URL, and metadata.
 - OAuth callbacks now prefer existing provider identity lookup before falling back to verified email, preventing provider email changes from accidentally creating a second SkillHub user.
@@ -355,7 +359,7 @@ Completed:
 - `/v1/account/sessions/:tokenId/revoke` now lets users revoke old non-current sessions, blocks current-session self-revocation, writes `auth.session.revoked` audit records, and queues `account.security.session_revoked` in-app notifications.
 - `/v1/account/identities/:provider/disconnect` now lets users disconnect Google or GitHub login identities only when another OAuth provider or a separate active user token remains available, preventing account lockout.
 - `/account` connected login method cards now expose provider disconnect controls with inline success/error feedback, audit records, and `account.security.identity_disconnected` notification events.
-- `/login` now behaves like a product account entry instead of a token-only console: email registration is active, Google/GitHub login paths become real provider redirects when configured, and token login remains the operator/team fallback.
+- `/login` now behaves like a product account entry instead of a token-only console: email-code signup/login is active, Google/GitHub login paths become real provider redirects when configured, and token login remains the operator/team fallback.
 - `/account` now gives users a personal center for profile, connected login methods, provider email, connection time, provider disconnect guardrails, organization role, session/token security with old-session revocation, workspace readiness, workspace shortcuts, and notification preferences.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
@@ -454,7 +458,7 @@ Completed:
 
 Next:
 
-- Password/passwordless email provider integration to replace raw signup-token reveal with verified email sessions.
+- Email provider delivery worker/protocol integration to replace provider-deferred code preview in non-production.
 - Provider-specific production OAuth app configuration and callback rollout.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.

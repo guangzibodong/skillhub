@@ -148,7 +148,7 @@ Account UX is part of the product, not an internal bootstrap console.
 
 Login/register must support these paths:
 
-- Email registration for a new organization workspace.
+- Email verification-code registration for a new organization workspace and email-code login for existing users.
 - Google OAuth login with provider credentials, consent screen, server callback, verified email, state validation, and httpOnly web session.
 - GitHub OAuth login with provider credentials, callback, verified email, state validation, and httpOnly web session.
 - User token fallback for bootstrap, team invitations, and operator recovery.
@@ -158,6 +158,7 @@ Personal center requirements:
 - Show profile identity, email, platform role, organization, and membership role.
 - Show connected or available login methods: email, Google, GitHub, and token fallback.
 - Store connected provider identities separately from raw session tokens, including provider user id, verified provider email, connection time, and latest login time.
+- Store short-lived email verification challenges with HMAC-hashed codes, expiry, attempt limits, delivery status, and single-use consumption before issuing a session.
 - Show token-session metadata without exposing the raw token after first reveal.
 - List current, active, expired, and revoked account sessions using token fingerprints only, and let users revoke old non-current sessions from the personal center.
 - Let users disconnect Google or GitHub identities with lockout-safe guardrails that require another OAuth provider or a separate active token fallback before the identity is removed.
@@ -600,7 +601,7 @@ The full product must include:
 - Auth.
 - Google login.
 - GitHub login.
-- Email registration and login.
+- Email verification-code registration and login.
 - Personal center for profile, connected accounts, organization membership, notification preferences, security sessions, and billing/payout readiness links.
 - Organizations.
 - Role-based access.

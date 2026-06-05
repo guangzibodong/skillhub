@@ -1489,6 +1489,37 @@ a {
   grid-column: 1 / -1;
 }
 
+.auth-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.auth-mode-switch__item {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+.auth-mode-switch__item--active {
+  background: rgba(155, 226, 141, 0.13);
+  color: var(--ink);
+}
+
 .auth-form label {
   display: grid;
   gap: 7px;
@@ -1563,6 +1594,41 @@ a {
 
 .auth-token-result {
   gap: 9px;
+}
+
+.auth-verification-form {
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.auth-verification-panel {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.auth-verification-panel strong,
+.auth-verification-panel code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.auth-verification-panel span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.auth-verification-panel code {
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.07);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  padding: 8px 10px;
 }
 
 .auth-token-result label {

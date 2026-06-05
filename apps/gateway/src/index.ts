@@ -162,8 +162,10 @@ import {
   oauthErrorRedirectUrl,
   oauthSuccessRedirectUrl,
   publicSubject,
+  requestEmailAccessCode,
   requireServiceAuthorization,
   sessionCookieHeader,
+  verifyEmailAccessCode,
   type AuthRole,
   type OAuthProvider
 } from "./auth.js";
@@ -190,9 +192,12 @@ type Env = {
     SKILLHUB_GITHUB_CLIENT_SECRET?: string;
     SKILLHUB_GOOGLE_CLIENT_ID?: string;
     SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+    SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
+    SKILLHUB_EMAIL_AUTH_SECRET?: string;
     SKILLHUB_OAUTH_STATE_SECRET?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
+    SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN?: string;
     PACKAGES?: R2Bucket;
   };
 };
@@ -421,9 +426,42 @@ app.post("/v1/auth/bootstrap-token", async (c) => {
   }
 });
 
+app.post("/v1/auth/email/request-code", async (c) => {
+  const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+
+  if (isPublicSignupDisabled(c.env) && body.mode !== "login") {
+    return c.json({ error: "Public email access is disabled for this deployment." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        challenge: await requestEmailAccessCode(body, c.env)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: emailAccessErrorMessage(error) }, emailAccessErrorStatus(error));
+  }
+});
+
+app.post("/v1/auth/email/verify-code", async (c) => {
+  try {
+    return c.json({
+      login: await verifyEmailAccessCode((await c.req.json().catch(() => ({}))) as Record<string, unknown>, c.env)
+    });
+  } catch (error) {
+    return c.json({ error: emailAccessErrorMessage(error) }, emailAccessErrorStatus(error));
+  }
+});
+
 app.post("/v1/auth/signup", async (c) => {
   if (isPublicSignupDisabled(c.env)) {
     return c.json({ error: "Public signup is disabled for this deployment." }, 403);
+  }
+
+  if (!isLegacySignupTokenEnabled(c.env)) {
+    return c.json({ error: "Legacy signup token creation is disabled. Use /v1/auth/email/request-code." }, 410);
   }
 
   try {
@@ -2501,6 +2539,11 @@ function isPublicSignupDisabled(env: Env["Bindings"] | undefined) {
   return value === "1" || value === "true" || value === "yes";
 }
 
+function isLegacySignupTokenEnabled(env: Env["Bindings"] | undefined) {
+  const value = (env?.SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN ?? getProcessEnv("SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN"))?.trim().toLowerCase();
+  return value === "1" || value === "true" || value === "yes";
+}
+
 function signupErrorMessage(error: unknown) {
   if (!(error instanceof Error)) {
     return "Unable to create workspace signup.";
@@ -2513,6 +2556,42 @@ function signupErrorMessage(error: unknown) {
   }
 
   return error.message || "Unable to create workspace signup.";
+}
+
+function emailAccessErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "Unable to complete email verification.";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("organizations_slug") || (message.includes("duplicate") && message.includes("slug"))) {
+    return "Workspace slug is already taken.";
+  }
+
+  return error.message || "Unable to complete email verification.";
+}
+
+function emailAccessErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
+  if (!(error instanceof Error)) {
+    return 400;
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("database_url") || message.includes("not available") || message.includes("secret is not configured")) {
+    return 503;
+  }
+
+  if (message.includes("not found")) {
+    return 404;
+  }
+
+  if (message.includes("too many failed attempts") || message.includes("already been used")) {
+    return 403;
+  }
+
+  return 400;
 }
 
 function accountSecurityErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
