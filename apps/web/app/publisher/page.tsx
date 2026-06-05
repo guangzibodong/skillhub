@@ -1,8 +1,11 @@
 import {
   BadgeCheck,
   BriefcaseBusiness,
+  CheckCircle2,
   CircleDollarSign,
+  CircleDot,
   ClipboardList,
+  ListChecks,
   PackageCheck,
   RotateCcw,
   ShieldAlert,
@@ -38,6 +41,13 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type ReadinessTask = {
+  detail: string;
+  id: "session" | "profile" | "publish" | "verified" | "payout";
+  status: "blocked" | "current" | "done";
+  title: string;
+};
+
 const copy = {
   en: {
     adjustmentEmpty: "No recent refund or dispute activity",
@@ -54,6 +64,20 @@ const copy = {
       demand: "Open demand",
       skills: "Owned skills",
       verified: "Verified skills"
+    },
+    readiness: {
+      blocked: "Waiting",
+      current: "Next",
+      done: "Done",
+      progress: "readiness",
+      title: "Publisher launch checklist",
+      tasks: {
+        session: ["Connect workspace session", "Sign in with an organization token so publishing, pricing, payouts, and notifications are scoped."],
+        profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
+        publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],
+        verified: ["Reach verified listing status", "Complete review and activate pricing so buyers can trust and install the skill."],
+        payout: ["Prepare payout readiness", "Connect payout details before revenue matures into a withdrawal request."]
+      }
     },
     title: "Operate your SkillHub publishing business."
   },
@@ -73,9 +97,75 @@ const copy = {
       skills: "我的技能",
       verified: "已验证技能"
     },
+    readiness: {
+      blocked: "等待",
+      current: "下一步",
+      done: "完成",
+      progress: "准备度",
+      title: "发布者上线清单",
+      tasks: {
+        session: ["连接工作区会话", "使用组织 token 登录，让发布、定价、提现和通知都归属到当前组织。"],
+        profile: ["创建发布者档案", "设置买家安装技能前会看到的公开发布者名称。"],
+        publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],
+        verified: ["获得已验证上架状态", "完成审核并启用价格，让买家可以信任并安装技能。"],
+        payout: ["准备提现资料", "在收入成熟并发起提现前，先完成提现账户和资料状态。"]
+      }
+    },
     title: "运营你的 SkillHub 技能发布业务。"
   }
 } as const;
+
+function buildReadinessTasks(
+  taskCopy: Record<ReadinessTask["id"], readonly [string, string]>,
+  flags: {
+    hasActiveVerifiedListing: boolean;
+    hasPublishedSkill: boolean;
+    hasPayoutReady: boolean;
+    hasPublisherProfile: boolean;
+    hasWorkspaceSession: boolean;
+  }
+): ReadinessTask[] {
+  const statusFor = (isDone: boolean, canStart: boolean): ReadinessTask["status"] => {
+    if (isDone) {
+      return "done";
+    }
+
+    return canStart ? "current" : "blocked";
+  };
+
+  return [
+    {
+      detail: taskCopy.session[1],
+      id: "session",
+      status: statusFor(flags.hasWorkspaceSession, true),
+      title: taskCopy.session[0]
+    },
+    {
+      detail: taskCopy.profile[1],
+      id: "profile",
+      status: statusFor(flags.hasPublisherProfile, flags.hasWorkspaceSession),
+      title: taskCopy.profile[0]
+    },
+    {
+      detail: taskCopy.publish[1],
+      id: "publish",
+      status: statusFor(flags.hasPublishedSkill, flags.hasPublisherProfile),
+      title: taskCopy.publish[0]
+    },
+    {
+      detail: taskCopy.verified[1],
+      id: "verified",
+      status: statusFor(flags.hasActiveVerifiedListing, flags.hasPublishedSkill),
+      title: taskCopy.verified[0]
+    },
+    {
+      detail: taskCopy.payout[1],
+      id: "payout",
+      status: statusFor(flags.hasPayoutReady, flags.hasPublisherProfile),
+      title: taskCopy.payout[0]
+    }
+  ];
+}
 
 export default async function PublisherPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -118,6 +208,26 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     [labels.metrics.available, formatMoney(financeLedger.summary.availableBalanceCents)],
     [labels.metrics.demand, formatCompactNumber(activeDemandCount)]
   ];
+  const hasWorkspaceSession = session.source !== "none" && Boolean(session.subject);
+  const hasPublisherProfile = Boolean(publisherAccount.publisherProfile);
+  const hasPublishedSkill = publisherSkills.length > 0;
+  const hasActiveVerifiedListing = publisherSkills.some(
+    (skill) => skill.verificationStatus === "verified" && skill.pricing.status === "active"
+  );
+  const hasPayoutReady =
+    publisherAccount.publisherProfile?.payoutStatus === "verified" ||
+    payoutSummary.publisherProfile?.payoutStatus === "verified" ||
+    publisherAccount.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready") ||
+    payoutSummary.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready");
+  const readinessTasks = buildReadinessTasks(labels.readiness.tasks, {
+    hasActiveVerifiedListing,
+    hasPublishedSkill,
+    hasPayoutReady,
+    hasPublisherProfile,
+    hasWorkspaceSession
+  });
+  const readinessDone = readinessTasks.filter((task) => task.status === "done").length;
+  const readinessPercent = Math.round((readinessDone / readinessTasks.length) * 100);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
       ? financeLedger.recentTransactions.slice(0, 6).map((transaction) => [
@@ -262,6 +372,41 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </div>
 
         <aside className="publisher-command-side">
+          <article className="ops-panel publisher-launch-checklist">
+            <div className="publisher-launch-checklist__head">
+              <div className="card-kicker">
+                <ListChecks size={16} aria-hidden="true" />
+                <span>{labels.readiness.title}</span>
+              </div>
+              <span className="status-chip status-chip--neutral">
+                {readinessPercent}% {labels.readiness.progress}
+              </span>
+            </div>
+
+            <div className="publisher-launch-checklist__bar" aria-hidden="true">
+              <span style={{ width: `${readinessPercent}%` }} />
+            </div>
+
+            <div className="publisher-launch-checklist__items">
+              {readinessTasks.map((task) => {
+                const Icon = task.status === "done" ? CheckCircle2 : CircleDot;
+
+                return (
+                  <div className={`publisher-launch-task publisher-launch-task--${task.status}`} key={task.id}>
+                    <Icon size={17} aria-hidden="true" />
+                    <div>
+                      <header>
+                        <strong>{task.title}</strong>
+                        <span>{labels.readiness[task.status]}</span>
+                      </header>
+                      <p>{task.detail}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+
           <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={publisherReturnUrl} />
 
           <PublisherPayoutManager locale={locale} summary={payoutSummary} />
