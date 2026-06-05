@@ -341,8 +341,16 @@ Added notification delivery batch processing, covering:
 
 - `/v1/admin/notification-deliveries/process` processes due external `email` and `webhook` events in `dry_run` or `deliver` mode.
 - Resend-backed email sending is ready when `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM` are configured; missing provider configuration becomes an explicit failed state instead of a silent queue stall.
-- Webhook processing fans organization-scoped external events into `webhook_delivery_events` for active subscribed endpoints, keeping network signing and retry response capture as the next worker step.
+- Webhook processing fans organization-scoped external events into `webhook_delivery_events` for active subscribed endpoints, then the dedicated webhook outbox worker handles signed network delivery and retry response capture.
 - `/admin` now exposes a compact Process due control and result summary so operators can run dry-runs and delivery batches without leaving the platform command center.
+
+Added webhook outbox network delivery, covering:
+
+- `webhook_delivery_events` now has a claimable `processing` state, `last_attempted_at`, and due-event index support for reliable batch processing.
+- Admin/support operators can inspect endpoint-level webhook outbox rows from `/admin`, including endpoint URL/status, attempt count, HTTP status, response body excerpt, last attempt, and next retry.
+- Admin/support operators can process due webhook deliveries in dry-run or delivery mode through `/v1/admin/webhook-deliveries/process`.
+- Delivery mode sends signed HTTP POST requests, captures response status/body, marks successful rows delivered, marks failures with retry backoff, updates endpoint delivery health, recovers stale processing rows, and writes audit plus platform notification records.
+- v0 webhook signing uses the stored `sha256(secret)` hash as the HMAC key because raw endpoint secrets are shown only once and are not stored; receivers verify by hashing their one-time `whsec_...` secret before HMAC verification.
 
 Added true admin audit stream, covering:
 
@@ -381,8 +389,8 @@ Added organization webhook endpoint management, covering:
 
 - Owner/admin/developer users can configure HTTPS callback URLs, event-topic subscriptions, and active/paused/disabled state from `/developer`.
 - Create and rotate actions return a raw `whsec_*` signing secret once while storing only the hash, prefix, and last four characters.
-- Endpoint records include last-delivery status, delivery timestamp, and failure count fields, plus a `webhook_delivery_events` outbox table for the final delivery worker/provider phase.
-- This turns webhook notification preferences into an operational integration surface before external delivery is connected.
+- Endpoint records include last-delivery status, delivery timestamp, and failure count fields, plus a `webhook_delivery_events` outbox table consumed by the signed delivery worker.
+- This turns webhook notification preferences into an operational integration surface with real HTTP delivery state before email and payment providers are finalized.
 
 Added developer project creation, covering:
 

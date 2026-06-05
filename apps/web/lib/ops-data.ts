@@ -86,6 +86,44 @@ export type AdminNotificationDeliveryProcessResult = {
   skippedCount: number;
 };
 
+export type AdminWebhookDelivery = {
+  id: string;
+  organizationId: string;
+  organizationName: string | null;
+  endpointId: string | null;
+  endpointUrl: string | null;
+  endpointStatus: "active" | "disabled" | "paused" | null;
+  eventType: string;
+  payloadSummary: Record<string, unknown>;
+  status: "delivered" | "failed" | "pending" | "processing" | "skipped";
+  attemptCount: number;
+  nextAttemptAt: string | null;
+  lastAttemptedAt: string | null;
+  deliveredAt: string | null;
+  responseStatus: number | null;
+  responseBody: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AdminWebhookDeliveryProcessItem = {
+  id: string;
+  endpointUrl: string | null;
+  eventType: string;
+  message: string;
+  responseStatus: number | null;
+  status: "delivered" | "failed" | "skipped" | "would_deliver" | "would_fail" | "would_skip";
+};
+
+export type AdminWebhookDeliveryProcessResult = {
+  deliveredCount: number;
+  failedCount: number;
+  mode: "deliver" | "dry_run";
+  processed: AdminWebhookDeliveryProcessItem[];
+  processedCount: number;
+  skippedCount: number;
+};
+
 export type AdminAuditLogRecord = {
   id: string;
   action: string;
@@ -1052,6 +1090,53 @@ const fallbackNotificationDeliveries: AdminNotificationDelivery[] = [
     status: "failed",
     subject: "Runtime incident opened",
     createdAt: "demo"
+  }
+];
+
+const fallbackWebhookDeliveries: AdminWebhookDelivery[] = [
+  {
+    id: "demo-webhook-outbox-incident",
+    organizationId: "demo-org",
+    organizationName: "Demo Builder Lab",
+    endpointId: "demo-webhook-ops",
+    endpointUrl: "https://example.com/skillhub/webhooks",
+    endpointStatus: "active",
+    eventType: "runtime.incident.opened",
+    payloadSummary: {
+      notificationEventId: "demo-notification",
+      payload: "[object]"
+    },
+    status: "failed",
+    attemptCount: 2,
+    nextAttemptAt: "demo",
+    lastAttemptedAt: "demo",
+    deliveredAt: null,
+    responseStatus: 503,
+    responseBody: "Endpoint returned 503.",
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-webhook-outbox-review",
+    organizationId: "demo-org",
+    organizationName: "Demo Builder Lab",
+    endpointId: "demo-webhook-ops",
+    endpointUrl: "https://example.com/skillhub/webhooks",
+    endpointStatus: "active",
+    eventType: "skill.review.approved",
+    payloadSummary: {
+      notificationEventId: "demo-review-notification",
+      payload: "[object]"
+    },
+    status: "pending",
+    attemptCount: 0,
+    nextAttemptAt: "demo",
+    lastAttemptedAt: null,
+    deliveredAt: null,
+    responseStatus: null,
+    responseBody: null,
+    createdAt: "demo",
+    updatedAt: "demo"
   }
 ];
 
@@ -2527,6 +2612,32 @@ export async function getAdminNotificationDeliveries(): Promise<AdminNotificatio
     return safeOperationValue(payload.deliveries, []);
   } catch {
     return demoFallback(fallbackNotificationDeliveries, []);
+  }
+}
+
+export async function getAdminWebhookDeliveries(): Promise<AdminWebhookDelivery[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return demoFallback(fallbackWebhookDeliveries, []);
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/webhook-deliveries?limit=16`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin webhook deliveries failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { deliveries: AdminWebhookDelivery[] };
+    return safeOperationValue(payload.deliveries, []);
+  } catch {
+    return demoFallback(fallbackWebhookDeliveries, []);
   }
 }
 

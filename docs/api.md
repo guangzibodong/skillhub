@@ -1498,7 +1498,69 @@ Modes:
 
 Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider.
 
-Webhook processing does not send network requests yet. It fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The final webhook network worker will consume that outbox and handle signing/retry response details.
+Webhook processing fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The webhook outbox worker consumes those endpoint-level rows and records signed HTTP delivery state separately.
+
+## Admin Webhook Delivery Outbox
+
+Inspect endpoint-level webhook delivery events:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/webhook-deliveries?limit=25&status=failed" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Rows include organization, endpoint URL/status, event type, attempt count, last attempt, next retry, HTTP response status/body, delivered time, and a redacted `payloadSummary`.
+
+Process due webhook outbox rows:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/webhook-deliveries/process" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":10,"mode":"deliver"}'
+```
+
+Modes:
+
+- `dry_run`: reports which active endpoints would receive a signed HTTP POST without mutating state.
+- `deliver`: claims due `pending`, retry-ready `failed`, or stale `processing` rows, sends signed HTTP POST requests, captures response status/body, and schedules retry backoff.
+
+Webhook POST body:
+
+```json
+{
+  "createdAt": "2026-06-05T00:00:00.000Z",
+  "deliveryId": "WEBHOOK_DELIVERY_ID",
+  "eventType": "skill.review.approved",
+  "organizationId": "ORGANIZATION_ID",
+  "payload": {
+    "notificationEventId": "NOTIFICATION_EVENT_ID",
+    "payload": {}
+  }
+}
+```
+
+Webhook request headers:
+
+- `X-SkillHub-Delivery`: webhook delivery id.
+- `X-SkillHub-Event`: event type.
+- `X-SkillHub-Timestamp`: Unix timestamp seconds.
+- `X-SkillHub-Signature-Version`: currently `v0-hashed-secret`.
+- `X-SkillHub-Signature`: `v0=<hex hmac sha256>`.
+
+Signature base string:
+
+```txt
+<timestamp>.<deliveryId>.<raw JSON request body>
+```
+
+Because webhook endpoint secrets are shown only once and the platform stores only `sha256(secret)`, v0 signing uses the stored secret hash as the HMAC key. Receivers verify by computing `sha256(raw whsec_... secret)` as a lowercase hex string, then HMAC-SHA256 signing the same base string. A future KMS-backed secret store can add a new signature version without changing the outbox state machine.
+
+Operational defaults:
+
+- `SKILLHUB_WEBHOOK_TIMEOUT_MS`: request timeout, default `8000`, clamped from 1s to 30s.
+- `SKILLHUB_WEBHOOK_MAX_ATTEMPTS`: retry cap, default `8`, clamped from 1 to 20.
+- Retry backoff uses 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours, then 24-hour intervals until the max attempt count is reached. Rows at the max attempt count remain visible as `failed` and are no longer selected by automatic due processing unless the cap is raised.
 
 Admin/support operators can inspect the immutable admin audit trail:
 

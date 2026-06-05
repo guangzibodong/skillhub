@@ -21,6 +21,7 @@ import { NotificationDeliveryManager } from "@/components/notification-delivery-
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { SiteHeader } from "@/components/site-header";
+import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
   formatMoney,
@@ -37,6 +38,7 @@ import {
   getAdminReviews,
   getAdminRefunds,
   getAdminSkillFeedback,
+  getAdminWebhookDeliveries,
   getFinanceLedger
 } from "@/lib/ops-data";
 
@@ -207,6 +209,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     auditLogs,
     marketplaceCuration,
     notificationDeliveries,
+    webhookDeliveries,
     notificationTemplates,
     identityDirectory,
     payouts,
@@ -222,6 +225,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminAuditLogs(),
     getAdminMarketplaceCuration(),
     getAdminNotificationDeliveries(),
+    getAdminWebhookDeliveries(),
     getAdminNotificationTemplates(),
     getAdminIdentityDirectory(),
     getAdminPayouts(),
@@ -334,6 +338,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
         <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">

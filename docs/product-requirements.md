@@ -327,7 +327,7 @@ Requirements:
 - Subscriptions.
 - Invoices.
 - Project-level refund and dispute history.
-- Webhook endpoints with HTTPS URL validation, event-topic subscriptions, active/paused/disabled state, one-time signing-secret creation/rotation, delivery-status history fields, audit events, and organization notifications before the final delivery worker/provider is connected.
+- Webhook endpoints with HTTPS URL validation, event-topic subscriptions, active/paused/disabled state, one-time signing-secret creation/rotation, delivery-status history fields, signed HTTP delivery, response capture, retry backoff, audit events, and organization notifications.
 - Organization team access with member list, role assignment, member token issuance, member removal, token visibility/revocation, audit events, and organization notifications before the final auth provider is connected.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Installed skills by project.
@@ -350,7 +350,7 @@ Requirements:
 - Organization member and role operations, including owner/admin/developer/publisher/reviewer/finance assignments, organization-scoped token issuance, and access-removal audit trails.
 - Audit stream backed by `admin_audit_logs`, showing actor, action, entity, reason, metadata, and timestamp separately from notification delivery events.
 - Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.
-- External notification delivery queue for `email` and `webhook` events, including status, attempts, provider metadata, redacted payload summary, retry scheduling, skip/fail/manual-sent controls, due-event batch processing, email-provider configuration errors, Resend-ready sending, webhook outbox fan-out, email-challenge delivery-status sync, and audit records before the final webhook network worker is connected.
+- External notification delivery queue for `email` and `webhook` events, including status, attempts, provider metadata, redacted payload summary, retry scheduling, skip/fail/manual-sent controls, due-event batch processing, email-provider configuration errors, Resend-ready sending, webhook outbox fan-out, signed webhook network delivery, response capture, retry backoff, email-challenge delivery-status sync, and audit records.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
 - Ranking/featured listing controls backed by curation rules, bounded boost, required reasons, expiry, audit logs, and quality-signal review.

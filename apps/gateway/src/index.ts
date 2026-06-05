@@ -56,6 +56,10 @@ import {
   rotateOrganizationWebhookSecret,
   updateOrganizationWebhookEndpoint
 } from "./organization-webhooks.js";
+import {
+  listAdminWebhookDeliveries,
+  processWebhookDeliveries
+} from "./webhook-deliveries.js";
 import { listAdminAuditLogs } from "./admin-audit-logs.js";
 import { getAdminIdentityDirectory } from "./admin-identity.js";
 import {
@@ -204,6 +208,8 @@ type Env = {
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
     SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN?: string;
+    SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
+    SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
     PACKAGES?: R2Bucket;
   };
 };
@@ -1627,6 +1633,47 @@ app.post("/v1/admin/notification-deliveries/process", async (c) => {
     );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to process notification deliveries." }, 400);
+  }
+});
+
+app.get("/v1/admin/webhook-deliveries", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      deliveries: await listAdminWebhookDeliveries(Number(c.req.query("limit") ?? "25"), {
+        status: c.req.query("status")
+      })
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to list webhook deliveries." },
+      500
+    );
+  }
+});
+
+app.post("/v1/admin/webhook-deliveries/process", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      await processWebhookDeliveries(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        c.env,
+        authorization.subject.userId
+      )
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to process webhook deliveries." }, 400);
   }
 });
 
