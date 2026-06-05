@@ -11,26 +11,26 @@ type SessionStatusPanelProps = {
 
 const copy = {
   en: {
-    cta: "Sign in with token",
+    cta: "Sign in",
     environment: "Environment fallback",
     noSession: "No workspace session",
-    noSessionBody: "Connect a user token so project, publisher, billing, and notification operations are scoped to the active user.",
+    noSessionBody: "Connect a user session so project, publisher, billing, payout, team, and notification operations are scoped to the active member.",
     role: "Role",
     signOut: "Sign out",
     title: "Workspace session",
     token: "Token",
-    unknown: "Verified token required"
+    unknown: "Verified user session required"
   },
   zh: {
-    cta: "使用 token 登录",
+    cta: "去登录",
     environment: "环境变量兜底",
     noSession: "未连接工作区会话",
-    noSessionBody: "连接用户 token 后，项目、发布者、账单和通知操作会按当前用户权限范围执行。",
+    noSessionBody: "连接用户会话后，项目、发布、账单、提现、团队和通知操作都会按当前成员权限执行。",
     role: "角色",
     signOut: "退出登录",
     title: "工作区会话",
     token: "Token",
-    unknown: "需要验证 token"
+    unknown: "需要已验证的用户会话"
   }
 } as const;
 

@@ -25,13 +25,13 @@ const copy = {
     organizationSlug: "Workspace slug",
     organizationSlugPlaceholder: "acme-agent-lab",
     owner: "Owner workspace",
-    ownerHelp: "Start with full workspace access across developer, publisher, billing, and team setup.",
+    ownerHelp: "Start with full access across developer, publisher, billing, payout, and team setup.",
     publisher: "Publisher workspace",
     publisherHelp: "Publish skills, submit reviews, price listings, and prepare payouts.",
     role: "Primary workspace path",
     submit: "Create workspace",
     submitting: "Creating",
-    title: "Create your SkillHub workspace",
+    title: "Email registration",
     token: "One-time user token",
     tokenHelp: "This token is already stored in this browser session. Save it if you need to connect another device.",
     workspace: "Open dashboard"
@@ -49,13 +49,13 @@ const copy = {
     organizationSlug: "工作区 slug",
     organizationSlugPlaceholder: "acme-agent-lab",
     owner: "所有者工作区",
-    ownerHelp: "先获得完整工作区权限，可同时配置开发者、发布者、账单和团队。",
+    ownerHelp: "先获得完整工作区权限，可配置开发者、发布者、账单、提现和团队。",
     publisher: "发布者工作区",
     publisherHelp: "发布技能、提交审核、设置价格，并准备提现资料。",
     role: "主要使用路径",
     submit: "创建工作区",
     submitting: "创建中",
-    title: "创建你的 SkillHub 工作区",
+    title: "邮箱注册",
     token: "一次性用户 token",
     tokenHelp: "这个 token 已经写入当前浏览器会话。需要在其他设备连接时，请现在保存。",
     workspace: "打开工作台"
@@ -79,7 +79,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   }, [router, state.status]);
 
   return (
-    <article className="ops-panel auth-card auth-card--signup">
+    <article className="ops-panel auth-card auth-card--signup" id="email-registration">
       <div className="card-kicker">
         <UserPlus size={16} aria-hidden="true" />
         <span>{labels.title}</span>

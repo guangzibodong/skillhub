@@ -29,10 +29,10 @@ const copy = {
     invalidToken: "Enter a valid SkillHub user access token.",
     organizationRequired: "Enter an organization or workspace name.",
     publicSignupDisabled: "Public workspace signup is disabled for this deployment.",
-    signedUp: "Workspace created and connected. Copy the token now; it will not be shown again.",
     signedIn: "Workspace session connected.",
-    slugTaken: "This workspace slug is already taken.",
     signedOut: "Workspace session cleared.",
+    signedUp: "Workspace created and connected. Copy the token now; it will not be shown again.",
+    slugTaken: "This workspace slug is already taken.",
     unableSignIn: "Unable to verify this token.",
     unableSignup: "Unable to create this workspace."
   },
@@ -41,10 +41,10 @@ const copy = {
     invalidToken: "请输入有效的 SkillHub 用户访问 token。",
     organizationRequired: "请输入组织或工作区名称。",
     publicSignupDisabled: "当前部署已关闭公开创建工作区。",
-    signedUp: "工作区已创建并连接。请现在保存 token，之后不会再次显示。",
     signedIn: "工作区会话已连接。",
-    slugTaken: "这个工作区 slug 已被使用。",
     signedOut: "工作区会话已清除。",
+    signedUp: "工作区已创建并连接。请现在保存 token，之后不会再次显示。",
+    slugTaken: "这个工作区 slug 已被使用。",
     unableSignIn: "无法验证这个 token。",
     unableSignup: "无法创建这个工作区。"
   }
@@ -71,7 +71,10 @@ export async function signInAction(
   await setSessionCookie(token);
   revalidatePath("/");
   revalidatePath("/dashboard");
+  revalidatePath("/developer");
+  revalidatePath("/publisher");
   revalidatePath("/admin");
+  revalidatePath("/account");
   revalidatePath("/publish");
 
   return {
@@ -143,6 +146,7 @@ export async function signUpAction(
     revalidatePath("/developer");
     revalidatePath("/publisher");
     revalidatePath("/admin");
+    revalidatePath("/account");
     revalidatePath("/publish");
 
     return {
@@ -168,7 +172,10 @@ export async function signOutAction(locale: Locale) {
   await clearSessionCookie();
   revalidatePath("/");
   revalidatePath("/dashboard");
+  revalidatePath("/developer");
+  revalidatePath("/publisher");
   revalidatePath("/admin");
+  revalidatePath("/account");
   revalidatePath("/publish");
   redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
 }

@@ -1,10 +1,12 @@
-import { KeyRound } from "lucide-react";
+import { KeyRound, UserCircle } from "lucide-react";
+import { AuthProviderPanel } from "@/components/auth-provider-panel";
 import { SessionLoginForm } from "@/components/session-login-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { WorkspaceSignupForm } from "@/components/workspace-signup-form";
+import { getAuthProviders } from "@/lib/account-data";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -14,14 +16,16 @@ type PageProps = {
 
 const copy = {
   en: {
-    body: "Create an organization-scoped account or connect an existing user token. Projects, publishing, billing, team, and notification operations run as the active member.",
-    eyebrow: "Access control",
-    title: "Create or sign in to SkillHub."
+    account: "Account center",
+    body: "Create a real organization workspace, connect a team token, or prepare OAuth login for Google and GitHub. Projects, publishing, billing, payout, and notifications run as the active member.",
+    eyebrow: "Account access",
+    title: "Sign in, register, and enter your SkillHub workspace."
   },
   zh: {
-    body: "创建一个组织级账号，或连接已有用户 token。进入工作区后，项目、发布、账单、团队和通知都会按当前成员权限执行。",
-    eyebrow: "访问控制",
-    title: "创建或登录 SkillHub"
+    account: "个人中心",
+    body: "创建真实组织工作区，连接团队 token，并为 Google / GitHub 登录预留正式入口。项目、发布、账单、提现和通知都会按当前成员身份执行。",
+    eyebrow: "账号入口",
+    title: "登录、注册并进入你的 SkillHub 工作区。"
   }
 } as const;
 
@@ -31,7 +35,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const session = await getWorkspaceSession();
+  const [providers, session] = await Promise.all([getAuthProviders(), getWorkspaceSession()]);
 
   return (
     <main className="product-shell">
@@ -46,10 +50,17 @@ export default async function LoginPage({ searchParams }: PageProps) {
           <h1>{labels.title}</h1>
           <p>{labels.body}</p>
         </div>
+        <a className="secondary-button secondary-button--large" href={localizedHref("/account", locale)}>
+          <UserCircle size={17} aria-hidden="true" />
+          <span>{labels.account}</span>
+        </a>
       </section>
 
       <section className="auth-layout auth-layout--signup">
-        <WorkspaceSignupForm locale={locale} />
+        <div className="auth-main-stack">
+          <AuthProviderPanel locale={locale} providers={providers} />
+          <WorkspaceSignupForm locale={locale} />
+        </div>
         <div className="auth-side-stack">
           <SessionLoginForm locale={locale} />
           <SessionStatusPanel locale={locale} session={session} />

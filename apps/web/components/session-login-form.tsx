@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, KeyRound, LogIn, XCircle } from "lucide-react";
 import { signInAction, type AuthActionState } from "@/lib/auth-actions";
 import type { Locale } from "@/lib/i18n";
+import { localizedHref } from "@/lib/i18n";
 
 type SessionLoginFormProps = {
   locale: Locale;
@@ -12,21 +13,22 @@ type SessionLoginFormProps = {
 
 const copy = {
   en: {
-    helper: "Use a token from signup, an invite, or the team console. It is stored in an httpOnly browser cookie for this app.",
+    helper:
+      "Use a token created by signup, an invite, or the team console. SkillHub stores it in an httpOnly browser cookie for this app.",
     label: "User access token",
     placeholder: "shub_user_...",
     submit: "Connect workspace",
     submitting: "Verifying",
-    title: "Already have a token?",
+    title: "Token fallback",
     workspace: "Open dashboard"
   },
   zh: {
-    helper: "使用注册、邀请或团队控制台生成的用户 token。它会保存在本站的 httpOnly 浏览器 cookie 中。",
+    helper: "使用注册、邀请或团队控制台生成的用户 token。SkillHub 会把它存入本站 httpOnly 浏览器 cookie。",
     label: "用户访问 token",
     placeholder: "shub_user_...",
     submit: "连接工作区",
     submitting: "验证中",
-    title: "已有 token？",
+    title: "Token 兜底登录",
     workspace: "打开工作台"
   }
 } as const;
@@ -48,7 +50,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
   }, [router, state.status]);
 
   return (
-    <article className="ops-panel auth-card">
+    <article className="ops-panel auth-card" id="token-fallback">
       <div className="card-kicker">
         <KeyRound size={16} aria-hidden="true" />
         <span>{labels.title}</span>
@@ -69,7 +71,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
         <div className="auth-subject">
           <strong>{state.subject.displayName ?? state.subject.email ?? "SkillHub user"}</strong>
           <span>{state.subject.roles.join(" / ")}</span>
-          <a className="ghost-button ghost-button--inline" href={locale === "zh" ? "/dashboard?lang=zh" : "/dashboard?lang=en"}>
+          <a className="ghost-button ghost-button--inline" href={localizedHref("/dashboard", locale)}>
             {labels.workspace}
           </a>
         </div>

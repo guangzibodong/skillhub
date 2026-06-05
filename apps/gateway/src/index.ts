@@ -158,9 +158,19 @@ import {
   requireServiceAuthorization,
   type AuthRole
 } from "./auth.js";
+import {
+  getAccountSummary,
+  getAuthProviderStatuses
+} from "./account.js";
 
 type Env = {
   Bindings: {
+    GITHUB_CLIENT_ID?: string;
+    GOOGLE_CLIENT_ID?: string;
+    SKILLHUB_AUTH_BASE_URL?: string;
+    SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
+    SKILLHUB_GITHUB_CLIENT_ID?: string;
+    SKILLHUB_GOOGLE_CLIENT_ID?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
     PACKAGES?: R2Bucket;
@@ -225,6 +235,32 @@ app.get("/v1/auth/me", async (c) => {
   return c.json({
     subject: publicSubject(authorization.subject)
   });
+});
+
+app.get("/v1/auth/providers", (c) => {
+  return c.json({
+    providers: getAuthProviderStatuses(c.env)
+  });
+});
+
+app.get("/v1/account", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Account center requires a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json({
+      account: await getAccountSummary(authorization.subject, c.env)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to read account summary." }, 400);
+  }
 });
 
 app.post("/v1/auth/bootstrap-token", async (c) => {

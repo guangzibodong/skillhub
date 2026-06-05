@@ -517,6 +517,14 @@ Added auth and personal-center product requirements, covering:
 - The personal center must manage profile, connected accounts, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness shortcuts.
 - This keeps account UX from becoming an afterthought while the marketplace operations layer is being built.
 
+Added account center implementation foundation, covering:
+
+- `/v1/auth/providers` exposes email, Google, GitHub, and token login-method readiness so the UI can show real provider state instead of decorative OAuth buttons.
+- `/v1/account` aggregates the active user's profile, organization membership, token-session metadata, login-method states, team/token/project/skill counts, unread notifications, notification preference count, billing readiness, publisher profile status, and payout status.
+- `/login` now presents email registration, Google OAuth, GitHub OAuth, and token fallback as one coherent product entry; Google/GitHub remain clearly provider-deferred until final OAuth credentials and callbacks are connected.
+- `/account` now gives users a personal center for profile, connected login methods, organization roles, session/token security, workspace readiness, workspace shortcuts, and notification preferences.
+- This strengthens first-visit value because a new user can create a real workspace with email registration, and repeat-visit value because account readiness, notifications, billing, payout, and role context are visible from one page.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

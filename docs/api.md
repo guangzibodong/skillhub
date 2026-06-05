@@ -255,12 +255,29 @@ curl -X POST "https://api.useskillhub.com/v1/auth/signup" \
 
 The signup flow creates a user, organization, membership, user token, audit log, and in-app notification event in one transaction. Set `SKILLHUB_DISABLE_PUBLIC_SIGNUP=true` to turn this endpoint off for invite-only deployments.
 
+Read public login-method readiness:
+
+```bash
+curl "https://api.useskillhub.com/v1/auth/providers"
+```
+
+The response lists `email`, `google`, `github`, and `token` methods. Email self-service registration is active through `/v1/auth/signup`. Google and GitHub are visible as OAuth methods and report whether provider credentials/callback configuration are still required; the final OAuth redirect and callback provider integration remains deferred until the auth-provider phase.
+
 Inspect the current token subject:
 
 ```bash
 curl "https://api.useskillhub.com/v1/auth/me" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
+
+Read the active user's account center summary:
+
+```bash
+curl "https://api.useskillhub.com/v1/account" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and payout status. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness.
 
 Admin/support operators can inspect the platform identity directory:
 
@@ -273,7 +290,9 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` lets a new user create a workspace or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
+- `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects remain disabled until the final provider credentials and callbacks are connected.
+- `/login` lets a new user create a workspace with email registration or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
+- `/account` centralizes profile, organization role, modeled connected accounts, token security, workspace readiness, and notification preferences for the active user.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.

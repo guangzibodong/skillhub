@@ -141,6 +141,27 @@ Required pages:
 - Personal center.
 - Pricing/terms later.
 
+### Login/Register And Personal Center
+
+Account UX is part of the product, not an internal bootstrap console.
+
+Login/register must support these paths:
+
+- Email registration for a new organization workspace.
+- Google OAuth login once provider credentials, consent screen, server callback, and state validation are connected.
+- GitHub OAuth login once provider credentials, callback, and state validation are connected.
+- User token fallback for bootstrap, team invitations, and operator recovery.
+
+Personal center requirements:
+
+- Show profile identity, email, platform role, organization, and membership role.
+- Show connected or available login methods: email, Google, GitHub, and token fallback.
+- Show token-session metadata without exposing the raw token after first reveal.
+- Show workspace readiness: team members, active tokens, project count, owned skill count, unread notifications, notification preference coverage, billing readiness, invoice readiness, publisher status, and payout status.
+- Let the user reach developer, publisher, dashboard, and admin workspaces from one place.
+- Let the user manage notification preferences before the final email/webhook delivery providers are connected.
+- Avoid treating Google/GitHub as fake buttons: if OAuth credentials/callbacks are not configured, show a clear deferred/configuration-required state.
+
 The public website must explain:
 
 - What SkillHub is.

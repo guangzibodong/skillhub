@@ -338,6 +338,10 @@ Completed:
 - User access token table and bootstrap flow for initial operator identities.
 - Gateway role checks for project, publisher, reviewer, finance, and admin operations.
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.
+- `/v1/auth/providers` endpoint now exposes product-visible login-method readiness for email registration, Google OAuth, GitHub OAuth, and token fallback, while keeping live OAuth redirects deferred until provider credentials and callbacks are connected.
+- `/v1/account` endpoint now returns a user-scoped account center summary with profile, organization, memberships, token-session metadata, login-method states, team/token/project/skill counts, unread notifications, notification preference count, billing readiness, publisher profile status, and payout status.
+- `/login` now behaves like a product account entry instead of a token-only console: email registration is active, Google/GitHub login paths are visible as provider-deferred OAuth methods, and token login remains the operator/team fallback.
+- `/account` now gives users a personal center for profile, connected login methods, organization role, session/token security, workspace readiness, workspace shortcuts, and notification preferences.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 - Publisher profile and payout-account onboarding endpoints.
@@ -434,7 +438,7 @@ Completed:
 
 Next:
 
-- Full OAuth/passwordless login provider integration to replace pasted bootstrap-created user access tokens.
+- Full Google OAuth, GitHub OAuth, and password/passwordless email provider callback integration to replace pasted bootstrap-created user access tokens in normal production use.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
 

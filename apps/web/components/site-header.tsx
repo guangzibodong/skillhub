@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Gauge, LogIn, Menu, UploadCloud, X } from "lucide-react";
+import { Gauge, Menu, UploadCloud, UserCircle, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
 
 type SiteHeaderProps = {
-  active: "home" | "marketplace" | "registry" | "agents" | "docs" | "dashboard" | "developer" | "publisher" | "admin" | "publish";
+  active: "home" | "marketplace" | "registry" | "agents" | "docs" | "dashboard" | "developer" | "publisher" | "admin" | "publish" | "account";
   apiUrl?: string;
   dictionary: Dictionary;
   locale: Locale;
@@ -84,9 +84,9 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
 
       <div className="site-actions">
         <LanguageSwitcher label={dictionary.common.language} locale={locale} pathname={pathname} />
-        <a className="ghost-button site-action-secondary" href={localizedHref("/login", locale)}>
-          <LogIn size={17} aria-hidden="true" />
-          <span>{locale === "zh" ? "登录" : "Sign in"}</span>
+        <a className="ghost-button site-action-secondary" href={localizedHref("/account", locale)}>
+          <UserCircle size={17} aria-hidden="true" />
+          <span>{locale === "zh" ? "账号" : "Account"}</span>
         </a>
         <a className="ghost-button site-action-secondary" href={`${apiUrl}/health`}>
           <Gauge size={17} aria-hidden="true" />
@@ -123,9 +123,9 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
           ))}
         </nav>
         <div className="site-mobile-panel__actions">
-          <a className="ghost-button" href={localizedHref("/login", locale)}>
-            <LogIn size={17} aria-hidden="true" />
-            <span>{locale === "zh" ? "登录" : "Sign in"}</span>
+          <a className="ghost-button" href={localizedHref("/account", locale)}>
+            <UserCircle size={17} aria-hidden="true" />
+            <span>{locale === "zh" ? "账号" : "Account"}</span>
           </a>
           <a className="ghost-button" href={`${apiUrl}/health`}>
             <Gauge size={17} aria-hidden="true" />
