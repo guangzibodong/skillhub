@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
+import { AdminIncidentManager } from "@/components/admin-incident-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
@@ -21,6 +22,7 @@ import {
   formatMoney,
   getAdminAbuseReports,
   getAdminDisputes,
+  getAdminIncidents,
   getAdminNotifications,
   getAdminPayouts,
   getAdminReviews,
@@ -91,13 +93,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
-  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, skillFeedback, reviews] = await Promise.all([
+  const [financeLedger, notifications, payouts, refunds, disputes, abuseReports, incidents, skillFeedback, reviews] = await Promise.all([
     getFinanceLedger(),
     getAdminNotifications(),
     getAdminPayouts(),
     getAdminRefunds(),
     getAdminDisputes(),
     getAdminAbuseReports(),
+    getAdminIncidents(),
     getAdminSkillFeedback(),
     getAdminReviews()
   ]);
@@ -120,8 +123,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
         ])
       : labels.auditRows.map((item) => [item, "system", "queued"]);
   const riskRows =
-    abuseReports.length + skillFeedback.length + refunds.length + disputes.length > 0
+    abuseReports.length + incidents.length + skillFeedback.length + refunds.length + disputes.length > 0
       ? [
+          ...incidents.slice(0, 3).map((incident) => [
+            `${incident.severity} incident`,
+            incident.skillName,
+            incident.status === "open" ? "Move to monitoring or resolve" : incident.summary ?? "Track runtime recovery",
+            "Platform"
+          ]),
           ...abuseReports.slice(0, 3).map((report) => [
             `${report.severity} ${report.category}`,
             report.skillName,
@@ -148,11 +157,12 @@ export default async function AdminPage({ searchParams }: PageProps) {
           ])
         ].slice(0, 5)
       : ops.riskRows;
+  const activeIncidentCount = incidents.filter((incident) => incident.status === "open" || incident.status === "monitoring").length;
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
     [labels.metrics[2][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
-    [labels.metrics[3][0], String(reviews.length + skillFeedback.filter((feedback) => feedback.status === "pending").length)]
+    [labels.metrics[3][0], String(reviews.length + activeIncidentCount + skillFeedback.filter((feedback) => feedback.status === "pending").length)]
   ];
 
   return (
@@ -205,6 +215,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
         <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
+        <AdminIncidentManager incidents={incidents} locale={locale} />
         <AbuseReportManager locale={locale} reports={abuseReports} />
         <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
       </section>

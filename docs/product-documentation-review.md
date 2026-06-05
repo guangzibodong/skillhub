@@ -321,6 +321,13 @@ Added user notification inbox, covering:
 - Dashboard now surfaces notification context and links to the relevant project, skill, dashboard, or admin view.
 - This turns audit/event recording into a user-visible repeat-use loop instead of leaving notifications as admin-only operational logs.
 
+Added runtime incident operations, covering:
+
+- Trust and platform operators can list active incidents, open a new incident by skill slug, assign severity, and move incidents through monitoring, resolution, and postmortem states from `/admin`.
+- Incident decisions require a reason, update the canonical `skill_incidents` row, write a skill update event for installed-skill inboxes, create an admin audit record, and queue an in-app notification for the publisher organization.
+- Admin risk summaries now include live incident signals before abuse, feedback, refund, and dispute rows, making operational recovery part of the command center instead of static dashboard text.
+- This gives developers and publishers a second-visit loop around runtime trust: developers see incidents through update/notification surfaces, while publishers see the operational reason their skill needs recovery or postmortem work.
+
 Added web console token session, covering:
 
 - Operators can sign in through `/login` with a bootstrap-created user access token before a final OAuth/passwordless provider is connected.

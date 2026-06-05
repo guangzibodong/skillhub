@@ -271,6 +271,22 @@ export type AbuseReportRecord = {
   updatedAt: string;
 };
 
+export type AdminIncidentRecord = {
+  id: string;
+  skillId: string;
+  skillSlug: string;
+  skillName: string;
+  skillVersionId: string | null;
+  status: "open" | "monitoring" | "resolved" | "postmortem";
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
+  summary: string | null;
+  startedAt: string;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PublisherSkillRecord = {
   id: string;
   slug: string;
@@ -974,6 +990,39 @@ const fallbackAbuseReports: AbuseReportRecord[] = [
     decidedAt: "demo",
     latestAction: "triage",
     latestActionAt: "demo",
+    createdAt: "demo",
+    updatedAt: "demo"
+  }
+];
+
+const fallbackAdminIncidents: AdminIncidentRecord[] = [
+  {
+    id: "demo-incident-browser-runtime",
+    skillId: "demo-skill-browser-research",
+    skillSlug: "browser-research",
+    skillName: "Browser Research",
+    skillVersionId: "demo-version-browser-research",
+    status: "monitoring",
+    severity: "high",
+    title: "Citation runtime timeout spike",
+    summary: "Runtime p95 latency crossed the project policy threshold after a source parsing change.",
+    startedAt: "demo",
+    resolvedAt: null,
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-incident-dataset-schema",
+    skillId: "demo-skill-dataset-summarizer",
+    skillSlug: "dataset-summarizer",
+    skillName: "Dataset Summarizer",
+    skillVersionId: "demo-version-dataset-summarizer",
+    status: "open",
+    severity: "medium",
+    title: "Output schema mismatch for sparse rows",
+    summary: "A developer project reported missing anomaly fields when input rows contain sparse numeric columns.",
+    startedAt: "demo",
+    resolvedAt: null,
     createdAt: "demo",
     updatedAt: "demo"
   }
@@ -2150,6 +2199,32 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
     return payload.reports;
   } catch {
     return fallbackAbuseReports;
+  }
+}
+
+export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return fallbackAdminIncidents;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/incidents?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin incidents failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { incidents: AdminIncidentRecord[] };
+    return payload.incidents;
+  } catch {
+    return fallbackAdminIncidents;
   }
 }
 

@@ -646,6 +646,46 @@ curl -X POST "https://api.useskillhub.com/v1/admin/skill-feedback/$FEEDBACK_ID/d
 
 Decision actions are `publish`, `hide`, `reject`, and `reopen`. Decisions update moderation state, write an admin audit log, and queue an in-app notification for the skill publisher. The public skill detail page shows only `published` feedback and the rating summary.
 
+## Runtime Incident Operations
+
+Runtime incidents are trust-operator records for production failures that affect installed skills, agent projects, or marketplace confidence. They are separate from user abuse reports: an incident tracks operational impact and recovery, while an abuse report tracks policy, security, privacy, billing, or malicious-behavior review.
+
+Read the admin incident queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/incidents?limit=25" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN"
+```
+
+Open a runtime incident for a skill:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/incidents" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "browser-research",
+    "severity": "high",
+    "title": "Citation runtime timeout spike",
+    "summary": "Runtime p95 latency crossed the project policy threshold after a source parsing change."
+  }'
+```
+
+Update an incident decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/incidents/$INCIDENT_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "monitoring",
+    "severity": "high",
+    "reason": "Publisher rolled back the parser and project operators should watch p95 latency for the next hour."
+  }'
+```
+
+Incident statuses are `open`, `monitoring`, `resolved`, and `postmortem`. Severities are `low`, `medium`, `high`, and `critical`. Creating or updating an incident writes `skill_incidents`, records a skill update event for installed-skill inboxes, writes an admin audit log, and queues an in-app notification for the publisher organization. `resolved` and `postmortem` decisions set `resolved_at` while keeping the historical audit trail intact.
+
 ## Finance Ledger
 
 SkillHub never pays publishers from raw usage logs. Billable usage must be posted into the ledger first:

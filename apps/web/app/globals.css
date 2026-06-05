@@ -2696,6 +2696,143 @@ a {
   gap: 14px;
 }
 
+.incident-manager-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.incident-create-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.72fr) minmax(160px, 1fr) minmax(110px, 0.5fr) auto;
+  gap: 8px;
+  align-items: end;
+  border: 1px solid rgba(123, 214, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(123, 214, 255, 0.045);
+  padding: 12px;
+}
+
+.incident-create-form label,
+.incident-action-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.incident-create-form label span,
+.incident-action-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.incident-create-form input,
+.incident-create-form select,
+.incident-action-form input,
+.incident-action-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.incident-create-form input:focus,
+.incident-create-form select:focus,
+.incident-action-form input:focus,
+.incident-action-form select:focus {
+  border-color: rgba(123, 214, 255, 0.46);
+  box-shadow: 0 0 0 3px rgba(123, 214, 255, 0.11);
+}
+
+.incident-create-form select option,
+.incident-action-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.incident-create-form__summary {
+  grid-column: 1 / -1;
+}
+
+.incident-list {
+  display: grid;
+  gap: 12px;
+}
+
+.incident-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.incident-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.incident-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.incident-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.incident-card__head span:not(.status-chip),
+.incident-card p,
+.incident-meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.incident-card p {
+  margin: 0;
+}
+
+.incident-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.incident-meta span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.incident-meta strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.incident-action-form {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.36fr) minmax(120px, 0.28fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
 .abuse-report-list {
   display: grid;
   gap: 12px;
@@ -6604,7 +6741,9 @@ a {
   .publisher-public-skill__head,
   .publisher-public-command,
   .admin-adjustment-action-form,
-  .admin-adjustment-action-form--dispute {
+  .admin-adjustment-action-form--dispute,
+  .incident-create-form,
+  .incident-action-form {
     grid-template-columns: 1fr;
   }
 
@@ -6612,6 +6751,8 @@ a {
   .publisher-public-command .secondary-button,
   .admin-payout-action-form .secondary-button,
   .skill-feedback-action-form .secondary-button,
+  .incident-create-form .secondary-button,
+  .incident-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     width: 100%;
   }
@@ -6619,6 +6760,8 @@ a {
   .related-skill-command .secondary-button,
   .publisher-public-command .secondary-button,
   .skill-feedback-action-form .secondary-button,
+  .incident-create-form .secondary-button,
+  .incident-action-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     justify-content: center;
   }
@@ -6664,6 +6807,7 @@ a {
   }
 
   .abuse-report-meta,
+  .incident-meta,
   .skill-feedback-review-meta,
   .abuse-report-action-form {
     grid-template-columns: 1fr;
@@ -6677,6 +6821,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .incident-card__head {
+    grid-template-columns: 1fr;
+  }
+
   .skill-feedback-review-card__head {
     grid-template-columns: 1fr;
   }
@@ -6686,7 +6834,10 @@ a {
   }
 
   .abuse-report-card__head .status-chip,
+  .incident-card__head .status-chip,
   .skill-feedback-review-card__head .status-chip,
+  .incident-create-form .secondary-button,
+  .incident-action-form .secondary-button,
   .skill-feedback-action-form .secondary-button,
   .abuse-report-action-form .secondary-button {
     justify-self: start;

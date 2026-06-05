@@ -109,6 +109,11 @@ import {
   listAdminAbuseReports
 } from "./trust-safety.js";
 import {
+  createAdminIncident,
+  decideAdminIncident,
+  listAdminIncidents
+} from "./incidents.js";
+import {
   createSkillFeedback,
   decideSkillFeedback,
   listAdminSkillFeedback,
@@ -1167,6 +1172,60 @@ app.post("/v1/admin/abuse-reports/:reportId/decision", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update abuse report." }, 400);
+  }
+});
+
+app.get("/v1/admin/incidents", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    incidents: await listAdminIncidents(Number(c.req.query("limit") ?? "50"))
+  });
+});
+
+app.post("/v1/admin/incidents", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        incident: await createAdminIncident(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create incident." }, 400);
+  }
+});
+
+app.post("/v1/admin/incidents/:incidentId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), trustOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      incident: await decideAdminIncident(
+        c.req.param("incidentId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update incident." }, 400);
   }
 });
 

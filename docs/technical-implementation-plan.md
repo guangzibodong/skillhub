@@ -223,6 +223,7 @@ API groups:
 
 - `/v1/payouts/*`
 - `/v1/notifications/*`
+- `/v1/admin/incidents/*`
 - `/v1/admin/payouts/*`
 - `/v1/admin/notifications/*`
 
@@ -372,6 +373,9 @@ Completed:
 - `/admin` now includes a skill feedback moderation queue beside trust, finance, and review operations so marketplace quality signals have an operator-owned path.
 - Skill search summaries now include published feedback count and average rating, and recommended ranking uses those signals alongside verification, permission risk, install evidence, runtime success, and freshness.
 - Publisher skill operations now expose average rating plus published/pending feedback counts so authors can see what buyers trust and what still needs moderation or response.
+- Admin runtime incident APIs now let trust/platform operators list incidents, open a skill-scoped incident, update severity, and move incidents through `open`, `monitoring`, `resolved`, and `postmortem` with required reasons.
+- Incident decisions now write skill update events, admin audit logs, and publisher in-app notifications, so developer update inboxes and publisher notifications reflect operational recovery before email delivery exists.
+- `/admin` now includes a runtime incident operations queue and folds active incidents into risk metrics and command-center rows beside feedback, abuse, refund, dispute, and payout workflows.
 
 Next:
 

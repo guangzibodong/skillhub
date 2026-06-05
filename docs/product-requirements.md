@@ -277,6 +277,7 @@ Requirements:
 - Ranking/featured listing controls.
 - Abuse report and takedown queue.
 - Skill feedback moderation queue for publishing, hiding, rejecting, or reopening user feedback.
+- Runtime incident operations queue where trust/platform operators can open incidents by skill, assign severity, move incidents through `open`, `monitoring`, `resolved`, and `postmortem`, require a decision reason, and trigger audit, installed-skill update, and publisher notification records.
 
 ## User Value And Retention Requirements
 
@@ -308,6 +309,7 @@ Publisher retention is driven by:
 - Listing improvement checklist.
 - Revenue ledger and payout readiness.
 - Incident and support workflows.
+- Clear incident recovery records, so publishers know which skill, severity, decision reason, and next state affected their marketplace trust and downstream developer installations.
 
 SkillHub must build a two-sided marketplace flywheel:
 
