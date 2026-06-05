@@ -137,6 +137,8 @@ Required pages:
 - Agent integration.
 - Docs.
 - Publish entry.
+- Login/register.
+- Personal center.
 - Pricing/terms later.
 
 The public website must explain:
@@ -278,6 +280,7 @@ Requirements:
 - Listing quality checklist.
 - Publisher quality score.
 - Marketplace placement, reason, expiry, quality gaps, and improvement path for each owned listing.
+- Marketplace distribution appeal/review requests with status, SLA, evidence URL, operator reason, and latest decision.
 - Incident response queue.
 
 ### Developer Dashboard
@@ -557,6 +560,10 @@ SkillHub should be specified as the full operating product from the beginning. W
 The full product must include:
 
 - Auth.
+- Google login.
+- GitHub login.
+- Email registration and login.
+- Personal center for profile, connected accounts, organization membership, notification preferences, security sessions, and billing/payout readiness links.
 - Organizations.
 - Role-based access.
 - Projects.
@@ -638,7 +645,7 @@ Operational metrics:
 
 These need final decisions before implementation:
 
-- Auth provider: NextAuth/Auth.js, Clerk, Supabase Auth, or custom session.
+- Auth provider: choose the final provider strategy for Google OAuth, GitHub OAuth, and email registration/login. The login/register UI and personal center must be product-grade rather than a temporary token-paste console.
 - Payment provider and region strategy.
 - Whether SkillHub hosts skills, proxies skills, or only routes to external runtimes in phase one.
 - Whether paid publishing launches invite-only.

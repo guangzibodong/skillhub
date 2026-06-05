@@ -320,6 +320,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
         <AdminMarketplaceCurationManager
+          appeals={marketplaceCuration.appeals}
           connectionMessage={marketplaceCuration.message}
           connectionMode={marketplaceCuration.mode}
           curation={marketplaceCuration.curation}

@@ -35,6 +35,18 @@ const actionCopy = {
 
 const billingModels = ["free", "per_call", "subscription"] as const;
 const priceStatuses = ["draft", "active", "archived"] as const;
+const appealCopy = {
+  en: {
+    missingReason: "Explain what changed or why the listing should be reviewed.",
+    submitted: "Marketplace distribution review request submitted.",
+    unable: "Unable to submit marketplace distribution review."
+  },
+  zh: {
+    missingReason: "\u8bf4\u660e\u6280\u80fd\u5df2\u5982\u4f55\u6539\u8fdb\uff0c\u6216\u4e3a\u4ec0\u4e48\u9700\u8981\u590d\u5ba1\u5206\u53d1\u3002",
+    submitted: "\u5e02\u573a\u5206\u53d1\u590d\u5ba1\u7533\u8bf7\u5df2\u63d0\u4ea4\u3002",
+    unable: "\u65e0\u6cd5\u63d0\u4ea4\u5e02\u573a\u5206\u53d1\u590d\u5ba1\u3002"
+  }
+} as const;
 
 export async function submitPublisherSkillReviewAction(
   locale: Locale,
@@ -144,6 +156,66 @@ export async function setPublisherSkillPriceAction(
   } catch (error) {
     return {
       message: error instanceof Error ? error.message : labels.unablePrice,
+      skillSlug,
+      status: "error"
+    };
+  }
+}
+
+export async function requestMarketplaceCurationAppealAction(
+  locale: Locale,
+  _previousState: PublisherSkillActionState,
+  formData: FormData
+): Promise<PublisherSkillActionState> {
+  const labels = actionCopy[locale];
+  const appealLabels = appealCopy[locale];
+  const token = await getWorkspaceToken();
+  const skillSlug = String(formData.get("skillSlug") ?? "").trim();
+  const appealReason = String(formData.get("appealReason") ?? "").trim();
+
+  if (!skillSlug) {
+    return { message: labels.missingSkill, status: "error" };
+  }
+
+  if (!appealReason) {
+    return { message: appealLabels.missingReason, skillSlug, status: "error" };
+  }
+
+  if (!token) {
+    return { message: labels.missingToken, skillSlug, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/publisher/skills/${encodeURIComponent(skillSlug)}/marketplace-appeals`, {
+      body: JSON.stringify({
+        appealReason,
+        evidenceUrl: String(formData.get("evidenceUrl") ?? "").trim(),
+        requestedPlacement: String(formData.get("requestedPlacement") ?? "standard").trim()
+      }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? appealLabels.unable);
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/publisher");
+    revalidatePath("/admin");
+
+    return {
+      message: appealLabels.submitted,
+      skillSlug,
+      status: "success"
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : appealLabels.unable,
       skillSlug,
       status: "error"
     };

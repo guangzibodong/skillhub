@@ -83,7 +83,40 @@ export type AdminMarketplaceCurationRecord = {
   visibility: string;
 };
 
+export type AdminMarketplaceCurationAppealRecord = {
+  id: string;
+  appealReason: string;
+  callCount: number;
+  createdAt: string;
+  createdByDisplayName: string | null;
+  createdByEmail: string | null;
+  currentCurationReason: string | null;
+  currentPlacement: "featured" | "standard" | "suppressed";
+  decidedAt: string | null;
+  decidedByDisplayName: string | null;
+  decidedByEmail: string | null;
+  evidenceUrl: string | null;
+  feedbackCount: number;
+  incidentCount: number;
+  installCount: number;
+  operatorReason: string | null;
+  publisherOrganizationId: string;
+  publisherOrganizationName: string;
+  requestType: "featured_request" | "placement_review" | "suppression_appeal";
+  requestedPlacement: "featured" | "standard";
+  skillId: string;
+  skillName: string;
+  skillSlug: string;
+  slaDueAt: string;
+  status: "approved" | "closed" | "open" | "rejected" | "under_review";
+  successRate: number | null;
+  updatedAt: string;
+  verificationStatus: string;
+  visibility: string;
+};
+
 export type AdminMarketplaceCurationData = {
+  appeals: AdminMarketplaceCurationAppealRecord[];
   curation: AdminMarketplaceCurationRecord[];
   message?: string;
   mode: "live" | "missing_token" | "unavailable";
@@ -498,6 +531,19 @@ export type PublisherSkillRecord = {
     reason: string | null;
     endsAt: string | null;
     updatedAt: string | null;
+    appeal?: {
+      id: string;
+      appealReason: string;
+      createdAt: string;
+      currentPlacement: "featured" | "standard" | "suppressed";
+      decidedAt: string | null;
+      operatorReason: string | null;
+      requestType: "featured_request" | "placement_review" | "suppression_appeal";
+      requestedPlacement: "featured" | "standard";
+      skillId: string;
+      slaDueAt: string;
+      status: "approved" | "closed" | "open" | "rejected" | "under_review";
+    } | null;
     improvementHints: Array<{
       key: string;
       severity: "critical" | "positive" | "warning";
@@ -1733,6 +1779,19 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       reason: "Keep improving runtime checks before featured placement.",
       endsAt: null,
       updatedAt: "demo",
+      appeal: {
+        appealReason: "Runtime endpoint evidence was updated and the publisher requested standard distribution review.",
+        createdAt: "demo",
+        currentPlacement: "suppressed",
+        decidedAt: null,
+        id: "demo-curation-appeal-dataset-summarizer",
+        operatorReason: null,
+        requestType: "suppression_appeal",
+        requestedPlacement: "standard",
+        skillId: "dataset-summarizer",
+        slaDueAt: "demo",
+        status: "open"
+      },
       improvementHints: [
         { key: "fix_runtime_checks", severity: "critical" },
         { key: "collect_feedback", severity: "warning" }
@@ -2285,6 +2344,7 @@ export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCur
 
   if (!token) {
     return {
+      appeals: [],
       curation: [],
       message: "Sign in with an admin/support token to inspect marketplace ranking controls.",
       mode: "missing_token"
@@ -2304,10 +2364,12 @@ export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCur
     }
 
     const payload = (await response.json()) as { curation: AdminMarketplaceCurationRecord[] };
+    const appeals = await getAdminMarketplaceCurationAppeals(token);
     const isDemoSource = payload.curation.length > 0 && payload.curation.every((item) => item.updatedAt === "demo");
 
     if (isDemoSource) {
       return {
+        appeals: [],
         curation: [],
         message: "The API is running without a live database, so marketplace ranking controls are disabled.",
         mode: "unavailable"
@@ -2315,15 +2377,38 @@ export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCur
     }
 
     return {
+      appeals,
       curation: payload.curation,
       mode: "live"
     };
   } catch (error) {
     return {
+      appeals: [],
       curation: [],
       message: error instanceof Error ? error.message : "Marketplace curation is unavailable.",
       mode: "unavailable"
     };
+  }
+}
+
+async function getAdminMarketplaceCurationAppeals(token: string): Promise<AdminMarketplaceCurationAppealRecord[]> {
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/marketplace-curation/appeals?limit=12`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as { appeals: AdminMarketplaceCurationAppealRecord[] };
+    const isDemoSource = payload.appeals.length > 0 && payload.appeals.every((item) => item.createdAt === "demo");
+    return isDemoSource ? [] : payload.appeals;
+  } catch {
+    return [];
   }
 }
 

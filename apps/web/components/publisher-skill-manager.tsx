@@ -18,6 +18,7 @@ import type { Locale } from "@/lib/i18n";
 import type { PublisherSkillRecord } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
+  requestMarketplaceCurationAppealAction,
   setPublisherSkillPriceAction,
   submitPublisherSkillReviewAction,
   type PublisherSkillActionState
@@ -149,8 +150,21 @@ const copy = {
 
 const marketplaceCopy = {
   en: {
+    activeAppeal: "Latest review request",
+    appealReason: "Review note",
+    appealStatuses: {
+      approved: "Approved",
+      closed: "Closed",
+      open: "Open",
+      rejected: "Rejected",
+      under_review: "Under review"
+    },
     expires: "Expires",
+    evidenceUrl: "Evidence URL",
     marketplace: "Marketplace distribution",
+    requestReview: "Request review",
+    requesting: "Requesting",
+    requestedPlacement: "Requested placement",
     hintLabels: {
       collect_feedback: "Collect published feedback",
       drive_first_installs: "Drive first installs",
@@ -168,11 +182,25 @@ const marketplaceCopy = {
       featured: "Featured",
       standard: "Standard",
       suppressed: "Suppressed"
-    }
+    },
+    reasonPlaceholder: "Summarize fixes, new evidence, buyer demand, or why the listing deserves reconsideration."
   },
   zh: {
+    activeAppeal: "\u6700\u65b0\u590d\u5ba1\u7533\u8bf7",
+    appealReason: "\u590d\u5ba1\u8bf4\u660e",
+    appealStatuses: {
+      approved: "\u5df2\u901a\u8fc7",
+      closed: "\u5df2\u5173\u95ed",
+      open: "\u5df2\u63d0\u4ea4",
+      rejected: "\u5df2\u62d2\u7edd",
+      under_review: "\u590d\u5ba1\u4e2d"
+    },
     expires: "\u5230\u671f",
+    evidenceUrl: "\u8bc1\u636e\u94fe\u63a5",
     marketplace: "\u5e02\u573a\u5206\u53d1",
+    requestReview: "\u7533\u8bf7\u590d\u5ba1",
+    requesting: "\u63d0\u4ea4\u4e2d",
+    requestedPlacement: "\u76ee\u6807\u5206\u53d1",
     hintLabels: {
       collect_feedback: "\u83b7\u53d6\u5df2\u53d1\u5e03\u53cd\u9988",
       drive_first_installs: "\u63a8\u52a8\u9996\u6279\u5b89\u88c5",
@@ -190,7 +218,8 @@ const marketplaceCopy = {
       featured: "\u7cbe\u9009",
       standard: "\u6807\u51c6",
       suppressed: "\u964d\u6743"
-    }
+    },
+    reasonPlaceholder: "\u8bf4\u660e\u4fee\u590d\u5185\u5bb9\u3001\u65b0\u8bc1\u636e\u3001\u4e70\u65b9\u9700\u6c42\uff0c\u6216\u4e3a\u4ec0\u4e48\u503c\u5f97\u91cd\u65b0\u8bc4\u4f30\u3002"
   }
 } as const;
 
@@ -242,10 +271,19 @@ function PublisherSkillCard({
     setPublisherSkillPriceAction.bind(null, locale),
     initialState
   );
+  const [appealState, appealAction, isAppealPending] = useActionState(
+    requestMarketplaceCurationAppealAction.bind(null, locale),
+    initialState
+  );
   const marketplaceLabels = marketplaceCopy[locale];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
+  const activeAppeal =
+    skill.marketplace?.appeal && ["open", "under_review"].includes(skill.marketplace.appeal.status)
+      ? skill.marketplace.appeal
+      : null;
   const reviewMessageVisible = reviewState.skillSlug === skill.slug && reviewState.status !== "idle";
   const priceMessageVisible = priceState.skillSlug === skill.slug && priceState.status !== "idle";
+  const appealMessageVisible = appealState.skillSlug === skill.slug && appealState.status !== "idle";
 
   return (
     <div className="publisher-skill-card">
@@ -303,6 +341,52 @@ function PublisherSkillCard({
               {marketplaceLabels.expires}: {formatDate(skill.marketplace.endsAt, locale)}
             </small>
           ) : null}
+          {skill.marketplace.appeal ? (
+            <div className="publisher-skill-appeal-status">
+              <strong>{marketplaceLabels.activeAppeal}</strong>
+              <span className={appealStatusClass(skill.marketplace.appeal.status)}>
+                {formatAppealStatus(skill.marketplace.appeal.status, marketplaceLabels.appealStatuses)}
+              </span>
+              <small>
+                {formatPlacement(skill.marketplace.appeal.currentPlacement, marketplaceLabels.placementLabels)}
+                {" -> "}
+                {formatPlacement(skill.marketplace.appeal.requestedPlacement, marketplaceLabels.placementLabels)}
+              </small>
+              {skill.marketplace.appeal.operatorReason ? <p>{skill.marketplace.appeal.operatorReason}</p> : null}
+              <small>
+                SLA: {formatDate(skill.marketplace.appeal.slaDueAt, locale)}
+              </small>
+            </div>
+          ) : null}
+          <form action={appealAction} className="publisher-skill-appeal-form">
+            <input name="skillSlug" type="hidden" value={skill.slug} />
+            <label>
+              <span>{marketplaceLabels.requestedPlacement}</span>
+              <select defaultValue={skill.marketplace.placement === "suppressed" ? "standard" : "featured"} disabled={Boolean(activeAppeal)} name="requestedPlacement">
+                <option value="standard">{marketplaceLabels.placementLabels.standard}</option>
+                <option value="featured">{marketplaceLabels.placementLabels.featured}</option>
+              </select>
+            </label>
+            <label className="publisher-skill-appeal-form__wide">
+              <span>{marketplaceLabels.appealReason}</span>
+              <textarea
+                disabled={Boolean(activeAppeal)}
+                name="appealReason"
+                placeholder={marketplaceLabels.reasonPlaceholder}
+                required
+                rows={2}
+              />
+            </label>
+            <label>
+              <span>{marketplaceLabels.evidenceUrl}</span>
+              <input disabled={Boolean(activeAppeal)} name="evidenceUrl" placeholder="https://" type="url" />
+            </label>
+            <button className="secondary-button secondary-button--compact" disabled={Boolean(activeAppeal) || isAppealPending} type="submit">
+              <Send size={15} aria-hidden="true" />
+              <span>{isAppealPending ? marketplaceLabels.requesting : marketplaceLabels.requestReview}</span>
+            </button>
+          </form>
+          {appealMessageVisible ? <ActionMessage state={appealState} /> : null}
         </div>
       ) : null}
 
@@ -413,6 +497,10 @@ function formatPlacement(placement: NonNullable<PublisherSkillRecord["marketplac
   return labels[placement] ?? placement.replaceAll("_", " ");
 }
 
+function formatAppealStatus(status: NonNullable<NonNullable<PublisherSkillRecord["marketplace"]>["appeal"]>["status"], labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
+}
+
 function formatHintLabel(key: string, labels: Record<string, string>) {
   return labels[key] ?? key.replaceAll("_", " ");
 }
@@ -460,6 +548,18 @@ function marketplaceClass(placement: NonNullable<PublisherSkillRecord["marketpla
   }
 
   return "status-chip status-chip--neutral";
+}
+
+function appealStatusClass(status: NonNullable<NonNullable<PublisherSkillRecord["marketplace"]>["appeal"]>["status"]) {
+  if (status === "approved") {
+    return "status-chip";
+  }
+
+  if (status === "rejected" || status === "closed") {
+    return "status-chip status-chip--danger";
+  }
+
+  return "status-chip status-chip--warning";
 }
 
 function qualityClass(status: PublisherSkillRecord["quality"]["checklist"][number]["status"]) {

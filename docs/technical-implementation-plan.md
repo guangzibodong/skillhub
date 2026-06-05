@@ -37,6 +37,8 @@ Core tables:
 - `publisher_profiles`
 - `projects`
 - `api_keys`
+- `user_access_tokens`
+- Final auth-provider identities for Google, GitHub, and email login
 
 API groups:
 
@@ -44,6 +46,8 @@ API groups:
 - `/v1/projects/*`
 - `/v1/api-keys/*`
 - `/v1/publisher/profile`
+- `/v1/auth/*`
+- `/v1/account/*`
 
 Acceptance checks:
 
@@ -51,6 +55,8 @@ Acceptance checks:
 - API keys are project-scoped and revocable.
 - Publisher actions require publisher or owner role.
 - Admin actions require reviewer, finance, or super admin role.
+- Login/register UI supports Google OAuth, GitHub OAuth, and email registration/login once the final provider is connected.
+- Personal center exposes profile, connected accounts, organization membership, roles, notification preferences, session/token security, billing profile, and payout readiness links.
 
 ### 2. Skill Registry And Publishing
 
@@ -97,6 +103,7 @@ Core tables:
 - `saved_skills`
 - `skill_feedback`
 - `marketplace_curation_rules`
+- `marketplace_curation_appeals`
 
 API groups:
 
@@ -107,6 +114,8 @@ API groups:
 - `/v1/skills/:slug/feedback`
 - `/v1/admin/skill-feedback`
 - `/v1/admin/marketplace-curation`
+- `/v1/publisher/skills/:skillSlug/marketplace-appeals`
+- `/v1/admin/marketplace-curation/appeals`
 
 Acceptance checks:
 
@@ -117,6 +126,7 @@ Acceptance checks:
 - Published feedback is public, new feedback starts in moderation, and admin decisions are audited.
 - Marketplace recommendation can be curated through featured, standard, or suppressed rules with bounded boost, required reason, optional expiry, and audit logs.
 - Public search uses active curation internally but never exposes internal boost values or operator reasons.
+- Suppressed or under-distributed publishers can request formal curation review with evidence, SLA, publisher-visible status, admin decision, audit logs, and notification events.
 
 ### 4. Publisher Retention
 
@@ -150,6 +160,7 @@ Acceptance checks:
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
 - Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
 - Publishers can see their current marketplace placement, operator reason, expiry, and safe improvement hints without exposing internal boost math.
+- Publishers can create and track marketplace distribution appeals when they have fixed quality gaps or need suppressed placement reconsidered.
 
 ### 5. Runtime And Metering
 
@@ -264,6 +275,7 @@ Acceptance checks:
 - `/dashboard`: project list, installed skills, budgets, API keys, usage, invoices, update inbox.
 - `/developer`: dedicated developer command center for projects, runtime keys, installed skills, budgets, buyer requests, billing readiness, and notifications.
 - `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, update inbox, recent runtime calls, subscriptions, and operational next actions.
+- `/account`: personal center for profile, connected accounts, login methods, organization roles, notification preferences, session/token security, billing profile shortcuts, and payout readiness shortcuts.
 
 ### Publisher Workspace
 
@@ -392,6 +404,9 @@ Completed:
 - Admin marketplace curation APIs now let platform operators read skill quality signals and let reviewer/admin roles update ranking placement with required reasons, previous/next audit metadata, and queued notification events.
 - Public recommended search now applies active curation internally while keeping internal boost and operator reasons out of marketplace-safe search responses.
 - `/admin` now exposes marketplace ranking controls beside quality, incident, audit, and notification operations so ranking changes happen from an auditable platform command center.
+- Marketplace curation appeals now let publishers request standard or featured distribution reconsideration with reason, evidence URL, current placement, requested placement, SLA, audit logs, and publisher/operator notifications.
+- Admin marketplace operations now expose a curation appeal queue where reviewers can move requests under review, approve with a curation-rule update, reject, or close with required reasons.
+- Publisher skill cards now show latest curation appeal status, SLA, and operator decision reason, and provide a review-request form when no appeal is open.
 - The marketplace browser preserves API order for recommended discovery after local filtering, so server-side trust and curation signals remain visible to buyers.
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 - Admin identity directory APIs now let admin/support operators read user, organization, platform-role, membership, token, project, skill, invocation, and ledger adoption signals without mutating access state.

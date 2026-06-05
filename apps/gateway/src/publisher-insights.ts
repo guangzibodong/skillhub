@@ -1,4 +1,5 @@
 import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
+import { listPublisherCurationAppealSummariesBySkill, type PublisherCurationAppealSummary } from "./marketplace-curation-appeals.js";
 import { getSql, searchSkills } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
@@ -230,7 +231,9 @@ export async function listPublisherSkills(organizationId: string | null | undefi
     limit ${safeLimit}
   `) as PublisherSkillRow[];
 
-  return rows.map(mapPublisherSkill);
+  const appealBySkillId = await listPublisherCurationAppealSummariesBySkill(scopedOrganizationId);
+
+  return rows.map((row) => mapPublisherSkill(row, appealBySkillId.get(row.id) ?? null));
 }
 
 async function fallbackPublisherSkills(limit: number) {
@@ -308,6 +311,22 @@ async function fallbackPublisherSkills(limit: number) {
             : "Keep improving runtime checks before featured placement.",
         endsAt: null,
         updatedAt: "demo",
+        appeal:
+          index === 1
+            ? {
+                appealReason: "Runtime check evidence was updated and the publisher requested standard placement.",
+                createdAt: "demo",
+                currentPlacement: "suppressed" as const,
+                decidedAt: null,
+                id: "demo-curation-appeal-dataset-summarizer",
+                operatorReason: null,
+                requestType: "suppression_appeal" as const,
+                requestedPlacement: "standard" as const,
+                skillId: skill.id,
+                slaDueAt: "demo",
+                status: "open" as const
+              }
+            : null,
         improvementHints:
           index === 0
             ? [{ key: "maintain_quality", severity: "positive" as const }]
@@ -321,7 +340,7 @@ async function fallbackPublisherSkills(limit: number) {
   });
 }
 
-function mapPublisherSkill(row: PublisherSkillRow) {
+function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppealSummary | null) {
   const permissionLevel = row.manifest?.permissions ? getPermissionLevel(row.manifest.permissions) : "medium";
   const successRate = row.callCount > 0 ? row.successCount / row.callCount : null;
   const runtimeChecks = normalizeRuntimeChecks(row.runtimeChecks);
@@ -398,6 +417,7 @@ function mapPublisherSkill(row: PublisherSkillRow) {
       reason: row.marketplaceReason,
       endsAt: row.marketplaceEndsAt,
       updatedAt: row.marketplaceUpdatedAt,
+      appeal,
       improvementHints: buildMarketplaceHints({
         callCount: row.callCount,
         incidentCount,

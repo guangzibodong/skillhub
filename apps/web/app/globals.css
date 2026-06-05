@@ -3982,6 +3982,55 @@ a {
   overflow-wrap: anywhere;
 }
 
+.marketplace-curation-appeals,
+.marketplace-curation-appeal-list {
+  display: grid;
+  gap: 12px;
+}
+
+.marketplace-curation-appeals > strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.marketplace-curation-appeal-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(255, 205, 86, 0.16);
+  border-radius: var(--radius);
+  background: rgba(255, 205, 86, 0.045);
+  padding: 13px;
+}
+
+.marketplace-curation-appeal-body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.marketplace-curation-appeal-body p,
+.marketplace-curation-appeal-body small,
+.marketplace-curation-appeal-body a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.marketplace-curation-appeal-body p {
+  color: var(--ink);
+}
+
+.marketplace-curation-appeal-body small,
+.marketplace-curation-appeal-body a {
+  color: var(--muted);
+}
+
+.marketplace-curation-form--appeal {
+  grid-template-columns: minmax(120px, 0.75fr) minmax(90px, 0.5fr) minmax(150px, 0.75fr) minmax(0, 1.25fr) minmax(120px, 0.75fr) auto;
+}
+
 .abuse-report-panel {
   display: grid;
   gap: 14px;
@@ -6837,6 +6886,82 @@ a {
   line-height: 1.5;
 }
 
+.publisher-skill-appeal-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 10px;
+  align-items: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 9px;
+}
+
+.publisher-skill-appeal-status strong,
+.publisher-skill-appeal-status small,
+.publisher-skill-appeal-status p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publisher-skill-appeal-status strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.publisher-skill-appeal-status small,
+.publisher-skill-appeal-status p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.publisher-skill-appeal-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.75fr) minmax(0, 1.35fr) minmax(130px, 0.8fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.publisher-skill-appeal-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.publisher-skill-appeal-form label span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.publisher-skill-appeal-form input,
+.publisher-skill-appeal-form select,
+.publisher-skill-appeal-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  outline: 0;
+  padding: 9px 10px;
+}
+
+.publisher-skill-appeal-form textarea {
+  min-height: 66px;
+  resize: vertical;
+}
+
+.publisher-skill-appeal-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
 .publisher-skill-hints {
   display: flex;
   flex-wrap: wrap;
@@ -8205,6 +8330,7 @@ a {
   .auth-status-grid,
   .key-create-form,
   .project-create-form,
+  .publisher-skill-appeal-form,
   .publisher-skill-price-form,
   .policy-editor {
     grid-template-columns: 1fr;
@@ -8220,6 +8346,7 @@ a {
   }
 
   .project-create-form .primary-button,
+  .publisher-skill-appeal-form .secondary-button,
   .publisher-skill-price-form .primary-button,
   .publisher-skill-review-form .secondary-button,
   .action-message .ghost-button--inline {
@@ -8263,7 +8390,8 @@ a {
 
   .admin-commission-form,
   .admin-commission-timeline__head,
-  .admin-commission-rule-row {
+  .admin-commission-rule-row,
+  .marketplace-curation-form--appeal {
     grid-template-columns: 1fr;
   }
 

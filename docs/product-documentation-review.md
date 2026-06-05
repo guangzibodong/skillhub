@@ -503,6 +503,20 @@ Added publisher-facing marketplace distribution diagnostics, covering:
 - Improvement hints are derived from visibility, review state, latest runtime checks, open incidents, success rate, feedback, and usage, while internal boost math stays admin-only.
 - This closes the marketplace curation loop for publishers because they can see why distribution changed and what to fix before asking for more exposure.
 
+Added marketplace curation appeal workflow, covering:
+
+- `marketplace_curation_appeals` stores publisher distribution review requests with current placement, requested placement, appeal reason, evidence URL, SLA, operator decision reason, submitter, publisher organization, and status.
+- Publishers can request standard or featured distribution reconsideration from their skill operations cards, and can see the latest appeal status and operator reason.
+- Admin marketplace operations now include an appeal queue where reviewers can start review, approve with a curation-rule update, reject, or close with required reasons.
+- Appeal creation and decisions write admin audit logs and queued in-app notifications before email/webhook providers are connected.
+- This completes the fairness loop promised by marketplace curation: operators can suppress or feature listings, publishers can understand the reason, and there is a formal path to request reconsideration.
+
+Added auth and personal-center product requirements, covering:
+
+- Login/register must become a product-grade entry with Google login, GitHub login, and email registration/login rather than a token-only operator console.
+- The personal center must manage profile, connected accounts, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness shortcuts.
+- This keeps account UX from becoming an afterthought while the marketplace operations layer is being built.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

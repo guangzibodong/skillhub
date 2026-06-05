@@ -92,6 +92,12 @@ import {
   upsertMarketplaceCuration
 } from "./marketplace-curation.js";
 import {
+  createPublisherMarketplaceCurationAppeal,
+  decideMarketplaceCurationAppeal,
+  listAdminMarketplaceCurationAppeals,
+  listPublisherMarketplaceCurationAppeals
+} from "./marketplace-curation-appeals.js";
+import {
   listNotificationPreferences,
   upsertNotificationPreference
 } from "./notification-preferences.js";
@@ -1374,6 +1380,45 @@ app.get("/v1/admin/marketplace-curation", async (c) => {
   }
 });
 
+app.get("/v1/admin/marketplace-curation/appeals", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      appeals: await listAdminMarketplaceCurationAppeals(Number(c.req.query("limit") ?? "30"), c.req.query("status"))
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to list marketplace curation appeals." },
+      500
+    );
+  }
+});
+
+app.post("/v1/admin/marketplace-curation/appeals/:appealId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), curationOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      appeal: await decideMarketplaceCurationAppeal(
+        c.req.param("appealId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update marketplace curation appeal." }, 400);
+  }
+});
+
 app.put("/v1/admin/marketplace-curation/:skillSlug", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), curationOperatorRoles);
 
@@ -1755,6 +1800,55 @@ app.get("/v1/publisher/skills", async (c) => {
   return c.json({
     skills: await listPublisherSkills(authorization.subject.organizationId, Number(c.req.query("limit") ?? "50"))
   });
+});
+
+app.get("/v1/publisher/marketplace-appeals", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    appeals: await listPublisherMarketplaceCurationAppeals(
+      authorization.subject.organizationId,
+      Number(c.req.query("limit") ?? "50")
+    )
+  });
+});
+
+app.post("/v1/publisher/skills/:skillSlug/marketplace-appeals", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.organizationId) {
+    return c.json({ error: "Marketplace curation appeals require an organization-scoped user token." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        appeal: await createPublisherMarketplaceCurationAppeal(
+          c.req.param("skillSlug"),
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          {
+            actorUserId: authorization.subject.userId,
+            organizationId: authorization.subject.organizationId
+          }
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create marketplace curation appeal." }, 400);
+  }
 });
 
 app.get("/v1/publisher/refunds", async (c) => {

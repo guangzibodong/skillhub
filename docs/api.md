@@ -98,6 +98,70 @@ Rules:
 - Every write queues an in-app `marketplace.curation.updated` notification event.
 - Public search keeps using the same response schema and does not expose internal reasons or boost values.
 
+## Marketplace Curation Appeals
+
+Publishers can request a formal marketplace distribution review when a listing is suppressed, when new quality evidence is available, or when they want featured placement reconsidered.
+
+Create a publisher appeal:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/skills/browser-research/marketplace-appeals" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "requestedPlacement": "standard",
+    "appealReason": "Runtime checks now pass and the listing has new buyer feedback.",
+    "evidenceUrl": "https://example.com/skillhub/browser-research/runtime-evidence"
+  }'
+```
+
+Rules:
+
+- Publisher appeals require a publisher, owner, admin, or super-admin organization-scoped user token.
+- The skill must belong to the token organization.
+- `requestedPlacement` is `standard` or `featured`.
+- `appealReason` is required.
+- Only one `open` or `under_review` appeal can exist per skill at a time.
+- Each appeal stores the current placement, requested placement, current curation reason, evidence URL, submitter, publisher organization, and seven-day SLA target.
+- Appeal creation writes an audit row and queues in-app notifications for platform operators and the publisher organization.
+
+Publishers can list their own appeal history:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/marketplace-appeals?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Admin/support operators can read the appeal queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/marketplace-curation/appeals?limit=30" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Admin/reviewer operators can record a decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/marketplace-curation/appeals/$APPEAL_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "approve",
+    "placement": "standard",
+    "boost": 0,
+    "reason": "Publisher supplied passing runtime evidence and no open incidents remain."
+  }'
+```
+
+Decision actions:
+
+- `review`: move the appeal to `under_review` with an operator reason.
+- `approve`: approve the appeal and upsert the skill's marketplace curation rule with chosen placement, boost, optional expiry, audit log, and publisher notification.
+- `reject`: reject with a required reason.
+- `close`: close without changing marketplace placement.
+
+Featured approvals still require a public listing in `submitted` or `verified` review status. The public marketplace never exposes appeal reasons or internal boost values.
+
 ## Get Skill Manifest
 
 ```bash
