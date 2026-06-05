@@ -78,6 +78,8 @@ API groups:
 - `/v1/skills/:slug`
 - `/v1/skills`
 - `/v1/skills/:slug/versions`
+- `/v1/publisher/skills/:skillSlug/versions`
+- `/v1/publisher/skills/:skillSlug/versions/:version/submit`
 - `/v1/reviews/*`
 
 Acceptance checks:
@@ -86,6 +88,9 @@ Acceptance checks:
 - Review submission must create automated manifest, runtime, example, and security checks for the submitted version.
 - A verified skill version must have a review decision and no failed, queued, or running automated checks. Warning checks require reviewer notes.
 - A new version cannot silently replace a verified version.
+- Approved or installed versions cannot be overwritten; publishers must create a new semantic version.
+- Publisher version history must expose per-version manifest, review status, runtime checks, installs, calls, and created time.
+- Public discovery and default installs must prefer approved versions when draft or submitted updates exist.
 - Suspended skills cannot be installed or invoked.
 
 ### 3. Discovery And Developer Retention

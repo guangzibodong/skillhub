@@ -525,6 +525,16 @@ Added account center implementation foundation, covering:
 - `/account` now gives users a personal center for profile, connected login methods, organization roles, session/token security, workspace readiness, workspace shortcuts, and notification preferences.
 - This strengthens first-visit value because a new user can create a real workspace with email registration, and repeat-visit value because account readiness, notifications, billing, payout, and role context are visible from one page.
 
+Added publisher skill version management, covering:
+
+- `/v1/publisher/skills` now returns owned skill version history with per-version manifest, review state, runtime checks, install count, call count, and created time.
+- Publishers can read `/v1/publisher/skills/:skillSlug/versions`, save a new version or update an unlocked draft through `/v1/publisher/skills/:skillSlug/versions`, and submit a specific version through `/v1/publisher/skills/:skillSlug/versions/:version/submit`.
+- Approved or installed versions are locked against in-place mutation, protecting developers who pin versions and preserving trust in verified contracts.
+- Creating a new version records a skill update event, audit log, and in-app notification before final email/webhook providers are connected.
+- Public discovery and default install selection now prefer approved versions, so a draft update does not silently replace the currently trusted contract.
+- The publisher skill operations UI now includes a version manager with version history, manifest editor, save-version action, and per-version review submission.
+- This strengthens publisher retention because authors can keep improving skills after first upload, and it strengthens developer trust because verified behavior remains stable while new versions move through review.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

@@ -101,7 +101,10 @@ import {
   listNotificationPreferences,
   upsertNotificationPreference
 } from "./notification-preferences.js";
-import { listPublisherSkills } from "./publisher-insights.js";
+import {
+  listPublisherSkills,
+  listPublisherSkillVersions
+} from "./publisher-insights.js";
 import {
   decidePayout,
   getPublisherPayoutSummary,
@@ -1838,6 +1841,83 @@ app.get("/v1/publisher/skills", async (c) => {
   });
 });
 
+app.get("/v1/publisher/skills/:skillSlug/versions", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    versions: await listPublisherSkillVersions(
+      authorization.subject.organizationId,
+      c.req.param("skillSlug"),
+      Number(c.req.query("limit") ?? "20")
+    )
+  });
+});
+
+app.post("/v1/publisher/skills/:skillSlug/versions", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  const body = (await c.req.json().catch(() => ({}))) as { manifest?: unknown };
+
+  if (!body.manifest) {
+    return c.json({ error: "Missing manifest." }, 400);
+  }
+
+  if (!isManifestForSkill(body.manifest, c.req.param("skillSlug"))) {
+    return c.json({ error: "Manifest name must match the managed skill slug." }, 400);
+  }
+
+  try {
+    return c.json(
+      {
+        version: await publishSkill(body.manifest, authorization.subject.organizationId, {
+          actorUserId: authorization.subject.userId,
+          source: "publisher_version_manager"
+        })
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to save skill version." }, 400);
+  }
+});
+
+app.post("/v1/publisher/skills/:skillSlug/versions/:version/submit", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        review: await submitSkillForReview(
+          c.req.param("skillSlug"),
+          authorization.subject.organizationId,
+          c.req.param("version")
+        )
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to submit skill version." }, 400);
+  }
+});
+
 app.get("/v1/publisher/marketplace-appeals", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
     requireOrganization: true
@@ -2116,10 +2196,12 @@ app.post("/v1/skills/:slug/submit", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
+  const body = (await c.req.json().catch(() => ({}))) as { version?: string };
+
   try {
     return c.json(
       {
-        review: await submitSkillForReview(c.req.param("slug"), authorization.subject.organizationId)
+        review: await submitSkillForReview(c.req.param("slug"), authorization.subject.organizationId, body.version)
       },
       201
     );
@@ -2189,7 +2271,13 @@ app.post("/v1/skills", async (c) => {
   }
 
   try {
-    return c.json(await publishSkill(body.manifest, authorization.subject.organizationId), 201);
+    return c.json(
+      await publishSkill(body.manifest, authorization.subject.organizationId, {
+        actorUserId: authorization.subject.userId,
+        source: "manifest_publish"
+      }),
+      201
+    );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to publish skill." }, 400);
   }
@@ -2289,6 +2377,14 @@ function signupErrorMessage(error: unknown) {
   }
 
   return error.message || "Unable to create workspace signup.";
+}
+
+function isManifestForSkill(value: unknown, skillSlug: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || !("name" in value)) {
+    return false;
+  }
+
+  return (value as { name?: unknown }).name === skillSlug;
 }
 
 function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {

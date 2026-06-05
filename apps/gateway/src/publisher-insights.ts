@@ -21,6 +21,25 @@ type MarketplaceImprovementHint = {
   severity: MarketplaceImprovementSeverity;
 };
 
+type PublisherSkillVersionSummary = {
+  callCount: number;
+  createdAt: string;
+  id: string;
+  installCount: number;
+  manifest: SkillManifest;
+  reviewDecidedAt: string | null;
+  reviewNotes: string | null;
+  reviewRiskLevel: SkillSummary["permissionLevel"] | null;
+  reviewStatus: string | null;
+  runtimeCheckCount: number;
+  runtimeChecks: RuntimeCheckSummary[];
+  runtimeFailedCount: number;
+  runtimePassedCount: number;
+  runtimeWarningCount: number;
+  status: "draft" | "submitted" | "verified" | "rejected" | "suspended";
+  version: string;
+};
+
 type PublisherSkillRow = {
   id: string;
   slug: string;
@@ -66,6 +85,7 @@ type PublisherSkillRow = {
   marketplaceReason: string | null;
   marketplaceEndsAt: string | null;
   marketplaceUpdatedAt: string | null;
+  versions: PublisherSkillVersionSummary[] | null;
 };
 
 export async function listPublisherSkills(organizationId: string | null | undefined, limit = 50) {
@@ -122,7 +142,8 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       active_curation.placement as "marketplacePlacement",
       active_curation.reason as "marketplaceReason",
       active_curation.ends_at::text as "marketplaceEndsAt",
-      active_curation.updated_at::text as "marketplaceUpdatedAt"
+      active_curation.updated_at::text as "marketplaceUpdatedAt",
+      coalesce(versions.items, '[]'::jsonb) as "versions"
     from skills s
     left join lateral (
       select id, version, manifest
@@ -226,6 +247,107 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       order by updated_at desc
       limit 1
     ) active_curation on true
+    left join lateral (
+      select jsonb_agg(
+        jsonb_build_object(
+          'callCount', version_items.call_count,
+          'createdAt', version_items.created_at,
+          'id', version_items.id,
+          'installCount', version_items.install_count,
+          'manifest', version_items.manifest,
+          'reviewDecidedAt', version_items.review_decided_at,
+          'reviewNotes', version_items.review_notes,
+          'reviewRiskLevel', version_items.review_risk_level,
+          'reviewStatus', version_items.review_status,
+          'runtimeCheckCount', version_items.runtime_check_count,
+          'runtimeChecks', version_items.runtime_checks,
+          'runtimeFailedCount', version_items.runtime_failed_count,
+          'runtimePassedCount', version_items.runtime_passed_count,
+          'runtimeWarningCount', version_items.runtime_warning_count,
+          'status', version_items.version_status,
+          'version', version_items.version
+        )
+        order by version_items.created_at desc
+      ) as items
+      from (
+        select
+          sv.id::text,
+          sv.version,
+          sv.manifest,
+          sv.created_at::text as created_at,
+          review.status as review_status,
+          review.risk_level as review_risk_level,
+          review.notes as review_notes,
+          review.decided_at::text as review_decided_at,
+          case
+            when review.status = 'approved' then 'verified'
+            when review.status in ('queued', 'in_review') then 'submitted'
+            when review.status = 'rejected' then 'rejected'
+            when review.status = 'blocked' then 'suspended'
+            else 'draft'
+          end as version_status,
+          coalesce(checks.total_count, 0)::int as runtime_check_count,
+          coalesce(checks.passed_count, 0)::int as runtime_passed_count,
+          coalesce(checks.failed_count, 0)::int as runtime_failed_count,
+          coalesce(checks.warning_count, 0)::int as runtime_warning_count,
+          coalesce(checks.items, '[]'::jsonb) as runtime_checks,
+          coalesce(installs.install_count, 0)::int as install_count,
+          coalesce(invocations.call_count, 0)::int as call_count
+        from skill_versions sv
+        left join lateral (
+          select status, risk_level, notes, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        left join lateral (
+          with latest_checks as (
+            select distinct on (check_type)
+              check_type,
+              status,
+              message,
+              latency_ms,
+              checked_at,
+              created_at
+            from skill_runtime_checks
+            where skill_version_id = sv.id
+            order by check_type, created_at desc
+          )
+          select
+            count(*) as total_count,
+            count(*) filter (where status = 'passed') as passed_count,
+            count(*) filter (where status = 'failed') as failed_count,
+            count(*) filter (where status = 'warning') as warning_count,
+            jsonb_agg(
+              jsonb_build_object(
+                'checkType', check_type,
+                'status', status,
+                'message', message,
+                'latencyMs', latency_ms,
+                'checkedAt', checked_at,
+                'createdAt', created_at
+              )
+              order by check_type
+            ) as items
+          from latest_checks
+        ) checks on true
+        left join lateral (
+          select count(*) as install_count
+          from project_skill_installs
+          where skill_version_id = sv.id
+            and status = 'installed'
+        ) installs on true
+        left join lateral (
+          select count(*) as call_count
+          from skill_invocations
+          where skill_version_id = sv.id
+        ) invocations on true
+        where sv.skill_id = s.id
+        order by sv.created_at desc
+        limit 8
+      ) version_items
+    ) versions on true
     where (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
     order by s.updated_at desc
     limit ${safeLimit}
@@ -335,9 +457,120 @@ async function fallbackPublisherSkills(limit: number) {
                 { key: "collect_feedback", severity: "warning" as const }
               ]
       },
+      versions: [
+        {
+          callCount: calls,
+          createdAt: "demo",
+          id: `${skill.id}-${skill.version}`,
+          installCount: index === 0 ? 46 : 12,
+          manifest: fallbackManifestForSummary(skill),
+          reviewDecidedAt: skill.verificationStatus === "verified" ? "demo" : null,
+          reviewNotes: skill.verificationStatus === "verified" ? "Demo listing approved." : "Needs operator review.",
+          reviewRiskLevel: skill.permissionLevel,
+          reviewStatus: skill.verificationStatus === "verified" ? "approved" : "queued",
+          runtimeCheckCount: runtimeChecks.length,
+          runtimeChecks,
+          runtimeFailedCount,
+          runtimePassedCount: runtimeChecks.filter((check) => check.status === "passed").length,
+          runtimeWarningCount: runtimeChecks.filter((check) => check.status === "warning").length,
+          status: skill.verificationStatus === "verified" ? ("verified" as const) : ("submitted" as const),
+          version: skill.version
+        }
+      ],
       updatedAt: "demo"
     };
   });
+}
+
+export async function listPublisherSkillVersions(
+  organizationId: string | null | undefined,
+  skillSlug: string,
+  limit = 20
+): Promise<PublisherSkillVersionSummary[]> {
+  const sql = await getSql();
+
+  if (!sql) {
+    const fallback = await fallbackPublisherSkills(limit);
+    return fallback.find((skill) => skill.slug === skillSlug)?.versions ?? [];
+  }
+
+  const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 50);
+  const scopedOrganizationId = organizationId ?? null;
+  const rows = (await sql`
+    select
+      sv.id::text,
+      sv.version,
+      sv.manifest,
+      sv.created_at::text as "createdAt",
+      review.status as "reviewStatus",
+      review.risk_level as "reviewRiskLevel",
+      review.notes as "reviewNotes",
+      review.decided_at::text as "reviewDecidedAt",
+      coalesce(checks.total_count, 0)::int as "runtimeCheckCount",
+      coalesce(checks.passed_count, 0)::int as "runtimePassedCount",
+      coalesce(checks.failed_count, 0)::int as "runtimeFailedCount",
+      coalesce(checks.warning_count, 0)::int as "runtimeWarningCount",
+      coalesce(checks.items, '[]'::jsonb) as "runtimeChecks",
+      coalesce(installs.install_count, 0)::int as "installCount",
+      coalesce(invocations.call_count, 0)::int as "callCount"
+    from skills s
+    join skill_versions sv on sv.skill_id = s.id
+    left join lateral (
+      select status, risk_level, notes, decided_at, created_at
+      from skill_reviews
+      where skill_version_id = sv.id
+      order by created_at desc
+      limit 1
+    ) review on true
+    left join lateral (
+      with latest_checks as (
+        select distinct on (check_type)
+          check_type,
+          status,
+          message,
+          latency_ms,
+          checked_at,
+          created_at
+        from skill_runtime_checks
+        where skill_version_id = sv.id
+        order by check_type, created_at desc
+      )
+      select
+        count(*) as total_count,
+        count(*) filter (where status = 'passed') as passed_count,
+        count(*) filter (where status = 'failed') as failed_count,
+        count(*) filter (where status = 'warning') as warning_count,
+        jsonb_agg(
+          jsonb_build_object(
+            'checkType', check_type,
+            'status', status,
+            'message', message,
+            'latencyMs', latency_ms,
+            'checkedAt', checked_at,
+            'createdAt', created_at
+          )
+          order by check_type
+        ) as items
+      from latest_checks
+    ) checks on true
+    left join lateral (
+      select count(*) as install_count
+      from project_skill_installs
+      where skill_version_id = sv.id
+        and status = 'installed'
+    ) installs on true
+    left join lateral (
+      select count(*) as call_count
+      from skill_invocations
+      where skill_version_id = sv.id
+    ) invocations on true
+    where s.slug = ${skillSlug}
+      and (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
+    order by sv.created_at desc
+    limit ${safeLimit}
+  `) as Array<Partial<PublisherSkillVersionSummary>>;
+
+  return normalizeVersionSummaries(rows);
 }
 
 function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppealSummary | null) {
@@ -430,8 +663,38 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
         visibility: row.visibility
       })
     },
+    versions: normalizeVersionSummaries(row.versions),
     updatedAt: row.updatedAt
   };
+}
+
+function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSummary>> | null): PublisherSkillVersionSummary[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((version) => {
+    const reviewStatus = typeof version.reviewStatus === "string" ? version.reviewStatus : null;
+
+    return {
+      callCount: Number(version.callCount ?? 0),
+      createdAt: String(version.createdAt ?? "demo"),
+      id: String(version.id ?? version.version ?? "version"),
+      installCount: Number(version.installCount ?? 0),
+      manifest: isSkillManifestLike(version.manifest) ? version.manifest : fallbackManifestForVersion(String(version.version ?? "0.1.0")),
+      reviewDecidedAt: version.reviewDecidedAt ?? null,
+      reviewNotes: version.reviewNotes ?? null,
+      reviewRiskLevel: version.reviewRiskLevel ?? null,
+      reviewStatus,
+      runtimeCheckCount: Number(version.runtimeCheckCount ?? 0),
+      runtimeChecks: normalizeRuntimeChecks(version.runtimeChecks ?? null),
+      runtimeFailedCount: Number(version.runtimeFailedCount ?? 0),
+      runtimePassedCount: Number(version.runtimePassedCount ?? 0),
+      runtimeWarningCount: Number(version.runtimeWarningCount ?? 0),
+      status: deriveVersionStatus(reviewStatus),
+      version: String(version.version ?? "0.1.0")
+    };
+  });
 }
 
 function normalizeRuntimeChecks(value: RuntimeCheckSummary[] | null): RuntimeCheckSummary[] {
@@ -447,6 +710,77 @@ function normalizeRuntimeChecks(value: RuntimeCheckSummary[] | null): RuntimeChe
     checkedAt: check.checkedAt ?? null,
     createdAt: check.createdAt ?? null
   }));
+}
+
+function deriveVersionStatus(reviewStatus: string | null): PublisherSkillVersionSummary["status"] {
+  if (reviewStatus === "approved") {
+    return "verified";
+  }
+
+  if (reviewStatus === "queued" || reviewStatus === "in_review") {
+    return "submitted";
+  }
+
+  if (reviewStatus === "rejected") {
+    return "rejected";
+  }
+
+  if (reviewStatus === "blocked") {
+    return "suspended";
+  }
+
+  return "draft";
+}
+
+function isSkillManifestLike(value: unknown): value is SkillManifest {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value) && "name" in value && "version" in value);
+}
+
+function fallbackManifestForSummary(skill: SkillSummary): SkillManifest {
+  return {
+    schemaVersion: "0.1",
+    name: skill.slug,
+    displayName: skill.displayName,
+    version: skill.version,
+    description: skill.description,
+    tags: skill.tags,
+    runtime:
+      skill.runtimeType === "mcp"
+        ? { type: "mcp", serverUrl: "https://api.useskillhub.com/demo/mcp" }
+        : skill.runtimeType === "local"
+          ? { type: "local", command: "skillhub-demo" }
+          : { type: "http", entrypoint: "https://api.useskillhub.com/demo/runtime" },
+    permissions: {
+      browser: skill.permissionLevel === "medium",
+      filesystem: skill.permissionLevel === "high" ? "write" : "none",
+      network: skill.permissionLevel !== "low",
+      secrets: []
+    },
+    inputSchema: {
+      properties: {},
+      type: "object"
+    },
+    outputSchema: {
+      properties: {},
+      type: "object"
+    }
+  };
+}
+
+function fallbackManifestForVersion(version: string): SkillManifest {
+  return {
+    ...fallbackManifestForSummary({
+      description: "Draft SkillHub skill version.",
+      displayName: "Draft skill",
+      id: "draft-skill",
+      permissionLevel: "low",
+      slug: "draft-skill",
+      tags: ["draft"],
+      verificationStatus: "draft",
+      version
+    }),
+    version
+  };
 }
 
 function runtimeCheckSummaries(failedCount: number): RuntimeCheckSummary[] {

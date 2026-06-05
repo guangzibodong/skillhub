@@ -57,6 +57,11 @@ type SearchOptions = {
   verificationStatus?: SkillSummary["verificationStatus"];
 };
 
+type PublishSkillOptions = {
+  actorUserId?: string | null;
+  source?: "manifest_publish" | "publisher_version_manager";
+};
+
 let sqlPromise: Promise<unknown> | undefined;
 let seeded = false;
 
@@ -89,10 +94,24 @@ export async function searchSkills(options: SearchOptions = {}): Promise<SkillSu
       coalesce(feedback.feedback_count, 0)::int as feedback_count
     from skills s
     join lateral (
-      select version, manifest
-      from skill_versions
-      where skill_id = s.id
-      order by created_at desc
+      select sv.version, sv.manifest
+      from skill_versions sv
+      left join lateral (
+        select status, decided_at, created_at
+        from skill_reviews
+        where skill_version_id = sv.id
+        order by created_at desc
+        limit 1
+      ) review on true
+      where sv.skill_id = s.id
+      order by
+        case
+          when review.status = 'approved' then 0
+          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+          else 2
+        end,
+        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+        sv.created_at desc
       limit 1
     ) latest on true
     left join lateral (
@@ -147,10 +166,24 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
     select latest.manifest
     from skills s
     join lateral (
-      select manifest
-      from skill_versions
-      where skill_id = s.id
-      order by created_at desc
+      select sv.manifest
+      from skill_versions sv
+      left join lateral (
+        select status, decided_at, created_at
+        from skill_reviews
+        where skill_version_id = sv.id
+        order by created_at desc
+        limit 1
+      ) review on true
+      where sv.skill_id = s.id
+      order by
+        case
+          when review.status = 'approved' then 0
+          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+          else 2
+        end,
+        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+        sv.created_at desc
       limit 1
     ) latest on true
     where s.visibility = 'public'
@@ -173,7 +206,27 @@ export async function getSkillManifest(slug: string): Promise<SkillManifest | un
   const rows = (await sql`
     select sv.manifest
     from skills s
-    join skill_versions sv on sv.skill_id = s.id
+    join lateral (
+      select sv.manifest
+      from skill_versions sv
+      left join lateral (
+        select status, decided_at, created_at
+        from skill_reviews
+        where skill_version_id = sv.id
+        order by created_at desc
+        limit 1
+      ) review on true
+      where sv.skill_id = s.id
+      order by
+        case
+          when review.status = 'approved' then 0
+          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+          else 2
+        end,
+        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+        sv.created_at desc
+      limit 1
+    ) sv on true
     where s.slug = ${slug}
       and s.visibility = 'public'
       and s.verification_status in ('verified', 'submitted', 'deprecated')
@@ -186,8 +239,9 @@ export async function getSkillManifest(slug: string): Promise<SkillManifest | un
 
 export async function publishSkill(
   manifest: unknown,
-  organizationId?: string | null
-): Promise<{ id: string; slug: string; status: string }> {
+  organizationId?: string | null,
+  options: PublishSkillOptions = {}
+): Promise<{ createdNewVersion: boolean; id: string; slug: string; status: string; version: string; versionId: string }> {
   assertSkillManifest(manifest);
 
   const sql = await getSql();
@@ -199,61 +253,153 @@ export async function publishSkill(
   await seedDemoData(sql);
 
   const ownerOrganizationId = organizationId ?? (await upsertDefaultOrganization(sql)).id;
-  const existingRows = (await sql`
-    select organization_id::text as "organizationId"
-    from skills
-    where slug = ${manifest.name}
-    limit 1
-  `) as Array<{ organizationId: string }>;
 
-  if (existingRows[0] && existingRows[0].organizationId !== ownerOrganizationId) {
-    throw new Error("Skill slug is already owned by another organization.");
-  }
+  return sql.begin(async (tx: NonNullable<SqlClient>) => {
+    const existingRows = (await tx`
+      select
+        id::text,
+        organization_id::text as "organizationId",
+        verification_status as "verificationStatus"
+      from skills
+      where slug = ${manifest.name}
+      limit 1
+    `) as Array<{ id: string; organizationId: string; verificationStatus: string }>;
 
-  const skillRows = (await sql`
-    insert into skills (
-      organization_id,
-      slug,
-      display_name,
-      description,
-      tags,
-      visibility,
-      verification_status,
-      updated_at
-    )
-    values (
-      ${ownerOrganizationId},
-      ${manifest.name},
-      ${manifest.displayName},
-      ${manifest.description},
-      ${manifest.tags},
-      'public',
-      'draft',
-      now()
-    )
-    on conflict (slug) do update set
-      display_name = excluded.display_name,
-      description = excluded.description,
-      tags = excluded.tags,
-      updated_at = now()
-    returning id::text, slug, verification_status
-  `) as Array<{ id: string; slug: string; verification_status: string }>;
+    const existingSkill = existingRows[0];
 
-  const skill = skillRows[0];
+    if (existingSkill && existingSkill.organizationId !== ownerOrganizationId) {
+      throw new Error("Skill slug is already owned by another organization.");
+    }
 
-  await sql`
-    insert into skill_versions (skill_id, version, manifest)
-    values (${skill.id}, ${manifest.version}, ${sql.json(manifest)})
-    on conflict (skill_id, version) do update set
-      manifest = excluded.manifest,
-      created_at = now()
-  `;
+    const skillRows = (await tx`
+      insert into skills (
+        organization_id,
+        slug,
+        display_name,
+        description,
+        tags,
+        visibility,
+        verification_status,
+        updated_at
+      )
+      values (
+        ${ownerOrganizationId},
+        ${manifest.name},
+        ${manifest.displayName},
+        ${manifest.description},
+        ${manifest.tags},
+        'public',
+        'draft',
+        now()
+      )
+      on conflict (slug) do update set
+        display_name = excluded.display_name,
+        description = excluded.description,
+        tags = excluded.tags,
+        updated_at = now()
+      returning id::text, slug, verification_status
+    `) as Array<{ id: string; slug: string; verification_status: string }>;
 
-  return {
-    id: skill.id,
-    slug: skill.slug,
-    status: skill.verification_status
-  };
+    const skill = skillRows[0];
+    const existingVersionRows = (await tx`
+      select
+        sv.id::text,
+        exists (
+          select 1
+          from skill_reviews sr
+          where sr.skill_version_id = sv.id
+            and sr.status = 'approved'
+        ) as "hasApprovedReview",
+        exists (
+          select 1
+          from project_skill_installs psi
+          where psi.skill_version_id = sv.id
+            and psi.status <> 'removed'
+        ) as "hasInstalls"
+      from skill_versions sv
+      where sv.skill_id = ${skill.id}
+        and sv.version = ${manifest.version}
+      limit 1
+    `) as Array<{ hasApprovedReview: boolean; hasInstalls: boolean; id: string }>;
+
+    const existingVersion = existingVersionRows[0];
+
+    if (existingVersion?.hasApprovedReview || existingVersion?.hasInstalls) {
+      throw new Error("This version is locked after approval or installation. Create a new semantic version instead.");
+    }
+
+    const versionRows = existingVersion
+      ? ((await tx`
+          update skill_versions
+          set manifest = ${tx.json(manifest)}, created_at = now()
+          where id = ${existingVersion.id}
+          returning id::text, version
+        `) as Array<{ id: string; version: string }>)
+      : ((await tx`
+          insert into skill_versions (skill_id, version, manifest)
+          values (${skill.id}, ${manifest.version}, ${tx.json(manifest)})
+          returning id::text, version
+        `) as Array<{ id: string; version: string }>);
+
+    const version = versionRows[0];
+    const createdNewVersion = !existingVersion;
+    const action = createdNewVersion ? "skill.version.created" : "skill.version.updated";
+
+    if (createdNewVersion && existingSkill) {
+      await tx`
+        insert into skill_update_events (skill_id, skill_version_id, event_type, severity, title, body)
+        values (
+          ${skill.id},
+          ${version.id},
+          'new_version',
+          'info',
+          ${`${manifest.displayName} ${manifest.version} is ready for publisher review`},
+          'Publisher created a new skill version. Installed projects can evaluate the update after review.'
+        )
+      `;
+    }
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${options.actorUserId ?? null},
+        ${action},
+        'skill_version',
+        ${version.id},
+        ${createdNewVersion ? "Publisher created a skill version." : "Publisher updated a draft skill version."},
+        ${tx.json({
+          skillSlug: skill.slug,
+          source: options.source ?? "manifest_publish",
+          version: version.version
+        })}
+      )
+    `;
+
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${ownerOrganizationId},
+        ${action},
+        'in_app',
+        ${createdNewVersion ? "Skill version created" : "Skill draft version updated"},
+        ${tx.json({
+          skillSlug: skill.slug,
+          displayName: manifest.displayName,
+          version: version.version
+        })},
+        'queued'
+      )
+    `;
+
+    return {
+      createdNewVersion,
+      id: skill.id,
+      slug: skill.slug,
+      status: skill.verification_status,
+      version: version.version,
+      versionId: version.id
+    };
+  });
 }
 
 export async function getRegistryStats(): Promise<RegistryStats> {

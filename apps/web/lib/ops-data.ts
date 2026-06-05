@@ -464,6 +464,32 @@ export type AdminIncidentRecord = {
   updatedAt: string;
 };
 
+export type PublisherSkillVersionRecord = {
+  callCount: number;
+  createdAt: string;
+  id: string;
+  installCount: number;
+  manifest: Record<string, unknown>;
+  reviewDecidedAt: string | null;
+  reviewNotes: string | null;
+  reviewRiskLevel: "low" | "medium" | "high" | null;
+  reviewStatus: string | null;
+  runtimeCheckCount: number;
+  runtimeChecks: Array<{
+    checkType: "example" | "manifest" | "runtime" | "security" | string;
+    status: "failed" | "passed" | "queued" | "running" | "warning" | string;
+    message: string | null;
+    latencyMs?: number | null;
+    checkedAt?: string | null;
+    createdAt?: string | null;
+  }>;
+  runtimeFailedCount: number;
+  runtimePassedCount: number;
+  runtimeWarningCount: number;
+  status: "draft" | "submitted" | "verified" | "rejected" | "suspended";
+  version: string;
+};
+
 export type PublisherSkillRecord = {
   id: string;
   slug: string;
@@ -549,6 +575,7 @@ export type PublisherSkillRecord = {
       severity: "critical" | "positive" | "warning";
     }>;
   };
+  versions?: PublisherSkillVersionRecord[];
   updatedAt: string;
 };
 
@@ -1710,6 +1737,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       updatedAt: "demo",
       improvementHints: [{ key: "maintain_quality", severity: "positive" }]
     },
+    versions: [
+      {
+        callCount: 18400,
+        createdAt: "demo",
+        id: "browser-research-0.1.0",
+        installCount: 46,
+        manifest: {
+          schemaVersion: "0.1",
+          name: "browser-research",
+          displayName: "Browser Research",
+          version: "0.1.0",
+          description: "Research a web topic and return concise findings with source URLs.",
+          tags: ["research", "browser", "citations"],
+          runtime: { type: "http", entrypoint: "https://api.useskillhub.com/demo/browser-research" },
+          permissions: { network: true, browser: true, filesystem: "none", secrets: [] },
+          inputSchema: { type: "object", properties: { query: { type: "string" } } },
+          outputSchema: { type: "object", properties: { summary: { type: "string" }, sources: { type: "array" } } }
+        },
+        reviewDecidedAt: "demo",
+        reviewNotes: "Manifest, runtime, and examples accepted.",
+        reviewRiskLevel: "medium",
+        reviewStatus: "approved",
+        runtimeCheckCount: 4,
+        runtimeChecks: [
+          { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+          { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
+          { checkType: "example", status: "passed", message: "Input and output schemas include concrete fields." },
+          { checkType: "security", status: "passed", message: "Permission profile is compatible with automated review gates." }
+        ],
+        runtimeFailedCount: 0,
+        runtimePassedCount: 4,
+        runtimeWarningCount: 0,
+        status: "verified",
+        version: "0.1.0"
+      }
+    ],
     updatedAt: "demo"
   },
   {
@@ -1797,6 +1860,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         { key: "collect_feedback", severity: "warning" }
       ]
     },
+    versions: [
+      {
+        callCount: 9200,
+        createdAt: "demo",
+        id: "dataset-summarizer-0.1.0",
+        installCount: 12,
+        manifest: {
+          schemaVersion: "0.1",
+          name: "dataset-summarizer",
+          displayName: "Dataset Summarizer",
+          version: "0.1.0",
+          description: "Summarize structured datasets with typed output.",
+          tags: ["data", "summary"],
+          runtime: { type: "http", entrypoint: "https://api.useskillhub.com/demo/dataset-summarizer" },
+          permissions: { network: true, browser: false, filesystem: "read", secrets: [] },
+          inputSchema: { type: "object", properties: { rows: { type: "array" } } },
+          outputSchema: { type: "object", properties: { summary: { type: "string" } } }
+        },
+        reviewDecidedAt: null,
+        reviewNotes: "Needs data retention review.",
+        reviewRiskLevel: "medium",
+        reviewStatus: "queued",
+        runtimeCheckCount: 4,
+        runtimeChecks: [
+          { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+          { checkType: "runtime", status: "failed", message: "Runtime declaration needs a reachable secure endpoint." },
+          { checkType: "example", status: "warning", message: "Example schemas should include concrete fields before approval." },
+          { checkType: "security", status: "passed", message: "Permission profile is compatible with review gates." }
+        ],
+        runtimeFailedCount: 1,
+        runtimePassedCount: 2,
+        runtimeWarningCount: 1,
+        status: "submitted",
+        version: "0.1.0"
+      }
+    ],
     updatedAt: "demo"
   }
 ];

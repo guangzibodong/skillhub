@@ -13,28 +13,34 @@ export type PublisherSkillActionState = {
 const actionCopy = {
   en: {
     invalidBillingModel: "Billing model must be free, per_call, or subscription.",
+    invalidManifest: "Manifest JSON is invalid.",
     invalidPriceStatus: "Price status must be draft, active, or archived.",
+    missingManifest: "Paste a SkillHub manifest before saving a version.",
     missingSkill: "Missing skill slug.",
     missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing publisher skills.",
     priceSaved: "Skill price saved.",
     reviewSubmitted: "Skill submitted for review.",
     unablePrice: "Unable to save skill price.",
-    unableReview: "Unable to submit skill for review."
+    unableReview: "Unable to submit skill for review.",
+    unableVersion: "Unable to save skill version.",
+    versionSaved: "Skill version saved."
   },
   zh: {
     invalidBillingModel: "计费模式必须是 free、per_call 或 subscription。",
+    invalidManifest: "Manifest JSON 无效。",
     invalidPriceStatus: "价格状态必须是 draft、active 或 archived。",
+    missingManifest: "请先粘贴 SkillHub manifest 再保存版本。",
     missingSkill: "缺少技能 slug。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理发布者技能。",
+    missingToken: "请先使用 SkillHub 用户 token 登录，或配置服务端备用 token，才能管理发布者技能。",
     priceSaved: "技能价格已保存。",
     reviewSubmitted: "技能已提交审核。",
     unablePrice: "无法保存技能价格。",
-    unableReview: "无法提交技能审核。"
+    unableReview: "无法提交技能审核。",
+    unableVersion: "无法保存技能版本。",
+    versionSaved: "技能版本已保存。"
   }
 } as const;
 
-const billingModels = ["free", "per_call", "subscription"] as const;
-const priceStatuses = ["draft", "active", "archived"] as const;
 const appealCopy = {
   en: {
     missingReason: "Explain what changed or why the listing should be reviewed.",
@@ -42,11 +48,14 @@ const appealCopy = {
     unable: "Unable to submit marketplace distribution review."
   },
   zh: {
-    missingReason: "\u8bf4\u660e\u6280\u80fd\u5df2\u5982\u4f55\u6539\u8fdb\uff0c\u6216\u4e3a\u4ec0\u4e48\u9700\u8981\u590d\u5ba1\u5206\u53d1\u3002",
-    submitted: "\u5e02\u573a\u5206\u53d1\u590d\u5ba1\u7533\u8bf7\u5df2\u63d0\u4ea4\u3002",
-    unable: "\u65e0\u6cd5\u63d0\u4ea4\u5e02\u573a\u5206\u53d1\u590d\u5ba1\u3002"
+    missingReason: "说明技能已如何改进，或为什么需要复审分发。",
+    submitted: "市场分发复审申请已提交。",
+    unable: "无法提交市场分发复审。"
   }
 } as const;
+
+const billingModels = ["free", "per_call", "subscription"] as const;
+const priceStatuses = ["draft", "active", "archived"] as const;
 
 export async function submitPublisherSkillReviewAction(
   locale: Locale,
@@ -56,6 +65,7 @@ export async function submitPublisherSkillReviewAction(
   const labels = actionCopy[locale];
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
+  const version = String(formData.get("version") ?? "").trim();
 
   if (!skillSlug) {
     return { message: labels.missingSkill, status: "error" };
@@ -66,9 +76,14 @@ export async function submitPublisherSkillReviewAction(
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/v1/skills/${encodeURIComponent(skillSlug)}/submit`, {
+    const endpoint = version
+      ? `${getApiUrl()}/v1/publisher/skills/${encodeURIComponent(skillSlug)}/versions/${encodeURIComponent(version)}/submit`
+      : `${getApiUrl()}/v1/skills/${encodeURIComponent(skillSlug)}/submit`;
+    const response = await fetch(endpoint, {
+      body: version ? undefined : JSON.stringify({ version: undefined }),
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        ...(version ? {} : { "Content-Type": "application/json" })
       },
       method: "POST"
     });
@@ -78,9 +93,8 @@ export async function submitPublisherSkillReviewAction(
       throw new Error(payload.error ?? labels.unableReview);
     }
 
-    revalidatePath("/dashboard");
+    revalidatePublisherSkillPaths(skillSlug);
     revalidatePath("/admin");
-    revalidatePath(`/skills/${skillSlug}`);
 
     return {
       message: labels.reviewSubmitted,
@@ -90,6 +104,67 @@ export async function submitPublisherSkillReviewAction(
   } catch (error) {
     return {
       message: error instanceof Error ? error.message : labels.unableReview,
+      skillSlug,
+      status: "error"
+    };
+  }
+}
+
+export async function savePublisherSkillVersionAction(
+  locale: Locale,
+  _previousState: PublisherSkillActionState,
+  formData: FormData
+): Promise<PublisherSkillActionState> {
+  const labels = actionCopy[locale];
+  const token = await getWorkspaceToken();
+  const skillSlug = String(formData.get("skillSlug") ?? "").trim();
+  const manifestText = String(formData.get("manifest") ?? "").trim();
+
+  if (!skillSlug) {
+    return { message: labels.missingSkill, status: "error" };
+  }
+
+  if (!manifestText) {
+    return { message: labels.missingManifest, skillSlug, status: "error" };
+  }
+
+  let manifest: unknown;
+
+  try {
+    manifest = JSON.parse(manifestText);
+  } catch {
+    return { message: labels.invalidManifest, skillSlug, status: "error" };
+  }
+
+  if (!token) {
+    return { message: labels.missingToken, skillSlug, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/publisher/skills/${encodeURIComponent(skillSlug)}/versions`, {
+      body: JSON.stringify({ manifest }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? labels.unableVersion);
+    }
+
+    revalidatePublisherSkillPaths(skillSlug);
+
+    return {
+      message: labels.versionSaved,
+      skillSlug,
+      status: "success"
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : labels.unableVersion,
       skillSlug,
       status: "error"
     };
@@ -144,9 +219,7 @@ export async function setPublisherSkillPriceAction(
       throw new Error(payload.error ?? labels.unablePrice);
     }
 
-    revalidatePath("/dashboard");
-    revalidatePath("/marketplace");
-    revalidatePath(`/skills/${skillSlug}`);
+    revalidatePublisherSkillPaths(skillSlug);
 
     return {
       message: labels.priceSaved,
@@ -220,6 +293,14 @@ export async function requestMarketplaceCurationAppealAction(
       status: "error"
     };
   }
+}
+
+function revalidatePublisherSkillPaths(skillSlug: string) {
+  revalidatePath("/dashboard");
+  revalidatePath("/publisher");
+  revalidatePath("/marketplace");
+  revalidatePath("/registry");
+  revalidatePath(`/skills/${skillSlug}`);
 }
 
 function getApiUrl() {

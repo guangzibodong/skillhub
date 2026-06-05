@@ -465,11 +465,11 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
   `;
 }
 
-export async function submitSkillForReview(slug: string, organizationId?: string | null) {
+export async function submitSkillForReview(slug: string, organizationId?: string | null, version?: string) {
   const sql = await requireSql();
   await seedRegistry(sql);
 
-  const skill = await getSkillRecord(sql, slug, undefined, organizationId);
+  const skill = await getSkillRecord(sql, slug, version, organizationId);
   const riskLevel = getPermissionLevel(skill.manifest.permissions);
   const existing = (await sql`
     select id::text, status
@@ -630,9 +630,6 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
     throw new Error("Review not found.");
   }
 
-  const verificationStatus =
-    input.status === "approved" ? "verified" : input.status === "blocked" ? "suspended" : "rejected";
-
   if (input.status === "approved") {
     await requireApprovalChecks(sql, review.skillVersionId, review.manifest);
   }
@@ -646,6 +643,15 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
     where id = ${reviewId}
     returning id::text, status, notes, decided_at as "decidedAt"
   `) as Array<{ id: string; status: string; notes: string | null; decidedAt: string }>;
+
+  const verificationStatus =
+    input.status === "approved"
+      ? "verified"
+      : input.status === "blocked"
+        ? "suspended"
+        : (await hasApprovedVersion(sql, review.skillId))
+          ? "verified"
+          : "rejected";
 
   await sql`
     update skills
@@ -756,13 +762,31 @@ async function getSkillRecord(
       s.verification_status,
       sv.id::text as version_id,
       sv.version,
-      sv.manifest
+      sv.manifest,
+      review.status as review_status,
+      review.decided_at as review_decided_at,
+      review.created_at as review_created_at
     from skills s
     join skill_versions sv on sv.skill_id = s.id
+    left join lateral (
+      select status, decided_at, created_at
+      from skill_reviews
+      where skill_version_id = sv.id
+      order by created_at desc
+      limit 1
+    ) review on true
     where s.slug = ${slug}
       and (${version ?? null}::text is null or sv.version = ${version ?? null})
       and (${organizationId ?? null}::uuid is null or s.organization_id = ${organizationId ?? null})
-    order by sv.created_at desc
+    order by
+      case
+        when ${version ?? null}::text is not null then 0
+        when review.status = 'approved' then 0
+        when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+        else 2
+      end,
+      coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+      sv.created_at desc
     limit 1
   `) as SkillRecord[];
 
@@ -887,6 +911,19 @@ async function getLatestRuntimeChecks(sql: Sql, skillVersionId: string) {
   `) as Array<{ checkType: RuntimeCheckType; status: RuntimeCheckStatus; message: string }>;
 
   return rows;
+}
+
+async function hasApprovedVersion(sql: Sql, skillId: string) {
+  const rows = (await sql`
+    select exists (
+      select 1
+      from skill_reviews
+      where skill_id = ${skillId}
+        and status = 'approved'
+    ) as "hasApprovedVersion"
+  `) as Array<{ hasApprovedVersion: boolean }>;
+
+  return Boolean(rows[0]?.hasApprovedVersion);
 }
 
 function buildRuntimeChecks(manifest: SkillManifest): RuntimeCheckResult[] {

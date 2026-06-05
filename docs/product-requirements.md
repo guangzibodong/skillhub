@@ -287,6 +287,10 @@ Requirements:
 - Publisher overview.
 - Skills list.
 - Version status.
+- Skill version history with draft, submitted, verified, rejected, and suspended states.
+- Manifest editing for unlocked drafts and new semantic versions.
+- Specific-version review submission so publishers can control which contract enters review.
+- Locked approved or installed versions that cannot be mutated in place.
 - Review pipeline.
 - Runtime check results.
 - Published feedback count, average rating, and pending feedback count.
@@ -418,6 +422,15 @@ publisher creates draft
 -> new versions require review
 -> incidents can deprecate or suspend listing
 ```
+
+Version governance requirements:
+
+- A verified or installed version is treated as immutable for marketplace and agent trust.
+- A publisher must create a new semantic version to change a verified or installed contract.
+- Draft versions can be updated until they are submitted, approved, or installed.
+- Submitting a version for review must generate automated manifest, runtime, example, and security checks for that exact version.
+- Public discovery and default installs must prefer approved versions so draft updates do not silently replace trusted behavior.
+- Creating a new version should generate an installed-skill update signal, audit log, and publisher notification before final email/webhook providers are connected.
 
 Acceptance criteria:
 

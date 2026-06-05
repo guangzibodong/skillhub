@@ -22,7 +22,7 @@ const copy = {
   zh: {
     invalidManifest: "Manifest JSON 无效。",
     missingManifest: "请先粘贴 SkillHub manifest 再发布。",
-    missingToken: "请先用发布者、owner 或 admin 用户 token 登录，再发布技能。",
+    missingToken: "请先使用发布者、owner 或 admin 用户 token 登录，再发布技能。",
     publishedPrefix: "已发布",
     publishedSuffix: "当前已保存为草稿，可继续进入发布者工作台提交审核。",
     unableToPublish: "无法发布技能。"

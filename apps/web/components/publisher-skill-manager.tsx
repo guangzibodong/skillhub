@@ -6,6 +6,9 @@ import {
   CheckCircle2,
   CircleDollarSign,
   ClipboardCheck,
+  FileJson,
+  GitBranch,
+  History,
   Megaphone,
   MessageSquareText,
   PackageCheck,
@@ -15,10 +18,11 @@ import {
   XCircle
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
-import type { PublisherSkillRecord } from "@/lib/ops-data";
+import type { PublisherSkillRecord, PublisherSkillVersionRecord } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
   requestMarketplaceCurationAppealAction,
+  savePublisherSkillVersionAction,
   setPublisherSkillPriceAction,
   submitPublisherSkillReviewAction,
   type PublisherSkillActionState
@@ -32,6 +36,11 @@ type PublisherSkillManagerProps = {
 const copy = {
   en: {
     billingModel: "Billing model",
+    billingModels: {
+      free: "Free",
+      per_call: "Per call",
+      subscription: "Subscription"
+    },
     calls: "Calls",
     checks: "Review checks",
     checkLabels: {
@@ -51,24 +60,14 @@ const copy = {
     empty: "No publisher skills yet. Publish a manifest first, then return here to submit review and set pricing.",
     feedback: "Published / pending",
     installs: "Installs",
-    rating: "Rating",
     priceStatus: "Price status",
-    quality: "Quality",
-    savePrice: "Save price",
-    saving: "Saving",
-    submitReview: "Submit review",
-    submitting: "Submitting",
-    successRate: "Success",
-    billingModels: {
-      free: "Free",
-      per_call: "Per call",
-      subscription: "Subscription"
-    },
     priceStatuses: {
       active: "Active",
       archived: "Archived",
       draft: "Draft"
     },
+    quality: "Quality",
+    rating: "Rating",
     reviewStatuses: {
       approved: "Approved",
       blocked: "Blocked",
@@ -77,6 +76,13 @@ const copy = {
       queued: "Queued",
       rejected: "Rejected"
     },
+    savePrice: "Save price",
+    saving: "Saving",
+    submitReview: "Submit review",
+    submitting: "Submitting",
+    successRate: "Success",
+    title: "Publisher skill operations",
+    unitAmount: "Unit amount (cents)",
     verificationStatuses: {
       deprecated: "Deprecated",
       draft: "Draft",
@@ -85,10 +91,38 @@ const copy = {
       suspended: "Suspended",
       verified: "Verified"
     },
-    title: "Publisher skill operations",
-    unitAmount: "Unit amount (cents)"
+    versions: {
+      calls: "calls",
+      created: "Created",
+      draftHelp: "Save a new semantic version or update an unlocked draft. Approved or installed versions are locked.",
+      editorLabel: "Editable manifest",
+      editorTitle: "Create or update a version",
+      history: "Version history",
+      installs: "installs",
+      locked: "Locked after review or installs",
+      reviewNotes: "Review notes",
+      save: "Save version",
+      saving: "Saving version",
+      submit: "Submit this version",
+      title: "Version manager",
+      versionCount: "versions",
+      statuses: {
+        draft: "Draft",
+        rejected: "Rejected",
+        submitted: "Submitted",
+        suspended: "Suspended",
+        verified: "Verified"
+      }
+    }
   },
   zh: {
+    billingModel: "计费模式",
+    billingModels: {
+      free: "免费",
+      per_call: "按次调用",
+      subscription: "订阅"
+    },
+    calls: "调用",
     checks: "审核检查",
     checkLabels: {
       example: "示例",
@@ -103,30 +137,18 @@ const copy = {
       running: "运行中",
       warning: "警告"
     },
-    billingModel: "计费模式",
-    calls: "调用",
     currency: "币种",
-    empty: "还没有发布者技能。先发布一个 manifest，再回到这里提交审核和设置价格。",
-    feedback: "公开 / 待审",
+    empty: "还没有发布者技能。先发布一个 manifest，然后回到这里提交审核并设置价格。",
+    feedback: "已公开 / 待审",
     installs: "安装",
-    rating: "评分",
     priceStatus: "价格状态",
-    quality: "质量",
-    savePrice: "保存价格",
-    saving: "保存中",
-    submitReview: "提交审核",
-    submitting: "提交中",
-    successRate: "成功率",
-    billingModels: {
-      free: "免费",
-      per_call: "按次调用",
-      subscription: "订阅"
-    },
     priceStatuses: {
       active: "启用",
       archived: "归档",
       draft: "草稿"
     },
+    quality: "质量",
+    rating: "评分",
     reviewStatuses: {
       approved: "已批准",
       blocked: "已阻断",
@@ -135,6 +157,13 @@ const copy = {
       queued: "排队中",
       rejected: "已拒绝"
     },
+    savePrice: "保存价格",
+    saving: "保存中",
+    submitReview: "提交审核",
+    submitting: "提交中",
+    successRate: "成功率",
+    title: "发布者技能运营",
+    unitAmount: "单价（分）",
     verificationStatuses: {
       deprecated: "已弃用",
       draft: "草稿",
@@ -143,8 +172,29 @@ const copy = {
       suspended: "已暂停",
       verified: "已验证"
     },
-    title: "发布者技能运营",
-    unitAmount: "单价（分）"
+    versions: {
+      calls: "次调用",
+      created: "创建时间",
+      draftHelp: "保存新的语义化版本，或更新尚未审核/安装的草稿版本。已审核或已安装版本会被锁定。",
+      editorLabel: "可编辑 manifest",
+      editorTitle: "创建或更新版本",
+      history: "版本历史",
+      installs: "次安装",
+      locked: "审核或安装后锁定",
+      reviewNotes: "审核备注",
+      save: "保存版本",
+      saving: "保存版本中",
+      submit: "提交该版本",
+      title: "版本管理",
+      versionCount: "个版本",
+      statuses: {
+        draft: "草稿",
+        rejected: "已拒绝",
+        submitted: "已提交",
+        suspended: "已暂停",
+        verified: "已验证"
+      }
+    }
   }
 } as const;
 
@@ -159,12 +209,8 @@ const marketplaceCopy = {
       rejected: "Rejected",
       under_review: "Under review"
     },
-    expires: "Expires",
     evidenceUrl: "Evidence URL",
-    marketplace: "Marketplace distribution",
-    requestReview: "Request review",
-    requesting: "Requesting",
-    requestedPlacement: "Requested placement",
+    expires: "Expires",
     hintLabels: {
       collect_feedback: "Collect published feedback",
       drive_first_installs: "Drive first installs",
@@ -178,48 +224,52 @@ const marketplaceCopy = {
       stabilize_runtime: "Stabilize runtime checks",
       submit_review: "Submit for review"
     },
+    marketplace: "Marketplace distribution",
     placementLabels: {
       featured: "Featured",
       standard: "Standard",
       suppressed: "Suppressed"
     },
-    reasonPlaceholder: "Summarize fixes, new evidence, buyer demand, or why the listing deserves reconsideration."
+    reasonPlaceholder: "Summarize fixes, new evidence, buyer demand, or why the listing deserves reconsideration.",
+    requestReview: "Request review",
+    requestedPlacement: "Requested placement",
+    requesting: "Requesting"
   },
   zh: {
-    activeAppeal: "\u6700\u65b0\u590d\u5ba1\u7533\u8bf7",
-    appealReason: "\u590d\u5ba1\u8bf4\u660e",
+    activeAppeal: "最新复审申请",
+    appealReason: "复审说明",
     appealStatuses: {
-      approved: "\u5df2\u901a\u8fc7",
-      closed: "\u5df2\u5173\u95ed",
-      open: "\u5df2\u63d0\u4ea4",
-      rejected: "\u5df2\u62d2\u7edd",
-      under_review: "\u590d\u5ba1\u4e2d"
+      approved: "已通过",
+      closed: "已关闭",
+      open: "已提交",
+      rejected: "已拒绝",
+      under_review: "复审中"
     },
-    expires: "\u5230\u671f",
-    evidenceUrl: "\u8bc1\u636e\u94fe\u63a5",
-    marketplace: "\u5e02\u573a\u5206\u53d1",
-    requestReview: "\u7533\u8bf7\u590d\u5ba1",
-    requesting: "\u63d0\u4ea4\u4e2d",
-    requestedPlacement: "\u76ee\u6807\u5206\u53d1",
+    evidenceUrl: "证据链接",
+    expires: "到期",
     hintLabels: {
-      collect_feedback: "\u83b7\u53d6\u5df2\u53d1\u5e03\u53cd\u9988",
-      drive_first_installs: "\u63a8\u52a8\u9996\u6279\u5b89\u88c5",
-      eligible_for_distribution: "\u53ef\u4ee5\u83b7\u5f97\u66f4\u5f3a\u5206\u53d1",
-      fix_runtime_checks: "\u4fee\u590d\u5931\u8d25\u7684\u5ba1\u6838\u68c0\u67e5",
-      maintain_quality: "\u7ee7\u7eed\u4fdd\u6301\u8d28\u91cf\u4fe1\u53f7",
-      make_public: "\u5c06\u6280\u80fd\u8bbe\u4e3a\u516c\u5f00",
-      moderate_feedback: "\u5904\u7406\u5f85\u5ba1\u53cd\u9988",
-      raise_success_rate: "\u63d0\u9ad8\u8fd0\u884c\u6210\u529f\u7387",
-      resolve_incidents: "\u89e3\u51b3\u672a\u5173\u95ed\u4e8b\u6545",
-      stabilize_runtime: "\u7a33\u5b9a\u8fd0\u884c\u68c0\u67e5",
-      submit_review: "\u63d0\u4ea4\u5ba1\u6838"
+      collect_feedback: "获取已发布反馈",
+      drive_first_installs: "推动首批安装",
+      eligible_for_distribution: "可以获得更强分发",
+      fix_runtime_checks: "修复失败的审核检查",
+      maintain_quality: "继续保持质量信号",
+      make_public: "将技能设为公开",
+      moderate_feedback: "处理待审反馈",
+      raise_success_rate: "提高运行成功率",
+      resolve_incidents: "解决未关闭事故",
+      stabilize_runtime: "稳定运行检查",
+      submit_review: "提交审核"
     },
+    marketplace: "市场分发",
     placementLabels: {
-      featured: "\u7cbe\u9009",
-      standard: "\u6807\u51c6",
-      suppressed: "\u964d\u6743"
+      featured: "精选",
+      standard: "标准",
+      suppressed: "降权"
     },
-    reasonPlaceholder: "\u8bf4\u660e\u4fee\u590d\u5185\u5bb9\u3001\u65b0\u8bc1\u636e\u3001\u4e70\u65b9\u9700\u6c42\uff0c\u6216\u4e3a\u4ec0\u4e48\u503c\u5f97\u91cd\u65b0\u8bc4\u4f30\u3002"
+    reasonPlaceholder: "说明修复内容、新证据、买方需求，或为什么值得重新评估。",
+    requestReview: "申请复审",
+    requestedPlacement: "目标分发",
+    requesting: "提交中"
   }
 } as const;
 
@@ -267,6 +317,10 @@ function PublisherSkillCard({
     submitPublisherSkillReviewAction.bind(null, locale),
     initialState
   );
+  const [versionState, versionAction, isVersionPending] = useActionState(
+    savePublisherSkillVersionAction.bind(null, locale),
+    initialState
+  );
   const [priceState, priceAction, isPricePending] = useActionState(
     setPublisherSkillPriceAction.bind(null, locale),
     initialState
@@ -276,12 +330,15 @@ function PublisherSkillCard({
     initialState
   );
   const marketplaceLabels = marketplaceCopy[locale];
+  const versions = skill.versions ?? [];
+  const latestVersion = versions[0];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
   const activeAppeal =
     skill.marketplace?.appeal && ["open", "under_review"].includes(skill.marketplace.appeal.status)
       ? skill.marketplace.appeal
       : null;
   const reviewMessageVisible = reviewState.skillSlug === skill.slug && reviewState.status !== "idle";
+  const versionMessageVisible = versionState.skillSlug === skill.slug && versionState.status !== "idle";
   const priceMessageVisible = priceState.skillSlug === skill.slug && priceState.status !== "idle";
   const appealMessageVisible = appealState.skillSlug === skill.slug && appealState.status !== "idle";
 
@@ -294,7 +351,9 @@ function PublisherSkillCard({
             {skill.slug} / {skill.version ?? labels.verificationStatuses.draft}
           </span>
         </div>
-        <span className={statusClass(skill.verificationStatus)}>{formatVerificationStatus(skill.verificationStatus, labels.verificationStatuses)}</span>
+        <span className={statusClass(skill.verificationStatus)}>
+          {formatVerificationStatus(skill.verificationStatus, labels.verificationStatuses)}
+        </span>
       </div>
 
       <div className="publisher-skill-metrics">
@@ -316,6 +375,58 @@ function PublisherSkillCard({
           ))}
         </div>
       </div>
+
+      <details className="publisher-skill-version-workbench">
+        <summary>
+          <span>
+            <History size={15} aria-hidden="true" />
+            {labels.versions.title}
+          </span>
+          <strong>
+            {versions.length} {labels.versions.versionCount}
+          </strong>
+        </summary>
+
+        <div className="publisher-skill-version-layout">
+          <div className="publisher-skill-version-history" aria-label={labels.versions.history}>
+            {versions.length > 0 ? (
+              versions.map((version) => (
+                <VersionRow
+                  key={version.id}
+                  isPending={isReviewPending}
+                  labels={labels}
+                  locale={locale}
+                  reviewAction={reviewAction}
+                  skillSlug={skill.slug}
+                  version={version}
+                />
+              ))
+            ) : (
+              <div className="publisher-skill-version-empty">{labels.versions.draftHelp}</div>
+            )}
+          </div>
+
+          <form action={versionAction} className="publisher-skill-version-form">
+            <input name="skillSlug" type="hidden" value={skill.slug} />
+            <div className="publisher-skill-version-form__head">
+              <strong>
+                <FileJson size={15} aria-hidden="true" />
+                {labels.versions.editorTitle}
+              </strong>
+              <span>{labels.versions.draftHelp}</span>
+            </div>
+            <label>
+              <span>{labels.versions.editorLabel}</span>
+              <textarea defaultValue={buildEditableManifest(skill, latestVersion)} name="manifest" rows={10} spellCheck={false} />
+            </label>
+            <button className="secondary-button" disabled={isVersionPending} type="submit">
+              <Save size={16} aria-hidden="true" />
+              <span>{isVersionPending ? labels.versions.saving : labels.versions.save}</span>
+            </button>
+          </form>
+        </div>
+        {versionMessageVisible ? <ActionMessage state={versionState} /> : null}
+      </details>
 
       {skill.marketplace ? (
         <div className="publisher-skill-marketplace">
@@ -353,9 +464,7 @@ function PublisherSkillCard({
                 {formatPlacement(skill.marketplace.appeal.requestedPlacement, marketplaceLabels.placementLabels)}
               </small>
               {skill.marketplace.appeal.operatorReason ? <p>{skill.marketplace.appeal.operatorReason}</p> : null}
-              <small>
-                SLA: {formatDate(skill.marketplace.appeal.slaDueAt, locale)}
-              </small>
+              <small>SLA: {formatDate(skill.marketplace.appeal.slaDueAt, locale)}</small>
             </div>
           ) : null}
           <form action={appealAction} className="publisher-skill-appeal-form">
@@ -407,6 +516,7 @@ function PublisherSkillCard({
 
       <form action={reviewAction} className="publisher-skill-review-form">
         <input name="skillSlug" type="hidden" value={skill.slug} />
+        {skill.version ? <input name="version" type="hidden" value={skill.version} /> : null}
         <button className="secondary-button" disabled={isReviewPending || isInReview} type="submit">
           <Send size={16} aria-hidden="true" />
           <span>{isReviewPending ? labels.submitting : labels.submitReview}</span>
@@ -456,6 +566,59 @@ function PublisherSkillCard({
   );
 }
 
+function VersionRow({
+  isPending,
+  labels,
+  locale,
+  reviewAction,
+  skillSlug,
+  version
+}: {
+  isPending: boolean;
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  reviewAction: (payload: FormData) => void;
+  skillSlug: string;
+  version: PublisherSkillVersionRecord;
+}) {
+  const isLocked = version.status === "verified" || version.installCount > 0;
+  const isReviewOpen = version.reviewStatus === "queued" || version.reviewStatus === "in_review";
+
+  return (
+    <div className="publisher-skill-version-row">
+      <div className="publisher-skill-version-row__main">
+        <span className={versionStatusClass(version.status)}>
+          <GitBranch size={13} aria-hidden="true" />
+          {formatVersionStatus(version.status, labels.versions.statuses)}
+        </span>
+        <strong>v{version.version}</strong>
+        <small>
+          {labels.versions.created}: {formatDate(version.createdAt, locale)}
+        </small>
+      </div>
+      <div className="publisher-skill-version-row__signals">
+        <span>{formatCompactNumber(version.installCount)} {labels.versions.installs}</span>
+        <span>{formatCompactNumber(version.callCount)} {labels.versions.calls}</span>
+        {isLocked ? <span>{labels.versions.locked}</span> : null}
+      </div>
+      {version.reviewNotes ? (
+        <p>
+          <strong>{labels.versions.reviewNotes}: </strong>
+          {version.reviewNotes}
+        </p>
+      ) : null}
+      <form action={reviewAction} className="publisher-skill-version-submit">
+        <input name="skillSlug" type="hidden" value={skillSlug} />
+        <input name="version" type="hidden" value={version.version} />
+        <button className="ghost-button ghost-button--inline" disabled={isPending || isReviewOpen || version.status === "verified"} type="submit">
+          <Send size={14} aria-hidden="true" />
+          <span>{labels.versions.submit}</span>
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div>
@@ -464,6 +627,65 @@ function Metric({ icon, label, value }: { icon: ReactNode; label: string; value:
       <strong>{value}</strong>
     </div>
   );
+}
+
+function buildEditableManifest(skill: PublisherSkillRecord, latestVersion?: PublisherSkillVersionRecord) {
+  const manifest = latestVersion?.manifest ?? {};
+  const currentVersion = typeof manifest.version === "string" ? manifest.version : (skill.version ?? "0.1.0");
+
+  return JSON.stringify(
+    {
+      schemaVersion: "0.1",
+      ...manifest,
+      name: skill.slug,
+      displayName: skill.displayName,
+      version: bumpPatchVersion(currentVersion),
+      description: typeof manifest.description === "string" ? manifest.description : skill.description,
+      tags: Array.isArray(manifest.tags) && manifest.tags.length > 0 ? manifest.tags : ["agent", "workflow"],
+      runtime:
+        manifest.runtime && typeof manifest.runtime === "object"
+          ? manifest.runtime
+          : {
+              type: "http",
+              entrypoint: "https://api.useskillhub.com/runtime/replace-me"
+            },
+      permissions:
+        manifest.permissions && typeof manifest.permissions === "object"
+          ? manifest.permissions
+          : {
+              browser: false,
+              filesystem: "none",
+              network: false,
+              secrets: []
+            },
+      inputSchema:
+        manifest.inputSchema && typeof manifest.inputSchema === "object"
+          ? manifest.inputSchema
+          : {
+              type: "object",
+              properties: {}
+            },
+      outputSchema:
+        manifest.outputSchema && typeof manifest.outputSchema === "object"
+          ? manifest.outputSchema
+          : {
+              type: "object",
+              properties: {}
+            }
+    },
+    null,
+    2
+  );
+}
+
+function bumpPatchVersion(version: string) {
+  const match = version.match(/^(\d+)\.(\d+)\.(\d+)(.*)$/);
+
+  if (!match) {
+    return "0.1.0";
+  }
+
+  return `${match[1]}.${match[2]}.${Number(match[3]) + 1}${match[4] ?? ""}`;
 }
 
 function formatRating(value: number | null | undefined) {
@@ -490,6 +712,10 @@ function formatReviewStatus(status: string | null, labels: Record<string, string
 }
 
 function formatVerificationStatus(status: string, labels: Record<string, string>) {
+  return labels[status] ?? status.replaceAll("_", " ");
+}
+
+function formatVersionStatus(status: PublisherSkillVersionRecord["status"], labels: Record<string, string>) {
   return labels[status] ?? status.replaceAll("_", " ");
 }
 
@@ -523,6 +749,22 @@ function ActionMessage({ state }: { state: PublisherSkillActionState }) {
 }
 
 function statusClass(status: PublisherSkillRecord["verificationStatus"]) {
+  if (status === "verified") {
+    return "status-chip";
+  }
+
+  if (status === "submitted" || status === "draft") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (status === "rejected" || status === "suspended") {
+    return "status-chip status-chip--danger";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
+function versionStatusClass(status: PublisherSkillVersionRecord["status"]) {
   if (status === "verified") {
     return "status-chip";
   }
@@ -604,7 +846,7 @@ function checkStatusClass(status: string) {
 
 function formatDate(value: string, locale: Locale) {
   if (value === "demo") {
-    return locale === "zh" ? "\u6f14\u793a\u65f6\u95f4" : "Demo time";
+    return locale === "zh" ? "演示时间" : "Demo time";
   }
 
   const date = new Date(value);

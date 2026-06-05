@@ -7065,6 +7065,187 @@ a {
   gap: 7px;
 }
 
+.publisher-skill-version-workbench {
+  display: grid;
+  min-width: 0;
+  border: 1px solid rgba(155, 226, 141, 0.15);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.045);
+  padding: 0;
+}
+
+.publisher-skill-version-workbench summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 11px;
+}
+
+.publisher-skill-version-workbench summary::-webkit-details-marker {
+  display: none;
+}
+
+.publisher-skill-version-workbench summary span,
+.publisher-skill-version-workbench summary strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.publisher-skill-version-workbench summary strong {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.publisher-skill-version-workbench summary svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.publisher-skill-version-workbench[open] summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.publisher-skill-version-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 11px;
+}
+
+.publisher-skill-version-history,
+.publisher-skill-version-form {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  align-content: start;
+}
+
+.publisher-skill-version-row {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 10px;
+}
+
+.publisher-skill-version-row__main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.publisher-skill-version-row__main small {
+  grid-column: 1 / -1;
+}
+
+.publisher-skill-version-row__main strong,
+.publisher-skill-version-row p,
+.publisher-skill-version-empty {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.publisher-skill-version-row__main strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.publisher-skill-version-row__main small,
+.publisher-skill-version-row__signals,
+.publisher-skill-version-row p,
+.publisher-skill-version-empty,
+.publisher-skill-version-form__head span,
+.publisher-skill-version-form label span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.publisher-skill-version-row__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.publisher-skill-version-row__signals span {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0 8px;
+}
+
+.publisher-skill-version-row p {
+  margin: 0;
+}
+
+.publisher-skill-version-submit {
+  display: inline-flex;
+}
+
+.publisher-skill-version-form {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.13);
+  padding: 10px;
+}
+
+.publisher-skill-version-form__head {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.publisher-skill-version-form__head strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.publisher-skill-version-form__head svg {
+  color: var(--cyan);
+}
+
+.publisher-skill-version-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.publisher-skill-version-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  outline: 0;
+  padding: 10px;
+  resize: vertical;
+}
+
 .publisher-skill-checks {
   display: grid;
   gap: 8px;
@@ -8617,6 +8798,7 @@ a {
   .project-create-form,
   .publisher-skill-appeal-form,
   .publisher-skill-price-form,
+  .publisher-skill-version-layout,
   .policy-editor {
     grid-template-columns: 1fr;
   }
@@ -8633,6 +8815,7 @@ a {
   .project-create-form .primary-button,
   .publisher-skill-appeal-form .secondary-button,
   .publisher-skill-price-form .primary-button,
+  .publisher-skill-version-form .secondary-button,
   .publisher-skill-review-form .secondary-button,
   .action-message .ghost-button--inline {
     width: 100%;

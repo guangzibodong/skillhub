@@ -718,7 +718,7 @@ curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, listing checklist, and publisher-visible marketplace distribution signal.
+The response includes each owned skill's latest version, version history, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, listing checklist, and publisher-visible marketplace distribution signal.
 
 `runtime.checks` contains the latest result for each automated review-check type, so publishers can see the exact reason behind pass, warning, failed, queued, or running states without waiting for an admin note:
 
@@ -745,6 +745,68 @@ The response includes each owned skill's latest version, verification state, lat
 ```
 
 Publisher runtime health is derived from the latest checks only: `failed` becomes `needs_attention`, `warning`, `queued`, or `running` becomes `warning`, passed checks become `healthy`, and missing checks remain `not_checked`.
+
+`versions` gives publishers a durable skill-version management surface:
+
+```json
+{
+  "versions": [
+    {
+      "id": "6e3d...",
+      "version": "0.2.0",
+      "status": "draft",
+      "reviewStatus": null,
+      "runtimeCheckCount": 0,
+      "installCount": 0,
+      "callCount": 0,
+      "createdAt": "2026-06-05T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+Read the version history for one owned skill:
+
+```bash
+curl "https://api.useskillhub.com/v1/publisher/skills/browser-research/versions?limit=20" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Create a new version or update an unlocked draft version:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/skills/browser-research/versions" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "manifest": {
+      "schemaVersion": "0.1",
+      "name": "browser-research",
+      "displayName": "Browser Research",
+      "version": "0.2.0",
+      "description": "Research a web topic and return concise findings with source URLs.",
+      "tags": ["research", "browser"],
+      "runtime": { "type": "http", "entrypoint": "https://example.com/skillhub/browser-research" },
+      "permissions": { "network": true, "browser": true, "filesystem": "none", "secrets": [] },
+      "inputSchema": { "type": "object", "properties": { "query": { "type": "string" } } },
+      "outputSchema": { "type": "object", "properties": { "summary": { "type": "string" } } }
+    }
+  }'
+```
+
+Version rules:
+
+- `manifest.name` must match the managed skill slug.
+- Approved versions and versions installed by projects are locked; publishers must create a new semantic version instead of mutating them.
+- Creating a new version writes a `skill_update_events` row, an audit log row, and an in-app notification event before final email/webhook delivery is connected.
+- Public discovery prefers approved versions, so a draft or submitted update does not silently replace a verified contract.
+
+Submit a specific version for review:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/skills/browser-research/versions/0.2.0/submit" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
 
 `marketplace` shows the publisher how the listing is currently distributed and what to improve next:
 
