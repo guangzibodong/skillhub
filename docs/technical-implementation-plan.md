@@ -273,6 +273,7 @@ Acceptance checks:
 - External `email` and `webhook` delivery events can be listed separately from in-app unread notifications.
 - Admin/support operators can mark an external delivery sent, failed, skipped, or queued for retry with a required reason, audit log, and provider metadata.
 - Email verification challenge delivery status stays synchronized with the matching `auth.email.code.requested` delivery event without exposing the raw code in admin lists.
+- Admin/support operators can process due external delivery events in batches, including dry-run mode, Resend-backed email delivery when configured, explicit provider-configuration failure states, and webhook fan-out into `webhook_delivery_events`.
 
 ## Frontend Pages To Make Real
 
@@ -416,6 +417,10 @@ Completed:
 - Admin notification delivery APIs now let admin/support operators list external `email` and `webhook` events and mark them sent, failed, skipped, or queued for retry with required reasons and audit logs.
 - `/admin` now exposes an external delivery queue with redacted payload summaries, provider metadata, attempts, errors, retry scheduling, and delivery actions; in-app notification unread state remains user-owned and is not treated as external delivery.
 - Email verification-code notification delivery decisions synchronize the matching `email_login_challenges.delivery_status`, keeping signup/login operations inspectable before the final email provider worker is connected.
+- `/v1/admin/notification-deliveries/process` now lets admin/support operators process due external delivery events in `dry_run` or `deliver` mode.
+- Email delivery processing supports Resend when `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM` are configured; missing provider configuration records an explicit failed state instead of silently dropping login or operational email.
+- Webhook processing fans matching organization-scoped external events into `webhook_delivery_events` for subscribed active endpoints, preparing the final network-signing worker without mixing webhook state with in-app unread notifications.
+- `/admin` now exposes a compact Process due control beside the external delivery queue, so operators can run provider dry-runs or delivery batches from the command center.
 - User notification inbox endpoints now let organization-scoped users read in-app events and mark unread items as read, so recorded notification events become a repeat-use dashboard surface instead of admin-only logs.
 - User notification inbox responses now include unread/read/failure totals plus per-topic counts, and organization-scoped users can mark all unread in-app events as read from the API and dashboard sidebars.
 - Dashboard organization operations now expose notification preference controls so users can choose in-app, email, and webhook channels before final email-provider delivery is connected.
@@ -467,7 +472,7 @@ Completed:
 
 Next:
 
-- Email provider delivery worker/protocol integration using the external delivery queue instead of manual provider-deferred status changes.
+- Final webhook network worker with signed HTTP delivery, response capture, and retry backoff from `webhook_delivery_events`.
 - Provider-specific production OAuth app configuration and callback rollout.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.

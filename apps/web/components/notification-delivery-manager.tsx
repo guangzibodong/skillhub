@@ -5,7 +5,9 @@ import { CheckCircle2, MailCheck, RefreshCw, Send, SkipForward, Webhook, XCircle
 import type { Locale } from "@/lib/i18n";
 import {
   decideNotificationDeliveryAction,
-  type NotificationDeliveryActionState
+  processNotificationDeliveriesAction,
+  type NotificationDeliveryActionState,
+  type NotificationDeliveryProcessActionState
 } from "@/lib/notification-delivery-actions";
 import type { AdminNotificationDelivery } from "@/lib/ops-data";
 
@@ -32,6 +34,10 @@ const copy = {
     providerPlaceholder: "provider_deferred",
     reason: "Reason",
     reasonPlaceholder: "Manual provider check, SMTP result, or retry note",
+    process: "Process due",
+    processMode: "Mode",
+    processLimit: "Limit",
+    processSummary: "Processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
     retry: "Retry",
     saving: "Updating",
     skip: "Skip",
@@ -46,6 +52,10 @@ const copy = {
     channels: {
       email: "Email",
       webhook: "Webhook"
+    },
+    processModes: {
+      deliver: "Deliver",
+      dry_run: "Dry run"
     }
   },
   zh: {
@@ -65,6 +75,10 @@ const copy = {
     providerPlaceholder: "provider_deferred",
     reason: "\u539f\u56e0",
     reasonPlaceholder: "\u624b\u52a8\u6838\u5bf9\u7ed3\u679c\u3001SMTP \u7ed3\u679c\u6216\u91cd\u8bd5\u8bf4\u660e",
+    process: "\u5904\u7406\u5230\u671f\u961f\u5217",
+    processMode: "\u6a21\u5f0f",
+    processLimit: "\u6570\u91cf",
+    processSummary: "\u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
     retry: "\u91cd\u8bd5",
     saving: "\u66f4\u65b0\u4e2d",
     skip: "\u8df3\u8fc7",
@@ -79,6 +93,10 @@ const copy = {
     channels: {
       email: "\u90ae\u4ef6",
       webhook: "Webhook"
+    },
+    processModes: {
+      deliver: "\u6295\u9012",
+      dry_run: "\u6f14\u7ec3"
     }
   }
 } as const;
@@ -88,9 +106,18 @@ const initialState: NotificationDeliveryActionState = {
   status: "idle"
 };
 
+const initialProcessState: NotificationDeliveryProcessActionState = {
+  message: "",
+  status: "idle"
+};
+
 export function NotificationDeliveryManager({ deliveries, locale }: NotificationDeliveryManagerProps) {
   const labels = copy[locale];
   const [state, formAction, isSaving] = useActionState(decideNotificationDeliveryAction.bind(null, locale), initialState);
+  const [processState, processAction, isProcessing] = useActionState(
+    processNotificationDeliveriesAction.bind(null, locale),
+    initialProcessState
+  );
 
   return (
     <article className="ops-panel notification-delivery-panel">
@@ -98,6 +125,25 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
         <MailCheck size={16} aria-hidden="true" />
         <span>{labels.title}</span>
       </div>
+
+      <form action={processAction} className="notification-delivery-process-form">
+        <label>
+          <span>{labels.processMode}</span>
+          <select defaultValue="deliver" name="mode">
+            <option value="deliver">{labels.processModes.deliver}</option>
+            <option value="dry_run">{labels.processModes.dry_run}</option>
+          </select>
+        </label>
+        <label>
+          <span>{labels.processLimit}</span>
+          <input defaultValue="10" max="50" min="1" name="limit" type="number" />
+        </label>
+        <button className="secondary-button secondary-button--compact" disabled={isProcessing} type="submit">
+          <RefreshCw size={15} aria-hidden="true" />
+          <span>{isProcessing ? labels.saving : labels.process}</span>
+        </button>
+      </form>
+      {processState.status !== "idle" ? <ProcessMessage labels={labels} state={processState} /> : null}
 
       <div className="notification-delivery-list">
         {deliveries.length > 0 ? (
@@ -179,6 +225,29 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
         )}
       </div>
     </article>
+  );
+}
+
+function ProcessMessage({
+  labels,
+  state
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  state: NotificationDeliveryProcessActionState;
+}) {
+  const summary = state.result
+    ? labels.processSummary
+        .replace("{{processed}}", String(state.result.processedCount))
+        .replace("{{sent}}", String(state.result.deliveredCount))
+        .replace("{{failed}}", String(state.result.failedCount))
+        .replace("{{skipped}}", String(state.result.skippedCount))
+    : state.message;
+
+  return (
+    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
+      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+      <span>{state.result ? `${state.message} ${summary}` : state.message}</span>
+    </div>
   );
 }
 

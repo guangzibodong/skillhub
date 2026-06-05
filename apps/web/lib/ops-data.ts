@@ -66,6 +66,26 @@ export type AdminNotificationDelivery = {
   createdAt: string;
 };
 
+export type AdminNotificationDeliveryProcessItem = {
+  id: string;
+  channel: "email" | "webhook";
+  eventType: string;
+  provider: string;
+  status: "delivered" | "failed" | "pending" | "skipped" | "would_deliver" | "would_fail" | "would_skip";
+  message: string;
+  providerMessageId: string | null;
+};
+
+export type AdminNotificationDeliveryProcessResult = {
+  deliveredCount: number;
+  failedCount: number;
+  mode: "deliver" | "dry_run";
+  pendingCount: number;
+  processed: AdminNotificationDeliveryProcessItem[];
+  processedCount: number;
+  skippedCount: number;
+};
+
 export type AdminAuditLogRecord = {
   id: string;
   action: string;

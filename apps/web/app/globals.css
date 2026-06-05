@@ -2921,6 +2921,58 @@ a {
   gap: 12px;
 }
 
+.notification-delivery-process-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.28fr) minmax(90px, 0.18fr) auto;
+  gap: 9px;
+  align-items: end;
+  border: 1px solid rgba(123, 214, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(123, 214, 255, 0.045);
+  padding: 12px;
+}
+
+.notification-delivery-process-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.notification-delivery-process-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notification-delivery-process-form input,
+.notification-delivery-process-form select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.notification-delivery-process-form input:focus,
+.notification-delivery-process-form select:focus {
+  border-color: rgba(123, 214, 255, 0.46);
+  box-shadow: 0 0 0 3px rgba(123, 214, 255, 0.11);
+}
+
+.notification-delivery-process-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.notification-delivery-process-form .secondary-button {
+  min-width: 150px;
+  justify-content: center;
+}
+
 .notification-delivery-card {
   display: grid;
   gap: 12px;
@@ -9273,6 +9325,7 @@ a {
   .incident-create-form,
   .incident-action-form,
   .notification-delivery-card__head,
+  .notification-delivery-process-form,
   .notification-delivery-form,
   .notification-template-card__head,
   .notification-template-form,
@@ -9293,6 +9346,7 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-delivery-process-form .secondary-button,
   .notification-delivery-actions .secondary-button,
   .notification-delivery-actions .ghost-button,
   .notification-template-form .secondary-button,
@@ -9314,6 +9368,7 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-delivery-process-form .secondary-button,
   .notification-delivery-actions .secondary-button,
   .notification-delivery-actions .ghost-button,
   .notification-template-form .secondary-button,

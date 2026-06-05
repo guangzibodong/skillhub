@@ -83,7 +83,8 @@ import {
   listAdminNotifications,
   listUserNotificationInbox,
   markAllUserNotificationsRead,
-  markUserNotificationRead
+  markUserNotificationRead,
+  processNotificationDeliveries
 } from "./notifications.js";
 import {
   listNotificationTemplates,
@@ -186,6 +187,7 @@ type Env = {
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
     NEXT_PUBLIC_APP_URL?: string;
+    RESEND_API_KEY?: string;
     SESSION_SECRET?: string;
     SKILLHUB_AUTH_BASE_URL?: string;
     SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
@@ -196,6 +198,8 @@ type Env = {
     SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
     SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
     SKILLHUB_EMAIL_AUTH_SECRET?: string;
+    SKILLHUB_EMAIL_FROM?: string;
+    SKILLHUB_EMAIL_PROVIDER?: string;
     SKILLHUB_OAUTH_STATE_SECRET?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
@@ -1603,6 +1607,26 @@ app.post("/v1/admin/notification-deliveries/:notificationId/decision", async (c)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update notification delivery." }, 400);
+  }
+});
+
+app.post("/v1/admin/notification-deliveries/process", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      await processNotificationDeliveries(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        c.env,
+        authorization.subject.userId
+      )
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to process notification deliveries." }, 400);
   }
 });
 

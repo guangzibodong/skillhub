@@ -8,6 +8,7 @@ type NotificationRow = {
   channel: "email" | "in_app" | "webhook";
   deliveryAttempts?: number;
   deliveryProvider?: string | null;
+  organizationId?: string | null;
   subject: string | null;
   error?: string | null;
   lastAttemptedAt?: string | null;
@@ -29,6 +30,30 @@ type NotificationDeliveryActionInput = {
   reason?: unknown;
 };
 
+type NotificationDeliveryProcessInput = {
+  limit?: unknown;
+  mode?: unknown;
+};
+
+type NotificationDeliveryProcessMode = "deliver" | "dry_run";
+
+type ProcessedDeliveryOutcome = {
+  action: Exclude<NotificationDeliveryAction, "retry">;
+  nextAttemptAt: string | null;
+  provider: string;
+  providerMessageId: string | null;
+  reason: string;
+};
+
+type NotificationDeliveryRuntimeEnv = {
+  NODE_ENV?: string;
+  RESEND_API_KEY?: string;
+  SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
+  SKILLHUB_EMAIL_FROM?: string;
+  SKILLHUB_EMAIL_PROVIDER?: string;
+  SKILLHUB_ENV?: string;
+};
+
 export type NotificationDeliveryRecord = {
   id: string;
   eventType: string;
@@ -44,6 +69,26 @@ export type NotificationDeliveryRecord = {
   status: "queued" | "sent" | "failed" | "skipped";
   subject: string | null;
   createdAt: string;
+};
+
+export type NotificationDeliveryProcessItem = {
+  id: string;
+  channel: "email" | "webhook";
+  eventType: string;
+  provider: string;
+  status: "delivered" | "failed" | "pending" | "skipped" | "would_deliver" | "would_fail" | "would_skip";
+  message: string;
+  providerMessageId: string | null;
+};
+
+export type NotificationDeliveryProcessResult = {
+  deliveredCount: number;
+  failedCount: number;
+  mode: NotificationDeliveryProcessMode;
+  pendingCount: number;
+  processed: NotificationDeliveryProcessItem[];
+  processedCount: number;
+  skippedCount: number;
 };
 
 type NotificationTopicSummary = {
@@ -369,6 +414,72 @@ export async function decideNotificationDelivery(
   });
 }
 
+export async function processNotificationDeliveries(
+  input: NotificationDeliveryProcessInput = {},
+  env?: NotificationDeliveryRuntimeEnv,
+  actorUserId?: string | null
+): Promise<NotificationDeliveryProcessResult> {
+  const sql = await requireSql();
+  const limit = Math.min(Math.max(Math.trunc(Number(input.limit) || 10), 1), 50);
+  const mode = normalizeProcessMode(input.mode);
+  const rows = (await sql`
+    select
+      id::text,
+      organization_id::text as "organizationId",
+      event_type as "eventType",
+      channel,
+      subject,
+      payload,
+      status,
+      error,
+      delivery_attempts as "deliveryAttempts",
+      last_attempted_at as "lastAttemptedAt",
+      next_attempt_at as "nextAttemptAt",
+      delivery_provider as "deliveryProvider",
+      provider_message_id as "providerMessageId",
+      created_at as "createdAt",
+      delivered_at as "deliveredAt"
+    from notification_events
+    where channel in ('email', 'webhook')
+      and status in ('queued', 'failed')
+      and (next_attempt_at is null or next_attempt_at <= now())
+    order by
+      case status when 'failed' then 0 else 1 end,
+      coalesce(next_attempt_at, created_at) asc,
+      created_at asc
+    limit ${limit}
+  `) as NotificationRow[];
+
+  const processed: NotificationDeliveryProcessItem[] = [];
+
+  for (const row of rows) {
+    const outcome =
+      row.channel === "email"
+        ? await processEmailDelivery(row, env, mode)
+        : await processWebhookDelivery(sql, row, mode);
+
+    if (mode === "deliver") {
+      await applyProcessedDeliveryOutcome(sql, row, outcome);
+    }
+
+    processed.push({
+      id: row.id,
+      channel: row.channel as "email" | "webhook",
+      eventType: row.eventType,
+      provider: outcome.provider,
+      status: mode === "dry_run" ? dryRunStatus(outcome.action) : deliveredStatus(outcome.action),
+      message: outcome.reason,
+      providerMessageId: outcome.providerMessageId
+    });
+  }
+
+  if (processed.length > 0 && mode === "deliver") {
+    await recordDeliveryProcessAudit(sql, actorUserId, processed);
+  }
+
+  return summarizeProcessResult(mode, processed);
+}
+
 export async function listUserNotifications(userId: string, organizationId: string | null | undefined, limit = 25) {
   const sql = await getSql();
   const safeLimit = normalizeLimit(limit);
@@ -527,6 +638,412 @@ export async function markUserNotificationRead(
 
 function normalizeLimit(limit: number) {
   return Math.min(Math.max(Math.trunc(Number(limit) || 25), 1), 100);
+}
+
+function normalizeProcessMode(value: unknown): NotificationDeliveryProcessMode {
+  const mode = String(value ?? "deliver").trim();
+
+  if (mode === "deliver" || mode === "dry_run") {
+    return mode;
+  }
+
+  throw new Error("Notification delivery process mode must be deliver or dry_run.");
+}
+
+async function processEmailDelivery(
+  row: NotificationRow,
+  env: NotificationDeliveryRuntimeEnv | undefined,
+  mode: NotificationDeliveryProcessMode
+): Promise<ProcessedDeliveryOutcome> {
+  const provider = normalizeEmailProvider(env);
+  const recipient = getPayloadText(row.payload, "email") ?? getPayloadText(row.payload, "to");
+
+  if (!recipient) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: "Email delivery payload is missing a recipient email."
+    };
+  }
+
+  if (provider === "debug_preview") {
+    return {
+      action: "mark_sent",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: `debug_${row.id.slice(0, 8)}`,
+      reason: "Debug email delivery mode recorded the event as sent without contacting a provider."
+    };
+  }
+
+  if (provider !== "resend") {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: "Email provider is not configured. Set SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM."
+    };
+  }
+
+  const apiKey = getRuntimeEnv(env, "RESEND_API_KEY");
+  const from = getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
+
+  if (!apiKey || !from) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: "Resend delivery requires RESEND_API_KEY and SKILLHUB_EMAIL_FROM."
+    };
+  }
+
+  if (mode === "dry_run") {
+    return {
+      action: "mark_sent",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: "dry_run",
+      reason: `Resend is configured and would send email to ${recipient}.`
+    };
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    body: JSON.stringify({
+      from,
+      subject: row.subject ?? "SkillHub notification",
+      text: renderEmailText(row),
+      to: [recipient]
+    }),
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    method: "POST"
+  });
+  const payload = (await response.json().catch(() => ({}))) as { id?: string; message?: string };
+
+  if (!response.ok) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: `Resend returned ${response.status}: ${payload.message ?? "delivery failed"}.`
+    };
+  }
+
+  return {
+    action: "mark_sent",
+    nextAttemptAt: null,
+    provider,
+    providerMessageId: payload.id ?? `resend_${row.id.slice(0, 8)}`,
+    reason: "Email delivered through Resend."
+  };
+}
+
+async function processWebhookDelivery(
+  sql: Sql,
+  row: NotificationRow,
+  mode: NotificationDeliveryProcessMode
+): Promise<ProcessedDeliveryOutcome> {
+  const organizationId = row.organizationId ?? null;
+  const provider = "webhook_outbox";
+
+  if (!organizationId) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: "Webhook delivery requires an organization-scoped notification event."
+    };
+  }
+
+  const topic = webhookTopicForEventType(row.eventType);
+  const endpoints = (await sql`
+    select
+      id::text,
+      url
+    from organization_webhook_endpoints
+    where organization_id = ${organizationId}
+      and status = 'active'
+      and (${row.eventType} = any(events) or ${topic} = any(events))
+    order by updated_at desc
+    limit 20
+  `) as Array<{ id: string; url: string }>;
+
+  if (endpoints.length === 0) {
+    return {
+      action: "skip",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: `No active webhook endpoint is subscribed to ${topic}.`
+    };
+  }
+
+  if (mode === "dry_run") {
+    return {
+      action: "mark_sent",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: "dry_run",
+      reason: `Would enqueue ${endpoints.length} webhook outbox delivery event(s) for ${topic}.`
+    };
+  }
+
+  for (const endpoint of endpoints) {
+    await sql`
+      insert into webhook_delivery_events (
+        organization_id,
+        endpoint_id,
+        event_type,
+        payload,
+        status,
+        attempt_count,
+        next_attempt_at
+      )
+      values (
+        ${organizationId},
+        ${endpoint.id},
+        ${row.eventType},
+        ${sql.json({
+          notificationEventId: row.id,
+          payload: row.payload ?? {}
+        })},
+        'pending',
+        0,
+        now()
+      )
+    `;
+    await sql`
+      update organization_webhook_endpoints
+      set
+        last_delivery_status = 'pending',
+        updated_at = now()
+      where id = ${endpoint.id}
+    `;
+  }
+
+  return {
+    action: "mark_sent",
+    nextAttemptAt: null,
+    provider,
+    providerMessageId: `outbox_${endpoints.length}`,
+    reason: `Queued ${endpoints.length} webhook outbox delivery event(s) for ${topic}.`
+  };
+}
+
+async function applyProcessedDeliveryOutcome(sql: Sql, row: NotificationRow, outcome: ProcessedDeliveryOutcome) {
+  const nextStatus = statusForDeliveryAction(outcome.action);
+  const rows = (await sql`
+    update notification_events
+    set
+      status = ${nextStatus},
+      error = ${outcome.action === "mark_failed" || outcome.action === "skip" ? outcome.reason : null},
+      delivery_attempts = delivery_attempts + 1,
+      last_attempted_at = now(),
+      next_attempt_at = ${outcome.nextAttemptAt},
+      delivered_at = ${outcome.action === "mark_sent" ? sql`now()` : null},
+      delivery_provider = ${outcome.provider},
+      provider_message_id = ${outcome.providerMessageId}
+    where id = ${row.id}
+      and channel in ('email', 'webhook')
+      and status in ('queued', 'failed')
+    returning
+      id::text,
+      organization_id::text as "organizationId",
+      event_type as "eventType",
+      channel,
+      subject,
+      payload,
+      status,
+      error,
+      delivery_attempts as "deliveryAttempts",
+      last_attempted_at as "lastAttemptedAt",
+      next_attempt_at as "nextAttemptAt",
+      delivery_provider as "deliveryProvider",
+      provider_message_id as "providerMessageId",
+      created_at as "createdAt",
+      delivered_at as "deliveredAt"
+  `) as NotificationRow[];
+
+  if (rows[0]) {
+    await syncEmailChallengeDeliveryStatus(sql, rows[0]);
+  }
+}
+
+async function recordDeliveryProcessAudit(
+  sql: Sql,
+  actorUserId: string | null | undefined,
+  processed: NotificationDeliveryProcessItem[]
+) {
+  const summary = summarizeProcessedItems(processed);
+
+  await sql`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (
+      ${actorUserId ?? null},
+      'notification.delivery.processed',
+      'notification_event',
+      null,
+      'External notification delivery batch processed.',
+      ${sql.json(summary)}
+    )
+  `;
+  await sql`
+    insert into notification_events (event_type, channel, subject, payload, status)
+    values (
+      'platform.notification_delivery.processed',
+      'in_app',
+      'Notification delivery batch processed',
+      ${sql.json(summary)},
+      'queued'
+    )
+  `;
+}
+
+function summarizeProcessResult(
+  mode: NotificationDeliveryProcessMode,
+  processed: NotificationDeliveryProcessItem[]
+): NotificationDeliveryProcessResult {
+  const summary = summarizeProcessedItems(processed);
+
+  return {
+    deliveredCount: summary.deliveredCount,
+    failedCount: summary.failedCount,
+    mode,
+    pendingCount: summary.pendingCount,
+    processed,
+    processedCount: processed.length,
+    skippedCount: summary.skippedCount
+  };
+}
+
+function summarizeProcessedItems(processed: NotificationDeliveryProcessItem[]) {
+  return {
+    deliveredCount: processed.filter((item) => item.status === "delivered" || item.status === "would_deliver").length,
+    failedCount: processed.filter((item) => item.status === "failed" || item.status === "would_fail").length,
+    pendingCount: processed.filter((item) => item.status === "pending").length,
+    processedCount: processed.length,
+    skippedCount: processed.filter((item) => item.status === "skipped" || item.status === "would_skip").length
+  };
+}
+
+function dryRunStatus(action: ProcessedDeliveryOutcome["action"]): NotificationDeliveryProcessItem["status"] {
+  if (action === "mark_sent") {
+    return "would_deliver";
+  }
+
+  if (action === "mark_failed") {
+    return "would_fail";
+  }
+
+  return "would_skip";
+}
+
+function deliveredStatus(action: ProcessedDeliveryOutcome["action"]): NotificationDeliveryProcessItem["status"] {
+  if (action === "mark_sent") {
+    return "delivered";
+  }
+
+  if (action === "mark_failed") {
+    return "failed";
+  }
+
+  return "skipped";
+}
+
+function normalizeEmailProvider(env: NotificationDeliveryRuntimeEnv | undefined) {
+  const configuredProvider = getRuntimeEnv(env, "SKILLHUB_EMAIL_PROVIDER")
+    ?.trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "_");
+
+  if (configuredProvider) {
+    return configuredProvider;
+  }
+
+  if (!isProductionLike(env) && isTruthy(getRuntimeEnv(env, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES"))) {
+    return "debug_preview";
+  }
+
+  return "provider_deferred";
+}
+
+function renderEmailText(row: NotificationRow) {
+  if (row.eventType === "auth.email.code.requested") {
+    const code = getPayloadText(row.payload, "code") ?? "------";
+    const mode = getPayloadText(row.payload, "mode") ?? "login";
+    const expiresAt = getPayloadText(row.payload, "expiresAt") ?? "soon";
+
+    return [
+      `Your SkillHub ${mode} verification code is ${code}.`,
+      "",
+      `This code expires at ${expiresAt}.`,
+      "If you did not request this code, you can ignore this message."
+    ].join("\n");
+  }
+
+  return [
+    row.subject ?? "SkillHub notification",
+    "",
+    "Event payload:",
+    JSON.stringify(summarizePayload(row.payload), null, 2)
+  ].join("\n");
+}
+
+function webhookTopicForEventType(eventType: string) {
+  if (eventType.includes("buyer_request") || eventType.includes("buyer.request")) {
+    return "buyer.request";
+  }
+
+  if (eventType.includes("payout")) {
+    return "publisher.payout";
+  }
+
+  if (eventType.includes("billing") || eventType.includes("invoice") || eventType.includes("refund") || eventType.includes("dispute")) {
+    return "finance.billing";
+  }
+
+  if (eventType.includes("review") || eventType.includes("feedback")) {
+    return "skill.review";
+  }
+
+  if (eventType.includes("runtime") || eventType.includes("incident")) {
+    return "runtime.incident";
+  }
+
+  if (eventType.includes("account") || eventType.includes("api_key")) {
+    return "account.security";
+  }
+
+  return "skill.update";
+}
+
+function getRuntimeEnv(env: NotificationDeliveryRuntimeEnv | undefined, key: keyof NotificationDeliveryRuntimeEnv) {
+  return env?.[key] ?? getProcessEnv(String(key));
+}
+
+function getProcessEnv(key: string): string | undefined {
+  if (typeof process === "undefined") {
+    return undefined;
+  }
+
+  return process.env[key];
+}
+
+function isProductionLike(env: NotificationDeliveryRuntimeEnv | undefined) {
+  return getRuntimeEnv(env, "SKILLHUB_ENV") === "production" || getRuntimeEnv(env, "NODE_ENV") === "production";
+}
+
+function isTruthy(value: string | undefined) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
 function normalizeOptionalDeliveryChannel(value: string | null | undefined) {

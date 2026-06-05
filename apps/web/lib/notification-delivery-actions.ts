@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getAdminOperatorToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
-import type { AdminNotificationDelivery } from "@/lib/ops-data";
+import type { AdminNotificationDelivery, AdminNotificationDeliveryProcessResult } from "@/lib/ops-data";
 
 export type NotificationDeliveryActionState = {
   delivery?: AdminNotificationDelivery;
@@ -12,19 +12,29 @@ export type NotificationDeliveryActionState = {
   status: "idle" | "success" | "error";
 };
 
+export type NotificationDeliveryProcessActionState = {
+  message: string;
+  result?: AdminNotificationDeliveryProcessResult;
+  status: "idle" | "success" | "error";
+};
+
 const copy = {
   en: {
     missingAction: "Choose a delivery action.",
     missingReason: "A delivery reason is required.",
     missingToken: "Sign in with an admin/support token or configure SKILLHUB_ADMIN_TOKEN before managing delivery events.",
+    processSaved: "Delivery processor finished.",
     saved: "Delivery event updated.",
+    unableProcess: "Unable to process delivery queue.",
     unableSave: "Unable to update delivery event."
   },
   zh: {
     missingAction: "\u8bf7\u9009\u62e9\u6295\u9012\u64cd\u4f5c\u3002",
     missingReason: "\u9700\u8981\u586b\u5199\u6295\u9012\u5904\u7406\u539f\u56e0\u3002",
     missingToken: "\u8bf7\u5148\u4f7f\u7528 admin/support token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u7ba1\u7406\u6295\u9012\u4e8b\u4ef6\u3002",
+    processSaved: "\u6295\u9012\u5904\u7406\u5668\u5df2\u5b8c\u6210\u3002",
     saved: "\u6295\u9012\u4e8b\u4ef6\u5df2\u66f4\u65b0\u3002",
+    unableProcess: "\u65e0\u6cd5\u5904\u7406\u6295\u9012\u961f\u5217\u3002",
     unableSave: "\u65e0\u6cd5\u66f4\u65b0\u6295\u9012\u4e8b\u4ef6\u3002"
   }
 } as const;
@@ -92,6 +102,52 @@ export async function decideNotificationDeliveryAction(
     return {
       deliveryId,
       message: error instanceof Error ? error.message : labels.unableSave,
+      status: "error"
+    };
+  }
+}
+
+export async function processNotificationDeliveriesAction(
+  locale: Locale,
+  _previousState: NotificationDeliveryProcessActionState,
+  formData: FormData
+): Promise<NotificationDeliveryProcessActionState> {
+  const labels = copy[locale];
+  const token = await getAdminOperatorToken();
+
+  if (!token) {
+    return { message: labels.missingToken, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/admin/notification-deliveries/process`, {
+      body: JSON.stringify({
+        limit: Number(formData.get("limit") ?? "10"),
+        mode: String(formData.get("mode") ?? "deliver").trim()
+      }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? labels.unableProcess);
+    }
+
+    const result = (await response.json()) as AdminNotificationDeliveryProcessResult;
+    revalidatePath("/admin");
+
+    return {
+      message: labels.processSaved,
+      result,
+      status: "success"
+    };
+  } catch (error) {
+    return {
+      message: error instanceof Error ? error.message : labels.unableProcess,
       status: "error"
     };
   }

@@ -311,6 +311,9 @@ SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
 SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-secret
 SKILLHUB_EMAIL_AUTH_SECRET=replace-with-a-different-long-random-secret
 SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false
+SKILLHUB_EMAIL_PROVIDER=resend
+SKILLHUB_EMAIL_FROM=no-reply@useskillhub.com
+RESEND_API_KEY=
 SKILLHUB_GOOGLE_CLIENT_ID=
 SKILLHUB_GOOGLE_CLIENT_SECRET=
 SKILLHUB_GITHUB_CLIENT_ID=
@@ -1478,6 +1481,24 @@ Supported `action` values are:
 - `skip`: closes an event as intentionally skipped with a required reason.
 
 Every delivery decision writes `admin_audit_logs` and queues an in-app platform notification. For `auth.email.code.requested`, the matching `email_login_challenges.delivery_status` is synchronized to the delivery event status so signup/login support can inspect whether a code is queued, sent, failed, or skipped.
+
+Process due external delivery events in a batch:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/notification-deliveries/process" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"limit":10,"mode":"deliver"}'
+```
+
+Modes:
+
+- `dry_run`: reports what would happen without mutating delivery state.
+- `deliver`: processes due `queued` or retry-ready `failed` `email` and `webhook` events.
+
+Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider.
+
+Webhook processing does not send network requests yet. It fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The final webhook network worker will consume that outbox and handle signing/retry response details.
 
 Admin/support operators can inspect the immutable admin audit trail:
 
