@@ -29,6 +29,16 @@ type SkillRow = {
   updated_at: string;
 };
 
+type SkillCurationSignal = {
+  boost: number;
+  placement: "featured" | "standard" | "suppressed";
+  skillId?: string;
+};
+
+type RankedSkillSummary = SkillSummary & {
+  curation?: SkillCurationSignal;
+};
+
 type RegistryStats = {
   publishedSkills: number;
   verifiedSkills: number;
@@ -114,10 +124,14 @@ export async function searchSkills(options: SearchOptions = {}): Promise<SkillSu
         and status = 'published'
     ) feedback on true
     where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status not in ('draft', 'rejected', 'suspended')
     order by s.updated_at desc
   `) as SkillRow[];
 
-  return filterSummaries(rows.map(rowToSummary), options);
+  const curationBySkillId = await getActiveCurationBySkillId(sql);
+
+  return filterSummaries(rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))), options);
 }
 
 export async function listSkillManifests(): Promise<SkillManifest[]> {
@@ -140,6 +154,7 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
       limit 1
     ) latest on true
     where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
     order by s.updated_at desc
   `) as Array<{ manifest: SkillManifest }>;
 
@@ -160,6 +175,8 @@ export async function getSkillManifest(slug: string): Promise<SkillManifest | un
     from skills s
     join skill_versions sv on sv.skill_id = s.id
     where s.slug = ${slug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
     order by sv.created_at desc
     limit 1
   `) as Array<{ manifest: SkillManifest }>;
@@ -276,7 +293,7 @@ export async function getRegistryStats(): Promise<RegistryStats> {
   };
 }
 
-function filterSummaries(skills: SkillSummary[], options: SearchOptions): SkillSummary[] {
+function filterSummaries(skills: RankedSkillSummary[], options: SearchOptions): SkillSummary[] {
   const query = options.query?.trim().toLowerCase() ?? "";
   const tags = (options.tags ?? []).map((tag) => tag.trim().toLowerCase()).filter(Boolean);
   const limit = options.limit && Number.isFinite(options.limit) ? options.limit : 20;
@@ -296,15 +313,16 @@ function filterSummaries(skills: SkillSummary[], options: SearchOptions): SkillS
       const runtimeMatch = !options.runtimeType || skill.runtimeType === options.runtimeType;
       const billingMatch = !options.billingModel || (skill.billingModel ?? "free") === options.billingModel;
       const verificationMatch = !options.verificationStatus || skill.verificationStatus === options.verificationStatus;
+      const publicStatusMatch = ["verified", "submitted", "deprecated"].includes(skill.verificationStatus);
 
-      return queryMatch && tagMatch && permissionMatch && runtimeMatch && billingMatch && verificationMatch;
+      return queryMatch && tagMatch && permissionMatch && runtimeMatch && billingMatch && verificationMatch && publicStatusMatch;
     })
     .sort((first, second) => compareSummaries(first, second, options.sort ?? "recommended", query));
 
-  return filtered.slice(0, Math.min(Math.max(limit, 1), 100));
+  return filtered.slice(0, Math.min(Math.max(limit, 1), 100)).map(stripCuration);
 }
 
-function rowToSummary(row: SkillRow): SkillSummary {
+function rowToSummary(row: SkillRow, curation?: SkillCurationSignal): RankedSkillSummary {
   return {
     id: row.id,
     slug: row.slug,
@@ -322,11 +340,12 @@ function rowToSummary(row: SkillRow): SkillSummary {
     avgLatencyMs: row.avg_latency_ms,
     averageRating: row.average_rating,
     feedbackCount: row.feedback_count,
+    curation,
     updatedAt: row.updated_at
   };
 }
 
-function toSummary(skill: SkillManifest): SkillSummary {
+function toSummary(skill: SkillManifest): RankedSkillSummary {
   const status: SkillSummary["verificationStatus"] =
     skill.name === "browser-research" ? "verified" : skill.name === "dataset-summarizer" ? "submitted" : "draft";
   const signals = demoSkillSignals(skill.name);
@@ -348,6 +367,7 @@ function toSummary(skill: SkillManifest): SkillSummary {
     avgLatencyMs: signals.avgLatencyMs,
     averageRating: signals.averageRating,
     feedbackCount: signals.feedbackCount,
+    curation: demoCurationSignal(skill.name),
     updatedAt: "demo"
   };
 }
@@ -413,11 +433,17 @@ function demoSkillSignals(
 }
 
 function compareSummaries(
-  first: SkillSummary,
-  second: SkillSummary,
+  first: RankedSkillSummary,
+  second: RankedSkillSummary,
   sort: NonNullable<SearchOptions["sort"]>,
   query: string
 ) {
+  const suppressionOrder = curationSuppressionRank(first) - curationSuppressionRank(second);
+
+  if (suppressionOrder !== 0) {
+    return suppressionOrder;
+  }
+
   if (sort === "adoption") {
     return (second.installCount ?? 0) - (first.installCount ?? 0) || first.slug.localeCompare(second.slug);
   }
@@ -437,7 +463,7 @@ function compareSummaries(
   return recommendedScore(second, query) - recommendedScore(first, query) || first.slug.localeCompare(second.slug);
 }
 
-function recommendedScore(skill: SkillSummary, query: string) {
+function recommendedScore(skill: RankedSkillSummary, query: string) {
   let score = 0;
   const normalizedName = skill.displayName.toLowerCase();
   const normalizedTags = skill.tags.join(" ").toLowerCase();
@@ -470,7 +496,78 @@ function recommendedScore(skill: SkillSummary, query: string) {
   score += Math.min(skill.feedbackCount ?? 0, 50) * 0.8;
   score += Math.min(parseDate(skill.updatedAt) / 1_000_000_000_000, 2);
 
+  if (skill.curation?.placement === "featured") {
+    score += 80;
+  } else if (skill.curation?.placement === "suppressed") {
+    score -= 160;
+  }
+
+  score += skill.curation?.boost ?? 0;
+
   return score;
+}
+
+async function getActiveCurationBySkillId(sql: NonNullable<SqlClient>) {
+  try {
+    const rows = (await sql`
+      select
+        mcr.skill_id::text as "skillId",
+        placement,
+        boost
+      from marketplace_curation_rules mcr
+      join skills s on s.id = mcr.skill_id
+      where mcr.starts_at <= now()
+        and (mcr.ends_at is null or mcr.ends_at > now())
+        and s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+    `) as SkillCurationSignal[];
+
+    return new Map(rows.map((row) => [row.skillId, row]));
+  } catch (error) {
+    if (isProductionRuntime()) {
+      throw new Error(
+        error instanceof Error
+          ? `Marketplace curation migration is unavailable: ${error.message}`
+          : "Marketplace curation migration is unavailable."
+      );
+    }
+
+    return new Map<string, SkillCurationSignal>();
+  }
+}
+
+function demoCurationSignal(slug: string): SkillCurationSignal | undefined {
+  if (slug === "browser-research") {
+    return {
+      boost: 120,
+      placement: "featured"
+    };
+  }
+
+  if (slug === "manifest-review") {
+    return {
+      boost: -60,
+      placement: "suppressed"
+    };
+  }
+
+  return undefined;
+}
+
+function stripCuration(skill: RankedSkillSummary): SkillSummary {
+  const { curation: _curation, ...summary } = skill;
+  return summary;
+}
+
+function curationSuppressionRank(skill: RankedSkillSummary) {
+  return skill.curation?.placement === "suppressed" ? 1 : 0;
+}
+
+function isProductionRuntime() {
+  return (
+    typeof process !== "undefined" &&
+    (process.env.SKILLHUB_ENV === "production" || process.env.NODE_ENV === "production")
+  );
 }
 
 function permissionRank(permissionLevel: SkillSummary["permissionLevel"]) {

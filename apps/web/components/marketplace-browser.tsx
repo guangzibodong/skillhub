@@ -146,6 +146,8 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
 
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const skillOrder = new Map(skills.map((skill, index) => [skill.slug, index]));
+
     return skills
       .filter((skill) => {
         const text = searchableText(skill, locale);
@@ -158,7 +160,13 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
 
         return queryMatch && categoryMatch && pricingMatch && riskMatch && runtimeMatch && verificationMatch;
       })
-      .sort((first, second) => compareSkills(first, second, sort, normalizedQuery, locale));
+      .sort((first, second) => {
+        if (sort === "recommended") {
+          return getSkillOrder(first, skillOrder) - getSkillOrder(second, skillOrder);
+        }
+
+        return compareSkills(first, second, sort, normalizedQuery, locale);
+      });
   }, [category, locale, pricing, query, risk, runtime, skills, sort, verification]);
 
   function copyInstall(skill: MarketplaceSkill) {
@@ -404,6 +412,10 @@ function verificationKey(skill: MarketplaceSkill): "verified" | "review" | "rest
   }
 
   return "review";
+}
+
+function getSkillOrder(skill: MarketplaceSkill, skillOrder: Map<string, number>) {
+  return skillOrder.get(skill.slug) ?? Number.MAX_SAFE_INTEGER;
 }
 
 function compareSkills(

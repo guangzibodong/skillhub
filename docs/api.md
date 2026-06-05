@@ -21,7 +21,7 @@ Supported public discovery parameters:
 - `permissionLevel`: `low`, `medium`, or `high`.
 - `runtimeType` or `runtime`: `http`, `mcp`, or `local`.
 - `billingModel` or `pricing`: `free`, `per_call`, or `subscription`.
-- `verificationStatus` or `verification`: `draft`, `submitted`, `verified`, `deprecated`, `rejected`, or `suspended`.
+- `verificationStatus` or `verification`: public discovery accepts the registry status filter, but marketplace search only returns public skills in `submitted`, `verified`, or `deprecated` states.
 - `sort`: `recommended`, `adoption`, `success`, `low_risk`, or `recent`.
 
 Response:
@@ -52,7 +52,51 @@ Response:
 }
 ```
 
-Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, published feedback rating, feedback count, and freshness. Search remains public because it returns marketplace-safe discovery metadata only.
+Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, published feedback rating, feedback count, freshness, and active marketplace curation signals. Search remains public because it returns marketplace-safe discovery metadata only. Internal curation fields such as manual boost, suppression reason, and operator notes are never included in the public search response.
+
+## Admin Marketplace Curation
+
+Marketplace curation lets operators improve discovery quality without editing skill records directly. Public search uses the active curation rule internally for `sort=recommended`; admin endpoints expose the rule, quality signals, and audit path.
+
+Read the curation queue:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/marketplace-curation?limit=30" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`GET /v1/admin/marketplace-curation` requires `support`, `admin`, or `super_admin`. It returns skill identity, visibility, verification state, current placement, boost, reason, expiry, install/call/success signals, feedback counts, and open/monitoring incident counts. If the production database is available but the curation migration has not run, the API returns a clear `500` instead of silently showing demo data.
+
+Create or update a rule:
+
+```bash
+curl -X PUT "https://api.useskillhub.com/v1/admin/marketplace-curation/browser-research" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "placement": "featured",
+    "boost": 120,
+    "reason": "Verified skill with strong success rate and current buyer demand.",
+    "endsAt": "2026-06-12T00:00:00.000Z"
+  }'
+```
+
+`PUT /v1/admin/marketplace-curation/:skillSlug` requires `reviewer`, `admin`, or `super_admin`.
+
+Request body:
+
+- `placement`: `featured`, `standard`, or `suppressed`.
+- `boost`: integer from `-250` to `250`; the API clamps out-of-range values.
+- `reason`: required operator reason, stored in the audit log and admin UI.
+- `endsAt`: optional ISO timestamp; if provided it must be in the future.
+
+Rules:
+
+- `featured` is allowed only for public skills in `submitted` or `verified` review status.
+- `suppressed` lowers public discovery ordering across sort modes but is not a takedown; use trust/suspension flows for removal.
+- Every write stores previous and next rule values in `admin_audit_logs`.
+- Every write queues an in-app `marketplace.curation.updated` notification event.
+- Public search keeps using the same response schema and does not expose internal reasons or boost values.
 
 ## Get Skill Manifest
 

@@ -192,6 +192,47 @@ Discovery and ranking should consider:
 - Install-to-success conversion.
 - Incident and abuse history.
 
+### Marketplace Curation And Ranking Policy
+
+Marketplace curation is a trust and distribution control, not an advertising shortcut.
+
+Goals:
+
+- Help developers find safe, reliable, task-relevant skills faster.
+- Give high-quality publishers a visible reward for review quality, stability, feedback, and support.
+- Give platform operators a controlled way to feature launch-quality supply, reduce exposure for risky skills, and respond to incidents.
+
+Placement states:
+
+- `featured`: highlighted in recommended ranking. Only public skills in `submitted` or `verified` review status can be featured.
+- `standard`: default ranking behavior with optional small positive or negative boost.
+- `suppressed`: lowers public discovery ordering across sort modes, but does not hide the listing. Takedown, restriction, and suspension remain trust-and-safety workflows.
+
+Required operator controls:
+
+- Placement.
+- Numeric boost with bounded range.
+- Required reason.
+- Optional expiry date.
+- Quality signals beside the decision: installs, calls, success rate, rating, published feedback, pending feedback, open incidents, visibility, and review status.
+- Preview or explanation of likely ranking impact before final launch.
+
+Governance requirements:
+
+- Every curation write must record actor, previous values, next values, reason, skill, visibility, verification status, and timestamp in the admin audit log.
+- Public search must not expose internal boost values, internal reasons, or operator notes.
+- Public marketplace cards should explain recommendation in buyer-safe language such as verified status, low-risk permissions, high success rate, recent review, strong feedback, or zero open incidents.
+- Publishers should be able to see their current placement, reason, expiry, quality gaps, and improvement path in the publisher workspace.
+- Suppressed publishers must have an appeal or review path with SLA before formal paid marketplace launch.
+- High boost, long-running featured placement, or negative action on a paid skill should require stronger role permission or second review before formal paid marketplace launch.
+- If paid promotion exists later, it must be labeled separately from trust-based recommendation.
+
+Safety requirements:
+
+- Rejected, suspended, draft, private, or unlisted skills cannot be boosted into public recommended discovery.
+- Open critical incidents, unresolved abuse reports, high-risk permissions without review notes, low runtime success, or excessive pending feedback should trigger operator attention before a skill can remain featured.
+- Curation rules must expire or be reviewed regularly so the marketplace does not accumulate stale manual bias.
+
 ### Skill Detail
 
 Requirements:
@@ -276,7 +317,7 @@ Requirements:
 - Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
-- Ranking/featured listing controls.
+- Ranking/featured listing controls backed by curation rules, bounded boost, required reasons, expiry, audit logs, and quality-signal review.
 - Abuse report and takedown queue.
 - Skill feedback moderation queue for publishing, hiding, rejecting, or reopening user feedback.
 - Runtime incident operations queue where trust/platform operators can open incidents by skill, assign severity, move incidents through `open`, `monitoring`, `resolved`, and `postmortem`, require a decision reason, and trigger audit, installed-skill update, and publisher notification records.

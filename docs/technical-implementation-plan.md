@@ -95,6 +95,7 @@ Core tables:
 - `skill_incidents`
 - `saved_skills`
 - `skill_feedback`
+- `marketplace_curation_rules`
 
 API groups:
 
@@ -104,6 +105,7 @@ API groups:
 - `/v1/projects/:projectId/saved-skills`
 - `/v1/skills/:slug/feedback`
 - `/v1/admin/skill-feedback`
+- `/v1/admin/marketplace-curation`
 
 Acceptance checks:
 
@@ -112,6 +114,8 @@ Acceptance checks:
 - Developers can see updates, deprecations, incidents, and replacements for installed skills.
 - Saved skills and collections exist before purchase flows are added.
 - Published feedback is public, new feedback starts in moderation, and admin decisions are audited.
+- Marketplace recommendation can be curated through featured, standard, or suppressed rules with bounded boost, required reason, optional expiry, and audit logs.
+- Public search uses active curation internally but never exposes internal boost values or operator reasons.
 
 ### 4. Publisher Retention
 
@@ -371,6 +375,11 @@ Completed:
 - `/publishers` now exposes a browseable public publisher trust directory and marketplace links now surface publisher count, verified publisher count, and a supplier-trust path before install decisions.
 - Marketplace discovery controls now filter by category, pricing model, permission risk, runtime, and verification state, with ranking by recommendation score, adoption, runtime success, low risk, and review freshness.
 - Public skill search now supports API-level runtime, billing model, verification status, permission, tag, query, limit, and sort parameters, and returns marketplace-safe discovery metrics for web, CLI, SDK, and agent callers.
+- Marketplace curation migration `018_marketplace_curation.sql` now stores one active ranking rule per skill with placement, bounded boost, required reason, optional expiry, creator/updater, and timestamps.
+- Admin marketplace curation APIs now let platform operators read skill quality signals and let reviewer/admin roles update ranking placement with required reasons, previous/next audit metadata, and queued notification events.
+- Public recommended search now applies active curation internally while keeping internal boost and operator reasons out of marketplace-safe search responses.
+- `/admin` now exposes marketplace ranking controls beside quality, incident, audit, and notification operations so ranking changes happen from an auditable platform command center.
+- The marketplace browser preserves API order for recommended discovery after local filtering, so server-side trust and curation signals remain visible to buyers.
 - Web console token session now lets operators sign in with a user access token, stores it as an httpOnly cookie, shows session scope in the dashboard, and makes dashboard data/actions prefer the active user session before falling back to server environment tokens.
 - Admin identity directory APIs now let admin/support operators read user, organization, platform-role, membership, token, project, skill, invocation, and ledger adoption signals without mutating access state.
 - `/admin` now exposes a user and organization directory so platform operators can see account health and adoption before final OAuth/passwordless provider tooling is connected.

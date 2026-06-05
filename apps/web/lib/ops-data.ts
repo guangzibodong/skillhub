@@ -51,6 +51,33 @@ export type AdminAuditLogRecord = {
   reason: string | null;
 };
 
+export type AdminMarketplaceCurationRecord = {
+  id: string | null;
+  averageRating: number | null;
+  boost: number;
+  displayName: string;
+  endsAt: string | null;
+  feedbackCount: number;
+  incidentCount: number;
+  installCount: number;
+  invocationCount: number;
+  pendingFeedbackCount: number;
+  placement: "featured" | "standard" | "suppressed";
+  reason: string | null;
+  skillId: string;
+  skillSlug: string;
+  successRate: number | null;
+  updatedAt: string | null;
+  verificationStatus: string;
+  visibility: string;
+};
+
+export type AdminMarketplaceCurationData = {
+  curation: AdminMarketplaceCurationRecord[];
+  message?: string;
+  mode: "live" | "missing_token" | "unavailable";
+};
+
 export type NotificationTemplateRecord = {
   id: string;
   templateKey: string;
@@ -2028,6 +2055,53 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
     return payload.auditLogs;
   } catch {
     return fallbackAdminAuditLogs;
+  }
+}
+
+export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCurationData> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return {
+      curation: [],
+      message: "Sign in with an admin/support token to inspect marketplace ranking controls.",
+      mode: "missing_token"
+    };
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/marketplace-curation?limit=24`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Marketplace curation failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { curation: AdminMarketplaceCurationRecord[] };
+    const isDemoSource = payload.curation.length > 0 && payload.curation.every((item) => item.updatedAt === "demo");
+
+    if (isDemoSource) {
+      return {
+        curation: [],
+        message: "The API is running without a live database, so marketplace ranking controls are disabled.",
+        mode: "unavailable"
+      };
+    }
+
+    return {
+      curation: payload.curation,
+      mode: "live"
+    };
+  } catch (error) {
+    return {
+      curation: [],
+      message: error instanceof Error ? error.message : "Marketplace curation is unavailable.",
+      mode: "unavailable"
+    };
   }
 }
 

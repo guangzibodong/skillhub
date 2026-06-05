@@ -85,6 +85,10 @@ import {
   upsertNotificationTemplate
 } from "./notification-templates.js";
 import {
+  listAdminMarketplaceCuration,
+  upsertMarketplaceCuration
+} from "./marketplace-curation.js";
+import {
   listNotificationPreferences,
   upsertNotificationPreference
 } from "./notification-preferences.js";
@@ -180,6 +184,7 @@ const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "
 const organizationAdminRoles: AuthRole[] = ["super_admin", "admin", "owner"];
 const organizationWebhookRoles: AuthRole[] = ["super_admin", "admin", "owner", "developer"];
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
+const curationOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "support"];
 
 app.use(
@@ -493,9 +498,14 @@ app.get("/v1/skills/search", async (c) => {
   const billingModel = parseBillingModel(c.req.query("billingModel") ?? c.req.query("pricing"));
   const verificationStatus = parseVerificationStatus(c.req.query("verificationStatus") ?? c.req.query("verification"));
   const sort = parseSearchSort(c.req.query("sort"));
-  const skills = await searchSkills({ billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
 
-  return c.json({ skills });
+  try {
+    const skills = await searchSkills({ billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
+
+    return c.json({ skills });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to search skills." }, 500);
+  }
 });
 
 app.get("/v1/publishers", async (c) => {
@@ -1269,6 +1279,45 @@ app.get("/v1/admin/audit-logs", async (c) => {
   return c.json({
     auditLogs: await listAdminAuditLogs(Number(c.req.query("limit") ?? "30"))
   });
+});
+
+app.get("/v1/admin/marketplace-curation", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      curation: await listAdminMarketplaceCuration(Number(c.req.query("limit") ?? "30"))
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to list marketplace curation." },
+      500
+    );
+  }
+});
+
+app.put("/v1/admin/marketplace-curation/:skillSlug", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), curationOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      curation: await upsertMarketplaceCuration(
+        c.req.param("skillSlug"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update marketplace curation." }, 400);
+  }
 });
 
 app.get("/v1/admin/identity", async (c) => {

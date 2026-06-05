@@ -453,6 +453,15 @@ Added API-backed marketplace discovery, covering:
 - API recommended ranking uses query relevance, verification state, permission risk, install evidence, invocation volume, runtime success, and update freshness.
 - The web marketplace uses recommended API search as its first source, so the browser, CLI, SDK, and agents can converge on the same public discovery contract.
 
+Added marketplace curation and ranking governance, covering:
+
+- `marketplace_curation_rules` stores one auditable ranking rule per skill with `featured`, `standard`, or `suppressed` placement, bounded boost, required reason, optional expiry, and creator/updater metadata.
+- Public recommended search uses active curation internally while keeping boost values, operator reasons, and notes out of public API responses.
+- Suppressed rules lower public discovery ordering across sort modes but do not replace trust-and-safety takedown, restriction, or suspension workflows.
+- `/admin` now exposes ranking controls beside installs, calls, success rate, feedback, pending feedback, incidents, visibility, and review status, so operators act from evidence rather than arbitrary manual ranking.
+- Curation writes require reviewer/admin-level access, store previous and next values in `admin_audit_logs`, and queue in-app notification events before external email/webhook providers are connected.
+- The product requirements now define curation fairness: publishers need visibility into reason, expiry, quality gaps, and appeal path; buyers need marketplace-safe recommendation explanations instead of a black-box order.
+
 Added skill feedback and review moderation, covering:
 
 - `skill_feedback` stores rating, public title/body, use case, reviewer organization, project context, moderation status, moderation reason, and publish timestamp.

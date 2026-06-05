@@ -3434,6 +3434,146 @@ a {
   padding: 11px;
 }
 
+.marketplace-curation-panel {
+  gap: 16px;
+}
+
+.marketplace-curation-list {
+  display: grid;
+  gap: 12px;
+}
+
+.marketplace-curation-card {
+  display: grid;
+  gap: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 14px;
+}
+
+.marketplace-curation-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.marketplace-curation-card__head > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.marketplace-curation-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.marketplace-curation-card__head span:not(.status-chip) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.marketplace-curation-card__head .status-chip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-self: end;
+}
+
+.marketplace-curation-signals {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.marketplace-curation-signals span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+
+.marketplace-curation-signals strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.marketplace-curation-signals small,
+.marketplace-curation-updated,
+.marketplace-curation-empty {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.marketplace-curation-empty--notice {
+  border: 1px solid rgba(255, 205, 86, 0.2);
+  border-radius: var(--radius);
+  background: rgba(255, 205, 86, 0.055);
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+
+.marketplace-curation-form {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.8fr) minmax(90px, 0.55fr) minmax(150px, 0.85fr) minmax(0, 1.8fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.marketplace-curation-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.marketplace-curation-form label span {
+  color: #aeb6a5;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.marketplace-curation-form input,
+.marketplace-curation-form select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 9px 10px;
+}
+
+.marketplace-curation-form select option {
+  background: #151812;
+  color: var(--ink);
+}
+
+.marketplace-curation-form input:focus,
+.marketplace-curation-form select:focus {
+  border-color: rgba(181, 241, 151, 0.55);
+  box-shadow: 0 0 0 3px rgba(181, 241, 151, 0.1);
+  outline: none;
+}
+
+.marketplace-curation-form .secondary-button {
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.marketplace-curation-card .action-message span {
+  overflow-wrap: anywhere;
+}
+
 .abuse-report-panel {
   display: grid;
   gap: 14px;
@@ -3851,6 +3991,16 @@ a {
   padding: 58px 0 28px;
 }
 
+.market-hero__copy {
+  min-width: 0;
+}
+
+.market-hero > *,
+.skill-detail-hero > *,
+.project-detail-hero > * {
+  min-width: 0;
+}
+
 .market-hero h1,
 .skill-detail-hero h1,
 .project-detail-hero h1 {
@@ -3860,6 +4010,7 @@ a {
   font-size: 60px;
   font-weight: 760;
   line-height: 0.98;
+  overflow-wrap: anywhere;
 }
 
 .market-hero p,
@@ -7148,7 +7299,7 @@ a {
   .schema-grid,
   .security-grid,
   .workspace-ops-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .page-hero {
@@ -7213,6 +7364,20 @@ a {
 }
 
 @media (max-width: 760px) {
+  .marketplace-curation-card__head,
+  .marketplace-curation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .marketplace-curation-card__head .status-chip,
+  .marketplace-curation-form .secondary-button {
+    justify-self: stretch;
+  }
+
+  .marketplace-curation-signals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .site-header {
     position: static;
   }
@@ -7644,6 +7809,10 @@ a {
 }
 
 @media (max-width: 480px) {
+  .marketplace-curation-signals {
+    grid-template-columns: 1fr;
+  }
+
   .site-nav {
     width: 100%;
     justify-content: flex-start;
@@ -7652,6 +7821,7 @@ a {
   .hero-actions,
   .hero-actions .primary-button,
   .hero-actions .secondary-button,
+  .hero-actions .ghost-button,
   .publish-actions,
   .publish-actions .primary-button {
     width: 100%;

@@ -13,6 +13,7 @@ import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
 import { AdminIncidentManager } from "@/components/admin-incident-manager";
 import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
+import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-curation-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
@@ -26,6 +27,7 @@ import {
   getAdminDisputes,
   getAdminIdentityDirectory,
   getAdminIncidents,
+  getAdminMarketplaceCuration,
   getAdminNotificationTemplates,
   getAdminPayouts,
   getAdminReviews,
@@ -99,6 +101,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const [
     financeLedger,
     auditLogs,
+    marketplaceCuration,
     notificationTemplates,
     identityDirectory,
     payouts,
@@ -111,6 +114,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ] = await Promise.all([
     getFinanceLedger(),
     getAdminAuditLogs(),
+    getAdminMarketplaceCuration(),
     getAdminNotificationTemplates(),
     getAdminIdentityDirectory(),
     getAdminPayouts(),
@@ -208,6 +212,15 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
         <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AdminMarketplaceCurationManager
+          connectionMessage={marketplaceCuration.message}
+          connectionMode={marketplaceCuration.mode}
+          curation={marketplaceCuration.curation}
+          locale={locale}
+        />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">
