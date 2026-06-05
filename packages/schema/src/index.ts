@@ -67,6 +67,8 @@ export type SkillSummary = {
   invocationCount?: number;
   successRate?: number | null;
   avgLatencyMs?: number | null;
+  averageRating?: number | null;
+  feedbackCount?: number;
   updatedAt?: string;
 };
 

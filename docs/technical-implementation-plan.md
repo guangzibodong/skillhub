@@ -369,6 +369,8 @@ Completed:
 - Admin skill feedback APIs now let trust operators publish, hide, reject, or reopen feedback with required reasons, audit logs, and queued publisher notifications.
 - Skill detail pages now show published user feedback, average rating, reviewer organization, use case, project context, and a signed-in feedback submission form before the trust report flow.
 - `/admin` now includes a skill feedback moderation queue beside trust, finance, and review operations so marketplace quality signals have an operator-owned path.
+- Skill search summaries now include published feedback count and average rating, and recommended ranking uses those signals alongside verification, permission risk, install evidence, runtime success, and freshness.
+- Publisher skill operations now expose average rating plus published/pending feedback counts so authors can see what buyers trust and what still needs moderation or response.
 
 Next:
 

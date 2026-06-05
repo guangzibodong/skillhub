@@ -224,6 +224,7 @@ Requirements:
 - Version status.
 - Review pipeline.
 - Runtime check results.
+- Published feedback count, average rating, and pending feedback count.
 - Pricing setup.
 - Usage analytics.
 - Earnings ledger.

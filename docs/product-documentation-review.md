@@ -419,6 +419,8 @@ Added skill feedback and review moderation, covering:
 - Signed-in developers can submit feedback from the skill detail page; new feedback enters moderation instead of becoming public immediately.
 - Trust operators can publish, hide, reject, or reopen feedback from `/admin`, with required reasons, audit logs, and queued publisher notifications.
 - This strengthens developer trust because listings now show real usage signals, and strengthens publisher retention because feedback creates a concrete improvement loop.
+- Search summaries and recommended ranking now use published average rating and feedback count, so feedback affects discovery instead of staying isolated on the detail page.
+- Publisher skill operations now show rating plus published/pending feedback counts, giving authors a repeat-use reason to return and improve listings.
 
 ## Product Standard Going Forward
 

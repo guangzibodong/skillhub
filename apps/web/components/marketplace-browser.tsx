@@ -30,6 +30,7 @@ const labels = {
     subscription: "Subscription",
     success: "success",
     latency: "latency",
+    feedback: "feedback",
     install: "install",
     catalog: "SkillHub Catalog",
     filters: "Discovery filters",
@@ -76,6 +77,7 @@ const labels = {
     subscription: "订阅",
     success: "成功率",
     latency: "延迟",
+    feedback: "反馈",
     install: "安装",
     catalog: "SkillHub 技能目录",
     filters: "发现筛选",
@@ -308,7 +310,7 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
             <div className="market-skill-card__meta">
               <span>
                 <Star size={14} aria-hidden="true" />
-                {skill.rating}
+                {formatFeedbackSignal(skill, dictionary.feedback)}
               </span>
               <span>
                 <BadgeCheck size={14} aria-hidden="true" />
@@ -458,9 +460,15 @@ function recommendedScore(skill: MarketplaceSkill, query: string, locale: Locale
   score += parsePercent(skill.successRate) * 35;
   score += Math.min(parseCompactNumber(skill.installs) / 1000, 35);
   score += Number.isFinite(Number(skill.rating)) ? Number(skill.rating) * 5 : 0;
+  score += Math.min(skill.feedbackCount ?? 0, 50) * 0.8;
   score += Math.min(parseDate(skill.lastReviewed) / 1_000_000_000_000, 2);
 
   return score;
+}
+
+function formatFeedbackSignal(skill: MarketplaceSkill, feedbackLabel: string) {
+  const count = skill.feedbackCount ?? 0;
+  return count > 0 ? `${skill.rating} / ${count} ${feedbackLabel}` : skill.rating;
 }
 
 function parsePercent(value: string) {

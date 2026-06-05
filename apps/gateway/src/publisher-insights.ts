@@ -35,6 +35,9 @@ type PublisherSkillRow = {
   billingModel: "free" | "per_call" | "subscription" | null;
   unitAmountCents: number | null;
   priceStatus: "draft" | "active" | "archived" | null;
+  averageRating: number | null;
+  publishedFeedbackCount: number;
+  pendingFeedbackCount: number;
   qualityScore: string | number | null;
   installSuccessRate: string | number | null;
   incidentCount: number | null;
@@ -82,6 +85,9 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       price.billing_model as "billingModel",
       price.unit_amount_cents as "unitAmountCents",
       price.status as "priceStatus",
+      feedback.average_rating as "averageRating",
+      coalesce(feedback.published_count, 0)::int as "publishedFeedbackCount",
+      coalesce(feedback.pending_count, 0)::int as "pendingFeedbackCount",
       pqs.score as "qualityScore",
       pqs.install_success_rate as "installSuccessRate",
       pqs.incident_count as "incidentCount"
@@ -140,6 +146,14 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       order by case when status = 'active' then 0 else 1 end, created_at desc
       limit 1
     ) price on true
+    left join lateral (
+      select
+        round((avg(rating) filter (where status = 'published'))::numeric, 1)::float as average_rating,
+        count(*) filter (where status = 'published')::int as published_count,
+        count(*) filter (where status = 'pending')::int as pending_count
+      from skill_feedback
+      where skill_id = s.id
+    ) feedback on true
     left join publisher_profiles pp on pp.organization_id = s.organization_id
     left join publisher_quality_scores pqs on pqs.publisher_profile_id = pp.id
     where (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
@@ -197,6 +211,11 @@ async function fallbackPublisherSkills(limit: number) {
         billingModel: index === 0 ? "per_call" : "free",
         unitAmountCents: index === 0 ? 2 : 0,
         status: "active"
+      },
+      feedback: {
+        averageRating: index === 0 ? 4.7 : null,
+        publishedCount: index === 0 ? 18 : 0,
+        pendingCount: index === 0 ? 2 : 0
       },
       quality: {
         score: index === 0 ? 86 : 64,
@@ -259,6 +278,11 @@ function mapPublisherSkill(row: PublisherSkillRow) {
       billingModel: row.billingModel ?? "free",
       unitAmountCents: row.unitAmountCents ?? 0,
       status: row.priceStatus ?? "draft"
+    },
+    feedback: {
+      averageRating: row.averageRating,
+      publishedCount: row.publishedFeedbackCount,
+      pendingCount: row.pendingFeedbackCount
     },
     quality: {
       score: row.qualityScore === null ? null : Number(row.qualityScore),

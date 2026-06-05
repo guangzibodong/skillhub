@@ -198,7 +198,8 @@ function manifestToMarketplaceSkill(
     outputExample: staticSkill?.outputExample ?? schemaExample(manifest?.outputSchema, "output"),
     permissions: manifest ? permissionRows(manifest) : staticSkill?.permissions ?? permissionRowsFromRisk(summary.permissionLevel),
     price: formatPrice(activePrice, billing, staticSkill),
-    rating: staticSkill?.rating ?? qualitySignal(summary),
+    rating: formatRating(summary, staticSkill),
+    feedbackCount: summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0,
     reviews: staticSkill?.reviews ?? [
       {
         author: "SkillHub Registry",
@@ -423,6 +424,17 @@ function qualitySignal(summary: SkillSummary) {
   }
 
   return "review";
+}
+
+function formatRating(summary: SkillSummary, staticSkill?: MarketplaceSkill) {
+  if (typeof summary.averageRating === "number" && Number.isFinite(summary.averageRating)) {
+    return new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1
+    }).format(summary.averageRating);
+  }
+
+  return staticSkill?.rating ?? qualitySignal(summary);
 }
 
 function schemaExample(schema: SkillManifest["inputSchema"] | undefined, label: string) {

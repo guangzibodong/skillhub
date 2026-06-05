@@ -292,6 +292,11 @@ export type PublisherSkillRecord = {
     unitAmountCents: number;
     status: "draft" | "active" | "archived";
   };
+  feedback?: {
+    averageRating: number | null;
+    publishedCount: number;
+    pendingCount: number;
+  };
   quality: {
     score: number | null;
     installSuccessRate: number | null;
@@ -1035,6 +1040,11 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       unitAmountCents: 2,
       status: "active"
     },
+    feedback: {
+      averageRating: 4.7,
+      publishedCount: 18,
+      pendingCount: 2
+    },
     quality: {
       score: 86,
       installSuccessRate: 0.96,
@@ -1087,6 +1097,11 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       billingModel: "free",
       unitAmountCents: 0,
       status: "active"
+    },
+    feedback: {
+      averageRating: 4.1,
+      publishedCount: 5,
+      pendingCount: 1
     },
     quality: {
       score: 64,

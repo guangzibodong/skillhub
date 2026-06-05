@@ -24,6 +24,8 @@ type SkillRow = {
   invocation_count: number;
   success_rate: number | null;
   avg_latency_ms: number | null;
+  average_rating: number | null;
+  feedback_count: number;
   updated_at: string;
 };
 
@@ -72,7 +74,9 @@ export async function searchSkills(options: SearchOptions = {}): Promise<SkillSu
       coalesce(installs.install_count, 0)::int as install_count,
       coalesce(invocations.invocation_count, 0)::int as invocation_count,
       invocations.success_rate,
-      invocations.avg_latency_ms
+      invocations.avg_latency_ms,
+      feedback.average_rating,
+      coalesce(feedback.feedback_count, 0)::int as feedback_count
     from skills s
     join lateral (
       select version, manifest
@@ -101,6 +105,14 @@ export async function searchSkills(options: SearchOptions = {}): Promise<SkillSu
       from skill_invocations
       where skill_id = s.id
     ) invocations on true
+    left join lateral (
+      select
+        round(avg(rating)::numeric, 1)::float as average_rating,
+        count(*)::int as feedback_count
+      from skill_feedback
+      where skill_id = s.id
+        and status = 'published'
+    ) feedback on true
     where s.visibility = 'public'
     order by s.updated_at desc
   `) as SkillRow[];
@@ -308,6 +320,8 @@ function rowToSummary(row: SkillRow): SkillSummary {
     invocationCount: row.invocation_count,
     successRate: row.success_rate,
     avgLatencyMs: row.avg_latency_ms,
+    averageRating: row.average_rating,
+    feedbackCount: row.feedback_count,
     updatedAt: row.updated_at
   };
 }
@@ -315,6 +329,7 @@ function rowToSummary(row: SkillRow): SkillSummary {
 function toSummary(skill: SkillManifest): SkillSummary {
   const status: SkillSummary["verificationStatus"] =
     skill.name === "browser-research" ? "verified" : skill.name === "dataset-summarizer" ? "submitted" : "draft";
+  const signals = demoSkillSignals(skill.name);
 
   return {
     id: skill.name,
@@ -327,11 +342,73 @@ function toSummary(skill: SkillManifest): SkillSummary {
     permissionLevel: getPermissionLevel(skill.permissions),
     runtimeType: skill.runtime.type,
     billingModel: "free",
+    installCount: signals.installCount,
+    invocationCount: signals.invocationCount,
+    successRate: signals.successRate,
+    avgLatencyMs: signals.avgLatencyMs,
+    averageRating: signals.averageRating,
+    feedbackCount: signals.feedbackCount,
+    updatedAt: "demo"
+  };
+}
+
+function demoSkillSignals(
+  slug: string
+): Pick<
+  SkillSummary,
+  "installCount" | "invocationCount" | "successRate" | "avgLatencyMs" | "averageRating" | "feedbackCount"
+> {
+  if (slug === "browser-research") {
+    return {
+      installCount: 12840,
+      invocationCount: 96200,
+      successRate: 0.982,
+      avgLatencyMs: 1800,
+      averageRating: 4.8,
+      feedbackCount: 24
+    };
+  }
+
+  if (slug === "dataset-summarizer") {
+    return {
+      installCount: 6920,
+      invocationCount: 41800,
+      successRate: 0.975,
+      avgLatencyMs: 1100,
+      averageRating: 4.6,
+      feedbackCount: 17
+    };
+  }
+
+  if (slug === "support-triage") {
+    return {
+      installCount: 15200,
+      invocationCount: 120400,
+      successRate: 0.991,
+      avgLatencyMs: 620,
+      averageRating: 4.7,
+      feedbackCount: 311
+    };
+  }
+
+  if (slug === "manifest-review") {
+    return {
+      installCount: 1840,
+      invocationCount: 11600,
+      successRate: 0.946,
+      avgLatencyMs: 760,
+      averageRating: 4.3,
+      feedbackCount: 9
+    };
+  }
+
+  return {
     installCount: 0,
     invocationCount: 0,
     successRate: null,
     avgLatencyMs: null,
-    updatedAt: "demo"
+    averageRating: null,
+    feedbackCount: 0
   };
 }
 
@@ -389,6 +466,8 @@ function recommendedScore(skill: SkillSummary, query: string) {
   score += Math.min(skill.installCount ?? 0, 100_000) / 2500;
   score += Math.min(skill.invocationCount ?? 0, 250_000) / 10_000;
   score += (skill.successRate ?? 0) * 40;
+  score += (skill.averageRating ?? 0) * 8;
+  score += Math.min(skill.feedbackCount ?? 0, 50) * 0.8;
   score += Math.min(parseDate(skill.updatedAt) / 1_000_000_000_000, 2);
 
   return score;

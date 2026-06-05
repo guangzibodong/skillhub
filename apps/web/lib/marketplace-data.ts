@@ -13,6 +13,7 @@ export type MarketplaceSkill = {
   price: LocalizedText;
   billing: "free" | "per_call" | "subscription";
   rating: string;
+  feedbackCount?: number;
   installs: string;
   successRate: string;
   latency: string;
@@ -81,6 +82,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "per_call",
     rating: "4.9",
+    feedbackCount: 248,
     installs: "12.8k",
     successRate: "98.2%",
     latency: "1.8s",
@@ -189,6 +191,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "subscription",
     rating: "4.8",
+    feedbackCount: 186,
     installs: "8.4k",
     successRate: "96.7%",
     latency: "2.4s",
@@ -285,6 +288,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "free",
     rating: "4.7",
+    feedbackCount: 311,
     installs: "15.2k",
     successRate: "99.1%",
     latency: "620ms",
@@ -381,6 +385,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "per_call",
     rating: "4.6",
+    feedbackCount: 142,
     installs: "6.9k",
     successRate: "97.5%",
     latency: "1.1s",
@@ -472,6 +477,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "subscription",
     rating: "4.8",
+    feedbackCount: 96,
     installs: "5.1k",
     successRate: "95.8%",
     latency: "3.2s",
@@ -563,6 +569,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     billing: "per_call",
     rating: "4.7",
+    feedbackCount: 118,
     installs: "4.8k",
     successRate: "96.1%",
     latency: "1.9s",

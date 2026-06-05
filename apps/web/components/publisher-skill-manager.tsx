@@ -6,9 +6,11 @@ import {
   CheckCircle2,
   CircleDollarSign,
   ClipboardCheck,
+  MessageSquareText,
   PackageCheck,
   Save,
   Send,
+  Star,
   XCircle
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
@@ -31,7 +33,9 @@ const copy = {
     calls: "Calls",
     currency: "Currency",
     empty: "No publisher skills yet. Publish a manifest first, then return here to submit review and set pricing.",
+    feedback: "Published / pending",
     installs: "Installs",
+    rating: "Rating",
     priceStatus: "Price status",
     quality: "Quality",
     savePrice: "Save price",
@@ -47,7 +51,9 @@ const copy = {
     calls: "调用",
     currency: "币种",
     empty: "还没有发布者技能。先发布一个 manifest，再回到这里提交审核和设置价格。",
+    feedback: "公开 / 待审",
     installs: "安装",
+    rating: "评分",
     priceStatus: "价格状态",
     quality: "质量",
     savePrice: "保存价格",
@@ -128,6 +134,8 @@ function PublisherSkillCard({
         <Metric icon={<PackageCheck size={15} aria-hidden="true" />} label={labels.installs} value={formatCompactNumber(skill.analytics.installCount)} />
         <Metric icon={<BarChart3 size={15} aria-hidden="true" />} label={labels.calls} value={formatCompactNumber(skill.analytics.callCount)} />
         <Metric icon={<CheckCircle2 size={15} aria-hidden="true" />} label={labels.successRate} value={formatPercent(skill.analytics.successRate)} />
+        <Metric icon={<Star size={15} aria-hidden="true" />} label={labels.rating} value={formatRating(skill.feedback?.averageRating)} />
+        <Metric icon={<MessageSquareText size={15} aria-hidden="true" />} label={labels.feedback} value={formatFeedbackCounts(skill.feedback)} />
         <Metric icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.unitAmount} value={formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} />
       </div>
 
@@ -201,6 +209,25 @@ function Metric({ icon, label, value }: { icon: ReactNode; label: string; value:
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatRating(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "n/a";
+  }
+
+  return `${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1
+  }).format(value)}/5`;
+}
+
+function formatFeedbackCounts(feedback: PublisherSkillRecord["feedback"]) {
+  if (!feedback) {
+    return "0 / 0";
+  }
+
+  return `${formatCompactNumber(feedback.publishedCount)} / ${formatCompactNumber(feedback.pendingCount)}`;
 }
 
 function ActionMessage({ state }: { state: PublisherSkillActionState }) {

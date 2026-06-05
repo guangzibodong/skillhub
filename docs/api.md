@@ -44,13 +44,15 @@ Response:
       "invocationCount": 8400,
       "successRate": 0.982,
       "avgLatencyMs": 1800,
+      "averageRating": 4.7,
+      "feedbackCount": 18,
       "updatedAt": "2026-06-05T00:00:00.000Z"
     }
   ]
 }
 ```
 
-Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, and freshness. Search remains public because it returns marketplace-safe discovery metadata only.
+Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, published feedback rating, feedback count, and freshness. Search remains public because it returns marketplace-safe discovery metadata only.
 
 ## Get Skill Manifest
 
