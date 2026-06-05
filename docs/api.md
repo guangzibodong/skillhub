@@ -1252,6 +1252,13 @@ curl "https://api.useskillhub.com/v1/publisher/finance/ledger" \
 
 The publisher ledger is read-only and scoped to the token organization. It returns the same summary and recent transaction shape as the admin finance ledger, but only for transaction splits and balances attached to the current publisher profile. This is the source for the dashboard revenue ledger shown to publishers.
 
+Ledger summaries include source-mix fields so publishers and finance operators can distinguish posted per-call usage revenue from posted subscription-period revenue without reading raw transaction rows:
+
+- `usageGrossCents`, `usagePlatformFeeCents`, `usagePublisherShareCents`, and `usageTransactionCount`.
+- `subscriptionGrossCents`, `subscriptionPlatformFeeCents`, `subscriptionPublisherShareCents`, and `subscriptionTransactionCount`.
+
+Recent transaction rows include `sourceType` and `sourceReference`. For subscription revenue, `sourceReference` points to the idempotent subscription-period reference, letting the publisher dashboard explain which posted period produced the earning.
+
 Read active and historical commission rules:
 
 ```bash

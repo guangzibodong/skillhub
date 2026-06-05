@@ -2191,6 +2191,110 @@ a {
   min-width: 0;
 }
 
+.ledger-row--publisher-revenue {
+  grid-template-columns:
+    minmax(170px, 1fr)
+    minmax(140px, 0.58fr)
+    repeat(3, minmax(88px, 0.42fr))
+    minmax(96px, 0.38fr);
+  min-width: 880px;
+}
+
+.publisher-revenue-mix {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.publisher-revenue-mix__head,
+.publisher-revenue-mix__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.publisher-revenue-mix__head strong,
+.publisher-revenue-mix__amount strong,
+.publisher-revenue-mix__item strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.publisher-revenue-mix__head span,
+.publisher-revenue-mix__amount span,
+.publisher-revenue-mix__item span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.publisher-revenue-mix__items {
+  display: grid;
+  gap: 11px;
+}
+
+.publisher-revenue-mix__item {
+  grid-template-columns: minmax(120px, 0.8fr) minmax(118px, auto);
+}
+
+.publisher-revenue-mix__item > div {
+  min-width: 0;
+}
+
+.publisher-revenue-mix__amount {
+  display: grid;
+  gap: 3px;
+  justify-items: end;
+  min-width: 0;
+  text-align: right;
+}
+
+.publisher-revenue-mix__bar {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.publisher-revenue-mix__bar span {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+}
+
+.publisher-ledger-source {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.publisher-ledger-source span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.publisher-ledger-source code {
+  min-width: 0;
+  overflow: hidden;
+  color: #9eb8ff;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .developer-project-row {
   grid-template-columns:
     minmax(150px, 1fr)

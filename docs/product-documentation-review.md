@@ -328,6 +328,12 @@ Added developer-visible subscription ledger diagnostics, covering:
 - `/dashboard/projects/[slug]` shows trial access, awaiting-post, posted, renewal-due, not-billable, and not-postable states beside subscription pause/restore/cancel controls.
 - This strengthens developer repeat-use value because project operators can reconcile runtime access, subscription billing, generated invoices, and admin renewal state from the project command center instead of guessing from a plain subscription status.
 
+Added publisher-visible revenue source explainability, covering:
+
+- Finance and publisher ledger summaries now break posted revenue into per-call usage and subscription-period sources with gross, platform fee, publisher share, and transaction count.
+- `/publisher` shows a revenue source mix before the detailed ledger and labels each recent row with source type plus compact source reference.
+- This strengthens publisher repeat-use value because skill authors can tell whether earnings are driven by agent calls, recurring subscriptions, or later adjustment workflows before the final payment provider is connected.
+
 Added project invoice records, covering:
 
 - Project operators can list, generate, inspect, and download CSV invoices for a project inside their own organization scope.

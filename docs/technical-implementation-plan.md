@@ -232,6 +232,7 @@ Acceptance checks:
 - Active subscription periods create posted `subscription` transactions through an idempotent `source_reference`; `trialing` subscriptions remain runtime access state and do not produce revenue ledger rows.
 - Subscription period renewal advances only expired `active` periods that already have a posted transaction for the previous period, then writes audit and notification records before the next period can be posted.
 - Developer project command-center subscription rows expose buyer-safe ledger state for the current period, including trial access, awaiting-post, posted, renewal-ready, linked transaction metadata, and invoice-line linkage.
+- Finance and publisher ledger summaries expose usage-vs-subscription source mix with gross, platform fee, publisher share, transaction count, and recent row source references.
 - Commission rules are versioned.
 - Finance admins can list active, scheduled, and ended commission rules from the admin console.
 - Creating a new commission rule requires a reason, keeps platform and publisher bps totaling 10000, closes overlapping open rules, and writes audit plus notification records.

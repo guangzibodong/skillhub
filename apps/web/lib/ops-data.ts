@@ -4,6 +4,14 @@ type FinanceLedgerSummary = {
   grossCents: number;
   platformFeeCents: number;
   publisherShareCents: number;
+  usageGrossCents: number;
+  usagePlatformFeeCents: number;
+  usagePublisherShareCents: number;
+  usageTransactionCount: number;
+  subscriptionGrossCents: number;
+  subscriptionPlatformFeeCents: number;
+  subscriptionPublisherShareCents: number;
+  subscriptionTransactionCount: number;
   pendingBalanceCents: number;
   availableBalanceCents: number;
   unprocessedUsageCount: number;
@@ -982,6 +990,14 @@ const emptyLedger: FinanceLedger = {
     grossCents: 0,
     platformFeeCents: 0,
     publisherShareCents: 0,
+    usageGrossCents: 0,
+    usagePlatformFeeCents: 0,
+    usagePublisherShareCents: 0,
+    usageTransactionCount: 0,
+    subscriptionGrossCents: 0,
+    subscriptionPlatformFeeCents: 0,
+    subscriptionPublisherShareCents: 0,
+    subscriptionTransactionCount: 0,
     pendingBalanceCents: 0,
     availableBalanceCents: 0,
     unprocessedUsageCount: 0,
@@ -1071,6 +1087,14 @@ const fallbackLedger: FinanceLedger = {
     grossCents: 1860000,
     platformFeeCents: 372000,
     publisherShareCents: 1488000,
+    usageGrossCents: 1240000,
+    usagePlatformFeeCents: 248000,
+    usagePublisherShareCents: 992000,
+    usageTransactionCount: 34,
+    subscriptionGrossCents: 620000,
+    subscriptionPlatformFeeCents: 124000,
+    subscriptionPublisherShareCents: 496000,
+    subscriptionTransactionCount: 8,
     pendingBalanceCents: 126000,
     availableBalanceCents: 482000,
     unprocessedUsageCount: 0,

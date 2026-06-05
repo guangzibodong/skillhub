@@ -60,9 +60,12 @@ const copy = {
       "A focused workspace for skill publishers to move packages through review, price verified listings, respond to buyer demand, and prepare revenue for payout.",
     eyebrow: "Publisher workspace",
     ledgerEmpty: "No posted publisher revenue yet",
-    ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
+    ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
     ledgerTitle: "Publisher revenue ledger",
     refundReview: "Refund review",
+    sourceMixTitle: "Revenue source mix",
+    sourceShareLabel: "publisher share",
+    sourceTransactionLabel: "transactions",
     unknownProject: "unknown-project",
     adjustmentTypes: {
       dispute: "Dispute",
@@ -81,6 +84,13 @@ const copy = {
       posted: "Posted",
       released: "Released",
       reserved: "Reserved"
+    },
+    ledgerSources: {
+      adjustment: "Adjustment",
+      refund: "Refund",
+      subscription: "Subscription",
+      unknown: "Ledger",
+      usage: "Usage"
     },
     refundStatuses: {
       approved: "Approved",
@@ -121,9 +131,12 @@ const copy = {
       "给技能发布者使用的独立工作台：推进技能审核，设置已验证技能价格，响应买方需求，并把收入准备到可提现状态。",
     eyebrow: "发布者工作台",
     ledgerEmpty: "暂无已入账的发布者收入",
-    ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
+    ledgerHeaders: ["技能", "来源", "总收入", "平台费", "净收入", "状态"],
     ledgerTitle: "发布者收入账本",
     refundReview: "退款复核",
+    sourceMixTitle: "收入来源结构",
+    sourceShareLabel: "发布者分成",
+    sourceTransactionLabel: "笔交易",
     unknownProject: "未知项目",
     adjustmentTypes: {
       dispute: "争议",
@@ -136,12 +149,19 @@ const copy = {
       won: "已胜诉"
     },
     ledgerStatuses: {
-      available: "可用",
+      available: "可提现",
       blocked: "已锁定",
       pending: "待结算",
       posted: "已入账",
       released: "已释放",
       reserved: "已预留"
+    },
+    ledgerSources: {
+      adjustment: "调整",
+      refund: "退款",
+      subscription: "订阅",
+      unknown: "账本",
+      usage: "调用"
     },
     refundStatuses: {
       approved: "已批准",
@@ -240,6 +260,31 @@ function formatLedgerStatus(value: string, labels: PublisherPageCopy) {
   return labels.ledgerStatuses[value as keyof typeof labels.ledgerStatuses] ?? value.replaceAll("_", " ");
 }
 
+function formatLedgerSource(value: string | undefined, labels: PublisherPageCopy) {
+  if (!value) {
+    return labels.ledgerSources.unknown;
+  }
+
+  return labels.ledgerSources[value as keyof typeof labels.ledgerSources] ?? value.replaceAll("_", " ");
+}
+
+function formatLedgerSourceReference(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  if (value.startsWith("subscription:")) {
+    const [, subscriptionId = "", ...periodParts] = value.split(":");
+    const period = periodParts.join(":");
+    const periodDate = period ? period.slice(0, 10) : null;
+    const subscriptionTail = subscriptionId.length > 8 ? subscriptionId.slice(0, 8) : subscriptionId;
+
+    return periodDate ? `sub ${subscriptionTail} / ${periodDate}` : `sub ${subscriptionTail}`;
+  }
+
+  return value.length > 28 ? `${value.slice(0, 14)}...${value.slice(-8)}` : value;
+}
+
 function formatRefundStatus(value: string, labels: PublisherPageCopy) {
   return labels.refundStatuses[value as keyof typeof labels.refundStatuses] ?? value.replaceAll("_", " ");
 }
@@ -313,15 +358,44 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   });
   const readinessDone = readinessTasks.filter((task) => task.status === "done").length;
   const readinessPercent = Math.round((readinessDone / readinessTasks.length) * 100);
+  const usageGrossCents = financeLedger.summary.usageGrossCents ?? 0;
+  const usagePublisherShareCents = financeLedger.summary.usagePublisherShareCents ?? 0;
+  const usageTransactionCount = financeLedger.summary.usageTransactionCount ?? 0;
+  const subscriptionGrossCents = financeLedger.summary.subscriptionGrossCents ?? 0;
+  const subscriptionPublisherShareCents = financeLedger.summary.subscriptionPublisherShareCents ?? 0;
+  const subscriptionTransactionCount = financeLedger.summary.subscriptionTransactionCount ?? 0;
+  const sourceMixGrossCents = usageGrossCents + subscriptionGrossCents;
+  const sourceMixRows = [
+    {
+      count: usageTransactionCount,
+      grossCents: usageGrossCents,
+      id: "usage",
+      label: formatLedgerSource("usage", labels),
+      publisherShareCents: usagePublisherShareCents
+    },
+    {
+      count: subscriptionTransactionCount,
+      grossCents: subscriptionGrossCents,
+      id: "subscription",
+      label: formatLedgerSource("subscription", labels),
+      publisherShareCents: subscriptionPublisherShareCents
+    }
+  ].map((source) => ({
+    ...source,
+    sharePercent: sourceMixGrossCents > 0 ? Math.round((source.grossCents / sourceMixGrossCents) * 100) : 0
+  }));
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
-      ? financeLedger.recentTransactions.slice(0, 6).map((transaction) => [
-          transaction.skillName ?? transaction.skillSlug ?? transaction.id,
-          formatMoney(transaction.grossCents, transaction.currency),
-          formatMoney(transaction.platformFeeCents, transaction.currency),
-          formatMoney(transaction.publisherShareCents, transaction.currency),
-          formatLedgerStatus(transaction.balanceState ?? transaction.status, labels)
-        ])
+      ? financeLedger.recentTransactions.slice(0, 6).map((transaction) => ({
+          fee: formatMoney(transaction.platformFeeCents, transaction.currency),
+          gross: formatMoney(transaction.grossCents, transaction.currency),
+          id: transaction.id,
+          net: formatMoney(transaction.publisherShareCents, transaction.currency),
+          skill: transaction.skillName ?? transaction.skillSlug ?? transaction.id,
+          source: formatLedgerSource(transaction.sourceType, labels),
+          sourceReference: formatLedgerSourceReference(transaction.sourceReference),
+          status: formatLedgerStatus(transaction.balanceState ?? transaction.status, labels)
+        }))
       : [];
   const adjustmentRows = [
     ...publisherRefunds.slice(0, 4).map((refund) => ({
@@ -395,20 +469,51 @@ export default async function PublisherPage({ searchParams }: PageProps) {
               <WalletCards size={16} aria-hidden="true" />
               <span>{labels.ledgerTitle}</span>
             </div>
+            <div className="publisher-revenue-mix">
+              <div className="publisher-revenue-mix__head">
+                <strong>{labels.sourceMixTitle}</strong>
+                <span>{formatMoney(sourceMixGrossCents)}</span>
+              </div>
+              <div className="publisher-revenue-mix__items">
+                {sourceMixRows.map((source) => (
+                  <div className="publisher-revenue-mix__item" key={source.id}>
+                    <div>
+                      <strong>{source.label}</strong>
+                      <span>
+                        {formatCompactNumber(source.count)} {labels.sourceTransactionLabel}
+                      </span>
+                    </div>
+                    <div className="publisher-revenue-mix__amount">
+                      <strong>{formatMoney(source.grossCents)}</strong>
+                      <span>
+                        {formatMoney(source.publisherShareCents)} {labels.sourceShareLabel}
+                      </span>
+                    </div>
+                    <div className="publisher-revenue-mix__bar" aria-hidden="true">
+                      <span style={{ width: `${source.sharePercent}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <div className="ledger-table">
-              <div className="ledger-row ledger-row--head">
+              <div className="ledger-row ledger-row--head ledger-row--publisher-revenue">
                 {labels.ledgerHeaders.map((header) => (
                   <span key={header}>{header}</span>
                 ))}
               </div>
               {ledgerRows.length > 0 ? (
-                ledgerRows.map(([skill, gross, fee, net, status]) => (
-                  <div className="ledger-row" key={skill}>
-                    <strong>{skill}</strong>
-                    <span>{gross}</span>
-                    <span>{fee}</span>
-                    <span>{net}</span>
-                    <span className="status-chip">{status}</span>
+                ledgerRows.map((transaction) => (
+                  <div className="ledger-row ledger-row--publisher-revenue" key={transaction.id}>
+                    <strong>{transaction.skill}</strong>
+                    <span className="publisher-ledger-source">
+                      <span>{transaction.source}</span>
+                      {transaction.sourceReference ? <code>{transaction.sourceReference}</code> : null}
+                    </span>
+                    <span>{transaction.gross}</span>
+                    <span>{transaction.fee}</span>
+                    <span>{transaction.net}</span>
+                    <span className="status-chip">{transaction.status}</span>
                   </div>
                 ))
               ) : (

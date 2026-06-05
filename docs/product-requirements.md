@@ -305,6 +305,7 @@ Requirements:
 - Pricing setup.
 - Usage analytics.
 - Earnings ledger.
+- Earnings ledger must explain whether posted revenue came from per-call usage or subscription periods, including gross revenue, platform fee, publisher share, transaction count, and source reference for recent rows.
 - Refund and dispute impact history.
 - Payout readiness.
 - Payout history.
