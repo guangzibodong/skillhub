@@ -17,6 +17,7 @@ import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
 import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-curation-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
+import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { SiteHeader } from "@/components/site-header";
@@ -30,6 +31,7 @@ import {
   getAdminIdentityDirectory,
   getAdminIncidents,
   getAdminMarketplaceCuration,
+  getAdminNotificationDeliveries,
   getAdminNotificationTemplates,
   getAdminPayouts,
   getAdminReviews,
@@ -204,6 +206,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     financeLedger,
     auditLogs,
     marketplaceCuration,
+    notificationDeliveries,
     notificationTemplates,
     identityDirectory,
     payouts,
@@ -218,6 +221,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getFinanceLedger(),
     getAdminAuditLogs(),
     getAdminMarketplaceCuration(),
+    getAdminNotificationDeliveries(),
     getAdminNotificationTemplates(),
     getAdminIdentityDirectory(),
     getAdminPayouts(),
@@ -326,6 +330,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
           curation={marketplaceCuration.curation}
           locale={locale}
         />
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom">

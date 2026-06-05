@@ -49,6 +49,23 @@ export type AdminNotification = {
   deliveredAt: string | null;
 };
 
+export type AdminNotificationDelivery = {
+  id: string;
+  eventType: string;
+  channel: "email" | "webhook";
+  deliveryAttempts: number;
+  deliveryProvider: string | null;
+  deliveredAt: string | null;
+  error: string | null;
+  lastAttemptedAt: string | null;
+  nextAttemptAt: string | null;
+  payloadSummary: Record<string, unknown>;
+  providerMessageId: string | null;
+  status: "queued" | "sent" | "failed" | "skipped";
+  subject: string | null;
+  createdAt: string;
+};
+
 export type AdminAuditLogRecord = {
   id: string;
   action: string;
@@ -972,6 +989,49 @@ const fallbackNotifications: AdminNotification[] = [
     status: "queued",
     createdAt: "demo",
     deliveredAt: null
+  }
+];
+
+const fallbackNotificationDeliveries: AdminNotificationDelivery[] = [
+  {
+    id: "demo-email-code",
+    eventType: "auth.email.code.requested",
+    channel: "email",
+    deliveryAttempts: 0,
+    deliveryProvider: "provider_deferred",
+    deliveredAt: null,
+    error: null,
+    lastAttemptedAt: null,
+    nextAttemptAt: null,
+    payloadSummary: {
+      challengeId: "demo-email-challenge",
+      code: "[redacted]",
+      email: "builder@example.com",
+      mode: "signup"
+    },
+    providerMessageId: null,
+    status: "queued",
+    subject: "SkillHub verification code",
+    createdAt: "demo"
+  },
+  {
+    id: "demo-webhook-delivery",
+    eventType: "runtime.incident.opened",
+    channel: "webhook",
+    deliveryAttempts: 2,
+    deliveryProvider: "webhook_worker",
+    deliveredAt: null,
+    error: "Endpoint returned 503.",
+    lastAttemptedAt: "demo",
+    nextAttemptAt: "demo",
+    payloadSummary: {
+      incidentId: "demo-incident",
+      skillSlug: "browser-research"
+    },
+    providerMessageId: "demo-msg-503",
+    status: "failed",
+    subject: "Runtime incident opened",
+    createdAt: "demo"
   }
 ];
 
@@ -2421,6 +2481,32 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     return safeOperationValue(payload.notifications, []);
   } catch {
     return demoFallback(fallbackNotifications, []);
+  }
+}
+
+export async function getAdminNotificationDeliveries(): Promise<AdminNotificationDelivery[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return demoFallback(fallbackNotificationDeliveries, []);
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/notification-deliveries?limit=16`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin notification deliveries failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { deliveries: AdminNotificationDelivery[] };
+    return safeOperationValue(payload.deliveries, []);
+  } catch {
+    return demoFallback(fallbackNotificationDeliveries, []);
   }
 }
 

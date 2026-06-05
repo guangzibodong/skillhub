@@ -329,6 +329,14 @@ Added admin notification template management, covering:
 - Template lifecycle states are `draft`, `active`, and `archived`, allowing operators to stage copy before final email or webhook providers are connected.
 - Each template change writes an admin audit log and queues an in-app platform notification, keeping communication changes reviewable instead of hidden in code.
 
+Added external notification delivery operations, covering:
+
+- `notification_events` now stores delivery attempts, last attempt time, next retry time, provider name, and provider message id for external `email` and `webhook` events.
+- Admin/support operators can inspect the external delivery queue from `/admin` without mixing it with user-owned in-app unread notifications.
+- Delivery decisions support sent, failed, retry, and skipped states with required reasons, audit logs, provider metadata, and redacted payload summaries.
+- Email verification-code delivery decisions synchronize `email_login_challenges.delivery_status`, making signup/login support inspectable before final SMTP/API worker integration.
+- Raw verification codes are redacted from admin delivery lists, preserving the provider-worker path without exposing sensitive login material in the operations UI.
+
 Added true admin audit stream, covering:
 
 - Admin/support operators can read recent `admin_audit_logs` through `/v1/admin/audit-logs`.

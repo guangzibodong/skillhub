@@ -78,6 +78,8 @@ import {
   setSkillPrice
 } from "./billing.js";
 import {
+  decideNotificationDelivery,
+  listAdminNotificationDeliveries,
   listAdminNotifications,
   listUserNotificationInbox,
   markAllUserNotificationsRead,
@@ -1560,6 +1562,48 @@ app.get("/v1/admin/notifications", async (c) => {
   return c.json({
     notifications: await listAdminNotifications(limit)
   });
+});
+
+app.get("/v1/admin/notification-deliveries", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      deliveries: await listAdminNotificationDeliveries(Number(c.req.query("limit") ?? "25"), {
+        channel: c.req.query("channel"),
+        status: c.req.query("status")
+      })
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to list notification deliveries." },
+      500
+    );
+  }
+});
+
+app.post("/v1/admin/notification-deliveries/:notificationId/decision", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      delivery: await decideNotificationDelivery(
+        c.req.param("notificationId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update notification delivery." }, 400);
+  }
 });
 
 app.get("/v1/admin/audit-logs", async (c) => {

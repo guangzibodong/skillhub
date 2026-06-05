@@ -1445,7 +1445,39 @@ curl "https://api.useskillhub.com/v1/admin/notifications?limit=25" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase.
+Current events are in-app/webhook/email state records only; actual email delivery is still deferred to the final provider integration phase. In-app `queued` means unread for the addressed user or organization, so external delivery operations use a separate queue for `email` and `webhook` records.
+
+Inspect external delivery events:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/notification-deliveries?limit=25&status=queued" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+The response returns `email` and `webhook` events only. Each row includes status, attempt count, last attempt, next retry, provider metadata, error, delivery timestamp, and a redacted `payloadSummary`. Sensitive payload keys such as verification `code`, token, and secret fields are never exposed through this admin listing.
+
+Record an operator delivery decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/notification-deliveries/$NOTIFICATION_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "retry",
+    "reason": "SMTP provider is not connected yet; retry after provider setup.",
+    "nextAttemptAt": "2026-06-06T12:00:00.000Z",
+    "provider": "provider_deferred"
+  }'
+```
+
+Supported `action` values are:
+
+- `mark_sent`: records a provider/manual send result, increments attempts, clears error, and sets `deliveredAt`.
+- `mark_failed`: records an error reason, increments attempts, and keeps the event visible for operator recovery.
+- `retry`: returns the event to `queued` and optionally schedules `nextAttemptAt`.
+- `skip`: closes an event as intentionally skipped with a required reason.
+
+Every delivery decision writes `admin_audit_logs` and queues an in-app platform notification. For `auth.email.code.requested`, the matching `email_login_challenges.delivery_status` is synchronized to the delivery event status so signup/login support can inspect whether a code is queued, sent, failed, or skipped.
 
 Admin/support operators can inspect the immutable admin audit trail:
 

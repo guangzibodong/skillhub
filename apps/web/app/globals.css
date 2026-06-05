@@ -2910,6 +2910,162 @@ a {
   padding: 12px;
 }
 
+.notification-delivery-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.notification-delivery-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notification-delivery-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.notification-delivery-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.notification-delivery-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notification-delivery-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.notification-delivery-card__head span:not(.status-chip),
+.notification-delivery-payload span,
+.notification-delivery-empty,
+.notification-delivery-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.notification-delivery-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.notification-delivery-meta div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  min-height: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 9px;
+}
+
+.notification-delivery-meta dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.notification-delivery-meta dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.notification-delivery-payload {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.notification-delivery-payload code {
+  display: block;
+  min-width: 0;
+  border: 1px solid rgba(123, 214, 255, 0.12);
+  border-radius: var(--radius);
+  background: rgba(123, 214, 255, 0.045);
+  color: var(--cyan);
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  padding: 9px;
+}
+
+.notification-delivery-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.42fr) minmax(140px, 0.45fr) minmax(140px, 0.42fr);
+  gap: 9px;
+  align-items: end;
+}
+
+.notification-delivery-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.notification-delivery-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.notification-delivery-form input:focus {
+  border-color: rgba(123, 214, 255, 0.46);
+  box-shadow: 0 0 0 3px rgba(123, 214, 255, 0.11);
+}
+
+.notification-delivery-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notification-delivery-actions .secondary-button,
+.notification-delivery-actions .ghost-button {
+  min-width: 126px;
+  justify-content: center;
+}
+
+.notification-delivery-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  padding: 11px;
+}
+
 .notification-template-panel {
   display: grid;
   gap: 14px;
@@ -9071,7 +9227,8 @@ a {
   .admin-identity-summary,
   .admin-identity-meta,
   .admin-identity-meta--six,
-  .admin-identity-memberships {
+  .admin-identity-memberships,
+  .notification-delivery-meta {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -9115,6 +9272,8 @@ a {
   .admin-identity-grid,
   .incident-create-form,
   .incident-action-form,
+  .notification-delivery-card__head,
+  .notification-delivery-form,
   .notification-template-card__head,
   .notification-template-form,
   .notification-template-update-form,
@@ -9134,6 +9293,8 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-delivery-actions .secondary-button,
+  .notification-delivery-actions .ghost-button,
   .notification-template-form .secondary-button,
   .notification-template-update-form .secondary-button,
   .organization-team-form .secondary-button,
@@ -9153,6 +9314,8 @@ a {
   .skill-feedback-action-form .secondary-button,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,
+  .notification-delivery-actions .secondary-button,
+  .notification-delivery-actions .ghost-button,
   .notification-template-form .secondary-button,
   .notification-template-update-form .secondary-button,
   .organization-team-form .secondary-button,
@@ -9322,6 +9485,7 @@ a {
   .admin-identity-meta,
   .admin-identity-meta--six,
   .admin-identity-memberships,
+  .notification-delivery-meta,
   .admin-review-meta,
   .admin-review-checks,
   .admin-commission-summary,

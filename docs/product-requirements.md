@@ -350,6 +350,7 @@ Requirements:
 - Organization member and role operations, including owner/admin/developer/publisher/reviewer/finance assignments, organization-scoped token issuance, and access-removal audit trails.
 - Audit stream backed by `admin_audit_logs`, showing actor, action, entity, reason, metadata, and timestamp separately from notification delivery events.
 - Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.
+- External notification delivery queue for `email` and `webhook` events, including status, attempts, provider metadata, redacted payload summary, retry scheduling, skip/fail/manual-sent controls, email-challenge delivery-status sync, and audit records before the final SMTP/API worker is connected.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
 - Ranking/featured listing controls backed by curation rules, bounded boost, required reasons, expiry, audit logs, and quality-signal review.

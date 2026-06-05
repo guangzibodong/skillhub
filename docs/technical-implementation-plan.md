@@ -251,6 +251,7 @@ Core tables:
 - `notification_preferences`
 - `organization_webhook_endpoints`
 - `webhook_delivery_events`
+- Delivery-attempt fields on `notification_events`: attempts, last attempt, next retry, delivery provider, provider message id, error, and status.
 
 API groups:
 
@@ -261,6 +262,7 @@ API groups:
 - `/v1/admin/incidents/*`
 - `/v1/admin/payouts/*`
 - `/v1/admin/notifications/*`
+- `/v1/admin/notification-deliveries/*`
 
 Acceptance checks:
 
@@ -268,6 +270,9 @@ Acceptance checks:
 - Payout requests above a threshold enter manual review.
 - Blocked payout records reason and retry condition.
 - Review, incident, billing, payout, refund, and dispute events are recorded before email delivery exists.
+- External `email` and `webhook` delivery events can be listed separately from in-app unread notifications.
+- Admin/support operators can mark an external delivery sent, failed, skipped, or queued for retry with a required reason, audit log, and provider metadata.
+- Email verification challenge delivery status stays synchronized with the matching `auth.email.code.requested` delivery event without exposing the raw code in admin lists.
 
 ## Frontend Pages To Make Real
 
@@ -294,7 +299,7 @@ Acceptance checks:
 
 ### Platform Admin
 
-- `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream.
+- `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream, external notification delivery queue.
 
 ## Near-Term Build Sequence
 
@@ -407,6 +412,10 @@ Completed:
 - Admin notification template APIs now let admin/support operators list, create, and update `notification_templates` records across `in_app`, `email`, and `webhook` channels with `draft`, `active`, and `archived` lifecycle states.
 - `/admin` now exposes notification template management beside the audit stream, so operators can maintain reusable communication copy before final email and webhook provider delivery is connected.
 - Notification template updates write admin audit records and queued in-app platform notifications, making copy/configuration changes visible in the operations trail.
+- Notification delivery operations migration `022_notification_delivery_operations.sql` adds attempt, retry, provider, provider-message, and delivery queue indexes for external notification events.
+- Admin notification delivery APIs now let admin/support operators list external `email` and `webhook` events and mark them sent, failed, skipped, or queued for retry with required reasons and audit logs.
+- `/admin` now exposes an external delivery queue with redacted payload summaries, provider metadata, attempts, errors, retry scheduling, and delivery actions; in-app notification unread state remains user-owned and is not treated as external delivery.
+- Email verification-code notification delivery decisions synchronize the matching `email_login_challenges.delivery_status`, keeping signup/login operations inspectable before the final email provider worker is connected.
 - User notification inbox endpoints now let organization-scoped users read in-app events and mark unread items as read, so recorded notification events become a repeat-use dashboard surface instead of admin-only logs.
 - User notification inbox responses now include unread/read/failure totals plus per-topic counts, and organization-scoped users can mark all unread in-app events as read from the API and dashboard sidebars.
 - Dashboard organization operations now expose notification preference controls so users can choose in-app, email, and webhook channels before final email-provider delivery is connected.
@@ -458,7 +467,7 @@ Completed:
 
 Next:
 
-- Email provider delivery worker/protocol integration to replace provider-deferred code preview in non-production.
+- Email provider delivery worker/protocol integration using the external delivery queue instead of manual provider-deferred status changes.
 - Provider-specific production OAuth app configuration and callback rollout.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
