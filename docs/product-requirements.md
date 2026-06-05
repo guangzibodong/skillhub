@@ -55,6 +55,7 @@ Needs:
 - Find skills by task, category, permissions, price, runtime, and trust level.
 - Inspect manifest, schemas, examples, and permissions before installing.
 - Install by CLI, SDK, or MCP.
+- Use MCP clients to list project-installed skills and call them through the same project policy, budget, subscription, and metering controls as direct API runtime calls.
 - Manage projects, API keys, budgets, subscriptions, and usage.
 - Start a provider-deferred subscription trial for subscription-priced skills from discovery, then install and test inside a project before production agent use.
 - Pin versions for predictable agent behavior.
@@ -467,6 +468,7 @@ Invocation requirements:
 - Skill version lookup.
 - Permission policy check.
 - Budget/rate-limit check.
+- MCP `tools/call` must reuse the same runtime invocation path as direct API calls, not bypass install, approval, permission, budget, subscription, logging, or billing rules.
 - Invocation record.
 - Latency and status tracking.
 - Error code tracking.

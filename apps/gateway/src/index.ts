@@ -27,6 +27,7 @@ import {
 import {
   createProjectApiKey,
   invokeSkill,
+  listProjectMcpTools,
   listProjectApiKeys,
   revokeProjectApiKey,
   testInvokeProjectSkill
@@ -2681,9 +2682,50 @@ app.post("/v1/skills", async (c) => {
 
 app.post("/mcp", async (c) => {
   const request = (await c.req.json()) as JsonRpcRequest;
-  const manifests = await listSkillManifests();
+
+  if (request.method === "initialize") {
+    return rpc(request.id, {
+      protocolVersion: "2024-11-05",
+      capabilities: {
+        resources: {},
+        tools: {}
+      },
+      serverInfo: {
+        name: "SkillHub",
+        version: "0.1.0"
+      }
+    });
+  }
+
+  if (request.method === "notifications/initialized") {
+    return new Response(null, { status: 204 });
+  }
+
+  if (request.method === "ping") {
+    return rpc(request.id, {});
+  }
 
   if (request.method === "tools/list") {
+    const authorizationHeader = c.req.header("Authorization");
+
+    if (authorizationHeader) {
+      try {
+        const projectTools = await listProjectMcpTools(authorizationHeader);
+
+        if (projectTools.status !== 200) {
+          return rpcError(request.id, -32001, projectTools.body.error ?? "Unable to list project MCP tools.");
+        }
+
+        return rpc(request.id, {
+          tools: projectTools.body.tools
+        });
+      } catch (error) {
+        return rpcError(request.id, -32002, error instanceof Error ? error.message : "Unable to list project MCP tools.");
+      }
+    }
+
+    const manifests = await listSkillManifests();
+
     return rpc(request.id, {
       tools: manifests.map((skill) => ({
         name: skill.name,
@@ -2698,7 +2740,47 @@ app.post("/mcp", async (c) => {
     });
   }
 
+  if (request.method === "tools/call") {
+    const toolName = typeof request.params?.name === "string" ? request.params.name : "";
+
+    if (!toolName) {
+      return rpcError(request.id, -32602, "Missing MCP tool name.");
+    }
+
+    try {
+      const result = await invokeSkill(c.req.header("Authorization"), {
+        input: request.params?.arguments ?? {},
+        skillSlug: toolName
+      });
+      const runtimeBody = result.body as Record<string, unknown>;
+      const isError = result.status !== 200 || runtimeBody.status !== "success";
+
+      return rpc(request.id, {
+        content: [
+          {
+            type: "text",
+            text: mcpToolCallText(runtimeBody, isError)
+          }
+        ],
+        isError,
+        structuredContent: runtimeBody
+      });
+    } catch (error) {
+      return rpc(request.id, {
+        content: [
+          {
+            type: "text",
+            text: error instanceof Error ? error.message : "Unable to call SkillHub MCP tool."
+          }
+        ],
+        isError: true
+      });
+    }
+  }
+
   if (request.method === "resources/list") {
+    const manifests = await listSkillManifests();
+
     return rpc(request.id, {
       resources: manifests.map((skill) => ({
         uri: `skillhub://skills/${skill.name}`,
@@ -2710,6 +2792,7 @@ app.post("/mcp", async (c) => {
   }
 
   if (request.method === "resources/read") {
+    const manifests = await listSkillManifests();
     const uri = String(request.params?.uri ?? "");
     const slug = uri.replace("skillhub://skills/", "");
     const skill = manifests.find((item) => item.name === slug);
@@ -2731,6 +2814,25 @@ app.post("/mcp", async (c) => {
 
   return rpcError(request.id, -32601, "Method not found.");
 });
+
+function mcpToolCallText(body: Record<string, unknown>, isError: boolean) {
+  if (isError) {
+    return JSON.stringify(
+      {
+        error: body.error ?? "Skill invocation failed.",
+        code: body.code ?? body.status ?? "runtime_error",
+        invocationId: body.invocationId ?? null,
+        policy: body.policy ?? null
+      },
+      null,
+      2
+    );
+  }
+
+  const output = body.output;
+
+  return typeof output === "string" ? output : JSON.stringify(output ?? body, null, 2);
+}
 
 function rpc(id: JsonRpcRequest["id"], result: unknown) {
   return Response.json({

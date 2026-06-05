@@ -1865,8 +1865,40 @@ The `/publish` web page uses the signed-in SkillHub user session for the same en
 
 ## MCP Discovery
 
+The MCP endpoint exposes SkillHub to agent clients through JSON-RPC. Public calls can discover marketplace-safe tools and resources. Project-scoped calls should include a project API key; then `tools/list` returns the skills installed for that project and `tools/call` invokes the same runtime governance path as `/v1/runtime/invoke`.
+
 ```bash
 curl -X POST "https://api.useskillhub.com/mcp" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
+
+Project-scoped tool listing:
+
+```bash
+curl -X POST "https://api.useskillhub.com/mcp" \
+  -H "Authorization: Bearer $SKILLHUB_PROJECT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+```
+
+Call an installed project skill through MCP:
+
+```bash
+curl -X POST "https://api.useskillhub.com/mcp" \
+  -H "Authorization: Bearer $SKILLHUB_PROJECT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "browser-research",
+      "arguments": {
+        "query": "MCP tool marketplace launch checklist"
+      }
+    }
+  }'
+```
+
+`tools/call` is not a shortcut around SkillHub policy. The gateway authenticates the project API key, checks the project install, version pin, verification state, owner approval, permission policy, rate limit, budget, and subscription state, then records invocation and usage events just like `/v1/runtime/invoke`. A blocked or failed call returns an MCP `isError` result with the SkillHub error code and invocation id where available.

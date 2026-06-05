@@ -328,6 +328,12 @@ Added developer-visible subscription ledger diagnostics, covering:
 - `/dashboard/projects/[slug]` shows trial access, awaiting-post, posted, renewal-due, not-billable, and not-postable states beside subscription pause/restore/cancel controls.
 - This strengthens developer repeat-use value because project operators can reconcile runtime access, subscription billing, generated invoices, and admin renewal state from the project command center instead of guessing from a plain subscription status.
 
+Added MCP project runtime execution, covering:
+
+- `/mcp` now supports initialization, public tool discovery, project API-key scoped installed-tool listing, and `tools/call`.
+- MCP `tools/call` reuses the existing SkillHub runtime path, so install state, version pin, verification, owner approval, permission policy, rate limit, budget, subscription state, invocation logs, usage events, and per-call metering all remain enforced.
+- This strengthens developer and agent-builder value because MCP clients can move from discovering SkillHub skills to actually calling project-approved tools without bypassing governance.
+
 Added publisher-visible revenue source explainability, covering:
 
 - Finance and publisher ledger summaries now break posted revenue into per-call usage and subscription-period sources with gross, platform fee, publisher share, and transaction count.

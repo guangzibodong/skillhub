@@ -198,6 +198,7 @@ Acceptance checks:
 - Gateway checks install state, version pin, permission approval, budget, and rate limit.
 - Every invocation records status, latency, error code, and skill version.
 - Only successful billable invocations can create billable usage.
+- `/mcp` supports MCP initialization, public tool discovery, project API-key scoped installed-tool listing, and `tools/call` execution through the same runtime policy, subscription, usage, and metering path as `/v1/runtime/invoke`.
 
 ### 6. Billing-Ready Ledger
 

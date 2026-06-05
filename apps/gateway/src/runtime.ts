@@ -38,6 +38,18 @@ type RuntimeInvokeInput = {
   input?: unknown;
 };
 
+type RuntimeMcpToolRecord = {
+  skill_slug: string;
+  display_name: string;
+  description: string;
+  verification_status: SkillSummary["verificationStatus"];
+  version: string;
+  manifest: SkillManifest;
+  install_status: string;
+  approval_state: string;
+  max_permission_level: SkillSummary["permissionLevel"] | null;
+};
+
 type RuntimeProjectRecord = {
   project_id: string;
   project_slug: string;
@@ -293,6 +305,89 @@ export async function testInvokeProjectSkill(projectSlug: string, organizationId
     mode: "console_test",
     meterBillableUsage: false
   });
+}
+
+export async function listProjectMcpTools(authorizationHeader: string | undefined) {
+  const apiKey = readBearer(authorizationHeader);
+
+  if (!apiKey) {
+    return {
+      status: 401,
+      body: {
+        error: "Missing project API key.",
+        code: "missing_api_key"
+      }
+    };
+  }
+
+  const sql = await requireSql();
+  await seedRegistry();
+  const apiKeyRecord = await findProjectApiKey(sql, apiKey);
+
+  if (!apiKeyRecord) {
+    return {
+      status: 401,
+      body: {
+        error: "Invalid or revoked project API key.",
+        code: "invalid_api_key"
+      }
+    };
+  }
+
+  const rows = (await sql`
+    select
+      s.slug as skill_slug,
+      s.display_name,
+      s.description,
+      s.verification_status,
+      sv.version,
+      sv.manifest,
+      psi.status as install_status,
+      psi.approval_state,
+      psp.max_permission_level
+    from project_skill_installs psi
+    join skills s on s.id = psi.skill_id
+    join skill_versions sv on sv.id = psi.skill_version_id
+    left join project_skill_policies psp on psp.project_id = psi.project_id and psp.skill_id = s.id
+    where psi.project_id = ${apiKeyRecord.project_id}
+      and psi.status <> 'removed'
+    order by s.display_name asc
+  `) as RuntimeMcpToolRecord[];
+
+  return {
+    status: 200,
+    body: {
+      projectSlug: apiKeyRecord.project_slug,
+      tools: rows.map((row) => {
+        const permissionLevel = getPermissionLevel(row.manifest.permissions);
+        const callable =
+          row.install_status === "installed" &&
+          row.approval_state === "approved" &&
+          (row.verification_status === "verified" || row.verification_status === "deprecated") &&
+          Boolean(row.max_permission_level);
+
+        return {
+          name: row.skill_slug,
+          title: row.display_name,
+          description: row.description,
+          inputSchema: row.manifest.inputSchema,
+          outputSchema: row.manifest.outputSchema,
+          annotations: {
+            projectSlug: apiKeyRecord.project_slug,
+            tags: row.manifest.tags,
+            version: row.version,
+            runtimeType: row.manifest.runtime.type,
+            permissionLevel,
+            maxPermissionLevel: row.max_permission_level,
+            verificationStatus: row.verification_status,
+            installStatus: row.install_status,
+            approvalState: row.approval_state,
+            callable
+          }
+        };
+      })
+    }
+  };
 }
 
 async function invokeInstalledProjectSkill(
