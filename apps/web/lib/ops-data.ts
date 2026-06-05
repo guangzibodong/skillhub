@@ -441,6 +441,14 @@ export type PublisherSkillRecord = {
     failedCount: number;
     warningCount: number;
     health: "healthy" | "warning" | "needs_attention" | "not_checked";
+    checks?: Array<{
+      checkType: "example" | "manifest" | "runtime" | "security" | string;
+      status: "failed" | "passed" | "queued" | "running" | "warning" | string;
+      message: string | null;
+      latencyMs?: number | null;
+      checkedAt?: string | null;
+      createdAt?: string | null;
+    }>;
   };
   analytics: {
     installCount: number;
@@ -1573,7 +1581,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       passedCount: 4,
       failedCount: 0,
       warningCount: 0,
-      health: "healthy"
+      health: "healthy",
+      checks: [
+        { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+        { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
+        { checkType: "example", status: "passed", message: "Input and output schemas include concrete fields." },
+        { checkType: "security", status: "passed", message: "Permission profile is compatible with automated review gates." }
+      ]
     },
     analytics: {
       installCount: 46,
@@ -1630,8 +1644,14 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       checkCount: 4,
       passedCount: 2,
       failedCount: 1,
-      warningCount: 0,
-      health: "needs_attention"
+      warningCount: 1,
+      health: "needs_attention",
+      checks: [
+        { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+        { checkType: "runtime", status: "failed", message: "Runtime declaration needs a reachable secure endpoint." },
+        { checkType: "example", status: "warning", message: "Example schemas should include concrete fields before approval." },
+        { checkType: "security", status: "passed", message: "Permission profile is compatible with review gates." }
+      ]
     },
     analytics: {
       installCount: 12,

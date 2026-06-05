@@ -3,6 +3,15 @@ import { getSql, searchSkills } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
+type RuntimeCheckSummary = {
+  checkType: string;
+  status: string;
+  message: string | null;
+  latencyMs: number | null;
+  checkedAt: string | null;
+  createdAt: string | null;
+};
+
 type PublisherSkillRow = {
   id: string;
   slug: string;
@@ -22,6 +31,8 @@ type PublisherSkillRow = {
   runtimePassedCount: number;
   runtimeFailedCount: number;
   runtimeWarningCount: number;
+  runtimeIncompleteCount: number;
+  runtimeChecks: RuntimeCheckSummary[] | null;
   installCount: number;
   callCount: number;
   successCount: number;
@@ -72,6 +83,8 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       coalesce(checks.passed_count, 0)::int as "runtimePassedCount",
       coalesce(checks.failed_count, 0)::int as "runtimeFailedCount",
       coalesce(checks.warning_count, 0)::int as "runtimeWarningCount",
+      coalesce(checks.incomplete_count, 0)::int as "runtimeIncompleteCount",
+      coalesce(checks.items, '[]'::jsonb) as "runtimeChecks",
       coalesce(installs.install_count, 0)::int as "installCount",
       coalesce(invocations.call_count, 0)::int as "callCount",
       coalesce(invocations.success_count, 0)::int as "successCount",
@@ -107,13 +120,36 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       limit 1
     ) review on true
     left join lateral (
+      with latest_checks as (
+        select distinct on (check_type)
+          check_type,
+          status,
+          message,
+          latency_ms,
+          checked_at,
+          created_at
+        from skill_runtime_checks
+        where skill_version_id = latest.id
+        order by check_type, created_at desc
+      )
       select
         count(*) as total_count,
         count(*) filter (where status = 'passed') as passed_count,
         count(*) filter (where status = 'failed') as failed_count,
-        count(*) filter (where status = 'warning') as warning_count
-      from skill_runtime_checks
-      where skill_version_id = latest.id
+        count(*) filter (where status = 'warning') as warning_count,
+        count(*) filter (where status in ('queued', 'running')) as incomplete_count,
+        jsonb_agg(
+          jsonb_build_object(
+            'checkType', check_type,
+            'status', status,
+            'message', message,
+            'latencyMs', latency_ms,
+            'checkedAt', checked_at,
+            'createdAt', created_at
+          )
+          order by check_type
+        ) as items
+      from latest_checks
     ) checks on true
     left join lateral (
       select count(*) as install_count
@@ -172,6 +208,7 @@ async function fallbackPublisherSkills(limit: number) {
     const successCount = Math.floor(calls * 0.96);
     const errorCount = Math.max(calls - successCount, 0);
     const runtimeFailedCount = skill.verificationStatus === "verified" ? 0 : 1;
+    const runtimeChecks = runtimeCheckSummaries(runtimeFailedCount);
 
     return {
       id: skill.id,
@@ -189,11 +226,12 @@ async function fallbackPublisherSkills(limit: number) {
         decidedAt: skill.verificationStatus === "verified" ? "demo" : null
       },
       runtime: {
-        checkCount: 4,
-        passedCount: runtimeFailedCount ? 2 : 4,
+        checkCount: runtimeChecks.length,
+        passedCount: runtimeChecks.filter((check) => check.status === "passed").length,
         failedCount: runtimeFailedCount,
-        warningCount: 0,
-        health: runtimeFailedCount ? "needs_attention" : "healthy"
+        warningCount: runtimeChecks.filter((check) => check.status === "warning").length,
+        health: runtimeFailedCount ? "needs_attention" : "healthy",
+        checks: runtimeChecks
       },
       analytics: {
         installCount: index === 0 ? 46 : 12,
@@ -237,8 +275,15 @@ async function fallbackPublisherSkills(limit: number) {
 function mapPublisherSkill(row: PublisherSkillRow) {
   const permissionLevel = row.manifest?.permissions ? getPermissionLevel(row.manifest.permissions) : "medium";
   const successRate = row.callCount > 0 ? row.successCount / row.callCount : null;
+  const runtimeChecks = normalizeRuntimeChecks(row.runtimeChecks);
   const runtimeHealth =
-    row.runtimeFailedCount > 0 ? "needs_attention" : row.runtimeWarningCount > 0 ? "warning" : row.runtimeCheckCount > 0 ? "healthy" : "not_checked";
+    row.runtimeFailedCount > 0
+      ? "needs_attention"
+      : row.runtimeWarningCount > 0 || row.runtimeIncompleteCount > 0
+        ? "warning"
+        : row.runtimeCheckCount > 0
+          ? "healthy"
+          : "not_checked";
 
   return {
     id: row.id,
@@ -260,7 +305,8 @@ function mapPublisherSkill(row: PublisherSkillRow) {
       passedCount: row.runtimePassedCount,
       failedCount: row.runtimeFailedCount,
       warningCount: row.runtimeWarningCount,
-      health: runtimeHealth
+      health: runtimeHealth,
+      checks: runtimeChecks
     },
     analytics: {
       installCount: row.installCount,
@@ -298,6 +344,60 @@ function mapPublisherSkill(row: PublisherSkillRow) {
     },
     updatedAt: row.updatedAt
   };
+}
+
+function normalizeRuntimeChecks(value: RuntimeCheckSummary[] | null): RuntimeCheckSummary[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((check) => ({
+    checkType: String(check.checkType ?? "unknown"),
+    status: String(check.status ?? "queued"),
+    message: check.message ?? null,
+    latencyMs: typeof check.latencyMs === "number" ? check.latencyMs : null,
+    checkedAt: check.checkedAt ?? null,
+    createdAt: check.createdAt ?? null
+  }));
+}
+
+function runtimeCheckSummaries(failedCount: number): RuntimeCheckSummary[] {
+  const hasFailure = failedCount > 0;
+
+  return [
+    {
+      checkType: "manifest",
+      status: "passed",
+      message: "Manifest contract includes required fields.",
+      latencyMs: null,
+      checkedAt: "demo",
+      createdAt: "demo"
+    },
+    {
+      checkType: "runtime",
+      status: hasFailure ? "failed" : "passed",
+      message: hasFailure ? "Runtime declaration needs a reachable secure endpoint." : "Runtime declaration is ready for review.",
+      latencyMs: hasFailure ? null : 120,
+      checkedAt: "demo",
+      createdAt: "demo"
+    },
+    {
+      checkType: "example",
+      status: hasFailure ? "warning" : "passed",
+      message: hasFailure ? "Example schemas should include concrete fields before approval." : "Example schemas are ready for invocation review.",
+      latencyMs: null,
+      checkedAt: "demo",
+      createdAt: "demo"
+    },
+    {
+      checkType: "security",
+      status: "passed",
+      message: "Permission profile is compatible with review gates.",
+      latencyMs: null,
+      checkedAt: "demo",
+      createdAt: "demo"
+    }
+  ];
 }
 
 function buildChecklist(input: {

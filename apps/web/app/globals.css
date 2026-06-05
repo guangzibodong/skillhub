@@ -6605,6 +6605,7 @@ a {
 
 .publisher-skill-card__top span:not(.status-chip),
 .publisher-skill-quality strong,
+.publisher-skill-checks > strong,
 .publisher-skill-review-state,
 .publisher-skill-price-form label span,
 .publisher-skill-empty {
@@ -6657,6 +6658,46 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+.publisher-skill-checks {
+  display: grid;
+  gap: 8px;
+}
+
+.publisher-skill-check-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publisher-skill-check {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 10px;
+}
+
+.publisher-skill-check .status-chip {
+  justify-self: start;
+}
+
+.publisher-skill-check strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.publisher-skill-check small {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .quality-chip {
@@ -8245,6 +8286,7 @@ a {
   .admin-payout-metrics,
   .admin-adjustment-metrics,
   .publisher-skill-metrics,
+  .publisher-skill-check-list,
   .publisher-account-status-grid,
   .payout-balance-grid,
   .organization-billing-form,

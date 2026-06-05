@@ -635,11 +635,37 @@ curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, and listing checklist.
+The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, and listing checklist.
+
+`runtime.checks` contains the latest result for each automated review-check type, so publishers can see the exact reason behind pass, warning, failed, queued, or running states without waiting for an admin note:
+
+```json
+{
+  "runtime": {
+    "checkCount": 4,
+    "passedCount": 2,
+    "failedCount": 1,
+    "warningCount": 1,
+    "health": "needs_attention",
+    "checks": [
+      {
+        "checkType": "runtime",
+        "status": "failed",
+        "message": "Runtime declaration needs a reachable secure endpoint.",
+        "latencyMs": null,
+        "checkedAt": "2026-06-05T08:00:00.000Z",
+        "createdAt": "2026-06-05T08:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+Publisher runtime health is derived from the latest checks only: `failed` becomes `needs_attention`, `warning`, `queued`, or `running` becomes `warning`, passed checks become `healthy`, and missing checks remain `not_checked`.
 
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
-The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, install/call/success signals, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
+The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
 
 ## Buyer Request Board
 

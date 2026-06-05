@@ -145,7 +145,7 @@ API groups:
 Acceptance checks:
 
 - Publishers can see review status and reviewer notes.
-- Runtime checks expose pass/fail state and next action.
+- Runtime checks expose pass/fail/warning/queued/running state, latest messages, and next action.
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
 - Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
@@ -331,8 +331,10 @@ Completed:
 - Project-scoped refund and dispute history endpoints for developer operators.
 - Publisher dashboard shows recent refund and dispute activity beside ledger and payout readiness.
 - Publisher skill operations endpoint aggregating owned skills, review state, runtime checks, installs, calls, success rate, latency, billable usage, pricing, and quality checklist.
+- Publisher skill operations now expose latest automated review-check details per type, not only counts, so authors can diagnose manifest, runtime, example, and security issues before resubmission.
 - Publisher skill publishing, review submission, and price writes now scope to the authorized subject organization and reject cross-organization slug ownership.
 - Publisher dashboard publishing pipeline now reads owned skill operations data and exposes review submission plus skill price controls instead of static rows.
+- Publisher dashboard skill cards now show latest automated review-check status and messages, giving authors a direct fix loop before they resubmit for operator approval.
 - `/publish` now submits manifests through the signed-in organization-scoped user session via a server action, so publishers do not paste raw admin tokens into the browser form.
 - Developer project operations endpoint aggregating organization-scoped projects, API keys, installs, approvals, budgets, runtime calls, success/error/blocked counts, latency, billable usage, subscriptions, and update-inbox counts.
 - Dashboard buyer project controls now read developer project operations data instead of static rows.

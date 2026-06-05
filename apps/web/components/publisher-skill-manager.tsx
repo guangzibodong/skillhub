@@ -31,6 +31,20 @@ const copy = {
   en: {
     billingModel: "Billing model",
     calls: "Calls",
+    checks: "Review checks",
+    checkLabels: {
+      example: "Example",
+      manifest: "Manifest",
+      runtime: "Runtime",
+      security: "Security"
+    },
+    checkStatusLabels: {
+      failed: "Failed",
+      passed: "Passed",
+      queued: "Queued",
+      running: "Running",
+      warning: "Warning"
+    },
     currency: "Currency",
     empty: "No publisher skills yet. Publish a manifest first, then return here to submit review and set pricing.",
     feedback: "Published / pending",
@@ -73,6 +87,20 @@ const copy = {
     unitAmount: "Unit amount (cents)"
   },
   zh: {
+    checks: "审核检查",
+    checkLabels: {
+      example: "示例",
+      manifest: "清单",
+      runtime: "运行",
+      security: "安全"
+    },
+    checkStatusLabels: {
+      failed: "失败",
+      passed: "通过",
+      queued: "排队",
+      running: "运行中",
+      warning: "警告"
+    },
     billingModel: "计费模式",
     calls: "调用",
     currency: "币种",
@@ -202,6 +230,21 @@ function PublisherSkillCard({
         </div>
       </div>
 
+      {skill.runtime.checks?.length ? (
+        <div className="publisher-skill-checks" aria-label={labels.checks}>
+          <strong>{labels.checks}</strong>
+          <div className="publisher-skill-check-list">
+            {skill.runtime.checks.map((check) => (
+              <div className="publisher-skill-check" key={`${skill.id}-${check.checkType}`}>
+                <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
+                <strong>{formatCheckType(check.checkType, labels)}</strong>
+                <small>{check.message ?? check.status}</small>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <form action={reviewAction} className="publisher-skill-review-form">
         <input name="skillSlug" type="hidden" value={skill.slug} />
         <button className="secondary-button" disabled={isReviewPending || isInReview} type="submit">
@@ -290,6 +333,14 @@ function formatVerificationStatus(status: string, labels: Record<string, string>
   return labels[status] ?? status.replaceAll("_", " ");
 }
 
+function formatCheckType(checkType: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return labels.checkLabels[checkType as keyof typeof labels.checkLabels] ?? checkType;
+}
+
+function formatCheckStatus(status: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return labels.checkStatusLabels[status as keyof typeof labels.checkStatusLabels] ?? status;
+}
+
 function ActionMessage({ state }: { state: PublisherSkillActionState }) {
   return (
     <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
@@ -325,4 +376,20 @@ function qualityClass(status: PublisherSkillRecord["quality"]["checklist"][numbe
   }
 
   return "quality-chip";
+}
+
+function checkStatusClass(status: string) {
+  if (status === "passed") {
+    return "status-chip";
+  }
+
+  if (status === "failed") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (status === "warning" || status === "queued" || status === "running") {
+    return "status-chip status-chip--warning";
+  }
+
+  return "status-chip status-chip--neutral";
 }

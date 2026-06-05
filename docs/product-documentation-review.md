@@ -481,6 +481,13 @@ Added automated review checks and approval gating, covering:
 - This strengthens marketplace trust because verified listings now require both operator decision and system-generated review evidence instead of relying on a free-form approval note alone.
 - This strengthens publisher retention because authors can see concrete pass/fail/warning reasons to fix before resubmitting, rather than waiting for opaque manual review.
 
+Added publisher-facing review-check diagnostics, covering:
+
+- `/v1/publisher/skills` now returns the latest automated check details per skill version instead of only aggregate counts.
+- Runtime health uses latest checks only, so historical review-check records do not pollute the current publisher status.
+- Publisher skill cards show each manifest, runtime, example, and security check with pass/fail/warning state and the exact message.
+- This closes the upload-review-fix loop for publishers because they can repair blocked runtime or example issues before resubmitting, without waiting for a separate admin explanation.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
