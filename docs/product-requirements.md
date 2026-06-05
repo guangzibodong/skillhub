@@ -168,7 +168,7 @@ Personal center requirements:
 - Show workspace readiness: team members, active tokens, project count, owned skill count, unread notifications, notification preference coverage, billing readiness, invoice readiness, publisher status, and payout status.
 - Let the user reach developer, publisher, dashboard, and admin workspaces from one place.
 - Let the user manage notification preferences before the final email/webhook delivery providers are connected.
-- Avoid treating Google/GitHub as fake buttons: if OAuth credentials/callbacks are not configured, show a clear deferred/configuration-required state.
+- Avoid treating Google/GitHub as fake buttons: if OAuth credentials/callbacks are not configured, show a clear deferred/configuration-required state with the required callback URL and missing launch configuration names, and show callback success or failure state after provider redirects.
 
 The public website must explain:
 

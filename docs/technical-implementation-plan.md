@@ -495,10 +495,10 @@ Completed:
 - Project runtime test invocation APIs now let signed-in developers run an installed skill through the same runtime policy, subscription, budget, invocation-log, and execution path as agent API-key calls while keeping console tests non-billable.
 - Skill detail project actions now expose a JSON test input and runtime result panel beside save/install, giving developers an immediate install-to-test loop before they hand a project key to an agent.
 - Project detail now exposes a REST/MCP agent connection panel with copyable endpoint and command snippets, active-key state, project slug, and a governance reminder that runtime policy, budget, subscription, logging, and metering still apply.
+- OAuth provider readiness now exposes exact Google/GitHub callback URLs, missing secret-safe configuration names, and per-provider readiness booleans through `/v1/auth/providers`; `/login` shows callback success/error notices and provider setup hints instead of dead OAuth buttons.
 
 Next:
 
-- Provider-specific production OAuth app configuration and callback rollout.
 - Resolve any launch-readiness blockers reported by `/admin` before public launch or paid marketplace rollout.
 - Finalize legal review of `/terms` once payment provider, payout provider, tax/KYC region, refund window, and minimum payout decisions are locked.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.

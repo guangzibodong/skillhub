@@ -2,12 +2,20 @@ import { getUserToken } from "@/lib/auth-session";
 
 export type AuthProviderStatus = {
   canDisconnect?: boolean;
+  callbackUrl?: string | null;
+  configuration?: {
+    callbackBaseUrlConfigured: boolean;
+    clientIdConfigured: boolean;
+    clientSecretConfigured: boolean;
+    stateSecretConfigured: boolean;
+  };
   connectedAt?: string | null;
   description: string;
   disconnectUrl?: string | null;
   emailVerified?: boolean;
   label: string;
   lastLoginAt?: string | null;
+  missingConfiguration?: string[];
   provider: "email" | "github" | "google" | "token";
   providerEmail?: string | null;
   startUrl: string | null;
@@ -101,6 +109,12 @@ const fallbackProviders: AuthProviderStatus[] = [
   {
     description: "Google OAuth needs provider credentials and callback configuration before live redirect is enabled.",
     label: "Google",
+    missingConfiguration: [
+      "SKILLHUB_GOOGLE_CLIENT_ID",
+      "SKILLHUB_GOOGLE_CLIENT_SECRET",
+      "SKILLHUB_AUTH_CALLBACK_BASE_URL",
+      "SKILLHUB_OAUTH_STATE_SECRET"
+    ],
     provider: "google",
     startUrl: null,
     status: "configuration_required",
@@ -109,6 +123,12 @@ const fallbackProviders: AuthProviderStatus[] = [
   {
     description: "GitHub OAuth needs provider credentials and callback configuration before live redirect is enabled.",
     label: "GitHub",
+    missingConfiguration: [
+      "SKILLHUB_GITHUB_CLIENT_ID",
+      "SKILLHUB_GITHUB_CLIENT_SECRET",
+      "SKILLHUB_AUTH_CALLBACK_BASE_URL",
+      "SKILLHUB_OAUTH_STATE_SECRET"
+    ],
     provider: "github",
     startUrl: null,
     status: "configuration_required",

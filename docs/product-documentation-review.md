@@ -682,6 +682,12 @@ Added paid pricing commercial-readiness enforcement, covering:
 - `/v1/publisher/skills` returns skill-level commercial blockers, and the publisher skill manager shows those blockers beside pricing so authors know whether review, payout, profile, or terms work is preventing paid activation.
 - This closes a real marketplace safety gap: paid listings cannot become active just because the UI submitted a price, and publishers get a clear return loop for completing commercial setup.
 
+Added OAuth provider readiness rollout, covering:
+
+- `/v1/auth/providers` now returns Google/GitHub callback URLs, missing launch configuration variable names, and secret-safe readiness booleans for client id, client secret, callback base URL, and OAuth state secret.
+- `/login` shows provider setup hints, exact callback URLs when available, missing configuration chips, and callback success/error notices after redirects return.
+- This closes the account-entry UX gap where OAuth buttons could look real without telling operators what still needed to be configured for production login.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

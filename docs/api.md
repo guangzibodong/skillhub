@@ -331,6 +331,14 @@ curl "https://api.useskillhub.com/v1/auth/providers"
 
 The response lists `email`, `google`, `github`, and `token` methods. Email code signup/login is active through `/v1/auth/email/request-code` and `/v1/auth/email/verify-code`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
 
+OAuth provider rows include launch-operator fields:
+
+- `callbackUrl`: the exact callback URL to register in the provider app when `SKILLHUB_AUTH_CALLBACK_BASE_URL` is configured.
+- `missingConfiguration`: secret-safe environment variable names still needed before live redirect can start.
+- `configuration`: boolean readiness for client id, client secret, callback base URL, and OAuth state secret.
+
+The `/login` page surfaces these fields directly and shows success or error notices after provider callbacks return with `?oauth=connected` or `?oauth=error`.
+
 Start a provider login:
 
 ```bash

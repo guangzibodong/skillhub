@@ -1952,10 +1952,105 @@ a {
   line-height: 1.45;
 }
 
+.auth-provider-card__setup {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.auth-provider-card__setup span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 720;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.auth-provider-card__setup > code {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(124, 199, 216, 0.16);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.07);
+  color: #d4edf2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 7px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-provider-card__missing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.auth-provider-card__missing code {
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 188, 96, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 188, 96, 0.08);
+  color: #f6c98d;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.25;
+  padding: 4px 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .auth-provider-card .secondary-button {
   align-self: end;
   margin-top: auto;
   justify-self: start;
+}
+
+.auth-callback-notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: var(--max-width);
+  margin: -8px auto 18px;
+  border: 1px solid rgba(155, 226, 141, 0.2);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.08);
+  padding: 13px 14px;
+}
+
+.auth-callback-notice--error {
+  border-color: rgba(255, 133, 111, 0.24);
+  background: rgba(255, 133, 111, 0.08);
+}
+
+.auth-callback-notice svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.auth-callback-notice--error svg {
+  color: #ff856f;
+}
+
+.auth-callback-notice div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.auth-callback-notice strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.auth-callback-notice span {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .ops-list,

@@ -108,12 +108,20 @@ export type AccountIdentityDisconnectResult = {
 
 export type AuthProviderStatus = {
   canDisconnect?: boolean;
+  callbackUrl?: string | null;
+  configuration?: {
+    callbackBaseUrlConfigured: boolean;
+    clientIdConfigured: boolean;
+    clientSecretConfigured: boolean;
+    stateSecretConfigured: boolean;
+  };
   connectedAt?: string | null;
   description: string;
   disconnectUrl?: string | null;
   emailVerified?: boolean;
   label: string;
   lastLoginAt?: string | null;
+  missingConfiguration?: string[];
   provider: "email" | "github" | "google" | "token";
   providerEmail?: string | null;
   startUrl: string | null;
@@ -442,9 +450,13 @@ export function getAuthProviderStatuses(
   const githubSecretConfigured = hasConfiguredValue(
     env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET ?? getProcessEnv("SKILLHUB_GITHUB_CLIENT_SECRET") ?? getProcessEnv("GITHUB_CLIENT_SECRET")
   );
-  const callbackConfigured = hasConfiguredValue(
-    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? getProcessEnv("SKILLHUB_AUTH_CALLBACK_BASE_URL") ?? getProcessEnv("SKILLHUB_AUTH_BASE_URL")
+  const callbackBaseUrl = configuredValue(
+    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ??
+      env?.SKILLHUB_AUTH_BASE_URL ??
+      getProcessEnv("SKILLHUB_AUTH_CALLBACK_BASE_URL") ??
+      getProcessEnv("SKILLHUB_AUTH_BASE_URL")
   );
+  const callbackConfigured = Boolean(callbackBaseUrl);
   const stateSecretConfigured = hasConfiguredValue(
     env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET ?? getProcessEnv("SKILLHUB_OAUTH_STATE_SECRET") ?? getProcessEnv("SESSION_SECRET")
   );
@@ -472,6 +484,13 @@ export function getAuthProviderStatuses(
     },
     {
       connectedAt: googleIdentity?.connectedAt ?? null,
+      callbackUrl: callbackBaseUrl ? oauthCallbackUrl("google", callbackBaseUrl) : null,
+      configuration: {
+        callbackBaseUrlConfigured: callbackConfigured,
+        clientIdConfigured: googleConfigured,
+        clientSecretConfigured: googleSecretConfigured,
+        stateSecretConfigured
+      },
       description: googleIdentity
         ? `Google is connected with verified email ${googleIdentity.email}.`
         : googleReady
@@ -480,6 +499,12 @@ export function getAuthProviderStatuses(
       emailVerified: googleIdentity?.emailVerified ?? false,
       label: "Google",
       lastLoginAt: googleIdentity?.lastLoginAt ?? null,
+      missingConfiguration: googleIdentity ? [] : oauthMissingConfiguration("google", {
+        callbackConfigured,
+        clientIdConfigured: googleConfigured,
+        clientSecretConfigured: googleSecretConfigured,
+        stateSecretConfigured
+      }),
       provider: "google",
       providerEmail: googleIdentity?.email ?? null,
       startUrl: googleReady ? "/v1/auth/oauth/google/start" : null,
@@ -490,6 +515,13 @@ export function getAuthProviderStatuses(
     },
     {
       connectedAt: githubIdentity?.connectedAt ?? null,
+      callbackUrl: callbackBaseUrl ? oauthCallbackUrl("github", callbackBaseUrl) : null,
+      configuration: {
+        callbackBaseUrlConfigured: callbackConfigured,
+        clientIdConfigured: githubConfigured,
+        clientSecretConfigured: githubSecretConfigured,
+        stateSecretConfigured
+      },
       description: githubIdentity
         ? `GitHub is connected with verified email ${githubIdentity.email}.`
         : githubReady
@@ -498,6 +530,12 @@ export function getAuthProviderStatuses(
       emailVerified: githubIdentity?.emailVerified ?? false,
       label: "GitHub",
       lastLoginAt: githubIdentity?.lastLoginAt ?? null,
+      missingConfiguration: githubIdentity ? [] : oauthMissingConfiguration("github", {
+        callbackConfigured,
+        clientIdConfigured: githubConfigured,
+        clientSecretConfigured: githubSecretConfigured,
+        stateSecretConfigured
+      }),
       provider: "github",
       providerEmail: githubIdentity?.email ?? null,
       startUrl: githubReady ? "/v1/auth/oauth/github/start" : null,
@@ -519,6 +557,28 @@ export function getAuthProviderStatuses(
       type: "token"
     }
   ];
+}
+
+function oauthCallbackUrl(provider: "github" | "google", callbackBaseUrl: string) {
+  return `${callbackBaseUrl.replace(/\/+$/, "")}/v1/auth/oauth/${provider}/callback`;
+}
+
+function oauthMissingConfiguration(
+  provider: "github" | "google",
+  status: {
+    callbackConfigured: boolean;
+    clientIdConfigured: boolean;
+    clientSecretConfigured: boolean;
+    stateSecretConfigured: boolean;
+  }
+) {
+  const providerPrefix = provider === "google" ? "SKILLHUB_GOOGLE" : "SKILLHUB_GITHUB";
+  return [
+    status.clientIdConfigured ? null : `${providerPrefix}_CLIENT_ID`,
+    status.clientSecretConfigured ? null : `${providerPrefix}_CLIENT_SECRET`,
+    status.callbackConfigured ? null : "SKILLHUB_AUTH_CALLBACK_BASE_URL",
+    status.stateSecretConfigured ? null : "SKILLHUB_OAUTH_STATE_SECRET"
+  ].filter((item): item is string => Boolean(item));
 }
 
 async function getUserProfile(sql: Sql, userId: string): Promise<UserProfile> {
@@ -749,6 +809,11 @@ async function getWorkspaceReadiness(
 
 function hasConfiguredValue(value: string | undefined) {
   return Boolean(value?.trim());
+}
+
+function configuredValue(value: string | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 function getProcessEnv(key: string): string | undefined {

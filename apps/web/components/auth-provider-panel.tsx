@@ -11,12 +11,15 @@ type AuthProviderPanelProps = {
 const copy = {
   en: {
     active: "Active",
+    callback: "Callback",
+    callbackMissing: "Set callback base URL",
     configuration_required: "Configuration required",
     connected: "Connected",
     deferred: "Provider callback pending",
     emailAction: "Use email code",
     helper:
       "SkillHub supports the account paths real teams expect: email code access, Google login, GitHub login, and token fallback for operators or invitations.",
+    missing: "Missing",
     oauthAction: "Continue",
     providerAction: "Configure provider",
     title: "Sign-in methods",
@@ -24,11 +27,14 @@ const copy = {
   },
   zh: {
     active: "可用",
+    callback: "回调地址",
+    callbackMissing: "先配置回调域名",
     configuration_required: "待配置",
     connected: "已连接",
     deferred: "等待回调接入",
     emailAction: "使用邮箱验证码",
     helper: "SkillHub 支持真实团队需要的账号入口：邮箱验证码、Google 登录、GitHub 登录，以及运营和邀请场景的 token 兜底。",
+    missing: "缺少",
     oauthAction: "继续登录",
     providerAction: "配置 provider",
     title: "登录方式",
@@ -68,6 +74,7 @@ export function AuthProviderPanel({ apiUrl, locale, providers }: AuthProviderPan
               </div>
               <strong>{providerLabel(provider, locale)}</strong>
               <p>{localizedDescription(provider, locale)}</p>
+              <ProviderSetupMeta labels={labels} provider={provider} />
               {action.href ? (
                 <a className="secondary-button secondary-button--compact" href={action.href}>
                   {action.label}
@@ -82,6 +89,34 @@ export function AuthProviderPanel({ apiUrl, locale, providers }: AuthProviderPan
         })}
       </div>
     </article>
+  );
+}
+
+function ProviderSetupMeta({
+  labels,
+  provider
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  provider: AuthProviderStatus;
+}) {
+  if (provider.type !== "oauth") {
+    return null;
+  }
+
+  const missing = provider.missingConfiguration ?? [];
+
+  return (
+    <div className="auth-provider-card__setup">
+      <span>{provider.callbackUrl ? labels.callback : labels.callbackMissing}</span>
+      {provider.callbackUrl ? <code>{provider.callbackUrl}</code> : null}
+      {missing.length ? (
+        <div className="auth-provider-card__missing" aria-label={labels.missing}>
+          {missing.map((item) => (
+            <code key={item}>{item}</code>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
