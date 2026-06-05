@@ -1199,6 +1199,12 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/submit" \
 ```
 
 Publisher review submission is scoped to the token organization. A publisher cannot submit another organization's skill by slug.
+Submission also records the latest automated review checks for the submitted skill version:
+
+- `manifest`: required identity, version, tags, runtime, permission, and schema shape.
+- `runtime`: runtime declaration validity and HTTPS transport posture for HTTP/MCP skills.
+- `example`: input and output schema shape for example invocation review.
+- `security`: permission-risk profile, secret handles, and high-risk manual-review flags.
 
 Read the admin review queue:
 
@@ -1206,6 +1212,25 @@ Read the admin review queue:
 curl "https://api.useskillhub.com/v1/admin/reviews" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
+
+Each review row includes `runtimeChecks`, an array of the latest check per type:
+
+```json
+{
+  "runtimeChecks": [
+    {
+      "checkType": "manifest",
+      "status": "passed",
+      "message": "Manifest contract includes required identity, version, tags, runtime, permissions, and schemas.",
+      "latencyMs": null,
+      "checkedAt": "2026-06-05T08:00:00.000Z",
+      "createdAt": "2026-06-05T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+`status` can be `queued`, `running`, `passed`, `failed`, or `warning`. The approval gate refreshes missing or incomplete checks once before deciding. After that refresh, the admin console treats `failed`, `queued`, and `running` as blocking signals; `warning` can be approved only when the reviewer records notes that explain the accepted risk.
 
 Record a review decision:
 
@@ -1218,7 +1243,7 @@ curl -X POST "https://api.useskillhub.com/v1/admin/reviews/$REVIEW_ID/decision" 
 
 Decision status can be:
 
-- `approved`: skill becomes verified.
+- `approved`: skill becomes verified only after automated checks exist and have no `failed`, `queued`, or `running` result. `warning` results are allowed with reviewer notes because high-risk permissions and local runtimes still require human judgment.
 - `rejected`: skill becomes rejected and keeps reviewer notes.
 - `blocked`: skill becomes suspended and writes risk/audit events.
 

@@ -77,7 +77,8 @@ API groups:
 Acceptance checks:
 
 - A submitted skill version must have a valid manifest.
-- A verified skill version must have a review decision.
+- Review submission must create automated manifest, runtime, example, and security checks for the submitted version.
+- A verified skill version must have a review decision and no failed, queued, or running automated checks. Warning checks require reviewer notes.
 - A new version cannot silently replace a verified version.
 - Suspended skills cannot be installed or invoked.
 
@@ -274,7 +275,7 @@ Acceptance checks:
 2. Add API overview endpoints for developer, publisher, admin, and platform health data.
 3. Wire dashboards to API-backed data where possible, with demo fallback allowed only outside production or behind an explicit demo flag.
 4. Add skill install and project policy endpoints.
-5. Add review queue endpoints and admin decision actions.
+5. Add review queue endpoints, automated review checks, approval gates, and admin decision actions.
 6. Add runtime invocation record and policy gate.
 7. Add ledger creation functions for billable usage.
 8. Add notification event recording.
@@ -294,6 +295,9 @@ Completed:
 - Skill review submission endpoint.
 - Admin review queue and review decision endpoints.
 - Admin review console now reads the live review queue and exposes approve, reject, and block decisions with required reviewer notes.
+- Skill review submission now creates automated manifest, runtime declaration, example schema, and security permission checks for the submitted version.
+- Admin review queue responses now include the latest automated check results per type, and the admin console shows pass/fail/warning state inside each review card.
+- Approved review decisions are blocked unless automated checks exist and have no failed, queued, or running result; warning results remain approvable with reviewer notes for human-risk acceptance.
 - Project API key creation, listing, and revocation.
 - Runtime invocation endpoint with API key auth, installed-skill gate, permission policy checks, rate limit checks, budget checks, invocation logs, and usage events.
 - SDK and CLI runtime invocation helpers.

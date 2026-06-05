@@ -473,6 +473,14 @@ Added skill feedback and review moderation, covering:
 - Search summaries and recommended ranking now use published average rating and feedback count, so feedback affects discovery instead of staying isolated on the detail page.
 - Publisher skill operations now show rating plus published/pending feedback counts, giving authors a repeat-use reason to return and improve listings.
 
+Added automated review checks and approval gating, covering:
+
+- Review submission now records automated manifest, runtime declaration, example schema, and security permission checks for the submitted skill version.
+- Admin review queue responses include the latest check result per type, and `/admin` shows those results directly inside each review card.
+- Approvals are blocked when checks are missing, failed, queued, or running; warning checks can still be approved with reviewer notes so high-risk permissions and local runtimes keep a human judgment path.
+- This strengthens marketplace trust because verified listings now require both operator decision and system-generated review evidence instead of relying on a free-form approval note alone.
+- This strengthens publisher retention because authors can see concrete pass/fail/warning reasons to fix before resubmitting, rather than waiting for opaque manual review.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

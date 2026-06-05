@@ -16,6 +16,20 @@ const copy = {
   en: {
     approve: "Approve",
     block: "Block",
+    checks: "Automated checks",
+    checkLabels: {
+      example: "Example",
+      manifest: "Manifest",
+      runtime: "Runtime",
+      security: "Security"
+    },
+    checkStatusLabels: {
+      failed: "Failed",
+      passed: "Passed",
+      queued: "Queued",
+      running: "Running",
+      warning: "Warning"
+    },
     created: "Submitted",
     decision: "Decision",
     empty: "No skill reviews need operator action.",
@@ -32,6 +46,20 @@ const copy = {
   zh: {
     approve: "批准",
     block: "阻断",
+    checks: "自动检查",
+    checkLabels: {
+      example: "示例",
+      manifest: "清单",
+      runtime: "运行",
+      security: "安全"
+    },
+    checkStatusLabels: {
+      failed: "失败",
+      passed: "通过",
+      queued: "排队",
+      running: "运行中",
+      warning: "警告"
+    },
     created: "提交时间",
     decision: "审核决定",
     empty: "当前没有需要处理的技能审核。",
@@ -107,6 +135,18 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </div>
                 ) : null}
 
+                {review.runtimeChecks?.length ? (
+                  <div className="admin-review-checks" aria-label={labels.checks}>
+                    {review.runtimeChecks.map((check) => (
+                      <div className="admin-review-check" key={`${review.id}-${check.checkType}`}>
+                        <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
+                        <strong>{formatCheckType(check.checkType, labels)}</strong>
+                        <small>{check.message ?? check.status}</small>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
                 <form action={action} className="admin-review-action-form">
                   <input name="reviewId" type="hidden" value={review.id} />
                   <input name="skillSlug" type="hidden" value={review.skillSlug} />
@@ -156,6 +196,10 @@ function ActionMessage({ state }: { state: AdminReviewActionState }) {
 }
 
 function suggestedDecision(review: AdminReviewRecord) {
+  if (hasBlockingChecks(review)) {
+    return "rejected";
+  }
+
   if (review.status === "blocked" || review.riskLevel === "high") {
     return "blocked";
   }
@@ -165,6 +209,40 @@ function suggestedDecision(review: AdminReviewRecord) {
   }
 
   return "rejected";
+}
+
+function hasBlockingChecks(review: AdminReviewRecord) {
+  const checks = review.runtimeChecks ?? [];
+
+  if (checks.length === 0) {
+    return false;
+  }
+
+  return checks.some((check) => check.status === "failed" || check.status === "queued" || check.status === "running");
+}
+
+function formatCheckType(checkType: string, labels: (typeof copy)["en" | "zh"]) {
+  return labels.checkLabels[checkType as keyof typeof labels.checkLabels] ?? checkType;
+}
+
+function formatCheckStatus(status: string, labels: (typeof copy)["en" | "zh"]) {
+  return labels.checkStatusLabels[status as keyof typeof labels.checkStatusLabels] ?? status;
+}
+
+function checkStatusClass(status: string) {
+  if (status === "passed") {
+    return "status-chip";
+  }
+
+  if (status === "failed") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (status === "warning" || status === "queued" || status === "running") {
+    return "status-chip status-chip--warning";
+  }
+
+  return "status-chip status-chip--neutral";
 }
 
 function riskClass(risk: AdminReviewRecord["riskLevel"]) {

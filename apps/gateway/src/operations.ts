@@ -28,6 +28,16 @@ type ReviewDecisionInput = {
   notes?: string;
 };
 
+type RuntimeCheckType = "manifest" | "runtime" | "example" | "security";
+type RuntimeCheckStatus = "queued" | "running" | "passed" | "failed" | "warning";
+
+type RuntimeCheckResult = {
+  checkType: RuntimeCheckType;
+  status: Extract<RuntimeCheckStatus, "passed" | "failed" | "warning">;
+  message: string;
+  latencyMs?: number;
+};
+
 type SkillRecord = {
   id: string;
   slug: string;
@@ -476,6 +486,8 @@ export async function submitSkillForReview(slug: string, organizationId?: string
     where id = ${skill.id}
   `;
 
+  await createRuntimeChecks(sql, skill.version_id, skill.manifest);
+
   if (existing[0]) {
     return {
       id: existing[0].id,
@@ -505,7 +517,6 @@ export async function submitSkillForReview(slug: string, organizationId?: string
     returning id::text, status, risk_level as "riskLevel", created_at as "createdAt"
   `) as Array<{ id: string; status: string; riskLevel: string; createdAt: string }>;
 
-  await createRuntimeChecks(sql, skill.version_id);
   await recordNotification(sql, "skill.review.submitted", "Skill submitted for review", {
     skillSlug: skill.slug,
     version: skill.version,
@@ -542,10 +553,44 @@ export async function listReviewQueue() {
       sr.risk_level as "riskLevel",
       sr.notes,
       sr.created_at as "createdAt",
-      sr.decided_at as "decidedAt"
+      sr.decided_at as "decidedAt",
+      coalesce(checks.items, '[]'::jsonb) as "runtimeChecks",
+      coalesce(checks.passed_count, 0)::int as "runtimePassedCount",
+      coalesce(checks.failed_count, 0)::int as "runtimeFailedCount",
+      coalesce(checks.warning_count, 0)::int as "runtimeWarningCount"
     from skill_reviews sr
     join skills s on s.id = sr.skill_id
     left join skill_versions sv on sv.id = sr.skill_version_id
+    left join lateral (
+      with latest_checks as (
+        select distinct on (check_type)
+          check_type,
+          status,
+          message,
+          latency_ms,
+          checked_at,
+          created_at
+        from skill_runtime_checks
+        where skill_version_id = sv.id
+        order by check_type, created_at desc
+      )
+      select
+        jsonb_agg(
+          jsonb_build_object(
+            'checkType', check_type,
+            'status', status,
+            'message', message,
+            'latencyMs', latency_ms,
+            'checkedAt', checked_at,
+            'createdAt', created_at
+          )
+          order by check_type
+        ) as items,
+        count(*) filter (where status = 'passed') as passed_count,
+        count(*) filter (where status = 'failed') as failed_count,
+        count(*) filter (where status = 'warning') as warning_count
+      from latest_checks
+    ) checks on true
     where sr.status in ('queued', 'in_review', 'blocked')
     order by sr.created_at asc
     limit 100
@@ -562,7 +607,8 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
       sr.skill_version_id::text as "skillVersionId",
       s.slug as "skillSlug",
       s.display_name as "displayName",
-      sv.version
+      sv.version,
+      sv.manifest
     from skill_reviews sr
     join skills s on s.id = sr.skill_id
     left join skill_versions sv on sv.id = sr.skill_version_id
@@ -575,6 +621,7 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
     skillSlug: string;
     displayName: string;
     version: string | null;
+    manifest: SkillManifest | null;
   }>;
 
   const review = reviewRows[0];
@@ -585,6 +632,10 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
 
   const verificationStatus =
     input.status === "approved" ? "verified" : input.status === "blocked" ? "suspended" : "rejected";
+
+  if (input.status === "approved") {
+    await requireApprovalChecks(sql, review.skillVersionId, review.manifest);
+  }
 
   const decidedRows = (await sql`
     update skill_reviews
@@ -774,26 +825,246 @@ function policyDefaults(manifest: SkillManifest) {
   };
 }
 
-async function createRuntimeChecks(sql: Sql, skillVersionId: string) {
-  const checks = [
-    ["manifest", "passed", "Manifest schema accepted."],
-    ["runtime", "queued", "Runtime reachability check queued."],
-    ["example", "queued", "Example invocation check queued."],
-    ["security", "queued", "Permission and data policy review queued."]
-  ] as const;
+async function createRuntimeChecks(sql: Sql, skillVersionId: string, manifest: SkillManifest) {
+  const checks = buildRuntimeChecks(manifest);
 
-  for (const [checkType, status, message] of checks) {
+  for (const check of checks) {
     await sql`
-      insert into skill_runtime_checks (skill_version_id, check_type, status, message, checked_at)
+      insert into skill_runtime_checks (skill_version_id, check_type, status, latency_ms, message, checked_at)
       values (
         ${skillVersionId},
-        ${checkType},
-        ${status},
-        ${message},
-        ${status === "passed" ? sql`now()` : null}
+        ${check.checkType},
+        ${check.status},
+        ${check.latencyMs ?? null},
+        ${check.message},
+        now()
       )
     `;
   }
+}
+
+async function requireApprovalChecks(sql: Sql, skillVersionId: string | null, manifest: SkillManifest | null) {
+  if (!skillVersionId || !manifest) {
+    throw new Error("Automated review checks require a skill version manifest before approval.");
+  }
+
+  let checks = await getLatestRuntimeChecks(sql, skillVersionId);
+  const requiredTypes: RuntimeCheckType[] = ["manifest", "runtime", "example", "security"];
+  let missingTypes = requiredTypes.filter((type) => !checks.some((check) => check.checkType === type));
+  let incomplete = checks.filter((check) => check.status === "queued" || check.status === "running");
+
+  if (checks.length === 0 || missingTypes.length > 0 || incomplete.length > 0) {
+    await createRuntimeChecks(sql, skillVersionId, manifest);
+    checks = await getLatestRuntimeChecks(sql, skillVersionId);
+    missingTypes = requiredTypes.filter((type) => !checks.some((check) => check.checkType === type));
+    incomplete = checks.filter((check) => check.status === "queued" || check.status === "running");
+  }
+
+  const blockers = checks.filter((check) => check.status === "failed");
+
+  if (missingTypes.length > 0 || blockers.length > 0 || incomplete.length > 0) {
+    const failedLabels = blockers.map((check) => `${check.checkType}: ${check.message}`);
+    const incompleteLabels = incomplete.map((check) => `${check.checkType}: ${check.status}`);
+    throw new Error(
+      `Automated review checks must pass before approval. ${[
+        ...missingTypes.map((type) => `${type}: missing`),
+        ...failedLabels,
+        ...incompleteLabels
+      ].join(" ")}`
+    );
+  }
+}
+
+async function getLatestRuntimeChecks(sql: Sql, skillVersionId: string) {
+  const rows = (await sql`
+    select distinct on (check_type)
+      check_type as "checkType",
+      status,
+      message
+    from skill_runtime_checks
+    where skill_version_id = ${skillVersionId}
+    order by check_type, created_at desc
+  `) as Array<{ checkType: RuntimeCheckType; status: RuntimeCheckStatus; message: string }>;
+
+  return rows;
+}
+
+function buildRuntimeChecks(manifest: SkillManifest): RuntimeCheckResult[] {
+  return [
+    buildManifestCheck(manifest),
+    buildRuntimeCheck(manifest),
+    buildExampleCheck(manifest),
+    buildSecurityCheck(manifest)
+  ];
+}
+
+function buildManifestCheck(manifest: SkillManifest): RuntimeCheckResult {
+  const missing = [
+    manifest.schemaVersion ? null : "schemaVersion",
+    manifest.name ? null : "name",
+    manifest.displayName ? null : "displayName",
+    manifest.version ? null : "version",
+    manifest.description ? null : "description",
+    manifest.tags.length > 0 ? null : "tags"
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    return {
+      checkType: "manifest",
+      status: "failed",
+      message: `Manifest is missing required fields: ${missing.join(", ")}.`
+    };
+  }
+
+  if (manifest.description.length < 40) {
+    return {
+      checkType: "manifest",
+      status: "warning",
+      message: "Manifest is valid but the description is short; reviewer should confirm listing clarity."
+    };
+  }
+
+  return {
+    checkType: "manifest",
+    status: "passed",
+    message: "Manifest contract includes required identity, version, tags, runtime, permissions, and schemas."
+  };
+}
+
+function buildRuntimeCheck(manifest: SkillManifest): RuntimeCheckResult {
+  const startedAt = Date.now();
+
+  if (manifest.runtime.type === "http") {
+    const url = parseUrl(manifest.runtime.entrypoint);
+
+    if (!url) {
+      return {
+        checkType: "runtime",
+        status: "failed",
+        latencyMs: Date.now() - startedAt,
+        message: "HTTP runtime entrypoint is not a valid URL."
+      };
+    }
+
+    return {
+      checkType: "runtime",
+      status: url.protocol === "https:" ? "passed" : "warning",
+      latencyMs: Date.now() - startedAt,
+      message:
+        url.protocol === "https:"
+          ? "HTTP runtime entrypoint uses HTTPS and is ready for reachability testing."
+          : "HTTP runtime entrypoint is not HTTPS; reviewer should require a secure endpoint before paid launch."
+    };
+  }
+
+  if (manifest.runtime.type === "mcp") {
+    const url = parseUrl(manifest.runtime.serverUrl);
+
+    if (!url) {
+      return {
+        checkType: "runtime",
+        status: "failed",
+        latencyMs: Date.now() - startedAt,
+        message: "MCP server URL is not a valid URL."
+      };
+    }
+
+    return {
+      checkType: "runtime",
+      status: url.protocol === "https:" ? "passed" : "warning",
+      latencyMs: Date.now() - startedAt,
+      message:
+        url.protocol === "https:"
+          ? "MCP server URL uses HTTPS and is ready for agent discovery."
+          : "MCP server URL is not HTTPS; reviewer should require transport hardening."
+    };
+  }
+
+  return {
+    checkType: "runtime",
+    status: manifest.runtime.command ? "warning" : "failed",
+    latencyMs: Date.now() - startedAt,
+    message: manifest.runtime.command
+      ? "Local runtime command is declared; reviewer must verify packaging, sandboxing, and execution proof manually."
+      : "Local runtime is missing a command."
+  };
+}
+
+function buildExampleCheck(manifest: SkillManifest): RuntimeCheckResult {
+  const inputSchema = asRecord(manifest.inputSchema);
+  const outputSchema = asRecord(manifest.outputSchema);
+
+  if (inputSchema.type !== "object" || outputSchema.type !== "object") {
+    return {
+      checkType: "example",
+      status: "failed",
+      message: "Input and output schemas must both be object schemas."
+    };
+  }
+
+  const inputProperties = asRecord(inputSchema.properties);
+  const outputProperties = asRecord(outputSchema.properties);
+
+  if (Object.keys(inputProperties).length === 0 || Object.keys(outputProperties).length === 0) {
+    return {
+      checkType: "example",
+      status: "warning",
+      message: "Schemas are objects but one side has no properties; reviewer should require concrete examples."
+    };
+  }
+
+  return {
+    checkType: "example",
+    status: "passed",
+    message: "Input and output object schemas include concrete fields for example invocation review."
+  };
+}
+
+function buildSecurityCheck(manifest: SkillManifest): RuntimeCheckResult {
+  const permissionLevel = getPermissionLevel(manifest.permissions);
+  const invalidSecrets = manifest.permissions.secrets.filter((secret) => !secret.trim() || secret.trim() === "*");
+
+  if (invalidSecrets.length > 0) {
+    return {
+      checkType: "security",
+      status: "failed",
+      message: "Secret permissions must name specific secret handles; wildcard or blank secret access is not allowed."
+    };
+  }
+
+  if (permissionLevel === "high") {
+    return {
+      checkType: "security",
+      status: "warning",
+      message: "High-risk permissions require explicit reviewer notes and project owner approval before runtime use."
+    };
+  }
+
+  if (manifest.permissions.network && manifest.permissions.browser) {
+    return {
+      checkType: "security",
+      status: "warning",
+      message: "Network plus browser access requires reviewer confirmation of data policy and allowed domains."
+    };
+  }
+
+  return {
+    checkType: "security",
+    status: "passed",
+    message: "Permission profile is compatible with automated low-risk review gates."
+  };
+}
+
+function parseUrl(value: string) {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }
 
 async function recordSkillUpdate(

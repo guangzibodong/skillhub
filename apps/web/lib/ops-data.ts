@@ -171,6 +171,14 @@ export type AdminReviewRecord = {
   status: "approved" | "blocked" | "in_review" | "queued" | "rejected" | string;
   riskLevel: "low" | "medium" | "high" | string | null;
   notes: string | null;
+  runtimeChecks?: Array<{
+    checkType: "example" | "manifest" | "runtime" | "security" | string;
+    status: "failed" | "passed" | "queued" | "running" | "warning" | string;
+    message: string | null;
+    latencyMs?: number | null;
+    checkedAt?: string | null;
+    createdAt?: string | null;
+  }>;
   createdAt: string;
   decidedAt: string | null;
 };
@@ -1088,6 +1096,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "queued",
     riskLevel: "medium",
     notes: "Validate browser domain allowlist, citation output schema, and pricing readiness before approval.",
+    runtimeChecks: [
+      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+      { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
+      { checkType: "example", status: "passed", message: "Schemas are ready for example invocation." },
+      { checkType: "security", status: "warning", message: "Browser plus network permissions require data-policy confirmation." }
+    ],
     createdAt: "demo",
     decidedAt: null
   },
@@ -1099,6 +1113,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "in_review",
     riskLevel: "low",
     notes: "Runtime passed; reviewer should confirm file-retention wording and example output coverage.",
+    runtimeChecks: [
+      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+      { checkType: "runtime", status: "passed", message: "Runtime declaration is valid." },
+      { checkType: "example", status: "passed", message: "Example schemas are object-shaped." },
+      { checkType: "security", status: "passed", message: "Permission profile is low risk." }
+    ],
     createdAt: "demo",
     decidedAt: null
   },
@@ -1110,6 +1130,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "blocked",
     riskLevel: "high",
     notes: "Filesystem write access requires explicit owner approval and stronger rollback instructions.",
+    runtimeChecks: [
+      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
+      { checkType: "runtime", status: "warning", message: "Local runtime requires manual execution proof." },
+      { checkType: "example", status: "passed", message: "Example schemas are object-shaped." },
+      { checkType: "security", status: "warning", message: "High-risk filesystem permissions require explicit reviewer notes." }
+    ],
     createdAt: "demo",
     decidedAt: null
   }
