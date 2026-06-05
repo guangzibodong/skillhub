@@ -8,6 +8,7 @@ import {
   Scale,
   Siren
 } from "lucide-react";
+import { AdminLaunchReadinessPanel } from "@/components/admin-launch-readiness-panel";
 import { AdminAuditLogPanel } from "@/components/admin-audit-log-panel";
 import { AbuseReportManager } from "@/components/abuse-report-manager";
 import { AdminAdjustmentManager } from "@/components/admin-adjustment-manager";
@@ -30,6 +31,7 @@ import {
   getAdminCommissionRules,
   getAdminDisputes,
   getAdminIdentityDirectory,
+  getAdminLaunchReadiness,
   getAdminIncidents,
   getAdminMarketplaceCuration,
   getAdminNotificationDeliveries,
@@ -206,6 +208,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const ops = adminOpsCopy[locale];
   const [
     financeLedger,
+    launchReadiness,
     auditLogs,
     marketplaceCuration,
     notificationDeliveries,
@@ -222,6 +225,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     reviews
   ] = await Promise.all([
     getFinanceLedger(),
+    getAdminLaunchReadiness(),
     getAdminAuditLogs(),
     getAdminMarketplaceCuration(),
     getAdminNotificationDeliveries(),
@@ -314,6 +318,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+        <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
       </section>
 
       <section className="admin-layout">

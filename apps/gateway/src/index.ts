@@ -62,6 +62,7 @@ import {
 } from "./webhook-deliveries.js";
 import { listAdminAuditLogs } from "./admin-audit-logs.js";
 import { getAdminIdentityDirectory } from "./admin-identity.js";
+import { getLaunchReadiness } from "./launch-readiness.js";
 import {
   createOrganizationTeamMemberToken,
   listOrganizationTeamMembers,
@@ -186,13 +187,18 @@ import {
 
 type Env = {
   Bindings: {
+    DATABASE_URL?: string;
     GITHUB_CLIENT_ID?: string;
     GITHUB_CLIENT_SECRET?: string;
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
+    NEXT_PUBLIC_API_URL?: string;
     NEXT_PUBLIC_APP_URL?: string;
+    NODE_ENV?: string;
     RESEND_API_KEY?: string;
     SESSION_SECRET?: string;
+    SKILLHUB_ADMIN_TOKEN?: string;
+    SKILLHUB_API_KEY_SALT?: string;
     SKILLHUB_AUTH_BASE_URL?: string;
     SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
     SKILLHUB_AUTH_COOKIE_DOMAIN?: string;
@@ -207,6 +213,7 @@ type Env = {
     SKILLHUB_OAUTH_STATE_SECRET?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
+    SKILLHUB_ENABLE_DEMO_FALLBACK?: string;
     SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN?: string;
     SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
     SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
@@ -1557,6 +1564,22 @@ app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update dispute." }, 400);
+  }
+});
+
+app.get("/v1/admin/launch-readiness", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      readiness: await getLaunchReadiness(c.env)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to read launch readiness." }, 400);
   }
 });
 

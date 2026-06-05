@@ -263,6 +263,7 @@ API groups:
 - `/v1/admin/payouts/*`
 - `/v1/admin/notifications/*`
 - `/v1/admin/notification-deliveries/*`
+- `/v1/admin/launch-readiness`
 
 Acceptance checks:
 
@@ -274,6 +275,7 @@ Acceptance checks:
 - Admin/support operators can mark an external delivery sent, failed, skipped, or queued for retry with a required reason, audit log, and provider metadata.
 - Email verification challenge delivery status stays synchronized with the matching `auth.email.code.requested` delivery event without exposing the raw code in admin lists.
 - Admin/support operators can process due external delivery events in batches, including dry-run mode, Resend-backed email delivery when configured, explicit provider-configuration failure states, and webhook fan-out into `webhook_delivery_events`.
+- Admin/support operators can inspect launch readiness without exposing secrets, covering identity providers, email delivery, webhook worker schema, database migrations, notification templates, runtime key hashing, commission/payout state, demo fallback, legacy signup, service token presence, and final-provider-deferred areas.
 
 ## Frontend Pages To Make Real
 
@@ -300,7 +302,7 @@ Acceptance checks:
 
 ### Platform Admin
 
-- `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream, external notification delivery queue.
+- `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream, external notification delivery queue, webhook outbox, launch readiness.
 
 ## Near-Term Build Sequence
 
@@ -424,6 +426,8 @@ Completed:
 - `/v1/admin/webhook-deliveries` and `/v1/admin/webhook-deliveries/process` now let admin/support operators inspect endpoint-level webhook outbox rows and process due deliveries with signed HTTP POST requests, response capture, endpoint status updates, stale-processing recovery, and retry backoff.
 - `/admin` now exposes a Webhook outbox manager beside the external notification queue, so operators can see fan-out state, endpoint HTTP status, response body excerpts, attempts, and next retry without confusing it with in-app unread notifications.
 - `/admin` now exposes a compact Process due control beside the external delivery queue, so operators can run provider dry-runs or delivery batches from the command center.
+- `/v1/admin/launch-readiness` now returns a secret-safe production readiness report for OAuth, email-code delivery, webhook delivery, database migrations, notification templates, runtime API-key hashing, commission rules, payout state, production guardrails, and intentionally deferred payment-provider work.
+- `/admin` now exposes launch readiness beside the command-center metrics, giving operators a single blocker/warning/ready/deferred view before production rollout.
 - User notification inbox endpoints now let organization-scoped users read in-app events and mark unread items as read, so recorded notification events become a repeat-use dashboard surface instead of admin-only logs.
 - User notification inbox responses now include unread/read/failure totals plus per-topic counts, and organization-scoped users can mark all unread in-app events as read from the API and dashboard sidebars.
 - Dashboard organization operations now expose notification preference controls so users can choose in-app, email, and webhook channels before final email-provider delivery is connected.
@@ -476,6 +480,7 @@ Completed:
 Next:
 
 - Provider-specific production OAuth app configuration and callback rollout.
+- Resolve any launch-readiness blockers reported by `/admin` before public launch or paid marketplace rollout.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
 

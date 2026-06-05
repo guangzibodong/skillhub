@@ -608,6 +608,13 @@ Added developer project version adoption, covering:
 - `/dashboard/projects/[slug]` now shows version transition state in the update inbox and disables adoption until the target version is review-ready.
 - This closes the publisher-to-developer version loop: publishers can ship reviewed updates, and developers can deliberately move agent projects onto those versions without losing policy protection.
 
+Added admin launch readiness, covering:
+
+- `/v1/admin/launch-readiness` gives support/admin operators a single production-readiness report for OAuth callbacks, cookie domain, email-code delivery, webhook worker schema, migration state, notification templates, runtime API-key hashing, commission rules, payout state, demo fallback, legacy signup, service-token presence, public signup policy, and intentionally deferred payment-provider work.
+- `/admin` now shows blocker, warning, ready, and deferred counts beside sectioned operator actions, so rollout work is visible from the command center instead of scattered across environment notes and migrations.
+- The readiness report is secret-safe: it exposes only configured/missing state, counts, URLs, and next actions, never raw provider secrets, tokens, salts, webhook secrets, verification codes, or credentials.
+- This improves launch discipline because the team can separate true production blockers from intentional final integrations such as payment-provider onboarding.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

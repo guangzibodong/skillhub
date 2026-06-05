@@ -124,6 +124,42 @@ export type AdminWebhookDeliveryProcessResult = {
   skippedCount: number;
 };
 
+export type LaunchReadinessStatus = "blocker" | "deferred" | "ready" | "warning";
+
+export type LaunchReadinessItem = {
+  action: string;
+  description: string;
+  detail: string;
+  key: string;
+  label: string;
+  status: LaunchReadinessStatus;
+};
+
+export type LaunchReadinessSection = {
+  items: LaunchReadinessItem[];
+  key: string;
+  status: LaunchReadinessStatus;
+  title: string;
+};
+
+export type LaunchReadinessReport = {
+  checkedAt: string;
+  environment: {
+    appUrl: string | null;
+    callbackBaseUrl: string | null;
+    isProductionLike: boolean;
+    runtime: string;
+  };
+  sections: LaunchReadinessSection[];
+  summary: {
+    blocker: number;
+    deferred: number;
+    ready: number;
+    status: LaunchReadinessStatus;
+    warning: number;
+  };
+};
+
 export type AdminAuditLogRecord = {
   id: string;
   action: string;
@@ -945,6 +981,24 @@ const emptyUserNotificationInbox: UserNotificationInbox = {
   summary: emptyUserNotificationSummary
 };
 
+const emptyLaunchReadiness: LaunchReadinessReport = {
+  checkedAt: "",
+  environment: {
+    appUrl: null,
+    callbackBaseUrl: null,
+    isProductionLike: isProductionLike,
+    runtime: process.env.SKILLHUB_ENV ?? process.env.NODE_ENV ?? "development"
+  },
+  sections: [],
+  summary: {
+    blocker: 0,
+    deferred: 0,
+    ready: 0,
+    status: "warning",
+    warning: 0
+  }
+};
+
 const emptyPublisherPayoutSummary: PublisherPayoutSummary = {
   publisherProfile: null,
   balances: {
@@ -1139,6 +1193,63 @@ const fallbackWebhookDeliveries: AdminWebhookDelivery[] = [
     updatedAt: "demo"
   }
 ];
+
+const fallbackLaunchReadiness: LaunchReadinessReport = {
+  checkedAt: "demo",
+  environment: {
+    appUrl: "https://app.useskillhub.com",
+    callbackBaseUrl: "https://api.useskillhub.com",
+    isProductionLike: false,
+    runtime: "development"
+  },
+  sections: [
+    {
+      key: "identity",
+      status: "warning",
+      title: "Identity and sign-in",
+      items: [
+        {
+          action: "Configure Google and GitHub client credentials.",
+          description: "OAuth provider readiness is visible before provider secrets are added.",
+          detail: "Google/GitHub OAuth not configured in demo mode.",
+          key: "oauth_providers",
+          label: "OAuth providers",
+          status: "warning"
+        },
+        {
+          action: "Keep email-code access enabled.",
+          description: "Email-code login remains the normal account entry.",
+          detail: "Email-code path active.",
+          key: "email_code",
+          label: "Email code login",
+          status: "ready"
+        }
+      ]
+    },
+    {
+      key: "commercial",
+      status: "deferred",
+      title: "Commercial readiness",
+      items: [
+        {
+          action: "Choose payment provider after internal billing states are stable.",
+          description: "Payment provider integration is intentionally last.",
+          detail: "Provider API integration deferred.",
+          key: "payment_provider",
+          label: "Payment provider",
+          status: "deferred"
+        }
+      ]
+    }
+  ],
+  summary: {
+    blocker: 0,
+    deferred: 1,
+    ready: 1,
+    status: "warning",
+    warning: 1
+  }
+};
 
 const fallbackAdminAuditLogs: AdminAuditLogRecord[] = [
   {
@@ -2638,6 +2749,32 @@ export async function getAdminWebhookDeliveries(): Promise<AdminWebhookDelivery[
     return safeOperationValue(payload.deliveries, []);
   } catch {
     return demoFallback(fallbackWebhookDeliveries, []);
+  }
+}
+
+export async function getAdminLaunchReadiness(): Promise<LaunchReadinessReport> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return demoFallback(fallbackLaunchReadiness, emptyLaunchReadiness);
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/launch-readiness`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Admin launch readiness failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { readiness: LaunchReadinessReport };
+    return safeOperationValue(payload.readiness, emptyLaunchReadiness);
+  } catch {
+    return demoFallback(fallbackLaunchReadiness, emptyLaunchReadiness);
   }
 }
 

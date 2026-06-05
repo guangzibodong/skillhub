@@ -351,6 +351,8 @@ Requirements:
 - Audit stream backed by `admin_audit_logs`, showing actor, action, entity, reason, metadata, and timestamp separately from notification delivery events.
 - Notification/event template management, including list, create, update, draft/active/archive lifecycle, channel targeting for in-app/email/webhook, locale-specific variants, audit records, and queued operator notifications, with actual email and webhook provider delivery deferred until the final integration phase.
 - External notification delivery queue for `email` and `webhook` events, including status, attempts, provider metadata, redacted payload summary, retry scheduling, skip/fail/manual-sent controls, due-event batch processing, email-provider configuration errors, Resend-ready sending, webhook outbox fan-out, signed webhook network delivery, response capture, retry backoff, email-challenge delivery-status sync, and audit records.
+- Launch readiness command panel that checks production configuration and operating prerequisites for OAuth callbacks, cookie domain, email-code delivery, webhook worker schema, database migrations, notification templates, runtime API-key hashing, commission rules, payout state, demo fallback, legacy signup, service token, and public signup policy.
+- Launch readiness output must expose only configured/missing states, counts, URLs, and operator actions. It must never reveal raw OAuth secrets, email provider keys, webhook secrets, service tokens, API-key salts, or user credentials.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
 - Ranking/featured listing controls backed by curation rules, bounded boost, required reasons, expiry, audit logs, and quality-signal review.

@@ -1562,6 +1562,24 @@ Operational defaults:
 - `SKILLHUB_WEBHOOK_MAX_ATTEMPTS`: retry cap, default `8`, clamped from 1 to 20.
 - Retry backoff uses 1 minute, 5 minutes, 30 minutes, 2 hours, 6 hours, then 24-hour intervals until the max attempt count is reached. Rows at the max attempt count remain visible as `failed` and are no longer selected by automatic due processing unless the cap is raised.
 
+## Admin Launch Readiness
+
+Inspect production readiness across account entry, provider-deferred delivery, migrations, and marketplace operations:
+
+```bash
+curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`GET /v1/admin/launch-readiness` requires `support`, `admin`, or `super_admin`. It returns a secret-safe report with:
+
+- Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
+- Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
+- Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, commercial readiness, and production guardrails.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration state, active templates, runtime API-key salt, commission rules, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+
+The endpoint reports only configured/missing state, URLs, counts, and next actions. It never returns OAuth secrets, Resend keys, service tokens, API-key salts, webhook signing secrets, raw email verification codes, user tokens, or passwords.
+
 Admin/support operators can inspect the immutable admin audit trail:
 
 ```bash
