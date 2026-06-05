@@ -218,12 +218,15 @@ Core tables:
 - `notification_events`
 - `notification_templates`
 - `notification_preferences`
+- `organization_webhook_endpoints`
+- `webhook_delivery_events`
 
 API groups:
 
 - `/v1/payouts/*`
 - `/v1/notifications/*`
 - `/v1/organization/team/*`
+- `/v1/organization/webhooks/*`
 - `/v1/admin/incidents/*`
 - `/v1/admin/payouts/*`
 - `/v1/admin/notifications/*`
@@ -379,6 +382,9 @@ Completed:
 - `/admin` now includes a runtime incident operations queue and folds active incidents into risk metrics and command-center rows beside feedback, abuse, refund, dispute, and payout workflows.
 - Organization team APIs now let owners/admins list members, add or update a member role, issue a one-time-visible organization-scoped user token, and remove a member while revoking organization-scoped access tokens.
 - `/developer` now includes team access management beside organization billing and notifications, so multi-person teams can split developer, publisher, finance, review, admin, and owner responsibilities before final auth-provider integration.
+- Organization webhook migration `017_organization_webhooks.sql` now stores webhook endpoint configuration plus future delivery outbox records.
+- Organization webhook APIs now let owner/admin/developer users list endpoints, create HTTPS callback endpoints, update subscribed event topics and status, and rotate one-time-visible signing secrets.
+- `/developer` now exposes webhook endpoint management beside team, billing, inbox, and notification preferences, so webhook preferences have a concrete integration surface before final delivery workers/providers are connected.
 
 Next:
 

@@ -178,6 +178,33 @@ curl -X POST "https://api.useskillhub.com/v1/organization/team/members/$USER_ID/
 
 Member roles are `owner`, `admin`, `developer`, `publisher`, `reviewer`, and `finance`. Adding a member creates or reuses the user record and upserts the organization membership. Token creation returns the raw `shub_user_*` token once, stores only the hash/prefix/last4, and lets that member sign in through `/login` before a final auth provider is connected. Removing a member deletes the organization membership and revokes that member's organization-scoped user access tokens. Each change records an admin audit log and queues an in-app account notification for the organization.
 
+Organization webhook endpoints are stored before external delivery workers are connected. They let teams configure callback URLs, event topics, status, and signing-secret fingerprints:
+
+```bash
+curl "https://api.useskillhub.com/v1/organization/webhooks" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl -X POST "https://api.useskillhub.com/v1/organization/webhooks" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/skillhub/webhooks",
+    "description": "Operations automation receiver",
+    "events": ["skill.update", "runtime.incident", "account.security"],
+    "status": "active"
+  }'
+
+curl -X PUT "https://api.useskillhub.com/v1/organization/webhooks/$ENDPOINT_ID" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"paused","events":["finance.billing","publisher.payout"]}'
+
+curl -X POST "https://api.useskillhub.com/v1/organization/webhooks/$ENDPOINT_ID/rotate-secret" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Webhook URLs must use `https`. Endpoint statuses are `active`, `paused`, and `disabled`. Create and rotate responses return the raw `whsec_*` signing secret once; SkillHub stores only the hash, prefix, and last four characters until the final delivery worker/provider integration is connected. Each create, update, or rotation records an admin audit row and queues an in-app account notification.
+
 ## Developer Project Operations
 
 These endpoints model the developer side of the marketplace: installed skills, permission policies, and update/deprecation/incident inboxes.

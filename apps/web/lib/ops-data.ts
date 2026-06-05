@@ -52,6 +52,22 @@ export type OrganizationTeamMember = {
   memberSince: string;
 };
 
+export type OrganizationWebhookEndpoint = {
+  id: string;
+  organizationId: string;
+  url: string;
+  description: string | null;
+  events: string[];
+  status: "active" | "disabled" | "paused";
+  signingSecretPrefix: string;
+  signingSecretLast4: string;
+  lastDeliveryStatus: "delivered" | "failed" | "pending" | "skipped" | null;
+  lastDeliveredAt: string | null;
+  failureCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type AdminReviewRecord = {
   id: string;
   skillSlug: string;
@@ -671,6 +687,39 @@ const fallbackOrganizationTeam: OrganizationTeamMember[] = [
     activeTokenCount: 0,
     lastTokenUsedAt: null,
     memberSince: "demo"
+  }
+];
+
+const fallbackOrganizationWebhookEndpoints: OrganizationWebhookEndpoint[] = [
+  {
+    id: "demo-webhook-ops",
+    organizationId: "demo-org",
+    url: "https://example.com/skillhub/webhooks",
+    description: "Operations automation receiver",
+    events: ["skill.update", "runtime.incident", "account.security"],
+    status: "active",
+    signingSecretPrefix: "whsec",
+    signingSecretLast4: "demo",
+    lastDeliveryStatus: "pending",
+    lastDeliveredAt: null,
+    failureCount: 0,
+    createdAt: "demo",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-webhook-finance",
+    organizationId: "demo-org",
+    url: "https://example.com/finance/events",
+    description: "Finance reconciliation receiver",
+    events: ["finance.billing", "publisher.payout"],
+    status: "paused",
+    signingSecretPrefix: "whsec",
+    signingSecretLast4: "fin1",
+    lastDeliveryStatus: "skipped",
+    lastDeliveredAt: null,
+    failureCount: 1,
+    createdAt: "demo",
+    updatedAt: "demo"
   }
 ];
 
@@ -1749,6 +1798,32 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
     return payload.members;
   } catch {
     return fallbackOrganizationTeam;
+  }
+}
+
+export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWebhookEndpoint[]> {
+  const token = await readWorkspaceToken();
+
+  if (!token) {
+    return fallbackOrganizationWebhookEndpoints;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/organization/webhooks`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Organization webhooks failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { endpoints: OrganizationWebhookEndpoint[] };
+    return payload.endpoints;
+  } catch {
+    return fallbackOrganizationWebhookEndpoints;
   }
 }
 

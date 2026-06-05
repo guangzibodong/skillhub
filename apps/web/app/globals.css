@@ -1926,6 +1926,210 @@ a {
   padding: 11px;
 }
 
+.organization-webhook-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.organization-webhook-form,
+.organization-webhook-update-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+
+.organization-webhook-form {
+  border: 1px solid rgba(123, 214, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(123, 214, 255, 0.045);
+  padding: 11px;
+}
+
+.organization-webhook-form label,
+.organization-webhook-update-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.organization-webhook-form label span,
+.organization-webhook-update-form label span,
+.organization-webhook-form legend,
+.organization-webhook-update-form legend,
+.organization-webhook-meta,
+.organization-webhook-card__head span:not(.status-chip) {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.organization-webhook-form input,
+.organization-webhook-form select,
+.organization-webhook-update-form input,
+.organization-webhook-update-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.organization-webhook-form input:focus,
+.organization-webhook-form select:focus,
+.organization-webhook-update-form input:focus,
+.organization-webhook-update-form select:focus {
+  border-color: rgba(123, 214, 255, 0.46);
+  box-shadow: 0 0 0 3px rgba(123, 214, 255, 0.11);
+}
+
+.organization-webhook-form select option,
+.organization-webhook-update-form select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.organization-webhook-form fieldset,
+.organization-webhook-update-form fieldset {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  margin: 0;
+  padding: 10px;
+}
+
+.organization-webhook-form legend,
+.organization-webhook-update-form legend {
+  padding: 0 4px;
+}
+
+.organization-webhook-form fieldset label,
+.organization-webhook-update-form fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.organization-webhook-form fieldset input,
+.organization-webhook-update-form fieldset input {
+  width: 14px;
+  min-height: 14px;
+  padding: 0;
+}
+
+.organization-webhook-form fieldset span,
+.organization-webhook-update-form fieldset span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.organization-webhook-list {
+  display: grid;
+  gap: 10px;
+}
+
+.organization-webhook-card {
+  display: grid;
+  gap: 11px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.organization-webhook-card__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.organization-webhook-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.organization-webhook-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.organization-webhook-card__head span:not(.status-chip) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.organization-webhook-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.organization-webhook-meta span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.organization-webhook-meta strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.organization-webhook-update-form__wide {
+  grid-column: 1 / -1;
+}
+
+.organization-webhook-rotate-form .secondary-button,
+.organization-webhook-update-form .secondary-button,
+.organization-webhook-form .secondary-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.organization-webhook-card .action-message span,
+.organization-webhook-panel > .action-message span {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.organization-webhook-card .action-message code,
+.organization-webhook-panel > .action-message code {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--ink);
+  padding: 7px 8px;
+}
+
+.organization-webhook-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 11px;
+}
+
 .publisher-account-panel {
   display: grid;
   gap: 14px;
@@ -6907,7 +7111,11 @@ a {
   .incident-create-form,
   .incident-action-form,
   .organization-team-card__head,
-  .organization-team-meta {
+  .organization-team-meta,
+  .organization-webhook-card__head,
+  .organization-webhook-meta,
+  .organization-webhook-form fieldset,
+  .organization-webhook-update-form fieldset {
     grid-template-columns: 1fr;
   }
 
@@ -6921,6 +7129,9 @@ a {
   .organization-team-role-form .secondary-button,
   .organization-team-token-form .secondary-button,
   .organization-team-remove-form .secondary-button,
+  .organization-webhook-form .secondary-button,
+  .organization-webhook-update-form .secondary-button,
+  .organization-webhook-rotate-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     width: 100%;
   }
@@ -6934,6 +7145,9 @@ a {
   .organization-team-role-form .secondary-button,
   .organization-team-token-form .secondary-button,
   .organization-team-remove-form .secondary-button,
+  .organization-webhook-form .secondary-button,
+  .organization-webhook-update-form .secondary-button,
+  .organization-webhook-rotate-form .secondary-button,
   .admin-adjustment-action-form .secondary-button {
     justify-content: center;
   }
@@ -7008,6 +7222,7 @@ a {
   .abuse-report-card__head .status-chip,
   .incident-card__head .status-chip,
   .organization-team-card__head .status-chip,
+  .organization-webhook-card__head .status-chip,
   .skill-feedback-review-card__head .status-chip,
   .incident-create-form .secondary-button,
   .incident-action-form .secondary-button,

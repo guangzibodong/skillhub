@@ -342,6 +342,13 @@ Added organization team access management, covering:
 - Every team access change writes an admin audit record and queues an in-app account notification for the organization.
 - This strengthens repeat-use value because real teams can divide project operations, publishing, finance, and trust responsibilities instead of sharing one bootstrap token.
 
+Added organization webhook endpoint management, covering:
+
+- Owner/admin/developer users can configure HTTPS callback URLs, event-topic subscriptions, and active/paused/disabled state from `/developer`.
+- Create and rotate actions return a raw `whsec_*` signing secret once while storing only the hash, prefix, and last four characters.
+- Endpoint records include last-delivery status, delivery timestamp, and failure count fields, plus a `webhook_delivery_events` outbox table for the final delivery worker/provider phase.
+- This turns webhook notification preferences into an operational integration surface before external delivery is connected.
+
 Added developer project creation, covering:
 
 - Organization-scoped users can create a new agent project from `/dashboard` without relying on implicit project upserts from API-key or install actions.

@@ -251,7 +251,7 @@ Requirements:
 - Subscriptions.
 - Invoices.
 - Project-level refund and dispute history.
-- Webhooks.
+- Webhook endpoints with HTTPS URL validation, event-topic subscriptions, active/paused/disabled state, one-time signing-secret creation/rotation, delivery-status history fields, audit events, and organization notifications before the final delivery worker/provider is connected.
 - Organization team access with member list, role assignment, member token issuance, member removal, token visibility/revocation, audit events, and organization notifications before the final auth provider is connected.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Installed skills by project.

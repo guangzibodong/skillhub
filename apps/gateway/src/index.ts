@@ -50,6 +50,12 @@ import {
   upsertOrganizationPaymentMethod
 } from "./organization-billing.js";
 import {
+  createOrganizationWebhookEndpoint,
+  listOrganizationWebhookEndpoints,
+  rotateOrganizationWebhookSecret,
+  updateOrganizationWebhookEndpoint
+} from "./organization-webhooks.js";
+import {
   createOrganizationTeamMemberToken,
   listOrganizationTeamMembers,
   removeOrganizationTeamMember,
@@ -166,6 +172,7 @@ const reviewOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
 const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "finance"];
 const organizationAdminRoles: AuthRole[] = ["super_admin", "admin", "owner"];
+const organizationWebhookRoles: AuthRole[] = ["super_admin", "admin", "owner", "developer"];
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
 const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "support"];
 
@@ -303,6 +310,86 @@ app.post("/v1/organization/team/members/:userId/tokens", async (c) => {
     );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to create organization member token." }, 400);
+  }
+});
+
+app.get("/v1/organization/webhooks", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationWebhookRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      endpoints: await listOrganizationWebhookEndpoints(authorization.subject.organizationId)
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to read organization webhooks." }, 400);
+  }
+});
+
+app.post("/v1/organization/webhooks", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationWebhookRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      await createOrganizationWebhookEndpoint(
+        authorization.subject.organizationId,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      ),
+      201
+    );
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to create organization webhook." }, 400);
+  }
+});
+
+app.put("/v1/organization/webhooks/:endpointId", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationWebhookRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      endpoint: await updateOrganizationWebhookEndpoint(
+        authorization.subject.organizationId,
+        c.req.param("endpointId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update organization webhook." }, 400);
+  }
+});
+
+app.post("/v1/organization/webhooks/:endpointId/rotate-secret", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), organizationWebhookRoles, {
+    requireOrganization: true
+  });
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(await rotateOrganizationWebhookSecret(authorization.subject.organizationId, c.req.param("endpointId"), authorization.subject.userId));
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to rotate organization webhook secret." }, 400);
   }
 });
 
