@@ -68,6 +68,23 @@ export type AccountSummary = {
   };
 };
 
+export type AccountSessionRecord = {
+  createdAt: string;
+  expiresAt: string | null;
+  isCurrent: boolean;
+  lastUsedAt: string | null;
+  name: string;
+  organizationId: string | null;
+  organizationName: string | null;
+  organizationSlug: string | null;
+  revokedAt: string | null;
+  scopes: string[];
+  status: "active" | "expired" | "revoked";
+  tokenId: string;
+  tokenLast4: string;
+  tokenPrefix: string;
+};
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackProviders: AuthProviderStatus[] = [
@@ -173,5 +190,31 @@ export async function getAccountSummary(): Promise<AccountSummary> {
     return payload.account ?? emptyAccountSummary;
   } catch {
     return emptyAccountSummary;
+  }
+}
+
+export async function getAccountSessions(): Promise<AccountSessionRecord[]> {
+  const token = await getUserToken();
+
+  if (!token) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/account/sessions`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Account sessions failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { sessions?: AccountSessionRecord[] };
+    return payload.sessions ?? [];
+  } catch {
+    return [];
   }
 }

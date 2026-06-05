@@ -14,10 +14,11 @@ import {
   Wallet
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { AccountSessionManager } from "@/components/account-session-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
-import { getAccountSummary, type AccountSummary, type AuthProviderStatus } from "@/lib/account-data";
+import { getAccountSessions, getAccountSummary, type AccountSummary, type AuthProviderStatus } from "@/lib/account-data";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { getNotificationPreferences } from "@/lib/ops-data";
@@ -120,8 +121,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [account, session, notificationPreferences] = await Promise.all([
+  const [account, accountSessions, session, notificationPreferences] = await Promise.all([
     getAccountSummary(),
+    getAccountSessions(),
     getWorkspaceSession(),
     getNotificationPreferences()
   ]);
@@ -236,18 +238,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
         <aside className="account-side">
           <SessionStatusPanel locale={locale} session={session} />
 
-          <article className="ops-panel account-security-panel">
-            <div className="card-kicker">
-              <KeyRound size={16} aria-hidden="true" />
-              <span>{labels.security}</span>
-            </div>
-            <div className="account-meta-grid account-meta-grid--single">
-              <MetaItem label={labels.token} value={account.session ? `${account.session.tokenPrefix}...${account.session.tokenLast4}` : labels.empty} />
-              <MetaItem label={labels.created} value={formatDate(account.session?.createdAt, locale)} />
-              <MetaItem label={labels.lastUsed} value={formatDate(account.session?.lastUsedAt, locale)} />
-              <MetaItem label={labels.scopes} value={account.session?.scopes?.length ? account.session.scopes.join(" / ") : statusLabel("default", locale)} />
-            </div>
-          </article>
+          <AccountSessionManager locale={locale} sessions={accountSessions} />
 
           {signedIn ? (
             <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />

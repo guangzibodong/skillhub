@@ -159,6 +159,7 @@ Personal center requirements:
 - Show connected or available login methods: email, Google, GitHub, and token fallback.
 - Store connected provider identities separately from raw session tokens, including provider user id, verified provider email, connection time, and latest login time.
 - Show token-session metadata without exposing the raw token after first reveal.
+- List current, active, expired, and revoked account sessions using token fingerprints only, and let users revoke old non-current sessions from the personal center.
 - Show workspace readiness: team members, active tokens, project count, owned skill count, unread notifications, notification preference coverage, billing readiness, invoice readiness, publisher status, and payout status.
 - Let the user reach developer, publisher, dashboard, and admin workspaces from one place.
 - Let the user manage notification preferences before the final email/webhook delivery providers are connected.

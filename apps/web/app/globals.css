@@ -7740,6 +7740,128 @@ a {
   color: rgba(245, 241, 232, 0.58);
 }
 
+.account-session-panel__head,
+.account-session-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-session-list {
+  display: grid;
+  gap: 10px;
+}
+
+.account-session-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.account-session-card--current {
+  border-color: rgba(155, 226, 141, 0.22);
+  background: rgba(155, 226, 141, 0.055);
+}
+
+.account-session-card--revoked {
+  opacity: 0.72;
+}
+
+.account-session-card__head div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.account-session-card__head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.account-session-card__head span:not(.status-chip),
+.account-session-token span,
+.account-session-hint,
+.account-session-meta span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.account-session-token {
+  display: grid;
+  grid-template-columns: auto minmax(0, 0.65fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 9px;
+}
+
+.account-session-token svg {
+  color: var(--cyan);
+}
+
+.account-session-token code {
+  min-width: 0;
+  overflow: hidden;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-session-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.account-session-meta div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 9px;
+}
+
+.account-session-meta strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.account-session-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.account-session-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.account-session-hint svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
 .account-stat-grid,
 .account-readiness-grid {
   display: grid;
@@ -8595,6 +8717,11 @@ a {
 @media (max-width: 760px) {
   .marketplace-curation-card__head,
   .marketplace-curation-form {
+    grid-template-columns: 1fr;
+  }
+
+  .account-session-meta,
+  .account-session-token {
     grid-template-columns: 1fr;
   }
 

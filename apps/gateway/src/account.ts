@@ -53,6 +53,20 @@ type TokenSessionRecord = {
   tokenPrefix: string;
 };
 
+export type AccountSessionRecord = TokenSessionRecord & {
+  isCurrent: boolean;
+  organizationId: string | null;
+  organizationName: string | null;
+  organizationSlug: string | null;
+  status: "active" | "expired" | "revoked";
+};
+
+type AccountSessionRow = TokenSessionRecord & {
+  organizationId: string | null;
+  organizationName: string | null;
+  organizationSlug: string | null;
+};
+
 type WorkspaceReadiness = {
   activeTokenCount: number;
   billingProfileComplete: boolean;
@@ -166,6 +180,146 @@ export async function getAccountSummary(subject: AuthSubject, env?: AccountProvi
     session,
     workspace
   };
+}
+
+export async function listAccountSessions(subject: AuthSubject): Promise<AccountSessionRecord[]> {
+  if (!subject.userId) {
+    throw new Error("Account sessions require a user-scoped token.");
+  }
+
+  const sql = await getSql();
+
+  if (!sql) {
+    throw new Error("DATABASE_URL is required for account session management.");
+  }
+
+  const rows = (await sql`
+    select
+      uat.id::text as "tokenId",
+      uat.name,
+      uat.token_prefix as "tokenPrefix",
+      uat.token_last4 as "tokenLast4",
+      uat.scopes,
+      uat.expires_at as "expiresAt",
+      uat.last_used_at as "lastUsedAt",
+      uat.revoked_at as "revokedAt",
+      uat.created_at as "createdAt",
+      uat.organization_id::text as "organizationId",
+      o.name as "organizationName",
+      o.slug as "organizationSlug"
+    from user_access_tokens uat
+    left join organizations o on o.id = uat.organization_id
+    where uat.user_id = ${subject.userId}
+    order by
+      case when uat.id::text = ${subject.tokenId ?? ""} then 0 else 1 end,
+      case when uat.revoked_at is null and (uat.expires_at is null or uat.expires_at > now()) then 0 else 1 end,
+      coalesce(uat.last_used_at, uat.created_at) desc
+    limit 100
+  `) as AccountSessionRow[];
+
+  return rows.map((row) => toAccountSessionRecord(row, subject.tokenId));
+}
+
+export async function revokeAccountSession(subject: AuthSubject, tokenId: string): Promise<AccountSessionRecord> {
+  if (!subject.userId) {
+    throw new Error("Account sessions require a user-scoped token.");
+  }
+
+  const normalizedTokenId = tokenId.trim();
+
+  if (!normalizedTokenId) {
+    throw new Error("Session id is required.");
+  }
+
+  if (normalizedTokenId === subject.tokenId) {
+    throw new Error("The current session cannot be revoked from this list. Use sign out to end it.");
+  }
+
+  const sql = await getSql();
+
+  if (!sql) {
+    throw new Error("DATABASE_URL is required for account session management.");
+  }
+
+  return sql.begin(async (tx: Sql) => {
+    const targetRows = (await tx`
+      select
+        uat.id::text as "tokenId",
+        uat.name,
+        uat.token_prefix as "tokenPrefix",
+        uat.token_last4 as "tokenLast4",
+        uat.scopes,
+        uat.expires_at as "expiresAt",
+        uat.last_used_at as "lastUsedAt",
+        uat.revoked_at as "revokedAt",
+        uat.created_at as "createdAt",
+        uat.organization_id::text as "organizationId",
+        o.name as "organizationName",
+        o.slug as "organizationSlug"
+      from user_access_tokens uat
+      left join organizations o on o.id = uat.organization_id
+      where uat.id::text = ${normalizedTokenId}
+        and uat.user_id = ${subject.userId}
+      limit 1
+    `) as AccountSessionRow[];
+    const target = targetRows[0];
+
+    if (!target) {
+      throw new Error("Account session was not found.");
+    }
+
+    if (target.revokedAt) {
+      return toAccountSessionRecord(target, subject.tokenId);
+    }
+
+    const revokedRows = (await tx`
+      update user_access_tokens
+      set revoked_at = now()
+      where id::text = ${normalizedTokenId}
+        and user_id = ${subject.userId}
+      returning
+        id::text as "tokenId",
+        name,
+        token_prefix as "tokenPrefix",
+        token_last4 as "tokenLast4",
+        scopes,
+        expires_at as "expiresAt",
+        last_used_at as "lastUsedAt",
+        revoked_at as "revokedAt",
+        created_at as "createdAt",
+        organization_id::text as "organizationId",
+        null::text as "organizationName",
+        null::text as "organizationSlug"
+    `) as AccountSessionRow[];
+    const session = {
+      ...toAccountSessionRecord({
+        ...revokedRows[0],
+        organizationName: target.organizationName,
+        organizationSlug: target.organizationSlug
+      }, subject.tokenId)
+    };
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${subject.userId}, 'auth.session.revoked', 'user_access_token', ${session.tokenId}, 'User revoked an account session.', ${tx.json({
+        isCurrent: session.isCurrent,
+        organizationId: session.organizationId,
+        tokenLast4: session.tokenLast4,
+        tokenPrefix: session.tokenPrefix
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (${subject.userId}, ${session.organizationId ?? subject.organizationId}, 'account.security.session_revoked', 'in_app', 'Account session revoked', ${tx.json({
+        tokenId: session.tokenId,
+        tokenLast4: session.tokenLast4,
+        tokenPrefix: session.tokenPrefix
+      })}, 'queued')
+    `;
+
+    return session;
+  });
 }
 
 export function getAuthProviderStatuses(
@@ -340,6 +494,31 @@ async function getTokenSession(sql: Sql, tokenId: string | null | undefined): Pr
   `) as TokenSessionRecord[];
 
   return rows[0] ?? null;
+}
+
+function toAccountSessionRecord(row: AccountSessionRow, currentTokenId: string | null | undefined): AccountSessionRecord {
+  return {
+    ...row,
+    isCurrent: row.tokenId === currentTokenId,
+    scopes: row.scopes ?? [],
+    status: accountSessionStatus(row)
+  };
+}
+
+function accountSessionStatus(session: Pick<TokenSessionRecord, "expiresAt" | "revokedAt">): AccountSessionRecord["status"] {
+  if (session.revokedAt) {
+    return "revoked";
+  }
+
+  if (session.expiresAt) {
+    const expiry = new Date(session.expiresAt);
+
+    if (!Number.isNaN(expiry.getTime()) && expiry.getTime() <= Date.now()) {
+      return "expired";
+    }
+  }
+
+  return "active";
 }
 
 async function listAuthIdentities(sql: Sql, userId: string): Promise<AuthIdentityRecord[]> {

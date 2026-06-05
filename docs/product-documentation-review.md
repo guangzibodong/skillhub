@@ -541,6 +541,14 @@ Added connected auth identity storage, covering:
 - `/account` Chinese copy was repaired and the connected login-method cards now show real provider identity state instead of only generic provider readiness.
 - This strengthens account trust and retention because users can see how they are connected, while admins gain a future foundation for disconnect, session review, and account-security workflows.
 
+Added account session security management, covering:
+
+- `/v1/account/sessions` lists current, active, expired, and revoked user-owned token sessions using fingerprints, organization context, activity time, and expiry state without returning raw tokens.
+- `/v1/account/sessions/:tokenId/revoke` lets users revoke old non-current sessions while blocking current-session self-revocation, keeping sign-out behavior clear.
+- Session revocation writes `auth.session.revoked` audit logs and queues `account.security.session_revoked` notifications before final email/webhook delivery is connected.
+- `/account` now shows a session security panel with current-session state, token fingerprints, last-used signals, and old-session revoke controls.
+- This strengthens repeat-use trust because developers, publishers, finance users, and admins can clean up stale account access before sensitive marketplace actions such as publishing, payout requests, billing changes, and review decisions.
+
 Added publisher skill version management, covering:
 
 - `/v1/publisher/skills` now returns owned skill version history with per-version manifest, review state, runtime checks, install count, call count, and created time.

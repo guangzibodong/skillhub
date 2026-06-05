@@ -351,8 +351,10 @@ Completed:
 - `user_auth_identities` migration `020_user_auth_identities.sql` now records email, Google, and GitHub login identities with provider user id, verified provider email, connection time, latest login time, avatar URL, and metadata.
 - OAuth callbacks now prefer existing provider identity lookup before falling back to verified email, preventing provider email changes from accidentally creating a second SkillHub user.
 - `/v1/account` endpoint now returns a user-scoped account center summary with profile, organization, memberships, token-session metadata, login-method states, team/token/project/skill counts, unread notifications, notification preference count, billing readiness, publisher profile status, and payout status.
+- `/v1/account/sessions` now lists all user-owned token sessions by fingerprint, organization, activity, expiry, and current-session state without exposing raw tokens.
+- `/v1/account/sessions/:tokenId/revoke` now lets users revoke old non-current sessions, blocks current-session self-revocation, writes `auth.session.revoked` audit records, and queues `account.security.session_revoked` in-app notifications.
 - `/login` now behaves like a product account entry instead of a token-only console: email registration is active, Google/GitHub login paths become real provider redirects when configured, and token login remains the operator/team fallback.
-- `/account` now gives users a personal center for profile, connected login methods, provider email, connection time, organization role, session/token security, workspace readiness, workspace shortcuts, and notification preferences.
+- `/account` now gives users a personal center for profile, connected login methods, provider email, connection time, organization role, session/token security with old-session revocation, workspace readiness, workspace shortcuts, and notification preferences.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 - Publisher profile and payout-account onboarding endpoints.
@@ -451,7 +453,7 @@ Completed:
 Next:
 
 - Password/passwordless email provider integration to replace raw signup-token reveal with verified email sessions.
-- Account security management for revoking sessions and disconnecting provider identities with owner-safe guardrails.
+- Account security management for disconnecting provider identities with owner-safe guardrails.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.
 

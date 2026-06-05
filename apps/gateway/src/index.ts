@@ -169,7 +169,9 @@ import {
 } from "./auth.js";
 import {
   getAccountSummary,
-  getAuthProviderStatuses
+  getAuthProviderStatuses,
+  listAccountSessions,
+  revokeAccountSession
 } from "./account.js";
 
 type Env = {
@@ -321,6 +323,52 @@ app.get("/v1/account", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to read account summary." }, 400);
+  }
+});
+
+app.get("/v1/account/sessions", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Account sessions require a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json({
+      sessions: await listAccountSessions(authorization.subject)
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to read account sessions." },
+      sessionErrorStatus(error)
+    );
+  }
+});
+
+app.post("/v1/account/sessions/:tokenId/revoke", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId) {
+    return c.json({ error: "Account sessions require a user-scoped token." }, 403);
+  }
+
+  try {
+    return c.json({
+      session: await revokeAccountSession(authorization.subject, c.req.param("tokenId"))
+    });
+  } catch (error) {
+    return c.json(
+      { error: error instanceof Error ? error.message : "Unable to revoke account session." },
+      sessionErrorStatus(error)
+    );
   }
 });
 
@@ -2435,6 +2483,26 @@ function signupErrorMessage(error: unknown) {
   }
 
   return error.message || "Unable to create workspace signup.";
+}
+
+function sessionErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
+  if (!(error instanceof Error)) {
+    return 400;
+  }
+
+  if (error.message.includes("DATABASE_URL")) {
+    return 503;
+  }
+
+  if (error.message.includes("not found")) {
+    return 404;
+  }
+
+  if (error.message.includes("current session")) {
+    return 403;
+  }
+
+  return 400;
 }
 
 function isManifestForSkill(value: unknown, skillSlug: string) {

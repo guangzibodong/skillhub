@@ -310,6 +310,30 @@ curl "https://api.useskillhub.com/v1/account" \
 
 `GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and payout status. Login methods include provider connection metadata where available: `providerEmail`, `emailVerified`, `connectedAt`, and `lastLoginAt`. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness.
 
+Read user-owned account sessions:
+
+```bash
+curl "https://api.useskillhub.com/v1/account/sessions" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`GET /v1/account/sessions` requires a user-scoped token. It returns token-session fingerprints only:
+
+- `tokenId`, `name`, `tokenPrefix`, and `tokenLast4`.
+- `createdAt`, `lastUsedAt`, `expiresAt`, and `revokedAt`.
+- `organizationId`, `organizationName`, and `organizationSlug`.
+- `status`: `active`, `expired`, or `revoked`.
+- `isCurrent`: true for the token used on this request.
+
+Revoke an old account session:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/account/sessions/$TOKEN_ID/revoke" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+`POST /v1/account/sessions/:tokenId/revoke` can revoke only sessions owned by the active user. It refuses to revoke the current request token; users should use `/account` sign out for the current browser session. A successful revocation writes `auth.session.revoked` to `admin_audit_logs` and queues an `account.security.session_revoked` in-app notification.
+
 Admin/support operators can inspect the platform identity directory:
 
 ```bash
@@ -323,7 +347,7 @@ Web console session:
 
 - `/login` is now a product account entry. It shows email registration, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` lets a new user create a workspace with email registration or lets an existing user paste a user access token from signup, invite, bootstrap, or the team console.
-- `/account` centralizes profile, organization role, modeled connected accounts, token security, workspace readiness, and notification preferences for the active user.
+- `/account` centralizes profile, organization role, modeled connected accounts, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.
