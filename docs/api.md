@@ -1902,3 +1902,5 @@ curl -X POST "https://api.useskillhub.com/mcp" \
 ```
 
 `tools/call` is not a shortcut around SkillHub policy. The gateway authenticates the project API key, checks the project install, version pin, verification state, owner approval, permission policy, rate limit, budget, and subscription state, then records invocation and usage events just like `/v1/runtime/invoke`. A blocked or failed call returns an MCP `isError` result with the SkillHub error code and invocation id where available.
+
+The project command center at `/dashboard/projects/[slug]` surfaces the same REST and MCP endpoints with copyable command snippets. The UI shows only the project API-key environment variable name and active-key count; raw project keys remain reveal-once through the key-creation workflow.

@@ -7249,6 +7249,132 @@ a {
   min-width: 0;
 }
 
+.agent-connection-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.agent-connection-panel__head,
+.agent-connection-endpoint,
+.agent-snippet__head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.agent-connection-panel__head {
+  align-items: flex-start;
+}
+
+.agent-connection-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.agent-connection-status-grid div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.agent-connection-status-grid svg,
+.agent-connection-endpoint svg,
+.agent-snippet__head svg {
+  color: var(--cyan);
+}
+
+.agent-connection-status-grid span,
+.agent-connection-endpoint span,
+.agent-connection-policy {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.agent-connection-status-grid strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-connection-endpoint {
+  min-height: 42px;
+  border: 1px solid rgba(145, 230, 139, 0.16);
+  border-radius: var(--radius);
+  background: rgba(145, 230, 139, 0.055);
+  padding: 8px 8px 8px 10px;
+}
+
+.agent-connection-endpoint code {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-connection-endpoint span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.agent-connection-policy {
+  margin: 0;
+}
+
+.agent-connection-snippets {
+  display: grid;
+  gap: 11px;
+}
+
+.agent-snippet {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.agent-snippet__head strong {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.agent-snippet pre {
+  min-width: 0;
+  overflow-x: auto;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.24);
+  padding: 11px;
+}
+
+.agent-snippet code {
+  color: #dcefd5;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre;
+}
+
 .project-table {
   display: grid;
   margin-top: 18px;
@@ -9689,6 +9815,10 @@ a {
   .buyer-request-board,
   .buyer-request-composer,
   .admin-adjustment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-connection-status-grid {
     grid-template-columns: 1fr;
   }
 

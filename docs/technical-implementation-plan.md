@@ -298,7 +298,7 @@ Acceptance checks:
 
 - `/dashboard`: project list, installed skills, budgets, API keys, usage, invoices, update inbox.
 - `/developer`: dedicated developer command center for projects, runtime keys, installed skills, budgets, buyer requests, billing readiness, and notifications.
-- `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, update inbox, recent runtime calls, subscriptions, and operational next actions.
+- `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, REST/MCP agent connection snippets, update inbox, recent runtime calls, subscriptions, and operational next actions.
 - `/account`: personal center for profile, connected accounts, login methods, organization roles, notification preferences, session/token security, billing profile shortcuts, and payout readiness shortcuts.
 
 ### Publisher Workspace
@@ -494,6 +494,7 @@ Completed:
 - `/developer` now exposes webhook endpoint management beside team, billing, inbox, and notification preferences, so webhook preferences have a concrete integration surface before final delivery workers/providers are connected.
 - Project runtime test invocation APIs now let signed-in developers run an installed skill through the same runtime policy, subscription, budget, invocation-log, and execution path as agent API-key calls while keeping console tests non-billable.
 - Skill detail project actions now expose a JSON test input and runtime result panel beside save/install, giving developers an immediate install-to-test loop before they hand a project key to an agent.
+- Project detail now exposes a REST/MCP agent connection panel with copyable endpoint and command snippets, active-key state, project slug, and a governance reminder that runtime policy, budget, subscription, logging, and metering still apply.
 
 Next:
 

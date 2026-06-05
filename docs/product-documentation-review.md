@@ -334,6 +334,12 @@ Added MCP project runtime execution, covering:
 - MCP `tools/call` reuses the existing SkillHub runtime path, so install state, version pin, verification, owner approval, permission policy, rate limit, budget, subscription state, invocation logs, usage events, and per-call metering all remain enforced.
 - This strengthens developer and agent-builder value because MCP clients can move from discovering SkillHub skills to actually calling project-approved tools without bypassing governance.
 
+Added project agent-connection onboarding, covering:
+
+- `/dashboard/projects/[slug]` now shows REST and MCP connection snippets, the MCP endpoint, active project-key state, and the project slug in the developer project command center.
+- Copy actions expose endpoint and command snippets while keeping raw project API keys reveal-once through the existing key creation flow.
+- This strengthens install-to-run value because developers can move from a managed project to an actual agent runtime configuration without hunting through API docs or bypassing project governance.
+
 Added publisher-visible revenue source explainability, covering:
 
 - Finance and publisher ledger summaries now break posted revenue into per-call usage and subscription-period sources with gross, platform fee, publisher share, and transaction count.

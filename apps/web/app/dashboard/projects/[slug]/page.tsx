@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   WalletCards
 } from "lucide-react";
+import { ProjectAgentConnectionPanel } from "@/components/project-agent-connection-panel";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectInvoiceManager } from "@/components/project-invoice-manager";
 import { ProjectSavedSkillManager } from "@/components/project-saved-skill-manager";
@@ -221,6 +222,13 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         </div>
 
         <aside className="project-detail-side">
+          <ProjectAgentConnectionPanel
+            activeKeyCount={project.apiKeys.activeCount}
+            apiUrl={apiUrl}
+            locale={locale}
+            projectSlug={project.slug}
+          />
+
           <ProjectApiKeyManager
             activeLabel={labels.active}
             emptyLabel={labels.empty}

@@ -323,7 +323,7 @@ Requirements:
 Requirements:
 
 - Projects.
-- Project detail command center with installed skills, editable per-skill policies, API keys, actionable update inbox, runtime calls, manageable subscription lifecycle, subscription ledger posting state, renewal readiness, cost, invoice records, organization billing readiness, and next actions.
+- Project detail command center with installed skills, editable per-skill policies, API keys, actionable update inbox, runtime calls, manageable subscription lifecycle, subscription ledger posting state, renewal readiness, cost, invoice records, organization billing readiness, agent REST/MCP connection details, and next actions.
 - Project API keys with create, reveal-once, copy, rotation, and revoke workflows.
 - Approved skills.
 - Version pins.
