@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   CircleDollarSign,
   ClipboardCheck,
+  Megaphone,
   MessageSquareText,
   PackageCheck,
   Save,
@@ -146,6 +147,53 @@ const copy = {
   }
 } as const;
 
+const marketplaceCopy = {
+  en: {
+    expires: "Expires",
+    marketplace: "Marketplace distribution",
+    hintLabels: {
+      collect_feedback: "Collect published feedback",
+      drive_first_installs: "Drive first installs",
+      eligible_for_distribution: "Eligible for stronger distribution",
+      fix_runtime_checks: "Fix failed review checks",
+      maintain_quality: "Maintain quality signals",
+      make_public: "Make listing public",
+      moderate_feedback: "Clear pending feedback",
+      raise_success_rate: "Raise runtime success rate",
+      resolve_incidents: "Resolve open incidents",
+      stabilize_runtime: "Stabilize runtime checks",
+      submit_review: "Submit for review"
+    },
+    placementLabels: {
+      featured: "Featured",
+      standard: "Standard",
+      suppressed: "Suppressed"
+    }
+  },
+  zh: {
+    expires: "\u5230\u671f",
+    marketplace: "\u5e02\u573a\u5206\u53d1",
+    hintLabels: {
+      collect_feedback: "\u83b7\u53d6\u5df2\u53d1\u5e03\u53cd\u9988",
+      drive_first_installs: "\u63a8\u52a8\u9996\u6279\u5b89\u88c5",
+      eligible_for_distribution: "\u53ef\u4ee5\u83b7\u5f97\u66f4\u5f3a\u5206\u53d1",
+      fix_runtime_checks: "\u4fee\u590d\u5931\u8d25\u7684\u5ba1\u6838\u68c0\u67e5",
+      maintain_quality: "\u7ee7\u7eed\u4fdd\u6301\u8d28\u91cf\u4fe1\u53f7",
+      make_public: "\u5c06\u6280\u80fd\u8bbe\u4e3a\u516c\u5f00",
+      moderate_feedback: "\u5904\u7406\u5f85\u5ba1\u53cd\u9988",
+      raise_success_rate: "\u63d0\u9ad8\u8fd0\u884c\u6210\u529f\u7387",
+      resolve_incidents: "\u89e3\u51b3\u672a\u5173\u95ed\u4e8b\u6545",
+      stabilize_runtime: "\u7a33\u5b9a\u8fd0\u884c\u68c0\u67e5",
+      submit_review: "\u63d0\u4ea4\u5ba1\u6838"
+    },
+    placementLabels: {
+      featured: "\u7cbe\u9009",
+      standard: "\u6807\u51c6",
+      suppressed: "\u964d\u6743"
+    }
+  }
+} as const;
+
 const initialState: PublisherSkillActionState = {
   message: "",
   status: "idle"
@@ -194,6 +242,7 @@ function PublisherSkillCard({
     setPublisherSkillPriceAction.bind(null, locale),
     initialState
   );
+  const marketplaceLabels = marketplaceCopy[locale];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
   const reviewMessageVisible = reviewState.skillSlug === skill.slug && reviewState.status !== "idle";
   const priceMessageVisible = priceState.skillSlug === skill.slug && priceState.status !== "idle";
@@ -229,6 +278,33 @@ function PublisherSkillCard({
           ))}
         </div>
       </div>
+
+      {skill.marketplace ? (
+        <div className="publisher-skill-marketplace">
+          <div className="publisher-skill-marketplace__head">
+            <strong>
+              <Megaphone size={15} aria-hidden="true" />
+              {marketplaceLabels.marketplace}
+            </strong>
+            <span className={marketplaceClass(skill.marketplace.placement)}>
+              {formatPlacement(skill.marketplace.placement, marketplaceLabels.placementLabels)}
+            </span>
+          </div>
+          {skill.marketplace.reason ? <p>{skill.marketplace.reason}</p> : null}
+          <div className="publisher-skill-hints">
+            {skill.marketplace.improvementHints.map((hint) => (
+              <span className={hintClass(hint.severity)} key={`${skill.id}-${hint.key}`}>
+                {formatHintLabel(hint.key, marketplaceLabels.hintLabels)}
+              </span>
+            ))}
+          </div>
+          {skill.marketplace.endsAt ? (
+            <small className="publisher-skill-marketplace__date">
+              {marketplaceLabels.expires}: {formatDate(skill.marketplace.endsAt, locale)}
+            </small>
+          ) : null}
+        </div>
+      ) : null}
 
       {skill.runtime.checks?.length ? (
         <div className="publisher-skill-checks" aria-label={labels.checks}>
@@ -333,6 +409,14 @@ function formatVerificationStatus(status: string, labels: Record<string, string>
   return labels[status] ?? status.replaceAll("_", " ");
 }
 
+function formatPlacement(placement: NonNullable<PublisherSkillRecord["marketplace"]>["placement"], labels: Record<string, string>) {
+  return labels[placement] ?? placement.replaceAll("_", " ");
+}
+
+function formatHintLabel(key: string, labels: Record<string, string>) {
+  return labels[key] ?? key.replaceAll("_", " ");
+}
+
 function formatCheckType(checkType: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
   return labels.checkLabels[checkType as keyof typeof labels.checkLabels] ?? checkType;
 }
@@ -366,6 +450,18 @@ function statusClass(status: PublisherSkillRecord["verificationStatus"]) {
   return "status-chip status-chip--neutral";
 }
 
+function marketplaceClass(placement: NonNullable<PublisherSkillRecord["marketplace"]>["placement"]) {
+  if (placement === "featured") {
+    return "status-chip";
+  }
+
+  if (placement === "suppressed") {
+    return "status-chip status-chip--warning";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
 function qualityClass(status: PublisherSkillRecord["quality"]["checklist"][number]["status"]) {
   if (status === "complete") {
     return "quality-chip quality-chip--complete";
@@ -376,6 +472,18 @@ function qualityClass(status: PublisherSkillRecord["quality"]["checklist"][numbe
   }
 
   return "quality-chip";
+}
+
+function hintClass(severity: NonNullable<PublisherSkillRecord["marketplace"]>["improvementHints"][number]["severity"]) {
+  if (severity === "positive") {
+    return "quality-chip quality-chip--complete";
+  }
+
+  if (severity === "critical") {
+    return "quality-chip quality-chip--critical";
+  }
+
+  return "quality-chip quality-chip--attention";
 }
 
 function checkStatusClass(status: string) {
@@ -392,4 +500,22 @@ function checkStatusClass(status: string) {
   }
 
   return "status-chip status-chip--neutral";
+}
+
+function formatDate(value: string, locale: Locale) {
+  if (value === "demo") {
+    return locale === "zh" ? "\u6f14\u793a\u65f6\u95f4" : "Demo time";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(date);
 }

@@ -635,7 +635,7 @@ curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, and listing checklist.
+The response includes each owned skill's latest version, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, quality score, listing checklist, and publisher-visible marketplace distribution signal.
 
 `runtime.checks` contains the latest result for each automated review-check type, so publishers can see the exact reason behind pass, warning, failed, queued, or running states without waiting for an admin note:
 
@@ -663,9 +663,28 @@ The response includes each owned skill's latest version, verification state, lat
 
 Publisher runtime health is derived from the latest checks only: `failed` becomes `needs_attention`, `warning`, `queued`, or `running` becomes `warning`, passed checks become `healthy`, and missing checks remain `not_checked`.
 
+`marketplace` shows the publisher how the listing is currently distributed and what to improve next:
+
+```json
+{
+  "marketplace": {
+    "placement": "standard",
+    "reason": "Keep improving runtime checks before featured placement.",
+    "endsAt": null,
+    "updatedAt": "2026-06-05T08:00:00.000Z",
+    "improvementHints": [
+      { "key": "fix_runtime_checks", "severity": "critical" },
+      { "key": "collect_feedback", "severity": "warning" }
+    ]
+  }
+}
+```
+
+Placements are `featured`, `standard`, and `suppressed`. Improvement hints are publisher-safe guidance derived from visibility, review state, latest runtime checks, open incidents, success rate, feedback, usage, and active marketplace curation. Admin-only internal ranking boost values are not returned to publishers.
+
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
-The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
+The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, marketplace distribution state, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
 
 ## Buyer Request Board
 

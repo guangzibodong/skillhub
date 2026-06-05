@@ -496,6 +496,13 @@ Added admin commission rule management, covering:
 - Historical transaction splits are never rewritten when commission settings change, preserving finance traceability before final payment provider integration is connected.
 - This gives SkillHub a real platform-operator control for marketplace monetization instead of hiding the revenue split as an unchangeable code default.
 
+Added publisher-facing marketplace distribution diagnostics, covering:
+
+- `/v1/publisher/skills` now returns each owned skill's active marketplace placement, operator reason, optional expiry, and publisher-safe improvement hints.
+- The publisher skill operations UI shows featured, standard, or suppressed distribution beside review, runtime, pricing, usage, and feedback signals.
+- Improvement hints are derived from visibility, review state, latest runtime checks, open incidents, success rate, feedback, and usage, while internal boost math stays admin-only.
+- This closes the marketplace curation loop for publishers because they can see why distribution changed and what to fix before asking for more exposure.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

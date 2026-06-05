@@ -493,6 +493,16 @@ export type PublisherSkillRecord = {
       status: "complete" | "missing" | "needs_attention" | "waiting";
     }>;
   };
+  marketplace?: {
+    placement: "featured" | "standard" | "suppressed";
+    reason: string | null;
+    endsAt: string | null;
+    updatedAt: string | null;
+    improvementHints: Array<{
+      key: string;
+      severity: "critical" | "positive" | "warning";
+    }>;
+  };
   updatedAt: string;
 };
 
@@ -1647,6 +1657,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         { key: "usage", label: "Usage signal", status: "complete" }
       ]
     },
+    marketplace: {
+      placement: "featured",
+      reason: "Verified, healthy runtime, and strong published feedback.",
+      endsAt: null,
+      updatedAt: "demo",
+      improvementHints: [{ key: "maintain_quality", severity: "positive" }]
+    },
     updatedAt: "demo"
   },
   {
@@ -1709,6 +1726,16 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         { key: "runtime", label: "Runtime health", status: "needs_attention" },
         { key: "pricing", label: "Pricing", status: "complete" },
         { key: "usage", label: "Usage signal", status: "complete" }
+      ]
+    },
+    marketplace: {
+      placement: "standard",
+      reason: "Keep improving runtime checks before featured placement.",
+      endsAt: null,
+      updatedAt: "demo",
+      improvementHints: [
+        { key: "fix_runtime_checks", severity: "critical" },
+        { key: "collect_feedback", severity: "warning" }
       ]
     },
     updatedAt: "demo"

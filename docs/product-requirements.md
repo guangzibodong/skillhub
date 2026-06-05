@@ -277,6 +277,7 @@ Requirements:
 - Buyer request board.
 - Listing quality checklist.
 - Publisher quality score.
+- Marketplace placement, reason, expiry, quality gaps, and improvement path for each owned listing.
 - Incident response queue.
 
 ### Developer Dashboard

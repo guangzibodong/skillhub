@@ -12,6 +12,14 @@ type RuntimeCheckSummary = {
   createdAt: string | null;
 };
 
+type MarketplacePlacement = "featured" | "standard" | "suppressed";
+type MarketplaceImprovementSeverity = "critical" | "positive" | "warning";
+
+type MarketplaceImprovementHint = {
+  key: string;
+  severity: MarketplaceImprovementSeverity;
+};
+
 type PublisherSkillRow = {
   id: string;
   slug: string;
@@ -52,6 +60,11 @@ type PublisherSkillRow = {
   qualityScore: string | number | null;
   installSuccessRate: string | number | null;
   incidentCount: number | null;
+  openIncidentCount: number;
+  marketplacePlacement: MarketplacePlacement | null;
+  marketplaceReason: string | null;
+  marketplaceEndsAt: string | null;
+  marketplaceUpdatedAt: string | null;
 };
 
 export async function listPublisherSkills(organizationId: string | null | undefined, limit = 50) {
@@ -103,7 +116,12 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       coalesce(feedback.pending_count, 0)::int as "pendingFeedbackCount",
       pqs.score as "qualityScore",
       pqs.install_success_rate as "installSuccessRate",
-      pqs.incident_count as "incidentCount"
+      pqs.incident_count as "incidentCount",
+      coalesce(open_incidents.incident_count, 0)::int as "openIncidentCount",
+      active_curation.placement as "marketplacePlacement",
+      active_curation.reason as "marketplaceReason",
+      active_curation.ends_at::text as "marketplaceEndsAt",
+      active_curation.updated_at::text as "marketplaceUpdatedAt"
     from skills s
     left join lateral (
       select id, version, manifest
@@ -192,6 +210,21 @@ export async function listPublisherSkills(organizationId: string | null | undefi
     ) feedback on true
     left join publisher_profiles pp on pp.organization_id = s.organization_id
     left join publisher_quality_scores pqs on pqs.publisher_profile_id = pp.id
+    left join lateral (
+      select count(*)::int as incident_count
+      from skill_incidents
+      where skill_id = s.id
+        and status in ('open', 'monitoring')
+    ) open_incidents on true
+    left join lateral (
+      select placement, reason, ends_at, updated_at
+      from marketplace_curation_rules
+      where skill_id = s.id
+        and starts_at <= now()
+        and (ends_at is null or ends_at > now())
+      order by updated_at desc
+      limit 1
+    ) active_curation on true
     where (${scopedOrganizationId}::uuid is null or s.organization_id = ${scopedOrganizationId})
     order by s.updated_at desc
     limit ${safeLimit}
@@ -267,6 +300,22 @@ async function fallbackPublisherSkills(limit: number) {
           hasUsage: calls > 0
         })
       },
+      marketplace: {
+        placement: index === 0 ? "featured" : "standard",
+        reason:
+          index === 0
+            ? "Verified, healthy runtime, and strong published feedback."
+            : "Keep improving runtime checks before featured placement.",
+        endsAt: null,
+        updatedAt: "demo",
+        improvementHints:
+          index === 0
+            ? [{ key: "maintain_quality", severity: "positive" as const }]
+            : [
+                { key: "fix_runtime_checks", severity: "critical" as const },
+                { key: "collect_feedback", severity: "warning" as const }
+              ]
+      },
       updatedAt: "demo"
     };
   });
@@ -284,6 +333,8 @@ function mapPublisherSkill(row: PublisherSkillRow) {
         : row.runtimeCheckCount > 0
           ? "healthy"
           : "not_checked";
+  const incidentCount = Number(row.incidentCount ?? row.openIncidentCount ?? row.runtimeFailedCount);
+  const marketplacePlacement = row.marketplacePlacement ?? "standard";
 
   return {
     id: row.id,
@@ -333,13 +384,30 @@ function mapPublisherSkill(row: PublisherSkillRow) {
     quality: {
       score: row.qualityScore === null ? null : Number(row.qualityScore),
       installSuccessRate: row.installSuccessRate === null ? successRate : Number(row.installSuccessRate),
-      incidentCount: Number(row.incidentCount ?? row.runtimeFailedCount),
+      incidentCount,
       checklist: buildChecklist({
         hasManifest: Boolean(row.manifest),
         hasReviewSignal: Boolean(row.reviewStatus) || row.verificationStatus === "verified",
         hasRuntimeHealth: runtimeHealth === "healthy",
         hasPricing: Boolean(row.priceId),
         hasUsage: row.callCount > 0
+      })
+    },
+    marketplace: {
+      placement: marketplacePlacement,
+      reason: row.marketplaceReason,
+      endsAt: row.marketplaceEndsAt,
+      updatedAt: row.marketplaceUpdatedAt,
+      improvementHints: buildMarketplaceHints({
+        callCount: row.callCount,
+        incidentCount,
+        marketplacePlacement,
+        pendingFeedbackCount: row.pendingFeedbackCount,
+        publishedFeedbackCount: row.publishedFeedbackCount,
+        runtimeHealth,
+        successRate,
+        verificationStatus: row.verificationStatus,
+        visibility: row.visibility
       })
     },
     updatedAt: row.updatedAt
@@ -434,4 +502,62 @@ function buildChecklist(input: {
       status: input.hasUsage ? "complete" : "waiting"
     }
   ];
+}
+
+function buildMarketplaceHints(input: {
+  callCount: number;
+  incidentCount: number;
+  marketplacePlacement: MarketplacePlacement;
+  pendingFeedbackCount: number;
+  publishedFeedbackCount: number;
+  runtimeHealth: "healthy" | "warning" | "needs_attention" | "not_checked";
+  successRate: number | null;
+  verificationStatus: string;
+  visibility: string;
+}): MarketplaceImprovementHint[] {
+  const hints: MarketplaceImprovementHint[] = [];
+
+  if (input.marketplacePlacement === "featured") {
+    hints.push({ key: "maintain_quality", severity: "positive" });
+  }
+
+  if (input.visibility !== "public") {
+    hints.push({ key: "make_public", severity: "warning" });
+  }
+
+  if (!["submitted", "verified"].includes(input.verificationStatus)) {
+    hints.push({ key: "submit_review", severity: "warning" });
+  }
+
+  if (input.runtimeHealth === "needs_attention") {
+    hints.push({ key: "fix_runtime_checks", severity: "critical" });
+  } else if (input.runtimeHealth === "warning" || input.runtimeHealth === "not_checked") {
+    hints.push({ key: "stabilize_runtime", severity: "warning" });
+  }
+
+  if (input.incidentCount > 0) {
+    hints.push({ key: "resolve_incidents", severity: "critical" });
+  }
+
+  if (input.successRate !== null && input.successRate < 0.95) {
+    hints.push({ key: "raise_success_rate", severity: "warning" });
+  }
+
+  if (input.pendingFeedbackCount > 0) {
+    hints.push({ key: "moderate_feedback", severity: "warning" });
+  }
+
+  if (input.publishedFeedbackCount === 0) {
+    hints.push({ key: "collect_feedback", severity: "warning" });
+  }
+
+  if (input.callCount === 0) {
+    hints.push({ key: "drive_first_installs", severity: "warning" });
+  }
+
+  if (hints.length === 0) {
+    hints.push({ key: "eligible_for_distribution", severity: "positive" });
+  }
+
+  return hints.slice(0, 5);
 }

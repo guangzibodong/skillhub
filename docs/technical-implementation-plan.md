@@ -149,6 +149,7 @@ Acceptance checks:
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
 - Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
+- Publishers can see their current marketplace placement, operator reason, expiry, and safe improvement hints without exposing internal boost math.
 
 ### 5. Runtime And Metering
 

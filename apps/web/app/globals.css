@@ -6797,6 +6797,52 @@ a {
   gap: 7px;
 }
 
+.publisher-skill-marketplace {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  border: 1px solid rgba(93, 211, 196, 0.16);
+  border-radius: var(--radius);
+  background: rgba(93, 211, 196, 0.045);
+  padding: 11px;
+}
+
+.publisher-skill-marketplace__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.publisher-skill-marketplace__head strong {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.publisher-skill-marketplace__head svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.publisher-skill-marketplace p,
+.publisher-skill-marketplace__date {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.publisher-skill-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
 .publisher-skill-checks {
   display: grid;
   gap: 8px;
@@ -6860,6 +6906,12 @@ a {
   border-color: rgba(215, 168, 76, 0.22);
   background: rgba(215, 168, 76, 0.08);
   color: var(--amber);
+}
+
+.quality-chip--critical {
+  border-color: rgba(255, 102, 102, 0.24);
+  background: rgba(255, 102, 102, 0.08);
+  color: #ff9a9a;
 }
 
 .publisher-skill-review-form {
