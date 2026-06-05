@@ -1,12 +1,14 @@
 "use client";
 
 import { CheckCircle2, FileJson, KeyRound, LockKeyhole, Send, ShieldCheck, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
-import type { Dictionary } from "@/lib/i18n";
+import { useActionState, useMemo, useState } from "react";
+import type { Dictionary, Locale } from "@/lib/i18n";
+import { publishSkillAction, type PublishSkillActionState } from "@/lib/publish-actions";
 
 type PublishFormProps = {
   apiUrl: string;
   labels: Dictionary["publishForm"];
+  locale: Locale;
 };
 
 type ReviewCheck = {
@@ -55,6 +57,11 @@ const exampleManifest = {
   }
 };
 
+const initialActionState: PublishSkillActionState = {
+  message: "",
+  status: "idle"
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -63,11 +70,9 @@ function toText(value: unknown, fallback: string) {
   return typeof value === "string" && value.length > 0 ? value : fallback;
 }
 
-export function PublishForm({ apiUrl, labels }: PublishFormProps) {
-  const [adminToken, setAdminToken] = useState("");
+export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
+  const [state, formAction, isPending] = useActionState(publishSkillAction.bind(null, locale), initialActionState);
   const [manifestText, setManifestText] = useState(JSON.stringify(exampleManifest, null, 2));
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
 
   const parsedManifest = useMemo(() => {
     try {
@@ -124,45 +129,11 @@ export function PublishForm({ apiUrl, labels }: PublishFormProps) {
     };
   }, [labels, parsedManifest]);
 
-  const canSubmit = Boolean(adminToken.trim()) && Boolean(parsedManifest) && status !== "submitting";
-
-  async function submit() {
-    if (!parsedManifest) {
-      setStatus("error");
-      setMessage(labels.invalidManifest);
-      return;
-    }
-
-    setStatus("submitting");
-    setMessage("");
-
-    try {
-      const response = await fetch(`${apiUrl}/v1/skills`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ manifest: parsedManifest })
-      });
-
-      const payload = (await response.json()) as { slug?: string; error?: string };
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? `Publish failed with ${response.status}`);
-      }
-
-      setStatus("success");
-      setMessage(`${labels.publishedPrefix} ${payload.slug}.`);
-    } catch (error) {
-      setStatus("error");
-      setMessage(error instanceof Error ? error.message : labels.unableToPublish);
-    }
-  }
+  const canSubmit = Boolean(parsedManifest) && !isPending;
 
   return (
     <section className="publish-grid" aria-label="Publish skill">
-      <div className="publish-main">
+      <form action={formAction} className="publish-main">
         <div className="publish-card">
           <div className="publish-card__head">
             <div>
@@ -181,13 +152,7 @@ export function PublishForm({ apiUrl, labels }: PublishFormProps) {
           <div className="field-grid">
             <label>
               <span>{labels.adminToken}</span>
-              <input
-                autoComplete="off"
-                onChange={(event) => setAdminToken(event.target.value)}
-                placeholder="skh_admin_..."
-                type="password"
-                value={adminToken}
-              />
+              <input readOnly value={labels.private} />
             </label>
             <label>
               <span>API</span>
@@ -206,6 +171,7 @@ export function PublishForm({ apiUrl, labels }: PublishFormProps) {
           </span>
           <textarea
             aria-invalid={!parsedManifest}
+            name="manifest"
             onChange={(event) => setManifestText(event.target.value)}
             spellCheck={false}
             value={manifestText}
@@ -213,24 +179,24 @@ export function PublishForm({ apiUrl, labels }: PublishFormProps) {
         </label>
 
         <div className="publish-actions">
-          <button className="primary-button primary-button--large" disabled={!canSubmit} onClick={submit} type="button">
+          <button className="primary-button primary-button--large" disabled={!canSubmit} type="submit">
             <Send size={18} aria-hidden="true" />
-            <span>{status === "submitting" ? labels.publishing : labels.publishSkill}</span>
+            <span>{isPending ? labels.publishing : labels.publishSkill}</span>
           </button>
-          {status === "success" && (
+          {state.status === "success" && (
             <p className="form-message form-message--success">
               <CheckCircle2 size={16} aria-hidden="true" />
-              <span>{message}</span>
+              <span>{state.message}</span>
             </p>
           )}
-          {status === "error" && (
+          {state.status === "error" && (
             <p className="form-message form-message--error">
               <XCircle size={16} aria-hidden="true" />
-              <span>{message}</span>
+              <span>{state.message}</span>
             </p>
           )}
         </div>
-      </div>
+      </form>
 
       <aside className="review-panel" aria-label="Manifest review">
         <div className="review-panel__head">

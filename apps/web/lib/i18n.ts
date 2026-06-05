@@ -323,20 +323,20 @@ export const dictionaries = {
         }
       ],
       endpointsTitle: "Core endpoints",
-      publishNote: "Publishing is protected by an admin token while discovery remains public."
+      publishNote: "Publishing uses an organization-scoped publisher, owner, or admin user session while discovery remains public."
     },
     publishPage: {
       eyebrow: "Publish workflow",
       title: "Register a skill package.",
       description:
-        "Paste a SkillHub manifest, review the contract, and publish it into the live registry behind useskillhub.com.",
+        "Sign in as a publisher, paste a SkillHub manifest, review the contract, and publish it into the live registry behind useskillhub.com.",
       badge: "skillhub.json",
       consoleSubtitle: "publish console"
     },
     publishForm: {
-      operatorAccess: "Operator access",
-      adminToken: "Admin token",
-      private: "Private",
+      operatorAccess: "Publisher access",
+      adminToken: "Signed-in user session",
+      private: "User-scoped token from login",
       validJson: "Valid JSON",
       invalidJson: "Invalid JSON",
       publishSkill: "Publish skill",
@@ -675,19 +675,19 @@ export const dictionaries = {
         }
       ],
       endpointsTitle: "核心端点",
-      publishNote: "发布接口由管理员 token 保护，发现接口保持公开。"
+      publishNote: "发布使用组织范围内的发布者、owner 或 admin 用户会话，发现接口保持公开。"
     },
     publishPage: {
       eyebrow: "发布流程",
       title: "注册一个技能包。",
-      description: "粘贴 SkillHub manifest，检查协议，然后发布到 useskillhub.com 后面的实时注册表。",
+      description: "以发布者身份登录后，粘贴 SkillHub manifest，检查协议，然后发布到 useskillhub.com 后面的实时注册表。",
       badge: "skillhub.json",
       consoleSubtitle: "发布控制台"
     },
     publishForm: {
-      operatorAccess: "运营权限",
-      adminToken: "管理员 token",
-      private: "私密",
+      operatorAccess: "发布者访问",
+      adminToken: "当前登录用户会话",
+      private: "来自登录的用户 token",
       validJson: "JSON 有效",
       invalidJson: "JSON 无效",
       publishSkill: "发布技能",

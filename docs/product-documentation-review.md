@@ -224,6 +224,7 @@ Added publisher skill operations analytics, covering:
 - Skill ownership checks for publish/update, review submission, and price writes.
 - Aggregated publisher signals for review, runtime checks, installs, calls, success/error/blocked counts, latency, billable usage, pricing, and quality checklist.
 - Dashboard publishing pipeline now reads owned skill operations data and exposes review submission plus pricing controls, giving publishers a concrete reason to return, improve listings, and move skills toward monetization.
+- `/publish` now uses the signed-in organization-scoped user session for manifest submission instead of asking for an admin token in the browser form, making the first publisher upload path feel like self-service product onboarding.
 
 Added developer project operations analytics, covering:
 

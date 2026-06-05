@@ -1199,6 +1199,8 @@ curl -X POST "https://api.useskillhub.com/v1/skills" \
   -d '{"manifest": { ... }}'
 ```
 
+The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace.
+
 ## MCP Discovery
 
 ```bash

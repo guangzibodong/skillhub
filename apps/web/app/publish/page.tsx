@@ -41,7 +41,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <PublishForm apiUrl={apiUrl} labels={dictionary.publishForm} />
+      <PublishForm apiUrl={apiUrl} labels={dictionary.publishForm} locale={locale} />
     </main>
   );
 }
