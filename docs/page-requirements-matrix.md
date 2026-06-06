@@ -80,6 +80,36 @@ Acceptance:
 - Shows the operating evidence chain from discovery to install, runtime governance, ledger, and payout so visitors can see the catalog is backed by operational state.
 - No internal curation boost/reason is exposed publicly.
 
+### Registry `/registry`
+
+Primary user: Developer / agent builder, publisher, customer evaluator.
+
+Page job:
+
+- Explain the versioned skill-contract layer behind marketplace discovery.
+- Show what a valid SkillHub manifest records before a listing becomes installable.
+- Connect registry contracts to review, runtime governance, ledger, payout, notification, and audit state.
+
+Primary action:
+
+- Open the public registry API.
+- Compare public skills in the marketplace.
+- Continue to the publisher submission path.
+
+Data source:
+
+- `/v1/skills/search`
+- `/v1/stats`
+- Shared operating evidence chain counts derived from public registry state.
+
+Acceptance:
+
+- Does not duplicate marketplace filtering or buyer comparison.
+- Shows the registry protocol position, manifest quality bar, skill lifecycle, runtime resolution path, public API endpoint, and live public registry rows.
+- Makes clear that production-like environments do not fill fake public supply unless demo fallback is explicitly enabled.
+- Shows high-risk, verified, MCP, and registry-call signals where available.
+- Desktop and mobile layouts must not horizontally overflow, including the manifest snippet and skill table.
+
 ### Skill Detail `/skills/[slug]`
 
 Primary user: Developer / agent builder.

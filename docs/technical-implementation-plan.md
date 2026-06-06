@@ -302,6 +302,7 @@ Acceptance checks:
 ### Public
 
 - `/`: product value, trust model, registry preview.
+- `/registry`: public versioned contract registry that explains manifest quality, lifecycle, runtime resolution, governance evidence, and the live `/v1/skills/search` endpoint without duplicating marketplace comparison.
 - `/marketplace`: searchable catalog with filters, install commands, trust, pricing, and request board.
 - `/skills/[slug]`: copyable CLI/MCP/SDK install commands, install-readiness checklist, project save/install/test actions, schemas, permissions, runtime, security notes, pricing, changelog, support, published feedback, and feedback submission.
 - `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
@@ -410,6 +411,7 @@ Completed:
 - `/`, `/login`, and `/account` now expose a role-aware console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, making backend routes, required roles, no-shared-password access, OAuth configuration state, and token fallback boundaries visible before customers need private instructions.
 - `/developer`, `/publisher`, and `/admin` now expose role-aware workspace access panels that show current session, token fingerprint, required roles, sign-in-required or role-required states, and the gateway-enforced write boundary before users reach project, publishing, or admin controls.
 - `/`, `/marketplace`, `/developer`, `/publisher`, and `/admin` now expose a shared operating evidence chain that connects publish contract, review gate, marketplace install, runtime governance, ledger split, payout, notification, and audit. Each page passes live/count signals from its own data source and keeps production empty states empty instead of filling unavailable data with bundled demo supply.
+- `/registry` now presents the public skill registry as SkillHub's versioned contract layer: it explains the manifest quality bar, lifecycle, runtime resolution path, production demo-fallback boundary, live API endpoint, and registry-specific evidence before showing the public skill table.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 - Publisher profile and payout-account onboarding endpoints.

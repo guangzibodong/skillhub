@@ -193,6 +193,12 @@ The web app uses this data for `/publishers`, `/publishers/[slug]`, marketplace 
 curl "https://api.useskillhub.com/v1/stats"
 ```
 
+## Public Registry Surface
+
+The public registry page at `https://app.useskillhub.com/registry` uses `/v1/skills/search` and `/v1/stats` to explain SkillHub's contract layer before marketplace comparison. It should show versioned manifest requirements, lifecycle state, runtime resolution, high-risk/verified/MCP evidence, and the public API endpoint. It intentionally avoids a non-stateful search box because marketplace discovery and ranking belong to `/marketplace`.
+
+Production-like runtimes must keep the same demo-fallback rule as marketplace and skill detail pages: bundled supply is suppressed unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
+
 ## Public Operating Terms
 
 The web app exposes public marketplace operating terms at:

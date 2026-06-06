@@ -60,6 +60,8 @@ The current UI pass adds a shared operating evidence chain to home, marketplace,
 
 The latest dashboard pass turns `/dashboard` into a clearer workspace command center instead of another mixed dashboard. It now places session state, backend access map, the three P0 journeys, the operating evidence chain, and role-specific account/developer/publisher/admin action cards before the dense project, publishing, finance, payout, billing, and notification panels. This helps a customer understand where the real backend lives, what role is required, and how the existing detailed panels support the frozen journeys without pretending there is one shared backend password.
 
+The latest registry pass turns `/registry` into a product-level contract registry instead of a thin skill table. It now explains that SkillHub records versioned manifests before marketplace listing, shows the manifest quality bar, lifecycle, runtime resolution path, production demo-fallback boundary, public API endpoint, and registry evidence signals before rendering live registry rows. This reduces demo risk because evaluators can see the platform layer that makes marketplace listings governable, installable, auditable, and ready for runtime/ledger operations.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:
