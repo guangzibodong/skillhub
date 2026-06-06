@@ -1,16 +1,20 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowDownWideNarrow,
+  Braces,
   CheckCircle2,
   ClipboardCheck,
   Clock3,
   FileText,
   ListFilter,
   Save,
+  ServerCog,
   ShieldAlert,
+  Tags,
+  UserRound,
   XCircle
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
@@ -242,6 +246,67 @@ const copy = {
   }
 } as const;
 
+const reviewEvidenceCopy = {
+  en: {
+    author: "Author",
+    browser: "Browser",
+    disabled: "off",
+    enabled: "on",
+    fields: "fields",
+    filesystem: "Files",
+    input: "Input",
+    manifest: "Manifest",
+    network: "Network",
+    noEvidence: "No manifest evidence was returned.",
+    organization: "Org",
+    output: "Output",
+    payout: "Payout",
+    permissions: "Permissions",
+    publisher: "Publisher",
+    publisherMissing: "No publisher profile",
+    required: "required",
+    runtime: "Runtime",
+    schema: "Schemas",
+    secrets: "Secrets",
+    status: "Status",
+    tags: "Tags",
+    target: "Target",
+    title: "Review evidence",
+    unknown: "Unknown",
+    version: "Version"
+  },
+  zh: {
+    author: "\u4f5c\u8005",
+    browser: "\u6d4f\u89c8\u5668",
+    disabled: "\u5173",
+    enabled: "\u5f00",
+    fields: "\u5b57\u6bb5",
+    filesystem: "\u6587\u4ef6",
+    input: "\u8f93\u5165",
+    manifest: "Manifest",
+    network: "\u7f51\u7edc",
+    noEvidence: "\u6ca1\u6709\u8fd4\u56de manifest \u5ba1\u6838\u6750\u6599\u3002",
+    organization: "\u7ec4\u7ec7",
+    output: "\u8f93\u51fa",
+    payout: "\u63d0\u73b0",
+    permissions: "\u6743\u9650",
+    publisher: "\u53d1\u5e03\u8005",
+    publisherMissing: "\u672a\u914d\u7f6e\u53d1\u5e03\u8005",
+    required: "\u5fc5\u586b",
+    runtime: "\u8fd0\u884c\u65f6",
+    schema: "Schema",
+    secrets: "Secret",
+    status: "\u72b6\u6001",
+    tags: "\u6807\u7b7e",
+    target: "\u76ee\u6807",
+    title: "\u5ba1\u6838\u8bc1\u636e",
+    unknown: "\u672a\u77e5",
+    version: "\u7248\u672c"
+  }
+} as const;
+
+type ReviewEvidenceLabels = (typeof reviewEvidenceCopy)["en" | "zh"];
+
 const initialState: AdminReviewActionState = {
   message: "",
   status: "idle"
@@ -249,6 +314,7 @@ const initialState: AdminReviewActionState = {
 
 export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps) {
   const labels = copy[locale];
+  const evidenceLabels = reviewEvidenceCopy[locale];
   const [filter, setFilter] = useState<ReviewFilter>("all");
   const [sort, setSort] = useState<ReviewSort>("priority");
   const [state, action, isPending] = useActionState(decideAdminReviewAction.bind(null, locale), initialState);
@@ -402,6 +468,8 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </div>
                 ) : null}
 
+                {review.reviewEvidence ? <ReviewEvidence evidence={review.reviewEvidence} labels={evidenceLabels} /> : null}
+
                 {review.runtimeChecks?.length ? (
                   <div className="admin-review-checks" aria-label={labels.checks}>
                     {review.runtimeChecks.map((check) => (
@@ -486,6 +554,133 @@ function ActionMessage({ state }: { state: AdminReviewActionState }) {
       <span>{state.message}</span>
     </div>
   );
+}
+
+function ReviewEvidence({
+  evidence,
+  labels
+}: {
+  evidence: NonNullable<AdminReviewRecord["reviewEvidence"]>;
+  labels: ReviewEvidenceLabels;
+}) {
+  const manifest = evidence.manifestSummary;
+  const publisher = evidence.publisher;
+
+  return (
+    <div className="admin-review-evidence" aria-label={labels.title}>
+      <div className="admin-review-evidence__head">
+        <ClipboardCheck size={14} aria-hidden="true" />
+        <span>{labels.title}</span>
+      </div>
+
+      <div className="admin-review-evidence__grid">
+        <EvidenceItem icon={<UserRound size={14} aria-hidden="true" />} label={labels.publisher} title={publisher.displayName ?? labels.publisherMissing}>
+          <small>
+            {labels.organization}: {publisher.organizationName ?? publisher.organizationSlug ?? labels.unknown}
+          </small>
+          <small>
+            {labels.status}: {publisher.status ?? labels.unknown} / {labels.payout}: {publisher.payoutStatus ?? labels.unknown}
+          </small>
+        </EvidenceItem>
+
+        <EvidenceItem icon={<ServerCog size={14} aria-hidden="true" />} label={labels.runtime} title={formatRuntimeTitle(manifest, labels)}>
+          {manifest?.runtimeTarget ? (
+            <small>
+              {labels.target}: <code>{manifest.runtimeTarget}</code>
+            </small>
+          ) : (
+            <small>{labels.noEvidence}</small>
+          )}
+          {manifest?.version ? (
+            <small>
+              {labels.version}: {manifest.version}
+            </small>
+          ) : null}
+        </EvidenceItem>
+
+        <EvidenceItem icon={<ShieldAlert size={14} aria-hidden="true" />} label={labels.permissions} title={manifest?.permissionLevel ?? labels.unknown}>
+          {manifest ? (
+            <div className="admin-review-evidence__chips">
+              <span>{formatEnabledLabel(labels.network, manifest.permissions.network, labels)}</span>
+              <span>{formatEnabledLabel(labels.browser, manifest.permissions.browser, labels)}</span>
+              <span>
+                {labels.filesystem}: {manifest.permissions.filesystem}
+              </span>
+              <span>
+                {labels.secrets}: {manifest.permissions.secretCount}
+              </span>
+            </div>
+          ) : (
+            <small>{labels.noEvidence}</small>
+          )}
+        </EvidenceItem>
+
+        <EvidenceItem icon={<Braces size={14} aria-hidden="true" />} label={labels.schema} title={formatSchemaTitle(manifest, labels)}>
+          {manifest ? (
+            <>
+              <small>
+                {labels.input}: {formatSchemaCounts(manifest.inputPropertyCount, manifest.inputRequiredCount, labels)}
+              </small>
+              <small>
+                {labels.output}: {formatSchemaCounts(manifest.outputPropertyCount, manifest.outputRequiredCount, labels)}
+              </small>
+            </>
+          ) : (
+            <small>{labels.noEvidence}</small>
+          )}
+        </EvidenceItem>
+
+        <EvidenceItem icon={<Tags size={14} aria-hidden="true" />} label={labels.manifest} title={manifest?.displayName ?? manifest?.name ?? labels.unknown}>
+          {manifest?.description ? <small>{manifest.description}</small> : null}
+          {manifest?.tags.length ? <small>{`${labels.tags}: ${manifest.tags.join(", ")}${manifest.tagsCount > manifest.tags.length ? "..." : ""}`}</small> : null}
+          {manifest?.authorName ? (
+            <small>
+              {labels.author}: {manifest.authorName}
+            </small>
+          ) : null}
+        </EvidenceItem>
+      </div>
+    </div>
+  );
+}
+
+function EvidenceItem({ children, icon, label, title }: { children: ReactNode; icon: ReactNode; label: string; title: string }) {
+  return (
+    <div className="admin-review-evidence__item">
+      <span className="admin-review-evidence__label">
+        {icon}
+        {label}
+      </span>
+      <strong>{title}</strong>
+      {children}
+    </div>
+  );
+}
+
+function formatRuntimeTitle(
+  manifest: NonNullable<AdminReviewRecord["reviewEvidence"]>["manifestSummary"],
+  labels: ReviewEvidenceLabels
+) {
+  return manifest?.runtimeType ? manifest.runtimeType.toUpperCase() : labels.unknown;
+}
+
+function formatSchemaTitle(
+  manifest: NonNullable<AdminReviewRecord["reviewEvidence"]>["manifestSummary"],
+  labels: ReviewEvidenceLabels
+) {
+  if (!manifest) {
+    return labels.unknown;
+  }
+
+  return `${manifest.inputType ?? labels.unknown} -> ${manifest.outputType ?? labels.unknown}`;
+}
+
+function formatSchemaCounts(properties: number, required: number, labels: ReviewEvidenceLabels) {
+  return `${properties} ${labels.fields} / ${required} ${labels.required}`;
+}
+
+function formatEnabledLabel(label: string, enabled: boolean, labels: ReviewEvidenceLabels) {
+  return `${label}: ${enabled ? labels.enabled : labels.disabled}`;
 }
 
 function buildReviewMetrics(reviews: AdminReviewRecord[]) {

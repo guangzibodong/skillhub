@@ -1,4 +1,4 @@
-import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
+import { getPermissionLevel, type SkillManifest, type SkillRuntime, type SkillSummary } from "@useskillhub/schema";
 import { getSql, searchSkills } from "./registry.js";
 import { buildReviewSlaFields } from "./review-sla.js";
 
@@ -593,7 +593,13 @@ export async function listReviewQueue() {
       sr.id::text,
       s.slug as "skillSlug",
       s.display_name as "displayName",
+      o.name as "organizationName",
+      o.slug as "organizationSlug",
+      pp.display_name as "publisherName",
+      pp.status as "publisherStatus",
+      pp.payout_status as "payoutStatus",
       sv.version,
+      sv.manifest,
       sr.status,
       sr.risk_level as "riskLevel",
       sr.notes,
@@ -605,7 +611,9 @@ export async function listReviewQueue() {
       coalesce(checks.warning_count, 0)::int as "runtimeWarningCount"
     from skill_reviews sr
     join skills s on s.id = sr.skill_id
+    join organizations o on o.id = s.organization_id
     left join skill_versions sv on sv.id = sr.skill_version_id
+    left join publisher_profiles pp on pp.organization_id = s.organization_id
     left join lateral (
       with latest_checks as (
         select distinct on (check_type)
@@ -650,11 +658,25 @@ export async function listReviewQueue() {
   `) as Array<{
     createdAt: Date | string | null;
     decidedAt: Date | string | null;
+    manifest: SkillManifest | null;
+    organizationName: string | null;
+    organizationSlug: string | null;
+    payoutStatus: string | null;
+    publisherName: string | null;
+    publisherStatus: string | null;
     status: string | null;
   }>;
 
-  return rows.map((review) => ({
+  return rows.map(({ manifest, organizationName, organizationSlug, payoutStatus, publisherName, publisherStatus, ...review }) => ({
     ...review,
+    reviewEvidence: buildReviewEvidence({
+      manifest,
+      organizationName,
+      organizationSlug,
+      payoutStatus,
+      publisherName,
+      publisherStatus
+    }),
     ...buildReviewSlaFields(review.createdAt, review.decidedAt, review.status)
   }));
 }
@@ -1253,6 +1275,133 @@ function buildSecurityCheck(manifest: SkillManifest): RuntimeCheckResult {
     message: "Permission profile is compatible with automated low-risk review gates.",
     nextAction: "No security repair is needed; keep permission declarations narrow for this version."
   };
+}
+
+function buildReviewEvidence(input: {
+  manifest: SkillManifest | null;
+  organizationName: string | null;
+  organizationSlug: string | null;
+  payoutStatus: string | null;
+  publisherName: string | null;
+  publisherStatus: string | null;
+}) {
+  return {
+    manifestSummary: input.manifest ? buildManifestSummary(input.manifest) : null,
+    publisher: {
+      displayName: input.publisherName ?? input.organizationName,
+      organizationName: input.organizationName,
+      organizationSlug: input.organizationSlug,
+      payoutStatus: input.payoutStatus ?? "not_configured",
+      status: input.publisherStatus ?? "missing"
+    }
+  };
+}
+
+function buildManifestSummary(manifest: SkillManifest) {
+  const permissions = manifest.permissions ?? {
+    browser: false,
+    filesystem: "none" as const,
+    network: false,
+    secrets: []
+  };
+  const tags = Array.isArray(manifest.tags) ? manifest.tags : [];
+
+  return {
+    authorName: manifest.author?.name ?? null,
+    authorUrl: manifest.author?.url ? safeUrlTarget(manifest.author.url) : null,
+    description: truncateText(manifest.description, 220),
+    displayName: manifest.displayName,
+    inputPropertyCount: countSchemaProperties(manifest.inputSchema),
+    inputRequiredCount: countSchemaRequired(manifest.inputSchema),
+    inputType: schemaType(manifest.inputSchema),
+    name: manifest.name,
+    outputPropertyCount: countSchemaProperties(manifest.outputSchema),
+    outputRequiredCount: countSchemaRequired(manifest.outputSchema),
+    outputType: schemaType(manifest.outputSchema),
+    permissionLevel: getPermissionLevel(permissions),
+    permissions: {
+      browser: Boolean(permissions.browser),
+      filesystem: permissions.filesystem,
+      network: Boolean(permissions.network),
+      secretCount: Array.isArray(permissions.secrets) ? permissions.secrets.length : 0
+    },
+    runtimeTarget: safeRuntimeTarget(manifest.runtime),
+    runtimeType: manifest.runtime?.type ?? null,
+    schemaVersion: manifest.schemaVersion,
+    tags: tags.slice(0, 8),
+    tagsCount: tags.length,
+    version: manifest.version
+  };
+}
+
+function safeRuntimeTarget(runtime: SkillRuntime | undefined) {
+  if (!runtime) {
+    return null;
+  }
+
+  if (runtime.type === "http") {
+    return safeUrlTarget(runtime.entrypoint);
+  }
+
+  if (runtime.type === "mcp") {
+    return safeUrlTarget(runtime.serverUrl);
+  }
+
+  return safeLocalCommand(runtime.command);
+}
+
+function safeUrlTarget(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const url = parseUrl(value);
+
+  if (!url) {
+    return truncateText(redactPotentialSecrets(value), 160);
+  }
+
+  url.username = "";
+  url.password = "";
+  url.search = "";
+  url.hash = "";
+
+  return truncateText(url.toString(), 160);
+}
+
+function safeLocalCommand(value: string | null | undefined) {
+  const command = value?.trim();
+
+  if (!command) {
+    return null;
+  }
+
+  return truncateText(redactPotentialSecrets(command.split(/\s+/).slice(0, 2).join(" ")), 140);
+}
+
+function schemaType(schema: SkillManifest["inputSchema"] | undefined) {
+  return typeof schema?.type === "string" ? schema.type : "unknown";
+}
+
+function countSchemaProperties(schema: SkillManifest["inputSchema"] | undefined) {
+  const properties = schema?.properties;
+  return properties && typeof properties === "object" && !Array.isArray(properties) ? Object.keys(properties).length : 0;
+}
+
+function countSchemaRequired(schema: SkillManifest["inputSchema"] | undefined) {
+  return Array.isArray(schema?.required) ? schema.required.length : 0;
+}
+
+function redactPotentialSecrets(value: string) {
+  return value.replace(/(password|secret|token|api[_-]?key|key)=([^&\s]+)/gi, "$1=[redacted]");
+}
+
+function truncateText(value: string | null | undefined, maxLength: number) {
+  if (!value) {
+    return null;
+  }
+
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 }
 
 function parseUrl(value: string) {

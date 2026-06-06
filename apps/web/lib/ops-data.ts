@@ -350,6 +350,41 @@ export type AdminReviewRecord = {
   reviewSlaHoursRemaining?: number | null;
   reviewSlaStatus?: ReviewSlaStatus | string | null;
   reviewSubmittedAt?: string | null;
+  reviewEvidence?: {
+    manifestSummary: {
+      authorName: string | null;
+      authorUrl: string | null;
+      description: string | null;
+      displayName: string | null;
+      inputPropertyCount: number;
+      inputRequiredCount: number;
+      inputType: string | null;
+      name: string | null;
+      outputPropertyCount: number;
+      outputRequiredCount: number;
+      outputType: string | null;
+      permissionLevel: "high" | "low" | "medium" | string;
+      permissions: {
+        browser: boolean;
+        filesystem: "none" | "read" | "write" | string;
+        network: boolean;
+        secretCount: number;
+      };
+      runtimeTarget: string | null;
+      runtimeType: "http" | "local" | "mcp" | string | null;
+      schemaVersion: string | null;
+      tags: string[];
+      tagsCount: number;
+      version: string | null;
+    } | null;
+    publisher: {
+      displayName: string | null;
+      organizationName: string | null;
+      organizationSlug: string | null;
+      payoutStatus: string | null;
+      status: string | null;
+    };
+  } | null;
   runtimeChecks?: Array<{
     checkType: "example" | "manifest" | "runtime" | "security" | string;
     status: "failed" | "passed" | "queued" | "running" | "warning" | string;
@@ -1674,6 +1709,41 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     reviewSlaHoursRemaining: 64,
     reviewSlaStatus: "on_track",
     reviewSubmittedAt: "demo",
+    reviewEvidence: {
+      manifestSummary: {
+        authorName: "SkillHub Labs",
+        authorUrl: "https://useskillhub.com/publishers/skillhub-labs",
+        description: "Research browsing skill that collects citations, checks freshness, and returns structured source notes for agent workflows.",
+        displayName: "Browser Research",
+        inputPropertyCount: 3,
+        inputRequiredCount: 2,
+        inputType: "object",
+        name: "browser-research",
+        outputPropertyCount: 4,
+        outputRequiredCount: 3,
+        outputType: "object",
+        permissionLevel: "medium",
+        permissions: {
+          browser: true,
+          filesystem: "none",
+          network: true,
+          secretCount: 0
+        },
+        runtimeTarget: "https://api.useskillhub.com/demo/browser-research",
+        runtimeType: "http",
+        schemaVersion: "0.1",
+        tags: ["research", "browser", "citations"],
+        tagsCount: 3,
+        version: "0.1.0"
+      },
+      publisher: {
+        displayName: "SkillHub Labs",
+        organizationName: "SkillHub Labs",
+        organizationSlug: "skillhub-labs",
+        payoutStatus: "verified",
+        status: "active"
+      }
+    },
     runtimeChecks: [
       {
         checkType: "manifest",
@@ -1729,6 +1799,41 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     reviewSlaHoursRemaining: 4,
     reviewSlaStatus: "due_soon",
     reviewSubmittedAt: "demo",
+    reviewEvidence: {
+      manifestSummary: {
+        authorName: "DataOps Studio",
+        authorUrl: "https://useskillhub.com/publishers/dataops-studio",
+        description: "Summarizes structured datasets into concise agent-ready findings with typed output and retention-safe defaults.",
+        displayName: "Dataset Summarizer",
+        inputPropertyCount: 2,
+        inputRequiredCount: 2,
+        inputType: "object",
+        name: "dataset-summarizer",
+        outputPropertyCount: 3,
+        outputRequiredCount: 2,
+        outputType: "object",
+        permissionLevel: "low",
+        permissions: {
+          browser: false,
+          filesystem: "none",
+          network: false,
+          secretCount: 0
+        },
+        runtimeTarget: "https://api.dataops.example/skillhub/summarize",
+        runtimeType: "http",
+        schemaVersion: "0.1",
+        tags: ["data", "summarization", "analytics"],
+        tagsCount: 3,
+        version: "0.1.0"
+      },
+      publisher: {
+        displayName: "DataOps Studio",
+        organizationName: "DataOps Studio",
+        organizationSlug: "dataops-studio",
+        payoutStatus: "verification_required",
+        status: "pending"
+      }
+    },
     runtimeChecks: [
       {
         checkType: "manifest",
@@ -1784,6 +1889,41 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     reviewSlaHoursRemaining: null,
     reviewSlaStatus: "decided",
     reviewSubmittedAt: "demo",
+    reviewEvidence: {
+      manifestSummary: {
+        authorName: "Ops Automation Guild",
+        authorUrl: "https://useskillhub.com/publishers/ops-automation",
+        description: "Local runtime that reads and writes project files for maintenance tasks; requires stronger sandbox and rollback review.",
+        displayName: "Local File Agent",
+        inputPropertyCount: 4,
+        inputRequiredCount: 3,
+        inputType: "object",
+        name: "local-file-agent",
+        outputPropertyCount: 3,
+        outputRequiredCount: 2,
+        outputType: "object",
+        permissionLevel: "high",
+        permissions: {
+          browser: false,
+          filesystem: "write",
+          network: false,
+          secretCount: 1
+        },
+        runtimeTarget: "node ./dist/local-file-agent.js",
+        runtimeType: "local",
+        schemaVersion: "0.1",
+        tags: ["files", "automation", "maintenance"],
+        tagsCount: 3,
+        version: "0.2.0"
+      },
+      publisher: {
+        displayName: "Ops Automation Guild",
+        organizationName: "Ops Automation Guild",
+        organizationSlug: "ops-automation",
+        payoutStatus: "blocked",
+        status: "restricted"
+      }
+    },
     runtimeChecks: [
       {
         checkType: "manifest",

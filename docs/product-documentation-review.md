@@ -38,6 +38,10 @@ SkillHub must become an operating workspace:
 - Publishers return to manage reviews, runtime checks, installs, usage, quality, buyer requests, and revenue state.
 - Admins return to manage review queues, risk, trust, ranking, incidents, ledger, payouts, disputes, and notifications.
 
+## Latest Implementation Review
+
+Admin review is now closer to an operating workflow rather than a status list: each review row is expected to carry a secret-safe evidence package with publisher readiness, payout state, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts. This directly supports Journey C because reviewers can judge supply quality and risk before approving, rejecting, or blocking a skill version.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

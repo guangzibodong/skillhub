@@ -451,6 +451,7 @@ Admin overview:
 - Queue aging/overdue.
 - Review queue filters for SLA pressure, blocking automated checks, high-risk permissions, and warning checks.
 - Review queue sort modes for recommended priority, oldest submitted, earliest SLA due time, and highest risk.
+- Secret-safe review evidence package present for each item, with publisher readiness, manifest summary, redacted runtime target, permission flags, and schema counts.
 - Action pending/success/error.
 
 Review:

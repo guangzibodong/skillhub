@@ -352,6 +352,7 @@ Completed:
 - Admin review console now reads the live review queue and exposes approve, reject, and block decisions with required reviewer notes.
 - Skill review submission now creates automated manifest, runtime declaration, example schema, and security permission checks for the submitted version.
 - Admin review queue responses now include the latest automated check results per type, and the admin console shows pass/fail/warning state inside each review card.
+- Admin review queue responses now include a secret-safe evidence package with publisher status, payout readiness, exact manifest identity, runtime type/redacted target, permission flags, secret-handle count, and input/output schema field counts; the admin console renders it between reviewer notes and automated checks.
 - Approved review decisions are blocked unless automated checks exist and have no failed, queued, or running result; warning results remain approvable with reviewer notes for human-risk acceptance.
 - Project API key creation, listing, and revocation.
 - Runtime invocation endpoint with API key auth, installed-skill gate, permission policy checks, rate limit checks, budget checks, invocation logs, and usage events.

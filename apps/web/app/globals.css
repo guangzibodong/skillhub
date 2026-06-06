@@ -4786,6 +4786,96 @@ a {
   color: var(--blue);
 }
 
+.admin-review-evidence {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  border-block: 1px solid rgba(255, 255, 255, 0.08);
+  padding-block: 10px;
+}
+
+.admin-review-evidence__head,
+.admin-review-evidence__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-review-evidence__head {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.admin-review-evidence__head svg,
+.admin-review-evidence__label svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.admin-review-evidence__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-review-evidence__item {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-review-evidence__label {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.admin-review-evidence__item strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.admin-review-evidence__item small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.admin-review-evidence__item code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.admin-review-evidence__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-review-evidence__chips span {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 680;
+  line-height: 1.2;
+  padding: 4px 6px;
+}
+
 .admin-review-priority {
   display: grid;
   gap: 8px;
@@ -12606,7 +12696,8 @@ a {
   }
 
   .admin-review-meta,
-  .admin-review-checks {
+  .admin-review-checks,
+  .admin-review-evidence__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -12834,6 +12925,10 @@ a {
 }
 
 @media (max-width: 480px) {
+  .admin-review-evidence__grid {
+    grid-template-columns: 1fr;
+  }
+
   .marketplace-curation-signals {
     grid-template-columns: 1fr;
   }

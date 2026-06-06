@@ -354,6 +354,7 @@ Requirements:
 - Skill review queue.
 - Skill review queue aging and SLA pressure, including due-soon and overdue rows derived from the submitted version timestamp.
 - Skill review queue prioritization with operator filters for SLA pressure, blocking automated checks, high-risk permission profiles, warning checks, and sort modes for recommended priority, oldest submitted, earliest SLA due time, and highest risk.
+- Skill review evidence package showing publisher identity, publisher/payout readiness, exact submitted version, manifest description/tags/author, runtime type and redacted target, permission flags, secret-handle count, and input/output schema field counts before a reviewer records a decision.
 - Risk command center.
 - Runtime incidents.
 - Finance ledger.

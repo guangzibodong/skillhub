@@ -1880,7 +1880,7 @@ curl "https://api.useskillhub.com/v1/admin/reviews" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Each review row includes review SLA fields plus `runtimeChecks`, an array of the latest check per type:
+Each review row includes review SLA fields, a secret-safe `reviewEvidence` package, and `runtimeChecks`, an array of the latest check per type:
 
 ```json
 {
@@ -1891,6 +1891,41 @@ Each review row includes review SLA fields plus `runtimeChecks`, an array of the
   "reviewSlaHoursRemaining": 67,
   "reviewQueueAgeHours": 5,
   "reviewSlaStatus": "on_track",
+  "reviewEvidence": {
+    "publisher": {
+      "displayName": "SkillHub Labs",
+      "organizationName": "SkillHub Labs",
+      "organizationSlug": "skillhub-labs",
+      "status": "active",
+      "payoutStatus": "verified"
+    },
+    "manifestSummary": {
+      "schemaVersion": "0.1",
+      "name": "browser-research",
+      "displayName": "Browser Research",
+      "version": "0.1.0",
+      "description": "Research browsing skill that collects citations and returns structured source notes.",
+      "runtimeType": "http",
+      "runtimeTarget": "https://api.useskillhub.com/demo/browser-research",
+      "permissionLevel": "medium",
+      "permissions": {
+        "network": true,
+        "browser": true,
+        "filesystem": "none",
+        "secretCount": 0
+      },
+      "inputType": "object",
+      "inputPropertyCount": 3,
+      "inputRequiredCount": 2,
+      "outputType": "object",
+      "outputPropertyCount": 4,
+      "outputRequiredCount": 3,
+      "tags": ["research", "browser", "citations"],
+      "tagsCount": 3,
+      "authorName": "SkillHub Labs",
+      "authorUrl": "https://useskillhub.com/publishers/skillhub-labs"
+    }
+  },
   "runtimeChecks": [
     {
       "checkType": "manifest",
@@ -1907,6 +1942,8 @@ Each review row includes review SLA fields plus `runtimeChecks`, an array of the
   ]
 }
 ```
+
+`reviewEvidence` is intentionally an operator-safe summary rather than the raw manifest. Runtime URLs remove query strings, fragments, and embedded credentials; local runtimes expose only a short command summary; secret values are never returned, and secret handles are represented by count only.
 
 `reviewSlaStatus` can be:
 
