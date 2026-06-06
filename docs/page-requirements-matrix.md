@@ -407,6 +407,11 @@ Acceptance:
 
 - Must not become a duplicate of every workspace.
 - Should show session state and operational shortcuts.
+- Shows a role-aware workspace command center before deep panels: account access, developer workspace, publisher workspace, and admin operations each expose required roles, sign-in-required, role-required, or available state.
+- Shows the three frozen P0 journeys together so signed-in users and customer evaluators understand where developer install/test, publisher upload/monetization, and admin governance continue.
+- Shows the shared operating evidence chain with dashboard-owned signals for projects, verified owned skills, ledger rows, and launch blocker/warning counts.
+- Uses admin launch-readiness summary only as secret-safe counts and next-action context; it must not expose OAuth secrets, email keys, service tokens, raw tokens, passwords, or other credentials.
+- Keeps detailed project, publisher, finance, payout, notification, and admin work in the dedicated workspaces instead of turning `/dashboard` into an unbounded duplicate console.
 
 ### Project Detail `/dashboard/projects/[slug]`
 
@@ -581,7 +586,7 @@ Acceptance:
 
 Status: implemented in the web UI.
 
-The home, marketplace, developer, publisher, and admin surfaces now include a shared operating evidence chain. The chain makes the same platform lifecycle visible from each role's viewpoint:
+The home, marketplace, dashboard, developer, publisher, and admin surfaces now include a shared operating evidence chain. The chain makes the same platform lifecycle visible from each role's viewpoint:
 
 - Publish contract: manifest, version, permissions, runtime, examples, and pricing intent.
 - Review gate: automated checks, human decision, reviewer notes, and SLA.
