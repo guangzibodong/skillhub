@@ -19,7 +19,7 @@ import {
   XCircle
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
-import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVersionRecord } from "@/lib/ops-data";
+import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVersionRecord, ReviewSlaStatus } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
   getPublisherFeedbackResponseCopy,
@@ -358,7 +358,12 @@ type ReviewRepairPlan = {
   openChecks: PublisherRuntimeCheck[];
   openVersionWorkbench: boolean;
   passedChecks: PublisherRuntimeCheck[];
+  queueAgeHours: number | null;
+  slaDueAt: string | null;
+  slaHoursRemaining: number | null;
+  slaStatus: ReviewSlaStatus | string | null;
   status: string | null;
+  submittedAt: string | null;
   tone: ReviewRepairTone;
   warningChecks: PublisherRuntimeCheck[];
 };
@@ -712,8 +717,23 @@ function ReviewRepairPanel({
           {plan.latestVersion ? `v${plan.latestVersion.version}` : "n/a"}
         </span>
         <span>
+          <strong>{repairLabels.submitted}</strong>
+          {formatDate(plan.submittedAt, locale)}
+        </span>
+        <span>
           <strong>{repairLabels.decided}</strong>
           {plan.decidedAt ? formatDate(plan.decidedAt, locale) : repairLabels.notDecided}
+        </span>
+        <span>
+          <strong>{repairLabels.queueAge}</strong>
+          {formatQueueAge(plan.queueAgeHours, locale)}
+        </span>
+        <span>
+          <strong>{repairLabels.sla}</strong>
+          <em className={reviewSlaClass(plan.slaStatus)}>
+            {formatReviewSlaStatus(plan.slaStatus, labels)}
+            {plan.slaDueAt ? ` / ${formatDate(plan.slaDueAt, locale)}` : ""}
+          </em>
         </span>
       </div>
 
@@ -786,6 +806,11 @@ function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
   const status = latestVersion?.reviewStatus ?? skill.review.status;
   const notes = latestVersion?.reviewNotes ?? skill.review.notes;
   const decidedAt = latestVersion?.reviewDecidedAt ?? skill.review.decidedAt;
+  const submittedAt = latestVersion?.reviewSubmittedAt ?? skill.review.reviewSubmittedAt ?? null;
+  const queueAgeHours = latestVersion?.reviewQueueAgeHours ?? skill.review.reviewQueueAgeHours ?? null;
+  const slaDueAt = latestVersion?.reviewSlaDueAt ?? skill.review.reviewSlaDueAt ?? null;
+  const slaHoursRemaining = latestVersion?.reviewSlaHoursRemaining ?? skill.review.reviewSlaHoursRemaining ?? null;
+  const slaStatus = latestVersion?.reviewSlaStatus ?? skill.review.reviewSlaStatus ?? null;
   const actionKeys: ReviewRepairActionKey[] = [];
 
   if (!latestVersion) {
@@ -835,7 +860,12 @@ function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
       ["clarify_risk", "create_version", "fix_checks", "resubmit_version", "submit_version"].includes(actionKey)
     ),
     passedChecks,
+    queueAgeHours,
+    slaDueAt,
+    slaHoursRemaining,
+    slaStatus,
     status,
+    submittedAt,
     tone,
     warningChecks
   };
@@ -1055,6 +1085,13 @@ function VersionRow({
         <small>
           {labels.versions.created}: {formatDate(version.createdAt, locale)}
         </small>
+        <small>
+          {labels.versions.reviewSla}:{" "}
+          <em className={reviewSlaClass(version.reviewSlaStatus)}>
+            {formatReviewSlaStatus(version.reviewSlaStatus, labels)}
+            {version.reviewSlaDueAt ? ` / ${formatDate(version.reviewSlaDueAt, locale)}` : ""}
+          </em>
+        </small>
       </div>
       <div className="publisher-skill-version-row__signals">
         <span>{formatCompactNumber(version.installCount)} {labels.versions.installs}</span>
@@ -1169,6 +1206,33 @@ function formatFeedbackCounts(feedback: PublisherSkillRecord["feedback"]) {
 
 function formatReviewStatus(status: string | null, labels: Record<string, string>) {
   return labels[status ?? "no_review"] ?? (status ?? "no_review").replaceAll("_", " ");
+}
+
+function formatReviewSlaStatus(status: ReviewSlaStatus | string | null | undefined, labels: PublisherSkillCopy) {
+  if (!status) {
+    return labels.reviewRepair.slaStatuses.not_submitted;
+  }
+
+  return labels.reviewRepair.slaStatuses[status as keyof typeof labels.reviewRepair.slaStatuses] ?? status.replaceAll("_", " ");
+}
+
+function formatQueueAge(value: number | null | undefined, locale: Locale) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return locale === "zh" ? "未开始" : "Not started";
+  }
+
+  if (value < 24) {
+    return locale === "zh" ? `${value} 小时` : `${value}h`;
+  }
+
+  const days = Math.floor(value / 24);
+  const hours = value % 24;
+
+  if (locale === "zh") {
+    return hours > 0 ? `${days} 天 ${hours} 小时` : `${days} 天`;
+  }
+
+  return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
 }
 
 function formatVerificationStatus(status: string, labels: Record<string, string>) {
@@ -1334,6 +1398,22 @@ function reviewStatusClass(status: string | null) {
   return "status-chip status-chip--neutral";
 }
 
+function reviewSlaClass(status: ReviewSlaStatus | string | null | undefined) {
+  if (status === "overdue") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (status === "due_soon") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (status === "on_track" || status === "decided") {
+    return "status-chip";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
 function checkStatusClass(status: string) {
   if (status === "passed") {
     return "status-chip";
@@ -1350,7 +1430,11 @@ function checkStatusClass(status: string) {
   return "status-chip status-chip--neutral";
 }
 
-function formatDate(value: string, locale: Locale) {
+function formatDate(value: string | null | undefined, locale: Locale) {
+  if (!value) {
+    return locale === "zh" ? "未开始" : "Not started";
+  }
+
   if (value === "demo") {
     return locale === "zh" ? "演示时间" : "Demo time";
   }

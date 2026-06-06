@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2, ClipboardCheck, FileText, Save, ShieldAlert, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, Clock3, FileText, Save, ShieldAlert, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import type { AdminReviewRecord } from "@/lib/ops-data";
@@ -40,8 +40,17 @@ const copy = {
     notes: "Reviewer notes",
     reject: "Reject",
     risk: "Risk",
+    queueAge: "Queue age",
     save: "Record decision",
     saving: "Saving",
+    sla: "Review SLA",
+    slaStatuses: {
+      decided: "Decided",
+      due_soon: "Due soon",
+      not_submitted: "Not submitted",
+      on_track: "On track",
+      overdue: "Overdue"
+    },
     status: "Status",
     title: "Skill review queue",
     version: "Version",
@@ -74,8 +83,17 @@ const copy = {
     notes: "审核备注",
     reject: "拒绝",
     risk: "风险",
+    queueAge: "排队时长",
     save: "记录决定",
     saving: "保存中",
+    sla: "审核 SLA",
+    slaStatuses: {
+      decided: "已决定",
+      due_soon: "即将到期",
+      not_submitted: "未提交",
+      on_track: "正常",
+      overdue: "已超期"
+    },
     status: "状态",
     title: "技能审核队列",
     version: "版本",
@@ -128,7 +146,19 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </span>
                   <span>
                     <strong>{labels.created}</strong>
-                    {formatDate(review.createdAt, locale)}
+                    {formatDate(review.reviewSubmittedAt ?? review.createdAt, locale)}
+                  </span>
+                  <span>
+                    <strong>{labels.queueAge}</strong>
+                    {formatQueueAge(review.reviewQueueAgeHours, locale)}
+                  </span>
+                  <span>
+                    <strong>{labels.sla}</strong>
+                    <em className={reviewSlaClass(review.reviewSlaStatus)}>
+                      <Clock3 size={12} aria-hidden="true" />
+                      {formatReviewSlaStatus(review.reviewSlaStatus, labels)}
+                      {review.reviewSlaDueAt ? ` / ${formatDate(review.reviewSlaDueAt, locale)}` : ""}
+                    </em>
                   </span>
                   <span>
                     <strong>{labels.risk}</strong>
@@ -296,6 +326,49 @@ function statusClass(status: AdminReviewRecord["status"]) {
   }
 
   return "status-chip status-chip--neutral";
+}
+
+function reviewSlaClass(status: AdminReviewRecord["reviewSlaStatus"]) {
+  if (status === "overdue") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (status === "due_soon") {
+    return "status-chip status-chip--warning";
+  }
+
+  if (status === "on_track" || status === "decided") {
+    return "status-chip";
+  }
+
+  return "status-chip status-chip--neutral";
+}
+
+function formatReviewSlaStatus(status: AdminReviewRecord["reviewSlaStatus"], labels: (typeof copy)["en" | "zh"]) {
+  if (!status) {
+    return labels.slaStatuses.not_submitted;
+  }
+
+  return labels.slaStatuses[status as keyof typeof labels.slaStatuses] ?? status;
+}
+
+function formatQueueAge(value: number | null | undefined, locale: Locale) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return locale === "zh" ? "未开始" : "Not started";
+  }
+
+  if (value < 24) {
+    return locale === "zh" ? `${value} 小时` : `${value}h`;
+  }
+
+  const days = Math.floor(value / 24);
+  const hours = value % 24;
+
+  if (locale === "zh") {
+    return hours > 0 ? `${days} 天 ${hours} 小时` : `${days} 天`;
+  }
+
+  return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {

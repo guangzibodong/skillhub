@@ -4600,7 +4600,7 @@ a {
 
 .admin-review-meta {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -4618,6 +4618,10 @@ a {
 }
 
 .admin-review-meta em {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
   font-style: normal;
 }
 
@@ -9397,10 +9401,16 @@ a {
   background: rgba(155, 226, 141, 0.05);
 }
 
-.publisher-skill-review-repair__head,
-.publisher-skill-review-repair__meta {
+.publisher-skill-review-repair__head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.publisher-skill-review-repair__meta {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   align-items: start;
 }
@@ -9433,6 +9443,14 @@ a {
   font-size: 12px;
   line-height: 1.4;
   padding: 8px 9px;
+}
+
+.publisher-skill-review-repair__meta em,
+.publisher-skill-version-row__main em {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  font-style: normal;
 }
 
 .publisher-skill-review-repair__meta strong {

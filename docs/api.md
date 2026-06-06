@@ -919,7 +919,7 @@ curl "https://api.useskillhub.com/v1/publisher/skills?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response includes each owned skill's latest version, version history, verification state, latest review signal, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, commercial paid-activation blockers, quality score, listing checklist, and publisher-visible marketplace distribution signal.
+The response includes each owned skill's latest version, version history, verification state, latest review signal, review SLA state, runtime check summary, latest runtime check details, install count, call count, success/error/blocked counts, average latency, billable usage, gross usage revenue, pricing state, commercial paid-activation blockers, quality score, listing checklist, and publisher-visible marketplace distribution signal.
 
 `commercial` explains whether the skill can activate paid pricing and why it is blocked:
 
@@ -981,6 +981,12 @@ Publisher runtime health is derived from the latest checks only: `failed` become
       "version": "0.2.0",
       "status": "draft",
       "reviewStatus": null,
+      "reviewSubmittedAt": null,
+      "reviewSlaBusinessDays": 3,
+      "reviewSlaDueAt": null,
+      "reviewSlaHoursRemaining": null,
+      "reviewQueueAgeHours": null,
+      "reviewSlaStatus": "not_submitted",
       "runtimeCheckCount": 0,
       "installCount": 0,
       "callCount": 0,
@@ -1025,6 +1031,7 @@ Version rules:
 - Approved versions and versions installed by projects are locked; publishers must create a new semantic version instead of mutating them.
 - Creating a new version writes a `skill_update_events` row, an audit log row, and an in-app notification event before final email/webhook delivery is connected.
 - Public discovery prefers approved versions, so a draft or submitted update does not silently replace a verified contract.
+- Review SLA fields are derived from the latest review submission for that exact version. `reviewSlaStatus` can be `not_submitted`, `on_track`, `due_soon`, `overdue`, or `decided`; the default display target is three business days from `reviewSubmittedAt`.
 
 Submit a specific version for review:
 
@@ -1054,7 +1061,7 @@ Placements are `featured`, `standard`, and `suppressed`. Improvement hints are p
 
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
-The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, marketplace distribution state, recent published buyer feedback, submit the latest version for review, respond to published feedback, and save free, per-call, or subscription pricing without leaving the workspace. The same response powers the review repair loop by combining `review`, `versions`, and `runtime.checks` into exact-version status, reviewer notes, automated check evidence, and repair actions for rejected, blocked, warning, or unsubmitted versions.
+The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, review SLA, install/call/success signals, marketplace distribution state, recent published buyer feedback, submit the latest version for review, respond to published feedback, and save free, per-call, or subscription pricing without leaving the workspace. The same response powers the review repair loop by combining `review`, `versions`, and `runtime.checks` into exact-version status, reviewer notes, automated check evidence, SLA pressure, and repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
 The `/publish` entry page now also keeps the saved draft response's exact semantic version and can submit that same version for review immediately after draft save, so first-time publishers can move from manifest upload to automated review evidence without manually finding the version in `/publisher`.
 
 ## Buyer Request Board
@@ -1873,10 +1880,17 @@ curl "https://api.useskillhub.com/v1/admin/reviews" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Each review row includes `runtimeChecks`, an array of the latest check per type:
+Each review row includes review SLA fields plus `runtimeChecks`, an array of the latest check per type:
 
 ```json
 {
+  "id": "review_123",
+  "reviewSubmittedAt": "2026-06-05T08:00:00.000Z",
+  "reviewSlaBusinessDays": 3,
+  "reviewSlaDueAt": "2026-06-10T08:00:00.000Z",
+  "reviewSlaHoursRemaining": 67,
+  "reviewQueueAgeHours": 5,
+  "reviewSlaStatus": "on_track",
   "runtimeChecks": [
     {
       "checkType": "manifest",
@@ -1893,6 +1907,14 @@ Each review row includes `runtimeChecks`, an array of the latest check per type:
   ]
 }
 ```
+
+`reviewSlaStatus` can be:
+
+- `not_submitted`: no review submission exists for the version.
+- `on_track`: the review is inside the default three-business-day window.
+- `due_soon`: the review is due within 24 hours.
+- `overdue`: the review has crossed the SLA due time.
+- `decided`: the review already has a terminal decision.
 
 `status` can be `queued`, `running`, `passed`, `failed`, or `warning`. New check rows also expose structured remediation metadata:
 

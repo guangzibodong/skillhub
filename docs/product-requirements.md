@@ -304,6 +304,7 @@ Requirements:
 - Specific-version review submission so publishers can control which contract enters review.
 - Locked approved or installed versions that cannot be mutated in place.
 - Review pipeline.
+- Review SLA visibility with submitted time, default three-business-day due time, queue age, and due-soon/overdue/decided state per submitted version.
 - Runtime check results.
 - Runtime check results must expose blocking semantics, fix category, target field, and next action so publishers know what to repair without guessing from reviewer prose.
 - Published feedback count, average rating, and pending feedback count.
@@ -351,6 +352,7 @@ Requirements:
 
 - Platform metrics.
 - Skill review queue.
+- Skill review queue aging and SLA pressure, including due-soon and overdue rows derived from the submitted version timestamp.
 - Risk command center.
 - Runtime incidents.
 - Finance ledger.

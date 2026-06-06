@@ -699,6 +699,13 @@ Added structured automated-check remediation, covering:
 - `/v1/admin/reviews`, publisher skill operations, admin review cards, and publisher repair loops now expose next action and target field beside automated evidence.
 - This strengthens Journey B and Journey C because rejected, blocked, warning, or incomplete reviews now produce concrete repair instructions and reviewer context.
 
+Added review SLA visibility, covering:
+
+- Review queue and publisher skill/version APIs now derive submitted time, three-business-day SLA due time, queue age, hours remaining, and `not_submitted`/`on_track`/`due_soon`/`overdue`/`decided` status without adding a migration.
+- `/admin` shows queue age and SLA pressure beside each review card so operators can prioritize due-soon or overdue supply review.
+- `/publisher` shows review submitted time, SLA, queue age, and decision state inside the review repair loop and version history, so authors understand whether to wait, repair, or follow up.
+- This improves publisher retention and operator credibility because review status is now a timed operating workflow instead of an opaque queued label.
+
 Added developer project version adoption, covering:
 
 - Project update inbox rows now expose current installed version, target version, target review status, and adoption readiness.

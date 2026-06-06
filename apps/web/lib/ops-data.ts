@@ -334,6 +334,8 @@ export type OrganizationWebhookEndpoint = {
   updatedAt: string;
 };
 
+export type ReviewSlaStatus = "decided" | "due_soon" | "not_submitted" | "on_track" | "overdue";
+
 export type AdminReviewRecord = {
   id: string;
   skillSlug: string;
@@ -342,6 +344,12 @@ export type AdminReviewRecord = {
   status: "approved" | "blocked" | "in_review" | "queued" | "rejected" | string;
   riskLevel: "low" | "medium" | "high" | string | null;
   notes: string | null;
+  reviewQueueAgeHours?: number | null;
+  reviewSlaBusinessDays?: number | null;
+  reviewSlaDueAt?: string | null;
+  reviewSlaHoursRemaining?: number | null;
+  reviewSlaStatus?: ReviewSlaStatus | string | null;
+  reviewSubmittedAt?: string | null;
   runtimeChecks?: Array<{
     checkType: "example" | "manifest" | "runtime" | "security" | string;
     status: "failed" | "passed" | "queued" | "running" | "warning" | string;
@@ -607,7 +615,13 @@ export type PublisherSkillVersionRecord = {
   reviewDecidedAt: string | null;
   reviewNotes: string | null;
   reviewRiskLevel: "low" | "medium" | "high" | null;
+  reviewQueueAgeHours?: number | null;
+  reviewSlaBusinessDays?: number | null;
+  reviewSlaDueAt?: string | null;
+  reviewSlaHoursRemaining?: number | null;
+  reviewSlaStatus?: ReviewSlaStatus | string | null;
   reviewStatus: string | null;
+  reviewSubmittedAt?: string | null;
   runtimeCheckCount: number;
   runtimeChecks: Array<{
     checkType: "example" | "manifest" | "runtime" | "security" | string;
@@ -650,6 +664,12 @@ export type PublisherSkillRecord = {
     riskLevel: "low" | "medium" | "high" | null;
     notes: string | null;
     decidedAt: string | null;
+    reviewQueueAgeHours?: number | null;
+    reviewSlaBusinessDays?: number | null;
+    reviewSlaDueAt?: string | null;
+    reviewSlaHoursRemaining?: number | null;
+    reviewSlaStatus?: ReviewSlaStatus | string | null;
+    reviewSubmittedAt?: string | null;
   };
   runtime: {
     checkCount: number;
@@ -1648,6 +1668,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "queued",
     riskLevel: "medium",
     notes: "Validate browser domain allowlist, citation output schema, and pricing readiness before approval.",
+    reviewQueueAgeHours: 8,
+    reviewSlaBusinessDays: 3,
+    reviewSlaDueAt: "demo",
+    reviewSlaHoursRemaining: 64,
+    reviewSlaStatus: "on_track",
+    reviewSubmittedAt: "demo",
     runtimeChecks: [
       {
         checkType: "manifest",
@@ -1697,6 +1723,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "in_review",
     riskLevel: "low",
     notes: "Runtime passed; reviewer should confirm file-retention wording and example output coverage.",
+    reviewQueueAgeHours: 68,
+    reviewSlaBusinessDays: 3,
+    reviewSlaDueAt: "demo",
+    reviewSlaHoursRemaining: 4,
+    reviewSlaStatus: "due_soon",
+    reviewSubmittedAt: "demo",
     runtimeChecks: [
       {
         checkType: "manifest",
@@ -1746,6 +1778,12 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     status: "blocked",
     riskLevel: "high",
     notes: "Filesystem write access requires explicit owner approval and stronger rollback instructions.",
+    reviewQueueAgeHours: null,
+    reviewSlaBusinessDays: 3,
+    reviewSlaDueAt: "demo",
+    reviewSlaHoursRemaining: null,
+    reviewSlaStatus: "decided",
+    reviewSubmittedAt: "demo",
     runtimeChecks: [
       {
         checkType: "manifest",
@@ -2223,7 +2261,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       status: "approved",
       riskLevel: "medium",
       notes: "Manifest, runtime, and examples accepted.",
-      decidedAt: "demo"
+      decidedAt: "demo",
+      reviewQueueAgeHours: null,
+      reviewSlaBusinessDays: 3,
+      reviewSlaDueAt: "demo",
+      reviewSlaHoursRemaining: null,
+      reviewSlaStatus: "decided",
+      reviewSubmittedAt: "demo"
     },
     runtime: {
       checkCount: 4,
@@ -2368,7 +2412,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         reviewDecidedAt: "demo",
         reviewNotes: "Manifest, runtime, and examples accepted.",
         reviewRiskLevel: "medium",
+        reviewQueueAgeHours: null,
+        reviewSlaBusinessDays: 3,
+        reviewSlaDueAt: "demo",
+        reviewSlaHoursRemaining: null,
+        reviewSlaStatus: "decided",
         reviewStatus: "approved",
+        reviewSubmittedAt: "demo",
         runtimeCheckCount: 4,
         runtimeChecks: [
           {
@@ -2430,7 +2480,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       status: "queued",
       riskLevel: "medium",
       notes: "Needs data retention review.",
-      decidedAt: null
+      decidedAt: null,
+      reviewQueueAgeHours: 68,
+      reviewSlaBusinessDays: 3,
+      reviewSlaDueAt: "demo",
+      reviewSlaHoursRemaining: 4,
+      reviewSlaStatus: "due_soon",
+      reviewSubmittedAt: "demo"
     },
     runtime: {
       checkCount: 4,
@@ -2564,7 +2620,13 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         reviewDecidedAt: null,
         reviewNotes: "Needs data retention review.",
         reviewRiskLevel: "medium",
+        reviewQueueAgeHours: 68,
+        reviewSlaBusinessDays: 3,
+        reviewSlaDueAt: "demo",
+        reviewSlaHoursRemaining: 4,
+        reviewSlaStatus: "due_soon",
         reviewStatus: "queued",
+        reviewSubmittedAt: "demo",
         runtimeCheckCount: 4,
         runtimeChecks: [
           {

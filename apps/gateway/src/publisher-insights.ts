@@ -2,6 +2,7 @@ import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@uses
 import { listPublisherCurationAppealSummariesBySkill, type PublisherCurationAppealSummary } from "./marketplace-curation-appeals.js";
 import { CURRENT_PUBLISHER_TERMS_VERSION } from "./publisher-terms.js";
 import { getSql, searchSkills } from "./registry.js";
+import { buildReviewSlaFields, type ReviewSlaFields } from "./review-sla.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -61,7 +62,13 @@ type PublisherSkillVersionSummary = {
   reviewDecidedAt: string | null;
   reviewNotes: string | null;
   reviewRiskLevel: SkillSummary["permissionLevel"] | null;
+  reviewQueueAgeHours: number | null;
+  reviewSlaBusinessDays: number;
+  reviewSlaDueAt: string | null;
+  reviewSlaHoursRemaining: number | null;
+  reviewSlaStatus: ReviewSlaFields["reviewSlaStatus"];
   reviewStatus: string | null;
+  reviewSubmittedAt: string | null;
   runtimeCheckCount: number;
   runtimeChecks: RuntimeCheckSummary[];
   runtimeFailedCount: number;
@@ -86,6 +93,7 @@ type PublisherSkillRow = {
   reviewRiskLevel: SkillSummary["permissionLevel"] | null;
   reviewNotes: string | null;
   reviewDecidedAt: string | null;
+  reviewSubmittedAt: string | null;
   runtimeCheckCount: number;
   runtimePassedCount: number;
   runtimeFailedCount: number;
@@ -150,6 +158,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       review.risk_level as "reviewRiskLevel",
       review.notes as "reviewNotes",
       review.decided_at as "reviewDecidedAt",
+      review.created_at::text as "reviewSubmittedAt",
       coalesce(checks.total_count, 0)::int as "runtimeCheckCount",
       coalesce(checks.passed_count, 0)::int as "runtimePassedCount",
       coalesce(checks.failed_count, 0)::int as "runtimeFailedCount",
@@ -196,7 +205,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       limit 1
     ) latest on true
     left join lateral (
-      select status, risk_level, notes, decided_at
+      select status, risk_level, notes, decided_at, created_at
       from skill_reviews
       where skill_id = s.id
       order by created_at desc
@@ -368,6 +377,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
           'reviewNotes', version_items.review_notes,
           'reviewRiskLevel', version_items.review_risk_level,
           'reviewStatus', version_items.review_status,
+          'reviewSubmittedAt', version_items.review_submitted_at,
           'runtimeCheckCount', version_items.runtime_check_count,
           'runtimeChecks', version_items.runtime_checks,
           'runtimeFailedCount', version_items.runtime_failed_count,
@@ -388,6 +398,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
           review.risk_level as review_risk_level,
           review.notes as review_notes,
           review.decided_at::text as review_decided_at,
+          review.created_at::text as review_submitted_at,
           case
             when review.status = 'approved' then 'verified'
             when review.status in ('queued', 'in_review') then 'submitted'
@@ -484,6 +495,9 @@ async function fallbackPublisherSkills(limit: number) {
     const errorCount = Math.max(calls - successCount, 0);
     const runtimeFailedCount = skill.verificationStatus === "verified" ? 0 : 1;
     const runtimeChecks = runtimeCheckSummaries(runtimeFailedCount);
+    const reviewStatus = skill.verificationStatus === "verified" ? "approved" : "queued";
+    const reviewDecidedAt = skill.verificationStatus === "verified" ? "demo" : null;
+    const reviewSla = buildReviewSlaFields("demo", reviewDecidedAt, reviewStatus);
 
     return {
       id: skill.id,
@@ -495,10 +509,11 @@ async function fallbackPublisherSkills(limit: number) {
       verificationStatus: skill.verificationStatus,
       permissionLevel: skill.permissionLevel,
       review: {
-        status: skill.verificationStatus === "verified" ? "approved" : "queued",
+        status: reviewStatus,
         riskLevel: skill.permissionLevel,
         notes: skill.verificationStatus === "verified" ? "Demo listing approved." : "Needs operator review.",
-        decidedAt: skill.verificationStatus === "verified" ? "demo" : null
+        decidedAt: reviewDecidedAt,
+        ...reviewSla
       },
       runtime: {
         checkCount: runtimeChecks.length,
@@ -620,10 +635,11 @@ async function fallbackPublisherSkills(limit: number) {
           id: `${skill.id}-${skill.version}`,
           installCount: index === 0 ? 46 : 12,
           manifest: fallbackManifestForSummary(skill),
-          reviewDecidedAt: skill.verificationStatus === "verified" ? "demo" : null,
+          reviewDecidedAt,
           reviewNotes: skill.verificationStatus === "verified" ? "Demo listing approved." : "Needs operator review.",
           reviewRiskLevel: skill.permissionLevel,
-          reviewStatus: skill.verificationStatus === "verified" ? "approved" : "queued",
+          reviewStatus,
+          ...reviewSla,
           runtimeCheckCount: runtimeChecks.length,
           runtimeChecks,
           runtimeFailedCount,
@@ -662,6 +678,7 @@ export async function listPublisherSkillVersions(
       review.risk_level as "reviewRiskLevel",
       review.notes as "reviewNotes",
       review.decided_at::text as "reviewDecidedAt",
+      review.created_at::text as "reviewSubmittedAt",
       coalesce(checks.total_count, 0)::int as "runtimeCheckCount",
       coalesce(checks.passed_count, 0)::int as "runtimePassedCount",
       coalesce(checks.failed_count, 0)::int as "runtimeFailedCount",
@@ -752,6 +769,7 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
   const incidentCount = Number(row.incidentCount ?? row.openIncidentCount ?? row.runtimeFailedCount);
   const marketplacePlacement = row.marketplacePlacement ?? "standard";
   const commercialBlockers = buildCommercialBlockers(row);
+  const reviewSla = buildReviewSlaFields(row.reviewSubmittedAt, row.reviewDecidedAt, row.reviewStatus);
 
   return {
     id: row.id,
@@ -766,7 +784,8 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
       status: row.reviewStatus,
       riskLevel: row.reviewRiskLevel,
       notes: row.reviewNotes,
-      decidedAt: row.reviewDecidedAt
+      decidedAt: row.reviewDecidedAt,
+      ...reviewSla
     },
     runtime: {
       checkCount: row.runtimeCheckCount,
@@ -878,6 +897,9 @@ function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSum
 
   return value.map((version) => {
     const reviewStatus = typeof version.reviewStatus === "string" ? version.reviewStatus : null;
+    const reviewSubmittedAt =
+      typeof version.reviewSubmittedAt === "string" ? version.reviewSubmittedAt : reviewStatus ? String(version.createdAt ?? "demo") : null;
+    const reviewSla = buildReviewSlaFields(reviewSubmittedAt, version.reviewDecidedAt ?? null, reviewStatus);
 
     return {
       callCount: Number(version.callCount ?? 0),
@@ -888,6 +910,7 @@ function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSum
       reviewDecidedAt: version.reviewDecidedAt ?? null,
       reviewNotes: version.reviewNotes ?? null,
       reviewRiskLevel: version.reviewRiskLevel ?? null,
+      ...reviewSla,
       reviewStatus,
       runtimeCheckCount: Number(version.runtimeCheckCount ?? 0),
       runtimeChecks: normalizeRuntimeChecks(version.runtimeChecks ?? null),

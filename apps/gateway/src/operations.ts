@@ -1,5 +1,6 @@
 import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
 import { getSql, searchSkills } from "./registry.js";
+import { buildReviewSlaFields } from "./review-sla.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -579,12 +580,15 @@ export async function listReviewQueue() {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackReviewQueue;
+    return fallbackReviewQueue.map((review) => ({
+      ...review,
+      ...buildReviewSlaFields(review.createdAt, review.decidedAt, review.status)
+    }));
   }
 
   await seedRegistry(sql);
 
-  return sql`
+  const rows = (await sql`
     select
       sr.id::text,
       s.slug as "skillSlug",
@@ -643,7 +647,16 @@ export async function listReviewQueue() {
     where sr.status in ('queued', 'in_review', 'blocked')
     order by sr.created_at asc
     limit 100
-  `;
+  `) as Array<{
+    createdAt: Date | string | null;
+    decidedAt: Date | string | null;
+    status: string | null;
+  }>;
+
+  return rows.map((review) => ({
+    ...review,
+    ...buildReviewSlaFields(review.createdAt, review.decidedAt, review.status)
+  }));
 }
 
 export async function decideReview(reviewId: string, input: ReviewDecisionInput) {

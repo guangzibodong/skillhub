@@ -91,10 +91,11 @@ Acceptance checks:
 
 - A submitted skill version must have a valid manifest.
 - Review submission must create automated manifest, runtime, example, and security checks for the submitted version.
+- Review queue and publisher version APIs must derive submitted time, three-business-day SLA due time, queue age, hours remaining, and `not_submitted`/`on_track`/`due_soon`/`overdue`/`decided` status without storing secret or provider data.
 - A verified skill version must have a review decision and no failed, queued, or running automated checks. Warning checks require reviewer notes.
 - A new version cannot silently replace a verified version.
 - Approved or installed versions cannot be overwritten; publishers must create a new semantic version.
-- Publisher version history must expose per-version manifest, review status, runtime checks, installs, calls, and created time.
+- Publisher version history must expose per-version manifest, review status, review SLA state, runtime checks, installs, calls, and created time.
 - Public discovery and default installs must prefer approved versions when draft or submitted updates exist.
 - Suspended skills cannot be installed or invoked.
 
@@ -169,6 +170,7 @@ Acceptance checks:
 
 - Publishers can see review status and reviewer notes.
 - Publisher workspaces must combine review status, reviewer notes, exact-version metadata, automated check evidence, and concrete repair actions into a single review repair loop so rejected, blocked, warning, or unsubmitted versions lead directly back to version editing and resubmission.
+- Publisher workspaces must show review submitted time, default three-business-day SLA due time, queue age, and due-soon/overdue/decided state inside the repair loop so authors understand when to wait and when to follow up.
 - Runtime checks expose pass/fail/warning/queued/running state, latest messages, structured blocking semantics, target fields, fix categories, and next action.
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
@@ -523,6 +525,7 @@ Completed:
 - Migration `028_runtime_check_remediation.sql` adds structured automated-check remediation fields to `skill_runtime_checks`: blocking flag, fix category, target field, and next action.
 - Review submission now stores structured remediation metadata for manifest, runtime, example, and security checks, so publishers and reviewers no longer have to infer repair steps from free-text messages.
 - `/v1/admin/reviews` and publisher skill/version APIs now return the remediation fields, and `/admin` plus `/publisher` display next action and target field beside check evidence.
+- Review queue and publisher skill/version APIs now derive a three-business-day review SLA from the submitted version timestamp, returning submitted time, due time, queue age, hours remaining, and `on_track`/`due_soon`/`overdue`/`decided`/`not_submitted` status; `/admin` and `/publisher` surface those signals so operators and publishers can manage queue pressure.
 - Launch readiness now treats the runtime-check remediation columns as a schema prerequisite and expects migration `028_runtime_check_remediation.sql`.
 - Journey A developer surfaces now use clean bilingual copy across `/developer`, `/skills/[slug]`, `/dashboard/projects/[slug]`, project API keys, project policy, saved skills, update inbox, and agent connection panels.
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.

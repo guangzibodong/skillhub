@@ -59,10 +59,20 @@ const publisherSkillCopy = {
         warning: "warning"
       },
       decided: "Decision",
+      queueAge: "Queue age",
       latestVersion: "Latest version",
       noNotes: "No reviewer notes yet. The version can still be prepared, submitted, or monitored from this workspace.",
       notes: "Reviewer notes",
       notDecided: "Pending",
+      sla: "Review SLA",
+      slaStatuses: {
+        decided: "Decided",
+        due_soon: "Due soon",
+        not_submitted: "Not submitted",
+        on_track: "On track",
+        overdue: "Overdue"
+      },
+      submitted: "Submitted",
       title: "Review repair loop"
     },
     priceStatus: "Price status",
@@ -105,6 +115,7 @@ const publisherSkillCopy = {
       history: "Version history",
       installs: "installs",
       locked: "Locked after review or installs",
+      reviewSla: "Review SLA",
       reviewNotes: "Review notes",
       save: "Save version",
       saving: "Saving version",
@@ -178,10 +189,20 @@ const publisherSkillCopy = {
         warning: "\u8b66\u544a"
       },
       decided: "\u51b3\u5b9a",
+      queueAge: "\u6392\u961f\u65f6\u957f",
       latestVersion: "\u6700\u65b0\u7248\u672c",
       noNotes: "\u6682\u65e0\u5ba1\u6838\u5907\u6ce8\u3002\u4f60\u4ecd\u7136\u53ef\u4ee5\u5728\u8fd9\u91cc\u51c6\u5907\u7248\u672c\u3001\u63d0\u4ea4\u5ba1\u6838\u6216\u76d1\u63a7\u8fd0\u8425\u3002",
       notes: "\u5ba1\u6838\u5907\u6ce8",
       notDecided: "\u5f85\u51b3\u5b9a",
+      sla: "\u5ba1\u6838 SLA",
+      slaStatuses: {
+        decided: "\u5df2\u51b3\u5b9a",
+        due_soon: "\u5373\u5c06\u5230\u671f",
+        not_submitted: "\u672a\u63d0\u4ea4",
+        on_track: "\u6b63\u5e38",
+        overdue: "\u5df2\u8d85\u671f"
+      },
+      submitted: "\u63d0\u4ea4\u65f6\u95f4",
       title: "\u5ba1\u6838\u4fee\u590d\u95ed\u73af"
     },
     priceStatus: "价格状态",
@@ -224,6 +245,7 @@ const publisherSkillCopy = {
       history: "版本历史",
       installs: "次安装",
       locked: "审核或安装后锁定",
+      reviewSla: "审核 SLA",
       reviewNotes: "审核备注",
       save: "保存版本",
       saving: "保存版本中",
