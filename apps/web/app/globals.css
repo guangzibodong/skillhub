@@ -2632,6 +2632,136 @@ a {
   color: var(--cyan);
 }
 
+.publisher-priority-board {
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto 0;
+}
+
+.publisher-priority-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+  gap: 18px;
+  min-width: 0;
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(155, 226, 141, 0.08), rgba(124, 199, 216, 0.035)),
+    rgba(18, 22, 17, 0.94);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.publisher-priority-card__main {
+  display: grid;
+  gap: 13px;
+  align-content: start;
+  min-width: 0;
+}
+
+.publisher-priority-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1.08;
+}
+
+.publisher-priority-card p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.publisher-priority-task {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(215, 168, 76, 0.2);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.07);
+  padding: 13px;
+}
+
+.publisher-priority-task--done {
+  border-color: rgba(155, 226, 141, 0.22);
+  background: rgba(155, 226, 141, 0.07);
+}
+
+.publisher-priority-task span {
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1;
+  padding: 5px 8px;
+}
+
+.publisher-priority-task--done span {
+  color: var(--signal);
+}
+
+.publisher-priority-task strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.publisher-priority-task p {
+  max-width: none;
+  font-size: 13px;
+}
+
+.publisher-priority-card__action {
+  justify-self: start;
+}
+
+.publisher-priority-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.publisher-priority-metric {
+  display: grid;
+  min-width: 0;
+  min-height: 82px;
+  align-content: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 12px;
+}
+
+.publisher-priority-metric:first-child {
+  grid-column: 1 / -1;
+}
+
+.publisher-priority-metric span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.publisher-priority-metric strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.05;
+}
+
 .developer-next-action-intro {
   margin: 10px 0 0;
   color: var(--muted);
@@ -12976,6 +13106,7 @@ a {
   .publisher-public-layout,
   .developer-command-layout,
   .publisher-command-layout,
+  .publisher-priority-card,
   .operating-console__intro,
   .schema-grid,
   .security-grid,
@@ -13012,6 +13143,14 @@ a {
 
   .publisher-commercial-readiness__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .publisher-priority-metrics {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .publisher-priority-metric:first-child {
+    grid-column: auto;
   }
 
   .metric {
@@ -13361,6 +13500,18 @@ a {
   .metric-strip,
   .status-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .publisher-priority-board {
+    width: min(100% - 28px, 1220px);
+  }
+
+  .publisher-priority-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .publisher-priority-metric:first-child {
+    grid-column: 1 / -1;
   }
 
   .publisher-commercial-readiness__metrics,
@@ -13811,7 +13962,8 @@ a {
   .action-result__actions .ghost-button,
   .publish-pipeline__head .secondary-button,
   .publish-actions,
-  .publish-actions .primary-button {
+  .publish-actions .primary-button,
+  .publisher-priority-card__action {
     width: 100%;
   }
 
@@ -13859,7 +14011,8 @@ a {
   .action-result__actions .secondary-button,
   .action-result__actions .ghost-button,
   .publish-pipeline__head .secondary-button,
-  .publish-actions .primary-button {
+  .publish-actions .primary-button,
+  .publisher-priority-card__action {
     justify-content: center;
   }
 

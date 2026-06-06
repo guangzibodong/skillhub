@@ -2,7 +2,23 @@
 
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
-const DEFAULT_APP_PATHS = ["/", "/marketplace", "/login", "/admin"];
+const DEFAULT_APP_PATHS = [
+  "/",
+  "/?lang=zh",
+  "/marketplace",
+  "/skills/browser-research-pro",
+  "/publishers",
+  "/agents",
+  "/docs",
+  "/publish",
+  "/publisher",
+  "/developer",
+  "/dashboard",
+  "/account",
+  "/login",
+  "/admin",
+  "/terms",
+];
 const DEFAULT_TIMEOUT_MS = 10000;
 
 let args;

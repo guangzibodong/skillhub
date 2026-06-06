@@ -37,6 +37,10 @@ curl https://api.useskillhub.com/health
 curl https://api.useskillhub.com/v1/stats
 curl "https://api.useskillhub.com/v1/skills/search?sort=recommended&limit=5"
 curl "https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3" -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Full smoke gate for the public app, marketplace, workspaces, auth entry,
+# protected launch-readiness shape, and critical public pages.
+SKILLHUB_SMOKE_TOKEN="$ADMIN_TOKEN" pnpm smoke:prod -- --timeout-ms 30000
 ```
 
 The expected health response is:

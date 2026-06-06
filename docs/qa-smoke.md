@@ -5,7 +5,7 @@ This smoke path covers the minimum launch surface for local builds and productio
 - `GET /v1/stats`
 - `GET /v1/auth/providers`
 - `GET /v1/admin/launch-readiness`
-- Built app pages: `/`, `/marketplace`, `/login`, `/admin`
+- Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/skills/browser-research-pro`, `/publishers`, `/agents`, `/docs`, `/publish`, `/publisher`, `/developer`, `/dashboard`, `/account`, `/login`, `/admin`, `/terms`
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
@@ -53,6 +53,8 @@ For a custom page subset:
 ```bash
 pnpm smoke -- --app-paths /,/login,/admin
 ```
+
+For production updates, keep the default page set unless you are debugging one route. It covers the public site, the two-sided marketplace entry points, account/login, developer workspace, publisher workspace, admin console, docs, and terms.
 
 ## Exit behavior
 

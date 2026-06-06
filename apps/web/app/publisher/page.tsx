@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   BadgeCheck,
   BriefcaseBusiness,
   CheckCircle2,
@@ -20,7 +21,7 @@ import { PublisherSkillManager } from "@/components/publisher-skill-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -63,6 +64,61 @@ type CommercialSkillRow = {
 };
 
 const CURRENT_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
+
+const publisherCommandCopy = {
+  en: {
+    body:
+      "The publisher workspace should behave like an operating queue: onboarding, review, paid readiness, buyer demand, ledger, and payout all point to one next move.",
+    completeAction: "Review publisher operations",
+    completeDetail:
+      "Core publisher readiness is complete. Monitor review evidence, buyer demand, revenue, feedback, payout state, and marketplace placement.",
+    completeTitle: "Keep the supply loop healthy",
+    eyebrow: "Publisher operations queue",
+    ready: "Ready",
+    title: "What should the publisher do next?",
+    actions: {
+      payout: "Open payout readiness",
+      profile: "Complete publisher account",
+      publish: "Publish a skill",
+      session: "Sign in",
+      terms: "Accept terms",
+      verified: "Open skill workbench"
+    },
+    metrics: {
+      demand: "Buyer demand",
+      payout: "Payout state",
+      pricing: "Paid blockers",
+      readiness: "Launch readiness",
+      review: "Review work"
+    }
+  },
+  zh: {
+    body:
+      "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u4e0d\u5e94\u8be5\u53ea\u662f\u770b\u6570\u636e\uff0c\u800c\u662f\u628a\u5165\u9a7b\u3001\u5ba1\u6838\u3001\u4ed8\u8d39\u5c31\u7eea\u3001\u4e70\u65b9\u9700\u6c42\u3001\u8d26\u672c\u548c\u63d0\u73b0\u90fd\u6536\u675f\u5230\u4e00\u4e2a\u4e0b\u4e00\u6b65\u3002",
+    completeAction: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
+    completeDetail:
+      "\u6838\u5fc3\u53d1\u5e03\u51c6\u5907\u5df2\u5b8c\u6210\u3002\u63a5\u4e0b\u6765\u91cd\u70b9\u76d1\u63a7\u5ba1\u6838\u8bc1\u636e\u3001\u4e70\u65b9\u9700\u6c42\u3001\u6536\u5165\u3001\u53cd\u9988\u3001\u63d0\u73b0\u548c\u5e02\u573a\u4f4d\u7f6e\u3002",
+    completeTitle: "\u4fdd\u6301\u4f9b\u7ed9\u95ed\u73af\u5065\u5eb7",
+    eyebrow: "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
+    ready: "\u5df2\u5c31\u7eea",
+    title: "\u53d1\u5e03\u8005\u73b0\u5728\u5e94\u8be5\u5148\u505a\u4ec0\u4e48\uff1f",
+    actions: {
+      payout: "\u6253\u5f00\u63d0\u73b0\u51c6\u5907",
+      profile: "\u5b8c\u6210\u53d1\u5e03\u8005\u8d26\u6237",
+      publish: "\u53d1\u5e03\u6280\u80fd",
+      session: "\u53bb\u767b\u5f55",
+      terms: "\u63a5\u53d7\u6761\u6b3e",
+      verified: "\u6253\u5f00\u6280\u80fd\u5de5\u4f5c\u53f0"
+    },
+    metrics: {
+      demand: "\u4e70\u65b9\u9700\u6c42",
+      payout: "\u63d0\u73b0\u72b6\u6001",
+      pricing: "\u4ed8\u8d39\u963b\u65ad",
+      readiness: "\u4e0a\u7ebf\u51c6\u5907",
+      review: "\u5ba1\u6838\u5de5\u4f5c"
+    }
+  }
+} as const;
 
 const copy = {
   en: {
@@ -359,6 +415,22 @@ function formatCommercialAction(blockers: PublisherCommercialBlocker[], labels: 
     .join(" / ");
 }
 
+function getPublisherCommandHref(taskId: ReadinessTask["id"], locale: Locale) {
+  if (taskId === "session") {
+    return localizedHref("/login", locale);
+  }
+
+  if (taskId === "publish") {
+    return localizedHref("/publish", locale);
+  }
+
+  if (taskId === "verified") {
+    return localizedHref("/publisher#publisher-skills", locale);
+  }
+
+  return localizedHref("/publisher#publisher-account", locale);
+}
+
 export default async function PublisherPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
@@ -454,6 +526,28 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   });
   const readinessDone = readinessTasks.filter((task) => task.status === "done").length;
   const readinessPercent = Math.round((readinessDone / readinessTasks.length) * 100);
+  const commandLabels = publisherCommandCopy[locale];
+  const currentReadinessTask =
+    readinessTasks.find((task) => task.status === "current") ??
+    readinessTasks.find((task) => task.status === "blocked") ??
+    null;
+  const priorityTask = currentReadinessTask ?? {
+    detail: commandLabels.completeDetail,
+    id: "verified" as const,
+    status: "done" as const,
+    title: commandLabels.completeTitle
+  };
+  const reviewWorkCount = publisherSkills.filter((skill) => {
+    const reviewStatus = skill.review.status ?? skill.verificationStatus;
+    return skill.verificationStatus !== "verified" || reviewStatus === "rejected" || reviewStatus === "blocked";
+  }).length;
+  const publisherCommandMetrics = [
+    [commandLabels.metrics.readiness, `${readinessPercent}%`],
+    [commandLabels.metrics.review, formatCompactNumber(reviewWorkCount)],
+    [commandLabels.metrics.pricing, formatCompactNumber(blockedPaidListings)],
+    [commandLabels.metrics.demand, formatCompactNumber(activeDemandCount)],
+    [commandLabels.metrics.payout, hasPayoutReady ? commandLabels.ready : formatCommercialState(payoutStatus, labels)]
+  ];
   const usageGrossCents = financeLedger.summary.usageGrossCents ?? 0;
   const usagePublisherShareCents = financeLedger.summary.usagePublisherShareCents ?? 0;
   const usageTransactionCount = financeLedger.summary.usageTransactionCount ?? 0;
@@ -549,9 +643,45 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <section className="publisher-priority-board" aria-labelledby="publisher-priority-heading">
+        <article className="publisher-priority-card">
+          <div className="publisher-priority-card__main">
+            <div className="card-kicker">
+              <ClipboardList size={16} aria-hidden="true" />
+              <span>{commandLabels.eyebrow}</span>
+            </div>
+            <h2 id="publisher-priority-heading">{commandLabels.title}</h2>
+            <p>{commandLabels.body}</p>
+
+            <div className={`publisher-priority-task publisher-priority-task--${priorityTask.status}`}>
+              <span>{currentReadinessTask ? labels.readiness[priorityTask.status] : commandLabels.ready}</span>
+              <strong>{priorityTask.title}</strong>
+              <p>{priorityTask.detail}</p>
+            </div>
+
+            <a
+              className="primary-button publisher-priority-card__action"
+              href={currentReadinessTask ? getPublisherCommandHref(currentReadinessTask.id, locale) : localizedHref("/publisher#publisher-skills", locale)}
+            >
+              <span>{currentReadinessTask ? commandLabels.actions[currentReadinessTask.id] : commandLabels.completeAction}</span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="publisher-priority-metrics">
+            {publisherCommandMetrics.map(([label, value]) => (
+              <div className="publisher-priority-metric" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
       <section className="publisher-command-layout">
         <div className="publisher-command-main">
-          <article className="ops-panel publisher-commercial-readiness">
+          <article className="ops-panel publisher-commercial-readiness" id="publisher-paid-readiness">
             <div className="publisher-commercial-readiness__head">
               <div className="card-kicker">
                 <ShieldAlert size={16} aria-hidden="true" />

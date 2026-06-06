@@ -185,7 +185,7 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
       : labels.notAccepted;
 
   return (
-    <article className="ops-panel publisher-account-panel">
+    <article className="ops-panel publisher-account-panel" id="publisher-account">
       <div className="publisher-account-panel__head">
         <div className="card-kicker">
           <WalletCards size={16} aria-hidden="true" />

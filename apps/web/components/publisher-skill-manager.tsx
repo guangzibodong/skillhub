@@ -372,7 +372,7 @@ export function PublisherSkillManager({ locale, skills }: PublisherSkillManagerP
   const labels = getPublisherSkillCopy(locale);
 
   return (
-    <article className="ops-panel publisher-skill-panel">
+    <article className="ops-panel publisher-skill-panel" id="publisher-skills">
       <div className="publisher-skill-panel__head">
         <div className="card-kicker">
           <PackageCheck size={16} aria-hidden="true" />
