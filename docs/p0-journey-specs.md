@@ -274,6 +274,7 @@ Publisher / Skill Author
 13. Verified skill becomes eligible for public trusted discovery.
 14. Publisher completes profile, terms, payout readiness, and pricing setup.
 15. Paid activation remains blocked until verified review, active publisher profile, accepted terms, payout readiness, active commission rule, and invite/paid eligibility where applicable.
+15a. Publisher can see a paid marketplace readiness command panel that summarizes ready paid listings, blocked paid listings, draft paid prices, payout readiness, profile/terms gates, and the next monetization action for each relevant skill.
 16. Publisher responds to published feedback, claims buyer requests, views placement reason, and files appeal when quality gaps are fixed.
 17. Publisher tracks ledger, refunds/disputes, balances, payout request state, and notifications.
 
@@ -303,6 +304,8 @@ Publisher workspace:
 - Review repair loop: latest exact version, review submitted time, SLA due state, reviewer notes, automated check evidence, structured blocker/advisory semantics, target field, concrete next action, and automatic version-workbench entry when waiting, fixing, following up, or resubmitting is needed.
 - Pricing free/draft/active/archived.
 - Paid activation blockers.
+- Paid marketplace readiness summary with profile, terms, payout, review, and pricing gates before the per-skill workbench.
+- Pricing form explains that active paid pricing is blocked while commercial blockers remain, while draft pricing can still be saved.
 - No feedback / pending feedback / published feedback / publisher response.
 - Buyer request open/claimed/submitted/matched/closed/canceled.
 - Marketplace placement featured/standard/suppressed with publisher-safe reason and appeal path.

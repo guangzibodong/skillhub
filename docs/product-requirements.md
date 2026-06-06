@@ -316,6 +316,7 @@ Requirements:
 - Refund and dispute impact history.
 - Payout readiness.
 - Payout history.
+- Paid marketplace readiness command center that aggregates publisher profile, current terms acceptance, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers so publishers know what prevents monetization before they edit individual skill cards.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Buyer request board.
 - Listing quality checklist.
@@ -625,6 +626,7 @@ Paid active pricing rules:
 - Publishers may save free prices, draft paid prices, or archived prices while setup is incomplete.
 - A `per_call` or `subscription` price cannot become `active` until the publisher profile exists, is active, has verified payout readiness, has accepted the current operating terms version, and the skill has a verified review.
 - The publisher workspace must show paid-activation blockers beside the pricing form so authors can fix review, payout, profile, or terms issues without guessing from a generic API error.
+- The publisher workspace must also show a top-level paid marketplace readiness panel so authors can see blocked paid listings, draft paid prices, payout readiness, profile/terms gates, and the next action for each monetization candidate before entering detailed version or feedback work.
 
 ## Full Product Scope
 

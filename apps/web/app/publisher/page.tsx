@@ -32,7 +32,9 @@ import {
   getPublisherPayoutSummary,
   getPublisherRefunds,
   getPublisherSkills,
-  getUserNotificationInbox
+  getUserNotificationInbox,
+  type PublisherCommercialBlocker,
+  type PublisherSkillRecord
 } from "@/lib/ops-data";
 import { getPublisherPageCopy, type PublisherPageCopy } from "@/lib/publisher-page-copy";
 
@@ -47,6 +49,17 @@ type ReadinessTask = {
   id: "session" | "profile" | "terms" | "publish" | "verified" | "payout";
   status: "blocked" | "current" | "done";
   title: string;
+};
+
+type CommercialSkillRow = {
+  blockers: PublisherCommercialBlocker[];
+  billingModel: PublisherSkillRecord["pricing"]["billingModel"];
+  displayName: string;
+  priceStatus: PublisherSkillRecord["pricing"]["status"];
+  ready: boolean;
+  reviewStatus: string | null;
+  slug: string;
+  unitAmountCents: number;
 };
 
 const CURRENT_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
@@ -292,6 +305,60 @@ function formatDisputeStatus(value: string, labels: PublisherPageCopy) {
   return labels.disputeStatuses[value as keyof typeof labels.disputeStatuses] ?? value.replaceAll("_", " ");
 }
 
+function buildCommercialSkillRows(skills: PublisherSkillRecord[]): CommercialSkillRow[] {
+  return skills
+    .filter((skill) => skill.pricing.billingModel !== "free" || skill.verificationStatus === "verified")
+    .map((skill) => ({
+      billingModel: skill.pricing.billingModel,
+      blockers: skill.commercial?.blockers ?? [],
+      displayName: skill.displayName,
+      priceStatus: skill.pricing.status,
+      ready: Boolean(skill.commercial?.paidActivationReady && skill.pricing.billingModel !== "free" && skill.pricing.status === "active"),
+      reviewStatus: skill.review.status ?? skill.verificationStatus,
+      slug: skill.slug,
+      unitAmountCents: skill.pricing.unitAmountCents
+    }))
+    .sort((a, b) => {
+      if (a.ready !== b.ready) {
+        return a.ready ? 1 : -1;
+      }
+
+      return b.blockers.length - a.blockers.length;
+    })
+    .slice(0, 6);
+}
+
+function formatCommercialState(value: string | null | undefined, labels: PublisherPageCopy) {
+  if (!value) {
+    return labels.commercial.states.notConfigured;
+  }
+
+  return labels.commercial.states[value as keyof typeof labels.commercial.states] ?? value.replaceAll("_", " ");
+}
+
+function formatCommercialPrice(row: CommercialSkillRow, labels: PublisherPageCopy) {
+  if (row.billingModel === "free") {
+    return labels.commercial.states.free;
+  }
+
+  const model = formatCommercialState(row.billingModel, labels);
+  const amount = formatMoney(row.unitAmountCents);
+  const status = formatCommercialState(row.priceStatus, labels);
+
+  return `${model} / ${amount} / ${status}`;
+}
+
+function formatCommercialAction(blockers: PublisherCommercialBlocker[], labels: PublisherPageCopy) {
+  if (blockers.length === 0) {
+    return labels.commercial.ready;
+  }
+
+  return blockers
+    .slice(0, 3)
+    .map((blocker) => labels.commercial.actionLabels[blocker] ?? blocker.replaceAll("_", " "))
+    .join(" / ");
+}
+
 export default async function PublisherPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
@@ -347,6 +414,36 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     payoutSummary.publisherProfile?.payoutStatus === "verified" ||
     publisherAccount.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready") ||
     payoutSummary.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready");
+  const commercialSkillRows = buildCommercialSkillRows(publisherSkills);
+  const readyPaidListings = publisherSkills.filter(
+    (skill) =>
+      skill.pricing.billingModel !== "free" &&
+      skill.pricing.status === "active" &&
+      Boolean(skill.commercial?.paidActivationReady)
+  ).length;
+  const blockedPaidListings = publisherSkills.filter(
+    (skill) =>
+      skill.pricing.billingModel !== "free" &&
+      skill.pricing.status !== "archived" &&
+      !Boolean(skill.commercial?.paidActivationReady)
+  ).length;
+  const draftPaidPrices = publisherSkills.filter(
+    (skill) => skill.pricing.billingModel !== "free" && skill.pricing.status === "draft"
+  ).length;
+  const profileReady = publisherAccount.publisherProfile?.status === "active";
+  const profileStatus = publisherAccount.publisherProfile?.status ?? null;
+  const payoutStatus =
+    publisherAccount.publisherProfile?.payoutStatus ??
+    payoutSummary.publisherProfile?.payoutStatus ??
+    publisherAccount.payoutAccounts[0]?.status ??
+    payoutSummary.payoutAccounts[0]?.status ??
+    null;
+  const commercialMetrics = [
+    [labels.commercial.metrics.readyPaid, formatCompactNumber(readyPaidListings)],
+    [labels.commercial.metrics.blockedPaid, formatCompactNumber(blockedPaidListings)],
+    [labels.commercial.metrics.draftPaid, formatCompactNumber(draftPaidPrices)],
+    [labels.commercial.metrics.payout, hasPayoutReady ? labels.commercial.ready : formatCommercialState(payoutStatus, labels)]
+  ];
   const readinessTasks = buildReadinessTasks(labels.readiness.tasks, {
     hasAcceptedCurrentTerms,
     hasActiveVerifiedListing,
@@ -454,6 +551,80 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
       <section className="publisher-command-layout">
         <div className="publisher-command-main">
+          <article className="ops-panel publisher-commercial-readiness">
+            <div className="publisher-commercial-readiness__head">
+              <div className="card-kicker">
+                <ShieldAlert size={16} aria-hidden="true" />
+                <span>{labels.commercial.title}</span>
+              </div>
+              <p>{labels.commercial.description}</p>
+            </div>
+
+            <div className="publisher-commercial-readiness__metrics">
+              {commercialMetrics.map(([label, value]) => (
+                <div className="publisher-commercial-metric" key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div className="publisher-commercial-gates">
+              <div className={profileReady ? "publisher-commercial-gate publisher-commercial-gate--ready" : "publisher-commercial-gate"}>
+                <strong>{labels.commercial.profile}</strong>
+                <span className={profileReady ? "status-chip" : "status-chip status-chip--warning"}>
+                  {formatCommercialState(profileStatus, labels)}
+                </span>
+              </div>
+              <div className={hasAcceptedCurrentTerms ? "publisher-commercial-gate publisher-commercial-gate--ready" : "publisher-commercial-gate"}>
+                <strong>{labels.commercial.terms}</strong>
+                <span className={hasAcceptedCurrentTerms ? "status-chip" : "status-chip status-chip--warning"}>
+                  {hasAcceptedCurrentTerms ? labels.commercial.ready : labels.commercial.blocked}
+                </span>
+              </div>
+              <div className={hasPayoutReady ? "publisher-commercial-gate publisher-commercial-gate--ready" : "publisher-commercial-gate"}>
+                <strong>{labels.commercial.metrics.payout}</strong>
+                <span className={hasPayoutReady ? "status-chip" : "status-chip status-chip--warning"}>
+                  {formatCommercialState(payoutStatus, labels)}
+                </span>
+              </div>
+            </div>
+
+            <div className="publisher-commercial-queue">
+              <div className="publisher-commercial-queue__head">
+                <strong>{labels.commercial.blockedSkillsTitle}</strong>
+                <span className="status-chip status-chip--neutral">{commercialSkillRows.length}</span>
+              </div>
+              {commercialSkillRows.length > 0 ? (
+                <div className="publisher-commercial-table">
+                  <div className="publisher-commercial-row publisher-commercial-row--head">
+                    <span>{labels.commercial.rows.skill}</span>
+                    <span>{labels.commercial.rows.review}</span>
+                    <span>{labels.commercial.rows.price}</span>
+                    <span>{labels.commercial.rows.task}</span>
+                  </div>
+                  {commercialSkillRows.map((row) => (
+                    <div className="publisher-commercial-row" key={row.slug}>
+                      <strong>
+                        <span>{row.displayName}</span>
+                        <code>{row.slug}</code>
+                      </strong>
+                      <span className={row.ready ? "status-chip" : "status-chip status-chip--warning"}>
+                        {formatCommercialState(row.reviewStatus, labels)}
+                      </span>
+                      <span>{formatCommercialPrice(row, labels)}</span>
+                      <span className={row.ready ? "quality-chip quality-chip--complete" : "quality-chip quality-chip--attention"}>
+                        {formatCommercialAction(row.blockers, labels)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="publisher-commercial-empty">{labels.commercial.empty}</div>
+              )}
+            </div>
+          </article>
+
           <PublisherSkillManager locale={locale} skills={publisherSkills} />
 
           <BuyerRequestManager

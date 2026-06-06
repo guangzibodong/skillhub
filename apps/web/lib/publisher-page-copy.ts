@@ -21,6 +21,57 @@ const publisherPageCopy = {
       dispute: "Dispute",
       refund: "Refund"
     },
+    commercial: {
+      actionLabels: {
+        current_terms: "Accept the latest terms version",
+        payout: "Finish payout verification",
+        publisher_profile: "Create the publisher profile",
+        publisher_status: "Reactivate the publisher profile",
+        review: "Pass review for this skill",
+        terms: "Accept publisher operating terms"
+      },
+      blocked: "Blocked",
+      blockedSkillsTitle: "Paid activation blockers",
+      description:
+        "A single operating view for the review, terms, payout, and pricing gates that decide whether a listing can become paid supply.",
+      empty: "No paid activation blockers are visible for the current publisher scope.",
+      metrics: {
+        blockedPaid: "Blocked paid listings",
+        draftPaid: "Draft paid prices",
+        payout: "Payout readiness",
+        readyPaid: "Ready paid listings"
+      },
+      profile: "Publisher profile",
+      ready: "Ready",
+      rows: {
+        price: "Price",
+        review: "Review",
+        skill: "Skill",
+        task: "Next action"
+      },
+      states: {
+        active: "Active",
+        approved: "Approved",
+        archived: "Archived",
+        blocked: "Blocked",
+        draft: "Draft",
+        free: "Free",
+        in_review: "In review",
+        notConfigured: "Not configured",
+        not_configured: "Not configured",
+        pending: "Pending",
+        per_call: "Per call",
+        queued: "Queued",
+        rejected: "Rejected",
+        restricted: "Restricted",
+        suspended: "Suspended",
+        subscription: "Subscription",
+        verification_required: "Verification required",
+        verified: "Verified"
+      },
+      terms: "Terms",
+      title: "Paid marketplace readiness"
+    },
     disputeStatuses: {
       lost: "Lost",
       open: "Open",
@@ -79,12 +130,12 @@ const publisherPageCopy = {
     title: "Operate your SkillHub publishing business."
   },
   zh: {
-    adjustmentEmpty: "暂无退款或争议记录",
+    adjustmentEmpty: "暂无近期退款或争议记录",
     adjustmentHeaders: ["类型", "技能", "项目", "金额", "状态"],
     adjustmentTitle: "退款与争议跟进",
     disputeReview: "争议复核",
     description:
-      "给技能发布者使用的独立工作台：推进技能审核，设置已验证技能价格，响应买方需求，并把收入准备到可提现状态。",
+      "给技能发布者使用的运营工作台：推进技能审核、配置已验证技能价格、响应买方需求，并把收入推进到可提现状态。",
     eyebrow: "发布者工作台",
     ledgerEmpty: "暂无已入账的发布者收入",
     ledgerHeaders: ["技能", "来源", "总收入", "平台费", "净收入", "状态"],
@@ -97,6 +148,56 @@ const publisherPageCopy = {
     adjustmentTypes: {
       dispute: "争议",
       refund: "退款"
+    },
+    commercial: {
+      actionLabels: {
+        current_terms: "接受最新条款版本",
+        payout: "完成提现验证",
+        publisher_profile: "创建发布者资料",
+        publisher_status: "恢复发布者资料",
+        review: "让该技能通过审核",
+        terms: "接受发布者运营条款"
+      },
+      blocked: "受阻",
+      blockedSkillsTitle: "付费激活阻塞项",
+      description: "集中查看审核、条款、提现和定价门禁，判断哪些技能可以成为付费供给。",
+      empty: "当前发布者范围内没有可见的付费激活阻塞项。",
+      metrics: {
+        blockedPaid: "受阻付费技能",
+        draftPaid: "草稿付费价格",
+        payout: "提现准备",
+        readyPaid: "可启用付费技能"
+      },
+      profile: "发布者资料",
+      ready: "已就绪",
+      rows: {
+        price: "价格",
+        review: "审核",
+        skill: "技能",
+        task: "下一步"
+      },
+      states: {
+        active: "启用",
+        approved: "已批准",
+        archived: "归档",
+        blocked: "受阻",
+        draft: "草稿",
+        free: "免费",
+        in_review: "审核中",
+        notConfigured: "未配置",
+        not_configured: "未配置",
+        pending: "待处理",
+        per_call: "按次调用",
+        queued: "排队中",
+        rejected: "已拒绝",
+        restricted: "受限",
+        suspended: "已暂停",
+        subscription: "订阅",
+        verification_required: "需要验证",
+        verified: "已验证"
+      },
+      terms: "条款",
+      title: "付费市场就绪"
     },
     disputeStatuses: {
       lost: "已败诉",

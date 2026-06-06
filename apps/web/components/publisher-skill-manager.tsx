@@ -441,6 +441,13 @@ function PublisherSkillCard({
     feedbackResponseState.skillSlug === skill.slug && feedbackResponseState.status !== "idle";
   const nextOperatingStep = getNextOperatingStep(skill, labels);
   const reviewRepairPlan = buildReviewRepairPlan(skill);
+  const paidPricingBlocked = Boolean(
+    skill.commercial && !skill.commercial.paidActivationReady && skill.pricing.billingModel !== "free"
+  );
+  const pricePreview =
+    skill.pricing.billingModel === "free"
+      ? labels.pricingGate.freePreview
+      : `${formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} / ${labels.billingModels[skill.pricing.billingModel]}`;
 
   return (
     <div className="publisher-skill-card">
@@ -652,6 +659,19 @@ function PublisherSkillCard({
         <CommercialReadinessPanel commercial={skill.commercial} labels={commercialLabels} />
       ) : null}
 
+      <div className={paidPricingBlocked ? "publisher-skill-price-gate publisher-skill-price-gate--blocked" : "publisher-skill-price-gate"}>
+        <div>
+          <strong>{labels.pricingGate.title}</strong>
+          <span className={paidPricingBlocked ? "status-chip status-chip--warning" : "status-chip"}>
+            {paidPricingBlocked ? commercialLabels.blocked : labels.pricingGate.ready}
+          </span>
+        </div>
+        <p>{paidPricingBlocked ? labels.pricingGate.activeBlocked : labels.pricingGate.draftSafe}</p>
+        <code>
+          {labels.pricingGate.preview}: {pricePreview}
+        </code>
+      </div>
+
       <form action={priceAction} className="publisher-skill-price-form">
         <input name="skillSlug" type="hidden" value={skill.slug} />
         <label>
@@ -674,7 +694,7 @@ function PublisherSkillCard({
           <span>{labels.priceStatus}</span>
           <select defaultValue={skill.pricing.status} name="status">
             <option value="draft">{labels.priceStatuses.draft}</option>
-            <option value="active">{labels.priceStatuses.active}</option>
+            <option disabled={paidPricingBlocked} value="active">{labels.priceStatuses.active}</option>
             <option value="archived">{labels.priceStatuses.archived}</option>
           </select>
         </label>

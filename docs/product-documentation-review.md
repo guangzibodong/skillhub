@@ -42,6 +42,8 @@ SkillHub must become an operating workspace:
 
 Admin review is now closer to an operating workflow rather than a status list: each review row is expected to carry a secret-safe evidence package with publisher readiness, payout state, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts. This directly supports Journey C because reviewers can judge supply quality and risk before approving, rejecting, or blocking a skill version.
 
+Publisher monetization is now closer to an operating workflow as well: `/publisher` exposes a paid marketplace readiness command panel before the per-skill workbench, summarizing paid listing readiness, blocker counts, draft paid prices, payout readiness, profile/terms gates, and per-skill next actions. The pricing form now explains when active paid pricing is commercially blocked while still allowing draft pricing, which makes Journey B feel like a marketplace operations console instead of a pile of disconnected forms.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

@@ -81,6 +81,14 @@ const publisherSkillCopy = {
       archived: "Archived",
       draft: "Draft"
     },
+    pricingGate: {
+      activeBlocked: "Active paid pricing is blocked until review, terms, payout, and publisher readiness are complete.",
+      draftSafe: "Draft pricing can be saved now; active paid pricing still follows the commercial gate.",
+      freePreview: "Free listing",
+      preview: "Price preview",
+      ready: "Paid activation ready",
+      title: "Pricing gate"
+    },
     quality: "Quality",
     rating: "Rating",
     reviewStatuses: {
@@ -149,7 +157,7 @@ const publisherSkillCopy = {
     checkStatusLabels: {
       failed: "失败",
       passed: "通过",
-      queued: "排队",
+      queued: "排队中",
       running: "运行中",
       warning: "警告"
     },
@@ -160,56 +168,64 @@ const publisherSkillCopy = {
     nextStep: {
       title: "下一步运营动作",
       curation: "质量问题修复后，申请市场分发复审。",
-      feedback: "回复已公开买家反馈，提升买家信任。",
+      feedback: "回复已公开的买家反馈，提升买家信任。",
       pricing: "先解决付费激活阻塞项，再启用付费价格。",
       review: "提交一个准确的语义版本进入审核。",
-      runtime: "\u4fee\u590d\u5931\u8d25\u68c0\u67e5\uff0c\u6216\u8865\u5145\u8b66\u544a\u9879\u8bf4\u660e\u540e\u518d\u5b8c\u6210\u5ba1\u6838\u3002",
-      verified: "继续监控安装、调用、买方需求、收入和提现。",
+      runtime: "修复失败检查，或补充警告项说明后再完成审核。",
+      verified: "持续监控安装、调用、买方需求、收入和提现。",
       version: "从已保存草稿创建语义版本。"
     },
     reviewRepair: {
-      actions: "\u4fee\u590d\u52a8\u4f5c",
+      actions: "修复动作",
       actionLabels: {
-        clarify_risk: "\u8865\u5145\u9ad8\u98ce\u9669\u6743\u9650\u8bf4\u660e",
-        complete_commercial: "\u6e05\u7406\u4ed8\u8d39\u6fc0\u6d3b\u963b\u585e",
-        create_version: "\u521b\u5efa\u65b0\u7684\u8bed\u4e49\u7248\u672c",
-        fix_checks: "\u4fee\u590d\u5931\u8d25\u68c0\u67e5\u6216\u8865\u5145\u8b66\u544a\u8bf4\u660e",
-        monitor: "\u6301\u7eed\u76d1\u63a7\u8fd0\u8425",
-        resubmit_version: "\u63d0\u4ea4\u4fee\u590d\u540e\u7248\u672c",
-        submit_version: "\u63d0\u4ea4\u51c6\u786e\u7248\u672c",
-        wait_review: "\u7b49\u5f85\u5ba1\u6838\u51b3\u5b9a"
+        clarify_risk: "补充高风险权限说明",
+        complete_commercial: "清理付费激活阻塞",
+        create_version: "创建新的语义版本",
+        fix_checks: "修复失败检查或补充警告说明",
+        monitor: "持续监控运营",
+        resubmit_version: "提交修复后版本",
+        submit_version: "提交准确版本",
+        wait_review: "等待审核决定"
       },
-      checkEvidence: "\u81ea\u52a8\u68c0\u67e5\u8bc1\u636e",
-      nextAction: "\u4e0b\u4e00\u6b65",
-      targetField: "\u5b57\u6bb5",
+      checkEvidence: "自动检查证据",
+      nextAction: "下一步",
+      targetField: "字段",
       checkSummary: {
-        failed: "\u5931\u8d25",
-        open: "\u672a\u5b8c\u6210",
-        passed: "\u901a\u8fc7",
-        warning: "\u8b66\u544a"
+        failed: "失败",
+        open: "未完成",
+        passed: "通过",
+        warning: "警告"
       },
-      decided: "\u51b3\u5b9a",
-      queueAge: "\u6392\u961f\u65f6\u957f",
-      latestVersion: "\u6700\u65b0\u7248\u672c",
-      noNotes: "\u6682\u65e0\u5ba1\u6838\u5907\u6ce8\u3002\u4f60\u4ecd\u7136\u53ef\u4ee5\u5728\u8fd9\u91cc\u51c6\u5907\u7248\u672c\u3001\u63d0\u4ea4\u5ba1\u6838\u6216\u76d1\u63a7\u8fd0\u8425\u3002",
-      notes: "\u5ba1\u6838\u5907\u6ce8",
-      notDecided: "\u5f85\u51b3\u5b9a",
-      sla: "\u5ba1\u6838 SLA",
+      decided: "决定",
+      queueAge: "排队时长",
+      latestVersion: "最新版本",
+      noNotes: "暂无审核备注。你仍然可以在这里准备版本、提交审核或监控运营。",
+      notes: "审核备注",
+      notDecided: "待决定",
+      sla: "审核 SLA",
       slaStatuses: {
-        decided: "\u5df2\u51b3\u5b9a",
-        due_soon: "\u5373\u5c06\u5230\u671f",
-        not_submitted: "\u672a\u63d0\u4ea4",
-        on_track: "\u6b63\u5e38",
-        overdue: "\u5df2\u8d85\u671f"
+        decided: "已决定",
+        due_soon: "即将到期",
+        not_submitted: "未提交",
+        on_track: "正常",
+        overdue: "已超期"
       },
-      submitted: "\u63d0\u4ea4\u65f6\u95f4",
-      title: "\u5ba1\u6838\u4fee\u590d\u95ed\u73af"
+      submitted: "提交时间",
+      title: "审核修复闭环"
     },
     priceStatus: "价格状态",
     priceStatuses: {
       active: "启用",
       archived: "归档",
       draft: "草稿"
+    },
+    pricingGate: {
+      activeBlocked: "付费价格启用前必须完成审核、条款、提现和发布者资料准备。",
+      draftSafe: "可以先保存草稿价格；启用付费价格仍然需要通过商业门禁。",
+      freePreview: "免费上架",
+      preview: "价格预览",
+      ready: "付费激活已就绪",
+      title: "定价门禁"
     },
     quality: "质量",
     rating: "评分",
@@ -315,7 +331,7 @@ const marketplaceCopy = {
     hintLabels: {
       collect_feedback: "获取已公开反馈",
       drive_first_installs: "推动首批安装",
-      eligible_for_distribution: "可获得更强分发",
+      eligible_for_distribution: "可以获得更强分发",
       fix_runtime_checks: "修复失败的审核检查",
       maintain_quality: "继续保持质量信号",
       make_public: "将技能设为公开",
