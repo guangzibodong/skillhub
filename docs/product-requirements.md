@@ -4,6 +4,8 @@
 
 SkillHub is a universal skill registry, marketplace, and runtime gateway for AI agents.
 
+Product and design work must follow [Product Management Operating Model](./product-management-operating-model.md). No new UI or implementation work should begin without a feature requirement using [Feature Requirement Template](./feature-requirement-template.md), unless the change is a small verified bug fix. Open launch and policy decisions are tracked in [Product Decision Log](./product-decision-log.md).
+
 The product lets:
 
 - Developers and AI-agent builders find trusted skills.

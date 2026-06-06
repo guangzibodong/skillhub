@@ -59,7 +59,7 @@ Notification preferences are part of the repeat-use loop, not a cosmetic setting
 - Publishers return when reviews finish, buyer requests match their skills, payout status changes, or quality issues need repair.
 - Operators return when billing, dispute, payout, and risk events need human action.
 
-The product now treats in-app, email, and webhook choices as user-owned state before the final email provider is connected. That keeps the platform ready for real operations without hard-coding one noisy notification behavior for every user.
+The product now treats in-app and email notification choices as user-owned state before the final email provider is connected, while organization webhook delivery is governed by organization webhook endpoint status and event subscriptions. That keeps the platform ready for real operations without hard-coding one noisy notification behavior for every user or letting one user's preference suppress organization-level webhook fanout.
 
 ## What Was Added
 
@@ -121,6 +121,14 @@ Added [Technical Implementation Plan](./technical-implementation-plan.md), mappi
 - API groups.
 - Frontend surfaces.
 - Acceptance checks.
+
+Added product-management governance, covering:
+
+- [Product Management Operating Model](./product-management-operating-model.md), defining the PM role, decision rights, product gates, priority rules, required artifacts, and how parallel AI roles should work without inventing product scope independently.
+- [Feature Requirement Template](./feature-requirement-template.md), defining the required spec fields before UI or code begins.
+- [Page Requirements Matrix](./page-requirements-matrix.md), defining each public, account, publisher, developer, dashboard, project, and admin page by primary user, page job, action, data source, and acceptance criteria.
+- [Product Decision Log](./product-decision-log.md), tracking public-launch blockers, paid-marketplace blockers, runtime strategy, paid publishing access, payout thresholds, refund/dispute policy, review SLA, auth launch policy, notification/webhook governance, and high-risk permission matrix decisions.
+- Updated product and technical plans so future UI/code work must map to approved requirements rather than ad hoc visual ideas.
 
 Added deployment migration-runner coverage, covering:
 
@@ -455,7 +463,7 @@ Added organization webhook endpoint management, covering:
 - Owner/admin/developer users can configure HTTPS callback URLs, event-topic subscriptions, and active/paused/disabled state from `/developer`.
 - Create and rotate actions return a raw `whsec_*` signing secret once while storing only the hash, prefix, and last four characters.
 - Endpoint records include last-delivery status, delivery timestamp, and failure count fields, plus a `webhook_delivery_events` outbox table consumed by the signed delivery worker.
-- This turns webhook notification preferences into an operational integration surface with real HTTP delivery state before email and payment providers are finalized.
+- This turns organization webhook endpoint subscriptions into an operational integration surface with real HTTP delivery state before email and payment providers are finalized.
 
 Added developer project creation, covering:
 

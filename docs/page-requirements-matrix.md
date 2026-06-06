@@ -1,0 +1,537 @@
+# SkillHub Page Requirements Matrix
+
+This matrix is the product manager source of truth for page-level work. A page is ready for UI design only when its user, job, primary action, data source, states, and acceptance criteria are clear.
+
+## Page Standard
+
+Every page must define:
+
+- Primary user.
+- Page job.
+- Primary action.
+- Repeat-use reason.
+- Data source.
+- Empty/error/blocked states.
+- Admin or operational visibility when relevant.
+- Mobile and desktop acceptance.
+- English and Chinese copy.
+
+## Public Website
+
+### Home `/`
+
+Primary user: Visitor, developer, publisher, customer evaluator.
+
+Page job:
+
+- Explain that SkillHub is a registry, marketplace, and runtime gateway for AI agents.
+- Prove it is an operating platform, not a static directory.
+- Send users to marketplace, publishing, agent integration, or account entry.
+
+Primary action:
+
+- Browse marketplace.
+- Publish a skill.
+- Read agent integration.
+
+Data source:
+
+- Platform overview API.
+- Marketplace preview.
+- Safe fallback only when production demo fallback is explicitly allowed.
+
+Acceptance:
+
+- First viewport communicates the product category.
+- Shows developer, publisher, and operator loops.
+- Shows public trust and operating proof.
+- Links to marketplace, publishers, agents, docs, publish, login/account, and terms.
+
+### Marketplace `/marketplace`
+
+Primary user: Developer / agent builder.
+
+Page job:
+
+- Let users discover, compare, and shortlist trusted skills.
+- Show marketplace operation: ranking, trust, runtime, pricing, and publisher signals.
+
+Primary action:
+
+- Search/filter skills.
+- Open skill detail.
+- Copy install command.
+- Move toward save/install once signed in.
+
+Data source:
+
+- `/v1/skills/search`
+- `/v1/platform/overview`
+- `/v1/publishers`
+
+Acceptance:
+
+- Filters cover category, pricing, runtime, permission risk, verification state, and ranking.
+- Cards show install command, risk, runtime, price, verification, rating, installs/calls when available.
+- Buyer-safe recommendation reasons are visible.
+- Publisher trust path is visible.
+- No internal curation boost/reason is exposed publicly.
+
+### Skill Detail `/skills/[slug]`
+
+Primary user: Developer / agent builder.
+
+Page job:
+
+- Let a developer decide if a skill is safe and useful enough to install into an agent project.
+
+Primary action:
+
+- Save skill to project.
+- Install skill to project.
+- Start trial/subscription if needed.
+- Test installed skill.
+- Submit feedback or trust report.
+
+Data source:
+
+- Public skill manifest.
+- Price records.
+- Published feedback.
+- Similar/replacement skill suggestions.
+- Signed-in project actions.
+
+Acceptance:
+
+- Shows manifest, schemas, examples, permissions, runtime, pricing, changelog, support, feedback, publisher trust, incidents/deprecation state, and install paths.
+- Signed-in project actions are scoped to the current organization.
+- Runtime test uses the same governance path as normal runtime calls.
+- Feedback enters moderation before public display.
+- Trust report creates an operator queue item.
+
+### Publishers Directory `/publishers`
+
+Primary user: Developer, publisher, customer evaluator.
+
+Page job:
+
+- Show that SkillHub has a supplier side with quality and operating signals.
+
+Primary action:
+
+- Browse publisher profiles.
+- Inspect a publisher's public trust profile.
+
+Data source:
+
+- `/v1/publishers`
+
+Acceptance:
+
+- Shows verified publisher count, public skill count, install/call evidence, payout readiness state where safe, and top public skills.
+- Does not expose private payout, organization, or user data.
+
+### Publisher Public Profile `/publishers/[slug]`
+
+Primary user: Developer / buyer.
+
+Page job:
+
+- Help buyers judge whether a publisher is trustworthy.
+
+Primary action:
+
+- Inspect publisher's public skills.
+- Open skill detail.
+
+Data source:
+
+- `/v1/publishers/:slug`
+
+Acceptance:
+
+- Shows trust level, verified skill count, runtime success signals, public skill list, active paid skill count, and public operating notes.
+- Does not expose internal curation boost, private payout details, or private organization members.
+
+### Agent Integration `/agents`
+
+Primary user: Developer / agent builder.
+
+Page job:
+
+- Explain how an agent connects to SkillHub through MCP, REST, SDK, CLI, and project-scoped keys.
+
+Primary action:
+
+- Copy integration snippets.
+- Go to developer workspace.
+
+Data source:
+
+- Static integration copy plus public endpoint URLs.
+
+Acceptance:
+
+- Explains project API key governance, installed skills, version pins, budgets, subscriptions, logs, and MCP `tools/call` parity with runtime invoke.
+- Includes production-before-use checklist.
+
+### Docs `/docs`
+
+Primary user: Developer, publisher, operator.
+
+Page job:
+
+- Provide product and technical reference for manifest, API, SDK, MCP, publishing, pricing, payout, and operations.
+
+Primary action:
+
+- Copy examples.
+- Navigate to deeper docs.
+
+Data source:
+
+- Static docs and API references.
+
+Acceptance:
+
+- Must not be a marketing page.
+- Must include manifest requirements, API endpoints, runtime governance, publishing flow, pricing/ledger, payout states, and notification states.
+
+### Terms `/terms`
+
+Primary user: Buyer, publisher, platform operator.
+
+Page job:
+
+- Make marketplace operating rules visible before final legal/payment integrations.
+
+Primary action:
+
+- Read rules.
+- Continue to publish or marketplace.
+
+Data source:
+
+- Public operating terms.
+
+Acceptance:
+
+- Covers buyer responsibilities, publisher responsibilities, review/takedown, refunds/disputes, data retention, notifications/webhooks, payout and provider-deferred boundaries.
+
+## Account And Entry
+
+### Login/Register `/login`
+
+Primary user: New or returning user.
+
+Page job:
+
+- Let users enter through email code, Google, GitHub, or token fallback.
+
+Primary action:
+
+- Request email code.
+- Verify email code.
+- Start Google/GitHub login.
+- Use token fallback.
+
+Data source:
+
+- `/v1/auth/providers`
+- `/v1/auth/email/request-code`
+- `/v1/auth/email/verify-code`
+- OAuth start/callback endpoints.
+
+Acceptance:
+
+- OAuth buttons are not fake: configuration-required state must show callback URLs and missing config names.
+- Email signup/login does not issue a session before code verification.
+- Token fallback is clearly for bootstrap, invitation, or operator recovery.
+
+### Account Center `/account`
+
+Primary user: Signed-in user.
+
+Page job:
+
+- Show identity, organization, connected login methods, sessions, roles, workspace readiness, shortcuts, and preferences.
+
+Primary action:
+
+- Revoke old sessions.
+- Disconnect OAuth identity safely.
+- Manage notification preferences.
+- Navigate to developer, publisher, dashboard, admin.
+
+Data source:
+
+- `/v1/account`
+- `/v1/account/sessions`
+- `/v1/notifications/preferences`
+
+Acceptance:
+
+- Never exposes raw tokens after first reveal.
+- Shows only token fingerprints.
+- Prevents lockout when disconnecting OAuth identity.
+- Shows workspace readiness for team, tokens, projects, owned skills, unread notifications, billing, invoice, publisher and payout states.
+
+## Publisher Workspace
+
+### Publish Entry `/publish`
+
+Primary user: Publisher / skill author.
+
+Page job:
+
+- Let a publisher create or update a skill draft from a manifest and understand the path to review, verification, pricing, and payout readiness.
+
+Primary action:
+
+- Paste manifest.
+- Run client preflight.
+- Save draft.
+- Continue to publisher workspace.
+
+Data source:
+
+- Signed-in user session.
+- `/v1/skills`
+
+Acceptance:
+
+- Shows preflight for JSON, identity, runtime, schemas, permissions, commercial readiness.
+- Explains draft -> version submit -> automated checks -> review -> verified -> commercial readiness.
+- Does not ask users to paste raw admin/service tokens.
+- Success state links to publisher workspace and skill detail.
+- Does not claim a skill is verified just because draft save succeeded.
+
+### Publisher Workspace `/publisher`
+
+Primary user: Publisher / skill author.
+
+Page job:
+
+- Operate owned skills after first upload.
+
+Primary action:
+
+- Submit version for review.
+- Edit unlocked draft/new version.
+- Set pricing.
+- Accept terms.
+- Start payout onboarding.
+- Respond to feedback.
+- Claim buyer requests.
+- Request marketplace distribution review.
+
+Data source:
+
+- `/v1/publisher/overview`
+- `/v1/publisher/skills`
+- `/v1/publisher/profile`
+- `/v1/publisher/balances`
+- `/v1/publisher/buyer-requests`
+- Notification and payout endpoints.
+
+Acceptance:
+
+- Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
+- Paid activation blockers are explicit.
+- Approved or installed versions cannot be edited in place.
+- Publisher sees why to come back next week.
+
+## Developer Workspace
+
+### Developer Command Center `/developer`
+
+Primary user: Developer / agent builder.
+
+Page job:
+
+- Give a high-level operating center for projects, runtime keys, installed skills, budgets, buyer requests, billing, notifications, team, and webhooks.
+
+Primary action:
+
+- Create project.
+- Open project detail.
+- Manage team, billing, notification preferences, webhooks.
+- Create buyer request.
+
+Data source:
+
+- `/v1/developer/overview`
+- `/v1/developer/projects`
+- `/v1/organization/team`
+- `/v1/organization/billing`
+- `/v1/organization/webhooks`
+- `/v1/notifications`
+
+Acceptance:
+
+- Shows projects, active keys, installed skills, update counts, billing readiness, notification inbox, team access, webhook setup, and buyer requests.
+- Developer can create a project without admin intervention.
+
+### Dashboard `/dashboard`
+
+Primary user: Signed-in organization member.
+
+Page job:
+
+- General workspace overview and bridge into developer/publisher/admin areas.
+
+Primary action:
+
+- Navigate to project, publisher, admin, account, billing, notifications.
+
+Data source:
+
+- Platform/developer/publisher overview where authorized.
+
+Acceptance:
+
+- Must not become a duplicate of every workspace.
+- Should show session state and operational shortcuts.
+
+### Project Detail `/dashboard/projects/[slug]`
+
+Primary user: Developer / agent operator.
+
+Page job:
+
+- Manage one agent project's installed skills, policies, API keys, runtime calls, subscriptions, invoices, saved skills, updates, and connection instructions.
+
+Primary action:
+
+- Create/revoke API key.
+- Edit policy.
+- Pause/remove/restore install.
+- Adopt/ignore/schedule update.
+- Generate invoice.
+- Run test invocation.
+- Copy REST/MCP snippets.
+
+Data source:
+
+- `/v1/developer/projects/:slug`
+- Project install, policy, key, update, invoice, subscription, saved skill, runtime test endpoints.
+
+Acceptance:
+
+- Runtime actions use project-scoped authorization.
+- High-risk permission changes require owner approval.
+- Version adoption only works for approved versions.
+- Subscription and budget gates are visible before runtime use.
+- API keys are reveal-once.
+
+## Admin Workspace
+
+### Admin Command Center `/admin`
+
+Primary user: Reviewer, trust operator, finance admin, support, super admin.
+
+Page job:
+
+- Operate platform review, trust, finance, notification, identity, webhook, and launch readiness workflows.
+
+Primary action:
+
+- Review skills.
+- Decide feedback/takedown/incidents.
+- Process finance ledger, payouts, refunds, disputes.
+- Manage commission rules.
+- Manage notification templates and delivery.
+- Inspect launch readiness.
+- Inspect identity directory.
+
+Data source:
+
+- `/v1/admin/overview`
+- `/v1/admin/reviews`
+- `/v1/admin/skill-feedback`
+- `/v1/admin/abuse-reports`
+- `/v1/admin/incidents`
+- `/v1/admin/finance/*`
+- `/v1/admin/payouts`
+- `/v1/admin/notifications`
+- `/v1/admin/notification-templates`
+- `/v1/admin/notification-deliveries`
+- `/v1/admin/webhook-deliveries`
+- `/v1/admin/launch-readiness`
+- `/v1/admin/audit-logs`
+- `/v1/admin/identity-directory`
+
+Acceptance:
+
+- Privileged actions require reason where applicable.
+- Audit log is separate from notification events.
+- Launch readiness is secret-safe.
+- No raw OAuth secrets, email keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords are displayed.
+- Finance actions do not mutate historical splits silently.
+
+## Core Journey Specs To Write Before More UI
+
+### Journey A: Developer Discovers, Installs, And Tests A Skill
+
+Routes:
+
+- `/marketplace`
+- `/skills/[slug]`
+- `/developer`
+- `/dashboard/projects/[slug]`
+
+Must specify:
+
+- Search and filter behavior.
+- Skill trust decision.
+- Save/install flow.
+- Project policy approval.
+- API key/MCP connection.
+- Test invocation.
+- Usage/cost visibility.
+- Update/incident follow-up.
+
+### Journey B: Publisher Uploads, Submits, Monetizes, And Improves A Skill
+
+Routes:
+
+- `/publish`
+- `/publisher`
+- `/skills/[slug]`
+
+Must specify:
+
+- Manifest draft save.
+- Version management.
+- Automated checks.
+- Review submission and decision.
+- Feedback response.
+- Pricing blockers.
+- Terms and payout readiness.
+- Revenue and payout follow-up.
+
+### Journey C: Admin Reviews, Governs, And Launches Platform Operations
+
+Routes:
+
+- `/admin`
+- `/terms`
+- `/docs`
+
+Must specify:
+
+- Review queue.
+- Trust/takedown queue.
+- Runtime incidents.
+- Feedback moderation.
+- Finance ledger.
+- Payout decisions.
+- Notification templates/deliveries.
+- Identity directory.
+- Launch readiness.
+
+## UI Design Rule
+
+UI design starts only after the relevant page row and journey spec are approved.
+
+If a design idea cannot be mapped to a user job, primary action, data source, or acceptance criterion, it should not be implemented yet.

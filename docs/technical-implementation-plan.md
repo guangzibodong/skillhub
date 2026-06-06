@@ -20,6 +20,8 @@ Every feature should create at least one of these values:
 
 If a feature does not support one of those values, it is secondary.
 
+Engineering work now follows the product-management gate defined in [Product Management Operating Model](./product-management-operating-model.md). Before UI or implementation work starts, the feature must have a requirement shape based on [Feature Requirement Template](./feature-requirement-template.md) and must map to the page or journey source of truth in [Page Requirements Matrix](./page-requirements-matrix.md). Small verified bug fixes can bypass the full template, but must still preserve the existing acceptance standard.
+
 ## Implementation Domains
 
 ### 1. Identity And Workspace
