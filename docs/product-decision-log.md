@@ -129,6 +129,7 @@ Design default:
 Acceptance impact:
 
 - Payout request UI and admin queue must match the configured thresholds.
+- Publisher payout readiness must show the minimum payout amount, manual review threshold, blocked/failed retry condition, and next action using the same configured values as the backend.
 
 ### D006: Refund And Dispute Window
 

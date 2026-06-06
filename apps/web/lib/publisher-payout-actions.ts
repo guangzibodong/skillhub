@@ -13,12 +13,12 @@ export type PublisherPayoutActionState = {
 
 const actionCopy = {
   en: {
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before requesting payouts.",
+    missingToken: "Sign in with a SkillHub user token before requesting payouts.",
     requested: "Payout request created. Available balances are now reserved for finance review.",
     unableRequest: "Unable to request payout."
   },
   zh: {
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能申请提现。",
+    missingToken: "请先使用 SkillHub 用户 token 登录，才能申请提现。",
     requested: "提现申请已创建，可用余额已锁定并进入财务流程。",
     unableRequest: "无法申请提现。"
   }
@@ -57,6 +57,7 @@ export async function requestPublisherPayoutAction(
     const payload = (await response.json()) as { payout: PayoutRecord };
 
     revalidatePath("/dashboard");
+    revalidatePath("/publisher");
 
     return {
       message: labels.requested,

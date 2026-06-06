@@ -1,333 +1,296 @@
 # SkillHub Product Management Operating Model
 
-本文档定义 SkillHub 的产品经理角色、需求治理方式和开发准入标准。目的很简单：先定需求，再设计 UI，再写代码，避免靠感觉堆页面。
+Status: active
 
-SkillHub 是一个真实运营型平台，不是展示型网站。每个功能都必须服务于开发者、发布者或平台运营者的真实工作流，并且必须能进入数据、权限、审核、通知、账务或运行治理体系。
+This document defines how SkillHub product decisions are made before UI and code work starts. Its purpose is simple: define requirements first, design UI second, then implement and verify. SkillHub is an operating platform, not a collection of decorative pages.
+
+SkillHub is a real marketplace and runtime governance product. Every feature must serve a developer, publisher, or platform operator workflow and must connect to durable state, permissions, review, notifications, ledger, payout, runtime governance, or audit.
 
 ## Product Manager Role
 
-产品经理是 SkillHub 的需求总控角色，拥有以下决策权：
+The product manager owns requirement control for SkillHub.
 
-- 定义用户是谁，以及当前功能解决哪个用户的哪个任务。
-- 决定功能优先级：P0、P1、P2。
-- 决定功能是否进入设计和代码阶段。
-- 维护用户旅程、页面信息架构、状态机、数据对象、权限、通知、后台操作和验收标准。
-- 拒绝只改善视觉但不增强产品价值的页面改动。
-- 拒绝没有状态、没有后台、没有验收标准的“假功能”。
-- 在支付接口、邮件协议等外部集成前，要求先建好内部状态、记录、审核和运营视图。
+Decision rights:
 
-产品经理不替代 UI、前端、后端、测试或运营角色。产品经理负责让这些角色不要各做各的。
+- Define the user, job, and scenario for every feature.
+- Set priority as P0, P1, or P2.
+- Decide whether a feature may enter UI design or implementation.
+- Maintain journeys, page information architecture, state language, data objects, permissions, notifications, admin operations, and acceptance criteria.
+- Reject visual-only changes that do not improve product value.
+- Reject fake features that have no state, backend, permission model, or acceptance path.
+- Require internal state, records, review views, and admin visibility before final payment, payout, or email integrations are connected.
+
+The product manager does not replace UI, frontend, backend, QA, or operations roles. The PM makes sure those roles are building the same product.
 
 ## Core Product Principle
 
-SkillHub 的核心产品原则：
+SkillHub must satisfy this rule:
 
 ```text
-用户第一次来，必须知道这里能解决什么。
-用户第二次来，必须有值得回来的工作流。
-平台上线运营，必须有审核、状态、账务、通知和后台闭环。
+On the first visit, users understand what SkillHub solves.
+On the second visit, users have operational work worth returning for.
+At launch, the platform has review, state, ledger, notification, and admin loops.
 ```
 
-因此每个需求都必须回答：
+Every requirement must answer:
 
-1. 谁使用它？
-2. 用户为什么第一次需要它？
-3. 用户为什么第二次还会回来？
-4. 它产生什么可运营数据？
-5. 它如何提升信任、分发、收入或留存？
-6. 平台管理员如何审核、纠错或追责？
-7. 需要哪些数据表、API、页面、通知和审计记录？
+1. Who uses it?
+2. Why does the user need it the first time?
+3. Why will the user come back?
+4. What operational data does it create?
+5. How does it improve trust, distribution, revenue, or retention?
+6. How can an admin review, correct, govern, or audit it?
+7. What data tables, APIs, pages, notifications, and audit records are required?
 
-## Product Roles And Jobs To Be Done
+## Product Roles And Jobs
 
 ### Visitor
 
 Job:
 
-- 理解 SkillHub 是什么。
-- 判断平台是否可信。
-- 看到真实技能、发布者、安装路径、审核规则和运营能力。
-- 选择注册、浏览市场、发布技能或阅读文档。
+- Understand what SkillHub is.
+- Judge whether the platform is trustworthy.
+- See real skills, publishers, install paths, review rules, and operating terms.
+- Choose marketplace browsing, publishing, agent integration, docs, or account entry.
 
-Must see:
+Repeat-use hook:
 
-- 清晰的市场定位。
-- 真实技能卡片和技能详情。
-- 发布者可信信号。
-- 公开运营条款。
-- Agent 接入方式。
+- Public trust, marketplace supply, integration docs, terms, and publisher signals make the product credible before signup.
 
 ### Developer / Agent Builder
 
 Job:
 
-- 找到能被智能体安全使用的技能。
-- 比较权限、价格、运行时、评分、审核状态和替代技能。
-- 把技能安装到项目，并用项目 API key、MCP 或 SDK 调用。
-- 管理版本、权限、预算、订阅、发票、事故和更新。
+- Find a skill an AI agent can safely use.
+- Compare permissions, pricing, runtime, verification, feedback, incidents, and alternatives.
+- Install a skill into an organization project.
+- Use project API keys, MCP, REST, or SDK calls under project policy, budget, subscription, and metering controls.
+- Manage version pins, updates, incidents, usage, billing, and runtime logs.
 
-Repeat-use reason:
+Repeat-use hook:
 
-- 查看项目运行状态。
-- 处理版本更新和事故。
-- 控制预算和订阅。
-- 轮换 API key。
-- 复查账单和使用记录。
+- Return to monitor runtime health, cost, keys, updates, incidents, approvals, invoices, and better alternatives.
 
 ### Publisher / Skill Author
 
 Job:
 
-- 把一个 AI 能力包装成可安装、可审核、可变现的技能。
-- 创建草稿、提交版本、查看审核和自动检查结果。
-- 完成上架质量、定价、条款和提现准备。
-- 追踪安装、调用、反馈、收入、退款争议和提现状态。
+- Package an AI capability as an installable, reviewable, monetizable skill.
+- Save drafts, manage versions, submit exact semantic versions, review automated checks, and respond to reviewer notes.
+- Complete profile, terms, payout readiness, and pricing blockers.
+- Track installs, calls, feedback, buyer requests, revenue, refunds, disputes, payout state, curation placement, and appeals.
 
-Repeat-use reason:
+Repeat-use hook:
 
-- 修复审核或运行检查问题。
-- 回复用户反馈。
-- 处理买方需求。
-- 发布新版本。
-- 查看收入和提现准备。
-- 对市场分发结果发起申诉。
+- Return to fix review/runtime issues, respond to buyer demand and feedback, publish new versions, improve distribution, and manage earnings.
 
 ### Platform Reviewer / Trust Operator
 
 Job:
 
-- 审核技能版本。
-- 判断权限、运行时、示例、数据保留和风险。
-- 处理滥用举报、下架、限制、事故和反馈审核。
-- 记录原因和审计轨迹。
+- Review skill versions.
+- Judge permissions, runtime posture, examples, data retention, and risk.
+- Handle feedback moderation, abuse reports, takedowns, restrictions, suspensions, incidents, and audit notes.
 
-Repeat-use reason:
+Repeat-use hook:
 
-- 审核队列和风险队列每天变化。
-- 事故和反馈需要持续处理。
-- 高风险技能需要人工判断。
+- Review queues, incidents, abuse reports, and feedback change every day and need durable decisions.
 
 ### Finance Admin
 
 Job:
 
-- 管理佣金规则、交易、分账、余额、退款、争议和提现。
-- 保证历史账务不可被静默篡改。
-- 在最终支付接口接入前，先让内部账务状态完整可查。
+- Manage commission rules, transactions, splits, balances, refunds, disputes, and payouts.
+- Preserve immutable historical money records.
+- Review high-value, failed, or blocked payouts before provider money movement.
 
-Repeat-use reason:
+Repeat-use hook:
 
-- 处理待成熟余额。
-- 审核提现。
-- 处理退款和争议。
-- 检查账务异常和未 post 项。
+- Return for matured balances, payout review, provider failures, blocked retry conditions, refund/dispute adjustments, and ledger anomalies.
 
 ### Super Admin
 
 Job:
 
-- 维护平台身份、组织、权限、模板、上线准备、迁移状态和运营健康。
-- 对关键操作有最终追责和恢复能力。
+- Maintain identity, organizations, permissions, templates, launch readiness, migration visibility, and privileged recovery.
 
-Repeat-use reason:
+Repeat-use hook:
 
-- 发布前检查 launch readiness。
-- 监控系统配置缺口。
-- 管理模板、通知、用户和组织风险。
+- Return for launch readiness, configuration gaps, template coverage, migration drift, user/org risk, and production operations.
 
 ## Requirement Levels
 
-SkillHub 需求分 5 层，低层不能跳过高层：
+SkillHub requirements have five levels. Lower levels cannot skip higher levels.
 
 ### L0: Product Definition
 
-回答平台是什么、不是什么、服务谁、长期靠什么形成壁垒。
+Defines what the platform is, what it is not, who it serves, and why it can compound value over time.
 
-Owner: 产品经理。
-
-Source:
+Sources:
 
 - `docs/product-requirements.md`
 - `docs/user-value-and-retention.md`
 
 ### L1: Domain Requirements
 
-定义大模块：
+Defines major domains:
 
-- 账号和组织。
-- 技能注册与发布。
-- 市场发现。
-- 开发者项目。
-- 发布者工作台。
-- 审核与信任。
-- 运行网关。
-- 账务和分佣。
-- 提现。
-- 通知。
-- 管理后台。
+- Account and organization.
+- Skill registry and publishing.
+- Marketplace discovery.
+- Developer projects.
+- Publisher workspace.
+- Review and trust.
+- Runtime gateway.
+- Billing and commission.
+- Payouts.
+- Notifications and webhooks.
+- Admin operations.
 
-Owner: 产品经理 + 技术负责人。
-
-Source:
+Sources:
 
 - `docs/technical-implementation-plan.md`
 - `docs/full-build-plan.md`
 
 ### L2: User Journey Requirements
 
-每个用户角色必须有端到端旅程：
+Every user role must have end-to-end journeys:
 
-- 首次访问。
-- 注册登录。
-- 创建/发现/发布。
-- 完成核心任务。
-- 第二次回来处理运营事项。
-- 遇到失败、审核、事故、退款、提现、通知时怎么走。
+- First visit.
+- Signup/login.
+- Create, discover, publish, install, or review.
+- Complete the core task.
+- Return later for operational work.
+- Recover from failure, review rejection, incident, refund, dispute, payout block, or notification.
 
-Owner: 产品经理 + UI/UX。
+Source:
+
+- `docs/p0-journey-specs.md`
 
 ### L3: Feature Specification
 
-每个功能进入设计和代码前，必须写清楚：
+Before a feature enters UI or code, it should define:
 
-- 用户角色。
-- 触发场景。
-- 成功结果。
-- 页面位置。
-- 主流程。
-- 空状态、错误状态、加载状态、权限不足状态。
-- 数据对象。
-- API。
-- 权限。
-- 通知。
-- 审计。
-- 账务影响。
-- 多语言文案。
-- 验收标准。
+- User role.
+- Trigger scenario.
+- Successful outcome.
+- Page location.
+- Main flow.
+- Empty, loading, error, blocked, and permission-denied states.
+- Data objects.
+- APIs.
+- Permissions.
+- Notifications.
+- Audit records.
+- Finance impact.
+- English and Chinese copy.
+- Acceptance criteria.
 
-Owner: 产品经理。
+Template:
 
-Template: `docs/feature-requirement-template.md`
+- `docs/feature-requirement-template.md`
 
 ### L4: Implementation Acceptance
 
-功能完成后必须验证：
+A feature is complete only when:
 
-- 页面是否符合需求。
-- API 是否返回真实数据或明确受控 fallback。
-- 数据状态是否可追踪。
-- 角色权限是否正确。
-- 管理后台是否能审核、修复或查看。
-- 中英文是否都可用。
-- 移动端和桌面端是否不溢出。
-- 类型检查、构建、烟测是否通过。
-
-Owner: 前端 + 后端 + 测试 + 产品经理。
+- The page matches the approved requirement.
+- API data is real or the fallback is explicitly allowed.
+- State is traceable.
+- Role permissions are correct.
+- Admins can inspect, review, repair, or audit the workflow.
+- English and Chinese UI are usable.
+- Desktop and mobile do not overflow.
+- Typecheck, build, and feasible smoke tests pass.
 
 ## Development Gate
 
-任何 UI 或代码任务必须按以下顺序通过：
+Any UI or code task must pass these gates in order:
 
-1. Product Gate: 已写清楚用户、场景、流程、状态和验收。
-2. Data Gate: 已明确需要读写哪些数据对象。
-3. Permission Gate: 已明确谁能看、谁能改、谁能审核。
-4. Ops Gate: 已明确后台、审计、通知或运营可见性。
-5. UI Gate: 已明确页面信息架构、优先级和交互状态。
-6. Code Gate: 才进入实现。
-7. QA Gate: 类型检查、构建、烟测、响应式检查。
+1. Product Gate: user, scenario, flow, states, and acceptance are clear.
+2. Data Gate: required read/write objects are clear.
+3. Permission Gate: who can see, change, approve, or audit is clear.
+4. Ops Gate: admin, audit, notification, finance, or runtime visibility is clear.
+5. UI Gate: page information architecture and interaction states are clear.
+6. Code Gate: implementation starts.
+7. QA Gate: typecheck, build, smoke, responsive, and acceptance checks pass.
 
-如果一个需求不能通过 Product Gate，就不要开始 UI。
+If a feature cannot pass Product Gate, do not start UI.
 
 ## Priority Rules
 
 ### P0
 
-没有它，平台不能被真实用户试用或客户会认为是玩具。
+Without this, real users or customers will treat the product as a toy.
 
 Typical P0:
 
-- 注册登录和个人中心。
-- 开发者发现、安装、项目调用。
-- 发布者上传、版本、审核、定价准备。
-- 管理后台审核、风险、账务、提现、通知、上线准备。
-- 公开页面能解释平台价值、信任和使用路径。
+- Signup/login and account center.
+- Developer discovery, install, project invocation, and runtime governance.
+- Publisher upload, versioning, review, pricing readiness, payout readiness, and improvement loops.
+- Admin review, risk, finance, payout, notification, audit, and launch readiness.
+- Public pages that explain product value, trust, integration, and marketplace rules.
 
 ### P1
 
-没有它，平台可以演示，但运营效率和留存会明显不足。
+Without this, the platform can demo but has weaker retention or operational efficiency.
 
 Typical P1:
 
-- 市场推荐策略。
-- 发布者质量评分和分发申诉。
-- 开发者收藏、更新处理、发票。
-- 用户反馈和发布者回复。
-- Webhook、通知偏好、模板管理。
+- Marketplace recommendation policy.
+- Publisher quality scoring and distribution appeals.
+- Developer collections, updates, and invoice improvements.
+- Feedback response loops.
+- Webhook, notification preference, and template management depth.
 
 ### P2
 
-增强体验、增长、转化或运营效率，但不阻塞第一版上线。
+Enhances growth, conversion, or efficiency without blocking the first production launch.
 
 Typical P2:
 
-- 高级筛选和集合。
-- 内容运营和 SEO 增长页。
-- 更复杂的企业权限。
-- 高级分析图表。
-- 多作者分账。
+- Advanced filters and aggregation.
+- SEO/GEO growth pages.
+- Help center and tutorials.
+- Advanced analytics.
+- Multi-author revenue splits.
 
-## Current Product Gaps To Control Before More UI
+## Current P0 Control Points
 
-### P0 Gaps
+Before broad visual polish, keep these control points locked:
 
-- Page-level requirements need a single source of truth: every public page, developer page, publisher page, and admin page needs a purpose, primary user, primary action, data source, and acceptance criteria.
-- Skill upload needs a formal journey spec: draft creation, manifest preflight, version submission, automated checks, reviewer decision, pricing readiness, and paid activation blockers.
-- Developer discovery-to-runtime needs a formal journey spec: marketplace search, skill detail, save/install, project approval, API key/MCP connection, test run, budget/subscription gate, usage visibility.
-- Publisher commercial flow needs a formal journey spec: profile, terms, payout readiness, price draft, paid activation, ledger, payout request, refund/dispute impact.
-- Admin operations need a formal command-center spec: review, trust, incidents, finance, payouts, notifications, launch readiness, identity directory.
-- The UI design system needs a product-grade IA map before more visual polish.
-
-### P1 Gaps
-
-- Retention loops need explicit acceptance: what exact inbox/task/metric makes the user come back next week?
-- Marketplace ranking explanations need buyer-safe copy and publisher-safe improvement hints.
-- Public publisher profiles need stronger acceptance criteria for trust.
-- Notification preferences and template management need user-facing and admin-facing copy requirements.
-- Multi-language copy needs product terminology rules so English and Chinese stay consistent.
-
-### P2 Gaps
-
-- SEO/GEO content strategy for agent-skill marketplace discovery.
-- Help center and onboarding tutorials.
-- Advanced analytics and benchmarking.
-- Partner/publisher certification program.
+- Page-level requirements must remain the source of truth for every public, developer, publisher, account, dashboard, and admin page.
+- Developer discovery-to-runtime must prove that a listing becomes project state and runtime state.
+- Publisher upload-to-monetization must prove that authors understand review blockers, paid blockers, feedback, demand, revenue, and payout state.
+- Admin operations must prove review, trust, incidents, finance, payouts, notifications, launch readiness, identity, and audit are operated from the console.
+- Shared state language must stay consistent across verification, risk, review, runtime health, install, subscription, ledger, payout, refund/dispute, notification, webhook, and launch readiness.
 
 ## Required Product Artifacts
 
-Before continuing broad UI development, maintain these artifacts:
+Maintain these documents:
 
 - Product requirements: `docs/product-requirements.md`
 - Technical implementation plan: `docs/technical-implementation-plan.md`
 - Product management operating model: `docs/product-management-operating-model.md`
 - Feature requirement template: `docs/feature-requirement-template.md`
-- Page and journey matrix: `docs/page-requirements-matrix.md`
+- Page requirements matrix: `docs/page-requirements-matrix.md`
 - Product decision log: `docs/product-decision-log.md`
 - Requirements freeze workshop: `docs/requirements-freeze-workshop.md`
 - P0 journey specs: `docs/p0-journey-specs.md`
 
 ## 48-Hour Product Focus
 
-The next 48 hours should not be random feature coding. The fastest high-quality path is:
+The fastest high-quality path remains:
 
-1. Lock the page and journey matrix for public, developer, publisher, admin, and account areas.
-2. Write feature specs for the three most important user journeys:
+1. Maintain the approved page and journey matrix.
+2. Finish the three P0 journeys:
    - Developer discovers, installs, and tests a skill.
    - Publisher uploads, submits, monetizes, and improves a skill.
    - Admin reviews, governs, and prepares launch readiness.
-3. Convert those specs into UI tasks, API tasks, and QA tasks.
-4. Only then continue page polish and implementation.
+3. Convert journey gaps into UI, API, and QA tasks.
+4. Implement only work that maps back to the approved journeys.
 
-## Rule For Future Agent Work
+## Parallel Agent Rules
 
 When multiple AI roles run in parallel:
 
@@ -336,6 +299,6 @@ When multiple AI roles run in parallel:
 - Frontend owns implementation of approved UI states.
 - Backend owns data, API, permissions, state machines, and audit.
 - QA owns verification against acceptance criteria.
-- User/Customer role challenges whether the platform feels real and worth returning to.
+- Customer Critic challenges whether the product feels real and worth returning to.
 
-No role should invent product scope independently. If a new need appears, it goes back to the Product Manager first.
+No role should invent product scope independently. If a new need appears, it returns to the Product Manager and decision log first.

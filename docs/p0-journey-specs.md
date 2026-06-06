@@ -255,7 +255,7 @@ Publisher / Skill Author
 - Submit a specific version for human review.
 - Improve listing quality using runtime checks, feedback, installs, and buyer demand.
 - Complete commercial readiness before paid publishing.
-- Track earnings, adjustments, balances, and payout readiness.
+- Track earnings, adjustments, balances, payout readiness, latest payout reason, retry condition, and next action.
 
 ### Main Flow
 
@@ -311,6 +311,7 @@ Publisher workspace:
 - Marketplace placement featured/standard/suppressed with publisher-safe reason and appeal path.
 - Balance pending/available/paid/reversed/blocked.
 - Payout requested/review/processing/paid/failed/blocked.
+- Payout readiness blocker, minimum amount, manual-review threshold, latest payout reason, retry condition, and publisher next action.
 
 ### Data And API Requirements
 
@@ -527,6 +528,7 @@ Finance:
 - Usage/subscription processor endpoints.
 - Balance release endpoints.
 - Admin payout queue/decision endpoints.
+- Payout decision endpoints require finance reason, provider reference when marking paid, and retry condition when blocking.
 - Refund/dispute endpoints.
 
 Notifications/webhooks:

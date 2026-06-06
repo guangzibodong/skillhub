@@ -457,7 +457,25 @@ export type PayoutRecord = {
   reviewReason: string | null;
   failureReason: string | null;
   providerReference: string | null;
+  retryCondition: string | null;
+  nextAction:
+    | "await_finance_review"
+    | "await_provider_processing"
+    | "complete"
+    | "request_again_after_failure"
+    | "resolve_blocker_before_retry"
+    | string
+    | null;
 };
+
+export type PublisherPayoutReadinessBlocker =
+  | "amount_below_minimum"
+  | "no_available_balance"
+  | "payout_account_missing"
+  | "payout_account_not_verified"
+  | "publisher_not_active"
+  | "publisher_payout_not_verified"
+  | "publisher_profile_missing";
 
 export type PublisherPayoutSummary = {
   publisherProfile: {
@@ -474,6 +492,20 @@ export type PublisherPayoutSummary = {
     currency: string;
     minPayoutCents: number;
     reviewThresholdCents: number;
+  };
+  readiness?: {
+    blockers: PublisherPayoutReadinessBlocker[];
+    canRequest: boolean;
+    expectedStatus: "requested" | "review" | "processing" | "paid" | "failed" | "blocked" | null;
+    nextAction:
+      | "activate_publisher_profile"
+      | "complete_payout_verification"
+      | "connect_verified_payout_account"
+      | "create_publisher_profile"
+      | "earn_or_wait_minimum"
+      | "request_payout"
+      | "wait_for_balance_maturity"
+      | string;
   };
   payoutAccounts: Array<{
     id: string;
@@ -1142,8 +1174,14 @@ const emptyPublisherPayoutSummary: PublisherPayoutSummary = {
     blockedCents: 0,
     paidCents: 0,
     currency: "usd",
-    minPayoutCents: 0,
-    reviewThresholdCents: 0
+    minPayoutCents: 5000,
+    reviewThresholdCents: 100000
+  },
+  readiness: {
+    blockers: ["publisher_profile_missing", "payout_account_missing", "no_available_balance"],
+    canRequest: false,
+    expectedStatus: null,
+    nextAction: "create_publisher_profile"
   },
   payoutAccounts: [],
   payouts: []
@@ -1383,7 +1421,7 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
         {
           action: "Run ./scripts/run-postgres-migrations.sh before each production rebuild.",
           description: "Migration history is tracked in schema_migrations so operators can see whether SQL kept up with code.",
-          detail: "Demo latest migration: 028_runtime_check_remediation.sql.",
+          detail: "Demo latest migration: 030_payout_explainability.sql.",
           key: "schema_migrations",
           label: "Migration history",
           status: "ready"
@@ -2114,7 +2152,9 @@ const fallbackPayouts: PayoutRecord[] = [
     paidAt: null,
     reviewReason: "High-value payout queued for manual review.",
     failureReason: null,
-    providerReference: null
+    providerReference: null,
+    retryCondition: null,
+    nextAction: "await_finance_review"
   }
 ];
 
@@ -2131,8 +2171,14 @@ const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
     blockedCents: 480000,
     paidCents: 940000,
     currency: "usd",
-    minPayoutCents: 1000,
-    reviewThresholdCents: 50000
+    minPayoutCents: 5000,
+    reviewThresholdCents: 100000
+  },
+  readiness: {
+    blockers: [],
+    canRequest: true,
+    expectedStatus: "review",
+    nextAction: "request_payout"
   },
   payoutAccounts: [
     {

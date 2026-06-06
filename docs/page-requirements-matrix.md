@@ -339,6 +339,7 @@ Acceptance:
 
 - Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
 - Shows a paid marketplace readiness command panel that aggregates publisher profile, current terms, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers before the detailed skill cards.
+- Payout readiness explains pending, available, locked, paid, failed, and blocked money states; request blockers; minimum payout; manual review threshold; latest payout reason; retry condition; and next action.
 - Shows a review repair loop that combines the latest exact version, review submitted time, SLA due state, reviewer notes, automated check evidence, structured blocker/advisory semantics, target fields, and concrete repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
 - Paid activation blockers are explicit.
 - Active paid pricing controls must communicate when review, terms, payout, or publisher readiness blocks activation; publishers can still save draft pricing while the backend remains the source of truth.
@@ -473,6 +474,7 @@ Acceptance:
 - Review cards expose the secret-safe evidence package before decision controls: publisher, payout readiness, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts.
 - Audit log is separate from notification events.
 - Launch readiness is secret-safe.
+- Payout decisions require finance reason, provider reference when marking paid, and retry condition when blocking; admins can see the publisher-facing next action before deciding.
 - No raw OAuth secrets, email keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords are displayed.
 - Finance actions do not mutate historical splits silently.
 

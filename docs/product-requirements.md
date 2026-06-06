@@ -316,6 +316,7 @@ Requirements:
 - Refund and dispute impact history.
 - Payout readiness.
 - Payout history.
+- Payout readiness must explain available, pending, blocked, and paid balances; minimum payout amount; manual review threshold; latest payout reason; next action; and retry condition for failed or blocked payouts.
 - Paid marketplace readiness command center that aggregates publisher profile, current terms acceptance, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers so publishers know what prevents monetization before they edit individual skill cards.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Buyer request board.
@@ -552,6 +553,9 @@ Rules:
 - No payout while account is suspended.
 - Payout above threshold enters manual review.
 - Blocked payout requires reason and retry condition.
+- Failed payout must explain whether balances were released and what provider/account condition should be fixed before retry.
+- Publisher payout UI must show why a request button is disabled, which readiness blocker applies, what next action is expected, and whether a new request will enter manual review.
+- Finance admin payout decisions must require a reason, require provider reference when marking paid, and require a retry condition when blocking.
 - Every finance admin action writes audit log.
 
 ## Trust And Safety Requirements

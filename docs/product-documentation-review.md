@@ -44,6 +44,8 @@ Admin review is now closer to an operating workflow rather than a status list: e
 
 Publisher monetization is now closer to an operating workflow as well: `/publisher` exposes a paid marketplace readiness command panel before the per-skill workbench, summarizing paid listing readiness, blocker counts, draft paid prices, payout readiness, profile/terms gates, and per-skill next actions. The pricing form now explains when active paid pricing is commercially blocked while still allowing draft pricing, which makes Journey B feel like a marketplace operations console instead of a pile of disconnected forms.
 
+Payout operations now have stronger explainability: publisher payout summaries expose readiness blockers, minimum payout, manual review threshold, balance-state meaning, latest payout reason, retry condition, and next action. Finance admins must record a reason for decisions, a provider reference when marking paid, and a retry condition when blocking a payout. This closes a key money-flow trust gap because publishers can understand why money is pending, available, reserved, failed, blocked, or paid without guessing from ledger rows.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:
@@ -789,6 +791,15 @@ Added publisher responses to buyer feedback, covering:
 - `/v1/publisher/skills` now returns recent published feedback rows, and the publisher workspace exposes response forms so authors can address buyer concerns without leaving operations.
 - Public skill detail pages show publisher responses under the matching feedback, improving buyer trust and giving publishers a concrete retention loop after feedback is moderated.
 - Launch readiness now checks the response columns so production operators can catch a missing migration before feedback-response workflows silently fail.
+
+Added payout explainability hardening, covering:
+
+- `030_payout_explainability.sql` adds payout retry-condition and next-action fields.
+- `/v1/publisher/payouts` returns request eligibility, blockers, expected initial payout status, and next action beside balances and payout rows.
+- Failed payouts release balances and explain retry path; blocked payouts keep balances locked and require a finance retry condition.
+- `/publisher` shows balance-state explanations, disabled request reasons, latest payout notes, provider reference, retry condition, and next action in English and Chinese.
+- `/admin` shows payout next action before decisions and requires finance notes, provider reference for paid records, and retry condition for blocked records.
+- Launch readiness now expects migration `030_payout_explainability.sql`.
 
 ## Product Standard Going Forward
 

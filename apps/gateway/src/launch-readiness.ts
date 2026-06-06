@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "029_buyer_request_delivery_package.sql";
-const expectedLatestMigrationNumber = 29;
+const expectedLatestMigrationFilename = "030_payout_explainability.sql";
+const expectedLatestMigrationNumber = 30;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -87,6 +87,7 @@ type DatabaseReadiness = {
   missingActiveNotificationTemplates: string[] | null;
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
+  payoutExplainabilityColumns: boolean;
   payoutTables: boolean;
   publisherFeedbackResponseColumns: boolean;
   publisherTermsAcceptanceColumns: boolean;
@@ -466,6 +467,16 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.payoutTables ? "ready" : "blocker"
     },
     {
+      action: database.payoutExplainabilityColumns ? "No action needed." : "Run migration 030_payout_explainability.sql.",
+      description: "Blocked or failed payouts need durable retry conditions and next-action state.",
+      detail: database.payoutExplainabilityColumns
+        ? "Payout explainability columns are available."
+        : "Payout retry-condition and next-action columns are missing.",
+      key: "payout_explainability",
+      label: "Payout explainability",
+      status: database.payoutExplainabilityColumns ? "ready" : "blocker"
+    },
+    {
       action: database.publisherTermsAcceptanceColumns ? "No action needed." : "Run migration 024_publisher_terms_acceptance.sql.",
       description: "Paid publishing needs a durable record of the accepted operating terms version and accepting user.",
       detail: database.publisherTermsAcceptanceColumns
@@ -565,6 +576,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       missingActiveNotificationTemplates: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
+      payoutExplainabilityColumns: false,
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
@@ -741,7 +753,21 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'buyer_requests'
             and column_name = 'decided_at'
-        ) as "buyerRequestDecidedAt"
+        ) as "buyerRequestDecidedAt",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payouts'
+            and column_name = 'retry_condition'
+        ) as "payoutRetryCondition",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payouts'
+            and column_name = 'next_action'
+        ) as "payoutNextAction"
     `) as Array<{
       buyerRequestDecidedAt: boolean;
       buyerRequestDecisionNote: boolean;
@@ -751,6 +777,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       buyerRequestSubmittedSkillId: boolean;
       buyerRequestSubmittedSkillVersionId: boolean;
       notificationDeliveryColumns: boolean;
+      payoutNextAction: boolean;
+      payoutRetryCondition: boolean;
       publisherResponseBody: boolean;
       publisherRespondedAt: boolean;
       publisherRespondedByUserId: boolean;
@@ -794,6 +822,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         tables.marketplaceCurationRules &&
         tables.organizationWebhookEndpoints &&
         tables.notificationEvents,
+      payoutExplainabilityColumns: columns.payoutRetryCondition && columns.payoutNextAction,
       payoutTables: tables.payoutAccounts && tables.payouts,
       publisherFeedbackResponseColumns:
         columns.publisherResponseBody &&
@@ -826,6 +855,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       missingActiveNotificationTemplates: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
+      payoutExplainabilityColumns: false,
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,

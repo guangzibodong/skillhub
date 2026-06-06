@@ -9,6 +9,7 @@ type PayoutDecisionInput = {
   action?: PayoutAction;
   reason?: string;
   providerReference?: string;
+  retryCondition?: string;
 };
 
 type RequestPayoutInput = {
@@ -40,6 +41,29 @@ type AvailableBalance = {
   currency: string;
 };
 
+type PayoutReadinessBlocker =
+  | "amount_below_minimum"
+  | "no_available_balance"
+  | "payout_account_missing"
+  | "payout_account_not_verified"
+  | "publisher_not_active"
+  | "publisher_payout_not_verified"
+  | "publisher_profile_missing";
+
+type PayoutReadiness = {
+  blockers: PayoutReadinessBlocker[];
+  canRequest: boolean;
+  expectedStatus: PayoutStatus | null;
+  nextAction:
+    | "activate_publisher_profile"
+    | "complete_payout_verification"
+    | "connect_verified_payout_account"
+    | "create_publisher_profile"
+    | "earn_or_wait_minimum"
+    | "request_payout"
+    | "wait_for_balance_maturity";
+};
+
 const fallbackPayoutSummary = {
   publisherProfile: {
     id: "demo-publisher",
@@ -55,6 +79,12 @@ const fallbackPayoutSummary = {
     currency: "usd",
     minPayoutCents: getMinPayoutCents(),
     reviewThresholdCents: getPayoutReviewThresholdCents()
+  },
+  readiness: {
+    blockers: [],
+    canRequest: true,
+    expectedStatus: "review",
+    nextAction: "request_payout"
   },
   payoutAccounts: [
     {
@@ -82,7 +112,9 @@ const fallbackPayoutSummary = {
       paidAt: null,
       reviewReason: "High-value payout queued for manual review.",
       failureReason: null,
-      providerReference: null
+      providerReference: null,
+      retryCondition: null,
+      nextAction: "await_finance_review"
     }
   ]
 };
@@ -107,6 +139,7 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
         blockedCents: 0,
         paidCents: 0
       },
+      readiness: buildPayoutReadiness(null, undefined, 0),
       payoutAccounts: [],
       payouts: []
     };
@@ -137,17 +170,20 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
     listPayoutRows(sql, 25, publisher.id)
   ]);
 
+  const balances = {
+    pendingCents: Number(balanceRows[0]?.pendingCents ?? 0),
+    availableCents: Number(balanceRows[0]?.availableCents ?? 0),
+    blockedCents: Number(balanceRows[0]?.blockedCents ?? 0),
+    paidCents: Number(balanceRows[0]?.paidCents ?? 0),
+    currency: "usd",
+    minPayoutCents: getMinPayoutCents(),
+    reviewThresholdCents: getPayoutReviewThresholdCents()
+  };
+
   return {
     publisherProfile: publisher,
-    balances: {
-      pendingCents: Number(balanceRows[0]?.pendingCents ?? 0),
-      availableCents: Number(balanceRows[0]?.availableCents ?? 0),
-      blockedCents: Number(balanceRows[0]?.blockedCents ?? 0),
-      paidCents: Number(balanceRows[0]?.paidCents ?? 0),
-      currency: "usd",
-      minPayoutCents: getMinPayoutCents(),
-      reviewThresholdCents: getPayoutReviewThresholdCents()
-    },
+    balances,
+    readiness: buildPayoutReadiness(publisher, payoutAccounts[0], balances.availableCents),
     payoutAccounts,
     payouts
   };
@@ -204,6 +240,7 @@ export async function requestPublisherPayout(input: RequestPayoutInput) {
         currency,
         status,
         review_reason,
+        next_action,
         updated_at
       )
       values (
@@ -213,6 +250,7 @@ export async function requestPublisherPayout(input: RequestPayoutInput) {
         ${currency},
         ${status},
         ${status === "review" ? "Amount exceeds manual review threshold." : null},
+        ${"await_finance_review"},
         now()
       )
       returning id::text
@@ -269,6 +307,14 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
     throw new Error("Payout action must be approve, mark_paid, fail, or block.");
   }
 
+  const reason = normalizeText(input.reason);
+  const providerReference = normalizeText(input.providerReference);
+  const retryCondition = normalizeText(input.retryCondition);
+
+  if (action === "block" && !retryCondition) {
+    throw new Error("Blocked payout requires a retry condition.");
+  }
+
   return sql.begin(async (tx: Sql) => {
     const payoutRows = (await tx`
       select
@@ -309,7 +355,9 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
         update payouts
         set
           status = 'processing',
-          review_reason = ${input.reason ?? "Approved for provider payout."},
+          review_reason = ${reason ?? "Approved for provider payout."},
+          retry_condition = null,
+          next_action = 'await_provider_processing',
           reviewed_at = now(),
           updated_at = now()
         where id = ${payoutId}
@@ -322,7 +370,9 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
         update payouts
         set
           status = 'paid',
-          provider_reference = ${input.providerReference ?? null},
+          provider_reference = ${providerReference ?? null},
+          retry_condition = null,
+          next_action = 'complete',
           paid_at = now(),
           updated_at = now()
         where id = ${payoutId}
@@ -336,7 +386,9 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
         update payouts
         set
           status = 'failed',
-          failure_reason = ${input.reason ?? "Provider payout failed."},
+          failure_reason = ${reason ?? "Provider payout failed."},
+          retry_condition = ${retryCondition ?? "Resolve the provider failure, then request payout again after balances return to available."},
+          next_action = 'request_again_after_failure',
           updated_at = now()
         where id = ${payoutId}
       `;
@@ -349,7 +401,9 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
         update payouts
         set
           status = 'blocked',
-          review_reason = ${input.reason ?? "Blocked by finance review."},
+          review_reason = ${reason ?? "Blocked by finance review."},
+          retry_condition = ${retryCondition},
+          next_action = 'resolve_blocker_before_retry',
           reviewed_at = now(),
           updated_at = now()
         where id = ${payoutId}
@@ -357,10 +411,11 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
       await updateLinkedBalanceState(tx, payoutId, "blocked");
     }
 
-    await recordPayoutAudit(tx, `payout.${action}`, payoutId, input.reason, {
+    await recordPayoutAudit(tx, `payout.${action}`, payoutId, reason, {
       publisherProfileId: payout.publisherProfileId,
       previousStatus: payout.status,
-      providerReference: input.providerReference ?? null
+      providerReference: providerReference ?? null,
+      retryCondition: retryCondition ?? null
     });
     await recordPayoutNotification(
       tx,
@@ -377,8 +432,9 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
         payoutId,
         amountCents: payout.amountCents,
         currency: payout.currency,
-        reason: input.reason ?? null,
-        providerReference: input.providerReference ?? null
+        reason: reason ?? null,
+        providerReference: providerReference ?? null,
+        retryCondition: retryCondition ?? null
       }
     );
 
@@ -390,7 +446,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
 async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string, payoutId?: string) {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
 
-  return sql`
+  const rows = (await sql`
     select
       p.id::text,
       pp.id::text as "publisherProfileId",
@@ -406,7 +462,9 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
       p.paid_at as "paidAt",
       p.review_reason as "reviewReason",
       p.failure_reason as "failureReason",
-      p.provider_reference as "providerReference"
+      p.provider_reference as "providerReference",
+      p.retry_condition as "retryCondition",
+      p.next_action as "nextAction"
     from payouts p
     join publisher_profiles pp on pp.id = p.publisher_profile_id
     left join payout_accounts pa on pa.id = p.payout_account_id
@@ -416,7 +474,30 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
     group by p.id, pp.id, pp.display_name, pa.id, pa.provider, pa.status
     order by p.requested_at desc
     limit ${safeLimit}
-  `;
+  `) as Array<{
+    accountStatus: string | null;
+    amountCents: number;
+    balanceCount: number;
+    currency: string;
+    failureReason: string | null;
+    id: string;
+    nextAction: string | null;
+    paidAt: string | null;
+    provider: string | null;
+    providerReference: string | null;
+    publisherName: string;
+    publisherProfileId: string;
+    requestedAt: string;
+    reviewedAt: string | null;
+    reviewReason: string | null;
+    retryCondition: string | null;
+    status: PayoutStatus;
+  }>;
+
+  return rows.map((row) => ({
+    ...row,
+    nextAction: row.nextAction ?? payoutNextAction(row.status)
+  }));
 }
 
 async function getPublisherProfile(
@@ -568,16 +649,110 @@ function ensurePayoutStatus(status: PayoutStatus, allowed: PayoutStatus[], actio
   }
 }
 
+function buildPayoutReadiness(
+  publisher: PublisherProfile | null,
+  payoutAccount: PayoutAccount | undefined,
+  availableCents: number
+): PayoutReadiness {
+  const blockers: PayoutReadinessBlocker[] = [];
+
+  if (!publisher) {
+    blockers.push("publisher_profile_missing");
+  } else {
+    if (publisher.status !== "active") {
+      blockers.push("publisher_not_active");
+    }
+
+    if (publisher.payoutStatus !== "verified") {
+      blockers.push("publisher_payout_not_verified");
+    }
+  }
+
+  if (!payoutAccount) {
+    blockers.push("payout_account_missing");
+  } else if (payoutAccount.status !== "verified") {
+    blockers.push("payout_account_not_verified");
+  }
+
+  if (availableCents <= 0) {
+    blockers.push("no_available_balance");
+  } else if (availableCents < getMinPayoutCents()) {
+    blockers.push("amount_below_minimum");
+  }
+
+  const canRequest = blockers.length === 0;
+
+  return {
+    blockers,
+    canRequest,
+    expectedStatus: canRequest ? (availableCents >= getPayoutReviewThresholdCents() ? "review" : "requested") : null,
+    nextAction: payoutReadinessNextAction(blockers)
+  };
+}
+
+function payoutReadinessNextAction(blockers: PayoutReadinessBlocker[]): PayoutReadiness["nextAction"] {
+  if (blockers.includes("publisher_profile_missing")) {
+    return "create_publisher_profile";
+  }
+
+  if (blockers.includes("publisher_not_active")) {
+    return "activate_publisher_profile";
+  }
+
+  if (blockers.includes("publisher_payout_not_verified") || blockers.includes("payout_account_not_verified")) {
+    return "complete_payout_verification";
+  }
+
+  if (blockers.includes("payout_account_missing")) {
+    return "connect_verified_payout_account";
+  }
+
+  if (blockers.includes("no_available_balance")) {
+    return "wait_for_balance_maturity";
+  }
+
+  if (blockers.includes("amount_below_minimum")) {
+    return "earn_or_wait_minimum";
+  }
+
+  return "request_payout";
+}
+
+function payoutNextAction(status: PayoutStatus) {
+  if (status === "processing") {
+    return "await_provider_processing";
+  }
+
+  if (status === "paid") {
+    return "complete";
+  }
+
+  if (status === "failed") {
+    return "request_again_after_failure";
+  }
+
+  if (status === "blocked") {
+    return "resolve_blocker_before_retry";
+  }
+
+  return "await_finance_review";
+}
+
 function normalizeCurrency(currency = "usd") {
   return currency.trim().toLowerCase() || "usd";
 }
 
+function normalizeText(value: string | undefined) {
+  const text = value?.trim();
+  return text ? text : undefined;
+}
+
 function getMinPayoutCents() {
-  return getEnvInt("SKILLHUB_MIN_PAYOUT_CENTS", 1000);
+  return getEnvInt("SKILLHUB_MIN_PAYOUT_CENTS", 5000);
 }
 
 function getPayoutReviewThresholdCents() {
-  return getEnvInt("SKILLHUB_PAYOUT_REVIEW_THRESHOLD_CENTS", 50000);
+  return getEnvInt("SKILLHUB_PAYOUT_REVIEW_THRESHOLD_CENTS", 100000);
 }
 
 function getEnvInt(key: string, fallback: number) {

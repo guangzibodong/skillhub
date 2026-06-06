@@ -1466,6 +1466,58 @@ curl "https://api.useskillhub.com/v1/publisher/payouts" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
+The response explains whether the publisher can request payout and why not:
+
+```json
+{
+  "publisherProfile": {
+    "id": "PUBLISHER_PROFILE_ID",
+    "displayName": "SkillHub Publisher",
+    "status": "active",
+    "payoutStatus": "verified"
+  },
+  "balances": {
+    "pendingCents": 126000,
+    "availableCents": 482000,
+    "blockedCents": 0,
+    "paidCents": 940000,
+    "currency": "usd",
+    "minPayoutCents": 5000,
+    "reviewThresholdCents": 100000
+  },
+  "readiness": {
+    "canRequest": true,
+    "blockers": [],
+    "expectedStatus": "review",
+    "nextAction": "request_payout"
+  },
+  "payouts": [
+    {
+      "id": "PAYOUT_ID",
+      "amountCents": 482000,
+      "currency": "usd",
+      "status": "review",
+      "balanceCount": 4,
+      "reviewReason": "Amount exceeds manual review threshold.",
+      "failureReason": null,
+      "providerReference": null,
+      "retryCondition": null,
+      "nextAction": "await_finance_review"
+    }
+  ]
+}
+```
+
+Readiness blocker values:
+
+- `publisher_profile_missing`
+- `publisher_not_active`
+- `publisher_payout_not_verified`
+- `payout_account_missing`
+- `payout_account_not_verified`
+- `no_available_balance`
+- `amount_below_minimum`
+
 Request a payout for all currently available publisher balances in a currency:
 
 ```bash
@@ -1497,10 +1549,23 @@ curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" 
 
 Supported payout actions:
 
-- `approve`: moves `requested` or `review` payouts to `processing`.
-- `mark_paid`: marks the payout paid and moves linked publisher balances to `paid`.
-- `fail`: marks the payout failed and releases linked balances back to `available`.
-- `block`: blocks the payout and keeps linked balances blocked until finance review resolves it.
+- `approve`: moves `requested` or `review` payouts to `processing`, clears retry condition, and sets `nextAction` to `await_provider_processing`.
+- `mark_paid`: marks the payout paid, moves linked publisher balances to `paid`, stores `providerReference`, and sets `nextAction` to `complete`.
+- `fail`: marks the payout failed, releases linked balances back to `available`, stores `failureReason`, stores an optional `retryCondition`, and sets `nextAction` to `request_again_after_failure`.
+- `block`: blocks the payout, keeps linked balances blocked, requires both `reason` and `retryCondition`, and sets `nextAction` to `resolve_blocker_before_retry`.
+
+Example blocked decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "block",
+    "reason": "Payout account ownership evidence is incomplete.",
+    "retryCondition": "Upload matching business ownership evidence and complete payout-account verification before requesting again."
+  }'
+```
 
 Every payout request and decision records an audit log and a queued in-app notification event.
 

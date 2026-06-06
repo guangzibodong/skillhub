@@ -1,10 +1,22 @@
 "use client";
 
 import { useActionState } from "react";
-import { Banknote, CheckCircle2, Clock3, Send, WalletCards, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  AlertTriangle,
+  Banknote,
+  CheckCircle2,
+  Clock3,
+  FileCheck2,
+  RotateCcw,
+  Send,
+  WalletCards,
+  XCircle
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/ops-format";
-import type { PublisherPayoutSummary } from "@/lib/ops-data";
+import type { PublisherPayoutReadinessBlocker, PublisherPayoutSummary, PayoutRecord } from "@/lib/ops-data";
 import { requestPublisherPayoutAction, type PublisherPayoutActionState } from "@/lib/publisher-payout-actions";
 
 type PublisherPayoutManagerProps = {
@@ -12,54 +24,146 @@ type PublisherPayoutManagerProps = {
   summary: PublisherPayoutSummary;
 };
 
+type Readiness = NonNullable<PublisherPayoutSummary["readiness"]>;
+
 const copy = {
   en: {
     account: "Payout account",
+    accountState: "Account state",
     available: "Available",
-    blocked: "Blocked",
-    cannotRequest: "A verified payout account and balance above the threshold are required before payout.",
+    availableHelp: "Matured balance that can be reserved for a payout request.",
+    blocked: "Reserved or blocked",
+    blockedHelp: "Balance reserved for payout review, provider processing, or finance block resolution.",
+    blockers: "Blocking items",
+    canRequest: "Ready to request",
+    cannotRequest: "Payout request is blocked until these items are resolved.",
+    expectedReview: "This request will enter manual finance review because it is above the review threshold.",
+    expectedRequested: "This request can be created and then moves through finance/provider processing.",
+    failureReason: "Failure reason",
+    latestPayout: "Latest payout",
     minimum: "Minimum",
+    nextAction: "Next action",
+    noLatest: "No payout request yet.",
+    paid: "Paid",
+    paidHelp: "Balance already marked paid in the ledger.",
     pending: "Pending",
+    pendingHelp: "Ledger balance waiting for the risk or maturity window.",
+    profileState: "Publisher state",
+    providerReference: "Provider reference",
     request: "Request payout",
     requesting: "Requesting",
-    status: "Readiness",
-    title: "Withdrawal readiness",
+    retryCondition: "Retry condition",
+    reviewThreshold: "Manual review",
+    title: "Payout readiness",
     statuses: {
+      active: "Active",
       blocked: "Blocked",
       failed: "Failed",
       not_configured: "Not configured",
       paid: "Paid",
+      pending: "Pending",
       processing: "Processing",
       requested: "Requested",
+      restricted: "Restricted",
       review: "In review",
+      suspended: "Suspended",
       verification_required: "Needs verification",
       verified: "Verified"
+    },
+    blockerLabels: {
+      amount_below_minimum: "Available balance is below the minimum payout amount.",
+      no_available_balance: "No available balance has matured yet.",
+      payout_account_missing: "Connect a payout account before requesting money movement.",
+      payout_account_not_verified: "Finish payout-account verification.",
+      publisher_not_active: "Publisher profile must be active.",
+      publisher_payout_not_verified: "Publisher payout readiness must be verified.",
+      publisher_profile_missing: "Create the publisher profile first."
+    },
+    nextActions: {
+      activate_publisher_profile: "Ask an operator to activate the publisher profile.",
+      await_finance_review: "Wait for finance review or respond if finance asks for evidence.",
+      await_provider_processing: "Finance approved the request; wait for provider processing.",
+      complete: "No action needed. The payout is complete.",
+      complete_payout_verification: "Finish verification in the payout account panel.",
+      connect_verified_payout_account: "Create or complete a verified payout account.",
+      create_publisher_profile: "Create the publisher profile and accept operating terms.",
+      earn_or_wait_minimum: "Wait for more revenue to mature or keep earning until the minimum is reached.",
+      request_again_after_failure: "Balances are available again; retry after the provider issue is fixed.",
+      request_payout: "Request payout for all eligible available balances.",
+      resolve_blocker_before_retry: "Resolve the finance blocker, then request payout again.",
+      wait_for_balance_maturity: "Wait for pending balances to mature into available balance."
     }
   },
   zh: {
     account: "提现账户",
+    accountState: "账户状态",
     available: "可提现",
-    blocked: "锁定中",
-    cannotRequest: "需要已验证的收款账户，并且可提现余额达到门槛后才能申请提现。",
+    availableHelp: "已经成熟、可以被提现申请锁定的余额。",
+    blocked: "锁定/阻断",
+    blockedHelp: "已被提现审核、服务商处理中或财务阻断占用的余额。",
+    blockers: "阻断项",
+    canRequest: "可以申请",
+    cannotRequest: "提现申请被阻断，先处理下面这些事项。",
+    expectedReview: "本次金额超过人工审核阈值，申请后会进入财务审核。",
+    expectedRequested: "本次可以创建提现申请，然后进入财务/服务商处理流程。",
+    failureReason: "失败原因",
+    latestPayout: "最近提现",
     minimum: "最低提现",
-    pending: "待结算",
+    nextAction: "下一步",
+    noLatest: "还没有提现申请。",
+    paid: "已打款",
+    paidHelp: "已经在账本中标记为打款完成的余额。",
+    pending: "待成熟",
+    pendingHelp: "账本已产生，但还在风险窗口或成熟期内的余额。",
+    profileState: "发布者状态",
+    providerReference: "服务商参考",
     request: "申请提现",
     requesting: "申请中",
-    status: "准备状态",
+    retryCondition: "再次申请条件",
+    reviewThreshold: "人工审核",
     title: "提现准备",
     statuses: {
+      active: "正常",
       blocked: "已阻断",
       failed: "失败",
       not_configured: "未配置",
       paid: "已打款",
+      pending: "待处理",
       processing: "处理中",
       requested: "已申请",
+      restricted: "受限",
       review: "审核中",
+      suspended: "已暂停",
       verification_required: "需要验证",
       verified: "已验证"
+    },
+    blockerLabels: {
+      amount_below_minimum: "可提现余额还没有达到最低提现金额。",
+      no_available_balance: "暂时没有已经成熟的可提现余额。",
+      payout_account_missing: "需要先连接提现账户。",
+      payout_account_not_verified: "需要完成提现账户验证。",
+      publisher_not_active: "发布者资料必须处于正常状态。",
+      publisher_payout_not_verified: "发布者提现准备状态必须完成验证。",
+      publisher_profile_missing: "需要先创建发布者资料。"
+    },
+    nextActions: {
+      activate_publisher_profile: "联系运营激活发布者资料。",
+      await_finance_review: "等待财务审核；如果财务要求补充材料，按通知处理。",
+      await_provider_processing: "财务已放行，等待服务商打款处理。",
+      complete: "无需操作，提现已完成。",
+      complete_payout_verification: "在提现账户面板完成验证。",
+      connect_verified_payout_account: "创建或完成一个已验证的提现账户。",
+      create_publisher_profile: "创建发布者资料并接受运营条款。",
+      earn_or_wait_minimum: "继续等待收入成熟，或让余额达到最低提现金额。",
+      request_again_after_failure: "余额已释放，服务商问题修复后可以重新申请。",
+      request_payout: "申请提现，系统会锁定所有符合条件的可用余额。",
+      resolve_blocker_before_retry: "先解决财务阻断原因，再重新申请提现。",
+      wait_for_balance_maturity: "等待待成熟余额转为可提现余额。"
     }
   }
 } as const;
+
+type PayoutCopy = (typeof copy)["en"] | (typeof copy)["zh"];
 
 const initialState: PublisherPayoutActionState = {
   message: "",
@@ -72,24 +176,14 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
   const profile = summary.publisherProfile;
   const payoutAccount = summary.payoutAccounts[0];
   const latestPayout = state.payout ?? summary.payouts[0];
-  const payoutReady = profile?.payoutStatus === "verified" && payoutAccount?.status === "verified";
-  const amountReady = summary.balances.availableCents >= summary.balances.minPayoutCents;
-  const canRequest = payoutReady && amountReady;
-  const balanceTiles = [
-    [labels.available, formatMoney(summary.balances.availableCents, summary.balances.currency)],
-    [labels.pending, formatMoney(summary.balances.pendingCents, summary.balances.currency)],
-    [labels.blocked, formatMoney(summary.balances.blockedCents, summary.balances.currency)],
-    [labels.minimum, formatMoney(summary.balances.minPayoutCents, summary.balances.currency)]
-  ];
-  const statusRows = [
-    [labels.account, formatStatusLabel(payoutAccount?.status ?? "not_configured", labels.statuses)],
-    [labels.status, formatStatusLabel(profile?.payoutStatus ?? "not_configured", labels.statuses)],
-    [
-      labels.request,
-      latestPayout
-        ? `${formatMoney(latestPayout.amountCents, latestPayout.currency)} / ${formatStatusLabel(latestPayout.status, labels.statuses)}`
-        : formatMoney(summary.balances.availableCents, summary.balances.currency)
-    ]
+  const readiness = summary.readiness ?? deriveReadiness(summary);
+  const canRequest = readiness.canRequest;
+  const expectedCopy = readiness.expectedStatus === "review" ? labels.expectedReview : labels.expectedRequested;
+  const balanceTiles: Array<[string, string, string, LucideIcon]> = [
+    [labels.available, formatMoney(summary.balances.availableCents, summary.balances.currency), labels.availableHelp, Banknote],
+    [labels.pending, formatMoney(summary.balances.pendingCents, summary.balances.currency), labels.pendingHelp, Clock3],
+    [labels.blocked, formatMoney(summary.balances.blockedCents, summary.balances.currency), labels.blockedHelp, AlertTriangle],
+    [labels.paid, formatMoney(summary.balances.paidCents, summary.balances.currency), labels.paidHelp, CheckCircle2]
   ];
 
   return (
@@ -100,33 +194,59 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
           <span>{labels.title}</span>
         </div>
         <span className={canRequest ? "status-chip" : "status-chip status-chip--warning"}>
-          {canRequest ? labels.request : labels.status}
+          {canRequest ? labels.canRequest : labels.blockers}
         </span>
       </div>
 
-      <div className="payout-balance-grid">
-        {balanceTiles.map(([label, value], index) => {
-          const Icon = index === 0 ? Banknote : Clock3;
-
-          return (
-            <div className="payout-balance-tile" key={label}>
-              <Icon size={16} aria-hidden="true" />
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="payout-list">
-        {statusRows.map(([label, value]) => (
-          <div className="payout-row" key={label}>
-            <CheckCircle2 size={16} aria-hidden="true" />
+      <div className="payout-balance-grid payout-balance-grid--dense">
+        {balanceTiles.map(([label, value, help, Icon]) => (
+          <div className="payout-balance-tile" key={label}>
+            <Icon size={16} aria-hidden="true" />
             <span>{label}</span>
             <strong>{value}</strong>
+            <small>{help}</small>
           </div>
         ))}
       </div>
+
+      <div className="payout-readiness-grid">
+        <StatusRow
+          icon={<WalletCards size={16} aria-hidden="true" />}
+          label={labels.accountState}
+          value={formatStatusLabel(payoutAccount?.status ?? "not_configured", labels.statuses)}
+        />
+        <StatusRow
+          icon={<FileCheck2 size={16} aria-hidden="true" />}
+          label={labels.profileState}
+          value={formatStatusLabel(profile?.status ?? profile?.payoutStatus ?? "not_configured", labels.statuses)}
+        />
+        <StatusRow icon={<Banknote size={16} aria-hidden="true" />} label={labels.minimum} value={formatMoney(summary.balances.minPayoutCents, summary.balances.currency)} />
+        <StatusRow
+          icon={<AlertTriangle size={16} aria-hidden="true" />}
+          label={labels.reviewThreshold}
+          value={formatMoney(summary.balances.reviewThresholdCents, summary.balances.currency)}
+        />
+      </div>
+
+      <div className={canRequest ? "payout-next-panel payout-next-panel--ready" : "payout-next-panel"}>
+        {canRequest ? <CheckCircle2 size={17} aria-hidden="true" /> : <AlertTriangle size={17} aria-hidden="true" />}
+        <div>
+          <strong>{labels.nextAction}</strong>
+          <span>{readiness.nextAction ? formatNextAction(readiness.nextAction, labels.nextActions) : expectedCopy}</span>
+          {canRequest ? <small>{expectedCopy}</small> : null}
+        </div>
+      </div>
+
+      {!canRequest ? (
+        <div className="payout-blocker-list" aria-label={labels.blockers}>
+          <strong>{labels.cannotRequest}</strong>
+          {readiness.blockers.map((blocker) => (
+            <span key={blocker}>{formatBlocker(blocker, labels.blockerLabels)}</span>
+          ))}
+        </div>
+      ) : null}
+
+      <LatestPayout labels={labels} latestPayout={latestPayout} locale={locale} />
 
       <form action={action} className="publisher-payout-request-form">
         <input name="currency" type="hidden" value={summary.balances.currency} />
@@ -137,9 +257,70 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
         </button>
       </form>
 
-      {!canRequest ? <p className="payout-request-hint">{labels.cannotRequest}</p> : null}
       {state.status !== "idle" ? <ActionMessage state={state} /> : null}
     </article>
+  );
+}
+
+function LatestPayout({
+  labels,
+  latestPayout,
+  locale
+}: {
+  labels: PayoutCopy;
+  latestPayout: PayoutRecord | undefined;
+  locale: Locale;
+}) {
+  if (!latestPayout) {
+    return <div className="payout-latest-empty">{labels.noLatest}</div>;
+  }
+
+  const note = latestPayout.failureReason ?? latestPayout.reviewReason;
+
+  return (
+    <section className="payout-latest-card">
+      <header>
+        <strong>{labels.latestPayout}</strong>
+        <span className={statusClass(latestPayout.status)}>{formatStatusLabel(latestPayout.status, labels.statuses)}</span>
+      </header>
+      <div className="payout-latest-metrics">
+        <StatusRow icon={<Banknote size={16} aria-hidden="true" />} label={labels.available} value={formatMoney(latestPayout.amountCents, latestPayout.currency)} />
+        <StatusRow icon={<Clock3 size={16} aria-hidden="true" />} label={labels.pending} value={formatDate(latestPayout.requestedAt, locale)} />
+        <StatusRow
+          icon={<RotateCcw size={16} aria-hidden="true" />}
+          label={labels.nextAction}
+          value={formatNextAction(latestPayout.nextAction, labels.nextActions)}
+        />
+      </div>
+      {note ? (
+        <p>
+          <strong>{latestPayout.failureReason ? labels.failureReason : labels.nextAction}</strong>
+          <span>{note}</span>
+        </p>
+      ) : null}
+      {latestPayout.retryCondition ? (
+        <p>
+          <strong>{labels.retryCondition}</strong>
+          <span>{latestPayout.retryCondition}</span>
+        </p>
+      ) : null}
+      {latestPayout.providerReference ? (
+        <p>
+          <strong>{labels.providerReference}</strong>
+          <span>{latestPayout.providerReference}</span>
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function StatusRow({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="payout-status-row">
+      {icon}
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
@@ -152,6 +333,113 @@ function ActionMessage({ state }: { state: PublisherPayoutActionState }) {
   );
 }
 
+function deriveReadiness(summary: PublisherPayoutSummary): Readiness {
+  const profile = summary.publisherProfile;
+  const payoutAccount = summary.payoutAccounts[0];
+  const blockers: PublisherPayoutReadinessBlocker[] = [];
+
+  if (!profile) {
+    blockers.push("publisher_profile_missing");
+  } else {
+    if (profile.status !== "active") {
+      blockers.push("publisher_not_active");
+    }
+
+    if (profile.payoutStatus !== "verified") {
+      blockers.push("publisher_payout_not_verified");
+    }
+  }
+
+  if (!payoutAccount) {
+    blockers.push("payout_account_missing");
+  } else if (payoutAccount.status !== "verified") {
+    blockers.push("payout_account_not_verified");
+  }
+
+  if (summary.balances.availableCents <= 0) {
+    blockers.push("no_available_balance");
+  } else if (summary.balances.availableCents < summary.balances.minPayoutCents) {
+    blockers.push("amount_below_minimum");
+  }
+
+  return {
+    blockers,
+    canRequest: blockers.length === 0,
+    expectedStatus: blockers.length === 0 && summary.balances.availableCents >= summary.balances.reviewThresholdCents ? "review" : blockers.length === 0 ? "requested" : null,
+    nextAction: nextReadinessAction(blockers)
+  };
+}
+
+function nextReadinessAction(blockers: PublisherPayoutReadinessBlocker[]): Readiness["nextAction"] {
+  if (blockers.includes("publisher_profile_missing")) {
+    return "create_publisher_profile";
+  }
+
+  if (blockers.includes("publisher_not_active")) {
+    return "activate_publisher_profile";
+  }
+
+  if (blockers.includes("publisher_payout_not_verified") || blockers.includes("payout_account_not_verified")) {
+    return "complete_payout_verification";
+  }
+
+  if (blockers.includes("payout_account_missing")) {
+    return "connect_verified_payout_account";
+  }
+
+  if (blockers.includes("no_available_balance")) {
+    return "wait_for_balance_maturity";
+  }
+
+  if (blockers.includes("amount_below_minimum")) {
+    return "earn_or_wait_minimum";
+  }
+
+  return "request_payout";
+}
+
+function formatBlocker(blocker: PublisherPayoutReadinessBlocker, labels: Record<string, string>) {
+  return labels[blocker] ?? blocker.replaceAll("_", " ");
+}
+
+function formatNextAction(action: string | null | undefined, labels: Record<string, string>) {
+  if (!action) {
+    return labels.await_finance_review;
+  }
+
+  return labels[action] ?? action.replaceAll("_", " ");
+}
+
 function formatStatusLabel(status: string, labels: Record<string, string>) {
   return labels[status] ?? status.replaceAll("_", " ");
+}
+
+function statusClass(status: PayoutRecord["status"]) {
+  if (status === "paid" || status === "processing") {
+    return "status-chip";
+  }
+
+  if (status === "failed" || status === "blocked") {
+    return "status-chip status-chip--danger";
+  }
+
+  return "status-chip status-chip--warning";
+}
+
+function formatDate(value: string | null | undefined, locale: Locale) {
+  if (!value || value === "demo") {
+    return locale === "zh" ? "演示时间" : "Demo time";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(date);
 }

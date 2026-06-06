@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState } from "react";
-import { Banknote, CheckCircle2, Clock3, ReceiptText, Save, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, Banknote, CheckCircle2, Clock3, ReceiptText, RotateCcw, Save, WalletCards, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { PayoutRecord } from "@/lib/ops-data";
 import { formatMoney } from "@/lib/ops-format";
@@ -19,15 +19,18 @@ const copy = {
     action: "Action",
     amount: "Amount",
     approve: "Approve",
-    balanceCount: "Balances",
+    balanceCount: "Reserved balances",
     block: "Block",
     empty: "No payouts require finance review.",
     fail: "Fail",
     markPaid: "Mark paid",
+    nextAction: "Next action",
     paid: "Paid",
     providerReference: "Provider reference",
     reason: "Finance note",
     requested: "Requested",
+    retryCondition: "Retry condition",
+    retryHint: "Required when blocking. Tell the publisher exactly what unlocks another request.",
     save: "Record decision",
     saving: "Saving",
     status: "Status",
@@ -40,6 +43,13 @@ const copy = {
       requested: "Requested",
       review: "In review",
       verified: "Verified"
+    },
+    nextActions: {
+      await_finance_review: "Review KYC, risk, balance items, and provider readiness.",
+      await_provider_processing: "Provider movement is in progress; mark paid when the reference is available.",
+      complete: "No further finance action is available.",
+      request_again_after_failure: "Balances were released; publisher can retry after the provider issue is fixed.",
+      resolve_blocker_before_retry: "Publisher must resolve the retry condition before a new payout request."
     }
   },
   zh: {
@@ -47,15 +57,18 @@ const copy = {
     action: "动作",
     amount: "金额",
     approve: "批准",
-    balanceCount: "余额项",
+    balanceCount: "锁定余额",
     block: "阻断",
     empty: "当前没有需要财务审核的提现。",
     fail: "失败",
     markPaid: "标记已打款",
-    paid: "打款",
+    nextAction: "下一步",
+    paid: "已打款",
     providerReference: "服务商参考",
     reason: "财务备注",
     requested: "申请时间",
+    retryCondition: "再次申请条件",
+    retryHint: "阻断时必须填写。要明确告诉发布者满足什么条件才能再次申请。",
     save: "记录决策",
     saving: "保存中",
     status: "状态",
@@ -68,6 +81,13 @@ const copy = {
       requested: "已申请",
       review: "审核中",
       verified: "已验证"
+    },
+    nextActions: {
+      await_finance_review: "审核 KYC、风险、余额明细和服务商准备状态。",
+      await_provider_processing: "服务商打款处理中；拿到参考号后标记已打款。",
+      complete: "无需继续处理。",
+      request_again_after_failure: "余额已释放；服务商问题修复后发布者可以重试。",
+      resolve_blocker_before_retry: "发布者必须满足再次申请条件，才能重新发起提现。"
     }
   }
 } as const;
@@ -119,17 +139,26 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                   <StatusTile icon={<Clock3 size={15} aria-hidden="true" />} label={labels.requested} value={formatDate(latest.requestedAt, locale)} />
                 </div>
 
-                {note || latest.providerReference ? (
+                <div className="admin-payout-next">
+                  <RotateCcw size={15} aria-hidden="true" />
+                  <div>
+                    <strong>{labels.nextAction}</strong>
+                    <span>{formatNextAction(latest.nextAction, labels.nextActions)}</span>
+                  </div>
+                </div>
+
+                {note || latest.retryCondition || latest.providerReference ? (
                   <div className="admin-payout-note">
-                    <ReceiptText size={15} aria-hidden="true" />
+                    <AlertTriangle size={15} aria-hidden="true" />
                     <span>
                       {note}
+                      {latest.retryCondition ? ` / ${latest.retryCondition}` : ""}
                       {latest.providerReference ? ` / ${latest.providerReference}` : ""}
                     </span>
                   </div>
                 ) : null}
 
-                <form action={action} className="admin-payout-action-form">
+                <form action={action} className="admin-payout-action-form admin-payout-action-form--explainable">
                   <input name="payoutId" type="hidden" value={latest.id} />
                   <label>
                     <span>{labels.action}</span>
@@ -143,6 +172,11 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                   <label>
                     <span>{labels.reason}</span>
                     <input defaultValue={defaultReason(latest, locale)} name="reason" required />
+                  </label>
+                  <label>
+                    <span>{labels.retryCondition}</span>
+                    <input aria-describedby={`retry-${latest.id}`} defaultValue={defaultRetryCondition(latest, locale)} name="retryCondition" />
+                    <small id={`retry-${latest.id}`}>{labels.retryHint}</small>
                   </label>
                   <label>
                     <span>{labels.providerReference}</span>
@@ -218,6 +252,22 @@ function defaultReason(payout: PayoutRecord, locale: Locale) {
   return locale === "zh" ? "KYC、余额和风险审核通过。" : "KYC, balance, and risk review passed.";
 }
 
+function defaultRetryCondition(payout: PayoutRecord, locale: Locale) {
+  if (payout.retryCondition) {
+    return payout.retryCondition;
+  }
+
+  if (payout.status === "failed") {
+    return locale === "zh" ? "服务商失败原因修复后，余额释放为可用即可重新申请。" : "Retry after the provider issue is fixed and balances return to available.";
+  }
+
+  if (payout.status === "blocked") {
+    return locale === "zh" ? "补齐财务要求的材料或账户验证后，再重新申请提现。" : "Provide the required finance evidence or account verification before requesting again.";
+  }
+
+  return locale === "zh" ? "如果选择阻断，请写清楚再次申请需要满足的条件。" : "If blocking, describe the condition required before the publisher can request again.";
+}
+
 function statusClass(status: PayoutRecord["status"]) {
   if (status === "paid" || status === "processing") {
     return "status-chip";
@@ -244,14 +294,22 @@ function terminalLabel(status: PayoutRecord["status"], locale: Locale) {
   }
 
   if (status === "failed") {
-    return locale === "zh" ? "已失败，余额已释放回可用状态。" : "Failed; reserved balances were released.";
+    return locale === "zh" ? "已失败，锁定余额已释放回可用状态。" : "Failed; reserved balances were released.";
   }
 
-  return locale === "zh" ? "已阻断，需后续财务复核。" : "Blocked pending follow-up finance review.";
+  return locale === "zh" ? "已阻断，发布者必须满足再次申请条件。" : "Blocked; publisher must satisfy the retry condition before retrying.";
 }
 
 function formatStatusLabel(status: string, labels: Record<string, string>) {
   return labels[status] ?? status.replaceAll("_", " ");
+}
+
+function formatNextAction(action: string | null | undefined, labels: Record<string, string>) {
+  if (!action) {
+    return labels.await_finance_review;
+  }
+
+  return labels[action] ?? action.replaceAll("_", " ");
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {

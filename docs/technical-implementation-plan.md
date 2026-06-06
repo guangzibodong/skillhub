@@ -284,6 +284,8 @@ Acceptance checks:
 - Paid publishing requires acceptable payout account state.
 - Payout requests above a threshold enter manual review.
 - Blocked payout records reason and retry condition.
+- Publisher payout summary exposes readiness blockers, request eligibility, expected initial payout status, balance-state explanations, latest payout reason, retry condition, and next action.
+- Finance payout decisions require provider reference when marking paid and retry condition when blocking a payout.
 - Review, incident, billing, payout, refund, and dispute events are recorded before email delivery exists.
 - External `email` and `webhook` delivery events can be listed separately from in-app unread notifications.
 - Admin/support operators can mark an external delivery sent, failed, skipped, or queued for retry with a required reason, audit log, and provider metadata.
@@ -369,7 +371,9 @@ Completed:
 - Payout workflow migration linking payouts to reserved publisher balance rows.
 - Publisher payout readiness and request endpoints.
 - Admin payout queue and payout decision endpoints.
-- Admin payout review console now reads the live payout queue and exposes approve, mark-paid, fail, and block decisions with finance notes and provider references.
+- Payout explainability migration `030_payout_explainability.sql` adds durable retry-condition and next-action fields to payout records.
+- Publisher payout readiness now returns request blockers, expected request status, latest payout next action, and retry condition so authors understand why balances are pending, available, locked, paid, failed, or blocked.
+- Admin payout review console now reads the live payout queue and exposes approve, mark-paid, fail, and block decisions with finance notes, provider references, retry conditions, and next-action state.
 - Dashboard and admin pages reading payout readiness and payout queue data.
 - Dashboard withdrawal panel now exposes payout request actions for verified publisher accounts with balances above the threshold, reserving eligible balances through the publisher payout endpoint.
 - Publisher terms acceptance migration `024_publisher_terms_acceptance.sql` now stores the accepted operating terms version, acceptance timestamp, and accepting user id on `publisher_profiles`.
@@ -533,7 +537,7 @@ Completed:
 - `/v1/admin/reviews` and publisher skill/version APIs now return the remediation fields, and `/admin` plus `/publisher` display next action and target field beside check evidence.
 - Review queue and publisher skill/version APIs now derive a three-business-day review SLA from the submitted version timestamp, returning submitted time, due time, queue age, hours remaining, and `on_track`/`due_soon`/`overdue`/`decided`/`not_submitted` status; `/admin` and `/publisher` surface those signals so operators and publishers can manage queue pressure.
 - `/admin` now prioritizes the skill review queue with summary counts, SLA/blocker/high-risk/warning filters, recommended priority reasons, and sort modes for priority, oldest submission, earliest SLA due time, and highest risk.
-- Launch readiness now treats the runtime-check remediation columns and buyer-request delivery package columns as schema prerequisites and expects migration `029_buyer_request_delivery_package.sql`.
+- Launch readiness now treats the runtime-check remediation columns, buyer-request delivery package columns, and payout explainability columns as schema prerequisites and expects migration `030_payout_explainability.sql`.
 - Journey A developer surfaces now use clean bilingual copy across `/developer`, `/skills/[slug]`, `/dashboard/projects/[slug]`, project API keys, project policy, saved skills, update inbox, and agent connection panels.
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.
 - `/dashboard/projects/[slug]` now exposes a runtime readiness checklist for project keys, installed skills, high-risk policy approval, update inbox decisions, and runtime quality, making the marketplace-to-project-to-runtime governance loop visible from the project command center.

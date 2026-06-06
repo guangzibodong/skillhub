@@ -3579,6 +3579,10 @@ a {
   gap: 9px;
 }
 
+.payout-balance-grid--dense {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .payout-balance-tile {
   display: grid;
   gap: 7px;
@@ -3608,6 +3612,141 @@ a {
   color: var(--ink);
   font-size: 17px;
   line-height: 1.1;
+}
+
+.payout-balance-tile small {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.payout-readiness-grid,
+.payout-latest-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.payout-status-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 9px 10px;
+}
+
+.payout-status-row svg {
+  color: var(--cyan);
+}
+
+.payout-status-row span,
+.payout-status-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.payout-status-row span {
+  color: var(--muted);
+}
+
+.payout-status-row strong {
+  color: var(--ink);
+}
+
+.payout-next-panel {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.07);
+  padding: 11px;
+}
+
+.payout-next-panel--ready {
+  border-color: rgba(74, 222, 128, 0.2);
+  background: rgba(74, 222, 128, 0.07);
+}
+
+.payout-next-panel svg {
+  flex: 0 0 auto;
+  color: var(--amber);
+}
+
+.payout-next-panel--ready svg {
+  color: var(--success);
+}
+
+.payout-next-panel div,
+.payout-latest-card p {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.payout-next-panel strong,
+.payout-latest-card strong,
+.payout-blocker-list strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.payout-next-panel span,
+.payout-next-panel small,
+.payout-blocker-list span,
+.payout-latest-card span,
+.payout-latest-card p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.payout-blocker-list,
+.payout-latest-card {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.payout-blocker-list span {
+  border-left: 2px solid var(--amber);
+  padding-left: 8px;
+}
+
+.payout-latest-card header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.payout-latest-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 11px;
 }
 
 .publisher-payout-request-form {
@@ -5344,6 +5483,44 @@ a {
   color: var(--amber);
 }
 
+.admin-payout-next {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: var(--radius);
+  background: rgba(125, 211, 252, 0.06);
+  padding: 9px 10px;
+}
+
+.admin-payout-next svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.admin-payout-next div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-payout-next strong,
+.admin-payout-next span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-payout-next strong {
+  color: var(--ink);
+}
+
+.admin-payout-next span {
+  color: var(--muted);
+}
+
 .admin-payout-action-form {
   display: grid;
   grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.56fr) minmax(0, 0.48fr) minmax(0, auto);
@@ -5352,10 +5529,22 @@ a {
   min-width: 0;
 }
 
+.admin-payout-action-form--explainable {
+  grid-template-columns: minmax(0, 0.24fr) minmax(0, 0.36fr) minmax(0, 0.44fr) minmax(0, 0.32fr) minmax(0, auto);
+}
+
 .admin-payout-action-form label {
   display: grid;
   gap: 6px;
   min-width: 0;
+}
+
+.admin-payout-action-form small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
 }
 
 .admin-payout-action-form input,
@@ -12995,6 +13184,20 @@ a {
   .publisher-commercial-row strong span,
   .publisher-commercial-row code {
     white-space: normal;
+  }
+
+  .payout-balance-grid--dense,
+  .payout-readiness-grid,
+  .payout-latest-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .payout-status-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .payout-status-row strong {
+    grid-column: 2;
   }
 
   .publisher-skill-price-gate div {

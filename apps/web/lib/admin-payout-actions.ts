@@ -18,6 +18,7 @@ const copy = {
     missingPayout: "Missing payout id.",
     missingProviderReference: "Provider reference is required when marking a payout paid.",
     missingReason: "A finance review reason is required.",
+    missingRetryCondition: "A retry condition is required when blocking a payout.",
     missingToken: "Sign in with a finance/admin token or configure SKILLHUB_ADMIN_TOKEN before deciding payouts.",
     saved: "Payout decision recorded.",
     unableSave: "Unable to update payout."
@@ -27,7 +28,8 @@ const copy = {
     missingPayout: "缺少提现 ID。",
     missingProviderReference: "标记已打款时必须填写服务商付款参考。",
     missingReason: "必须填写财务审核原因。",
-    missingToken: "请先用财务或管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理提现。",
+    missingRetryCondition: "阻断提现时必须填写再次申请条件。",
+    missingToken: "请先使用财务或管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理提现。",
     saved: "提现决策已记录。",
     unableSave: "无法更新提现。"
   }
@@ -46,6 +48,7 @@ export async function decideAdminPayoutAction(
   const action = String(formData.get("action") ?? "").trim();
   const providerReference = String(formData.get("providerReference") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
+  const retryCondition = String(formData.get("retryCondition") ?? "").trim();
 
   if (!payoutId) {
     return { message: labels.missingPayout, status: "error" };
@@ -63,6 +66,10 @@ export async function decideAdminPayoutAction(
     return { message: labels.missingProviderReference, payoutId, status: "error" };
   }
 
+  if (action === "block" && !retryCondition) {
+    return { message: labels.missingRetryCondition, payoutId, status: "error" };
+  }
+
   if (!token) {
     return { message: labels.missingToken, payoutId, status: "error" };
   }
@@ -72,7 +79,8 @@ export async function decideAdminPayoutAction(
       body: JSON.stringify({
         action,
         providerReference: providerReference || undefined,
-        reason
+        reason,
+        retryCondition: retryCondition || undefined
       }),
       headers: {
         Authorization: `Bearer ${token}`,
