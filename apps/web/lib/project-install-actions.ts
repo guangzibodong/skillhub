@@ -27,6 +27,19 @@ const actionCopy = {
   }
 } as const;
 
+const sensitiveActionCopy = {
+  en: {
+    invalidRemoveConfirmation: "Type REMOVE before removing this installed skill.",
+    invalidSuspendConfirmation: "Type SUSPEND before suspending this installed skill.",
+    missingReason: "A reason is required before suspending or removing an installed skill."
+  },
+  zh: {
+    invalidRemoveConfirmation: "\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u524d\uff0c\u8bf7\u8f93\u5165 REMOVE\u3002",
+    invalidSuspendConfirmation: "\u6682\u505c\u5df2\u5b89\u88c5\u6280\u80fd\u524d\uff0c\u8bf7\u8f93\u5165 SUSPEND\u3002",
+    missingReason: "\u6682\u505c\u6216\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u524d\u5fc5\u987b\u586b\u5199\u539f\u56e0\u3002"
+  }
+} as const;
+
 const installStatuses = ["installed", "suspended", "removed"] as const;
 
 export async function updateProjectSkillInstallStatusAction(
@@ -36,9 +49,12 @@ export async function updateProjectSkillInstallStatusAction(
   formData: FormData
 ): Promise<ProjectInstallActionState> {
   const labels = actionCopy[locale];
+  const sensitiveLabels = sensitiveActionCopy[locale];
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const status = String(formData.get("status") ?? "");
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
 
   if (!skillSlug) {
     return { message: labels.invalidSkill, status: "error" };
@@ -46,6 +62,22 @@ export async function updateProjectSkillInstallStatusAction(
 
   if (!installStatuses.includes(status as (typeof installStatuses)[number])) {
     return { message: labels.invalidStatus, status: "error", updatedSkillSlug: skillSlug };
+  }
+
+  if (status === "suspended" || status === "removed") {
+    const expectedConfirmation = status === "suspended" ? "SUSPEND" : "REMOVE";
+
+    if (reason.length < 6) {
+      return { message: sensitiveLabels.missingReason, status: "error", updatedSkillSlug: skillSlug };
+    }
+
+    if (confirmation.toUpperCase() !== expectedConfirmation) {
+      return {
+        message: status === "suspended" ? sensitiveLabels.invalidSuspendConfirmation : sensitiveLabels.invalidRemoveConfirmation,
+        status: "error",
+        updatedSkillSlug: skillSlug
+      };
+    }
   }
 
   if (!token) {
@@ -56,7 +88,7 @@ export async function updateProjectSkillInstallStatusAction(
     const response = await fetch(
       `${getApiUrl()}/v1/projects/${encodeURIComponent(projectSlug)}/installed-skills/${encodeURIComponent(skillSlug)}/status`,
       {
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ reason, status }),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"

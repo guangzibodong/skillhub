@@ -573,7 +573,7 @@ Pause, restore, or remove an installed skill:
 curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/installed-skills/browser-research/status" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"status":"suspended"}'
+  -d '{"status":"suspended","reason":"Runtime incident triage while the publisher confirms allowed domains."}'
 ```
 
 Allowed install statuses:
@@ -583,6 +583,7 @@ Allowed install statuses:
 - `removed`: retained for audit and restoration, but blocked at runtime.
 
 Install status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects any install that is not `installed`.
+Changing an installed skill to `suspended` or `removed` requires a human-readable `reason`; the project console also requires a confirmation phrase before submitting the change. Restoring to `installed` may use the default audit reason when no reason is supplied.
 
 Create a project subscription from a subscription-priced skill:
 
@@ -604,7 +605,7 @@ Pause, restore, or cancel a project subscription:
 curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/subscriptions/demo-subscription-browser-research/status" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"status":"paused"}'
+  -d '{"status":"paused","reason":"Budget owner requested a temporary usage freeze."}'
 ```
 
 Allowed project-managed subscription statuses:
@@ -614,6 +615,7 @@ Allowed project-managed subscription statuses:
 - `canceled`: the subscription is closed and cannot be restored from the project console.
 
 Subscription status changes are scoped to the token organization and write audit plus in-app notification records. Runtime invocation rejects subscription-priced skills when the project has no active or trialing subscription, when the period is expired, or when the subscription is paused, past due, or canceled.
+Changing a project subscription to `paused` or `canceled` requires a human-readable `reason`; the project console also requires a confirmation phrase before submitting the change. Restoring to `active` may use the default audit reason when no reason is supplied.
 
 Read project skill policies:
 
@@ -837,8 +839,12 @@ Revoke a project API key:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/api-keys/$KEY_ID/revoke" \
-  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reason":"Replacement key is deployed and the old runtime key can be retired."}'
 ```
+
+Revoking a project API key requires a human-readable `reason`, writes `project_api_key.revoked` audit and in-app notification records, and immediately blocks runtime requests using that key. The project console requires typing `REVOKE` or the key's last four characters before submitting the revocation.
 
 ## Runtime Invocation
 

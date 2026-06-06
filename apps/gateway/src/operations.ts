@@ -242,7 +242,9 @@ export async function updateProjectInstallStatus(
   projectSlug: string,
   skillSlug: string,
   status: ProjectInstallStatus,
-  organizationId?: string | null
+  organizationId?: string | null,
+  reasonInput?: unknown,
+  actorUserId?: string | null
 ) {
   const sql = await requireSql();
   await seedRegistry(sql);
@@ -252,6 +254,11 @@ export async function updateProjectInstallStatus(
   }
 
   const scopedOrganizationId = organizationId ?? null;
+  const reason = normalizeProjectActionReason(
+    reasonInput,
+    `Project skill install marked ${status}.`,
+    status === "suspended" || status === "removed"
+  );
 
   return sql.begin(async (tx: Sql) => {
     const rows = (await tx`
@@ -291,15 +298,17 @@ export async function updateProjectInstallStatus(
     }
 
     await tx`
-      insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
       values (
+        ${actorUserId ?? null},
         ${`project_install.${status}`},
         'project_skill_install',
         ${install.id},
-        ${`Project skill install marked ${status}.`},
+        ${reason},
         ${tx.json({
           projectSlug,
           skillSlug,
+          reason,
           status,
           organizationId: install.organizationId
         })}
@@ -316,6 +325,7 @@ export async function updateProjectInstallStatus(
           projectSlug,
           skillSlug,
           displayName: install.displayName,
+          reason,
           status
         })},
         'queued'
@@ -728,6 +738,16 @@ async function requireSql(): Promise<Sql> {
   }
 
   return sql;
+}
+
+function normalizeProjectActionReason(value: unknown, fallback: string, required: boolean) {
+  const reason = String(value ?? "").trim();
+
+  if (required && reason.length < 6) {
+    throw new Error("A reason is required before this project operation.");
+  }
+
+  return (reason || fallback).slice(0, 600);
 }
 
 async function seedRegistry(sql: Sql) {

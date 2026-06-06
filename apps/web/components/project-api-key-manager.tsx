@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { CheckCircle2, Copy, KeyRound, Plus, RotateCcw, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
   createProjectApiKeyAction,
   revokeProjectApiKeyAction,
@@ -56,6 +57,23 @@ const copy = {
   }
 } as const;
 
+const sensitiveCopy = {
+  en: {
+    confirm: "Confirmation",
+    confirmRevokePlaceholder: "Type REVOKE or the key last 4",
+    reason: "Reason",
+    revokeDescription: "This immediately blocks agents using this key. Record why the key is being revoked for audit and incident review.",
+    revokeReasonPlaceholder: "Rotation completed, suspected leak, owner request, or environment retired"
+  },
+  zh: {
+    confirm: "\u786e\u8ba4\u77ed\u8bed",
+    confirmRevokePlaceholder: "\u8f93\u5165 REVOKE \u6216 Key \u540e 4 \u4f4d",
+    reason: "\u539f\u56e0",
+    revokeDescription: "\u8fd9\u4f1a\u7acb\u5373\u963b\u65ad\u6b63\u5728\u4f7f\u7528\u8be5 Key \u7684\u667a\u80fd\u4f53\u3002\u8bf7\u8bb0\u5f55\u64a4\u9500\u539f\u56e0\uff0c\u4fbf\u4e8e\u5ba1\u8ba1\u548c\u4e8b\u6545\u590d\u76d8\u3002",
+    revokeReasonPlaceholder: "\u5df2\u5b8c\u6210\u8f6e\u6362\u3001\u7591\u4f3c\u6cc4\u9732\u3001\u8d1f\u8d23\u4eba\u8981\u6c42\u6216\u73af\u5883\u4e0b\u7ebf"
+  }
+} as const;
+
 const initialActionState: ProjectKeyActionState = {
   message: "",
   status: "idle"
@@ -72,6 +90,7 @@ export function ProjectApiKeyManager({
   titleLabel
 }: ProjectApiKeyManagerProps) {
   const labels = copy[locale];
+  const sensitiveLabels = sensitiveCopy[locale];
   const [isCreating, setIsCreating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [createState, createAction, isCreatePending] = useActionState(
@@ -164,13 +183,23 @@ export function ProjectApiKeyManager({
               {key.revokedAt ? (
                 <span>{revokedLabel}</span>
               ) : (
-                <form action={revokeAction}>
-                  <input name="keyId" type="hidden" value={key.id} />
-                  <button className="ghost-button ghost-button--danger" disabled={isRevokePending} type="submit">
-                    <XCircle size={15} aria-hidden="true" />
-                    <span>{isRevokePending ? labels.revoking : labels.revoke}</span>
-                  </button>
-                </form>
+                <ProjectSensitiveActionForm
+                  action={revokeAction}
+                  cancelLabel={labels.cancelRotation}
+                  confirmLabel={sensitiveLabels.confirm}
+                  confirmPlaceholder={sensitiveLabels.confirmRevokePlaceholder}
+                  description={sensitiveLabels.revokeDescription}
+                  disabled={isRevokePending}
+                  hiddenFields={{
+                    keyId: key.id,
+                    keyLast4: key.keyLast4
+                  }}
+                  icon={XCircle}
+                  label={labels.revoke}
+                  reasonLabel={sensitiveLabels.reason}
+                  reasonPlaceholder={sensitiveLabels.revokeReasonPlaceholder}
+                  submitLabel={isRevokePending ? labels.revoking : labels.revoke}
+                />
               )}
             </div>
           ))

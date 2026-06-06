@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, PauseCircle, RotateCcw, Save, SlidersHorizontal, Trash2, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import { updateProjectSkillInstallStatusAction, type ProjectInstallActionState } from "@/lib/project-install-actions";
 import { updateProjectSkillPolicyAction, type ProjectPolicyActionState } from "@/lib/project-policy-actions";
 import type { DeveloperProjectSkillRecord } from "@/lib/ops-data";
@@ -85,6 +86,31 @@ const copy = {
   }
 } as const;
 
+const sensitiveCopy = {
+  en: {
+    cancel: "Cancel",
+    confirm: "Confirmation",
+    reason: "Reason",
+    removeConfirmPlaceholder: "Type REMOVE",
+    removeDescription: "Removing an installed skill blocks runtime calls and keeps the install only for audit and possible restoration.",
+    removeReasonPlaceholder: "Skill retired, no longer used by this project, or replacement installed",
+    suspendConfirmPlaceholder: "Type SUSPEND",
+    suspendDescription: "Suspending an installed skill keeps it visible but immediately blocks runtime calls for this project.",
+    suspendReasonPlaceholder: "Incident triage, permission review, budget protection, or owner request"
+  },
+  zh: {
+    cancel: "\u53d6\u6d88",
+    confirm: "\u786e\u8ba4\u77ed\u8bed",
+    reason: "\u539f\u56e0",
+    removeConfirmPlaceholder: "\u8f93\u5165 REMOVE",
+    removeDescription: "\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u4f1a\u963b\u65ad\u8fd0\u884c\u8c03\u7528\uff0c\u4ec5\u4fdd\u7559\u5ba1\u8ba1\u548c\u6062\u590d\u72b6\u6001\u3002",
+    removeReasonPlaceholder: "\u6280\u80fd\u4e0b\u7ebf\u3001\u9879\u76ee\u4e0d\u518d\u4f7f\u7528\uff0c\u6216\u5df2\u5b89\u88c5\u66ff\u4ee3\u65b9\u6848",
+    suspendConfirmPlaceholder: "\u8f93\u5165 SUSPEND",
+    suspendDescription: "\u6682\u505c\u5df2\u5b89\u88c5\u6280\u80fd\u4f1a\u4fdd\u7559\u53ef\u89c1\u72b6\u6001\uff0c\u4f46\u7acb\u5373\u963b\u65ad\u8be5\u9879\u76ee\u7684\u8fd0\u884c\u8c03\u7528\u3002",
+    suspendReasonPlaceholder: "\u4e8b\u6545\u6392\u67e5\u3001\u6743\u9650\u590d\u6838\u3001\u9884\u7b97\u4fdd\u62a4\u6216\u8d1f\u8d23\u4eba\u8981\u6c42"
+  }
+} as const;
+
 const initialPolicyState: ProjectPolicyActionState = {
   message: "",
   status: "idle"
@@ -105,6 +131,7 @@ export function ProjectSkillPolicyManager({
   titleLabel
 }: ProjectSkillPolicyManagerProps) {
   const labels = copy[locale];
+  const sensitiveLabels = sensitiveCopy[locale];
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [policyState, policyAction, isPolicyPending] = useActionState(
     updateProjectSkillPolicyAction.bind(null, projectSlug, locale),
@@ -174,6 +201,7 @@ export function ProjectSkillPolicyManager({
                           disabled={isInstallPending}
                           icon="suspend"
                           label={labels.suspend}
+                          sensitiveLabels={sensitiveLabels}
                           skillSlug={skill.skillSlug}
                           status="suspended"
                         />
@@ -183,6 +211,7 @@ export function ProjectSkillPolicyManager({
                           disabled={isInstallPending}
                           icon="remove"
                           label={labels.remove}
+                          sensitiveLabels={sensitiveLabels}
                           skillSlug={skill.skillSlug}
                           status="removed"
                         />
@@ -292,6 +321,7 @@ function InstallStatusButton({
   disabled,
   icon,
   label,
+  sensitiveLabels,
   skillSlug,
   status
 }: {
@@ -300,10 +330,36 @@ function InstallStatusButton({
   disabled: boolean;
   icon: "remove" | "restore" | "suspend";
   label: string;
+  sensitiveLabels?: (typeof sensitiveCopy)["en"] | (typeof sensitiveCopy)["zh"];
   skillSlug: string;
   status: "installed" | "suspended" | "removed";
 }) {
   const Icon = icon === "remove" ? Trash2 : icon === "restore" ? RotateCcw : PauseCircle;
+
+  if (sensitiveLabels && status !== "installed") {
+    const isRemove = status === "removed";
+
+    return (
+      <ProjectSensitiveActionForm
+        action={action}
+        cancelLabel={sensitiveLabels.cancel}
+        confirmLabel={sensitiveLabels.confirm}
+        confirmPlaceholder={isRemove ? sensitiveLabels.removeConfirmPlaceholder : sensitiveLabels.suspendConfirmPlaceholder}
+        description={isRemove ? sensitiveLabels.removeDescription : sensitiveLabels.suspendDescription}
+        disabled={disabled}
+        hiddenFields={{
+          skillSlug,
+          status
+        }}
+        icon={Icon}
+        label={label}
+        reasonLabel={sensitiveLabels.reason}
+        reasonPlaceholder={isRemove ? sensitiveLabels.removeReasonPlaceholder : sensitiveLabels.suspendReasonPlaceholder}
+        submitLabel={label}
+        tone={isRemove ? "danger" : "warning"}
+      />
+    );
+  }
 
   return (
     <form action={action} className="skill-status-action-form">

@@ -414,15 +414,18 @@ Completed:
 - Project installed-skill, project policy, and update-inbox read endpoints now require project-operator authorization and filter by the authorized organization.
 - `/dashboard/projects/[slug]` now includes per-skill policy editing for permission level, network/browser/filesystem/secret access, monthly budget, rate limit, and owner approval state.
 - Project API key list and revoke operations now accept the authorized organization scope to prevent cross-tenant slug collisions.
-- `/dashboard/projects/[slug]` now includes runtime key rotation UX: create a replacement key, reveal the raw key once, copy it, and revoke old keys.
+- Project API key revocation now requires a human reason, records actor-scoped audit metadata, queues an in-app notification, and the project console requires `REVOKE` or the key last four before submitting.
+- `/dashboard/projects/[slug]` now includes runtime key rotation UX: create a replacement key, reveal the raw key once, copy it, and revoke old keys through an auditable confirmation flow.
 - Publisher finance ledger endpoint now scopes revenue, platform-fee, publisher-share, balance, unprocessed usage, and recent transaction reads to the authorized publisher organization.
 - Dashboard revenue ledger now reads the publisher-scoped finance ledger instead of the admin global finance ledger, so publishers see their own earnings state.
 - Buyer request board endpoints now let developer organizations create and decide requests while publishers can view open demand, claim requests, and submit builds under organization-scoped authorization.
 - Dashboard publisher workspace now shows a buyer request board with request, category, bounty, status, requester, due date, and next action signals.
 - Dashboard buyer request exchange now exposes creation, claim, submit, match, close, and cancel controls so buyer demand and publisher supply can move without leaving the workspace.
 - Project installed-skill status endpoint now lets project operators restore, suspend, or remove installs under organization-scoped authorization, with audit and notification records.
+- Suspending or removing an installed skill now requires a reason, writes that reason into audit and notification payloads, and the project console requires `SUSPEND` or `REMOVE` confirmation before submitting.
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
 - Project subscription lifecycle endpoint now lets project operators pause, restore, or cancel subscriptions under organization-scoped authorization, with audit and notification records.
+- Pausing or canceling a project subscription now requires a reason, writes actor-scoped audit metadata, queues an in-app notification, and the project console requires `PAUSE` or `CANCEL` confirmation before submitting.
 - Project detail console now exposes subscription pause, restore, and cancel controls; runtime invocation blocks subscription-priced skills when the subscription is missing, expired, paused, past due, or canceled.
 - Project detail console now exposes current subscription-period ledger state, linked transaction amount/id, invoice-line count, and renewal readiness, so developers can reconcile trialing, posted, unposted, and renewal-due subscription states without opening the admin finance console.
 - Project subscription creation endpoint now lets project operators start a `trialing` or `active` provider-deferred subscription for a public verified subscription-priced skill with an active price, scoped to their organization and backed by audit plus notification records.

@@ -37,6 +37,17 @@ const actionCopy = {
   }
 } as const;
 
+const sensitiveActionCopy = {
+  en: {
+    invalidRevokeConfirmation: "Type REVOKE or the key last 4 characters before revoking this runtime key.",
+    missingRevokeReason: "A revocation reason is required before this runtime key can be revoked."
+  },
+  zh: {
+    invalidRevokeConfirmation: "\u64a4\u9500\u8fd0\u884c Key \u524d\uff0c\u8bf7\u8f93\u5165 REVOKE \u6216 Key \u540e 4 \u4f4d\u3002",
+    missingRevokeReason: "\u64a4\u9500\u8fd0\u884c Key \u524d\u5fc5\u987b\u586b\u5199\u539f\u56e0\u3002"
+  }
+} as const;
+
 export async function createProjectApiKeyAction(
   projectSlug: string,
   locale: Locale,
@@ -102,11 +113,23 @@ export async function revokeProjectApiKeyAction(
   formData: FormData
 ): Promise<ProjectKeyActionState> {
   const labels = actionCopy[locale];
+  const sensitiveLabels = sensitiveActionCopy[locale];
   const keyId = String(formData.get("keyId") ?? "").trim();
+  const keyLast4 = String(formData.get("keyLast4") ?? "").trim();
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
   const token = await getWorkspaceToken();
 
   if (!keyId) {
     return { message: labels.missingKey, status: "error" };
+  }
+
+  if (reason.length < 6) {
+    return { message: sensitiveLabels.missingRevokeReason, status: "error" };
+  }
+
+  if (!isValidRevokeConfirmation(confirmation, keyLast4)) {
+    return { message: sensitiveLabels.invalidRevokeConfirmation, status: "error" };
   }
 
   if (!token) {
@@ -117,8 +140,10 @@ export async function revokeProjectApiKeyAction(
     const response = await fetch(
       `${getApiUrl()}/v1/projects/${encodeURIComponent(projectSlug)}/api-keys/${encodeURIComponent(keyId)}/revoke`,
       {
+        body: JSON.stringify({ reason }),
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
         method: "POST"
       }
@@ -145,4 +170,12 @@ export async function revokeProjectApiKeyAction(
 
 function getApiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+}
+
+function isValidRevokeConfirmation(confirmation: string, keyLast4: string) {
+  if (confirmation.toUpperCase() === "REVOKE") {
+    return true;
+  }
+
+  return Boolean(keyLast4) && confirmation.toLowerCase() === keyLast4.toLowerCase();
 }

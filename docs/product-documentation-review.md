@@ -261,6 +261,7 @@ Added first project command-center write action, covering:
 
 - Tenant-scoped project API key list and revoke operations.
 - Project detail UI for creating replacement runtime keys, revealing the raw secret only once, copying it, and revoking old keys.
+- Runtime key revocation now requires a reason plus `REVOKE` or key-last-four confirmation in the project console, then writes actor-scoped audit and in-app notification records.
 - A stronger repeat-use loop for developers who need to rotate runtime credentials without leaving the SkillHub workspace.
 
 Added project policy operations depth, covering:
@@ -290,6 +291,7 @@ Added project installed-skill lifecycle controls, covering:
 - Project operators can mark installed skills as `installed`, `suspended`, or `removed` inside their own organization scope.
 - Runtime invocation blocks any install that is not active, so pause/remove controls have real operational effect.
 - Each install status change writes audit and in-app notification records.
+- Suspended and removed transitions now require a reason and confirmation phrase in the project console, and the backend persists that reason in audit/notification payloads.
 - Project detail now gives developers a concrete repeat-use loop for disabling risky skills, restoring safe skills, and preserving an audit trail.
 
 Added project subscription lifecycle controls, covering:
@@ -297,6 +299,7 @@ Added project subscription lifecycle controls, covering:
 - Project operators can mark subscriptions as `active`, `paused`, or `canceled` inside their own organization scope.
 - Runtime invocation blocks subscription-priced skills when the project subscription is missing, expired, paused, past due, or canceled.
 - Each subscription status change writes audit and in-app notification records before payment provider webhooks are connected.
+- Paused and canceled transitions now require a reason and confirmation phrase in the project console, and the backend persists actor-scoped audit metadata before final billing-provider integrations are connected.
 - Project detail now gives developers and agent operators a concrete repeat-use loop for controlling recurring spend, pausing risky paid skills, and restoring required skills without losing the billing history.
 
 Added project update-inbox handling controls, covering:

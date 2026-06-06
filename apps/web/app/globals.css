@@ -8703,6 +8703,87 @@ a {
   color: var(--coral);
 }
 
+.secondary-button--warning {
+  border-color: rgba(244, 185, 99, 0.28);
+  color: #f4b963;
+}
+
+.secondary-button--warning:hover {
+  background: rgba(244, 185, 99, 0.08);
+  color: #ffd18d;
+}
+
+.project-sensitive-action {
+  display: grid;
+  gap: 9px;
+  width: min(100%, 320px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 10px;
+}
+
+.project-sensitive-action--danger {
+  border-color: rgba(255, 133, 111, 0.22);
+  background: rgba(255, 133, 111, 0.05);
+}
+
+.project-sensitive-action--warning {
+  border-color: rgba(244, 185, 99, 0.22);
+  background: rgba(244, 185, 99, 0.05);
+}
+
+.project-sensitive-action p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.project-sensitive-action label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.project-sensitive-action label span {
+  color: #a5ad9f;
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.project-sensitive-action input,
+.project-sensitive-action textarea {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--ink);
+  font: inherit;
+  outline: 0;
+  padding: 8px 10px;
+}
+
+.project-sensitive-action textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.project-sensitive-action input:focus,
+.project-sensitive-action textarea:focus {
+  border-color: rgba(208, 255, 139, 0.38);
+  box-shadow: 0 0 0 3px rgba(208, 255, 139, 0.09);
+}
+
+.project-sensitive-action__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .policy-editor {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

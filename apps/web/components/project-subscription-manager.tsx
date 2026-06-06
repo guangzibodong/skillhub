@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { CheckCircle2, PauseCircle, RotateCcw, XCircle, Zap } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import type { DeveloperProjectSubscriptionRecord } from "@/lib/ops-data";
 import { formatMoney } from "@/lib/ops-format";
 import {
@@ -79,6 +80,31 @@ const copy = {
   }
 } as const;
 
+const sensitiveCopy = {
+  en: {
+    cancel: "Cancel",
+    cancelConfirmPlaceholder: "Type CANCEL",
+    cancelDescription: "Canceling closes this project subscription and cannot be restored from the project console.",
+    cancelReasonPlaceholder: "Project retired, replacement selected, budget owner request, or duplicate subscription",
+    confirm: "Confirmation",
+    pauseConfirmPlaceholder: "Type PAUSE",
+    pauseDescription: "Pausing blocks subscription-priced runtime access while keeping the subscription available for restoration.",
+    pauseReasonPlaceholder: "Budget review, owner approval needed, incident triage, or temporary usage freeze",
+    reason: "Reason"
+  },
+  zh: {
+    cancel: "\u53d6\u6d88",
+    cancelConfirmPlaceholder: "\u8f93\u5165 CANCEL",
+    cancelDescription: "\u53d6\u6d88\u540e\u8be5\u9879\u76ee\u8ba2\u9605\u4f1a\u5173\u95ed\uff0c\u4e14\u4e0d\u80fd\u5728\u9879\u76ee\u63a7\u5236\u53f0\u76f4\u63a5\u6062\u590d\u3002",
+    cancelReasonPlaceholder: "\u9879\u76ee\u4e0b\u7ebf\u3001\u5df2\u9009\u66ff\u4ee3\u65b9\u6848\u3001\u9884\u7b97\u8d1f\u8d23\u4eba\u8981\u6c42\u6216\u91cd\u590d\u8ba2\u9605",
+    confirm: "\u786e\u8ba4\u77ed\u8bed",
+    pauseConfirmPlaceholder: "\u8f93\u5165 PAUSE",
+    pauseDescription: "\u6682\u505c\u4f1a\u963b\u65ad\u8ba2\u9605\u578b\u6280\u80fd\u7684\u8fd0\u884c\u8bbf\u95ee\uff0c\u540c\u65f6\u4fdd\u7559\u540e\u7eed\u6062\u590d\u8ba2\u9605\u7684\u72b6\u6001\u3002",
+    pauseReasonPlaceholder: "\u9884\u7b97\u590d\u6838\u3001\u9700\u8d1f\u8d23\u4eba\u6279\u51c6\u3001\u4e8b\u6545\u6392\u67e5\u6216\u4e34\u65f6\u51bb\u7ed3\u4f7f\u7528",
+    reason: "\u539f\u56e0"
+  }
+} as const;
+
 const initialSubscriptionState: ProjectSubscriptionActionState = {
   message: "",
   status: "idle"
@@ -94,6 +120,7 @@ export function ProjectSubscriptionManager({
   titleLabel
 }: ProjectSubscriptionManagerProps) {
   const labels = copy[locale];
+  const sensitiveLabels = sensitiveCopy[locale];
   const [subscriptionState, subscriptionAction, isSubscriptionPending] = useActionState(
     updateProjectSubscriptionStatusAction.bind(null, projectSlug, locale),
     initialSubscriptionState
@@ -136,6 +163,7 @@ export function ProjectSubscriptionManager({
                         disabled={isSubscriptionPending}
                         icon="pause"
                         label={isSubscriptionPending ? labels.pausing : labels.pause}
+                        sensitiveLabels={sensitiveLabels}
                         status="paused"
                         subscriptionId={subscription.id}
                       />
@@ -157,6 +185,7 @@ export function ProjectSubscriptionManager({
                         disabled={isSubscriptionPending}
                         icon="cancel"
                         label={isSubscriptionPending ? labels.canceling : labels.cancel}
+                        sensitiveLabels={sensitiveLabels}
                         status="canceled"
                         subscriptionId={subscription.id}
                       />
@@ -253,6 +282,7 @@ function SubscriptionStatusButton({
   disabled,
   icon,
   label,
+  sensitiveLabels,
   status,
   subscriptionId
 }: {
@@ -261,10 +291,36 @@ function SubscriptionStatusButton({
   disabled: boolean;
   icon: "cancel" | "pause" | "resume";
   label: string;
+  sensitiveLabels?: (typeof sensitiveCopy)["en"] | (typeof sensitiveCopy)["zh"];
   status: "active" | "paused" | "canceled";
   subscriptionId: string;
 }) {
   const Icon = icon === "cancel" ? XCircle : icon === "pause" ? PauseCircle : RotateCcw;
+
+  if (sensitiveLabels && status !== "active") {
+    const isCancel = status === "canceled";
+
+    return (
+      <ProjectSensitiveActionForm
+        action={action}
+        cancelLabel={sensitiveLabels.cancel}
+        confirmLabel={sensitiveLabels.confirm}
+        confirmPlaceholder={isCancel ? sensitiveLabels.cancelConfirmPlaceholder : sensitiveLabels.pauseConfirmPlaceholder}
+        description={isCancel ? sensitiveLabels.cancelDescription : sensitiveLabels.pauseDescription}
+        disabled={disabled}
+        hiddenFields={{
+          status,
+          subscriptionId
+        }}
+        icon={Icon}
+        label={label}
+        reasonLabel={sensitiveLabels.reason}
+        reasonPlaceholder={isCancel ? sensitiveLabels.cancelReasonPlaceholder : sensitiveLabels.pauseReasonPlaceholder}
+        submitLabel={label}
+        tone={isCancel ? "danger" : "warning"}
+      />
+    );
+  }
 
   return (
     <form action={action} className="subscription-action-form">

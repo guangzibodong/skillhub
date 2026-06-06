@@ -990,7 +990,10 @@ app.put("/v1/projects/:projectSlug/installed-skills/:skillSlug/status", async (c
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { status?: "installed" | "suspended" | "removed" };
+  const body = (await c.req.json().catch(() => ({}))) as {
+    reason?: unknown;
+    status?: "installed" | "suspended" | "removed";
+  };
 
   if (!body.status) {
     return c.json({ error: "Missing install status." }, 400);
@@ -1002,7 +1005,9 @@ app.put("/v1/projects/:projectSlug/installed-skills/:skillSlug/status", async (c
         c.req.param("projectSlug"),
         c.req.param("skillSlug"),
         body.status,
-        authorization.subject.organizationId
+        authorization.subject.organizationId,
+        body.reason,
+        authorization.subject.userId
       )
     });
   } catch (error) {
@@ -1273,7 +1278,7 @@ app.put("/v1/projects/:projectSlug/subscriptions/:subscriptionId/status", async 
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { status?: string };
+  const body = (await c.req.json().catch(() => ({}))) as { reason?: unknown; status?: string };
 
   if (!body.status) {
     return c.json({ error: "Missing subscription status." }, 400);
@@ -1285,7 +1290,9 @@ app.put("/v1/projects/:projectSlug/subscriptions/:subscriptionId/status", async 
         projectSlug,
         c.req.param("subscriptionId"),
         body.status,
-        authorization.subject.organizationId
+        authorization.subject.organizationId,
+        body.reason,
+        authorization.subject.userId
       )
     });
   } catch (error) {
@@ -1369,9 +1376,17 @@ app.post("/v1/projects/:projectSlug/api-keys/:keyId/revoke", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
+  const body = (await c.req.json().catch(() => ({}))) as { reason?: unknown };
+
   try {
     return c.json({
-      apiKey: await revokeProjectApiKey(projectSlug, c.req.param("keyId"), authorization.subject.organizationId)
+      apiKey: await revokeProjectApiKey(
+        projectSlug,
+        c.req.param("keyId"),
+        authorization.subject.organizationId,
+        body.reason,
+        authorization.subject.userId
+      )
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to revoke API key." }, 400);

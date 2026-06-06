@@ -27,6 +27,19 @@ const actionCopy = {
   }
 } as const;
 
+const sensitiveActionCopy = {
+  en: {
+    invalidCancelConfirmation: "Type CANCEL before canceling this project subscription.",
+    invalidPauseConfirmation: "Type PAUSE before pausing this project subscription.",
+    missingReason: "A reason is required before pausing or canceling a project subscription."
+  },
+  zh: {
+    invalidCancelConfirmation: "\u53d6\u6d88\u9879\u76ee\u8ba2\u9605\u524d\uff0c\u8bf7\u8f93\u5165 CANCEL\u3002",
+    invalidPauseConfirmation: "\u6682\u505c\u9879\u76ee\u8ba2\u9605\u524d\uff0c\u8bf7\u8f93\u5165 PAUSE\u3002",
+    missingReason: "\u6682\u505c\u6216\u53d6\u6d88\u9879\u76ee\u8ba2\u9605\u524d\u5fc5\u987b\u586b\u5199\u539f\u56e0\u3002"
+  }
+} as const;
+
 const subscriptionStatuses = ["active", "paused", "canceled"] as const;
 
 export async function updateProjectSubscriptionStatusAction(
@@ -36,9 +49,12 @@ export async function updateProjectSubscriptionStatusAction(
   formData: FormData
 ): Promise<ProjectSubscriptionActionState> {
   const labels = actionCopy[locale];
+  const sensitiveLabels = sensitiveActionCopy[locale];
   const token = await getWorkspaceToken();
   const subscriptionId = String(formData.get("subscriptionId") ?? "").trim();
   const status = String(formData.get("status") ?? "");
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
 
   if (!subscriptionId) {
     return { message: labels.missingSubscription, status: "error" };
@@ -46,6 +62,22 @@ export async function updateProjectSubscriptionStatusAction(
 
   if (!subscriptionStatuses.includes(status as (typeof subscriptionStatuses)[number])) {
     return { message: labels.invalidStatus, status: "error", updatedSubscriptionId: subscriptionId };
+  }
+
+  if (status === "paused" || status === "canceled") {
+    const expectedConfirmation = status === "paused" ? "PAUSE" : "CANCEL";
+
+    if (reason.length < 6) {
+      return { message: sensitiveLabels.missingReason, status: "error", updatedSubscriptionId: subscriptionId };
+    }
+
+    if (confirmation.toUpperCase() !== expectedConfirmation) {
+      return {
+        message: status === "paused" ? sensitiveLabels.invalidPauseConfirmation : sensitiveLabels.invalidCancelConfirmation,
+        status: "error",
+        updatedSubscriptionId: subscriptionId
+      };
+    }
   }
 
   if (!token) {
@@ -56,7 +88,7 @@ export async function updateProjectSubscriptionStatusAction(
     const response = await fetch(
       `${getApiUrl()}/v1/projects/${encodeURIComponent(projectSlug)}/subscriptions/${encodeURIComponent(subscriptionId)}/status`,
       {
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ reason, status }),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"

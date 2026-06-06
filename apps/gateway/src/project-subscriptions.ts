@@ -243,11 +243,18 @@ export async function updateProjectSubscriptionStatus(
   projectSlug: string,
   subscriptionId: string,
   nextStatus: string,
-  organizationId?: string | null
+  organizationId?: string | null,
+  reasonInput?: unknown,
+  actorUserId?: string | null
 ) {
   const status = normalizeProjectManagedStatus(nextStatus);
   const sql = await requireSql();
   const scopedOrganizationId = organizationId ?? null;
+  const reason = normalizeProjectActionReason(
+    reasonInput,
+    `Project subscription changed to ${status}.`,
+    status === "paused" || status === "canceled"
+  );
 
   return sql.begin(async (tx: Sql) => {
     const currentRows = (await tx`
@@ -325,16 +332,18 @@ export async function updateProjectSubscriptionStatus(
     const subscription = updatedRows[0];
 
     await tx`
-      insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
       values (
+        ${actorUserId ?? null},
         ${`project_subscription.${status}`},
         'subscription',
         ${subscription.id},
-        ${`Project subscription changed from ${current.status} to ${status}.`},
+        ${reason},
         ${tx.json({
           projectSlug,
           skillSlug: subscription.skillSlug,
           previousStatus: current.status,
+          reason,
           status,
           organizationId: subscription.organizationId
         })}
@@ -352,6 +361,7 @@ export async function updateProjectSubscriptionStatus(
           skillSlug: subscription.skillSlug,
           displayName: subscription.displayName,
           previousStatus: current.status,
+          reason,
           status
         })},
         'queued'
@@ -399,6 +409,16 @@ function normalizeRequiredText(value: unknown, fieldName: string, maxLength: num
   }
 
   return text.slice(0, maxLength);
+}
+
+function normalizeProjectActionReason(value: unknown, fallback: string, required: boolean) {
+  const reason = String(value ?? "").trim();
+
+  if (required && reason.length < 6) {
+    throw new Error("A reason is required before this project operation.");
+  }
+
+  return (reason || fallback).slice(0, 600);
 }
 
 function normalizeOptionalText(value: unknown, maxLength: number) {

@@ -163,30 +163,79 @@ export async function createProjectApiKey(projectSlug: string, name = "Project A
   };
 }
 
-export async function revokeProjectApiKey(projectSlug: string, keyId: string, organizationId?: string | null) {
+export async function revokeProjectApiKey(
+  projectSlug: string,
+  keyId: string,
+  organizationId?: string | null,
+  reasonInput?: unknown,
+  actorUserId?: string | null
+) {
   const sql = await requireSql();
   const scopedOrganizationId = organizationId ?? null;
+  const reason = normalizeProjectActionReason(reasonInput, "Project API key revoked.", true);
 
-  const rows = (await sql`
-    update api_keys ak
-    set revoked_at = now()
-    from projects p
-    where ak.project_id = p.id
-      and p.slug = ${projectSlug}
-      and ak.id = ${keyId}
-      and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
-    returning
-      ak.id::text,
-      p.slug as "projectSlug",
-      ak.name,
-      ak.revoked_at as "revokedAt"
-  `) as Array<{ id: string; projectSlug: string; name: string; revokedAt: string }>;
+  return sql.begin(async (tx: Sql) => {
+    const rows = (await tx`
+      update api_keys ak
+      set revoked_at = now()
+      from projects p
+      where ak.project_id = p.id
+        and p.slug = ${projectSlug}
+        and ak.id = ${keyId}
+        and (${scopedOrganizationId}::uuid is null or p.organization_id = ${scopedOrganizationId})
+      returning
+        ak.id::text,
+        p.slug as "projectSlug",
+        p.organization_id::text as "organizationId",
+        ak.name,
+        ak.key_last4 as "keyLast4",
+        ak.revoked_at as "revokedAt"
+    `) as Array<{ id: string; projectSlug: string; organizationId: string; name: string; keyLast4: string; revokedAt: string }>;
+    const apiKey = rows[0];
 
-  if (!rows[0]) {
-    throw new Error("API key not found.");
-  }
+    if (!apiKey) {
+      throw new Error("API key not found.");
+    }
 
-  return rows[0];
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${actorUserId ?? null},
+        'project_api_key.revoked',
+        'api_key',
+        ${apiKey.id},
+        ${reason},
+        ${tx.json({
+          projectSlug,
+          keyId: apiKey.id,
+          keyName: apiKey.name,
+          keyLast4: apiKey.keyLast4,
+          reason,
+          organizationId: apiKey.organizationId
+        })}
+      )
+    `;
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${actorUserId ?? null},
+        ${apiKey.organizationId},
+        'project_api_key.revoked',
+        'in_app',
+        'Project API key revoked',
+        ${tx.json({
+          projectSlug,
+          keyId: apiKey.id,
+          keyName: apiKey.name,
+          keyLast4: apiKey.keyLast4,
+          reason
+        })},
+        'queued'
+      )
+    `;
+
+    return apiKey;
+  });
 }
 
 export async function invokeSkill(authorizationHeader: string | undefined, input: RuntimeInvokeInput) {
@@ -964,6 +1013,16 @@ async function requireSql(): Promise<Sql> {
   }
 
   return sql;
+}
+
+function normalizeProjectActionReason(value: unknown, fallback: string, required: boolean) {
+  const reason = String(value ?? "").trim();
+
+  if (required && reason.length < 6) {
+    throw new Error("A reason is required before this project operation.");
+  }
+
+  return (reason || fallback).slice(0, 600);
 }
 
 async function seedRegistry() {
