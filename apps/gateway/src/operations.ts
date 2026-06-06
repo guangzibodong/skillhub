@@ -33,7 +33,11 @@ type RuntimeCheckStatus = "queued" | "running" | "passed" | "failed" | "warning"
 
 type RuntimeCheckResult = {
   checkType: RuntimeCheckType;
+  fixCategory: "example" | "manifest" | "runtime" | "security";
+  isBlocking: boolean;
+  nextAction: string;
   status: Extract<RuntimeCheckStatus, "passed" | "failed" | "warning">;
+  targetField: string | null;
   message: string;
   latencyMs?: number;
 };
@@ -604,6 +608,10 @@ export async function listReviewQueue() {
           check_type,
           status,
           message,
+          is_blocking,
+          fix_category,
+          target_field,
+          next_action,
           latency_ms,
           checked_at,
           created_at
@@ -617,6 +625,10 @@ export async function listReviewQueue() {
             'checkType', check_type,
             'status', status,
             'message', message,
+            'isBlocking', is_blocking,
+            'fixCategory', fix_category,
+            'targetField', target_field,
+            'nextAction', next_action,
             'latencyMs', latency_ms,
             'checkedAt', checked_at,
             'createdAt', created_at
@@ -901,13 +913,28 @@ async function createRuntimeChecks(sql: Sql, skillVersionId: string, manifest: S
 
   for (const check of checks) {
     await sql`
-      insert into skill_runtime_checks (skill_version_id, check_type, status, latency_ms, message, checked_at)
+      insert into skill_runtime_checks (
+        skill_version_id,
+        check_type,
+        status,
+        latency_ms,
+        message,
+        is_blocking,
+        fix_category,
+        target_field,
+        next_action,
+        checked_at
+      )
       values (
         ${skillVersionId},
         ${check.checkType},
         ${check.status},
         ${check.latencyMs ?? null},
         ${check.message},
+        ${check.isBlocking},
+        ${check.fixCategory},
+        ${check.targetField},
+        ${check.nextAction},
         now()
       )
     `;
@@ -931,10 +958,10 @@ async function requireApprovalChecks(sql: Sql, skillVersionId: string | null, ma
     incomplete = checks.filter((check) => check.status === "queued" || check.status === "running");
   }
 
-  const blockers = checks.filter((check) => check.status === "failed");
+  const blockers = checks.filter((check) => check.status === "failed" || check.isBlocking === true);
 
   if (missingTypes.length > 0 || blockers.length > 0 || incomplete.length > 0) {
-    const failedLabels = blockers.map((check) => `${check.checkType}: ${check.message}`);
+    const failedLabels = blockers.map((check) => `${check.checkType}: ${check.nextAction ?? check.message}`);
     const incompleteLabels = incomplete.map((check) => `${check.checkType}: ${check.status}`);
     throw new Error(
       `Automated review checks must pass before approval. ${[
@@ -951,11 +978,19 @@ async function getLatestRuntimeChecks(sql: Sql, skillVersionId: string) {
     select distinct on (check_type)
       check_type as "checkType",
       status,
-      message
+      message,
+      is_blocking as "isBlocking",
+      next_action as "nextAction"
     from skill_runtime_checks
     where skill_version_id = ${skillVersionId}
     order by check_type, created_at desc
-  `) as Array<{ checkType: RuntimeCheckType; status: RuntimeCheckStatus; message: string }>;
+  `) as Array<{
+    checkType: RuntimeCheckType;
+    isBlocking: boolean | null;
+    status: RuntimeCheckStatus;
+    message: string;
+    nextAction: string | null;
+  }>;
 
   return rows;
 }
@@ -995,23 +1030,35 @@ function buildManifestCheck(manifest: SkillManifest): RuntimeCheckResult {
   if (missing.length > 0) {
     return {
       checkType: "manifest",
+      fixCategory: "manifest",
+      isBlocking: true,
       status: "failed",
-      message: `Manifest is missing required fields: ${missing.join(", ")}.`
+      targetField: "manifest.identity",
+      message: `Manifest is missing required fields: ${missing.join(", ")}.`,
+      nextAction: `Add the missing manifest fields before resubmitting: ${missing.join(", ")}.`
     };
   }
 
   if (manifest.description.length < 40) {
     return {
       checkType: "manifest",
+      fixCategory: "manifest",
+      isBlocking: false,
       status: "warning",
-      message: "Manifest is valid but the description is short; reviewer should confirm listing clarity."
+      targetField: "description",
+      message: "Manifest is valid but the description is short; reviewer should confirm listing clarity.",
+      nextAction: "Expand the description so buyers and reviewers can understand the concrete agent use case."
     };
   }
 
   return {
     checkType: "manifest",
+    fixCategory: "manifest",
+    isBlocking: false,
     status: "passed",
-    message: "Manifest contract includes required identity, version, tags, runtime, permissions, and schemas."
+    targetField: null,
+    message: "Manifest contract includes required identity, version, tags, runtime, permissions, and schemas.",
+    nextAction: "No manifest repair is needed; keep identity, version, tags, runtime, permissions, and schemas stable for this submission."
   };
 }
 
@@ -1024,20 +1071,31 @@ function buildRuntimeCheck(manifest: SkillManifest): RuntimeCheckResult {
     if (!url) {
       return {
         checkType: "runtime",
+        fixCategory: "runtime",
+        isBlocking: true,
         status: "failed",
         latencyMs: Date.now() - startedAt,
-        message: "HTTP runtime entrypoint is not a valid URL."
+        targetField: "runtime.entrypoint",
+        message: "HTTP runtime entrypoint is not a valid URL.",
+        nextAction: "Use a reachable absolute HTTPS URL in runtime.entrypoint before resubmitting this version."
       };
     }
 
     return {
       checkType: "runtime",
+      fixCategory: "runtime",
+      isBlocking: false,
       status: url.protocol === "https:" ? "passed" : "warning",
       latencyMs: Date.now() - startedAt,
+      targetField: "runtime.entrypoint",
       message:
         url.protocol === "https:"
           ? "HTTP runtime entrypoint uses HTTPS and is ready for reachability testing."
-          : "HTTP runtime entrypoint is not HTTPS; reviewer should require a secure endpoint before paid launch."
+          : "HTTP runtime entrypoint is not HTTPS; reviewer should require a secure endpoint before paid launch.",
+      nextAction:
+        url.protocol === "https:"
+          ? "No runtime URL repair is needed; provide reachability evidence if the reviewer asks for production proof."
+          : "Move runtime.entrypoint to HTTPS or provide reviewer evidence for why this transport is safe before paid activation."
     };
   }
 
@@ -1047,30 +1105,47 @@ function buildRuntimeCheck(manifest: SkillManifest): RuntimeCheckResult {
     if (!url) {
       return {
         checkType: "runtime",
+        fixCategory: "runtime",
+        isBlocking: true,
         status: "failed",
         latencyMs: Date.now() - startedAt,
-        message: "MCP server URL is not a valid URL."
+        targetField: "runtime.serverUrl",
+        message: "MCP server URL is not a valid URL.",
+        nextAction: "Use a reachable absolute HTTPS URL in runtime.serverUrl before resubmitting this version."
       };
     }
 
     return {
       checkType: "runtime",
+      fixCategory: "runtime",
+      isBlocking: false,
       status: url.protocol === "https:" ? "passed" : "warning",
       latencyMs: Date.now() - startedAt,
+      targetField: "runtime.serverUrl",
       message:
         url.protocol === "https:"
           ? "MCP server URL uses HTTPS and is ready for agent discovery."
-          : "MCP server URL is not HTTPS; reviewer should require transport hardening."
+          : "MCP server URL is not HTTPS; reviewer should require transport hardening.",
+      nextAction:
+        url.protocol === "https:"
+          ? "No MCP URL repair is needed; keep discovery and tools/call evidence available for review."
+          : "Move runtime.serverUrl to HTTPS or provide reviewer evidence for transport hardening before approval."
     };
   }
 
   return {
     checkType: "runtime",
+    fixCategory: "runtime",
+    isBlocking: !manifest.runtime.command,
     status: manifest.runtime.command ? "warning" : "failed",
     latencyMs: Date.now() - startedAt,
+    targetField: "runtime.command",
     message: manifest.runtime.command
       ? "Local runtime command is declared; reviewer must verify packaging, sandboxing, and execution proof manually."
-      : "Local runtime is missing a command."
+      : "Local runtime is missing a command.",
+    nextAction: manifest.runtime.command
+      ? "Attach packaging, sandboxing, and execution proof so a reviewer can make the required local-runtime decision."
+      : "Declare runtime.command or switch to an external HTTP/MCP runtime before resubmitting this version."
   };
 }
 
@@ -1081,8 +1156,12 @@ function buildExampleCheck(manifest: SkillManifest): RuntimeCheckResult {
   if (inputSchema.type !== "object" || outputSchema.type !== "object") {
     return {
       checkType: "example",
+      fixCategory: "example",
+      isBlocking: true,
       status: "failed",
-      message: "Input and output schemas must both be object schemas."
+      targetField: "inputSchema/outputSchema",
+      message: "Input and output schemas must both be object schemas.",
+      nextAction: "Change inputSchema and outputSchema to JSON object schemas before resubmitting this version."
     };
   }
 
@@ -1092,15 +1171,23 @@ function buildExampleCheck(manifest: SkillManifest): RuntimeCheckResult {
   if (Object.keys(inputProperties).length === 0 || Object.keys(outputProperties).length === 0) {
     return {
       checkType: "example",
+      fixCategory: "example",
+      isBlocking: false,
       status: "warning",
-      message: "Schemas are objects but one side has no properties; reviewer should require concrete examples."
+      targetField: "inputSchema.properties/outputSchema.properties",
+      message: "Schemas are objects but one side has no properties; reviewer should require concrete examples.",
+      nextAction: "Add concrete input and output properties, plus example payloads, so developers know how agents should call the skill."
     };
   }
 
   return {
     checkType: "example",
+    fixCategory: "example",
+    isBlocking: false,
     status: "passed",
-    message: "Input and output object schemas include concrete fields for example invocation review."
+    targetField: null,
+    message: "Input and output object schemas include concrete fields for example invocation review.",
+    nextAction: "No schema repair is needed; keep example input and output aligned with the submitted version."
   };
 }
 
@@ -1111,31 +1198,47 @@ function buildSecurityCheck(manifest: SkillManifest): RuntimeCheckResult {
   if (invalidSecrets.length > 0) {
     return {
       checkType: "security",
+      fixCategory: "security",
+      isBlocking: true,
       status: "failed",
-      message: "Secret permissions must name specific secret handles; wildcard or blank secret access is not allowed."
+      targetField: "permissions.secrets",
+      message: "Secret permissions must name specific secret handles; wildcard or blank secret access is not allowed.",
+      nextAction: "Replace wildcard or blank secret permissions with specific named secret handles before resubmitting."
     };
   }
 
   if (permissionLevel === "high") {
     return {
       checkType: "security",
+      fixCategory: "security",
+      isBlocking: false,
       status: "warning",
-      message: "High-risk permissions require explicit reviewer notes and project owner approval before runtime use."
+      targetField: "permissions",
+      message: "High-risk permissions require explicit reviewer notes and project owner approval before runtime use.",
+      nextAction: "Provide a high-risk permission rationale, data-handling notes, and reviewer evidence for owner approval governance."
     };
   }
 
   if (manifest.permissions.network && manifest.permissions.browser) {
     return {
       checkType: "security",
+      fixCategory: "security",
+      isBlocking: false,
       status: "warning",
-      message: "Network plus browser access requires reviewer confirmation of data policy and allowed domains."
+      targetField: "permissions.network/permissions.browser",
+      message: "Network plus browser access requires reviewer confirmation of data policy and allowed domains.",
+      nextAction: "Document allowed domains, data retention, and browser/network purpose so the reviewer can accept the warning."
     };
   }
 
   return {
     checkType: "security",
+    fixCategory: "security",
+    isBlocking: false,
     status: "passed",
-    message: "Permission profile is compatible with automated low-risk review gates."
+    targetField: null,
+    message: "Permission profile is compatible with automated low-risk review gates.",
+    nextAction: "No security repair is needed; keep permission declarations narrow for this version."
   };
 }
 

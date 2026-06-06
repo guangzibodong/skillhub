@@ -4656,6 +4656,10 @@ a {
   justify-self: start;
 }
 
+.admin-review-check .quality-chip {
+  justify-self: start;
+}
+
 .admin-review-check strong {
   min-width: 0;
   overflow-wrap: anywhere;
@@ -4669,6 +4673,22 @@ a {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.admin-review-check b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-review-check code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 11px;
 }
 
 .admin-review-action-form {
@@ -9480,6 +9500,22 @@ a {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.45;
+}
+
+.publisher-skill-review-repair__check b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.publisher-skill-review-repair__check code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 11px;
 }
 
 .publisher-skill-review-repair__actions {

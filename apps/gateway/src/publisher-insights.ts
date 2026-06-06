@@ -7,8 +7,12 @@ type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
 type RuntimeCheckSummary = {
   checkType: string;
+  fixCategory: string | null;
+  isBlocking: boolean | null;
   status: string;
   message: string | null;
+  nextAction: string | null;
+  targetField: string | null;
   latencyMs: number | null;
   checkedAt: string | null;
   createdAt: string | null;
@@ -204,6 +208,10 @@ export async function listPublisherSkills(organizationId: string | null | undefi
           check_type,
           status,
           message,
+          is_blocking,
+          fix_category,
+          target_field,
+          next_action,
           latency_ms,
           checked_at,
           created_at
@@ -222,6 +230,10 @@ export async function listPublisherSkills(organizationId: string | null | undefi
             'checkType', check_type,
             'status', status,
             'message', message,
+            'isBlocking', is_blocking,
+            'fixCategory', fix_category,
+            'targetField', target_field,
+            'nextAction', next_action,
             'latencyMs', latency_ms,
             'checkedAt', checked_at,
             'createdAt', created_at
@@ -404,6 +416,10 @@ export async function listPublisherSkills(organizationId: string | null | undefi
               check_type,
               status,
               message,
+              is_blocking,
+              fix_category,
+              target_field,
+              next_action,
               latency_ms,
               checked_at,
               created_at
@@ -421,6 +437,10 @@ export async function listPublisherSkills(organizationId: string | null | undefi
                 'checkType', check_type,
                 'status', status,
                 'message', message,
+                'isBlocking', is_blocking,
+                'fixCategory', fix_category,
+                'targetField', target_field,
+                'nextAction', next_action,
                 'latencyMs', latency_ms,
                 'checkedAt', checked_at,
                 'createdAt', created_at
@@ -664,6 +684,10 @@ export async function listPublisherSkillVersions(
           check_type,
           status,
           message,
+          is_blocking,
+          fix_category,
+          target_field,
+          next_action,
           latency_ms,
           checked_at,
           created_at
@@ -681,6 +705,10 @@ export async function listPublisherSkillVersions(
             'checkType', check_type,
             'status', status,
             'message', message,
+            'isBlocking', is_blocking,
+            'fixCategory', fix_category,
+            'targetField', target_field,
+            'nextAction', next_action,
             'latencyMs', latency_ms,
             'checkedAt', checked_at,
             'createdAt', created_at
@@ -909,8 +937,12 @@ function normalizeRuntimeChecks(value: RuntimeCheckSummary[] | null): RuntimeChe
 
   return value.map((check) => ({
     checkType: String(check.checkType ?? "unknown"),
+    fixCategory: typeof check.fixCategory === "string" ? check.fixCategory : null,
+    isBlocking: typeof check.isBlocking === "boolean" ? check.isBlocking : null,
     status: String(check.status ?? "queued"),
     message: check.message ?? null,
+    nextAction: typeof check.nextAction === "string" ? check.nextAction : null,
+    targetField: typeof check.targetField === "string" ? check.targetField : null,
     latencyMs: typeof check.latencyMs === "number" ? check.latencyMs : null,
     checkedAt: check.checkedAt ?? null,
     createdAt: check.createdAt ?? null
@@ -994,32 +1026,52 @@ function runtimeCheckSummaries(failedCount: number): RuntimeCheckSummary[] {
   return [
     {
       checkType: "manifest",
+      fixCategory: "manifest",
+      isBlocking: false,
       status: "passed",
       message: "Manifest contract includes required fields.",
+      nextAction: "No manifest repair is needed.",
+      targetField: null,
       latencyMs: null,
       checkedAt: "demo",
       createdAt: "demo"
     },
     {
       checkType: "runtime",
+      fixCategory: "runtime",
+      isBlocking: hasFailure,
       status: hasFailure ? "failed" : "passed",
       message: hasFailure ? "Runtime declaration needs a reachable secure endpoint." : "Runtime declaration is ready for review.",
+      nextAction: hasFailure
+        ? "Use a reachable HTTPS endpoint before resubmitting this version."
+        : "No runtime declaration repair is needed.",
+      targetField: "runtime.entrypoint",
       latencyMs: hasFailure ? null : 120,
       checkedAt: "demo",
       createdAt: "demo"
     },
     {
       checkType: "example",
+      fixCategory: "example",
+      isBlocking: false,
       status: hasFailure ? "warning" : "passed",
       message: hasFailure ? "Example schemas should include concrete fields before approval." : "Example schemas are ready for invocation review.",
+      nextAction: hasFailure
+        ? "Add concrete input and output properties so reviewers and developers can test the skill."
+        : "No example schema repair is needed.",
+      targetField: hasFailure ? "inputSchema.properties/outputSchema.properties" : null,
       latencyMs: null,
       checkedAt: "demo",
       createdAt: "demo"
     },
     {
       checkType: "security",
+      fixCategory: "security",
+      isBlocking: false,
       status: "passed",
       message: "Permission profile is compatible with review gates.",
+      nextAction: "No security repair is needed.",
+      targetField: null,
       latencyMs: null,
       checkedAt: "demo",
       createdAt: "demo"

@@ -346,6 +346,10 @@ export type AdminReviewRecord = {
     checkType: "example" | "manifest" | "runtime" | "security" | string;
     status: "failed" | "passed" | "queued" | "running" | "warning" | string;
     message: string | null;
+    isBlocking?: boolean | null;
+    fixCategory?: string | null;
+    targetField?: string | null;
+    nextAction?: string | null;
     latencyMs?: number | null;
     checkedAt?: string | null;
     createdAt?: string | null;
@@ -609,6 +613,10 @@ export type PublisherSkillVersionRecord = {
     checkType: "example" | "manifest" | "runtime" | "security" | string;
     status: "failed" | "passed" | "queued" | "running" | "warning" | string;
     message: string | null;
+    isBlocking?: boolean | null;
+    fixCategory?: string | null;
+    targetField?: string | null;
+    nextAction?: string | null;
     latencyMs?: number | null;
     checkedAt?: string | null;
     createdAt?: string | null;
@@ -653,6 +661,10 @@ export type PublisherSkillRecord = {
       checkType: "example" | "manifest" | "runtime" | "security" | string;
       status: "failed" | "passed" | "queued" | "running" | "warning" | string;
       message: string | null;
+      isBlocking?: boolean | null;
+      fixCategory?: string | null;
+      targetField?: string | null;
+      nextAction?: string | null;
       latencyMs?: number | null;
       checkedAt?: string | null;
       createdAt?: string | null;
@@ -1304,7 +1316,7 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
         {
           action: "Run ./scripts/run-postgres-migrations.sh before each production rebuild.",
           description: "Migration history is tracked in schema_migrations so operators can see whether SQL kept up with code.",
-          detail: "Demo latest migration: 026_skill_feedback_publisher_responses.sql.",
+          detail: "Demo latest migration: 028_runtime_check_remediation.sql.",
           key: "schema_migrations",
           label: "Migration history",
           status: "ready"
@@ -1637,10 +1649,42 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     riskLevel: "medium",
     notes: "Validate browser domain allowlist, citation output schema, and pricing readiness before approval.",
     runtimeChecks: [
-      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-      { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
-      { checkType: "example", status: "passed", message: "Schemas are ready for example invocation." },
-      { checkType: "security", status: "warning", message: "Browser plus network permissions require data-policy confirmation." }
+      {
+        checkType: "manifest",
+        status: "passed",
+        message: "Manifest contract includes required fields.",
+        isBlocking: false,
+        fixCategory: "manifest",
+        targetField: null,
+        nextAction: "No manifest repair is needed."
+      },
+      {
+        checkType: "runtime",
+        status: "passed",
+        message: "HTTP runtime entrypoint uses HTTPS.",
+        isBlocking: false,
+        fixCategory: "runtime",
+        targetField: "runtime.entrypoint",
+        nextAction: "No runtime URL repair is needed."
+      },
+      {
+        checkType: "example",
+        status: "passed",
+        message: "Schemas are ready for example invocation.",
+        isBlocking: false,
+        fixCategory: "example",
+        targetField: null,
+        nextAction: "No example schema repair is needed."
+      },
+      {
+        checkType: "security",
+        status: "warning",
+        message: "Browser plus network permissions require data-policy confirmation.",
+        isBlocking: false,
+        fixCategory: "security",
+        targetField: "permissions.network/permissions.browser",
+        nextAction: "Document allowed domains, retention, and browser/network purpose before approval."
+      }
     ],
     createdAt: "demo",
     decidedAt: null
@@ -1654,10 +1698,42 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     riskLevel: "low",
     notes: "Runtime passed; reviewer should confirm file-retention wording and example output coverage.",
     runtimeChecks: [
-      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-      { checkType: "runtime", status: "passed", message: "Runtime declaration is valid." },
-      { checkType: "example", status: "passed", message: "Example schemas are object-shaped." },
-      { checkType: "security", status: "passed", message: "Permission profile is low risk." }
+      {
+        checkType: "manifest",
+        status: "passed",
+        message: "Manifest contract includes required fields.",
+        isBlocking: false,
+        fixCategory: "manifest",
+        targetField: null,
+        nextAction: "No manifest repair is needed."
+      },
+      {
+        checkType: "runtime",
+        status: "passed",
+        message: "Runtime declaration is valid.",
+        isBlocking: false,
+        fixCategory: "runtime",
+        targetField: "runtime.entrypoint",
+        nextAction: "No runtime declaration repair is needed."
+      },
+      {
+        checkType: "example",
+        status: "passed",
+        message: "Example schemas are object-shaped.",
+        isBlocking: false,
+        fixCategory: "example",
+        targetField: null,
+        nextAction: "No example schema repair is needed."
+      },
+      {
+        checkType: "security",
+        status: "passed",
+        message: "Permission profile is low risk.",
+        isBlocking: false,
+        fixCategory: "security",
+        targetField: null,
+        nextAction: "No security repair is needed."
+      }
     ],
     createdAt: "demo",
     decidedAt: null
@@ -1671,10 +1747,42 @@ const fallbackAdminReviews: AdminReviewRecord[] = [
     riskLevel: "high",
     notes: "Filesystem write access requires explicit owner approval and stronger rollback instructions.",
     runtimeChecks: [
-      { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-      { checkType: "runtime", status: "warning", message: "Local runtime requires manual execution proof." },
-      { checkType: "example", status: "passed", message: "Example schemas are object-shaped." },
-      { checkType: "security", status: "warning", message: "High-risk filesystem permissions require explicit reviewer notes." }
+      {
+        checkType: "manifest",
+        status: "passed",
+        message: "Manifest contract includes required fields.",
+        isBlocking: false,
+        fixCategory: "manifest",
+        targetField: null,
+        nextAction: "No manifest repair is needed."
+      },
+      {
+        checkType: "runtime",
+        status: "warning",
+        message: "Local runtime requires manual execution proof.",
+        isBlocking: false,
+        fixCategory: "runtime",
+        targetField: "runtime.command",
+        nextAction: "Attach packaging, sandboxing, and execution proof for local runtime review."
+      },
+      {
+        checkType: "example",
+        status: "passed",
+        message: "Example schemas are object-shaped.",
+        isBlocking: false,
+        fixCategory: "example",
+        targetField: null,
+        nextAction: "No example schema repair is needed."
+      },
+      {
+        checkType: "security",
+        status: "warning",
+        message: "High-risk filesystem permissions require explicit reviewer notes.",
+        isBlocking: false,
+        fixCategory: "security",
+        targetField: "permissions.filesystem",
+        nextAction: "Provide high-risk permission rationale and owner-approval guidance before approval."
+      }
     ],
     createdAt: "demo",
     decidedAt: null
@@ -2124,10 +2232,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       warningCount: 0,
       health: "healthy",
       checks: [
-        { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-        { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
-        { checkType: "example", status: "passed", message: "Input and output schemas include concrete fields." },
-        { checkType: "security", status: "passed", message: "Permission profile is compatible with automated review gates." }
+        {
+          checkType: "manifest",
+          status: "passed",
+          message: "Manifest contract includes required fields.",
+          isBlocking: false,
+          fixCategory: "manifest",
+          targetField: null,
+          nextAction: "No manifest repair is needed."
+        },
+        {
+          checkType: "runtime",
+          status: "passed",
+          message: "HTTP runtime entrypoint uses HTTPS.",
+          isBlocking: false,
+          fixCategory: "runtime",
+          targetField: "runtime.entrypoint",
+          nextAction: "No runtime URL repair is needed."
+        },
+        {
+          checkType: "example",
+          status: "passed",
+          message: "Input and output schemas include concrete fields.",
+          isBlocking: false,
+          fixCategory: "example",
+          targetField: null,
+          nextAction: "No example schema repair is needed."
+        },
+        {
+          checkType: "security",
+          status: "passed",
+          message: "Permission profile is compatible with automated review gates.",
+          isBlocking: false,
+          fixCategory: "security",
+          targetField: null,
+          nextAction: "No security repair is needed."
+        }
       ]
     },
     analytics: {
@@ -2231,10 +2371,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         reviewStatus: "approved",
         runtimeCheckCount: 4,
         runtimeChecks: [
-          { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-          { checkType: "runtime", status: "passed", message: "HTTP runtime entrypoint uses HTTPS." },
-          { checkType: "example", status: "passed", message: "Input and output schemas include concrete fields." },
-          { checkType: "security", status: "passed", message: "Permission profile is compatible with automated review gates." }
+          {
+            checkType: "manifest",
+            status: "passed",
+            message: "Manifest contract includes required fields.",
+            isBlocking: false,
+            fixCategory: "manifest",
+            targetField: null,
+            nextAction: "No manifest repair is needed."
+          },
+          {
+            checkType: "runtime",
+            status: "passed",
+            message: "HTTP runtime entrypoint uses HTTPS.",
+            isBlocking: false,
+            fixCategory: "runtime",
+            targetField: "runtime.entrypoint",
+            nextAction: "No runtime URL repair is needed."
+          },
+          {
+            checkType: "example",
+            status: "passed",
+            message: "Input and output schemas include concrete fields.",
+            isBlocking: false,
+            fixCategory: "example",
+            targetField: null,
+            nextAction: "No example schema repair is needed."
+          },
+          {
+            checkType: "security",
+            status: "passed",
+            message: "Permission profile is compatible with automated review gates.",
+            isBlocking: false,
+            fixCategory: "security",
+            targetField: null,
+            nextAction: "No security repair is needed."
+          }
         ],
         runtimeFailedCount: 0,
         runtimePassedCount: 4,
@@ -2267,10 +2439,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       warningCount: 1,
       health: "needs_attention",
       checks: [
-        { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-        { checkType: "runtime", status: "failed", message: "Runtime declaration needs a reachable secure endpoint." },
-        { checkType: "example", status: "warning", message: "Example schemas should include concrete fields before approval." },
-        { checkType: "security", status: "passed", message: "Permission profile is compatible with review gates." }
+        {
+          checkType: "manifest",
+          status: "passed",
+          message: "Manifest contract includes required fields.",
+          isBlocking: false,
+          fixCategory: "manifest",
+          targetField: null,
+          nextAction: "No manifest repair is needed."
+        },
+        {
+          checkType: "runtime",
+          status: "failed",
+          message: "Runtime declaration needs a reachable secure endpoint.",
+          isBlocking: true,
+          fixCategory: "runtime",
+          targetField: "runtime.entrypoint",
+          nextAction: "Use a reachable HTTPS endpoint before resubmitting this version."
+        },
+        {
+          checkType: "example",
+          status: "warning",
+          message: "Example schemas should include concrete fields before approval.",
+          isBlocking: false,
+          fixCategory: "example",
+          targetField: "inputSchema.properties/outputSchema.properties",
+          nextAction: "Add concrete input and output fields so reviewers and developers can test the skill."
+        },
+        {
+          checkType: "security",
+          status: "passed",
+          message: "Permission profile is compatible with review gates.",
+          isBlocking: false,
+          fixCategory: "security",
+          targetField: null,
+          nextAction: "No security repair is needed."
+        }
       ]
     },
     analytics: {
@@ -2363,10 +2567,42 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
         reviewStatus: "queued",
         runtimeCheckCount: 4,
         runtimeChecks: [
-          { checkType: "manifest", status: "passed", message: "Manifest contract includes required fields." },
-          { checkType: "runtime", status: "failed", message: "Runtime declaration needs a reachable secure endpoint." },
-          { checkType: "example", status: "warning", message: "Example schemas should include concrete fields before approval." },
-          { checkType: "security", status: "passed", message: "Permission profile is compatible with review gates." }
+          {
+            checkType: "manifest",
+            status: "passed",
+            message: "Manifest contract includes required fields.",
+            isBlocking: false,
+            fixCategory: "manifest",
+            targetField: null,
+            nextAction: "No manifest repair is needed."
+          },
+          {
+            checkType: "runtime",
+            status: "failed",
+            message: "Runtime declaration needs a reachable secure endpoint.",
+            isBlocking: true,
+            fixCategory: "runtime",
+            targetField: "runtime.entrypoint",
+            nextAction: "Use a reachable HTTPS endpoint before resubmitting this version."
+          },
+          {
+            checkType: "example",
+            status: "warning",
+            message: "Example schemas should include concrete fields before approval.",
+            isBlocking: false,
+            fixCategory: "example",
+            targetField: "inputSchema.properties/outputSchema.properties",
+            nextAction: "Add concrete input and output fields so reviewers and developers can test the skill."
+          },
+          {
+            checkType: "security",
+            status: "passed",
+            message: "Permission profile is compatible with review gates.",
+            isBlocking: false,
+            fixCategory: "security",
+            targetField: null,
+            nextAction: "No security repair is needed."
+          }
         ],
         runtimeFailedCount: 1,
         runtimePassedCount: 2,

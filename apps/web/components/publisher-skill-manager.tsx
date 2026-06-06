@@ -744,6 +744,18 @@ function ReviewRepairPanel({
               <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
               <strong>{formatCheckType(check.checkType, labels)}</strong>
               <small>{check.message ?? check.status}</small>
+              {check.nextAction ? (
+                <small>
+                  <b>{repairLabels.nextAction}</b>
+                  {check.nextAction}
+                </small>
+              ) : null}
+              {check.targetField ? (
+                <small>
+                  <b>{repairLabels.targetField}</b>
+                  <code>{check.targetField}</code>
+                </small>
+              ) : null}
             </div>
           ))}
         </div>
@@ -770,6 +782,7 @@ function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
   const warningChecks = checks.filter((check) => check.status === "warning");
   const openChecks = checks.filter((check) => check.status === "queued" || check.status === "running");
   const passedChecks = checks.filter((check) => check.status === "passed");
+  const blockingChecks = checks.filter((check) => check.isBlocking === true);
   const status = latestVersion?.reviewStatus ?? skill.review.status;
   const notes = latestVersion?.reviewNotes ?? skill.review.notes;
   const decidedAt = latestVersion?.reviewDecidedAt ?? skill.review.decidedAt;
@@ -779,7 +792,7 @@ function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
     pushReviewRepairAction(actionKeys, "create_version");
   }
 
-  if (failedChecks.length > 0 || warningChecks.length > 0) {
+  if (failedChecks.length > 0 || warningChecks.length > 0 || blockingChecks.length > 0) {
     pushReviewRepairAction(actionKeys, "fix_checks");
   }
 
@@ -803,7 +816,7 @@ function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
   }
 
   const tone: ReviewRepairTone =
-    status === "rejected" || status === "blocked" || failedChecks.length > 0
+    status === "rejected" || status === "blocked" || failedChecks.length > 0 || blockingChecks.length > 0
       ? "danger"
       : status === "approved" && failedChecks.length === 0 && warningChecks.length === 0 && openChecks.length === 0
         ? "ready"

@@ -30,6 +30,10 @@ const copy = {
       running: "Running",
       warning: "Warning"
     },
+    blocking: "Blocking",
+    advisory: "Reviewer note",
+    nextAction: "Next action",
+    targetField: "Target",
     created: "Submitted",
     decision: "Decision",
     empty: "No skill reviews need operator action.",
@@ -60,6 +64,10 @@ const copy = {
       running: "运行中",
       warning: "警告"
     },
+    blocking: "阻塞",
+    advisory: "人工确认",
+    nextAction: "下一步",
+    targetField: "字段",
     created: "提交时间",
     decision: "审核决定",
     empty: "当前没有需要处理的技能审核。",
@@ -141,7 +149,24 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                       <div className="admin-review-check" key={`${review.id}-${check.checkType}`}>
                         <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
                         <strong>{formatCheckType(check.checkType, labels)}</strong>
+                        {typeof check.isBlocking === "boolean" ? (
+                          <em className={check.isBlocking ? "quality-chip quality-chip--critical" : "quality-chip quality-chip--attention"}>
+                            {check.isBlocking ? labels.blocking : labels.advisory}
+                          </em>
+                        ) : null}
                         <small>{check.message ?? check.status}</small>
+                        {check.nextAction ? (
+                          <small>
+                            <b>{labels.nextAction}</b>
+                            {check.nextAction}
+                          </small>
+                        ) : null}
+                        {check.targetField ? (
+                          <small>
+                            <b>{labels.targetField}</b>
+                            <code>{check.targetField}</code>
+                          </small>
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -218,7 +243,7 @@ function hasBlockingChecks(review: AdminReviewRecord) {
     return false;
   }
 
-  return checks.some((check) => check.status === "failed" || check.status === "queued" || check.status === "running");
+  return checks.some((check) => check.isBlocking === true || check.status === "failed" || check.status === "queued" || check.status === "running");
 }
 
 function formatCheckType(checkType: string, labels: (typeof copy)["en" | "zh"]) {

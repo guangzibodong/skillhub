@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "027_default_notification_templates.sql";
-const expectedLatestMigrationNumber = 27;
+const expectedLatestMigrationFilename = "028_runtime_check_remediation.sql";
+const expectedLatestMigrationNumber = 28;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -89,6 +89,7 @@ type DatabaseReadiness = {
   payoutTables: boolean;
   publisherFeedbackResponseColumns: boolean;
   publisherTermsAcceptanceColumns: boolean;
+  runtimeCheckRemediationColumns: boolean;
   schemaMigrations: boolean;
   userAuthIdentities: boolean;
   webhookDeliveryWorker: boolean;
@@ -378,6 +379,16 @@ function buildMarketplaceOperationsSection(
       status: database.operationsTables ? "ready" : "blocker"
     },
     {
+      action: database.runtimeCheckRemediationColumns ? "No action needed." : "Run migration 028_runtime_check_remediation.sql.",
+      description: "Automated review checks need structured repair metadata so publishers and reviewers can see blockers, target fields, and next actions.",
+      detail: database.runtimeCheckRemediationColumns
+        ? "Runtime check remediation columns are available."
+        : "Runtime check remediation columns are missing.",
+      key: "runtime_check_remediation",
+      label: "Review check remediation",
+      status: database.runtimeCheckRemediationColumns ? "ready" : "blocker"
+    },
+    {
       action: database.publisherFeedbackResponseColumns ? "No action needed." : "Run migration 026_skill_feedback_publisher_responses.sql.",
       description: "Publisher responses turn moderated buyer feedback into a public maintenance and trust loop.",
       detail: database.publisherFeedbackResponseColumns
@@ -545,6 +556,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
+      runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
@@ -640,7 +652,35 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'skill_feedback'
             and column_name = 'publisher_responded_by_user_id'
-        ) as "publisherRespondedByUserId"
+        ) as "publisherRespondedByUserId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_runtime_checks'
+            and column_name = 'is_blocking'
+        ) as "runtimeCheckIsBlocking",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_runtime_checks'
+            and column_name = 'fix_category'
+        ) as "runtimeCheckFixCategory",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_runtime_checks'
+            and column_name = 'target_field'
+        ) as "runtimeCheckTargetField",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_runtime_checks'
+            and column_name = 'next_action'
+        ) as "runtimeCheckNextAction"
     `) as Array<{
       notificationDeliveryColumns: boolean;
       publisherResponseBody: boolean;
@@ -649,6 +689,10 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       publisherTermsAcceptedAt: boolean;
       publisherTermsAcceptedByUserId: boolean;
       publisherTermsVersion: boolean;
+      runtimeCheckFixCategory: boolean;
+      runtimeCheckIsBlocking: boolean;
+      runtimeCheckNextAction: boolean;
+      runtimeCheckTargetField: boolean;
       webhookLastAttemptedAt: boolean;
     }>;
     const columns = columnRows[0];
@@ -683,6 +727,11 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         columns.publisherTermsAcceptedAt &&
         columns.publisherTermsVersion &&
         columns.publisherTermsAcceptedByUserId,
+      runtimeCheckRemediationColumns:
+        columns.runtimeCheckIsBlocking &&
+        columns.runtimeCheckFixCategory &&
+        columns.runtimeCheckTargetField &&
+        columns.runtimeCheckNextAction,
       schemaMigrations: tables.schemaMigrations,
       userAuthIdentities: tables.userAuthIdentities,
       webhookDeliveryWorker: tables.webhookDeliveryEvents && columns.webhookLastAttemptedAt
@@ -703,6 +752,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
+      runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false

@@ -954,6 +954,10 @@ Possible blocker values are `publisher_profile`, `publisher_status`, `payout`, `
         "checkType": "runtime",
         "status": "failed",
         "message": "Runtime declaration needs a reachable secure endpoint.",
+        "isBlocking": true,
+        "fixCategory": "runtime",
+        "targetField": "runtime.entrypoint",
+        "nextAction": "Use a reachable HTTPS endpoint before resubmitting this version.",
         "latencyMs": null,
         "checkedAt": "2026-06-05T08:00:00.000Z",
         "createdAt": "2026-06-05T08:00:00.000Z"
@@ -962,6 +966,8 @@ Possible blocker values are `publisher_profile`, `publisher_status`, `payout`, `
   }
 }
 ```
+
+`message` is evidence copy for humans. `isBlocking`, `fixCategory`, `targetField`, and `nextAction` are the structured remediation contract used by publisher repair loops and admin review cards. Warnings may be non-blocking but still require reviewer notes or publisher evidence.
 
 Publisher runtime health is derived from the latest checks only: `failed` becomes `needs_attention`, `warning`, `queued`, or `running` becomes `warning`, passed checks become `healthy`, and missing checks remain `not_checked`.
 
@@ -1876,6 +1882,10 @@ Each review row includes `runtimeChecks`, an array of the latest check per type:
       "checkType": "manifest",
       "status": "passed",
       "message": "Manifest contract includes required identity, version, tags, runtime, permissions, and schemas.",
+      "isBlocking": false,
+      "fixCategory": "manifest",
+      "targetField": null,
+      "nextAction": "No manifest repair is needed; keep identity, version, tags, runtime, permissions, and schemas stable for this submission.",
       "latencyMs": null,
       "checkedAt": "2026-06-05T08:00:00.000Z",
       "createdAt": "2026-06-05T08:00:00.000Z"
@@ -1884,7 +1894,14 @@ Each review row includes `runtimeChecks`, an array of the latest check per type:
 }
 ```
 
-`status` can be `queued`, `running`, `passed`, `failed`, or `warning`. The approval gate refreshes missing or incomplete checks once before deciding. After that refresh, the admin console treats `failed`, `queued`, and `running` as blocking signals; `warning` can be approved only when the reviewer records notes that explain the accepted risk.
+`status` can be `queued`, `running`, `passed`, `failed`, or `warning`. New check rows also expose structured remediation metadata:
+
+- `isBlocking`: whether this check blocks approval or resubmission until repaired. Failed checks are blocking; warnings usually require reviewer notes or publisher evidence.
+- `fixCategory`: the product area to repair, such as `manifest`, `runtime`, `example`, or `security`.
+- `targetField`: the manifest/runtime field to inspect when a concrete field exists.
+- `nextAction`: the publisher/reviewer action to take without parsing the human-readable `message`.
+
+The approval gate refreshes missing or incomplete checks once before deciding. After that refresh, the admin console treats `failed`, `queued`, and `running` as blocking signals; `warning` can be approved only when the reviewer records notes that explain the accepted risk.
 
 Record a review decision:
 

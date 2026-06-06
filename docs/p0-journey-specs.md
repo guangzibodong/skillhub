@@ -299,7 +299,7 @@ Publisher workspace:
 - Version locked/unlocked.
 - Automated check queued/running/passed/warning/failed.
 - Review notes present/missing.
-- Review repair loop: latest exact version, reviewer notes, automated check evidence, concrete repair actions, and automatic version-workbench entry when fixing or resubmitting is needed.
+- Review repair loop: latest exact version, reviewer notes, automated check evidence, structured blocker/advisory semantics, target field, concrete next action, and automatic version-workbench entry when fixing or resubmitting is needed.
 - Pricing free/draft/active/archived.
 - Paid activation blockers.
 - No feedback / pending feedback / published feedback / publisher response.

@@ -305,6 +305,7 @@ Requirements:
 - Locked approved or installed versions that cannot be mutated in place.
 - Review pipeline.
 - Runtime check results.
+- Runtime check results must expose blocking semantics, fix category, target field, and next action so publishers know what to repair without guessing from reviewer prose.
 - Published feedback count, average rating, and pending feedback count.
 - Pricing setup.
 - Usage analytics.

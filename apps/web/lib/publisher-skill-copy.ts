@@ -50,6 +50,8 @@ const publisherSkillCopy = {
         wait_review: "Wait for reviewer decision"
       },
       checkEvidence: "Automated check evidence",
+      nextAction: "Next action",
+      targetField: "Target",
       checkSummary: {
         failed: "failed",
         open: "open",
@@ -167,6 +169,8 @@ const publisherSkillCopy = {
         wait_review: "\u7b49\u5f85\u5ba1\u6838\u51b3\u5b9a"
       },
       checkEvidence: "\u81ea\u52a8\u68c0\u67e5\u8bc1\u636e",
+      nextAction: "\u4e0b\u4e00\u6b65",
+      targetField: "\u5b57\u6bb5",
       checkSummary: {
         failed: "\u5931\u8d25",
         open: "\u672a\u5b8c\u6210",

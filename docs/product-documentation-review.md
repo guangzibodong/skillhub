@@ -692,6 +692,13 @@ Added publisher workspace copy and next-action hardening, covering:
 - Skill cards now include a review repair loop that combines latest exact version, reviewer notes, failed/warning/open check evidence, and repair actions; when repair or resubmission is needed, the version manager opens directly.
 - This improves the repeat-use loop because publishers see what to do next after saving a draft instead of only seeing metrics and forms.
 
+Added structured automated-check remediation, covering:
+
+- `028_runtime_check_remediation.sql` adds blocking flag, fix category, target field, and next action to `skill_runtime_checks`.
+- Review submission stores remediation metadata for manifest, runtime, example, and security checks instead of forcing UI or reviewers to infer repair actions from free-text messages.
+- `/v1/admin/reviews`, publisher skill operations, admin review cards, and publisher repair loops now expose next action and target field beside automated evidence.
+- This strengthens Journey B and Journey C because rejected, blocked, warning, or incomplete reviews now produce concrete repair instructions and reviewer context.
+
 Added developer project version adoption, covering:
 
 - Project update inbox rows now expose current installed version, target version, target review status, and adoption readiness.
