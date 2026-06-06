@@ -12,6 +12,8 @@ import {
   PackageCheck,
   Plus,
   Radar,
+  Repeat2,
+  Rocket,
   Search,
   ServerCog,
   ShieldCheck,
@@ -33,6 +35,7 @@ type PageProps = {
 const workflowIcons = [Radar, FileJson, Zap] as const;
 const trustIcons = [ShieldCheck, PackageCheck, KeyRound] as const;
 const proofIcons = [KeyRound, ShieldCheck, Gauge, WalletCards, Activity, Terminal] as const;
+const operatingIcons = [Code2, PackageCheck, ShieldCheck] as const;
 
 const proofCopy = {
   en: {
@@ -64,6 +67,78 @@ const proofCopy = {
       ["\u70df\u6d4b\u95f8\u95e8", "\u751f\u4ea7\u70df\u6d4b\u547d\u4ee4\u4f1a\u68c0\u67e5 stats\u3001auth providers\u3001readiness \u4fdd\u62a4\u548c\u5173\u952e\u9875\u9762\u3002"]
     ],
     title: "\u5ba2\u6237\u80fd\u770b\u5230\u5e73\u53f0\uff0c\u4e0d\u53ea\u662f\u542c\u5230\u613f\u666f\u3002"
+  }
+} as const;
+
+const operatingCopy = {
+  en: {
+    eyebrow: "Live marketplace loops",
+    title: "One platform for developers, publishers, and operators.",
+    body:
+      "The product only feels real when a listing becomes install state, runtime state, review state, ledger state, and payout state. SkillHub keeps those loops visible from day one.",
+    flow: ["Publish", "Review", "Install", "Invoke", "Ledger", "Payout"],
+    loops: [
+      {
+        action: "Open developer console",
+        body: "Find a verified skill, install it into a project, create a reveal-once runtime key, run a governed test call, and monitor cost or incidents later.",
+        href: "/developer",
+        label: "Developer / Agent Builder",
+        metric: "Project runtime",
+        status: "Install -> test -> monitor"
+      },
+      {
+        action: "Open publisher workspace",
+        body: "Upload a manifest, submit an exact version, repair review blockers, activate pricing gates, respond to feedback, and track payout readiness.",
+        href: "/publisher",
+        label: "Publisher / Skill Author",
+        metric: "Supply operations",
+        status: "Draft -> review -> improve"
+      },
+      {
+        action: "Open admin operations",
+        body: "Prioritize reviews, govern abuse and incidents, process ledger states, manage notification delivery, and inspect launch readiness without exposing secrets.",
+        href: "/admin",
+        label: "Platform Operator",
+        metric: "Trust and finance",
+        status: "Review -> govern -> launch"
+      }
+    ]
+  },
+  zh: {
+    eyebrow: "\u5b9e\u65f6\u5e02\u573a\u95ed\u73af",
+    title: "\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u3001\u8fd0\u8425\u5458\u5171\u7528\u4e00\u4e2a\u5e73\u53f0\u3002",
+    body:
+      "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u53d8\u6210\u5b89\u88c5\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8d26\u672c\u72b6\u6001\u548c\u63d0\u73b0\u72b6\u6001\u3002",
+    flow: ["\u53d1\u5e03", "\u5ba1\u6838", "\u5b89\u88c5", "\u8c03\u7528", "\u8d26\u672c", "\u63d0\u73b0"],
+    loops: [
+      {
+        action: "\u6253\u5f00\u5f00\u53d1\u8005\u63a7\u5236\u53f0",
+        body:
+          "\u627e\u5230\u5df2\u9a8c\u8bc1\u6280\u80fd\uff0c\u5b89\u88c5\u5230\u9879\u76ee\uff0c\u521b\u5efa\u4e00\u6b21\u53ef\u89c1\u7684\u8fd0\u884c Key\uff0c\u8dd1\u4e00\u6b21\u53d7\u6cbb\u7406\u7684\u6d4b\u8bd5\u8c03\u7528\uff0c\u4e4b\u540e\u56de\u6765\u770b\u6210\u672c\u548c\u4e8b\u6545\u3002",
+        href: "/developer",
+        label: "\u5f00\u53d1\u8005 / Agent Builder",
+        metric: "\u9879\u76ee\u8fd0\u884c",
+        status: "\u5b89\u88c5 -> \u6d4b\u8bd5 -> \u76d1\u63a7"
+      },
+      {
+        action: "\u6253\u5f00\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
+        body:
+          "\u4e0a\u4f20 manifest\uff0c\u63d0\u4ea4\u7cbe\u786e\u7248\u672c\uff0c\u4fee\u590d\u5ba1\u6838\u963b\u65ad\uff0c\u5b8c\u6210\u4ef7\u683c\u95e8\u69db\uff0c\u56de\u590d\u53cd\u9988\uff0c\u8ddf\u8e2a\u63d0\u73b0\u5c31\u7eea\u5ea6\u3002",
+        href: "/publisher",
+        label: "\u53d1\u5e03\u8005 / \u6280\u80fd\u4f5c\u8005",
+        metric: "\u4f9b\u7ed9\u4fa7\u8fd0\u8425",
+        status: "\u8349\u7a3f -> \u5ba1\u6838 -> \u6539\u8fdb"
+      },
+      {
+        action: "\u6253\u5f00\u5e73\u53f0\u540e\u53f0",
+        body:
+          "\u5904\u7406\u5ba1\u6838\u4f18\u5148\u7ea7\uff0c\u6cbb\u7406\u6ee5\u7528\u548c\u4e8b\u6545\uff0c\u5904\u7406\u8d26\u672c\u72b6\u6001\uff0c\u7ba1\u7406\u901a\u77e5\u6295\u9012\uff0c\u5e76\u7528\u4e0d\u66b4\u9732\u5bc6\u94a5\u7684\u65b9\u5f0f\u68c0\u67e5\u4e0a\u7ebf\u5c31\u7eea\u5ea6\u3002",
+        href: "/admin",
+        label: "\u5e73\u53f0\u8fd0\u8425",
+        metric: "\u4fe1\u4efb\u548c\u8d22\u52a1",
+        status: "\u5ba1\u6838 -> \u6cbb\u7406 -> \u4e0a\u7ebf"
+      }
+    ]
   }
 } as const;
 
@@ -116,6 +191,7 @@ export default async function Home({ searchParams }: PageProps) {
     { label: dictionary.home.status.schema, value: "v0.1", icon: Braces },
     { label: dictionary.home.status.store, value: "Postgres", icon: Database }
   ];
+  const operating = operatingCopy[locale];
   const proof = proofCopy[locale];
 
   return (
@@ -183,6 +259,56 @@ tools: skillhub.search, skillhub.get`}</code>
             </pre>
           </div>
         </aside>
+
+        <section className="operating-console reveal-item reveal-item--late" aria-labelledby="operating-heading">
+          <div className="operating-console__intro">
+            <div className="operating-console__headline">
+              <div className="card-kicker">
+                <Repeat2 size={16} aria-hidden="true" />
+                <span>{operating.eyebrow}</span>
+              </div>
+              <h2 id="operating-heading">{operating.title}</h2>
+            </div>
+            <p>{operating.body}</p>
+          </div>
+
+          <div className="operating-flow-rail" aria-label={operating.eyebrow}>
+            {operating.flow.map((step, index) => (
+              <div className="operating-flow-node" key={step}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{step}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="operating-loop-grid">
+            {operating.loops.map((loop, index) => {
+              const Icon = operatingIcons[index];
+
+              return (
+                <article className="operating-loop-card" key={loop.label}>
+                  <div className="operating-loop-card__head">
+                    <div className="operating-loop-card__icon" aria-hidden="true">
+                      <Icon size={18} />
+                    </div>
+                    <div>
+                      <strong>{loop.label}</strong>
+                      <span>{loop.metric}</span>
+                    </div>
+                  </div>
+                  <p>{loop.body}</p>
+                  <div className="operating-loop-card__foot">
+                    <span>{loop.status}</span>
+                    <a href={localizedHref(loop.href, locale)}>
+                      {loop.action}
+                      <Rocket size={15} aria-hidden="true" />
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
 
         <section className="registry-workbench reveal-item reveal-item--late" id="registry" aria-labelledby="registry-heading">
           <div className="workbench-top">
