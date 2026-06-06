@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { JourneyRailDeck } from "@/components/journey-rail";
+import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -267,6 +268,17 @@ tools: skillhub.search, skillhub.get`}</code>
             </pre>
           </div>
         </aside>
+
+        <OperatingEvidenceChain
+          focus="platform"
+          locale={locale}
+          stats={[
+            { label: dictionary.metrics.publishedSkills, value: String(publishedSkills) },
+            { label: dictionary.metrics.verified, tone: "good", value: String(verifiedCount) },
+            { label: dictionary.metrics.apiCalls, value: getMetricValue(gatewayStats, "API calls", "0") },
+            { label: dictionary.metrics.avgLatency, tone: "neutral", value: getMetricValue(gatewayStats, "Avg latency", "--") }
+          ]}
+        />
 
         <ConsoleAccessPanel locale={locale} session={session} />
 

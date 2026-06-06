@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
+import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
@@ -464,6 +465,17 @@ skillhub install browser-research`}</code>
           </div>
         ))}
       </section>
+
+      <OperatingEvidenceChain
+        focus="marketplace"
+        locale={locale}
+        stats={[
+          { label: labels.catalogMetric, value: String(skills.length) },
+          { label: labels.publisherMetric, value: String(publishers.length) },
+          { label: labels.loopMetrics.calls, value: formatCompactMetric(totalCallCount, locale) },
+          { label: labels.loopMetrics.payout, tone: payoutReadyPublisherCount > 0 ? "good" : "attention", value: `${payoutReadyPublisherCount}/${publishers.length}` }
+        ]}
+      />
 
       <section className="market-overview-section" aria-labelledby="market-overview-heading">
         <div className="market-overview-head">

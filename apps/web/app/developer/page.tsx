@@ -6,6 +6,7 @@ import { NotificationPreferenceManager } from "@/components/notification-prefere
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
 import { OrganizationTeamManager } from "@/components/organization-team-manager";
 import { OrganizationWebhookManager } from "@/components/organization-webhook-manager";
+import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -169,6 +170,17 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
       </section>
 
       <JourneyRail currentStep="developer" journey="developer" locale={locale} />
+
+      <OperatingEvidenceChain
+        focus="developer"
+        locale={locale}
+        stats={[
+          { label: labels.metrics.projects, value: formatCompactNumber(developerProjects.length) },
+          { label: labels.metrics.installed, tone: totalInstalled > 0 ? "good" : "attention", value: formatCompactNumber(totalInstalled) },
+          { label: labels.metrics.calls, value: formatCompactNumber(totalCalls) },
+          { label: labels.metrics.budget, value: formatMoney(totalBudget, currency) }
+        ]}
+      />
 
       <section className="console-board developer-console-board">
         <SessionStatusPanel locale={locale} session={session} />

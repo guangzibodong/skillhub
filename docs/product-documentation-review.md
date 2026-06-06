@@ -56,6 +56,8 @@ The public docs surface now behaves like a product reference instead of a thin m
 
 The latest UI pass adds a shared role-aware P0 journey rail across the core product surfaces. Home now shows the three frozen journeys together, marketplace and skill detail show where developers are in discovery-to-runtime, publish and publisher show where authors are in upload-to-monetization, and admin shows where operators are in readiness-to-governance. This closes a customer-demo clarity gap: users can now see how pages belong to one operating product instead of interpreting each page as a disconnected dashboard.
 
+The current UI pass adds a shared operating evidence chain to home, marketplace, developer, publisher, and admin. The chain connects publish contract, review gate, marketplace install, runtime governance, ledger split, payout, delivery, and audit while each page contributes live/count signals from its own data source. This directly answers the customer-demo concern that the product can look like only a homepage: evaluators can now see one marketplace object moving through supply, trust, demand, runtime, money, and operations without replacing missing production rows with fake demo data.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

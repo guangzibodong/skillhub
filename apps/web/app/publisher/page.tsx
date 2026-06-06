@@ -16,6 +16,7 @@ import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { JourneyRail } from "@/components/journey-rail";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
+import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { PublisherAccountManager } from "@/components/publisher-account-manager";
 import { PublisherPayoutManager } from "@/components/publisher-payout-manager";
 import { PublisherSkillManager } from "@/components/publisher-skill-manager";
@@ -628,6 +629,17 @@ export default async function PublisherPage({ searchParams }: PageProps) {
       </section>
 
       <JourneyRail currentStep="publisher" journey="publisher" locale={locale} />
+
+      <OperatingEvidenceChain
+        focus="publisher"
+        locale={locale}
+        stats={[
+          { label: commandLabels.metrics.readiness, tone: readinessPercent >= 80 ? "good" : "attention", value: `${readinessPercent}%` },
+          { label: commandLabels.metrics.review, tone: reviewWorkCount > 0 ? "attention" : "good", value: formatCompactNumber(reviewWorkCount) },
+          { label: commandLabels.metrics.pricing, tone: blockedPaidListings > 0 ? "attention" : "good", value: formatCompactNumber(blockedPaidListings) },
+          { label: commandLabels.metrics.payout, tone: hasPayoutReady ? "good" : "attention", value: hasPayoutReady ? commandLabels.ready : formatCommercialState(payoutStatus, labels) }
+        ]}
+      />
 
       <section className="console-board publisher-console-board">
         <SessionStatusPanel locale={locale} session={session} />

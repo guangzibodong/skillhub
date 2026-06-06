@@ -309,6 +309,7 @@ Acceptance checks:
 - `/agents`: public agent integration guide with MCP, REST, SDK/CLI paths, project-scoped key guidance, runtime-governance explanation, and production-before-use checklist.
 - `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
 - `/terms`: public operating terms for buyers, publishers, platform operators, refunds, disputes, data retention, takedown, notifications, and provider-deferred payment/email boundaries.
+- Shared operating evidence chain: home and marketplace must show how a skill moves from publish contract to review, install, governed runtime, ledger split, payout, notification, and audit without using fake production rows.
 
 ### Developer Workspace
 
@@ -316,15 +317,18 @@ Acceptance checks:
 - `/developer`: dedicated developer command center for projects, runtime keys, installed skills, budgets, buyer requests, billing readiness, and notifications.
 - `/dashboard/projects/[slug]`: project command center for installed skills, per-skill policy and budget state, API keys, REST/MCP agent connection snippets, update inbox, recent runtime calls, subscriptions, and operational next actions.
 - `/account`: personal center for profile, connected accounts, login methods, organization roles, notification preferences, session/token security, billing profile shortcuts, and payout readiness shortcuts.
+- Developer evidence chain: developer surfaces must use project, install, runtime, and budget counts to prove marketplace choices become organization-scoped project governance state.
 
 ### Publisher Workspace
 
 - `/publish`: package submission and manifest preflight.
 - `/publisher`: dedicated publisher command center for skills, reviews, runtime checks, analytics, buyer requests, earnings, payout readiness, and notification preferences.
+- Publisher evidence chain: publisher surfaces must use readiness, review, pricing-blocker, and payout signals to prove author work moves toward reviewed supply, monetization, and retained follow-up.
 
 ### Platform Admin
 
 - `/admin`: review queue, skill feedback moderation, risk command center, finance ledger, payout review, incidents, audit stream, external notification delivery queue, webhook outbox, launch readiness.
+- Admin evidence chain: admin surfaces must use finance, pending-balance, review/risk, and ledger-row signals to prove review, governance, money, delivery, and audit records are operationally connected.
 
 ## Near-Term Build Sequence
 
@@ -405,6 +409,7 @@ Completed:
 - `/account` now gives users a personal center for profile, connected login methods, provider email, connection time, provider disconnect guardrails, organization role, session/token security with old-session revocation, workspace readiness, workspace shortcuts, and notification preferences.
 - `/`, `/login`, and `/account` now expose a role-aware console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, making backend routes, required roles, no-shared-password access, OAuth configuration state, and token fallback boundaries visible before customers need private instructions.
 - `/developer`, `/publisher`, and `/admin` now expose role-aware workspace access panels that show current session, token fingerprint, required roles, sign-in-required or role-required states, and the gateway-enforced write boundary before users reach project, publishing, or admin controls.
+- `/`, `/marketplace`, `/developer`, `/publisher`, and `/admin` now expose a shared operating evidence chain that connects publish contract, review gate, marketplace install, runtime governance, ledger split, payout, notification, and audit. Each page passes live/count signals from its own data source and keeps production empty states empty instead of filling unavailable data with bundled demo supply.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 - Publisher profile and payout-account onboarding endpoints.

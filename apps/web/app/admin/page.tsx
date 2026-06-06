@@ -20,6 +20,7 @@ import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { JourneyRail } from "@/components/journey-rail";
+import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
@@ -317,6 +318,17 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
 
       <JourneyRail currentStep="admin" journey="admin" locale={locale} />
+
+      <OperatingEvidenceChain
+        focus="admin"
+        locale={locale}
+        stats={[
+          { label: labels.metrics[0][0], value: formatMoney(financeLedger.summary.grossCents) },
+          { label: labels.metrics[2][0], tone: financeLedger.summary.pendingBalanceCents > 0 ? "attention" : "neutral", value: formatMoney(financeLedger.summary.pendingBalanceCents) },
+          { label: labels.metrics[3][0], tone: reviews.length > 0 ? "attention" : "good", value: String(reviews.length + activeIncidentCount + skillFeedback.filter((feedback) => feedback.status === "pending").length) },
+          { label: ops.moneyTitle, value: String(financeLedger.recentTransactions.length) }
+        ]}
+      />
 
       <section className="console-board">
         <SessionStatusPanel locale={locale} session={session} />

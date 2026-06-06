@@ -45,6 +45,7 @@ Acceptance:
 - First viewport communicates the product category.
 - Shows developer, publisher, and operator loops.
 - Shows an explicit console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including role expectations and no-shared-password guidance.
+- Shows a shared operating evidence chain that connects publisher supply, admin review, marketplace install, runtime governance, ledger split, payout, and audit without using fake production rows.
 - Shows public trust and operating proof.
 - Links to marketplace, publishers, agents, docs, publish, login/account, and terms.
 
@@ -76,6 +77,7 @@ Acceptance:
 - Cards show install command, risk, runtime, price, verification, rating, installs/calls when available.
 - Buyer-safe recommendation reasons are visible.
 - Publisher trust path is visible.
+- Shows the operating evidence chain from discovery to install, runtime governance, ledger, and payout so visitors can see the catalog is backed by operational state.
 - No internal curation boost/reason is exposed publicly.
 
 ### Skill Detail `/skills/[slug]`
@@ -343,6 +345,7 @@ Acceptance:
 - Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
 - Shows a role-aware workspace access panel explaining current session, required publisher roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Shows a paid marketplace readiness command panel that aggregates publisher profile, current terms, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers before the detailed skill cards.
+- Shows the publisher-focused operating evidence chain with live readiness, review, pricing, and payout signals so authors understand how upload work becomes reviewed supply and future revenue state.
 - Payout readiness explains pending, available, locked, paid, failed, and blocked money states; request blockers; minimum payout; manual review threshold; latest payout reason; retry condition; and next action.
 - Shows a review repair loop that combines the latest exact version, review submitted time, SLA due state, reviewer notes, automated check evidence, structured blocker/advisory semantics, target fields, and concrete repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
 - Paid activation blockers are explicit.
@@ -381,6 +384,7 @@ Acceptance:
 
 - Shows projects, active keys, installed skills, update counts, billing readiness, notification inbox, team access, webhook setup, and buyer requests.
 - Shows a role-aware workspace access panel explaining current session, required developer roles, sign-in-required, role-required, and gateway-enforced write boundaries.
+- Shows the developer-focused operating evidence chain with live project, install, runtime call, and budget signals so an install command visibly becomes project governance state.
 - Developer can create a project without admin intervention.
 
 ### Dashboard `/dashboard`
@@ -476,6 +480,7 @@ Acceptance:
 
 - Privileged actions require reason where applicable.
 - Shows a role-aware workspace access panel explaining current session, required reviewer/finance/support/admin roles, sign-in-required, role-required, and gateway-enforced write boundaries.
+- Shows the admin-focused operating evidence chain with live GMV, pending balance, review/risk, and ledger-row signals so operators can trace review, finance, payout, delivery, and audit work.
 - Review queue exposes SLA pressure, blocker, high-risk, and warning filters with recommended priority reasons so reviewers can decide what to process first.
 - Review cards expose the secret-safe evidence package before decision controls: publisher, payout readiness, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts.
 - Audit log is separate from notification events.
@@ -571,3 +576,23 @@ Acceptance:
 - It must map only to frozen Journey A, B, and C steps.
 - It must stay bilingual and responsive without horizontal overflow on mobile.
 - It must help a customer understand how a public listing becomes project state, review state, runtime state, ledger state, payout state, notification state, and audit state.
+
+## Shared Operating Evidence Chain
+
+Status: implemented in the web UI.
+
+The home, marketplace, developer, publisher, and admin surfaces now include a shared operating evidence chain. The chain makes the same platform lifecycle visible from each role's viewpoint:
+
+- Publish contract: manifest, version, permissions, runtime, examples, and pricing intent.
+- Review gate: automated checks, human decision, reviewer notes, and SLA.
+- Marketplace install: searchable public listing, publisher trust, install readiness, pricing, feedback, and alternatives.
+- Runtime governance: project-scoped keys, approval policy, budget, rate limit, subscription state, REST, MCP, invocation logs, and usage.
+- Ledger split: transactions, immutable commission splits, balances, refunds, and disputes.
+- Payout and audit: balance reservation, finance decision, provider-deferred payout, notification delivery, and audit trail.
+
+Acceptance:
+
+- It must use page-owned live/count signals when available and show empty-safe production state instead of replacing missing rows with bundled demo supply.
+- It must highlight the current role's stage without claiming the stage succeeded.
+- It must remain bilingual, responsive, and free of horizontal overflow at mobile widths.
+- It must strengthen customer demo clarity by showing that SkillHub is a marketplace operating system, not only a public homepage or static catalog.
