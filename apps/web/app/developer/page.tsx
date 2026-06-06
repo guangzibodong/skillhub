@@ -1,5 +1,6 @@
 import { Activity, BriefcaseBusiness, CreditCard, KeyRound, LockKeyhole, PackageCheck, ReceiptText } from "lucide-react";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
+import { JourneyRail } from "@/components/journey-rail";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { OrganizationBillingManager } from "@/components/organization-billing-manager";
@@ -166,6 +167,8 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
           <p>{labels.description}</p>
         </div>
       </section>
+
+      <JourneyRail currentStep="developer" journey="developer" locale={locale} />
 
       <section className="console-board developer-console-board">
         <SessionStatusPanel locale={locale} session={session} />

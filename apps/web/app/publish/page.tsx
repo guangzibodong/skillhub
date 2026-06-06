@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   UploadCloud
 } from "lucide-react";
+import { JourneyRail } from "@/components/journey-rail";
 import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
 import { SiteHeader } from "@/components/site-header";
@@ -70,6 +71,8 @@ export default async function PublishPage({ searchParams }: PageProps) {
           </div>
         </div>
       </section>
+
+      <JourneyRail currentStep="publish" journey="publisher" locale={locale} />
 
       <section className="publish-pipeline" aria-labelledby="publish-pipeline-heading">
         <div className="publish-pipeline__head">

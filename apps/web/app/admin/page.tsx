@@ -19,6 +19,7 @@ import { AdminLedgerProcessor } from "@/components/admin-ledger-processor";
 import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-curation-manager";
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
+import { JourneyRail } from "@/components/journey-rail";
 import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
@@ -314,6 +315,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <p>{labels.description}</p>
         </div>
       </section>
+
+      <JourneyRail currentStep="admin" journey="admin" locale={locale} />
 
       <section className="console-board">
         <SessionStatusPanel locale={locale} session={session} />

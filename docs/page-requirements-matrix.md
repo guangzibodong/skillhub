@@ -553,3 +553,21 @@ Must specify:
 UI design starts only after the relevant page row and journey spec are approved.
 
 If a design idea cannot be mapped to a user job, primary action, data source, or acceptance criterion, it should not be implemented yet.
+
+## Shared Journey Navigation
+
+Status: implemented in the web UI.
+
+The public and console surfaces now include a shared role-aware P0 journey rail:
+
+- Developer rail: `/marketplace`, `/skills/[slug]`, `/developer`, and `/dashboard/projects/[slug]`.
+- Publisher rail: `/publish` and `/publisher`.
+- Admin rail: `/admin`.
+- Home rail deck: `/` shows all three P0 paths together.
+
+Acceptance:
+
+- The rail must show the current step, the next step, and the full role journey without implying fake success state.
+- It must map only to frozen Journey A, B, and C steps.
+- It must stay bilingual and responsive without horizontal overflow on mobile.
+- It must help a customer understand how a public listing becomes project state, review state, runtime state, ledger state, payout state, notification state, and audit state.

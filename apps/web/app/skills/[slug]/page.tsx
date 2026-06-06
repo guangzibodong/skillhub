@@ -16,6 +16,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import { JourneyRail } from "@/components/journey-rail";
 import { SiteHeader } from "@/components/site-header";
 import { SkillInstallCommandPanel } from "@/components/skill-install-command-panel";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
@@ -223,6 +224,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           </div>
         </aside>
       </section>
+
+      <JourneyRail currentStep="skill" journey="developer" locale={locale} />
 
       <section className="skill-detail-layout">
         <div className="skill-detail-main">

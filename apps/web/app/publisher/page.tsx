@@ -13,6 +13,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
+import { JourneyRail } from "@/components/journey-rail";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { PublisherAccountManager } from "@/components/publisher-account-manager";
@@ -625,6 +626,8 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           <p>{labels.description}</p>
         </div>
       </section>
+
+      <JourneyRail currentStep="publisher" journey="publisher" locale={locale} />
 
       <section className="console-board publisher-console-board">
         <SessionStatusPanel locale={locale} session={session} />

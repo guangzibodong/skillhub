@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   WalletCards
 } from "lucide-react";
+import { JourneyRail } from "@/components/journey-rail";
 import { ProjectAgentConnectionPanel } from "@/components/project-agent-connection-panel";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectInvoiceManager } from "@/components/project-invoice-manager";
@@ -208,6 +209,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           </div>
         </aside>
       </section>
+
+      <JourneyRail currentStep="project" journey="developer" locale={locale} />
 
       <section className="console-board">
         <div className="metric-strip project-metric-strip metric-strip--standalone">

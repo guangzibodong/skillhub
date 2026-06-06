@@ -13935,6 +13935,232 @@ a {
   color: var(--coral);
 }
 
+.journey-rail,
+.journey-rail-deck {
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto 26px;
+}
+
+.command-screen > .journey-rail-deck {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 2px 0 4px;
+}
+
+.journey-rail {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.5fr) auto;
+  gap: 14px;
+  align-items: stretch;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(155, 226, 141, 0.1), rgba(124, 199, 216, 0.045) 46%, rgba(255, 255, 255, 0.02)),
+    rgba(20, 24, 18, 0.94);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+  padding: 14px;
+}
+
+.journey-rail__copy {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.journey-rail__copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.journey-rail__state {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.journey-rail__state span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.journey-rail__state strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.journey-rail__steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journey-rail-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  min-width: 0;
+  min-height: 124px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.034);
+  padding: 12px;
+}
+
+.journey-rail-step::after {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: rgba(155, 226, 141, 0.32);
+  content: "";
+}
+
+.journey-rail-step:last-child::after {
+  display: none;
+}
+
+.journey-rail-step--done {
+  border-color: rgba(155, 226, 141, 0.2);
+  background: rgba(155, 226, 141, 0.07);
+}
+
+.journey-rail-step--current {
+  border-color: rgba(124, 199, 216, 0.45);
+  background: rgba(124, 199, 216, 0.11);
+}
+
+.journey-rail-step--upcoming {
+  color: rgba(248, 242, 231, 0.72);
+}
+
+.journey-rail-step__icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  color: var(--muted);
+}
+
+.journey-rail-step--done .journey-rail-step__icon {
+  border-color: rgba(155, 226, 141, 0.28);
+  color: var(--signal);
+}
+
+.journey-rail-step--current .journey-rail-step__icon {
+  border-color: rgba(124, 199, 216, 0.35);
+  color: var(--cyan);
+}
+
+.journey-rail-step div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.journey-rail-step strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.22;
+}
+
+.journey-rail-step small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.journey-rail__action {
+  display: inline-flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 132px;
+  max-width: 190px;
+  border: 1px solid rgba(155, 226, 141, 0.24);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.09);
+  color: var(--signal);
+  font-size: 13px;
+  font-weight: 780;
+  line-height: 1.2;
+  padding: 0 13px;
+  text-align: center;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.journey-rail__action:hover {
+  border-color: rgba(155, 226, 141, 0.44);
+  background: rgba(155, 226, 141, 0.13);
+  transform: translateY(-1px);
+}
+
+.journey-rail__action span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.journey-rail-deck {
+  display: grid;
+  gap: 14px;
+}
+
+.journey-rail-deck__head {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 18px;
+  align-items: end;
+  min-width: 0;
+}
+
+.journey-rail-deck__head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.journey-rail-deck__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.journey-rail-deck__grid .journey-rail {
+  width: 100%;
+  margin: 0;
+}
+
 @media (max-width: 1120px) {
   .site-header {
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -13958,6 +14184,31 @@ a {
   .site-action-publish {
     min-height: 40px;
     padding: 0 13px;
+  }
+
+  .journey-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-rail__copy {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+    align-items: start;
+  }
+
+  .journey-rail__copy .card-kicker,
+  .journey-rail__copy p {
+    grid-column: 1;
+  }
+
+  .journey-rail__state {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .journey-rail__action {
+    width: 100%;
+    max-width: none;
+    min-height: 42px;
   }
 
   .site-mobile-menu-button {
@@ -14198,6 +14449,8 @@ a {
   .trust-section,
   .auth-layout,
   .console-access-panel,
+  .journey-rail,
+  .journey-rail-deck,
   .account-layout,
   .publish-hero,
   .publish-pipeline,
@@ -14240,6 +14493,35 @@ a {
 
   .command-screen {
     padding-top: 32px;
+  }
+
+  .journey-rail,
+  .journey-rail__copy,
+  .journey-rail-deck__head {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-rail__copy .card-kicker,
+  .journey-rail__copy p,
+  .journey-rail__state {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .journey-rail__state {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .journey-rail__steps {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-rail-step {
+    min-height: auto;
+  }
+
+  .journey-rail-step::after {
+    display: none;
   }
 
   .operating-console__intro h2 {
@@ -14916,6 +15198,7 @@ a {
   .publish-access-grid,
   .publish-hero__signals,
   .preflight-counts,
+  .journey-rail__state,
   .operational-flow-list {
     grid-template-columns: 1fr;
   }

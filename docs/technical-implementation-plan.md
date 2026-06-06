@@ -547,6 +547,7 @@ Completed:
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.
 - `/dashboard/projects/[slug]` now exposes a runtime readiness checklist for project keys, installed skills, high-risk policy approval, update inbox decisions, and runtime quality, making the marketplace-to-project-to-runtime governance loop visible from the project command center.
 - `/docs` now works as a bilingual operating reference for the full P0 product: journey maps, manifest quality requirements, runtime governance path, API groups, shared lifecycle/check/balance/delivery states, and launch/operator guardrails are visible from the public site instead of only internal repository docs.
+- A shared role-aware journey rail now connects the key P0 surfaces: home shows all three journey paths, developer pages show marketplace-to-project-to-runtime progression, publisher pages show publish-to-review-to-monetization progression, and admin shows readiness-to-review-to-finance-to-delivery governance. This is a UI/IA layer only; it adds no fake success state or new API contract.
 
 Next:
 

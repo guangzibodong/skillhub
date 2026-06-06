@@ -23,6 +23,7 @@ import {
   Zap
 } from "lucide-react";
 import { ConsoleAccessPanel } from "@/components/console-access-panel";
+import { JourneyRailDeck } from "@/components/journey-rail";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -268,6 +269,8 @@ tools: skillhub.search, skillhub.get`}</code>
         </aside>
 
         <ConsoleAccessPanel locale={locale} session={session} />
+
+        <JourneyRailDeck locale={locale} />
 
         <section className="operating-console reveal-item reveal-item--late" aria-labelledby="operating-heading">
           <div className="operating-console__intro">

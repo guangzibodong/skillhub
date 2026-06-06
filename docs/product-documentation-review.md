@@ -54,6 +54,8 @@ Workspace access is now visible inside the operating consoles as well. `/develop
 
 The public docs surface now behaves like a product reference instead of a thin manifest page. `/docs` maps the three frozen P0 journeys, manifest quality bar, runtime governance path, API groups, shared lifecycle/check/balance/delivery states, and launch/operator guardrails in one bilingual reference. This closes the page-matrix requirement that docs cover manifest requirements, runtime governance, publishing flow, pricing and ledger states, payout states, notification/webhook states, and admin readiness without forcing evaluators to read internal repository documents.
 
+The latest UI pass adds a shared role-aware P0 journey rail across the core product surfaces. Home now shows the three frozen journeys together, marketplace and skill detail show where developers are in discovery-to-runtime, publish and publisher show where authors are in upload-to-monetization, and admin shows where operators are in readiness-to-governance. This closes a customer-demo clarity gap: users can now see how pages belong to one operating product instead of interpreting each page as a disconnected dashboard.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

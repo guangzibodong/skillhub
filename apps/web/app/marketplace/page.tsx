@@ -17,6 +17,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
@@ -452,6 +453,8 @@ skillhub install browser-research`}</code>
           </div>
         </aside>
       </section>
+
+      <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
 
       <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
         {metrics.map(([label, value]) => (
