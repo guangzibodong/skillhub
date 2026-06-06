@@ -21,6 +21,7 @@ import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
+import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 import { getPublicMarketplaceSkills } from "@/lib/public-marketplace";
 import { getPublicPublishers } from "@/lib/public-publishers";
 
@@ -60,6 +61,64 @@ const pageCopy = {
       ["Review threshold", "Manual review above configured amount"],
       ["Ledger rule", "Usage logs never pay out directly"]
     ],
+    overview: {
+      eyebrow: "Operating overview",
+      title: "The marketplace already has separate loops for buyers, publishers, and operators.",
+      body:
+        "These signals come from the platform overview API, so the public marketplace can show the working surfaces behind discovery instead of only presenting a catalog.",
+      metrics: {
+        activeSubscriptions: "Active subscriptions",
+        availableBalance: "Available balance",
+        failedChecks: "Failed checks",
+        installedSkills: "Installed skills",
+        openBuyerRequests: "Buyer requests",
+        payoutReview: "Payout review",
+        projects: "Projects",
+        queuedNotifications: "Queued notifications",
+        reviewQueue: "Review queue",
+        savedSkills: "Saved skills",
+        submittedVersions: "Submitted versions",
+        updateInbox: "Update inbox"
+      },
+      roles: {
+        admin: {
+          empty: "No active risk signals.",
+          subtitle: "Review, money, notification, and incident queues protect the marketplace.",
+          title: "Platform operators"
+        },
+        developer: {
+          empty: "No installed-skill updates.",
+          subtitle: "Projects return for policies, version changes, budgets, keys, and runtime evidence.",
+          title: "Developers"
+        },
+        publisher: {
+          empty: "No publisher actions.",
+          subtitle: "Authors return for review feedback, runtime checks, demand, revenue, and payout readiness.",
+          title: "Publishers"
+        }
+      },
+      queueLabels: {
+        action: "Action",
+        event: "Event",
+        next: "Next step",
+        scope: "Scope",
+        severity: "Severity",
+        stage: "Stage"
+      },
+      retentionTitle: "Why teams come back",
+      retention: {
+        developer: [
+          "Approve and update installed skills per project.",
+          "Watch cost, failures, latency, incidents, and budget state.",
+          "Compare better verified alternatives as the catalog grows."
+        ],
+        publisher: [
+          "Repair review and runtime issues before losing distribution.",
+          "Turn buyer requests and feedback into new paid versions.",
+          "Track ledger state and payout readiness after usage lands."
+        ]
+      }
+    },
     catalogMetric: "Live catalog",
     publisherMetric: "Public publishers",
     verifiedPublisherMetric: "Verified publishers",
@@ -124,6 +183,64 @@ const pageCopy = {
       ["审核阈值", "超过配置金额进入人工审核"],
       ["账本规则", "绝不直接从用量日志打款"]
     ],
+    overview: {
+      eyebrow: "运营总览",
+      title: "市场已经拆出了买家、发布者、平台运营三条回访闭环。",
+      body:
+        "这些信号来自 platform overview API，所以市场页展示的不只是目录，而是目录背后的真实工作台、队列和运营状态。",
+      metrics: {
+        activeSubscriptions: "活跃订阅",
+        availableBalance: "可用余额",
+        failedChecks: "失败检查",
+        installedSkills: "已安装技能",
+        openBuyerRequests: "买方需求",
+        payoutReview: "提现审核",
+        projects: "项目",
+        queuedNotifications: "排队通知",
+        reviewQueue: "审核队列",
+        savedSkills: "收藏技能",
+        submittedVersions: "提交版本",
+        updateInbox: "更新收件箱"
+      },
+      roles: {
+        admin: {
+          empty: "暂无活跃风险信号。",
+          subtitle: "审核、资金、通知和事故队列保护整个市场。",
+          title: "平台运营"
+        },
+        developer: {
+          empty: "暂无已安装技能更新。",
+          subtitle: "项目会为了策略、版本变化、预算、Key 和运行证据回到平台。",
+          title: "开发者"
+        },
+        publisher: {
+          empty: "暂无发布者行动。",
+          subtitle: "作者会为了审核反馈、运行检查、需求、收入和提现准备回到平台。",
+          title: "发布者"
+        }
+      },
+      queueLabels: {
+        action: "动作",
+        event: "事件",
+        next: "下一步",
+        scope: "范围",
+        severity: "级别",
+        stage: "阶段"
+      },
+      retentionTitle: "团队为什么会再次回来",
+      retention: {
+        developer: [
+          "按项目批准和更新已安装技能。",
+          "观察成本、失败率、延迟、事故和预算状态。",
+          "随着目录增长，比较更好的已验证替代方案。"
+        ],
+        publisher: [
+          "在失去分发前修复审核和运行问题。",
+          "把买方需求和反馈转成新的付费版本。",
+          "用量入账后持续跟踪账本和提现准备。"
+        ]
+      }
+    },
     catalogMetric: "实时目录",
     publisherMetric: "公开发布者",
     verifiedPublisherMetric: "已验证发布者",
@@ -162,6 +279,7 @@ const pageCopy = {
 } as const;
 
 const loopStepIcons = [PackageSearch, PlugZap, Gauge, History] as const;
+const overviewRoleIcons = [PlugZap, HandCoins, ShieldCheck] as const;
 
 function formatCompactMetric(value: number, locale: keyof typeof pageCopy) {
   return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
@@ -170,13 +288,53 @@ function formatCompactMetric(value: number, locale: keyof typeof pageCopy) {
   }).format(value);
 }
 
+function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
+  const normalized = value.replaceAll("_", " ");
+  const zhLabels: Record<string, string> = {
+    "Complete runtime verification": "完成运行验证",
+    "Confirm per-call cap": "确认按次调用上限",
+    "Confirm pricing": "确认价格",
+    "Data policy": "数据政策",
+    "Fix runtime checks": "修复运行检查",
+    "High-risk filesystem skill": "高风险文件系统技能",
+    "Hold for KYC review": "暂停并做 KYC 审核",
+    "Improve listing quality": "提升上架质量",
+    "Medium risk approved": "中风险已批准",
+    "Owner approval required": "需要负责人批准",
+    "Pricing approval": "价格批准",
+    "Require owner approval": "要求负责人批准",
+    "Restricted launch": "受限上线",
+    "Review CRM token scope": "审核 CRM token 范围",
+    "Runtime error spike": "运行错误激增",
+    "Submit for review": "提交审核",
+    "Throttle and notify publisher": "限流并通知发布者",
+    "Unusual payout request": "异常提现请求",
+    high: "高",
+    info: "信息",
+    medium: "中",
+    "new version": "新版本",
+    "data policy update": "数据政策更新",
+    "owner approval required": "需要负责人批准"
+  };
+
+  if (locale === "zh") {
+    return zhLabels[normalized] ?? zhLabels[value] ?? normalized;
+  }
+
+  return normalized;
+}
+
 export default async function MarketplacePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
-  const [skills, publishers] = await Promise.all([getPublicMarketplaceSkills(), getPublicPublishers()]);
+  const [skills, publishers, overview] = await Promise.all([
+    getPublicMarketplaceSkills(),
+    getPublicPublishers(),
+    getPlatformOverview()
+  ]);
   const verifiedPublisherCount = publishers.filter((publisher) => publisher.trustLevel === "verified").length;
   const payoutReadyPublisherCount = publishers.filter((publisher) => publisher.payoutStatus === "verified").length;
   const totalCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
@@ -193,6 +351,56 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     [labels.loopMetrics.calls, formatCompactMetric(totalCallCount, locale)],
     [labels.loopMetrics.feedback, formatCompactMetric(feedbackCount, locale)],
     [labels.loopMetrics.payout, `${payoutReadyPublisherCount}/${publishers.length}`]
+  ];
+  const overviewCards = [
+    {
+      empty: labels.overview.roles.developer.empty,
+      href: localizedHref("/developer", locale),
+      metrics: [
+        [labels.overview.metrics.projects, getOverviewMetric(overview.developer.metrics, "Projects", "0")],
+        [labels.overview.metrics.installedSkills, getOverviewMetric(overview.developer.metrics, "Installed skills", "0")],
+        [labels.overview.metrics.updateInbox, getOverviewMetric(overview.developer.metrics, "Update inbox", "0")]
+      ],
+      rows: overview.developer.updateInbox.slice(0, 3).map((row) => ({
+        detail: `${labels.overview.queueLabels.event}: ${formatQueueValue(row.event, locale)}`,
+        meta: `${labels.overview.queueLabels.severity}: ${formatQueueValue(row.severity, locale)}`,
+        title: row.skill
+      })),
+      subtitle: labels.overview.roles.developer.subtitle,
+      title: labels.overview.roles.developer.title
+    },
+    {
+      empty: labels.overview.roles.publisher.empty,
+      href: localizedHref("/publisher", locale),
+      metrics: [
+        [labels.overview.metrics.submittedVersions, getOverviewMetric(overview.publisher.metrics, "Submitted versions", "0")],
+        [labels.overview.metrics.failedChecks, getOverviewMetric(overview.publisher.metrics, "Runtime checks failed", "0")],
+        [labels.overview.metrics.availableBalance, getOverviewMetric(overview.publisher.metrics, "Available balance", "$0")]
+      ],
+      rows: overview.publisher.reviewPipeline.slice(0, 3).map((row) => ({
+        detail: `${labels.overview.queueLabels.stage}: ${formatQueueValue(row.stage, locale)}`,
+        meta: `${labels.overview.queueLabels.next}: ${formatQueueValue(row.nextStep, locale)}`,
+        title: row.skill
+      })),
+      subtitle: labels.overview.roles.publisher.subtitle,
+      title: labels.overview.roles.publisher.title
+    },
+    {
+      empty: labels.overview.roles.admin.empty,
+      href: localizedHref("/admin", locale),
+      metrics: [
+        [labels.overview.metrics.reviewQueue, getOverviewMetric(overview.admin.metrics, "Review queue", "0")],
+        [labels.overview.metrics.payoutReview, getOverviewMetric(overview.admin.metrics, "Payout review", "0")],
+        [labels.overview.metrics.queuedNotifications, getOverviewMetric(overview.admin.metrics, "Queued notifications", "0")]
+      ],
+      rows: overview.admin.riskQueue.slice(0, 3).map((row) => ({
+        detail: `${labels.overview.queueLabels.scope}: ${formatQueueValue(row.scope, locale)}`,
+        meta: `${labels.overview.queueLabels.action}: ${formatQueueValue(row.action, locale)}`,
+        title: formatQueueValue(row.signal, locale)
+      })),
+      subtitle: labels.overview.roles.admin.subtitle,
+      title: labels.overview.roles.admin.title
+    }
   ];
 
   return (
@@ -252,6 +460,79 @@ skillhub install browser-research`}</code>
             <strong>{value}</strong>
           </div>
         ))}
+      </section>
+
+      <section className="market-overview-section" aria-labelledby="market-overview-heading">
+        <div className="market-overview-head">
+          <div>
+            <div className="card-kicker">
+              <Gauge size={16} aria-hidden="true" />
+              <span>{labels.overview.eyebrow}</span>
+            </div>
+            <h2 id="market-overview-heading">{labels.overview.title}</h2>
+          </div>
+          <p>{labels.overview.body}</p>
+        </div>
+
+        <div className="market-overview-grid">
+          {overviewCards.map((card, index) => {
+            const Icon = overviewRoleIcons[index];
+
+            return (
+              <article className="market-overview-card" key={card.title}>
+                <header>
+                  <span className="market-overview-card__icon">
+                    <Icon size={17} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>{card.title}</h3>
+                    <p>{card.subtitle}</p>
+                  </div>
+                </header>
+
+                <div className="market-overview-metrics">
+                  {card.metrics.map(([label, value]) => (
+                    <div key={label}>
+                      <span>{label}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="market-overview-queue">
+                  {card.rows.length > 0 ? (
+                    card.rows.map((row) => (
+                      <div className="market-overview-row" key={`${card.title}-${row.title}-${row.detail}`}>
+                        <strong>{row.title}</strong>
+                        <span>{row.detail}</span>
+                        <small>{row.meta}</small>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="market-overview-empty">{card.empty}</div>
+                  )}
+                </div>
+
+                <a className="ghost-button ghost-button--inline" href={card.href}>
+                  <span>{card.title}</span>
+                  <ArrowRight size={14} aria-hidden="true" />
+                </a>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="market-retention-card" aria-label={labels.overview.retentionTitle}>
+          <strong>{labels.overview.retentionTitle}</strong>
+          <div>
+            {[...labels.overview.retention.developer, ...labels.overview.retention.publisher].map((reason) => (
+              <span key={reason}>
+                <BadgeCheck size={14} aria-hidden="true" />
+                {reason}
+              </span>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="market-publisher-callout" aria-label={labels.publisherDirectoryTitle}>

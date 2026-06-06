@@ -168,6 +168,7 @@ Added first billing-ledger API endpoints, covering:
 Connected the operating UI to live platform data, covering:
 
 - Public marketplace catalog and skill detail pages now read registry search, manifests, and public price records first, while keeping bundled content as fallback.
+- Marketplace operating overview now reads the platform overview API and shows developer, publisher, and operator loops side by side, making repeat-use reasons visible before a user signs in.
 - Admin finance metrics from the ledger.
 - Admin money table from recent ledger transactions.
 - Admin notification/audit stream from notification events.

@@ -263,6 +263,8 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals scoped to the token organization.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
+The public marketplace page uses `/v1/platform/overview` for its operating overview section. That section presents buyer/developer, publisher, and platform-operator loops side by side so visitors can see why teams return after first discovery: project controls and update inboxes for developers, review/runtime/revenue queues for publishers, and review/risk/money/notification queues for operators. If the API is unavailable, the web app falls back to bundled safe demo operating signals.
+
 ## Identity And RBAC
 
 Business API writes use user access tokens with role checks. The deployment service token can bootstrap the first user token and remains available for emergency service operations, but it is no longer the product permission model. In the current gateway environment the service token is read from `SKILLHUB_ADMIN_TOKEN`; API examples call it `SKILLHUB_SERVICE_TOKEN` to distinguish it from user credentials.
