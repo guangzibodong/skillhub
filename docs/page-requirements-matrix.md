@@ -474,6 +474,7 @@ Acceptance:
 - Review cards expose the secret-safe evidence package before decision controls: publisher, payout readiness, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts.
 - Audit log is separate from notification events.
 - Launch readiness is secret-safe.
+- Launch readiness shows customer-facing credibility thresholds for verified public skills, active publishers, active developer projects, successful invocations, and published feedback so operators know whether the marketplace has enough proof for customer demos or public launch.
 - Payout decisions require finance reason, provider reference when marking paid, and retry condition when blocking; admins can see the publisher-facing next action before deciding.
 - No raw OAuth secrets, email keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords are displayed.
 - Finance actions do not mutate historical splits silently.

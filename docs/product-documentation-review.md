@@ -46,6 +46,8 @@ Publisher monetization is now closer to an operating workflow as well: `/publish
 
 Payout operations now have stronger explainability: publisher payout summaries expose readiness blockers, minimum payout, manual review threshold, balance-state meaning, latest payout reason, retry condition, and next action. Finance admins must record a reason for decisions, a provider reference when marking paid, and a retry condition when blocking a payout. This closes a key money-flow trust gap because publishers can understand why money is pending, available, reserved, failed, blocked, or paid without guessing from ledger rows.
 
+Launch readiness now has customer-facing credibility thresholds instead of only infrastructure checks. `/v1/admin/launch-readiness` can warn operators when verified supply, publisher diversity, developer project activity, successful invocations, or published feedback are below the decided launch targets. This helps the team answer whether SkillHub has enough marketplace proof for customer demos and public launch, not just whether the server is configured.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

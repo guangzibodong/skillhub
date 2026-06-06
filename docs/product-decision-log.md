@@ -258,7 +258,7 @@ Acceptance impact:
 
 ### D102: Launch Success Thresholds
 
-Status: open
+Status: decided
 
 Owner: Product Manager
 
@@ -266,9 +266,21 @@ Question:
 
 - How many verified skills, active publishers, active projects, successful invocations, and published feedback rows are enough for launch credibility?
 
+Decision:
+
+- Early public-launch credibility thresholds are:
+  - 5 public verified skills.
+  - 2 active publishers with public marketplace supply.
+  - 3 active developer projects with an installed skill or runtime activity.
+  - 20 successful governed runtime invocations.
+  - 5 published buyer feedback rows.
+- These thresholds are launch credibility warnings, not payment-provider blockers.
+- Operators may tune the defaults with `SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS`, `SKILLHUB_LAUNCH_MIN_ACTIVE_PUBLISHERS`, `SKILLHUB_LAUNCH_MIN_ACTIVE_PROJECTS`, `SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS`, and `SKILLHUB_LAUNCH_MIN_PUBLISHED_FEEDBACK`.
+
 Acceptance impact:
 
-- Product dashboard and launch-readiness messaging should track these thresholds.
+- `/v1/admin/launch-readiness` and `/admin` must track these thresholds from real marketplace, project, invocation, and feedback state.
+- Missing thresholds should create operator warnings so the team knows what supply, demand, runtime, or trust proof to build before showing the platform to customers.
 
 ## How To Add A Decision
 

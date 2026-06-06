@@ -1856,10 +1856,20 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
-- Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, commercial readiness, and production guardrails.
+- Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, launch credibility thresholds, commercial readiness, and production guardrails.
 - Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
 
 The migration history check reads `schema_migrations`, reports the recorded migration count, latest applied filename, latest applied time, and compares it with the current expected production migration. It returns a warning when the migration runner has never recorded history and a blocker when the recorded latest migration is older than the code expects.
+
+The launch credibility section reads live marketplace and runtime state, then reports warning/ready checks for:
+
+- Verified public skills, default target `SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS=5`.
+- Active publishers with public supply, default target `SKILLHUB_LAUNCH_MIN_ACTIVE_PUBLISHERS=2`.
+- Active developer projects with an installed skill or runtime activity, default target `SKILLHUB_LAUNCH_MIN_ACTIVE_PROJECTS=3`.
+- Successful governed invocations, default target `SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS=20`.
+- Published buyer feedback rows, default target `SKILLHUB_LAUNCH_MIN_PUBLISHED_FEEDBACK=5`.
+
+These are credibility warnings for customer-facing launch readiness, not final payment-provider blockers.
 
 The endpoint reports only configured/missing state, URLs, counts, and next actions. It never returns OAuth secrets, Resend keys, service tokens, API-key salts, webhook signing secrets, raw email verification codes, user tokens, or passwords.
 

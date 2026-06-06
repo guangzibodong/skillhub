@@ -33,6 +33,11 @@ type LaunchReadinessEnv = {
   SKILLHUB_GITHUB_CLIENT_SECRET?: string;
   SKILLHUB_GOOGLE_CLIENT_ID?: string;
   SKILLHUB_GOOGLE_CLIENT_SECRET?: string;
+  SKILLHUB_LAUNCH_MIN_ACTIVE_PROJECTS?: string;
+  SKILLHUB_LAUNCH_MIN_ACTIVE_PUBLISHERS?: string;
+  SKILLHUB_LAUNCH_MIN_PUBLISHED_FEEDBACK?: string;
+  SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS?: string;
+  SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS?: string;
   SKILLHUB_OAUTH_STATE_SECRET?: string;
   SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
   SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
@@ -77,6 +82,8 @@ export type LaunchReadinessReport = {
 type DatabaseReadiness = {
   activeCommissionRules: number | null;
   activeNotificationTemplates: number | null;
+  activeProjectCount: number | null;
+  activePublisherCount: number | null;
   buyerRequestDeliveryColumns: boolean;
   databaseConnected: boolean;
   emailChallenges: boolean;
@@ -89,11 +96,14 @@ type DatabaseReadiness = {
   operationsTables: boolean;
   payoutExplainabilityColumns: boolean;
   payoutTables: boolean;
+  publishedFeedbackCount: number | null;
   publisherFeedbackResponseColumns: boolean;
   publisherTermsAcceptanceColumns: boolean;
   runtimeCheckRemediationColumns: boolean;
   schemaMigrations: boolean;
+  successfulInvocationCount: number | null;
   userAuthIdentities: boolean;
+  verifiedSkillCount: number | null;
   webhookDeliveryWorker: boolean;
 };
 
@@ -176,6 +186,7 @@ export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<Laun
     buildEmailSection(env, database),
     buildWebhookSection(env, database),
     buildMarketplaceOperationsSection(env, database),
+    buildLaunchCredibilitySection(env, database),
     buildCommercialSection(database),
     buildProductionGuardrailSection(env, database)
   ];
@@ -445,6 +456,57 @@ function buildMarketplaceOperationsSection(
   return section("marketplace_operations", "Marketplace operations", items);
 }
 
+function buildLaunchCredibilitySection(
+  env: LaunchReadinessEnv | undefined,
+  database: DatabaseReadiness
+): LaunchReadinessSection {
+  const thresholds = getLaunchCredibilityThresholds(env);
+  const items: LaunchReadinessItem[] = [
+    launchCredibilityItem({
+      action: `Verify and publish at least ${thresholds.verifiedSkills} launch-quality public skill(s).`,
+      count: database.verifiedSkillCount,
+      description: "Public launch needs enough verified supply that buyers are not evaluating an empty marketplace.",
+      key: "verified_skills_threshold",
+      label: "Verified public skills",
+      minimum: thresholds.verifiedSkills
+    }),
+    launchCredibilityItem({
+      action: `Recruit at least ${thresholds.activePublishers} active publisher(s) with public supply.`,
+      count: database.activePublisherCount,
+      description: "Supplier diversity keeps SkillHub from looking like a single-team catalog.",
+      key: "active_publishers_threshold",
+      label: "Active publishers",
+      minimum: thresholds.activePublishers
+    }),
+    launchCredibilityItem({
+      action: `Create and operate at least ${thresholds.activeProjects} developer project(s) with installs or runtime activity.`,
+      count: database.activeProjectCount,
+      description: "Developer-side project state proves listings become governed agent workspace state.",
+      key: "active_projects_threshold",
+      label: "Active developer projects",
+      minimum: thresholds.activeProjects
+    }),
+    launchCredibilityItem({
+      action: `Run at least ${thresholds.successfulInvocations} successful governed invocation(s).`,
+      count: database.successfulInvocationCount,
+      description: "Successful invocations prove the runtime gateway, policy checks, logging, and metering path work.",
+      key: "successful_invocations_threshold",
+      label: "Successful invocations",
+      minimum: thresholds.successfulInvocations
+    }),
+    launchCredibilityItem({
+      action: `Moderate and publish at least ${thresholds.publishedFeedback} buyer feedback row(s).`,
+      count: database.publishedFeedbackCount,
+      description: "Published feedback gives buyers public trust evidence and gives publishers a reason to return.",
+      key: "published_feedback_threshold",
+      label: "Published feedback",
+      minimum: thresholds.publishedFeedback
+    })
+  ];
+
+  return section("launch_credibility", "Launch credibility thresholds", items);
+}
+
 function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSection {
   const items: LaunchReadinessItem[] = [
     {
@@ -566,6 +628,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     return {
       activeCommissionRules: null,
       activeNotificationTemplates: null,
+      activeProjectCount: null,
+      activePublisherCount: null,
       buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
@@ -578,11 +642,14 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       operationsTables: false,
       payoutExplainabilityColumns: false,
       payoutTables: false,
+      publishedFeedbackCount: null,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
       runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
+      successfulInvocationCount: null,
       userAuthIdentities: false,
+      verifiedSkillCount: null,
       webhookDeliveryWorker: false
     };
   }
@@ -592,6 +659,10 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       select
         to_regclass('public.user_auth_identities') is not null as "userAuthIdentities",
         to_regclass('public.email_login_challenges') is not null as "emailChallenges",
+        to_regclass('public.skills') is not null as "skills",
+        to_regclass('public.projects') is not null as "projects",
+        to_regclass('public.skill_invocations') is not null as "skillInvocations",
+        to_regclass('public.publisher_profiles') is not null as "publisherProfiles",
         to_regclass('public.project_skill_installs') is not null as "projectSkillInstalls",
         to_regclass('public.skill_feedback') is not null as "skillFeedback",
         to_regclass('public.marketplace_curation_rules') is not null as "marketplaceCurationRules",
@@ -612,8 +683,12 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       organizationWebhookEndpoints: boolean;
       payoutAccounts: boolean;
       payouts: boolean;
+      projects: boolean;
       projectSkillInstalls: boolean;
+      publisherProfiles: boolean;
       schemaMigrations: boolean;
+      skillInvocations: boolean;
+      skills: boolean;
       skillFeedback: boolean;
       userAuthIdentities: boolean;
       webhookDeliveryEvents: boolean;
@@ -796,10 +871,13 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     const activeNotificationTemplates = tables.notificationTemplates ? await countActiveNotificationTemplates(sql) : null;
     const missingActiveNotificationTemplates = tables.notificationTemplates ? await listMissingActiveNotificationTemplates(sql) : null;
     const migrationHistory = tables.schemaMigrations ? await getMigrationHistory(sql) : null;
+    const launchCredibility = await countLaunchCredibilitySignals(sql, tables);
 
     return {
       activeCommissionRules,
       activeNotificationTemplates,
+      activeProjectCount: launchCredibility.activeProjectCount,
+      activePublisherCount: launchCredibility.activePublisherCount,
       buyerRequestDeliveryColumns:
         columns.buyerRequestSubmittedSkillId &&
         columns.buyerRequestSubmittedSkillVersionId &&
@@ -824,6 +902,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         tables.notificationEvents,
       payoutExplainabilityColumns: columns.payoutRetryCondition && columns.payoutNextAction,
       payoutTables: tables.payoutAccounts && tables.payouts,
+      publishedFeedbackCount: launchCredibility.publishedFeedbackCount,
       publisherFeedbackResponseColumns:
         columns.publisherResponseBody &&
         columns.publisherRespondedAt &&
@@ -838,13 +917,17 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         columns.runtimeCheckTargetField &&
         columns.runtimeCheckNextAction,
       schemaMigrations: tables.schemaMigrations,
+      successfulInvocationCount: launchCredibility.successfulInvocationCount,
       userAuthIdentities: tables.userAuthIdentities,
+      verifiedSkillCount: launchCredibility.verifiedSkillCount,
       webhookDeliveryWorker: tables.webhookDeliveryEvents && columns.webhookLastAttemptedAt
     };
   } catch {
     return {
       activeCommissionRules: null,
       activeNotificationTemplates: null,
+      activeProjectCount: null,
+      activePublisherCount: null,
       buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
@@ -857,14 +940,112 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       operationsTables: false,
       payoutExplainabilityColumns: false,
       payoutTables: false,
+      publishedFeedbackCount: null,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
       runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
+      successfulInvocationCount: null,
       userAuthIdentities: false,
+      verifiedSkillCount: null,
       webhookDeliveryWorker: false
     };
   }
+}
+
+async function countLaunchCredibilitySignals(
+  sql: Sql,
+  tables: {
+    projectSkillInstalls: boolean;
+    projects: boolean;
+    publisherProfiles: boolean;
+    skillFeedback: boolean;
+    skillInvocations: boolean;
+    skills: boolean;
+  }
+) {
+  const verifiedSkillCount = tables.skills ? await countPublicVerifiedSkills(sql) : null;
+  const activePublisherCount = tables.publisherProfiles && tables.skills ? await countActivePublishers(sql) : null;
+  const activeProjectCount =
+    tables.projects && tables.projectSkillInstalls && tables.skillInvocations ? await countActiveDeveloperProjects(sql) : null;
+  const successfulInvocationCount = tables.skillInvocations ? await countSuccessfulInvocations(sql) : null;
+  const publishedFeedbackCount = tables.skillFeedback ? await countPublishedFeedback(sql) : null;
+
+  return {
+    activeProjectCount,
+    activePublisherCount,
+    publishedFeedbackCount,
+    successfulInvocationCount,
+    verifiedSkillCount
+  };
+}
+
+async function countPublicVerifiedSkills(sql: Sql) {
+  const rows = (await sql`
+    select count(*)::int as count
+    from skills
+    where verification_status = 'verified'
+      and visibility = 'public'
+  `) as Array<{ count: number }>;
+
+  return rows[0]?.count ?? 0;
+}
+
+async function countActivePublishers(sql: Sql) {
+  const rows = (await sql`
+    select count(distinct publisher_profiles.id)::int as count
+    from publisher_profiles
+    where publisher_profiles.status = 'active'
+      and exists (
+        select 1
+        from skills
+        where skills.organization_id = publisher_profiles.organization_id
+          and skills.visibility = 'public'
+          and skills.verification_status in ('submitted', 'verified', 'deprecated')
+      )
+  `) as Array<{ count: number }>;
+
+  return rows[0]?.count ?? 0;
+}
+
+async function countActiveDeveloperProjects(sql: Sql) {
+  const rows = (await sql`
+    select count(distinct projects.id)::int as count
+    from projects
+    where exists (
+        select 1
+        from project_skill_installs
+        where project_skill_installs.project_id = projects.id
+          and project_skill_installs.status = 'installed'
+      )
+      or exists (
+        select 1
+        from skill_invocations
+        where skill_invocations.project_id = projects.id
+      )
+  `) as Array<{ count: number }>;
+
+  return rows[0]?.count ?? 0;
+}
+
+async function countSuccessfulInvocations(sql: Sql) {
+  const rows = (await sql`
+    select count(*)::int as count
+    from skill_invocations
+    where status = 'success'
+  `) as Array<{ count: number }>;
+
+  return rows[0]?.count ?? 0;
+}
+
+async function countPublishedFeedback(sql: Sql) {
+  const rows = (await sql`
+    select count(*)::int as count
+    from skill_feedback
+    where status = 'published'
+  `) as Array<{ count: number }>;
+
+  return rows[0]?.count ?? 0;
 }
 
 async function getMigrationHistory(sql: Sql) {
@@ -956,6 +1137,52 @@ function notificationTemplateReadinessDetail(database: DatabaseReadiness) {
   }
 
   return `${activeCount} active template(s). Missing required ${missing.length}/${requiredCount}: ${missing.slice(0, 8).join(", ")}${missing.length > 8 ? ", ..." : ""}.`;
+}
+
+function launchCredibilityItem({
+  action,
+  count,
+  description,
+  key,
+  label,
+  minimum
+}: {
+  action: string;
+  count: number | null;
+  description: string;
+  key: string;
+  label: string;
+  minimum: number;
+}): LaunchReadinessItem {
+  const current = count ?? 0;
+  const ready = count !== null && current >= minimum;
+
+  return {
+    action: ready ? "No action needed." : action,
+    description,
+    detail: count === null ? `Count unavailable. Target ${minimum}.` : `${current}/${minimum} target reached.`,
+    key,
+    label,
+    status: ready ? "ready" : "warning"
+  };
+}
+
+function getLaunchCredibilityThresholds(env: LaunchReadinessEnv | undefined) {
+  return {
+    activeProjects: launchThreshold(env?.SKILLHUB_LAUNCH_MIN_ACTIVE_PROJECTS, "SKILLHUB_LAUNCH_MIN_ACTIVE_PROJECTS", 3),
+    activePublishers: launchThreshold(env?.SKILLHUB_LAUNCH_MIN_ACTIVE_PUBLISHERS, "SKILLHUB_LAUNCH_MIN_ACTIVE_PUBLISHERS", 2),
+    publishedFeedback: launchThreshold(env?.SKILLHUB_LAUNCH_MIN_PUBLISHED_FEEDBACK, "SKILLHUB_LAUNCH_MIN_PUBLISHED_FEEDBACK", 5),
+    successfulInvocations: launchThreshold(
+      env?.SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS,
+      "SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS",
+      20
+    ),
+    verifiedSkills: launchThreshold(env?.SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS, "SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS", 5)
+  };
+}
+
+function launchThreshold(value: string | undefined, key: string, fallback: number) {
+  return Math.max(0, Math.floor(numberValue(configured(value, key), fallback)));
 }
 
 function templateIdentity(templateKey: string, channel: string, locale: string) {

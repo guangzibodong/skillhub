@@ -443,7 +443,7 @@ Let platform operators run SkillHub as a real marketplace: review supply, govern
 9. Admin manages notification templates and processes external email/webhook delivery queues.
 10. Admin processes webhook outbox rows with signed delivery, response capture, retry, and redacted payloads.
 11. Admin inspects identity directory and audit logs.
-12. Launch readiness separates public-launch blockers from paid-marketplace blockers and deferred integrations.
+12. Launch readiness separates public-launch blockers from paid-marketplace blockers, customer-facing credibility thresholds, and deferred integrations.
 
 ### Required UI States
 
@@ -584,7 +584,7 @@ Product:
 
 - A customer can see the platform has real operations, not decorative metrics.
 - Every queue has a next action and recovery path.
-- Launch readiness clearly separates public blockers, paid blockers, warnings, ready checks, and deferred final integrations.
+- Launch readiness clearly separates public blockers, paid blockers, customer-facing credibility warnings, ready checks, and deferred final integrations.
 
 Technical:
 

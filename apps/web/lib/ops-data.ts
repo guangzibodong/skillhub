@@ -1429,6 +1429,53 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
       ]
     },
     {
+      key: "launch_credibility",
+      status: "ready",
+      title: "Launch credibility thresholds",
+      items: [
+        {
+          action: "No action needed.",
+          description: "Public launch needs enough verified supply that buyers are not evaluating an empty marketplace.",
+          detail: "5/5 target reached.",
+          key: "verified_skills_threshold",
+          label: "Verified public skills",
+          status: "ready"
+        },
+        {
+          action: "No action needed.",
+          description: "Supplier diversity keeps SkillHub from looking like a single-team catalog.",
+          detail: "2/2 target reached.",
+          key: "active_publishers_threshold",
+          label: "Active publishers",
+          status: "ready"
+        },
+        {
+          action: "No action needed.",
+          description: "Developer-side project state proves listings become governed agent workspace state.",
+          detail: "3/3 target reached.",
+          key: "active_projects_threshold",
+          label: "Active developer projects",
+          status: "ready"
+        },
+        {
+          action: "No action needed.",
+          description: "Successful invocations prove the runtime gateway, policy checks, logging, and metering path work.",
+          detail: "20/20 target reached.",
+          key: "successful_invocations_threshold",
+          label: "Successful invocations",
+          status: "ready"
+        },
+        {
+          action: "No action needed.",
+          description: "Published feedback gives buyers public trust evidence and gives publishers a reason to return.",
+          detail: "5/5 target reached.",
+          key: "published_feedback_threshold",
+          label: "Published feedback",
+          status: "ready"
+        }
+      ]
+    },
+    {
       key: "commercial",
       status: "deferred",
       title: "Commercial readiness",
@@ -1447,7 +1494,7 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
   summary: {
     blocker: 0,
     deferred: 1,
-    ready: 2,
+    ready: 7,
     status: "warning",
     warning: 1
   }
