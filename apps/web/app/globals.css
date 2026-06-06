@@ -3994,6 +3994,14 @@ a {
   line-height: 1.05;
 }
 
+.admin-priority-card {
+  border-color: rgba(124, 199, 216, 0.18);
+}
+
+.admin-priority-metric svg {
+  color: var(--cyan);
+}
+
 .developer-next-action-intro {
   margin: 10px 0 0;
   color: var(--muted);

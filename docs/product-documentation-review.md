@@ -68,6 +68,8 @@ The latest developer-discovery pass strengthens Journey A's marketplace proof. `
 
 The latest publisher-operations pass strengthens Journey B's repeat-use loop. `/publisher` now turns organization-scoped readiness, skill review, runtime check, review SLA, paid activation, buyer request, feedback response, marketplace placement, payout, refund, and dispute signals into a ranked operations priority queue above the detailed panels. This makes the publisher workspace answer "what should I fix or follow up today?" before authors scroll into individual skill cards, while still using existing endpoints and avoiding fake task rows.
 
+The latest admin-operations pass strengthens Journey C's command-center loop. `/admin` now turns launch readiness, review SLA/check/risk pressure, incidents, abuse reports, feedback moderation, payout/refund/dispute work, notification delivery, webhook outbox, curation appeals, commission rules, and identity health into a ranked operations priority queue above the detailed panels. This makes the admin workspace answer "what must operators process first today?" before reviewers, trust operators, finance users, and support staff scroll into specialized queues, while still using existing endpoints and avoiding fake task rows.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:
