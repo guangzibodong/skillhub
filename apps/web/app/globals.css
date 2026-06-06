@@ -704,6 +704,90 @@ a {
   color: var(--signal);
 }
 
+.proof-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+  gap: 18px;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 18px 0 34px;
+}
+
+.proof-section__copy {
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.16);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(124, 199, 216, 0.09), rgba(155, 226, 141, 0.045)),
+    rgba(20, 24, 18, 0.94);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.proof-section__copy h2 {
+  margin-top: 14px;
+  color: var(--ink);
+  font-size: clamp(28px, 3.4vw, 42px);
+  line-height: 1.04;
+}
+
+.proof-section__copy p {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.proof-section__copy .secondary-button {
+  width: fit-content;
+  margin-top: 20px;
+}
+
+.proof-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.proof-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  min-height: 154px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.94);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
+  padding: 14px;
+}
+
+.proof-card div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.proof-card svg {
+  color: var(--signal);
+}
+
+.proof-card strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.proof-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .skill-table {
   display: grid;
 }
@@ -3855,6 +3939,10 @@ a {
   line-height: 1;
 }
 
+#launch-readiness {
+  scroll-margin-top: 92px;
+}
+
 .launch-readiness-priority {
   display: grid;
   gap: 10px;
@@ -4623,19 +4711,23 @@ a {
 .admin-payout-manager {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .admin-payout-manager__head,
 .admin-payout-card__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-payout-list {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-payout-card {
@@ -4672,10 +4764,17 @@ a {
   line-height: 1.45;
 }
 
+.admin-payout-card__head .status-chip {
+  flex: 0 1 auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .admin-payout-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  min-width: 0;
 }
 
 .admin-payout-metrics div {
@@ -4711,10 +4810,16 @@ a {
   display: flex;
   gap: 8px;
   align-items: flex-start;
+  min-width: 0;
   border: 1px solid rgba(215, 168, 76, 0.18);
   border-radius: var(--radius);
   background: rgba(215, 168, 76, 0.07);
   padding: 9px 10px;
+}
+
+.admin-payout-note span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-payout-note svg {
@@ -4724,9 +4829,10 @@ a {
 
 .admin-payout-action-form {
   display: grid;
-  grid-template-columns: minmax(130px, 0.32fr) minmax(170px, 0.56fr) minmax(150px, 0.48fr) auto;
+  grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.56fr) minmax(0, 0.48fr) minmax(0, auto);
   gap: 9px;
   align-items: end;
+  min-width: 0;
 }
 
 .admin-payout-action-form label {
@@ -4738,6 +4844,7 @@ a {
 .admin-payout-action-form input,
 .admin-payout-action-form select {
   width: 100%;
+  min-width: 0;
   min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
@@ -4745,6 +4852,12 @@ a {
   color: var(--ink);
   outline: 0;
   padding: 0 10px;
+}
+
+.admin-payout-action-form .secondary-button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .admin-payout-action-form select option {
@@ -4977,15 +5090,18 @@ a {
 .admin-adjustment-manager {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .admin-adjustment-manager__head,
 .admin-adjustment-queue__head,
 .admin-adjustment-card__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-adjustment-counts {
@@ -4999,6 +5115,7 @@ a {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  min-width: 0;
 }
 
 .admin-adjustment-queue,
@@ -5071,10 +5188,17 @@ a {
   line-height: 1.45;
 }
 
+.admin-adjustment-card__head .status-chip {
+  flex: 0 1 auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .admin-adjustment-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  min-width: 0;
 }
 
 .admin-adjustment-metrics div {
@@ -5110,10 +5234,16 @@ a {
   display: flex;
   gap: 8px;
   align-items: flex-start;
+  min-width: 0;
   border: 1px solid rgba(215, 168, 76, 0.18);
   border-radius: var(--radius);
   background: rgba(215, 168, 76, 0.07);
   padding: 9px 10px;
+}
+
+.admin-adjustment-note span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-adjustment-note svg {
@@ -5123,13 +5253,14 @@ a {
 
 .admin-adjustment-action-form {
   display: grid;
-  grid-template-columns: minmax(130px, 0.32fr) minmax(170px, 0.56fr) minmax(150px, 0.48fr) auto;
+  grid-template-columns: minmax(0, 0.32fr) minmax(0, 0.56fr) minmax(0, 0.48fr) minmax(0, auto);
   gap: 9px;
   align-items: end;
+  min-width: 0;
 }
 
 .admin-adjustment-action-form--dispute {
-  grid-template-columns: minmax(180px, 0.48fr) minmax(180px, 0.62fr) minmax(160px, 0.44fr) auto;
+  grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.62fr) minmax(0, 0.44fr) minmax(0, auto);
 }
 
 .admin-adjustment-action-form label {
@@ -5141,6 +5272,7 @@ a {
 .admin-adjustment-action-form input,
 .admin-adjustment-action-form select {
   width: 100%;
+  min-width: 0;
   min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
@@ -5148,6 +5280,12 @@ a {
   color: var(--ink);
   outline: 0;
   padding: 0 10px;
+}
+
+.admin-adjustment-action-form .secondary-button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .admin-adjustment-action-form select option {
@@ -10592,6 +10730,7 @@ a {
   }
 
   .command-screen,
+  .proof-section,
   .publish-grid,
   .contract-section,
   .agent-integration-layout,
@@ -10672,6 +10811,7 @@ a {
 
   .marketplace-ops-strip,
   .market-loop-metric-grid,
+  .proof-board,
   .trust-requirement-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -10793,6 +10933,7 @@ a {
   .console-board,
   .finance-layout,
   .admin-layout,
+  .proof-section,
   .admin-finance-section,
   .market-hero,
   .market-publisher-callout,
@@ -10840,6 +10981,7 @@ a {
   .marketplace-ops-strip,
   .market-loop-metric-grid,
   .market-loop-steps,
+  .proof-board,
   .publish-flow-list,
   .proof-grid,
   .terms-summary-grid {

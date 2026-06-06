@@ -6,6 +6,7 @@ import {
   Code2,
   Database,
   FileJson,
+  Gauge,
   KeyRound,
   Network,
   PackageCheck,
@@ -15,6 +16,7 @@ import {
   ServerCog,
   ShieldCheck,
   Terminal,
+  WalletCards,
   Zap
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -30,6 +32,40 @@ type PageProps = {
 
 const workflowIcons = [Radar, FileJson, Zap] as const;
 const trustIcons = [ShieldCheck, PackageCheck, KeyRound] as const;
+const proofIcons = [KeyRound, ShieldCheck, Gauge, WalletCards, Activity, Terminal] as const;
+
+const proofCopy = {
+  en: {
+    action: "Open launch readiness",
+    body:
+      "These are not brochure claims. They are the operating surfaces a buyer, publisher, or platform operator can revisit after the first install.",
+    eyebrow: "Operating proof",
+    items: [
+      ["Account entry", "Email-code login, OAuth readiness, session fingerprints, and connected identity state are modeled before launch."],
+      ["Review gate", "Submitted versions run automated manifest, runtime, example, and security checks before approval."],
+      ["Runtime governance", "REST and MCP calls pass through project install, policy, budget, subscription, logging, and metering controls."],
+      ["Commercial ledger", "Usage and subscriptions post into transactions, splits, balances, invoice records, refunds, disputes, and payouts."],
+      ["Notification loop", "In-app events fan out to email and organization webhooks with templates, retry state, and admin recovery."],
+      ["Smoke checks", "Production smoke commands verify stats, auth providers, launch readiness protection, and key app pages."]
+    ],
+    title: "A customer can inspect the platform, not just the pitch."
+  },
+  zh: {
+    action: "\u67e5\u770b\u4e0a\u7ebf\u5c31\u7eea\u5ea6",
+    body:
+      "\u8fd9\u4e0d\u662f\u5ba3\u4f20\u6587\u6848\u3002\u8fd9\u4e9b\u662f\u4e70\u5bb6\u3001\u53d1\u5e03\u8005\u548c\u5e73\u53f0\u8fd0\u8425\u5728\u9996\u6b21\u5b89\u88c5\u540e\u4ecd\u7136\u4f1a\u56de\u6765\u5904\u7406\u7684\u771f\u5b9e\u754c\u9762\u548c\u72b6\u6001\u3002",
+    eyebrow: "\u8fd0\u8425\u8bc1\u636e",
+    items: [
+      ["\u8d26\u53f7\u5165\u53e3", "\u90ae\u7bb1\u9a8c\u8bc1\u7801\u767b\u5f55\u3001OAuth \u5c31\u7eea\u5ea6\u3001\u4f1a\u8bdd\u6307\u7eb9\u548c\u8fde\u63a5\u8eab\u4efd\u72b6\u6001\u90fd\u5df2\u5efa\u6a21\u3002"],
+      ["\u5ba1\u6838\u95f8\u95e8", "\u7248\u672c\u63d0\u4ea4\u540e\u4f1a\u7ecf\u8fc7 manifest\u3001runtime\u3001example\u3001security \u81ea\u52a8\u68c0\u67e5\u518d\u8fdb\u5165\u6279\u51c6\u3002"],
+      ["\u8fd0\u884c\u6cbb\u7406", "REST \u548c MCP \u8c03\u7528\u90fd\u7ecf\u8fc7\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u3001\u9884\u7b97\u3001\u8ba2\u9605\u3001\u65e5\u5fd7\u548c\u8ba1\u91cf\u63a7\u5236\u3002"],
+      ["\u5546\u4e1a\u8d26\u672c", "\u7528\u91cf\u548c\u8ba2\u9605\u4f1a\u8fdb\u5165\u4ea4\u6613\u3001\u5206\u6210\u3001\u4f59\u989d\u3001\u53d1\u7968\u3001\u9000\u6b3e\u3001\u4e89\u8bae\u548c\u63d0\u73b0\u72b6\u6001\u3002"],
+      ["\u901a\u77e5\u56de\u8def", "\u7ad9\u5185\u4e8b\u4ef6\u53ef fan-out \u5230\u90ae\u4ef6\u548c\u7ec4\u7ec7 webhook\uff0c\u5e76\u6709\u6a21\u677f\u3001\u91cd\u8bd5\u548c\u7ba1\u7406\u5458\u6062\u590d\u72b6\u6001\u3002"],
+      ["\u70df\u6d4b\u95f8\u95e8", "\u751f\u4ea7\u70df\u6d4b\u547d\u4ee4\u4f1a\u68c0\u67e5 stats\u3001auth providers\u3001readiness \u4fdd\u62a4\u548c\u5173\u952e\u9875\u9762\u3002"]
+    ],
+    title: "\u5ba2\u6237\u80fd\u770b\u5230\u5e73\u53f0\uff0c\u4e0d\u53ea\u662f\u542c\u5230\u613f\u666f\u3002"
+  }
+} as const;
 
 const manifestSnippet = `{
   "schemaVersion": "0.1",
@@ -80,6 +116,7 @@ export default async function Home({ searchParams }: PageProps) {
     { label: dictionary.home.status.schema, value: "v0.1", icon: Braces },
     { label: dictionary.home.status.store, value: "Postgres", icon: Database }
   ];
+  const proof = proofCopy[locale];
 
   return (
     <main className="product-shell">
@@ -183,6 +220,37 @@ tools: skillhub.search, skillhub.get`}</code>
 
           <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} skills={skills} />
         </section>
+      </section>
+
+      <section className="proof-section reveal-scope" aria-labelledby="proof-heading">
+        <div className="proof-section__copy reveal-item">
+          <div className="eyebrow">
+            <ShieldCheck size={16} aria-hidden="true" />
+            <span>{proof.eyebrow}</span>
+          </div>
+          <h2 id="proof-heading">{proof.title}</h2>
+          <p>{proof.body}</p>
+          <a className="secondary-button secondary-button--large" href={localizedHref("/admin#launch-readiness", locale)}>
+            <Gauge size={18} aria-hidden="true" />
+            <span>{proof.action}</span>
+          </a>
+        </div>
+
+        <div className="proof-board">
+          {proof.items.map(([title, description], index) => {
+            const Icon = proofIcons[index];
+
+            return (
+              <article className="proof-card lift-card reveal-item reveal-item--delay" key={title}>
+                <div>
+                  <Icon size={18} aria-hidden="true" />
+                  <strong>{title}</strong>
+                </div>
+                <p>{description}</p>
+              </article>
+            );
+          })}
+        </div>
       </section>
 
       <section className="platform-section" id="protocol" aria-labelledby="protocol-heading">

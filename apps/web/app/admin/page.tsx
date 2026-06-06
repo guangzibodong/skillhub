@@ -321,7 +321,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="workspace-ops-layout workspace-ops-layout--bottom">
+      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
         <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
       </section>
 
