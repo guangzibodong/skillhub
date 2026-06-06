@@ -697,6 +697,13 @@ Added developer project version adoption, covering:
 - `/dashboard/projects/[slug]` now shows version transition state in the update inbox and disables adoption until the target version is review-ready.
 - This closes the publisher-to-developer version loop: publishers can ship reviewed updates, and developers can deliberately move agent projects onto those versions without losing policy protection.
 
+Added project-level runtime testing, covering:
+
+- `/dashboard/projects/[slug]` now lets developers choose an installed skill, submit JSON input, and run a non-billable console test through the same project runtime gateway used by agent calls.
+- Test results show invocation id, runtime status, version, latency, billing state, mode, and JSON output or blocking error.
+- The REST connection snippet now uses a skill installed in the current project instead of a hardcoded example slug.
+- This closes the Journey A project-side acceptance gap because developers can inspect policies, run the governed test, and verify the new invocation in the recent runtime log without leaving the project command center.
+
 Added admin launch readiness, covering:
 
 - `/v1/admin/launch-readiness` gives support/admin operators a single production-readiness report for OAuth callbacks, cookie domain, email-code delivery, webhook worker schema, migration state, notification templates, runtime API-key hashing, commission rules, payout state, demo fallback, legacy signup, service-token presence, public signup policy, and intentionally deferred payment-provider work.

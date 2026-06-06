@@ -16,6 +16,7 @@ import {
 import { ProjectAgentConnectionPanel } from "@/components/project-agent-connection-panel";
 import { ProjectApiKeyManager } from "@/components/project-api-key-manager";
 import { ProjectInvoiceManager } from "@/components/project-invoice-manager";
+import { ProjectRuntimeTestPanel } from "@/components/project-runtime-test-panel";
 import { ProjectSavedSkillManager } from "@/components/project-saved-skill-manager";
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
@@ -232,6 +233,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             titleLabel={labels.skillTitle}
           />
 
+          <ProjectRuntimeTestPanel locale={locale} projectSlug={project.slug} skills={detail.installedSkills} />
+
           <article className="ops-panel project-table-panel">
             <div className="card-kicker">
               <RadioTower size={16} aria-hidden="true" />
@@ -268,6 +271,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             apiUrl={apiUrl}
             locale={locale}
             projectSlug={project.slug}
+            sampleSkillSlug={getAgentSampleSkillSlug(detail)}
           />
 
           <ProjectApiKeyManager
@@ -319,6 +323,15 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         </aside>
       </section>
     </main>
+  );
+}
+
+function getAgentSampleSkillSlug(detail: DeveloperProjectDetail) {
+  return (
+    detail.installedSkills.find((skill) => skill.status === "installed" && skill.verificationStatus === "verified")?.skillSlug ??
+    detail.installedSkills.find((skill) => skill.status === "installed")?.skillSlug ??
+    detail.installedSkills[0]?.skillSlug ??
+    null
   );
 }
 

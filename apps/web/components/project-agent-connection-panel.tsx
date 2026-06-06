@@ -9,6 +9,7 @@ type ProjectAgentConnectionPanelProps = {
   apiUrl: string;
   locale: Locale;
   projectSlug: string;
+  sampleSkillSlug?: string | null;
 };
 
 const copy = {
@@ -46,13 +47,15 @@ export function ProjectAgentConnectionPanel({
   activeKeyCount,
   apiUrl,
   locale,
-  projectSlug
+  projectSlug,
+  sampleSkillSlug
 }: ProjectAgentConnectionPanelProps) {
   const labels = copy[locale];
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const normalizedApiUrl = apiUrl.replace(/\/$/, "");
   const mcpEndpoint = `${normalizedApiUrl}/mcp`;
   const restEndpoint = `${normalizedApiUrl}/v1/runtime/invoke`;
+  const restSkillSlug = sampleSkillSlug ?? "replace-with-installed-skill";
   const snippets = useMemo(
     () => [
       {
@@ -67,12 +70,12 @@ export function ProjectAgentConnectionPanel({
         body: `curl -X POST "${restEndpoint}" \\
   -H "Authorization: Bearer $SKILLHUB_PROJECT_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"skillSlug":"browser-research","input":{"query":"agent runtime check"}}'`,
+  -d '{"skillSlug":"${restSkillSlug}","input":{"query":"agent runtime check"}}'`,
         id: "rest",
         title: labels.apiTitle
       }
     ],
-    [labels.apiTitle, labels.mcpTitle, mcpEndpoint, restEndpoint]
+    [labels.apiTitle, labels.mcpTitle, mcpEndpoint, restEndpoint, restSkillSlug]
   );
 
   async function copyText(key: string, value: string) {

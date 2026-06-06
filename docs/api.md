@@ -884,7 +884,7 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/runtime/tes
   }'
 ```
 
-The test endpoint requires an organization-scoped developer/owner/admin token and the target project must belong to that organization. It reuses the same install, version, verification, approval, policy, subscription, rate-limit, budget, invocation-log, and runtime execution path as `/v1/runtime/invoke`, but marks successful usage events as non-billable so console tests do not create payable ledger activity.
+The test endpoint requires an organization-scoped developer/owner/admin token and the target project must belong to that organization. It reuses the same install, version, verification, approval, policy, subscription, rate-limit, budget, invocation-log, and runtime execution path as `/v1/runtime/invoke`, but marks successful usage events as non-billable so console tests do not create payable ledger activity. The project command center at `/dashboard/projects/[slug]` exposes this as a runtime test panel beside installed-skill policy controls and recent invocation logs.
 
 SDK:
 

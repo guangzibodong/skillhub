@@ -8481,6 +8481,113 @@ a {
   white-space: pre;
 }
 
+.project-runtime-test-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.project-runtime-test-panel__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.project-runtime-test-panel__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.project-runtime-test-panel__copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.project-runtime-test-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.42fr);
+  gap: 12px;
+}
+
+.project-runtime-test-form label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.project-runtime-test-form label span {
+  color: #c5cfbd;
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.project-runtime-test-form select,
+.project-runtime-test-form input,
+.project-runtime-test-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.24);
+  color: var(--ink);
+  outline: 0;
+}
+
+.project-runtime-test-form select,
+.project-runtime-test-form input {
+  min-height: 40px;
+  padding: 0 11px;
+}
+
+.project-runtime-test-form textarea {
+  min-height: 164px;
+  resize: vertical;
+  padding: 11px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.project-runtime-test-form select:focus,
+.project-runtime-test-form input:focus,
+.project-runtime-test-form textarea:focus {
+  border-color: rgba(155, 226, 141, 0.42);
+  box-shadow: 0 0 0 3px rgba(155, 226, 141, 0.08);
+}
+
+.project-runtime-test-form__wide,
+.project-runtime-test-form .primary-button {
+  grid-column: 1 / -1;
+}
+
+.project-runtime-test-form .primary-button {
+  justify-self: flex-start;
+  min-width: 176px;
+}
+
+.project-runtime-test-empty {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 12px;
+}
+
+.project-runtime-test-empty svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
 .project-table {
   display: grid;
   margin-top: 18px;
@@ -11549,6 +11656,10 @@ a {
 
   .publish-flow-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .project-runtime-test-form {
+    grid-template-columns: 1fr;
   }
 
   .policy-editor {
