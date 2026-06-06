@@ -1,4 +1,9 @@
-import { getPermissionLevel, type SkillManifest, type SkillSummary } from "@useskillhub/schema";
+import {
+  getPermissionLevel,
+  type SkillManifest,
+  type SkillSummary,
+} from "@useskillhub/schema";
+import { demoFallback } from "./demo-fallback.js";
 import { demoSkills } from "./demo-skills.js";
 import { getSql } from "./registry.js";
 
@@ -10,7 +15,11 @@ type PublisherProfileRow = {
   id: string;
   organizationName: string;
   organizationSlug: string;
-  payoutStatus: "not_configured" | "verification_required" | "verified" | "blocked";
+  payoutStatus:
+    | "not_configured"
+    | "verification_required"
+    | "verified"
+    | "blocked";
   status: "pending" | "active" | "restricted" | "suspended";
   updatedAt: string;
 };
@@ -49,28 +58,46 @@ export type PublicPublisherProfile = {
   updatedAt: string;
 };
 
-export async function listPublicPublishers(limit = 20): Promise<PublicPublisherProfile[]> {
+export async function listPublicPublishers(
+  limit = 20,
+): Promise<PublicPublisherProfile[]> {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackPublicPublishers().slice(0, normalizeLimit(limit));
+    return demoFallback(
+      fallbackPublicPublishers().slice(0, normalizeLimit(limit)),
+      [],
+    );
   }
 
   const profiles = await listPublisherProfileRows(sql, normalizeLimit(limit));
-  const hydrated = await Promise.all(profiles.map((profile) => hydratePublicPublisher(sql, profile)));
+  const hydrated = await Promise.all(
+    profiles.map((profile) => hydratePublicPublisher(sql, profile)),
+  );
   return hydrated.filter((profile) => profile.skills.length > 0);
 }
 
-export async function getPublicPublisherProfile(slug: string): Promise<PublicPublisherProfile | null> {
+export async function getPublicPublisherProfile(
+  slug: string,
+): Promise<PublicPublisherProfile | null> {
   const normalizedSlug = normalizeSlug(slug);
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackPublicPublishers().find((profile) => profile.slug === normalizedSlug) ?? null;
+    return demoFallback(
+      fallbackPublicPublishers().find(
+        (profile) => profile.slug === normalizedSlug,
+      ) ?? null,
+      null,
+    );
   }
 
   const profiles = await listPublisherProfileRows(sql, 100);
-  const profile = profiles.find((item) => item.organizationSlug === normalizedSlug || normalizeSlug(item.displayName) === normalizedSlug);
+  const profile = profiles.find(
+    (item) =>
+      item.organizationSlug === normalizedSlug ||
+      normalizeSlug(item.displayName) === normalizedSlug,
+  );
 
   if (!profile) {
     return null;
@@ -106,7 +133,10 @@ async function listPublisherProfileRows(sql: Sql, limit: number) {
   `) as PublisherProfileRow[];
 }
 
-async function hydratePublicPublisher(sql: Sql, profile: PublisherProfileRow): Promise<PublicPublisherProfile> {
+async function hydratePublicPublisher(
+  sql: Sql,
+  profile: PublisherProfileRow,
+): Promise<PublicPublisherProfile> {
   const rows = (await sql`
     select
       s.slug,
@@ -176,13 +206,15 @@ async function hydratePublicPublisher(sql: Sql, profile: PublisherProfileRow): P
     description: row.description,
     displayName: row.displayName,
     installCount: row.installCount,
-    permissionLevel: row.manifest?.permissions ? getPermissionLevel(row.manifest.permissions) : "medium",
+    permissionLevel: row.manifest?.permissions
+      ? getPermissionLevel(row.manifest.permissions)
+      : "medium",
     priceStatus: row.priceStatus ?? "draft",
     slug: row.slug,
     successRate: row.callCount > 0 ? row.successCount / row.callCount : null,
     unitAmountCents: row.unitAmountCents ?? 0,
     verificationStatus: row.verificationStatus,
-    version: row.version
+    version: row.version,
   }));
 
   return {
@@ -194,7 +226,7 @@ async function hydratePublicPublisher(sql: Sql, profile: PublisherProfileRow): P
     slug: profile.organizationSlug,
     status: profile.status,
     trustLevel: trustLevel(profile),
-    updatedAt: profile.updatedAt
+    updatedAt: profile.updatedAt,
   };
 }
 
@@ -219,8 +251,9 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
       slug: skill.name,
       successRate: index === 0 ? 0.97 : null,
       unitAmountCents: index === 0 ? 2 : 0,
-      verificationStatus: index === 0 ? "verified" as const : "submitted" as const,
-      version: skill.version
+      verificationStatus:
+        index === 0 ? ("verified" as const) : ("submitted" as const),
+      version: skill.version,
     }));
 
     return {
@@ -232,7 +265,7 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
       slug,
       status: "active",
       trustLevel: "verified",
-      updatedAt: "demo"
+      updatedAt: "demo",
     };
   });
 }
@@ -242,19 +275,29 @@ function publisherMetrics(skills: PublicPublisherSkill[]) {
   const successSamples = skills.filter((skill) => skill.successRate !== null);
 
   return {
-    activePaidSkillCount: skills.filter((skill) => skill.priceStatus === "active" && skill.billingModel !== "free").length,
+    activePaidSkillCount: skills.filter(
+      (skill) =>
+        skill.priceStatus === "active" && skill.billingModel !== "free",
+    ).length,
     avgSuccessRate:
       successSamples.length > 0
-        ? successSamples.reduce((sum, skill) => sum + (skill.successRate ?? 0), 0) / successSamples.length
+        ? successSamples.reduce(
+            (sum, skill) => sum + (skill.successRate ?? 0),
+            0,
+          ) / successSamples.length
         : null,
     callCount,
     installCount: skills.reduce((sum, skill) => sum + skill.installCount, 0),
     publicSkillCount: skills.length,
-    verifiedSkillCount: skills.filter((skill) => skill.verificationStatus === "verified").length
+    verifiedSkillCount: skills.filter(
+      (skill) => skill.verificationStatus === "verified",
+    ).length,
   };
 }
 
-function trustLevel(profile: PublisherProfileRow): PublicPublisherProfile["trustLevel"] {
+function trustLevel(
+  profile: PublisherProfileRow,
+): PublicPublisherProfile["trustLevel"] {
   if (profile.status === "suspended" || profile.payoutStatus === "blocked") {
     return "blocked";
   }

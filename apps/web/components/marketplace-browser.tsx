@@ -1,13 +1,24 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { BadgeCheck, Copy, ExternalLink, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Star, Timer, Zap } from "lucide-react";
+import {
+  BadgeCheck,
+  Copy,
+  ExternalLink,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Star,
+  Timer,
+  Zap,
+} from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import {
   localizeText,
   marketplaceCategories,
-  type MarketplaceSkill
+  type MarketplaceSkill,
 } from "@/lib/marketplace-data";
 import { publisherSlugFromName } from "@/lib/public-publishers";
 
@@ -42,13 +53,14 @@ const labels = {
     sort: "Sort",
     reset: "Reset filters",
     emptyTitle: "No skills match these filters",
-    emptyBody: "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
+    emptyBody:
+      "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
     sortOptions: {
       adoption: "Most installed",
       lowRisk: "Lowest risk",
       recommended: "Recommended",
       recent: "Recently reviewed",
-      success: "Best runtime success"
+      success: "Best runtime success",
     },
     allRuntime: "All runtimes",
     allRisk: "All risk",
@@ -56,13 +68,13 @@ const labels = {
     verificationLabels: {
       review: "In review",
       restricted: "Restricted",
-      verified: "Verified"
+      verified: "Verified",
     },
     risk: {
       low: "low",
       medium: "medium",
-      high: "high"
-    }
+      high: "high",
+    },
   },
   zh: {
     search: "搜索技能、集成、权限",
@@ -89,13 +101,14 @@ const labels = {
     sort: "排序",
     reset: "重置筛选",
     emptyTitle: "没有符合条件的技能",
-    emptyBody: "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
+    emptyBody:
+      "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
     sortOptions: {
       adoption: "安装最多",
       lowRisk: "风险最低",
       recommended: "推荐优先",
       recent: "最近审核",
-      success: "成功率最高"
+      success: "成功率最高",
     },
     allRuntime: "全部运行时",
     allRisk: "全部风险",
@@ -103,38 +116,69 @@ const labels = {
     verificationLabels: {
       review: "审核中",
       restricted: "受限",
-      verified: "已验证"
+      verified: "已验证",
     },
     risk: {
       low: "低风险",
       medium: "中风险",
-      high: "高风险"
-    }
-  }
+      high: "高风险",
+    },
+  },
 } as const;
 
 const pricingOptions = [
   { key: "all", label: { en: "All pricing", zh: "全部价格" } },
   { key: "free", label: { en: "Free", zh: "免费" } },
   { key: "per_call", label: { en: "Per call", zh: "按次调用" } },
-  { key: "subscription", label: { en: "Subscription", zh: "订阅" } }
+  { key: "subscription", label: { en: "Subscription", zh: "订阅" } },
 ] as const;
 
 const riskOptions = ["all", "low", "medium", "high"] as const;
 const runtimeOptions = ["all", "HTTP", "MCP", "Local"] as const;
-const verificationOptions = ["all", "verified", "review", "restricted"] as const;
-const sortOptions = ["recommended", "adoption", "success", "lowRisk", "recent"] as const;
+const verificationOptions = [
+  "all",
+  "verified",
+  "review",
+  "restricted",
+] as const;
+const sortOptions = [
+  "recommended",
+  "adoption",
+  "success",
+  "lowRisk",
+  "recent",
+] as const;
 
-export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) {
+const emptyCatalogCopy = {
+  en: {
+    body: "The live registry is not exposing public skills yet. Review launch readiness, approve real skill versions, or enable demo fallback only for a controlled staging demo.",
+    title: "No public skills from the live registry",
+  },
+  zh: {
+    body: "实时注册表还没有公开技能。请检查 launch readiness、审核真实技能版本，或只在受控 staging 演示中启用 demo fallback。",
+    title: "暂无来自实时注册表的公开技能",
+  },
+} as const;
+
+export function MarketplaceBrowser({
+  locale,
+  skills,
+}: MarketplaceBrowserProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof marketplaceCategories)[number]["key"]>("all");
-  const [pricing, setPricing] = useState<(typeof pricingOptions)[number]["key"]>("all");
+  const [category, setCategory] =
+    useState<(typeof marketplaceCategories)[number]["key"]>("all");
+  const [pricing, setPricing] =
+    useState<(typeof pricingOptions)[number]["key"]>("all");
   const [risk, setRisk] = useState<(typeof riskOptions)[number]>("all");
-  const [runtime, setRuntime] = useState<(typeof runtimeOptions)[number]>("all");
-  const [verification, setVerification] = useState<(typeof verificationOptions)[number]>("all");
+  const [runtime, setRuntime] =
+    useState<(typeof runtimeOptions)[number]>("all");
+  const [verification, setVerification] =
+    useState<(typeof verificationOptions)[number]>("all");
   const [sort, setSort] = useState<(typeof sortOptions)[number]>("recommended");
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const dictionary = labels[locale];
+  const emptyCatalog = emptyCatalogCopy[locale];
+  const isEmptyCatalog = skills.length === 0;
   const hasActiveFilters =
     query.trim().length > 0 ||
     category !== "all" ||
@@ -146,28 +190,52 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
 
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    const skillOrder = new Map(skills.map((skill, index) => [skill.slug, index]));
+    const skillOrder = new Map(
+      skills.map((skill, index) => [skill.slug, index]),
+    );
 
     return skills
       .filter((skill) => {
         const text = searchableText(skill, locale);
-        const queryMatch = normalizedQuery.length === 0 || text.includes(normalizedQuery);
-        const categoryMatch = category === "all" || skill.categoryKey === category;
+        const queryMatch =
+          normalizedQuery.length === 0 || text.includes(normalizedQuery);
+        const categoryMatch =
+          category === "all" || skill.categoryKey === category;
         const pricingMatch = pricing === "all" || skill.billing === pricing;
         const riskMatch = risk === "all" || skill.risk === risk;
         const runtimeMatch = runtime === "all" || skill.runtime === runtime;
-        const verificationMatch = verification === "all" || verificationKey(skill) === verification;
+        const verificationMatch =
+          verification === "all" || verificationKey(skill) === verification;
 
-        return queryMatch && categoryMatch && pricingMatch && riskMatch && runtimeMatch && verificationMatch;
+        return (
+          queryMatch &&
+          categoryMatch &&
+          pricingMatch &&
+          riskMatch &&
+          runtimeMatch &&
+          verificationMatch
+        );
       })
       .sort((first, second) => {
         if (sort === "recommended") {
-          return getSkillOrder(first, skillOrder) - getSkillOrder(second, skillOrder);
+          return (
+            getSkillOrder(first, skillOrder) - getSkillOrder(second, skillOrder)
+          );
         }
 
         return compareSkills(first, second, sort, normalizedQuery, locale);
       });
-  }, [category, locale, pricing, query, risk, runtime, skills, sort, verification]);
+  }, [
+    category,
+    locale,
+    pricing,
+    query,
+    risk,
+    runtime,
+    skills,
+    sort,
+    verification,
+  ]);
 
   function copyInstall(skill: MarketplaceSkill) {
     void navigator.clipboard.writeText(skill.installsCommand.cli).then(() => {
@@ -187,18 +255,27 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
   }
 
   return (
-    <section className="market-browser" aria-labelledby="market-browser-heading">
+    <section
+      className="market-browser"
+      aria-labelledby="market-browser-heading"
+    >
       <div className="market-browser__top">
         <div>
           <div className="card-kicker">
             <Search size={16} aria-hidden="true" />
             <span id="market-browser-heading">{dictionary.catalog}</span>
           </div>
-          <strong>{filteredSkills.length} {dictionary.results}</strong>
+          <strong>
+            {filteredSkills.length} {dictionary.results}
+          </strong>
         </div>
         <label className="market-search">
           <Search size={17} aria-hidden="true" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={dictionary.search} />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={dictionary.search}
+          />
         </label>
       </div>
 
@@ -209,7 +286,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
             {dictionary.filters}
           </span>
           {hasActiveFilters && (
-            <button className="filter-reset-button" onClick={resetFilters} type="button">
+            <button
+              className="filter-reset-button"
+              onClick={resetFilters}
+              type="button"
+            >
               <RotateCcw size={14} aria-hidden="true" />
               {dictionary.reset}
             </button>
@@ -219,7 +300,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.category}>
           {marketplaceCategories.map((item) => (
             <button
-              className={category === item.key ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                category === item.key
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item.key}
               onClick={() => setCategory(item.key)}
               type="button"
@@ -232,7 +317,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.pricing}>
           {pricingOptions.map((item) => (
             <button
-              className={pricing === item.key ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                pricing === item.key
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item.key}
               onClick={() => setPricing(item.key)}
               type="button"
@@ -245,7 +334,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.permissionRisk}>
           {riskOptions.map((item) => (
             <button
-              className={risk === item ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                risk === item
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item}
               onClick={() => setRisk(item)}
               type="button"
@@ -258,7 +351,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.runtime}>
           {runtimeOptions.map((item) => (
             <button
-              className={runtime === item ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                runtime === item
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item}
               onClick={() => setRuntime(item)}
               type="button"
@@ -271,12 +368,18 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.verification}>
           {verificationOptions.map((item) => (
             <button
-              className={verification === item ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                verification === item
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item}
               onClick={() => setVerification(item)}
               type="button"
             >
-              {item === "all" ? dictionary.allVerification : dictionary.verificationLabels[item]}
+              {item === "all"
+                ? dictionary.allVerification
+                : dictionary.verificationLabels[item]}
             </button>
           ))}
         </FilterGroup>
@@ -284,7 +387,11 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
         <FilterGroup label={dictionary.sort}>
           {sortOptions.map((item) => (
             <button
-              className={sort === item ? "filter-button filter-button--active" : "filter-button"}
+              className={
+                sort === item
+                  ? "filter-button filter-button--active"
+                  : "filter-button"
+              }
               key={item}
               onClick={() => setSort(item)}
               type="button"
@@ -298,82 +405,114 @@ export function MarketplaceBrowser({ locale, skills }: MarketplaceBrowserProps) 
       {filteredSkills.length > 0 ? (
         <div className="market-card-grid">
           {filteredSkills.map((skill) => (
-          <article className="market-skill-card lift-card" key={skill.slug}>
-            <div className="market-skill-card__head">
-              <div className="market-skill-card__icon" aria-hidden="true">
-                <Zap size={18} />
+            <article className="market-skill-card lift-card" key={skill.slug}>
+              <div className="market-skill-card__head">
+                <div className="market-skill-card__icon" aria-hidden="true">
+                  <Zap size={18} />
+                </div>
+                <div>
+                  <span>{localizeText(skill.category, locale)}</span>
+                  <h2>{localizeText(skill.name, locale)}</h2>
+                  <a
+                    className="market-skill-card__publisher"
+                    href={localizedHref(
+                      `/publishers/${publisherSlugFromName(skill.author)}`,
+                      locale,
+                    )}
+                  >
+                    {dictionary.by} {skill.author}
+                  </a>
+                </div>
+                <span className={`risk-badge risk-badge--${skill.risk}`}>
+                  {dictionary.risk[skill.risk]}
+                </span>
               </div>
-              <div>
-                <span>{localizeText(skill.category, locale)}</span>
-                <h2>{localizeText(skill.name, locale)}</h2>
-                <a className="market-skill-card__publisher" href={localizedHref(`/publishers/${publisherSlugFromName(skill.author)}`, locale)}>
-                  {dictionary.by} {skill.author}
+
+              <p>{localizeText(skill.summary, locale)}</p>
+
+              <div className="market-skill-card__meta">
+                <span>
+                  <Star size={14} aria-hidden="true" />
+                  {formatFeedbackSignal(skill, dictionary.feedback)}
+                </span>
+                <span>
+                  <BadgeCheck size={14} aria-hidden="true" />
+                  {skill.successRate} {dictionary.success}
+                </span>
+                <span>
+                  <Timer size={14} aria-hidden="true" />
+                  {skill.latency} {dictionary.latency}
+                </span>
+              </div>
+
+              <div className="tag-list">
+                {skill.tags[locale].slice(0, 4).map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+
+              <div
+                className="install-strip"
+                aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
+              >
+                <code>{skill.installsCommand.cli}</code>
+                <button
+                  aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
+                  onClick={() => copyInstall(skill)}
+                  type="button"
+                >
+                  <Copy size={15} aria-hidden="true" />
+                  {copiedSlug === skill.slug
+                    ? dictionary.copied
+                    : dictionary.copy}
+                </button>
+              </div>
+
+              <div className="market-skill-card__foot">
+                <div>
+                  <span>{skill.price[locale]}</span>
+                  <strong>{localizeText(skill.verification, locale)}</strong>
+                </div>
+                <a
+                  className="secondary-button"
+                  href={localizedHref(`/skills/${skill.slug}`, locale)}
+                >
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  <span>{dictionary.details}</span>
+                  <ExternalLink size={15} aria-hidden="true" />
                 </a>
               </div>
-              <span className={`risk-badge risk-badge--${skill.risk}`}>{dictionary.risk[skill.risk]}</span>
-            </div>
-
-            <p>{localizeText(skill.summary, locale)}</p>
-
-            <div className="market-skill-card__meta">
-              <span>
-                <Star size={14} aria-hidden="true" />
-                {formatFeedbackSignal(skill, dictionary.feedback)}
-              </span>
-              <span>
-                <BadgeCheck size={14} aria-hidden="true" />
-                {skill.successRate} {dictionary.success}
-              </span>
-              <span>
-                <Timer size={14} aria-hidden="true" />
-                {skill.latency} {dictionary.latency}
-              </span>
-            </div>
-
-            <div className="tag-list">
-              {skill.tags[locale].slice(0, 4).map((tag) => (
-                <span key={tag}>{tag}</span>
-              ))}
-            </div>
-
-            <div className="install-strip" aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}>
-              <code>{skill.installsCommand.cli}</code>
-              <button aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`} onClick={() => copyInstall(skill)} type="button">
-                <Copy size={15} aria-hidden="true" />
-                {copiedSlug === skill.slug ? dictionary.copied : dictionary.copy}
-              </button>
-            </div>
-
-            <div className="market-skill-card__foot">
-              <div>
-                <span>{skill.price[locale]}</span>
-                <strong>{localizeText(skill.verification, locale)}</strong>
-              </div>
-              <a className="secondary-button" href={localizedHref(`/skills/${skill.slug}`, locale)}>
-                <ShieldCheck size={16} aria-hidden="true" />
-                <span>{dictionary.details}</span>
-                <ExternalLink size={15} aria-hidden="true" />
-              </a>
-            </div>
-          </article>
+            </article>
           ))}
         </div>
       ) : (
         <div className="market-empty-state">
           <Search size={26} aria-hidden="true" />
-          <h3>{dictionary.emptyTitle}</h3>
-          <p>{dictionary.emptyBody}</p>
-          <button className="secondary-button secondary-button--compact" onClick={resetFilters} type="button">
-            <RotateCcw size={15} aria-hidden="true" />
-            <span>{dictionary.reset}</span>
-          </button>
+          <h3>{isEmptyCatalog ? emptyCatalog.title : dictionary.emptyTitle}</h3>
+          <p>{isEmptyCatalog ? emptyCatalog.body : dictionary.emptyBody}</p>
+          {!isEmptyCatalog && (
+            <button
+              className="secondary-button secondary-button--compact"
+              onClick={resetFilters}
+              type="button"
+            >
+              <RotateCcw size={15} aria-hidden="true" />
+              <span>{dictionary.reset}</span>
+            </button>
+          )}
         </div>
       )}
     </section>
   );
 }
 
-function FilterGroup({ children, label }: { children: ReactNode; label: string }) {
+function FilterGroup({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
   return (
     <div className="market-filter-group">
       <span>{label}</span>
@@ -394,27 +533,36 @@ function searchableText(skill: MarketplaceSkill, locale: Locale) {
     localizeText(skill.verification, locale),
     skill.verification.en,
     ...skill.tags[locale],
-    ...skill.tags.en
+    ...skill.tags.en,
   ]
     .join(" ")
     .toLowerCase();
 }
 
-function verificationKey(skill: MarketplaceSkill): "verified" | "review" | "restricted" {
+function verificationKey(
+  skill: MarketplaceSkill,
+): "verified" | "review" | "restricted" {
   const normalized = skill.verification.en.toLowerCase();
 
   if (normalized.includes("verified")) {
     return "verified";
   }
 
-  if (normalized.includes("restricted") || normalized.includes("suspended") || normalized.includes("rejected")) {
+  if (
+    normalized.includes("restricted") ||
+    normalized.includes("suspended") ||
+    normalized.includes("rejected")
+  ) {
     return "restricted";
   }
 
   return "review";
 }
 
-function getSkillOrder(skill: MarketplaceSkill, skillOrder: Map<string, number>) {
+function getSkillOrder(
+  skill: MarketplaceSkill,
+  skillOrder: Map<string, number>,
+) {
   return skillOrder.get(skill.slug) ?? Number.MAX_SAFE_INTEGER;
 }
 
@@ -423,28 +571,52 @@ function compareSkills(
   second: MarketplaceSkill,
   sort: (typeof sortOptions)[number],
   query: string,
-  locale: Locale
+  locale: Locale,
 ) {
   if (sort === "adoption") {
-    return parseCompactNumber(second.installs) - parseCompactNumber(first.installs) || first.slug.localeCompare(second.slug);
+    return (
+      parseCompactNumber(second.installs) -
+        parseCompactNumber(first.installs) ||
+      first.slug.localeCompare(second.slug)
+    );
   }
 
   if (sort === "success") {
-    return parsePercent(second.successRate) - parsePercent(first.successRate) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+    return (
+      parsePercent(second.successRate) - parsePercent(first.successRate) ||
+      recommendedScore(second, query, locale) -
+        recommendedScore(first, query, locale)
+    );
   }
 
   if (sort === "lowRisk") {
-    return riskRank(first.risk) - riskRank(second.risk) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+    return (
+      riskRank(first.risk) - riskRank(second.risk) ||
+      recommendedScore(second, query, locale) -
+        recommendedScore(first, query, locale)
+    );
   }
 
   if (sort === "recent") {
-    return parseDate(second.lastReviewed) - parseDate(first.lastReviewed) || recommendedScore(second, query, locale) - recommendedScore(first, query, locale);
+    return (
+      parseDate(second.lastReviewed) - parseDate(first.lastReviewed) ||
+      recommendedScore(second, query, locale) -
+        recommendedScore(first, query, locale)
+    );
   }
 
-  return recommendedScore(second, query, locale) - recommendedScore(first, query, locale) || first.slug.localeCompare(second.slug);
+  return (
+    recommendedScore(second, query, locale) -
+      recommendedScore(first, query, locale) ||
+    first.slug.localeCompare(second.slug)
+  );
 }
 
-function recommendedScore(skill: MarketplaceSkill, query: string, locale: Locale) {
+function recommendedScore(
+  skill: MarketplaceSkill,
+  query: string,
+  locale: Locale,
+) {
   let score = 0;
 
   if (query) {
@@ -480,7 +652,9 @@ function recommendedScore(skill: MarketplaceSkill, query: string, locale: Locale
 
 function formatFeedbackSignal(skill: MarketplaceSkill, feedbackLabel: string) {
   const count = skill.feedbackCount ?? 0;
-  return count > 0 ? `${skill.rating} / ${count} ${feedbackLabel}` : skill.rating;
+  return count > 0
+    ? `${skill.rating} / ${count} ${feedbackLabel}`
+    : skill.rating;
 }
 
 function parsePercent(value: string) {
@@ -490,7 +664,11 @@ function parsePercent(value: string) {
 
 function parseCompactNumber(value: string) {
   const normalized = value.trim().toLowerCase();
-  const multiplier = normalized.endsWith("k") ? 1000 : normalized.endsWith("m") ? 1_000_000 : 1;
+  const multiplier = normalized.endsWith("k")
+    ? 1000
+    : normalized.endsWith("m")
+      ? 1_000_000
+      : 1;
   const parsed = Number(normalized.replace(/[km]$/, ""));
   return Number.isFinite(parsed) ? parsed * multiplier : 0;
 }
@@ -504,7 +682,7 @@ function riskRank(risk: MarketplaceSkill["risk"]) {
   const ranks = {
     high: 3,
     low: 1,
-    medium: 2
+    medium: 2,
   } satisfies Record<MarketplaceSkill["risk"], number>;
 
   return ranks[risk];

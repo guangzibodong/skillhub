@@ -168,7 +168,7 @@ Featured approvals still require a public listing in `submitted` or `verified` r
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 ```
 
-The public marketplace and skill detail pages now read these registry endpoints first, then fall back to bundled demo content if the API is unavailable. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`. The marketplace uses `/v1/skills/search?sort=recommended` as the first discovery source before local interactive filtering.
+The public marketplace and skill detail pages read these registry endpoints first. In local development or controlled staging demos, bundled demo content can fill unavailable registry responses. In production-like runtimes (`NODE_ENV=production`, `VERCEL_ENV=production`, or `SKILLHUB_ENV=production`), demo fallback is disabled unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly set, so unavailable or empty live registry data renders an empty marketplace or a not-found skill detail instead of fake supply. Skill cards merge search summaries, manifest runtime/permission data, and public price records from `/v1/skills/:slug/prices`. The marketplace uses `/v1/skills/search?sort=recommended` as the first discovery source before local interactive filtering.
 
 ## Public Publishers
 
@@ -185,7 +185,7 @@ The response includes:
 - Public skill count, verified skill count, install count, runtime call count, active paid skill count, and average success rate.
 - Public skill rows with verification status, permission risk, pricing model, install count, call count, success rate, and version.
 
-The web app uses this data for `/publishers`, `/publishers/[slug]`, marketplace publisher links, and skill-detail publisher trust panels. If the API is unavailable, the same pages fall back to bundled marketplace publisher data.
+The web app uses this data for `/publishers`, `/publishers/[slug]`, marketplace publisher links, and skill-detail publisher trust panels. Production-like runtimes suppress bundled publisher fallback unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled, so public publisher trust signals remain tied to live registry data.
 
 ## Registry Stats
 
@@ -263,7 +263,7 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals scoped to the token organization.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
-The public marketplace page uses `/v1/platform/overview` for its operating overview section. That section presents buyer/developer, publisher, and platform-operator loops side by side so visitors can see why teams return after first discovery: project controls and update inboxes for developers, review/runtime/revenue queues for publishers, and review/risk/money/notification queues for operators. If the API is unavailable, the web app falls back to bundled safe demo operating signals.
+The public marketplace page uses `/v1/platform/overview` for its operating overview section. That section presents buyer/developer, publisher, and platform-operator loops side by side so visitors can see why teams return after first discovery: project controls and update inboxes for developers, review/runtime/revenue queues for publishers, and review/risk/money/notification queues for operators. If the API is unavailable, production-like runtimes return empty/zero operating signals unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
 
 ## Identity And RBAC
 
@@ -447,7 +447,7 @@ Web console session:
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.
 - `SKILLHUB_USER_TOKEN` and `SKILLHUB_ADMIN_TOKEN` remain server-side fallbacks for bootstrap, demos, and emergency operator deployments.
-- Production web consoles treat `NODE_ENV=production`, `VERCEL_ENV=production`, or `SKILLHUB_ENV=production` as production-like. In that mode, admin, finance, trust, publisher, developer, team, billing, notification, and project operations return empty operational states instead of bundled demo rows when a token/API/database is unavailable.
+- Production web consoles treat `NODE_ENV=production`, `VERCEL_ENV=production`, or `SKILLHUB_ENV=production` as production-like. In that mode, public marketplace, skill detail, publisher directory/profile, public feedback, admin, finance, trust, publisher, developer, team, billing, notification, and project operations return empty operational states instead of bundled demo rows when a token/API/database is unavailable.
 - `SKILLHUB_ENABLE_DEMO_FALLBACK=true` may be used only for local demos or controlled staging walkthroughs where fake operator data is expected.
 
 Role boundaries:
@@ -897,8 +897,12 @@ SDK:
 ```ts
 import { SkillHubClient } from "@useskillhub/sdk";
 
-const skillhub = new SkillHubClient({ apiKey: process.env.SKILLHUB_PROJECT_API_KEY });
-const result = await skillhub.run("browser-research", { query: "MCP server registry trends" });
+const skillhub = new SkillHubClient({
+  apiKey: process.env.SKILLHUB_PROJECT_API_KEY,
+});
+const result = await skillhub.run("browser-research", {
+  query: "MCP server registry trends",
+});
 ```
 
 CLI:

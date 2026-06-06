@@ -4,8 +4,9 @@ import {
   type SkillBillingModel,
   type SkillManifest,
   type SkillRuntime,
-  type SkillSummary
+  type SkillSummary,
 } from "@useskillhub/schema";
+import { allowDemoFallback, isProductionRuntime } from "./demo-fallback.js";
 import { demoSkills } from "./demo-skills.js";
 
 type SqlClient = Awaited<ReturnType<typeof getSql>>;
@@ -65,10 +66,16 @@ type PublishSkillOptions = {
 let sqlPromise: Promise<unknown> | undefined;
 let seeded = false;
 
-export async function searchSkills(options: SearchOptions = {}): Promise<SkillSummary[]> {
+export async function searchSkills(
+  options: SearchOptions = {},
+): Promise<SkillSummary[]> {
   const sql = await getSql();
 
   if (!sql) {
+    if (!allowDemoFallback()) {
+      return [];
+    }
+
     return filterSummaries(demoSkills.map(toSummary), options);
   }
 
@@ -150,14 +157,17 @@ export async function searchSkills(options: SearchOptions = {}): Promise<SkillSu
 
   const curationBySkillId = await getActiveCurationBySkillId(sql);
 
-  return filterSummaries(rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))), options);
+  return filterSummaries(
+    rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))),
+    options,
+  );
 }
 
 export async function listSkillManifests(): Promise<SkillManifest[]> {
   const sql = await getSql();
 
   if (!sql) {
-    return demoSkills;
+    return allowDemoFallback() ? demoSkills : [];
   }
 
   await seedDemoData(sql);
@@ -194,11 +204,15 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
   return rows.map((row) => row.manifest);
 }
 
-export async function getSkillManifest(slug: string): Promise<SkillManifest | undefined> {
+export async function getSkillManifest(
+  slug: string,
+): Promise<SkillManifest | undefined> {
   const sql = await getSql();
 
   if (!sql) {
-    return demoSkills.find((skill) => skill.name === slug);
+    return allowDemoFallback()
+      ? demoSkills.find((skill) => skill.name === slug)
+      : undefined;
   }
 
   await seedDemoData(sql);
@@ -240,8 +254,15 @@ export async function getSkillManifest(slug: string): Promise<SkillManifest | un
 export async function publishSkill(
   manifest: unknown,
   organizationId?: string | null,
-  options: PublishSkillOptions = {}
-): Promise<{ createdNewVersion: boolean; id: string; slug: string; status: string; version: string; versionId: string }> {
+  options: PublishSkillOptions = {},
+): Promise<{
+  createdNewVersion: boolean;
+  id: string;
+  slug: string;
+  status: string;
+  version: string;
+  versionId: string;
+}> {
   assertSkillManifest(manifest);
 
   const sql = await getSql();
@@ -252,7 +273,8 @@ export async function publishSkill(
 
   await seedDemoData(sql);
 
-  const ownerOrganizationId = organizationId ?? (await upsertDefaultOrganization(sql)).id;
+  const ownerOrganizationId =
+    organizationId ?? (await upsertDefaultOrganization(sql)).id;
 
   return sql.begin(async (tx: NonNullable<SqlClient>) => {
     const existingRows = (await tx`
@@ -263,7 +285,11 @@ export async function publishSkill(
       from skills
       where slug = ${manifest.name}
       limit 1
-    `) as Array<{ id: string; organizationId: string; verificationStatus: string }>;
+    `) as Array<{
+      id: string;
+      organizationId: string;
+      verificationStatus: string;
+    }>;
 
     const existingSkill = existingRows[0];
 
@@ -320,12 +346,18 @@ export async function publishSkill(
       where sv.skill_id = ${skill.id}
         and sv.version = ${manifest.version}
       limit 1
-    `) as Array<{ hasApprovedReview: boolean; hasInstalls: boolean; id: string }>;
+    `) as Array<{
+      hasApprovedReview: boolean;
+      hasInstalls: boolean;
+      id: string;
+    }>;
 
     const existingVersion = existingVersionRows[0];
 
     if (existingVersion?.hasApprovedReview || existingVersion?.hasInstalls) {
-      throw new Error("This version is locked after approval or installation. Create a new semantic version instead.");
+      throw new Error(
+        "This version is locked after approval or installation. Create a new semantic version instead.",
+      );
     }
 
     const versionRows = existingVersion
@@ -343,7 +375,9 @@ export async function publishSkill(
 
     const version = versionRows[0];
     const createdNewVersion = !existingVersion;
-    const action = createdNewVersion ? "skill.version.created" : "skill.version.updated";
+    const action = createdNewVersion
+      ? "skill.version.created"
+      : "skill.version.updated";
 
     if (createdNewVersion && existingSkill) {
       await tx`
@@ -370,7 +404,7 @@ export async function publishSkill(
         ${tx.json({
           skillSlug: skill.slug,
           source: options.source ?? "manifest_publish",
-          version: version.version
+          version: version.version,
         })}
       )
     `;
@@ -385,7 +419,7 @@ export async function publishSkill(
         ${tx.json({
           skillSlug: skill.slug,
           displayName: manifest.displayName,
-          version: version.version
+          version: version.version,
         })},
         'queued'
       )
@@ -397,7 +431,7 @@ export async function publishSkill(
       slug: skill.slug,
       status: skill.verification_status,
       version: version.version,
-      versionId: version.id
+      versionId: version.id,
     };
   });
 }
@@ -406,11 +440,20 @@ export async function getRegistryStats(): Promise<RegistryStats> {
   const sql = await getSql();
 
   if (!sql) {
+    if (!allowDemoFallback()) {
+      return {
+        publishedSkills: 0,
+        verifiedSkills: 0,
+        apiCalls: 0,
+        avgLatencyMs: null,
+      };
+    }
+
     return {
       publishedSkills: demoSkills.length,
       verifiedSkills: 1,
       apiCalls: 0,
-      avgLatencyMs: null
+      avgLatencyMs: null,
     };
   }
 
@@ -435,14 +478,20 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     publishedSkills: skillRows[0]?.published_skills ?? 0,
     verifiedSkills: skillRows[0]?.verified_skills ?? 0,
     apiCalls: invocationRows[0]?.api_calls ?? 0,
-    avgLatencyMs: invocationRows[0]?.avg_latency_ms ?? null
+    avgLatencyMs: invocationRows[0]?.avg_latency_ms ?? null,
   };
 }
 
-function filterSummaries(skills: RankedSkillSummary[], options: SearchOptions): SkillSummary[] {
+function filterSummaries(
+  skills: RankedSkillSummary[],
+  options: SearchOptions,
+): SkillSummary[] {
   const query = options.query?.trim().toLowerCase() ?? "";
-  const tags = (options.tags ?? []).map((tag) => tag.trim().toLowerCase()).filter(Boolean);
-  const limit = options.limit && Number.isFinite(options.limit) ? options.limit : 20;
+  const tags = (options.tags ?? [])
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean);
+  const limit =
+    options.limit && Number.isFinite(options.limit) ? options.limit : 20;
 
   const filtered = skills
     .filter((skill) => {
@@ -454,21 +503,48 @@ function filterSummaries(skills: RankedSkillSummary[], options: SearchOptions): 
         skill.description.toLowerCase().includes(query) ||
         normalizedTags.some((tag) => tag.includes(query));
 
-      const tagMatch = tags.length === 0 || tags.every((tag) => normalizedTags.includes(tag));
-      const permissionMatch = !options.permissionLevel || skill.permissionLevel === options.permissionLevel;
-      const runtimeMatch = !options.runtimeType || skill.runtimeType === options.runtimeType;
-      const billingMatch = !options.billingModel || (skill.billingModel ?? "free") === options.billingModel;
-      const verificationMatch = !options.verificationStatus || skill.verificationStatus === options.verificationStatus;
-      const publicStatusMatch = ["verified", "submitted", "deprecated"].includes(skill.verificationStatus);
+      const tagMatch =
+        tags.length === 0 || tags.every((tag) => normalizedTags.includes(tag));
+      const permissionMatch =
+        !options.permissionLevel ||
+        skill.permissionLevel === options.permissionLevel;
+      const runtimeMatch =
+        !options.runtimeType || skill.runtimeType === options.runtimeType;
+      const billingMatch =
+        !options.billingModel ||
+        (skill.billingModel ?? "free") === options.billingModel;
+      const verificationMatch =
+        !options.verificationStatus ||
+        skill.verificationStatus === options.verificationStatus;
+      const publicStatusMatch = [
+        "verified",
+        "submitted",
+        "deprecated",
+      ].includes(skill.verificationStatus);
 
-      return queryMatch && tagMatch && permissionMatch && runtimeMatch && billingMatch && verificationMatch && publicStatusMatch;
+      return (
+        queryMatch &&
+        tagMatch &&
+        permissionMatch &&
+        runtimeMatch &&
+        billingMatch &&
+        verificationMatch &&
+        publicStatusMatch
+      );
     })
-    .sort((first, second) => compareSummaries(first, second, options.sort ?? "recommended", query));
+    .sort((first, second) =>
+      compareSummaries(first, second, options.sort ?? "recommended", query),
+    );
 
-  return filtered.slice(0, Math.min(Math.max(limit, 1), 100)).map(stripCuration);
+  return filtered
+    .slice(0, Math.min(Math.max(limit, 1), 100))
+    .map(stripCuration);
 }
 
-function rowToSummary(row: SkillRow, curation?: SkillCurationSignal): RankedSkillSummary {
+function rowToSummary(
+  row: SkillRow,
+  curation?: SkillCurationSignal,
+): RankedSkillSummary {
   return {
     id: row.id,
     slug: row.slug,
@@ -487,13 +563,17 @@ function rowToSummary(row: SkillRow, curation?: SkillCurationSignal): RankedSkil
     averageRating: row.average_rating,
     feedbackCount: row.feedback_count,
     curation,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   };
 }
 
 function toSummary(skill: SkillManifest): RankedSkillSummary {
   const status: SkillSummary["verificationStatus"] =
-    skill.name === "browser-research" ? "verified" : skill.name === "dataset-summarizer" ? "submitted" : "draft";
+    skill.name === "browser-research"
+      ? "verified"
+      : skill.name === "dataset-summarizer"
+        ? "submitted"
+        : "draft";
   const signals = demoSkillSignals(skill.name);
 
   return {
@@ -514,15 +594,20 @@ function toSummary(skill: SkillManifest): RankedSkillSummary {
     averageRating: signals.averageRating,
     feedbackCount: signals.feedbackCount,
     curation: demoCurationSignal(skill.name),
-    updatedAt: "demo"
+    updatedAt: "demo",
   };
 }
 
 function demoSkillSignals(
-  slug: string
+  slug: string,
 ): Pick<
   SkillSummary,
-  "installCount" | "invocationCount" | "successRate" | "avgLatencyMs" | "averageRating" | "feedbackCount"
+  | "installCount"
+  | "invocationCount"
+  | "successRate"
+  | "avgLatencyMs"
+  | "averageRating"
+  | "feedbackCount"
 > {
   if (slug === "browser-research") {
     return {
@@ -531,7 +616,7 @@ function demoSkillSignals(
       successRate: 0.982,
       avgLatencyMs: 1800,
       averageRating: 4.8,
-      feedbackCount: 24
+      feedbackCount: 24,
     };
   }
 
@@ -542,7 +627,7 @@ function demoSkillSignals(
       successRate: 0.975,
       avgLatencyMs: 1100,
       averageRating: 4.6,
-      feedbackCount: 17
+      feedbackCount: 17,
     };
   }
 
@@ -553,7 +638,7 @@ function demoSkillSignals(
       successRate: 0.991,
       avgLatencyMs: 620,
       averageRating: 4.7,
-      feedbackCount: 311
+      feedbackCount: 311,
     };
   }
 
@@ -564,7 +649,7 @@ function demoSkillSignals(
       successRate: 0.946,
       avgLatencyMs: 760,
       averageRating: 4.3,
-      feedbackCount: 9
+      feedbackCount: 9,
     };
   }
 
@@ -574,7 +659,7 @@ function demoSkillSignals(
     successRate: null,
     avgLatencyMs: null,
     averageRating: null,
-    feedbackCount: 0
+    feedbackCount: 0,
   };
 }
 
@@ -582,31 +667,48 @@ function compareSummaries(
   first: RankedSkillSummary,
   second: RankedSkillSummary,
   sort: NonNullable<SearchOptions["sort"]>,
-  query: string
+  query: string,
 ) {
-  const suppressionOrder = curationSuppressionRank(first) - curationSuppressionRank(second);
+  const suppressionOrder =
+    curationSuppressionRank(first) - curationSuppressionRank(second);
 
   if (suppressionOrder !== 0) {
     return suppressionOrder;
   }
 
   if (sort === "adoption") {
-    return (second.installCount ?? 0) - (first.installCount ?? 0) || first.slug.localeCompare(second.slug);
+    return (
+      (second.installCount ?? 0) - (first.installCount ?? 0) ||
+      first.slug.localeCompare(second.slug)
+    );
   }
 
   if (sort === "success") {
-    return (second.successRate ?? 0) - (first.successRate ?? 0) || recommendedScore(second, query) - recommendedScore(first, query);
+    return (
+      (second.successRate ?? 0) - (first.successRate ?? 0) ||
+      recommendedScore(second, query) - recommendedScore(first, query)
+    );
   }
 
   if (sort === "low_risk") {
-    return permissionRank(first.permissionLevel) - permissionRank(second.permissionLevel) || recommendedScore(second, query) - recommendedScore(first, query);
+    return (
+      permissionRank(first.permissionLevel) -
+        permissionRank(second.permissionLevel) ||
+      recommendedScore(second, query) - recommendedScore(first, query)
+    );
   }
 
   if (sort === "recent") {
-    return parseDate(second.updatedAt) - parseDate(first.updatedAt) || recommendedScore(second, query) - recommendedScore(first, query);
+    return (
+      parseDate(second.updatedAt) - parseDate(first.updatedAt) ||
+      recommendedScore(second, query) - recommendedScore(first, query)
+    );
   }
 
-  return recommendedScore(second, query) - recommendedScore(first, query) || first.slug.localeCompare(second.slug);
+  return (
+    recommendedScore(second, query) - recommendedScore(first, query) ||
+    first.slug.localeCompare(second.slug)
+  );
 }
 
 function recommendedScore(skill: RankedSkillSummary, query: string) {
@@ -617,7 +719,10 @@ function recommendedScore(skill: RankedSkillSummary, query: string) {
   if (query) {
     if (normalizedName === query || skill.slug.toLowerCase() === query) {
       score += 120;
-    } else if (normalizedName.includes(query) || skill.slug.toLowerCase().includes(query)) {
+    } else if (
+      normalizedName.includes(query) ||
+      skill.slug.toLowerCase().includes(query)
+    ) {
       score += 70;
     }
 
@@ -628,9 +733,15 @@ function recommendedScore(skill: RankedSkillSummary, query: string) {
 
   if (skill.verificationStatus === "verified") {
     score += 100;
-  } else if (skill.verificationStatus === "submitted" || skill.verificationStatus === "deprecated") {
+  } else if (
+    skill.verificationStatus === "submitted" ||
+    skill.verificationStatus === "deprecated"
+  ) {
     score += 35;
-  } else if (skill.verificationStatus === "rejected" || skill.verificationStatus === "suspended") {
+  } else if (
+    skill.verificationStatus === "rejected" ||
+    skill.verificationStatus === "suspended"
+  ) {
     score -= 100;
   }
 
@@ -674,7 +785,7 @@ async function getActiveCurationBySkillId(sql: NonNullable<SqlClient>) {
       throw new Error(
         error instanceof Error
           ? `Marketplace curation migration is unavailable: ${error.message}`
-          : "Marketplace curation migration is unavailable."
+          : "Marketplace curation migration is unavailable.",
       );
     }
 
@@ -686,14 +797,14 @@ function demoCurationSignal(slug: string): SkillCurationSignal | undefined {
   if (slug === "browser-research") {
     return {
       boost: 120,
-      placement: "featured"
+      placement: "featured",
     };
   }
 
   if (slug === "manifest-review") {
     return {
       boost: -60,
-      placement: "suppressed"
+      placement: "suppressed",
     };
   }
 
@@ -709,18 +820,11 @@ function curationSuppressionRank(skill: RankedSkillSummary) {
   return skill.curation?.placement === "suppressed" ? 1 : 0;
 }
 
-function isProductionRuntime() {
-  return (
-    typeof process !== "undefined" &&
-    (process.env.SKILLHUB_ENV === "production" || process.env.NODE_ENV === "production")
-  );
-}
-
 function permissionRank(permissionLevel: SkillSummary["permissionLevel"]) {
   const ranks = {
     high: 3,
     low: 1,
-    medium: 2
+    medium: 2,
   } satisfies Record<SkillSummary["permissionLevel"], number>;
 
   return ranks[permissionLevel];
@@ -733,6 +837,10 @@ function parseDate(value: string | undefined) {
 
 async function seedDemoData(sql: SqlClient): Promise<void> {
   if (seeded) {
+    return;
+  }
+
+  if (!allowDemoFallback()) {
     return;
   }
 
@@ -780,7 +888,9 @@ async function seedDemoData(sql: SqlClient): Promise<void> {
   seeded = true;
 }
 
-async function upsertDefaultOrganization(sql: SqlClient): Promise<{ id: string }> {
+async function upsertDefaultOrganization(
+  sql: SqlClient,
+): Promise<{ id: string }> {
   const rows = (await sql`
     insert into organizations (name, slug)
     values ('SkillHub', 'skillhub')
@@ -792,7 +902,8 @@ async function upsertDefaultOrganization(sql: SqlClient): Promise<{ id: string }
 }
 
 export async function getSql(): Promise<any | undefined> {
-  const databaseUrl = typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
+  const databaseUrl =
+    typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
 
   if (!databaseUrl) {
     return undefined;
@@ -803,8 +914,8 @@ export async function getSql(): Promise<any | undefined> {
       postgres(databaseUrl, {
         connect_timeout: 10,
         idle_timeout: 30,
-        max: 5
-      })
+        max: 5,
+      }),
     );
   }
 

@@ -1,3 +1,4 @@
+import { demoFallback } from "./demo-fallback.js";
 import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
@@ -71,8 +72,18 @@ export type SkillFeedbackSummary = {
   ratingBreakdown: Record<1 | 2 | 3 | 4 | 5, number>;
 };
 
-const statuses: FeedbackStatus[] = ["pending", "published", "hidden", "rejected"];
-const decisionActions: FeedbackDecisionAction[] = ["hide", "publish", "reject", "reopen"];
+const statuses: FeedbackStatus[] = [
+  "pending",
+  "published",
+  "hidden",
+  "rejected",
+];
+const decisionActions: FeedbackDecisionAction[] = [
+  "hide",
+  "publish",
+  "reject",
+  "reopen",
+];
 
 const fallbackFeedback = [
   {
@@ -97,7 +108,7 @@ const fallbackFeedback = [
     publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
-    updatedAt: "demo"
+    updatedAt: "demo",
   },
   {
     id: "demo-feedback-browser-research-2",
@@ -121,7 +132,7 @@ const fallbackFeedback = [
     publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
-    updatedAt: "demo"
+    updatedAt: "demo",
   },
   {
     id: "demo-feedback-manifest-review-1",
@@ -144,7 +155,7 @@ const fallbackFeedback = [
     publisherResponderDisplayName: null,
     publishedAt: "demo",
     createdAt: "demo",
-    updatedAt: "demo"
+    updatedAt: "demo",
   },
   {
     id: "demo-feedback-pending",
@@ -167,33 +178,38 @@ const fallbackFeedback = [
     publisherResponderDisplayName: null,
     publishedAt: null,
     createdAt: "demo",
-    updatedAt: "demo"
-  }
+    updatedAt: "demo",
+  },
 ] satisfies SkillFeedbackRow[];
 
 export async function listPublicSkillFeedback(skillSlug: string, limit = 12) {
   const sql = await getSql();
 
   if (!sql) {
-    const feedback = fallbackFeedback
-      .filter((row) => row.skillSlug === skillSlug && row.status === "published")
-      .slice(0, normalizeLimit(limit, 24));
+    const feedback = demoFallback(
+      fallbackFeedback
+        .filter(
+          (row) => row.skillSlug === skillSlug && row.status === "published",
+        )
+        .slice(0, normalizeLimit(limit, 24)),
+      [],
+    );
 
     return {
       feedback,
-      summary: summarizeFeedback(feedback)
+      summary: summarizeFeedback(feedback),
     };
   }
 
   const feedback = await listFeedbackRows(sql, {
     limit,
     skillSlug,
-    status: "published"
+    status: "published",
   });
 
   return {
     feedback,
-    summary: await getFeedbackSummary(sql, skillSlug)
+    summary: await getFeedbackSummary(sql, skillSlug),
   };
 }
 
@@ -202,18 +218,24 @@ export async function listAdminSkillFeedback(status?: string, limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackFeedback
-      .filter((row) => !normalizedStatus || row.status === normalizedStatus)
-      .slice(0, normalizeLimit(limit, 100));
+    return demoFallback(
+      fallbackFeedback
+        .filter((row) => !normalizedStatus || row.status === normalizedStatus)
+        .slice(0, normalizeLimit(limit, 100)),
+      [],
+    );
   }
 
   return listFeedbackRows(sql, {
     limit,
-    status: normalizedStatus
+    status: normalizedStatus,
   });
 }
 
-export async function createSkillFeedback(input: CreateSkillFeedbackInput, context: CreateSkillFeedbackContext) {
+export async function createSkillFeedback(
+  input: CreateSkillFeedbackInput,
+  context: CreateSkillFeedbackContext,
+) {
   const sql = await requireSql();
   const rating = normalizeRating(input.rating);
   const title = normalizeText(input.title, "title", 140);
@@ -223,7 +245,11 @@ export async function createSkillFeedback(input: CreateSkillFeedbackInput, conte
   return sql.begin(async (tx: Sql) => {
     const skill = await getSkillForSlug(tx, context.skillSlug);
     const projectId = context.organizationId
-      ? await getProjectId(tx, normalizeOptionalText(input.projectSlug, 120), context.organizationId)
+      ? await getProjectId(
+          tx,
+          normalizeOptionalText(input.projectSlug, 120),
+          context.organizationId,
+        )
       : null;
     const rows = (await tx`
       insert into skill_feedback (
@@ -254,21 +280,34 @@ export async function createSkillFeedback(input: CreateSkillFeedbackInput, conte
     `) as Array<{ id: string }>;
     const feedbackId = rows[0].id;
 
-    await recordFeedbackAudit(tx, context.userId, "skill_feedback.created", feedbackId, "Feedback submitted.", {
-      rating,
-      skillSlug: skill.slug,
-      reviewerOrganizationId: context.organizationId ?? null
-    });
-    await recordFeedbackNotification(tx, skill.organizationId, "skill.feedback.created", "Skill feedback submitted", {
+    await recordFeedbackAudit(
+      tx,
+      context.userId,
+      "skill_feedback.created",
       feedbackId,
-      rating,
-      skillName: skill.displayName,
-      skillSlug: skill.slug
-    });
+      "Feedback submitted.",
+      {
+        rating,
+        skillSlug: skill.slug,
+        reviewerOrganizationId: context.organizationId ?? null,
+      },
+    );
+    await recordFeedbackNotification(
+      tx,
+      skill.organizationId,
+      "skill.feedback.created",
+      "Skill feedback submitted",
+      {
+        feedbackId,
+        rating,
+        skillName: skill.displayName,
+        skillSlug: skill.slug,
+      },
+    );
 
     const feedback = await listFeedbackRows(tx, {
       feedbackId,
-      limit: 1
+      limit: 1,
     });
     return feedback[0];
   });
@@ -277,7 +316,7 @@ export async function createSkillFeedback(input: CreateSkillFeedbackInput, conte
 export async function decideSkillFeedback(
   feedbackId: string,
   input: SkillFeedbackDecisionInput,
-  actorUserId: string | null | undefined
+  actorUserId: string | null | undefined,
 ) {
   const sql = await requireSql();
   const action = normalizeDecisionAction(input.action);
@@ -299,24 +338,37 @@ export async function decideSkillFeedback(
       where id = ${feedbackId}
     `;
 
-    await recordFeedbackAudit(tx, actorUserId, `skill_feedback.${action}`, feedbackId, reason, {
-      action,
-      previousStatus: feedback.status,
-      skillSlug: feedback.skillSlug,
-      status
-    });
-    await recordFeedbackNotification(tx, feedback.publisherOrganizationId, `skill.feedback.${status}`, "Skill feedback decision recorded", {
-      action,
+    await recordFeedbackAudit(
+      tx,
+      actorUserId,
+      `skill_feedback.${action}`,
       feedbackId,
-      rating: feedback.rating,
-      skillName: feedback.skillName,
-      skillSlug: feedback.skillSlug,
-      status
-    });
+      reason,
+      {
+        action,
+        previousStatus: feedback.status,
+        skillSlug: feedback.skillSlug,
+        status,
+      },
+    );
+    await recordFeedbackNotification(
+      tx,
+      feedback.publisherOrganizationId,
+      `skill.feedback.${status}`,
+      "Skill feedback decision recorded",
+      {
+        action,
+        feedbackId,
+        rating: feedback.rating,
+        skillName: feedback.skillName,
+        skillSlug: feedback.skillSlug,
+        status,
+      },
+    );
 
     const feedbackRows = await listFeedbackRows(tx, {
       feedbackId,
-      limit: 1
+      limit: 1,
     });
     return feedbackRows[0];
   });
@@ -325,7 +377,7 @@ export async function decideSkillFeedback(
 export async function respondToSkillFeedback(
   feedbackId: string,
   input: PublisherFeedbackResponseInput,
-  context: PublisherFeedbackResponseContext
+  context: PublisherFeedbackResponseContext,
 ) {
   const sql = await requireSql();
   const body = normalizeText(input.body, "publisher response", 1800);
@@ -333,12 +385,19 @@ export async function respondToSkillFeedback(
   return sql.begin(async (tx: Sql) => {
     const feedback = await getFeedbackForPublisherResponse(tx, feedbackId);
 
-    if (!context.organizationId || feedback.publisherOrganizationId !== context.organizationId) {
-      throw new Error("Publisher feedback responses require the owning publisher organization.");
+    if (
+      !context.organizationId ||
+      feedback.publisherOrganizationId !== context.organizationId
+    ) {
+      throw new Error(
+        "Publisher feedback responses require the owning publisher organization.",
+      );
     }
 
     if (feedback.status !== "published") {
-      throw new Error("Only published feedback can receive a publisher response.");
+      throw new Error(
+        "Only published feedback can receive a publisher response.",
+      );
     }
 
     await tx`
@@ -351,22 +410,35 @@ export async function respondToSkillFeedback(
       where id = ${feedbackId}
     `;
 
-    await recordFeedbackAudit(tx, context.userId, "skill_feedback.publisher_response", feedbackId, "Publisher responded to feedback.", {
-      previousResponsePresent: Boolean(feedback.publisherResponseBody),
-      rating: feedback.rating,
-      skillSlug: feedback.skillSlug
-    });
-    await recordFeedbackNotification(tx, feedback.reviewerOrganizationId, "skill.feedback.publisher_response", "Publisher responded to feedback", {
+    await recordFeedbackAudit(
+      tx,
+      context.userId,
+      "skill_feedback.publisher_response",
       feedbackId,
-      rating: feedback.rating,
-      responsePreview: body.slice(0, 220),
-      skillName: feedback.skillName,
-      skillSlug: feedback.skillSlug
-    });
+      "Publisher responded to feedback.",
+      {
+        previousResponsePresent: Boolean(feedback.publisherResponseBody),
+        rating: feedback.rating,
+        skillSlug: feedback.skillSlug,
+      },
+    );
+    await recordFeedbackNotification(
+      tx,
+      feedback.reviewerOrganizationId,
+      "skill.feedback.publisher_response",
+      "Publisher responded to feedback",
+      {
+        feedbackId,
+        rating: feedback.rating,
+        responsePreview: body.slice(0, 220),
+        skillName: feedback.skillName,
+        skillSlug: feedback.skillSlug,
+      },
+    );
 
     const feedbackRows = await listFeedbackRows(tx, {
       feedbackId,
-      limit: 1
+      limit: 1,
     });
     return feedbackRows[0];
   });
@@ -379,7 +451,7 @@ async function listFeedbackRows(
     limit: number;
     skillSlug?: string;
     status?: FeedbackStatus;
-  }
+  },
 ) {
   const feedbackId = options.feedbackId ?? null;
   const skillSlug = options.skillSlug ?? null;
@@ -429,7 +501,10 @@ async function listFeedbackRows(
   `) as SkillFeedbackRow[];
 }
 
-async function getFeedbackSummary(sql: Sql, skillSlug: string): Promise<SkillFeedbackSummary> {
+async function getFeedbackSummary(
+  sql: Sql,
+  skillSlug: string,
+): Promise<SkillFeedbackSummary> {
   const rows = (await sql`
     select
       round(avg(sf.rating)::numeric, 1)::float as "averageRating",
@@ -462,12 +537,15 @@ async function getFeedbackSummary(sql: Sql, skillSlug: string): Promise<SkillFee
       2: summary?.rating2 ?? 0,
       3: summary?.rating3 ?? 0,
       4: summary?.rating4 ?? 0,
-      5: summary?.rating5 ?? 0
-    }
+      5: summary?.rating5 ?? 0,
+    },
   };
 }
 
-async function getSkillForSlug(sql: Sql, slug: string): Promise<SkillForFeedback> {
+async function getSkillForSlug(
+  sql: Sql,
+  slug: string,
+): Promise<SkillForFeedback> {
   const rows = (await sql`
     select
       s.id::text,
@@ -494,7 +572,11 @@ async function getSkillForSlug(sql: Sql, slug: string): Promise<SkillForFeedback
   return rows[0];
 }
 
-async function getProjectId(sql: Sql, projectSlug: string | null, organizationId: string) {
+async function getProjectId(
+  sql: Sql,
+  projectSlug: string | null,
+  organizationId: string,
+) {
   if (!projectSlug) {
     return null;
   }
@@ -582,7 +664,7 @@ async function recordFeedbackAudit(
   action: string,
   feedbackId: string,
   reason: string | null,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
 ) {
   await sql`
     insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
@@ -595,7 +677,7 @@ async function recordFeedbackNotification(
   organizationId: string | null | undefined,
   eventType: string,
   subject: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ) {
   await sql`
     insert into notification_events (organization_id, event_type, channel, subject, payload, status)
@@ -609,7 +691,7 @@ function summarizeFeedback(feedback: SkillFeedbackRow[]): SkillFeedbackSummary {
     2: 0,
     3: 0,
     4: 0,
-    5: 0
+    5: 0,
   } satisfies SkillFeedbackSummary["ratingBreakdown"];
   const published = feedback.filter((row) => row.status === "published");
 
@@ -620,9 +702,12 @@ function summarizeFeedback(feedback: SkillFeedbackRow[]): SkillFeedbackSummary {
   const total = published.reduce((sum, row) => sum + row.rating, 0);
 
   return {
-    averageRating: published.length > 0 ? Number((total / published.length).toFixed(1)) : null,
+    averageRating:
+      published.length > 0
+        ? Number((total / published.length).toFixed(1))
+        : null,
     publishedCount: published.length,
-    ratingBreakdown
+    ratingBreakdown,
   };
 }
 
@@ -630,7 +715,9 @@ function normalizeDecisionAction(value: unknown): FeedbackDecisionAction {
   const action = String(value ?? "").trim();
 
   if (!decisionActions.includes(action as FeedbackDecisionAction)) {
-    throw new Error("Feedback action must be publish, hide, reject, or reopen.");
+    throw new Error(
+      "Feedback action must be publish, hide, reject, or reopen.",
+    );
   }
 
   return action as FeedbackDecisionAction;
@@ -641,7 +728,7 @@ function statusForAction(action: FeedbackDecisionAction): FeedbackStatus {
     hide: "hidden",
     publish: "published",
     reject: "rejected",
-    reopen: "pending"
+    reopen: "pending",
   };
 
   return statuses[action];
@@ -649,7 +736,9 @@ function statusForAction(action: FeedbackDecisionAction): FeedbackStatus {
 
 function normalizeOptionalStatus(value: string | undefined) {
   const status = value?.trim();
-  return statuses.includes(status as FeedbackStatus) ? (status as FeedbackStatus) : undefined;
+  return statuses.includes(status as FeedbackStatus)
+    ? (status as FeedbackStatus)
+    : undefined;
 }
 
 function normalizeRating(value: unknown) {

@@ -7,13 +7,20 @@ import {
   Sparkles,
   Star,
   Terminal,
-  WalletCards
+  WalletCards,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import {
+  getDictionary,
+  getLocaleFromSearchParams,
+  localizedHref,
+} from "@/lib/i18n";
 import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
-import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
+import {
+  getPublicPublishers,
+  type PublicPublisherProfile,
+} from "@/lib/public-publishers";
 
 export const dynamic = "force-dynamic";
 
@@ -54,28 +61,34 @@ const copy = {
       active: "Active publisher",
       blocked: "Blocked publisher",
       limited: "Limited publisher",
-      verified: "Verified publisher"
+      verified: "Verified publisher",
     },
     publisherStatuses: {
       active: "Active",
       pending: "Pending",
       restricted: "Restricted",
-      suspended: "Suspended"
+      suspended: "Suspended",
     },
     payoutStatuses: {
       blocked: "Blocked",
       not_configured: "Not configured",
       verification_required: "Verification required",
-      verified: "Verified"
+      verified: "Verified",
     },
-    checks: ["Verified skills carry more ranking weight.", "Payout readiness matters for paid listings.", "Runtime evidence shows real adoption.", "Skill-level pages still expose install commands and permissions."]
+    checks: [
+      "Verified skills carry more ranking weight.",
+      "Payout readiness matters for paid listings.",
+      "Runtime evidence shows real adoption.",
+      "Skill-level pages still expose install commands and permissions.",
+    ],
   },
   zh: {
     activePaid: "活跃付费",
     back: "返回市场",
     calls: "运行调用",
     directory: "公开发布者",
-    directoryBody: "按信任等级、已验证上架、安装证据、运行调用、提现准备和公开技能库存浏览市场供应方。",
+    directoryBody:
+      "按信任等级、已验证上架、安装证据、运行调用、提现准备和公开技能库存浏览市场供应方。",
     docs: "审核文档",
     eyebrow: "发布者信任目录",
     installs: "安装",
@@ -101,46 +114,102 @@ const copy = {
       active: "活跃发布者",
       blocked: "已阻断发布者",
       limited: "受限发布者",
-      verified: "已验证发布者"
+      verified: "已验证发布者",
     },
     publisherStatuses: {
       active: "活跃",
       pending: "待完善",
       restricted: "受限",
-      suspended: "已暂停"
+      suspended: "已暂停",
     },
     payoutStatuses: {
       blocked: "已阻断",
       not_configured: "未配置",
       verification_required: "需要验证",
-      verified: "已验证"
+      verified: "已验证",
     },
-    checks: ["已验证技能会获得更高排序权重。", "提现准备决定付费技能能否顺畅运营。", "运行证据体现真实采用情况。", "技能详情页仍然展示安装命令和权限。"]
-  }
+    checks: [
+      "已验证技能会获得更高排序权重。",
+      "提现准备决定付费技能能否顺畅运营。",
+      "运行证据体现真实采用情况。",
+      "技能详情页仍然展示安装命令和权限。",
+    ],
+  },
 } as const;
 
-export default async function PublisherDirectoryPage({ searchParams }: PageProps) {
+const emptyDirectoryCopy = {
+  en: {
+    body: "The live registry is not exposing public publisher supply yet. Check launch readiness, seed real verified skills, or enable demo fallback only for a controlled staging demo.",
+    title: "No public publishers from the live registry",
+  },
+  zh: {
+    body: "实时注册表还没有公开发布者供给。上线前请检查 launch readiness、补充真实已验证技能，或只在受控 staging 演示中启用 demo fallback。",
+    title: "暂无来自实时注册表的公开发布者",
+  },
+} as const;
+
+export default async function PublisherDirectoryPage({
+  searchParams,
+}: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = copy[locale];
+  const emptyLabels = emptyDirectoryCopy[locale];
   const publishers = await getPublicPublishers();
-  const rankedPublishers = [...publishers].sort((a, b) => publisherScore(b) - publisherScore(a));
+  const rankedPublishers = [...publishers].sort(
+    (a, b) => publisherScore(b) - publisherScore(a),
+  );
   const metrics = [
     [labels.metricPublishers, formatCompactNumber(publishers.length)],
-    [labels.metricVerifiedPublishers, formatCompactNumber(publishers.filter((publisher) => publisher.trustLevel === "verified").length)],
-    [labels.metricPublic, formatCompactNumber(publishers.reduce((sum, publisher) => sum + publisher.metrics.publicSkillCount, 0))],
-    [labels.metricInstalls, formatCompactNumber(publishers.reduce((sum, publisher) => sum + publisher.metrics.installCount, 0))]
+    [
+      labels.metricVerifiedPublishers,
+      formatCompactNumber(
+        publishers.filter((publisher) => publisher.trustLevel === "verified")
+          .length,
+      ),
+    ],
+    [
+      labels.metricPublic,
+      formatCompactNumber(
+        publishers.reduce(
+          (sum, publisher) => sum + publisher.metrics.publicSkillCount,
+          0,
+        ),
+      ),
+    ],
+    [
+      labels.metricInstalls,
+      formatCompactNumber(
+        publishers.reduce(
+          (sum, publisher) => sum + publisher.metrics.installCount,
+          0,
+        ),
+      ),
+    ],
   ];
 
   return (
     <main className="product-shell">
-      <SiteHeader active="marketplace" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/publishers" />
+      <SiteHeader
+        active="marketplace"
+        apiUrl={apiUrl}
+        dictionary={dictionary}
+        locale={locale}
+        pathname="/publishers"
+      />
 
-      <section className="page-hero page-hero--compact publisher-directory-hero" aria-labelledby="publisher-directory-heading">
+      <section
+        className="page-hero page-hero--compact publisher-directory-hero"
+        aria-labelledby="publisher-directory-heading"
+      >
         <div>
-          <a className="breadcrumb-link" href={localizedHref("/marketplace", locale)}>
+          <a
+            className="breadcrumb-link"
+            href={localizedHref("/marketplace", locale)}
+          >
             {labels.back}
           </a>
           <div className="eyebrow">
@@ -150,11 +219,17 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
           <h1 id="publisher-directory-heading">{labels.title}</h1>
           <p>{labels.directoryBody}</p>
           <div className="hero-actions">
-            <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
+            <a
+              className="primary-button primary-button--large"
+              href={localizedHref("/marketplace", locale)}
+            >
               <PackageCheck size={18} aria-hidden="true" />
               <span>{labels.marketplace}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/publisher", locale)}>
+            <a
+              className="secondary-button secondary-button--large"
+              href={localizedHref("/publisher", locale)}
+            >
               <WalletCards size={18} aria-hidden="true" />
               <span>{dictionary.nav.publisher}</span>
             </a>
@@ -196,57 +271,124 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
             <span>{labels.directory}</span>
           </div>
 
-          <div className="publisher-directory-card-grid">
-            {rankedPublishers.map((publisher) => (
-              <article className="publisher-directory-card" key={publisher.slug}>
-                <header className="publisher-directory-card__top">
-                  <div>
-                    <span>{labels.trust}</span>
-                    <h2>{publisher.displayName}</h2>
+          {rankedPublishers.length > 0 ? (
+            <div className="publisher-directory-card-grid">
+              {rankedPublishers.map((publisher) => (
+                <article
+                  className="publisher-directory-card"
+                  key={publisher.slug}
+                >
+                  <header className="publisher-directory-card__top">
+                    <div>
+                      <span>{labels.trust}</span>
+                      <h2>{publisher.displayName}</h2>
+                    </div>
+                    <span className={trustClass(publisher.trustLevel)}>
+                      {labels.trustLevels[publisher.trustLevel]}
+                    </span>
+                  </header>
+
+                  <div className="publisher-directory-badges">
+                    <span className={publisherStatusClass(publisher.status)}>
+                      {labels.status}:{" "}
+                      {labels.publisherStatuses[publisher.status]}
+                    </span>
+                    <span className={payoutClass(publisher.payoutStatus)}>
+                      {labels.payout}:{" "}
+                      {labels.payoutStatuses[publisher.payoutStatus]}
+                    </span>
                   </div>
-                  <span className={trustClass(publisher.trustLevel)}>{labels.trustLevels[publisher.trustLevel]}</span>
-                </header>
 
-                <div className="publisher-directory-badges">
-                  <span className={publisherStatusClass(publisher.status)}>
-                    {labels.status}: {labels.publisherStatuses[publisher.status]}
-                  </span>
-                  <span className={payoutClass(publisher.payoutStatus)}>
-                    {labels.payout}: {labels.payoutStatuses[publisher.payoutStatus]}
-                  </span>
-                </div>
+                  <div className="publisher-directory-metrics">
+                    <Metric
+                      label={labels.publicSkills}
+                      value={formatCompactNumber(
+                        publisher.metrics.publicSkillCount,
+                      )}
+                    />
+                    <Metric
+                      label={labels.verifiedSkills}
+                      value={formatCompactNumber(
+                        publisher.metrics.verifiedSkillCount,
+                      )}
+                    />
+                    <Metric
+                      label={labels.installs}
+                      value={formatCompactNumber(
+                        publisher.metrics.installCount,
+                      )}
+                    />
+                    <Metric
+                      label={labels.calls}
+                      value={formatCompactNumber(publisher.metrics.callCount)}
+                    />
+                    <Metric
+                      label={labels.activePaid}
+                      value={formatCompactNumber(
+                        publisher.metrics.activePaidSkillCount,
+                      )}
+                    />
+                    <Metric
+                      label={labels.success}
+                      value={
+                        publisher.metrics.avgSuccessRate === null
+                          ? labels.notAvailable
+                          : formatPercent(publisher.metrics.avgSuccessRate)
+                      }
+                    />
+                  </div>
 
-                <div className="publisher-directory-metrics">
-                  <Metric label={labels.publicSkills} value={formatCompactNumber(publisher.metrics.publicSkillCount)} />
-                  <Metric label={labels.verifiedSkills} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
-                  <Metric label={labels.installs} value={formatCompactNumber(publisher.metrics.installCount)} />
-                  <Metric label={labels.calls} value={formatCompactNumber(publisher.metrics.callCount)} />
-                  <Metric label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />
-                  <Metric label={labels.success} value={publisher.metrics.avgSuccessRate === null ? labels.notAvailable : formatPercent(publisher.metrics.avgSuccessRate)} />
-                </div>
+                  <div
+                    className="publisher-directory-skills"
+                    aria-label={labels.topSkills}
+                  >
+                    {publisher.skills.slice(0, 4).map((skill) => (
+                      <a
+                        href={localizedHref(`/skills/${skill.slug}`, locale)}
+                        key={skill.slug}
+                      >
+                        <Star size={13} aria-hidden="true" />
+                        <span>{localizeText(skill.displayName, locale)}</span>
+                      </a>
+                    ))}
+                  </div>
 
-                <div className="publisher-directory-skills" aria-label={labels.topSkills}>
-                  {publisher.skills.slice(0, 4).map((skill) => (
-                    <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug}>
-                      <Star size={13} aria-hidden="true" />
-                      <span>{localizeText(skill.displayName, locale)}</span>
+                  <footer className="publisher-directory-card__foot">
+                    <span>
+                      {labels.topSkills}:{" "}
+                      {formatCompactNumber(
+                        Math.min(publisher.skills.length, 4),
+                      )}
+                    </span>
+                    <a
+                      className="secondary-button secondary-button--compact"
+                      href={localizedHref(
+                        `/publishers/${publisher.slug}`,
+                        locale,
+                      )}
+                    >
+                      <ShieldCheck size={15} aria-hidden="true" />
+                      <span>{labels.profile}</span>
+                      <ArrowRight size={14} aria-hidden="true" />
                     </a>
-                  ))}
-                </div>
-
-                <footer className="publisher-directory-card__foot">
-                  <span>
-                    {labels.topSkills}: {formatCompactNumber(Math.min(publisher.skills.length, 4))}
-                  </span>
-                  <a className="secondary-button secondary-button--compact" href={localizedHref(`/publishers/${publisher.slug}`, locale)}>
-                    <ShieldCheck size={15} aria-hidden="true" />
-                    <span>{labels.profile}</span>
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </a>
-                </footer>
-              </article>
-            ))}
-          </div>
+                  </footer>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="publisher-directory-empty">
+              <PackageCheck size={24} aria-hidden="true" />
+              <strong>{emptyLabels.title}</strong>
+              <p>{emptyLabels.body}</p>
+              <a
+                className="secondary-button secondary-button--compact"
+                href={localizedHref("/docs", locale)}
+              >
+                <ShieldCheck size={15} aria-hidden="true" />
+                <span>{labels.docs}</span>
+              </a>
+            </div>
+          )}
         </article>
 
         <aside className="publisher-directory-side">
@@ -263,7 +405,10 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                 </span>
               ))}
             </div>
-            <a className="ghost-button ghost-button--inline" href={localizedHref("/docs", locale)}>
+            <a
+              className="ghost-button ghost-button--inline"
+              href={localizedHref("/docs", locale)}
+            >
               <ShieldCheck size={16} aria-hidden="true" />
               <span>{labels.docs}</span>
             </a>
@@ -284,8 +429,18 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function publisherScore(profile: PublicPublisherProfile) {
-  const trustBoost = profile.trustLevel === "verified" ? 500_000 : profile.trustLevel === "active" ? 150_000 : 0;
-  return trustBoost + profile.metrics.verifiedSkillCount * 100_000 + profile.metrics.installCount * 10 + profile.metrics.callCount;
+  const trustBoost =
+    profile.trustLevel === "verified"
+      ? 500_000
+      : profile.trustLevel === "active"
+        ? 150_000
+        : 0;
+  return (
+    trustBoost +
+    profile.metrics.verifiedSkillCount * 100_000 +
+    profile.metrics.installCount * 10 +
+    profile.metrics.callCount
+  );
 }
 
 function trustClass(trustLevel: PublicPublisherProfile["trustLevel"]) {

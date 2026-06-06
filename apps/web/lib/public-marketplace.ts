@@ -2,8 +2,9 @@ import type { SkillManifest, SkillSummary } from "@useskillhub/schema";
 import {
   getMarketplaceSkill,
   marketplaceSkills,
-  type MarketplaceSkill
+  type MarketplaceSkill,
 } from "@/lib/marketplace-data";
+import { demoFallback } from "@/lib/demo-fallback";
 
 type SkillPriceRecord = {
   id: string;
@@ -33,22 +34,31 @@ export type MarketplaceSkillSuggestion = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
-export async function getPublicMarketplaceSkills(options: PublicMarketplaceSearchOptions = {}): Promise<MarketplaceSkill[]> {
+export async function getPublicMarketplaceSkills(
+  options: PublicMarketplaceSearchOptions = {},
+): Promise<MarketplaceSkill[]> {
   try {
     const searchParams = new URLSearchParams({
       limit: String(options.limit ?? 50),
-      sort: options.sort ?? "recommended"
+      sort: options.sort ?? "recommended",
     });
 
     appendSearchParam(searchParams, "billingModel", options.billingModel);
     appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
     appendSearchParam(searchParams, "q", options.query);
     appendSearchParam(searchParams, "runtimeType", options.runtimeType);
-    appendSearchParam(searchParams, "verificationStatus", options.verificationStatus);
+    appendSearchParam(
+      searchParams,
+      "verificationStatus",
+      options.verificationStatus,
+    );
 
-    const response = await fetch(`${apiUrl}/v1/skills/search?${searchParams.toString()}`, {
-      cache: "no-store"
-    });
+    const response = await fetch(
+      `${apiUrl}/v1/skills/search?${searchParams.toString()}`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!response.ok) {
       throw new Error(`Marketplace skill search failed: ${response.status}`);
@@ -57,37 +67,56 @@ export async function getPublicMarketplaceSkills(options: PublicMarketplaceSearc
     const payload = (await response.json()) as { skills: SkillSummary[] };
 
     if (payload.skills.length === 0) {
-      return marketplaceSkills;
+      return demoFallback(marketplaceSkills, []);
     }
 
-    return Promise.all(payload.skills.map((summary) => hydrateMarketplaceSkill(summary)));
+    return Promise.all(
+      payload.skills.map((summary) => hydrateMarketplaceSkill(summary)),
+    );
   } catch {
-    return marketplaceSkills;
+    return demoFallback(marketplaceSkills, []);
   }
 }
 
-export async function getPublicMarketplaceSkill(slug: string): Promise<MarketplaceSkill | null> {
+export async function getPublicMarketplaceSkill(
+  slug: string,
+): Promise<MarketplaceSkill | null> {
   const staticSkill = getMarketplaceSkill(slug);
 
   try {
-    const [manifest, prices, summary] = await Promise.all([fetchSkillManifest(slug), fetchSkillPrices(slug), fetchSkillSummary(slug)]);
+    const [manifest, prices, summary] = await Promise.all([
+      fetchSkillManifest(slug),
+      fetchSkillPrices(slug),
+      fetchSkillSummary(slug),
+    ]);
 
     if (!manifest && !staticSkill) {
       return null;
     }
 
     if (!manifest) {
-      return staticSkill ?? null;
+      return demoFallback(staticSkill ?? null, null);
     }
 
-    return manifestToMarketplaceSkill(manifest, summary ?? manifestToSummary(manifest), prices, staticSkill);
+    return manifestToMarketplaceSkill(
+      manifest,
+      summary ?? manifestToSummary(manifest),
+      prices,
+      staticSkill,
+    );
   } catch {
-    return staticSkill ?? null;
+    return demoFallback(staticSkill ?? null, null);
   }
 }
 
-export async function getRelatedMarketplaceSkills(slug: string, limit = 3): Promise<MarketplaceSkillSuggestion[]> {
-  const [current, skills] = await Promise.all([getPublicMarketplaceSkill(slug), getPublicMarketplaceSkills()]);
+export async function getRelatedMarketplaceSkills(
+  slug: string,
+  limit = 3,
+): Promise<MarketplaceSkillSuggestion[]> {
+  const [current, skills] = await Promise.all([
+    getPublicMarketplaceSkill(slug),
+    getPublicMarketplaceSkills(),
+  ]);
 
   if (!current) {
     return [];
@@ -97,20 +126,35 @@ export async function getRelatedMarketplaceSkills(slug: string, limit = 3): Prom
     .filter((skill) => skill.slug !== current.slug)
     .map((skill) => scoreRelatedSkill(current, skill))
     .filter((suggestion) => suggestion.score > 0)
-    .sort((first, second) => second.score - first.score || first.skill.slug.localeCompare(second.skill.slug))
+    .sort(
+      (first, second) =>
+        second.score - first.score ||
+        first.skill.slug.localeCompare(second.skill.slug),
+    )
     .slice(0, limit);
 }
 
 async function hydrateMarketplaceSkill(summary: SkillSummary) {
-  const [manifest, prices] = await Promise.all([fetchSkillManifest(summary.slug), fetchSkillPrices(summary.slug)]);
-  return manifestToMarketplaceSkill(manifest, summary, prices, getMarketplaceSkill(summary.slug));
+  const [manifest, prices] = await Promise.all([
+    fetchSkillManifest(summary.slug),
+    fetchSkillPrices(summary.slug),
+  ]);
+  return manifestToMarketplaceSkill(
+    manifest,
+    summary,
+    prices,
+    getMarketplaceSkill(summary.slug),
+  );
 }
 
 async function fetchSkillManifest(slug: string) {
   try {
-    const response = await fetch(`${apiUrl}/v1/skills/${encodeURIComponent(slug)}`, {
-      cache: "no-store"
-    });
+    const response = await fetch(
+      `${apiUrl}/v1/skills/${encodeURIComponent(slug)}`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!response.ok) {
       return null;
@@ -124,9 +168,12 @@ async function fetchSkillManifest(slug: string) {
 
 async function fetchSkillSummary(slug: string) {
   try {
-    const response = await fetch(`${apiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`, {
-      cache: "no-store"
-    });
+    const response = await fetch(
+      `${apiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!response.ok) {
       return null;
@@ -141,9 +188,12 @@ async function fetchSkillSummary(slug: string) {
 
 async function fetchSkillPrices(slug: string) {
   try {
-    const response = await fetch(`${apiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`, {
-      cache: "no-store"
-    });
+    const response = await fetch(
+      `${apiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!response.ok) {
       return [];
@@ -160,14 +210,24 @@ function manifestToMarketplaceSkill(
   manifest: SkillManifest | null,
   summary: SkillSummary,
   prices: SkillPriceRecord[],
-  staticSkill?: MarketplaceSkill
+  staticSkill?: MarketplaceSkill,
 ): MarketplaceSkill {
-  const activePrice = prices.find((price) => price.status === "active") ?? prices[0];
-  const billing = activePrice?.billingModel ?? summary.billingModel ?? staticSkill?.billing ?? "free";
-  const runtime = manifest ? runtimeLabel(manifest.runtime.type) : summary.runtimeType ? runtimeLabel(summary.runtimeType) : staticSkill?.runtime ?? "HTTP";
+  const activePrice =
+    prices.find((price) => price.status === "active") ?? prices[0];
+  const billing =
+    activePrice?.billingModel ??
+    summary.billingModel ??
+    staticSkill?.billing ??
+    "free";
+  const runtime = manifest
+    ? runtimeLabel(manifest.runtime.type)
+    : summary.runtimeType
+      ? runtimeLabel(summary.runtimeType)
+      : (staticSkill?.runtime ?? "HTTP");
   const categoryKey = inferCategoryKey(summary.tags);
   const category = categoryLabel(categoryKey);
-  const author = manifest?.author?.name ?? staticSkill?.author ?? "SkillHub Publisher";
+  const author =
+    manifest?.author?.name ?? staticSkill?.author ?? "SkillHub Publisher";
 
   return {
     author,
@@ -178,25 +238,32 @@ function manifestToMarketplaceSkill(
       {
         note: {
           en: `${summary.displayName} ${summary.version} is the latest registry version.`,
-          zh: `${summary.displayName} ${summary.version} 是当前注册表版本。`
+          zh: `${summary.displayName} ${summary.version} 是当前注册表版本。`,
         },
-        version: summary.version
-      }
+        version: summary.version,
+      },
     ],
-    inputExample: staticSkill?.inputExample ?? schemaExample(manifest?.inputSchema, "input"),
+    inputExample:
+      staticSkill?.inputExample ??
+      schemaExample(manifest?.inputSchema, "input"),
     installs: staticSkill?.installs ?? formatCompactCount(summary.installCount),
     installsCommand: {
       cli: `skillhub install ${summary.slug}`,
       mcp: `${apiUrl}/mcp/${summary.slug}`,
-      sdk: `await skillhub.run("${summary.slug}", input)`
+      sdk: `await skillhub.run("${summary.slug}", input)`,
     },
     latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),
     name: {
       en: summary.displayName,
-      zh: staticSkill?.name.zh ?? summary.displayName
+      zh: staticSkill?.name.zh ?? summary.displayName,
     },
-    outputExample: staticSkill?.outputExample ?? schemaExample(manifest?.outputSchema, "output"),
-    permissions: manifest ? permissionRows(manifest) : staticSkill?.permissions ?? permissionRowsFromRisk(summary.permissionLevel),
+    outputExample:
+      staticSkill?.outputExample ??
+      schemaExample(manifest?.outputSchema, "output"),
+    permissions: manifest
+      ? permissionRows(manifest)
+      : (staticSkill?.permissions ??
+        permissionRowsFromRisk(summary.permissionLevel)),
     price: formatPrice(activePrice, billing, staticSkill),
     rating: formatRating(summary, staticSkill),
     feedbackCount: summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0,
@@ -205,31 +272,34 @@ function manifestToMarketplaceSkill(
         author: "SkillHub Registry",
         quote: {
           en: `Listed from the live registry with ${summary.verificationStatus} trust status.`,
-          zh: `来自实时注册表，当前信任状态为 ${summary.verificationStatus}。`
-        }
-      }
+          zh: `来自实时注册表，当前信任状态为 ${summary.verificationStatus}。`,
+        },
+      },
     ],
     risk: summary.permissionLevel,
     runtime,
-    securityReport: manifest ? securityRows(manifest, summary) : staticSkill?.securityReport ?? securityRows(null, summary),
+    securityReport: manifest
+      ? securityRows(manifest, summary)
+      : (staticSkill?.securityReport ?? securityRows(null, summary)),
     slug: summary.slug,
-    successRate: staticSkill?.successRate ?? formatSuccessRate(summary.successRate),
+    successRate:
+      staticSkill?.successRate ?? formatSuccessRate(summary.successRate),
     summary: {
       en: summary.description,
-      zh: staticSkill?.summary.zh ?? summary.description
+      zh: staticSkill?.summary.zh ?? summary.description,
     },
     tags: {
       en: summary.tags,
-      zh: staticSkill?.tags.zh ?? summary.tags
+      zh: staticSkill?.tags.zh ?? summary.tags,
     },
     useCases: staticSkill?.useCases ?? [
       {
         en: `Use ${summary.displayName} as a reusable agent capability instead of rebuilding the same workflow.`,
-        zh: `把 ${summary.displayName} 当作可复用智能体能力，而不是重复重写同类流程。`
-      }
+        zh: `把 ${summary.displayName} 当作可复用智能体能力，而不是重复重写同类流程。`,
+      },
     ],
     verification: verificationLabel(summary.verificationStatus),
-    lastReviewed: staticSkill?.lastReviewed ?? "live registry"
+    lastReviewed: staticSkill?.lastReviewed ?? "live registry",
   };
 }
 
@@ -242,16 +312,25 @@ function manifestToSummary(manifest: SkillManifest): SkillSummary {
     slug: manifest.name,
     tags: manifest.tags,
     verificationStatus: "submitted",
-    version: manifest.version
+    version: manifest.version,
   };
 }
 
-function permissionLevelFromManifest(manifest: SkillManifest): SkillSummary["permissionLevel"] {
-  if (manifest.permissions.filesystem === "write" || manifest.permissions.secrets.length > 0) {
+function permissionLevelFromManifest(
+  manifest: SkillManifest,
+): SkillSummary["permissionLevel"] {
+  if (
+    manifest.permissions.filesystem === "write" ||
+    manifest.permissions.secrets.length > 0
+  ) {
     return "high";
   }
 
-  if (manifest.permissions.browser || manifest.permissions.filesystem === "read" || manifest.permissions.network) {
+  if (
+    manifest.permissions.browser ||
+    manifest.permissions.filesystem === "read" ||
+    manifest.permissions.network
+  ) {
     return "medium";
   }
 
@@ -261,7 +340,9 @@ function permissionLevelFromManifest(manifest: SkillManifest): SkillSummary["per
 function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
   const normalized = tags.map((tag) => tag.toLowerCase());
 
-  if (normalized.some((tag) => ["research", "browser", "citations"].includes(tag))) {
+  if (
+    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
+  ) {
     return "research";
   }
 
@@ -269,7 +350,11 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
     return "sales";
   }
 
-  if (normalized.some((tag) => ["support", "ticket", "classification"].includes(tag))) {
+  if (
+    normalized.some((tag) =>
+      ["support", "ticket", "classification"].includes(tag),
+    )
+  ) {
     return "support";
   }
 
@@ -277,7 +362,11 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
     return "data";
   }
 
-  if (normalized.some((tag) => ["security", "trust", "review", "schema"].includes(tag))) {
+  if (
+    normalized.some((tag) =>
+      ["security", "trust", "review", "schema"].includes(tag),
+    )
+  ) {
     return "security";
   }
 
@@ -291,13 +380,18 @@ function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
     research: { en: "Research", zh: "研究" },
     sales: { en: "Sales", zh: "销售" },
     security: { en: "Security", zh: "安全" },
-    support: { en: "Support", zh: "客服" }
-  } satisfies Record<MarketplaceSkill["categoryKey"], MarketplaceSkill["category"]>;
+    support: { en: "Support", zh: "客服" },
+  } satisfies Record<
+    MarketplaceSkill["categoryKey"],
+    MarketplaceSkill["category"]
+  >;
 
   return labels[categoryKey];
 }
 
-function runtimeLabel(runtime: SkillManifest["runtime"]["type"]): MarketplaceSkill["runtime"] {
+function runtimeLabel(
+  runtime: SkillManifest["runtime"]["type"],
+): MarketplaceSkill["runtime"] {
   if (runtime === "mcp") {
     return "MCP";
   }
@@ -309,7 +403,11 @@ function runtimeLabel(runtime: SkillManifest["runtime"]["type"]): MarketplaceSki
   return "HTTP";
 }
 
-function formatPrice(price: SkillPriceRecord | undefined, billing: MarketplaceSkill["billing"], staticSkill?: MarketplaceSkill) {
+function formatPrice(
+  price: SkillPriceRecord | undefined,
+  billing: MarketplaceSkill["billing"],
+  staticSkill?: MarketplaceSkill,
+) {
   if (!price) {
     if (staticSkill?.price) {
       return staticSkill.price;
@@ -333,84 +431,107 @@ function formatPrice(price: SkillPriceRecord | undefined, billing: MarketplaceSk
   const amount = new Intl.NumberFormat("en-US", {
     currency: price.currency.toUpperCase(),
     maximumFractionDigits: 3,
-    style: "currency"
+    style: "currency",
   }).format(price.unitAmountCents / 100);
-  const suffix = billing === "subscription" ? { en: " / month", zh: " / 月" } : { en: " / call", zh: " / 次" };
+  const suffix =
+    billing === "subscription"
+      ? { en: " / month", zh: " / 月" }
+      : { en: " / call", zh: " / 次" };
 
   return {
     en: `${amount}${suffix.en}`,
-    zh: `${amount}${suffix.zh}`
+    zh: `${amount}${suffix.zh}`,
   };
 }
 
 function verificationLabel(status: SkillSummary["verificationStatus"]) {
-  const labels: Record<SkillSummary["verificationStatus"], MarketplaceSkill["verification"]> = {
+  const labels: Record<
+    SkillSummary["verificationStatus"],
+    MarketplaceSkill["verification"]
+  > = {
     deprecated: { en: "Deprecated", zh: "已弃用" },
     draft: { en: "Draft", zh: "草稿" },
     rejected: { en: "Rejected", zh: "已拒绝" },
     submitted: { en: "Submitted", zh: "已提交" },
     suspended: { en: "Suspended", zh: "已暂停" },
-    verified: { en: "Verified", zh: "已验证" }
+    verified: { en: "Verified", zh: "已验证" },
   };
 
   return labels[status];
 }
 
-function permissionRows(manifest: SkillManifest): MarketplaceSkill["permissions"] {
+function permissionRows(
+  manifest: SkillManifest,
+): MarketplaceSkill["permissions"] {
   return [
     {
       key: "network",
       label: { en: "Network", zh: "网络" },
       value: manifest.permissions.network
         ? { en: "Required by manifest", zh: "Manifest 声明需要" }
-        : { en: "Not requested", zh: "未请求" }
+        : { en: "Not requested", zh: "未请求" },
     },
     {
       key: "browser",
       label: { en: "Browser", zh: "浏览器" },
       value: manifest.permissions.browser
         ? { en: "Browser runtime access", zh: "需要浏览器运行权限" }
-        : { en: "Not requested", zh: "未请求" }
+        : { en: "Not requested", zh: "未请求" },
     },
     {
       key: "filesystem",
       label: { en: "Filesystem", zh: "文件系统" },
-      value: { en: manifest.permissions.filesystem, zh: manifest.permissions.filesystem }
+      value: {
+        en: manifest.permissions.filesystem,
+        zh: manifest.permissions.filesystem,
+      },
     },
     {
       key: "secrets",
       label: { en: "Secrets", zh: "密钥" },
-      value: manifest.permissions.secrets.length > 0
-        ? { en: manifest.permissions.secrets.join(", "), zh: manifest.permissions.secrets.join(", ") }
-        : { en: "None", zh: "无" }
-    }
+      value:
+        manifest.permissions.secrets.length > 0
+          ? {
+              en: manifest.permissions.secrets.join(", "),
+              zh: manifest.permissions.secrets.join(", "),
+            }
+          : { en: "None", zh: "无" },
+    },
   ];
 }
 
-function permissionRowsFromRisk(permissionLevel: SkillSummary["permissionLevel"]): MarketplaceSkill["permissions"] {
+function permissionRowsFromRisk(
+  permissionLevel: SkillSummary["permissionLevel"],
+): MarketplaceSkill["permissions"] {
   return [
     {
       key: "risk",
       label: { en: "Permission risk", zh: "权限风险" },
-      value: { en: permissionLevel, zh: permissionLevel }
-    }
+      value: { en: permissionLevel, zh: permissionLevel },
+    },
   ];
 }
 
-function securityRows(manifest: SkillManifest | null, summary: SkillSummary): MarketplaceSkill["securityReport"] {
+function securityRows(
+  manifest: SkillManifest | null,
+  summary: SkillSummary,
+): MarketplaceSkill["securityReport"] {
   return [
     {
       label: { en: "Registry status", zh: "注册表状态" },
-      value: verificationLabel(summary.verificationStatus)
+      value: verificationLabel(summary.verificationStatus),
     },
     {
       label: { en: "Permission profile", zh: "权限画像" },
-      value: { en: summary.permissionLevel, zh: summary.permissionLevel }
+      value: { en: summary.permissionLevel, zh: summary.permissionLevel },
     },
     {
       label: { en: "Runtime", zh: "运行时" },
-      value: { en: manifest ? runtimeLabel(manifest.runtime.type) : "Unknown", zh: manifest ? runtimeLabel(manifest.runtime.type) : "未知" }
-    }
+      value: {
+        en: manifest ? runtimeLabel(manifest.runtime.type) : "Unknown",
+        zh: manifest ? runtimeLabel(manifest.runtime.type) : "未知",
+      },
+    },
   ];
 }
 
@@ -419,7 +540,10 @@ function qualitySignal(summary: SkillSummary) {
     return "verified";
   }
 
-  if (summary.verificationStatus === "suspended" || summary.verificationStatus === "rejected") {
+  if (
+    summary.verificationStatus === "suspended" ||
+    summary.verificationStatus === "rejected"
+  ) {
     return "blocked";
   }
 
@@ -427,17 +551,23 @@ function qualitySignal(summary: SkillSummary) {
 }
 
 function formatRating(summary: SkillSummary, staticSkill?: MarketplaceSkill) {
-  if (typeof summary.averageRating === "number" && Number.isFinite(summary.averageRating)) {
+  if (
+    typeof summary.averageRating === "number" &&
+    Number.isFinite(summary.averageRating)
+  ) {
     return new Intl.NumberFormat("en-US", {
       maximumFractionDigits: 1,
-      minimumFractionDigits: 1
+      minimumFractionDigits: 1,
     }).format(summary.averageRating);
   }
 
   return staticSkill?.rating ?? qualitySignal(summary);
 }
 
-function schemaExample(schema: SkillManifest["inputSchema"] | undefined, label: string) {
+function schemaExample(
+  schema: SkillManifest["inputSchema"] | undefined,
+  label: string,
+) {
   if (!schema) {
     return `{ "${label}": "..." }`;
   }
@@ -445,7 +575,11 @@ function schemaExample(schema: SkillManifest["inputSchema"] | undefined, label: 
   return JSON.stringify(schema, null, 2);
 }
 
-function appendSearchParam(params: URLSearchParams, key: string, value: string | number | undefined) {
+function appendSearchParam(
+  params: URLSearchParams,
+  key: string,
+  value: string | number | undefined,
+) {
   if (value === undefined || value === "") {
     return;
   }
@@ -456,7 +590,7 @@ function appendSearchParam(params: URLSearchParams, key: string, value: string |
 function formatCompactCount(value: number | null | undefined) {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
-    notation: "compact"
+    notation: "compact",
   }).format(value ?? 0);
 }
 
@@ -479,16 +613,19 @@ function formatSuccessRate(value: number | null | undefined) {
 
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 1,
-    style: "percent"
+    style: "percent",
   }).format(value);
 }
 
-function scoreRelatedSkill(current: MarketplaceSkill, skill: MarketplaceSkill): MarketplaceSkillSuggestion {
+function scoreRelatedSkill(
+  current: MarketplaceSkill,
+  skill: MarketplaceSkill,
+): MarketplaceSkillSuggestion {
   let score = 0;
   let relevanceSignals = 0;
   const reasons: MarketplaceSkillSuggestion["reasons"] = {
     en: [],
-    zh: []
+    zh: [],
   };
 
   if (skill.categoryKey === current.categoryKey) {
@@ -547,14 +684,17 @@ function scoreRelatedSkill(current: MarketplaceSkill, skill: MarketplaceSkill): 
   return {
     reasons: {
       en: reasons.en.slice(0, 4),
-      zh: reasons.zh.slice(0, 4)
+      zh: reasons.zh.slice(0, 4),
     },
     score,
-    skill
+    skill,
   };
 }
 
-function sharedLocalizedTags(current: MarketplaceSkill, skill: MarketplaceSkill) {
+function sharedLocalizedTags(
+  current: MarketplaceSkill,
+  skill: MarketplaceSkill,
+) {
   const currentTags = new Set(current.tags.en.map((tag) => tag.toLowerCase()));
   const en: string[] = [];
   const zh: string[] = [];
@@ -575,7 +715,7 @@ function riskRank(risk: MarketplaceSkill["risk"]) {
   const ranks = {
     high: 3,
     low: 1,
-    medium: 2
+    medium: 2,
   } satisfies Record<MarketplaceSkill["risk"], number>;
 
   return ranks[risk];

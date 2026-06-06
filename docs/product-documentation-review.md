@@ -187,7 +187,7 @@ Added first billing-ledger API endpoints, covering:
 
 Connected the operating UI to live platform data, covering:
 
-- Public marketplace catalog and skill detail pages now read registry search, manifests, and public price records first, while keeping bundled content as fallback.
+- Public marketplace catalog, skill detail, publisher directory/profile, platform overview, and public feedback surfaces now read live APIs first. Bundled fallback content is suppressed in production-like runtimes unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
 - Marketplace operating overview now reads the platform overview API and shows developer, publisher, and operator loops side by side, making repeat-use reasons visible before a user signs in.
 - Admin finance metrics from the ledger.
 - Admin money table from recent ledger transactions.
@@ -584,7 +584,7 @@ Added marketplace curation and ranking governance, covering:
 Added skill feedback and review moderation, covering:
 
 - `skill_feedback` stores rating, public title/body, use case, reviewer organization, project context, moderation status, moderation reason, and publish timestamp.
-- Public skill detail pages read published feedback and rating summaries from the API, with fallback demo data when the API is unavailable.
+- Public skill detail pages read published feedback and rating summaries from the API. Production-like runtimes return empty public feedback instead of demo reviews when the API/database is unavailable.
 - Signed-in developers can submit feedback from the skill detail page; new feedback enters moderation instead of becoming public immediately.
 - Trust operators can publish, hide, reject, or reopen feedback from `/admin`, with required reasons, audit logs, and queued publisher notifications.
 - This strengthens developer trust because listings now show real usage signals, and strengthens publisher retention because feedback creates a concrete improvement loop.

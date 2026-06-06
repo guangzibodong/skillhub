@@ -1,3 +1,5 @@
+import { demoFallback } from "@/lib/demo-fallback";
+
 export type SkillFeedbackRecord = {
   id: string;
   skillId: string;
@@ -58,7 +60,7 @@ const fallbackFeedback = [
     publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
-    updatedAt: "demo"
+    updatedAt: "demo",
   },
   {
     id: "demo-feedback-browser-research-2",
@@ -82,17 +84,20 @@ const fallbackFeedback = [
     publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
-    updatedAt: "demo"
-  }
+    updatedAt: "demo",
+  },
 ] satisfies SkillFeedbackRecord[];
 
-export async function getSkillFeedback(skillSlug: string, limit = 12): Promise<SkillFeedbackPayload> {
+export async function getSkillFeedback(
+  skillSlug: string,
+  limit = 12,
+): Promise<SkillFeedbackPayload> {
   try {
     const response = await fetch(
       `${apiUrl}/v1/skills/${encodeURIComponent(skillSlug)}/feedback?limit=${encodeURIComponent(String(limit))}`,
       {
-        cache: "no-store"
-      }
+        cache: "no-store",
+      },
     );
 
     if (!response.ok) {
@@ -101,26 +106,40 @@ export async function getSkillFeedback(skillSlug: string, limit = 12): Promise<S
 
     return (await response.json()) as SkillFeedbackPayload;
   } catch {
-    const feedback = fallbackFeedback.filter((row) => feedbackMatchesSkill(row.skillSlug, skillSlug)).slice(0, limit);
+    const feedback = demoFallback(
+      fallbackFeedback
+        .filter((row) => feedbackMatchesSkill(row.skillSlug, skillSlug))
+        .slice(0, limit),
+      [],
+    );
 
     return {
       feedback,
-      summary: summarizeFeedback(feedback)
+      summary: summarizeFeedback(feedback),
     };
   }
 }
 
-function feedbackMatchesSkill(rowSkillSlug: string, requestedSkillSlug: string) {
-  return rowSkillSlug === requestedSkillSlug || (requestedSkillSlug === "browser-research-pro" && rowSkillSlug === "browser-research");
+function feedbackMatchesSkill(
+  rowSkillSlug: string,
+  requestedSkillSlug: string,
+) {
+  return (
+    rowSkillSlug === requestedSkillSlug ||
+    (requestedSkillSlug === "browser-research-pro" &&
+      rowSkillSlug === "browser-research")
+  );
 }
 
-function summarizeFeedback(feedback: SkillFeedbackRecord[]): SkillFeedbackSummary {
+function summarizeFeedback(
+  feedback: SkillFeedbackRecord[],
+): SkillFeedbackSummary {
   const ratingBreakdown = {
     1: 0,
     2: 0,
     3: 0,
     4: 0,
-    5: 0
+    5: 0,
   } satisfies SkillFeedbackSummary["ratingBreakdown"];
   const published = feedback.filter((row) => row.status === "published");
 
@@ -131,8 +150,11 @@ function summarizeFeedback(feedback: SkillFeedbackRecord[]): SkillFeedbackSummar
   const total = published.reduce((sum, row) => sum + row.rating, 0);
 
   return {
-    averageRating: published.length > 0 ? Number((total / published.length).toFixed(1)) : null,
+    averageRating:
+      published.length > 0
+        ? Number((total / published.length).toFixed(1))
+        : null,
     publishedCount: published.length,
-    ratingBreakdown
+    ratingBreakdown,
   };
 }

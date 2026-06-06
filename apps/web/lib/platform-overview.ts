@@ -1,3 +1,5 @@
+import { demoFallback } from "@/lib/demo-fallback";
+
 export type OverviewMetric = {
   label: string;
   value: string | number;
@@ -64,9 +66,9 @@ const fallbackOverview: PlatformOverview = {
       { label: "Installed skills", value: 128 },
       { label: "API calls", value: "38.4k" },
       { label: "Avg latency", value: "1.4s" },
-      { label: "Open incidents", value: 1 }
+      { label: "Open incidents", value: 1 },
     ],
-    signals: []
+    signals: [],
   },
   developer: {
     metrics: [
@@ -74,10 +76,10 @@ const fallbackOverview: PlatformOverview = {
       { label: "Installed skills", value: 18 },
       { label: "Saved skills", value: 11 },
       { label: "Update inbox", value: 5 },
-      { label: "Active subscriptions", value: 126 }
+      { label: "Active subscriptions", value: 126 },
     ],
     projectControls: [],
-    updateInbox: []
+    updateInbox: [],
   },
   publisher: {
     metrics: [
@@ -85,31 +87,81 @@ const fallbackOverview: PlatformOverview = {
       { label: "Runtime checks failed", value: 1 },
       { label: "Open buyer requests", value: 2 },
       { label: "Available balance", value: "$4,820" },
-      { label: "Pending balance", value: "$1,260" }
+      { label: "Pending balance", value: "$1,260" },
     ],
     reviewPipeline: [],
-    buyerRequests: []
+    buyerRequests: [],
   },
   admin: {
     metrics: [
       { label: "Review queue", value: 9 },
       { label: "Payout review", value: 3 },
       { label: "Queued notifications", value: 14 },
-      { label: "Failed runtime checks", value: 2 }
+      { label: "Failed runtime checks", value: 2 },
     ],
     riskQueue: [],
-    moneyQueue: []
+    moneyQueue: [],
   },
   retention: {
     developerReasons: [],
-    publisherReasons: []
-  }
+    publisherReasons: [],
+  },
+};
+
+const emptyOverview: PlatformOverview = {
+  platform: {
+    metrics: [
+      { label: "Published skills", value: 0 },
+      { label: "Verified skills", value: 0 },
+      { label: "Installed skills", value: 0 },
+      { label: "API calls", value: 0 },
+      { label: "Avg latency", value: "n/a" },
+      { label: "Open incidents", value: 0 },
+    ],
+    signals: [],
+  },
+  developer: {
+    metrics: [
+      { label: "Projects", value: 0 },
+      { label: "Installed skills", value: 0 },
+      { label: "Saved skills", value: 0 },
+      { label: "Update inbox", value: 0 },
+      { label: "Active subscriptions", value: 0 },
+    ],
+    projectControls: [],
+    updateInbox: [],
+  },
+  publisher: {
+    metrics: [
+      { label: "Submitted versions", value: 0 },
+      { label: "Runtime checks failed", value: 0 },
+      { label: "Open buyer requests", value: 0 },
+      { label: "Available balance", value: "$0" },
+      { label: "Pending balance", value: "$0" },
+    ],
+    reviewPipeline: [],
+    buyerRequests: [],
+  },
+  admin: {
+    metrics: [
+      { label: "Review queue", value: 0 },
+      { label: "Payout review", value: 0 },
+      { label: "Queued notifications", value: 0 },
+      { label: "Failed runtime checks", value: 0 },
+    ],
+    riskQueue: [],
+    moneyQueue: [],
+  },
+  retention: {
+    developerReasons: [],
+    publisherReasons: [],
+  },
 };
 
 export async function getPlatformOverview(): Promise<PlatformOverview> {
   try {
     const response = await fetch(`${apiUrl}/v1/platform/overview`, {
-      cache: "no-store"
+      cache: "no-store",
     });
 
     if (!response.ok) {
@@ -118,11 +170,15 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
 
     return (await response.json()) as PlatformOverview;
   } catch {
-    return fallbackOverview;
+    return demoFallback(fallbackOverview, emptyOverview);
   }
 }
 
-export function getOverviewMetric(metrics: OverviewMetric[], label: string, fallback: string) {
+export function getOverviewMetric(
+  metrics: OverviewMetric[],
+  label: string,
+  fallback: string,
+) {
   const value = metrics.find((metric) => metric.label === label)?.value;
   return value === undefined ? fallback : String(value);
 }
