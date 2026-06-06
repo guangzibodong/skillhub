@@ -128,6 +128,7 @@ Added product-management governance, covering:
 - [Feature Requirement Template](./feature-requirement-template.md), defining the required spec fields before UI or code begins.
 - [Page Requirements Matrix](./page-requirements-matrix.md), defining each public, account, publisher, developer, dashboard, project, and admin page by primary user, page job, action, data source, and acceptance criteria.
 - [Product Decision Log](./product-decision-log.md), tracking public-launch blockers, paid-marketplace blockers, runtime strategy, paid publishing access, payout thresholds, refund/dispute policy, review SLA, auth launch policy, notification/webhook governance, and high-risk permission matrix decisions.
+- [Requirements Freeze Workshop](./requirements-freeze-workshop.md), recording the multi-role product meeting, P0 journeys, frozen product rules, reusable `/publish` prototype assets, paid-marketplace design defaults, UI entry criteria, and maximum-parallel team topology.
 - Updated product and technical plans so future UI/code work must map to approved requirements rather than ad hoc visual ideas.
 
 Added deployment migration-runner coverage, covering:

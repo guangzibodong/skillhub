@@ -2,7 +2,7 @@
 
 This log tracks product decisions that affect scope, launch readiness, paid marketplace rollout, architecture, UI, operations, legal, finance, or customer commitments.
 
-Each P0 decision must have an owner, target date, status, and acceptance impact before related UI or implementation is treated as final.
+Each P0 decision must have an owner, target date, status, and acceptance impact before related UI or implementation is treated as final. The current multi-role freeze proposal is recorded in [Requirements Freeze Workshop](./requirements-freeze-workshop.md).
 
 ## Decision Status
 
@@ -15,7 +15,7 @@ Each P0 decision must have an owner, target date, status, and acceptance impact 
 
 ### D001: Public Launch Blockers
 
-Status: open
+Status: decided
 
 Owner: Product Manager
 
@@ -25,9 +25,11 @@ Question:
 
 - Which readiness checks block public launch, and which only create warnings?
 
-Current assumption:
+Decision:
 
-- Public launch blockers should include account entry, core public pages, marketplace discovery, skill detail, publish path, publisher workspace, developer project path, admin review/risk visibility, migrations, secret-safe launch readiness, and production demo fallback disabled.
+- Public launch blockers include account entry, core public pages, marketplace discovery, skill detail, publish path, publisher workspace, developer project path, admin review/risk visibility, migration readiness, notification-template coverage, secret-safe launch readiness, and production demo fallback disabled.
+- OAuth providers can be configuration-required for public launch if email-code access is working and the UI/readiness panel explains missing callback/client configuration.
+- Payment, payout provider movement, and final legal terms are paid-marketplace blockers, not public-launch blockers.
 
 Acceptance impact:
 
@@ -35,7 +37,7 @@ Acceptance impact:
 
 ### D002: Paid Marketplace Launch Blockers
 
-Status: open
+Status: proposed
 
 Owner: Product Manager + Finance + Legal
 
@@ -49,13 +51,17 @@ Current assumption:
 
 - Verified skill review, publisher profile, accepted publisher terms, payout readiness, active commission rule, refund/dispute policy, payout threshold, review SLA, finance admin workflow, and provider-deferred payment state visibility are required.
 
+Design default:
+
+- Paid activation remains invite-only until payment provider, payout provider, KYC/tax, refund/dispute, and legal review are finalized.
+
 Acceptance impact:
 
 - Active `per_call` and `subscription` pricing cannot bypass paid-readiness blockers.
 
 ### D003: Runtime Strategy For Phase One
 
-Status: open
+Status: decided
 
 Owner: Product Manager + Engineering
 
@@ -65,9 +71,12 @@ Question:
 
 - Does SkillHub only route to external runtimes, proxy HTTP/MCP runtimes, host managed runtimes, or support a combination in phase one?
 
-Current assumption:
+Decision:
 
-- Phase one should prefer external HTTP/MCP runtimes through SkillHub governance and metering. Local execution remains restricted and requires manual review.
+- Phase one supports external HTTP/MCP runtimes governed through SkillHub policy, versioning, metering, and logging.
+- SkillHub may proxy/route calls through its runtime gateway where needed for governance.
+- Local execution is restricted and requires human review.
+- MCP `tools/call` must reuse the same runtime governance path as REST invocation.
 
 Acceptance impact:
 
@@ -75,7 +84,7 @@ Acceptance impact:
 
 ### D004: Paid Publishing Access
 
-Status: open
+Status: proposed
 
 Owner: Product Manager
 
@@ -89,13 +98,17 @@ Current assumption:
 
 - Paid publishing should start invite-only until payout/KYC/provider, review SLA, support, refund/dispute, and finance operations are proven.
 
+Design default:
+
+- UI should expose paid-activation eligibility/invite state, but real paid launch remains blocked until finance/legal/provider review.
+
 Acceptance impact:
 
 - Publisher workspace must show invite or paid-activation eligibility if invite-only is chosen.
 
 ### D005: Minimum Payout And Manual Review Threshold
 
-Status: open
+Status: proposed
 
 Owner: Finance + Product Manager
 
@@ -109,13 +122,17 @@ Current assumption:
 
 - Minimum payout and manual review threshold should be configurable, displayed in publisher payout readiness, and audited when changed.
 
+Design default:
+
+- Initial UI copy and thresholds use USD 50 minimum payout and USD 1,000 manual review threshold as configurable defaults.
+
 Acceptance impact:
 
 - Payout request UI and admin queue must match the configured thresholds.
 
 ### D006: Refund And Dispute Window
 
-Status: open
+Status: proposed
 
 Owner: Legal + Finance + Product Manager
 
@@ -129,13 +146,17 @@ Current assumption:
 
 - Provider-deferred refund/dispute states can exist now, but final public terms need legal review before paid launch.
 
+Design default:
+
+- Refund/dispute UI can show provider-deferred states and adjustment records now, but final refund window language must remain replaceable before real money movement.
+
 Acceptance impact:
 
 - `/terms`, admin adjustment UI, project adjustment history, and publisher revenue adjustment history must use the same policy.
 
 ### D007: Paid Skill Review SLA
 
-Status: open
+Status: proposed
 
 Owner: Product Manager + Trust Operator
 
@@ -149,13 +170,19 @@ Current assumption:
 
 - Paid skills need a stricter SLA than free draft listings; critical incidents need a separate faster response target.
 
+Design default:
+
+- Paid-skill review SLA display default: 3 business days.
+- Marketplace curation appeal SLA display default: 7 calendar days.
+- Critical incident first-response display default: 24 hours.
+
 Acceptance impact:
 
 - Publisher workspace, admin queues, terms, and notification templates must display consistent SLA language.
 
 ### D008: Auth Provider Launch Policy
 
-Status: proposed
+Status: decided
 
 Owner: Product Manager + Engineering
 
@@ -165,7 +192,7 @@ Question:
 
 - Which login methods are required for public launch?
 
-Current assumption:
+Decision:
 
 - Email-code access is required. Google and GitHub can remain configuration-required until production OAuth credentials are configured, but the UI must show exact callback URLs and missing configuration names.
 
@@ -191,7 +218,7 @@ Acceptance impact:
 
 ### D010: High-Risk Permission Matrix
 
-Status: open
+Status: decided
 
 Owner: Product Manager + Trust Operator + Engineering
 
@@ -201,9 +228,12 @@ Question:
 
 - Which permissions require owner approval, reviewer notes, second review, or paid-launch blocking?
 
-Current assumption:
+Decision:
 
-- Filesystem write, secret access, local execution, destructive workflows, payment actions, and sensitive data handling are high risk.
+- Filesystem write, secret access, local execution, destructive workflows, payment actions, and sensitive personal, financial, business, or credential data handling are high risk.
+- High-risk skills require reviewer notes.
+- High-risk installs require project owner approval before runtime.
+- Local execution and destructive/payment workflows require stronger review before paid activation.
 
 Acceptance impact:
 
