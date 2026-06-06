@@ -23,17 +23,21 @@ const copy = {
     add: "Save skill",
     collection: "Collection",
     defaultCollection: "default",
+    free: "free",
     remove: "Remove",
     saving: "Saving",
-    skillSlug: "Skill slug"
+    skillSlug: "Skill slug",
+    subscription: "subscription"
   },
   zh: {
     add: "保存技能",
     collection: "集合",
     defaultCollection: "default",
+    free: "免费",
     remove: "移除",
     saving: "保存中",
-    skillSlug: "技能 slug"
+    skillSlug: "技能 slug",
+    subscription: "订阅"
   }
 } as const;
 
@@ -101,7 +105,7 @@ export function ProjectSavedSkillManager({
                   <span className="status-chip status-chip--neutral">{savedSkill.permissionLevel}</span>
                   {savedSkill.installedStatus ? <span className="status-chip">{savedSkill.installedStatus}</span> : null}
                 </div>
-                <small>{pricingLabel(savedSkill)}</small>
+                <small>{pricingLabel(savedSkill, locale)}</small>
                 <form action={removeAction}>
                   <input name="savedSkillId" type="hidden" value={savedSkill.id} />
                   <button className="ghost-button ghost-button--danger" disabled={isRemovePending} type="submit">
@@ -137,13 +141,15 @@ function statusChipClass(status: string) {
   return "status-chip";
 }
 
-function pricingLabel(savedSkill: DeveloperProjectSavedSkillRecord) {
+function pricingLabel(savedSkill: DeveloperProjectSavedSkillRecord, locale: Locale) {
+  const labels = copy[locale];
+
   if (savedSkill.pricing.billingModel === "free") {
-    return "free";
+    return labels.free;
   }
 
   if (savedSkill.pricing.billingModel === "subscription") {
-    return "subscription";
+    return labels.subscription;
   }
 
   return `${formatMoney(savedSkill.pricing.unitAmountCents, savedSkill.pricing.currency)} / call`;

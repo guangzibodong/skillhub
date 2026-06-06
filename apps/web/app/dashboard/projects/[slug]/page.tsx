@@ -22,7 +22,13 @@ import { ProjectSubscriptionManager } from "@/components/project-subscription-ma
 import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
-import { formatCompactNumber, formatMoney, formatPercent, getDeveloperProjectDetail } from "@/lib/ops-data";
+import {
+  formatCompactNumber,
+  formatMoney,
+  formatPercent,
+  getDeveloperProjectDetail,
+  type DeveloperProjectDetail
+} from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +61,16 @@ const copy = {
     noDate: "n/a",
     ownerReview: "Owner review",
     policyState: "Policy state",
+    readiness: {
+      approved: ["Policy approval", "High-risk installs must be cleared before governed runtime."],
+      install: ["Skill installed", "At least one marketplace listing has become project state."],
+      key: ["Runtime key ready", "A reveal-once project key exists for REST or MCP clients."],
+      runtime: ["Runtime quality watched", "Recent calls are logged with status, latency, and error codes."],
+      needsAction: "Needs action",
+      ready: "Ready",
+      title: "Runtime readiness",
+      update: ["Update inbox", "Version updates and incidents need an explicit project decision."]
+    },
     revoked: "Revoked",
     savedSkillsTitle: "Saved skills",
     skillHeaders: ["Skill", "Policy", "Runtime", "Cost", "Next action"],
@@ -72,7 +88,7 @@ const copy = {
     avgLatency: "平均延迟",
     back: "返回工作台",
     billingHeaders: ["技能", "状态", "模式", "周期"],
-    billingTitle: "订阅与计费",
+    billingTitle: "订阅与账单",
     budget: "月度策略预算",
     callHeaders: ["技能", "状态", "延迟", "错误"],
     calls: "运行调用",
@@ -85,10 +101,20 @@ const copy = {
     invoicesTitle: "发票",
     keysTitle: "运行 API Key",
     noDate: "暂无",
-    ownerReview: "待负责人审核",
+    ownerReview: "负责人审批",
     policyState: "策略状态",
+    readiness: {
+      approved: ["策略审批", "高风险安装必须先完成负责人确认，才能进入治理运行。"],
+      install: ["已有技能安装", "至少一个市场上架项已经变成项目状态。"],
+      key: ["运行 Key 就绪", "已有一次性展示的项目 Key，可供 REST 或 MCP 客户端使用。"],
+      runtime: ["运行质量可监控", "最近调用已经记录状态、延迟和错误码。"],
+      needsAction: "待处理",
+      ready: "已就绪",
+      title: "运行准备度",
+      update: ["更新队列", "版本更新和事故通知需要明确的项目侧决策。"]
+    },
     revoked: "已撤销",
-    savedSkillsTitle: "收藏技能",
+    savedSkillsTitle: "已保存技能",
     skillHeaders: ["技能", "策略", "运行", "成本", "下一步"],
     skillTitle: "已安装技能与策略",
     spend: "使用成本",
@@ -125,6 +151,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
     [labels.avgLatency, formatLatency(project.runtime.avgLatencyMs, labels.noDate), Clock3],
     [labels.subscriptions, `${project.subscriptions.activeCount}`, CheckCircle2]
   ] as const;
+  const readinessItems = getReadinessItems(detail, locale);
 
   return (
     <main className="product-shell">
@@ -161,6 +188,20 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
                 <Icon size={16} aria-hidden="true" />
                 <span>{label}</span>
                 <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="project-readiness-list" aria-label={labels.readiness.title}>
+            <strong>{labels.readiness.title}</strong>
+            {readinessItems.map((item) => (
+              <div className="project-readiness-item" key={item.label}>
+                <span className={item.ready ? "status-chip" : "status-chip status-chip--warning"}>
+                  {item.ready ? labels.readiness.ready : labels.readiness.needsAction}
+                </span>
+                <div>
+                  <b>{item.label}</b>
+                  <small>{item.detail}</small>
+                </div>
               </div>
             ))}
           </div>
@@ -279,6 +320,43 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
       </section>
     </main>
   );
+}
+
+function getReadinessItems(detail: DeveloperProjectDetail, locale: Locale) {
+  const labels = copy[locale].readiness;
+  const { project } = detail;
+  const runtimeReady =
+    project.runtime.callCount > 0 &&
+    project.runtime.blockedCount === 0 &&
+    (project.runtime.successRate === null || project.runtime.successRate >= 0.95);
+
+  return [
+    {
+      detail: labels.key[1],
+      label: labels.key[0],
+      ready: project.apiKeys.activeCount > 0
+    },
+    {
+      detail: labels.install[1],
+      label: labels.install[0],
+      ready: project.installs.installedSkillCount > 0
+    },
+    {
+      detail: labels.approved[1],
+      label: labels.approved[0],
+      ready: project.policy.state === "approved" && project.installs.ownerRequiredCount === 0
+    },
+    {
+      detail: labels.update[1],
+      label: labels.update[0],
+      ready: detail.updateInbox.length === 0 && project.updates.count === 0
+    },
+    {
+      detail: labels.runtime[1],
+      label: labels.runtime[0],
+      ready: runtimeReady
+    }
+  ];
 }
 
 function policyStateLabel(state: "approved" | "owner_review" | "suspended", locale: Locale) {

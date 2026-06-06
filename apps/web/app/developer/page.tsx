@@ -16,10 +16,11 @@ import {
   getDeveloperBuyerRequests,
   getDeveloperProjects,
   getNotificationPreferences,
-  getUserNotificationInbox,
   getOrganizationBillingSummary,
   getOrganizationTeamMembers,
   getOrganizationWebhookEndpoints,
+  getUserNotificationInbox,
+  type DeveloperProjectRecord
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,8 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+type DeveloperLocale = "en" | "zh";
 
 const copy = {
   en: {
@@ -40,14 +43,37 @@ const copy = {
       installed: "Installed skills",
       projects: "Projects"
     },
-    projectHeaders: ["Project", "Installed", "Keys", "Budget", "Runtime"],
+    nextActions: {
+      billing: ["Review billing", "Keep invoice profile and payment method readiness clear before paid runtime grows."],
+      createKey: ["Create runtime key", "No active project key exists yet. Create a reveal-once key before handing SkillHub to an agent."],
+      createProject: ["Create first project", "Start with one agent project so marketplace decisions become project state."],
+      installSkill: ["Install first skill", "Browse the marketplace and install a verified skill before runtime testing."],
+      monitor: ["Monitor operations", "Runtime, updates, costs, keys, and notifications are ready for weekly review."],
+      ownerReview: ["Approve high-risk policy", "A skill needs owner approval before agents can invoke it under project policy."],
+      runtime: ["Inspect runtime quality", "Errors, blocked calls, or low success rate need review before scaling agent traffic."],
+      update: ["Review version update", "A publisher update or incident is waiting for an explicit project decision."]
+    },
+    nextActionsDescription: "These are the project states that make developers come back after the first install.",
+    nextActionsTitle: "Operating queue",
+    openMarketplace: "Browse marketplace",
+    openProject: "Open project",
+    projectRow: {
+      active: "active",
+      approved: "approved",
+      calls: "calls",
+      installed: "installed",
+      ownerReview: "owner review",
+      revoked: "revoked",
+      suspended: "suspended"
+    },
+    projectHeaders: ["Project", "Installed", "Keys", "Budget", "Runtime / next step"],
     projectTitle: "Agent project operations",
     title: "Manage the skills your agents use."
   },
   zh: {
     description:
-      "给下载和使用技能的团队准备的独立工作台：创建智能体项目、查看 API Key 和预算、发布买方需求，并保持账单资料可用。",
-    emptyProjects: "还没有开发者项目。先创建一个项目，再开始安装和审批技能。",
+      "给安装和运行技能的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、账单和运行治理。",
+    emptyProjects: "还没有开发者项目。先创建一个项目，再开始安装、审批和测试技能。",
     eyebrow: "开发者工作台",
     metrics: {
       budget: "月度预算",
@@ -55,7 +81,30 @@ const copy = {
       installed: "已安装技能",
       projects: "项目"
     },
-    projectHeaders: ["项目", "已安装", "Key", "预算", "运行"],
+    nextActions: {
+      billing: ["检查账单准备", "在付费运行扩大前，确认发票资料和支付方式状态清楚。"],
+      createKey: ["创建运行 Key", "当前项目还没有活跃 Key。先创建一次性展示的 Key，再交给智能体运行。"],
+      createProject: ["创建第一个项目", "先建立一个智能体项目，让市场里的选择变成真实项目状态。"],
+      installSkill: ["安装第一个技能", "去市场选择一个已验证技能，安装后再进入运行测试。"],
+      monitor: ["持续监控运营", "运行、更新、成本、Key 和通知都已进入可复查状态。"],
+      ownerReview: ["审批高风险策略", "有技能需要负责人审批后，智能体才可以通过项目策略调用。"],
+      runtime: ["检查运行质量", "错误、阻断调用或成功率偏低，需要在扩大调用前处理。"],
+      update: ["处理版本更新", "发布者更新或事故通知正在等待项目侧明确决策。"]
+    },
+    nextActionsDescription: "这些项目状态，就是开发者第一次安装之后还会回来的原因。",
+    nextActionsTitle: "运营队列",
+    openMarketplace: "浏览市场",
+    openProject: "打开项目",
+    projectRow: {
+      active: "活跃",
+      approved: "已批准",
+      calls: "次调用",
+      installed: "已安装",
+      ownerReview: "负责人审批",
+      revoked: "已撤销",
+      suspended: "已暂停"
+    },
+    projectHeaders: ["项目", "已安装", "Key", "预算", "运行 / 下一步"],
     projectTitle: "智能体项目运营",
     title: "管理你的智能体正在使用的技能。"
   }
@@ -97,6 +146,10 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
     [labels.metrics.calls, formatCompactNumber(totalCalls)],
     [labels.metrics.budget, formatMoney(totalBudget, currency)]
   ];
+  const projectNextSteps = developerProjects.slice(0, 4).map((project) => ({
+    project,
+    step: getDeveloperProjectNextStep(project, locale)
+  }));
 
   return (
     <main className="product-shell">
@@ -146,25 +199,30 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
                 ))}
               </div>
               {developerProjects.length > 0 ? (
-                developerProjects.slice(0, 8).map((project) => (
-                  <div className="work-table__row developer-project-row" key={project.slug}>
-                    <strong>
-                      <a className="table-link" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
-                        {project.name}
-                      </a>
-                    </strong>
-                    <span>
-                      {project.installs.installedSkillCount} installed / {project.installs.approvedSkillCount} approved
-                    </span>
-                    <span>
-                      {project.apiKeys.activeCount} active / {project.apiKeys.revokedCount} revoked
-                    </span>
-                    <span>{formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)}</span>
-                    <span>
-                      {formatCompactNumber(project.runtime.callCount)} calls / {project.policy.state}
-                    </span>
-                  </div>
-                ))
+                developerProjects.slice(0, 8).map((project) => {
+                  const nextStep = getDeveloperProjectNextStep(project, locale);
+
+                  return (
+                    <div className="work-table__row developer-project-row" key={project.slug}>
+                      <strong>
+                        <a className="table-link" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                          {project.name}
+                        </a>
+                      </strong>
+                      <span>
+                        {project.installs.installedSkillCount} {labels.projectRow.installed} / {project.installs.approvedSkillCount} {labels.projectRow.approved}
+                      </span>
+                      <span>
+                        {project.apiKeys.activeCount} {labels.projectRow.active} / {project.apiKeys.revokedCount} {labels.projectRow.revoked}
+                      </span>
+                      <span>{formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)}</span>
+                      <span>
+                        {formatCompactNumber(project.runtime.callCount)} {labels.projectRow.calls} / {projectPolicyStateLabel(project.policy.state, locale)}
+                        <small>{nextStep.title}</small>
+                      </span>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="work-table__row developer-project-row developer-project-row--empty">
                   <strong>{labels.emptyProjects}</strong>
@@ -199,23 +257,85 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
           <article className="ops-panel runtime-ops-panel">
             <div className="card-kicker">
               <ReceiptText size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "下一步" : "Next actions"}</span>
+              <span>{labels.nextActionsTitle}</span>
             </div>
+            <p className="developer-next-action-intro">{labels.nextActionsDescription}</p>
             <div className="trust-requirement-grid trust-requirement-grid--single">
-              <div className="trust-requirement">
-                <KeyRound size={16} aria-hidden="true" />
-                <strong>{locale === "zh" ? "轮换项目 API Key" : "Rotate project API keys"}</strong>
-                <span>{locale === "zh" ? "进入项目详情页创建新 key，并撤销旧 key。" : "Open a project detail page to create a replacement key and revoke stale keys."}</span>
-              </div>
-              <div className="trust-requirement">
-                <PackageCheck size={16} aria-hidden="true" />
-                <strong>{locale === "zh" ? "审批高风险技能" : "Approve high-risk skills"}</strong>
-                <span>{locale === "zh" ? "项目策略页会展示权限、预算、速率限制和 owner 审批状态。" : "Project policies expose permissions, budgets, rate limits, and owner approval state."}</span>
-              </div>
+              {projectNextSteps.length > 0 ? (
+                projectNextSteps.map(({ project, step }) => (
+                  <div className="trust-requirement developer-next-action" key={project.slug}>
+                    <KeyRound size={16} aria-hidden="true" />
+                    <strong>{step.title}</strong>
+                    <span>{project.name}: {step.detail}</span>
+                    <a className="ghost-button ghost-button--inline" href={localizedHref(step.href, locale)}>
+                      {step.href === "/marketplace" ? labels.openMarketplace : labels.openProject}
+                    </a>
+                  </div>
+                ))
+              ) : (
+                <div className="trust-requirement developer-next-action">
+                  <PackageCheck size={16} aria-hidden="true" />
+                  <strong>{labels.nextActions.createProject[0]}</strong>
+                  <span>{labels.nextActions.createProject[1]}</span>
+                </div>
+              )}
             </div>
           </article>
         </aside>
       </section>
     </main>
   );
+}
+
+function getDeveloperProjectNextStep(project: DeveloperProjectRecord, locale: DeveloperLocale) {
+  const labels = copy[locale].nextActions;
+  const projectHref = `/dashboard/projects/${project.slug}`;
+
+  if (project.apiKeys.activeCount === 0) {
+    return { detail: labels.createKey[1], href: projectHref, title: labels.createKey[0] };
+  }
+
+  if (project.installs.installedSkillCount === 0) {
+    return { detail: labels.installSkill[1], href: "/marketplace", title: labels.installSkill[0] };
+  }
+
+  if (project.policy.state === "owner_review" || project.installs.ownerRequiredCount > 0 || project.policy.approvalRequiredCount > 0) {
+    return { detail: labels.ownerReview[1], href: projectHref, title: labels.ownerReview[0] };
+  }
+
+  if (project.installs.suspendedInstallCount > 0 || project.policy.state === "suspended") {
+    return { detail: labels.runtime[1], href: projectHref, title: labels.runtime[0] };
+  }
+
+  if (project.updates.count > 0) {
+    return { detail: labels.update[1], href: projectHref, title: labels.update[0] };
+  }
+
+  if (
+    project.runtime.blockedCount > 0 ||
+    project.runtime.errorCount > 0 ||
+    (project.runtime.successRate !== null && project.runtime.successRate < 0.95)
+  ) {
+    return { detail: labels.runtime[1], href: projectHref, title: labels.runtime[0] };
+  }
+
+  if (project.usage.grossCents > 0 && project.subscriptions.activeCount === 0) {
+    return { detail: labels.billing[1], href: projectHref, title: labels.billing[0] };
+  }
+
+  return { detail: labels.monitor[1], href: projectHref, title: labels.monitor[0] };
+}
+
+function projectPolicyStateLabel(state: DeveloperProjectRecord["policy"]["state"], locale: DeveloperLocale) {
+  const labels = copy[locale].projectRow;
+
+  if (state === "owner_review") {
+    return labels.ownerReview;
+  }
+
+  if (state === "suspended") {
+    return labels.suspended;
+  }
+
+  return labels.approved;
 }

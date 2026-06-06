@@ -36,104 +36,104 @@ type PageProps = {
 
 const copy = {
   en: {
+    anonymousReviewer: "Verified user",
+    approval: "Approval state",
+    averageRating: "Average rating",
     back: "Back to marketplace",
-    install: "Install",
-    overview: "Overview",
-    security: "Security review",
-    pricing: "Pricing",
-    contract: "Runtime contract",
-    useCases: "Production use cases",
     changelog: "Changelog",
+    cli: "CLI",
+    contract: "Runtime contract",
     feedback: "User feedback",
     feedbackBody: "Published feedback from teams that installed or evaluated this skill.",
     feedbackEmpty: "No published feedback yet.",
     feedbackProject: "Project",
-    publisherResponse: "Publisher response",
     feedbackUseCase: "Use case",
-    averageRating: "Average rating",
-    publishedFeedback: "Published feedback",
-    anonymousReviewer: "Verified user",
-    reviews: "Operator notes",
+    input: "Input example",
+    install: "Install",
+    installs: "Installs",
+    lastReviewed: "Last reviewed",
+    latency: "Median latency",
+    mcp: "MCP",
+    output: "Output example",
+    overview: "Overview",
+    payout: "Publisher payout",
+    payoutBody: "Paid usage is converted into immutable transaction splits before a publisher balance can be paid out.",
     permissions: "Permissions",
+    pricing: "Pricing",
+    publishedFeedback: "Published feedback",
     publisher: "Publisher",
+    publisherResponse: "Publisher response",
     publisherTrust: "Publisher trust",
+    related: "Alternatives and replacements",
+    relatedBody: "Compare similar skills before installing, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
+    relatedDetails: "Open details",
+    relatedReasons: "Why it matches",
+    reviews: "Operator notes",
+    runtime: "Runtime",
+    sdk: "SDK",
+    security: "Security review",
+    success: "Success rate",
+    support: "Support and operations",
+    supportItems: ["Version pinning supported", "Deprecation notice required", "Runtime incidents enter review queue"],
     trustLevels: {
       active: "active",
       blocked: "blocked",
       limited: "limited",
       verified: "verified"
     },
-    viewPublisher: "Open publisher profile",
+    useCases: "Production use cases",
     verifiedSkills: "verified skills",
-    related: "Alternatives and replacements",
-    relatedBody: "Compare similar skills before installing, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
-    relatedReasons: "Why it matches",
-    relatedDetails: "Open details",
-    lastReviewed: "Last reviewed",
-    success: "Success rate",
-    latency: "Median latency",
-    installs: "Installs",
-    runtime: "Runtime",
-    approval: "Approval state",
-    cli: "CLI",
-    mcp: "MCP",
-    sdk: "SDK",
-    input: "Input example",
-    output: "Output example",
-    payout: "Publisher payout",
-    payoutBody: "Paid usage is converted into immutable transaction splits before a publisher balance can be paid out.",
-    support: "Support and operations",
-    supportItems: ["Version pinning supported", "Deprecation notice required", "Runtime incidents enter review queue"]
+    viewPublisher: "Open publisher profile"
   },
   zh: {
+    anonymousReviewer: "已验证用户",
+    approval: "审核状态",
+    averageRating: "平均评分",
     back: "返回市场",
-    install: "安装",
-    overview: "概览",
-    security: "安全审核",
-    pricing: "价格",
-    contract: "运行协议",
-    useCases: "生产使用场景",
     changelog: "更新记录",
+    cli: "CLI",
+    contract: "运行协议",
     feedback: "用户反馈",
     feedbackBody: "来自已安装或评估该技能团队的公开反馈。",
     feedbackEmpty: "暂时还没有公开反馈。",
     feedbackProject: "项目",
-    publisherResponse: "发布者回复",
     feedbackUseCase: "使用场景",
-    averageRating: "平均评分",
-    publishedFeedback: "公开反馈",
-    anonymousReviewer: "已验证用户",
-    reviews: "运营备注",
+    input: "输入示例",
+    install: "安装",
+    installs: "安装量",
+    lastReviewed: "最近审核",
+    latency: "中位延迟",
+    mcp: "MCP",
+    output: "输出示例",
+    overview: "概览",
+    payout: "发布者提现",
+    payoutBody: "付费用量必须先转换成不可变分账交易，然后才会进入发布者可提现余额。",
     permissions: "权限",
+    pricing: "价格",
+    publishedFeedback: "公开反馈",
     publisher: "发布者",
+    publisherResponse: "发布者回复",
     publisherTrust: "发布者信任",
+    related: "替代和相似技能",
+    relatedBody: "安装前先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
+    relatedDetails: "打开详情",
+    relatedReasons: "推荐原因",
+    reviews: "运营备注",
+    runtime: "运行时",
+    sdk: "SDK",
+    security: "安全审核",
+    success: "成功率",
+    support: "支持和运营",
+    supportItems: ["支持版本固定", "弃用必须提前通知", "运行事故进入审核队列"],
     trustLevels: {
       active: "活跃",
       blocked: "已阻断",
       limited: "受限",
       verified: "已验证"
     },
-    viewPublisher: "打开发布者档案",
+    useCases: "生产使用场景",
     verifiedSkills: "已验证技能",
-    related: "替代和相似技能",
-    relatedBody: "安装前先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
-    relatedReasons: "推荐原因",
-    relatedDetails: "打开详情",
-    lastReviewed: "最近审核",
-    success: "成功率",
-    latency: "中位延迟",
-    installs: "安装量",
-    runtime: "运行时",
-    approval: "审核状态",
-    cli: "CLI",
-    mcp: "MCP",
-    sdk: "SDK",
-    input: "输入示例",
-    output: "输出示例",
-    payout: "发布者提现",
-    payoutBody: "付费用量必须先转换成不可变分账交易，之后才能进入发布者可提现余额。",
-    support: "支持和运营",
-    supportItems: ["支持版本固定", "弃用必须提前通知", "运行事故进入审核队列"]
+    viewPublisher: "打开发布者档案"
   }
 } as const;
 
@@ -240,7 +240,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
             <SkillProjectActionPanel
               billingModel={skill.billing}
-              dashboardHref={localizedHref("/dashboard", locale)}
+              dashboardHref={localizedHref("/developer", locale)}
               inputExample={skill.inputExample}
               latestVersion={latestVersion}
               locale={locale}
@@ -455,7 +455,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
           <section className="skill-detail-panel">
             <div className="card-kicker">
-              <CircleDollarSignIcon />
+              <WalletCards size={16} aria-hidden="true" />
               <span>{labels.pricing}</span>
             </div>
             <div className="price-block">
@@ -522,10 +522,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
       </section>
     </main>
   );
-}
-
-function CircleDollarSignIcon() {
-  return <WalletCards size={16} aria-hidden="true" />;
 }
 
 function formatDate(value: string, locale: "en" | "zh") {

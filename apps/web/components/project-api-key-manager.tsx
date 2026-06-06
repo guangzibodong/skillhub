@@ -28,10 +28,10 @@ const copy = {
     copied: "Copied",
     create: "Create key",
     creating: "Creating",
-    key: "Key",
     keyHeaders: ["Name", "Key", "Last used", "State", "Action"],
     namePlaceholder: "Production runtime key",
     newKey: "New runtime secret",
+    revealOnce: "This raw key is shown once. Store it in your agent runtime before closing this page.",
     revoke: "Revoke",
     revoking: "Revoking",
     rotate: "Rotate key",
@@ -44,10 +44,10 @@ const copy = {
     copied: "已复制",
     create: "创建 Key",
     creating: "创建中",
-    key: "Key",
     keyHeaders: ["名称", "Key", "最近使用", "状态", "操作"],
     namePlaceholder: "生产运行 Key",
     newKey: "新的运行密钥",
+    revealOnce: "原始 Key 只展示一次。关闭页面前，请先写入你的智能体运行环境。",
     revoke: "撤销",
     revoking: "撤销中",
     rotate: "轮换 Key",
@@ -131,6 +131,7 @@ export function ProjectApiKeyManager({
         <div className="secret-reveal">
           <span>{labels.newKey}</span>
           <code>{createState.apiKey.apiKey}</code>
+          <small>{labels.revealOnce}</small>
           <button className="secondary-button" onClick={() => copySecret(createState.apiKey!.apiKey)} type="button">
             <Copy size={16} aria-hidden="true" />
             <span>{copied ? labels.copied : labels.copy}</span>

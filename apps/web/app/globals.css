@@ -2449,6 +2449,22 @@ a {
   color: var(--cyan);
 }
 
+.developer-next-action-intro {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.developer-next-action {
+  gap: 10px;
+}
+
+.developer-next-action .ghost-button {
+  justify-self: start;
+  margin-top: 2px;
+}
+
 .publisher-launch-checklist {
   display: grid;
   gap: 14px;
@@ -2688,13 +2704,7 @@ a {
 }
 
 .developer-project-row {
-  grid-template-columns:
-    minmax(150px, 1fr)
-    minmax(150px, 0.72fr)
-    minmax(136px, 0.58fr)
-    minmax(108px, 0.42fr)
-    minmax(150px, 0.72fr);
-  min-width: 840px;
+  min-width: 0;
 }
 
 .developer-project-row--empty {
@@ -8280,6 +8290,45 @@ a {
   line-height: 1.15;
 }
 
+.project-readiness-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.project-readiness-list > strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.project-readiness-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
+}
+
+.project-readiness-item > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.project-readiness-item b {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.project-readiness-item small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .project-metric {
   display: grid;
   align-content: start;
@@ -10962,6 +11011,29 @@ a {
   font-weight: 760;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.work-table__row.developer-project-row {
+  grid-template-columns:
+    minmax(126px, 1fr)
+    minmax(118px, 0.72fr)
+    minmax(96px, 0.52fr)
+    minmax(72px, 0.36fr)
+    minmax(128px, 0.76fr);
+  min-width: 0;
+}
+
+.developer-project-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.developer-project-row span small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
 }
 
 .publish-hero__signals strong {

@@ -24,38 +24,64 @@ const copy = {
     allowNetwork: "Network",
     allowSecretAccess: "Secrets",
     approvalRequired: "Require owner approval",
+    approved: "Approved",
     close: "Close",
     edit: "Edit policy",
     filesystemAccess: "Filesystem",
+    free: "free",
+    improveRuntime: "Improve runtime quality",
+    installSuspended: "Install suspended",
+    investigateIncident: "Investigate incident",
     maxPermissionLevel: "Max permission",
+    monitor: "Monitor",
     monthlyBudgetDollars: "Monthly budget",
     noSensitiveAccess: "no sensitive access",
+    ownerReview: "Approve policy",
     rateLimitPerMinute: "Rate / min",
+    removed: "Removed",
     remove: "Remove",
+    resolveSuspension: "Resolve suspension",
     restore: "Restore",
+    reviewUpdate: "Review update",
     save: "Save policy",
     saving: "Saving",
+    subscription: "subscription",
+    suspended: "Suspended",
     suspend: "Suspend",
-    title: "Policy editor"
+    title: "Policy editor",
+    unpinned: "unpinned"
   },
   zh: {
     allowBrowser: "浏览器",
     allowNetwork: "网络",
     allowSecretAccess: "密钥",
     approvalRequired: "需要负责人审批",
+    approved: "已批准",
     close: "关闭",
     edit: "编辑策略",
     filesystemAccess: "文件系统",
+    free: "免费",
+    improveRuntime: "优化运行质量",
+    installSuspended: "安装已暂停",
+    investigateIncident: "排查运行事故",
     maxPermissionLevel: "最高权限",
+    monitor: "持续监控",
     monthlyBudgetDollars: "月预算",
     noSensitiveAccess: "无敏感权限",
+    ownerReview: "审批策略权限",
     rateLimitPerMinute: "每分钟限制",
+    removed: "已移除",
     remove: "移除",
+    resolveSuspension: "处理暂停原因",
     restore: "恢复",
+    reviewUpdate: "评估版本更新",
     save: "保存策略",
     saving: "保存中",
+    subscription: "订阅",
+    suspended: "已暂停",
     suspend: "暂停",
-    title: "策略编辑"
+    title: "策略编辑",
+    unpinned: "未固定"
   }
 } as const;
 
@@ -92,7 +118,7 @@ export function ProjectSkillPolicyManager({
   return (
     <article className="ops-panel project-table-panel">
       <div className="card-kicker">
-        <PackageShieldIcon />
+        <SlidersHorizontal size={16} aria-hidden="true" />
         <span>{titleLabel}</span>
       </div>
       <div className="project-table">
@@ -114,7 +140,7 @@ export function ProjectSkillPolicyManager({
                   <strong>
                     {skill.displayName}
                     <small>
-                      {skill.skillSlug} / {formatVersion(skill.version)}
+                      {skill.skillSlug} / {formatVersion(skill.version, locale)}
                     </small>
                   </strong>
                   <span>
@@ -295,17 +321,13 @@ function InstallStatusButton({
   );
 }
 
-function PackageShieldIcon() {
-  return <SlidersHorizontal size={16} aria-hidden="true" />;
-}
-
 function installStateLabel(skill: DeveloperProjectSkillRecord, locale: Locale) {
   if (skill.status === "suspended") {
-    return locale === "zh" ? "安装已暂停" : "Install suspended";
+    return copy[locale].installSuspended;
   }
 
   if (skill.status === "removed") {
-    return locale === "zh" ? "已移除" : "Removed";
+    return copy[locale].removed;
   }
 
   return policyStateLabel(skill.policy.state, locale);
@@ -313,14 +335,14 @@ function installStateLabel(skill: DeveloperProjectSkillRecord, locale: Locale) {
 
 function policyStateLabel(state: "approved" | "owner_review" | "suspended", locale: Locale) {
   if (state === "suspended") {
-    return locale === "zh" ? "已暂停" : "Suspended";
+    return copy[locale].suspended;
   }
 
   if (state === "owner_review") {
-    return locale === "zh" ? "待负责人审核" : "Owner review";
+    return copy[locale].ownerReview;
   }
 
-  return locale === "zh" ? "已批准" : "Approved";
+  return copy[locale].approved;
 }
 
 function statusChipClass(status: string) {
@@ -335,8 +357,8 @@ function statusChipClass(status: string) {
   return "status-chip";
 }
 
-function formatVersion(version: string | null) {
-  return version ? `v${version}` : "unpinned";
+function formatVersion(version: string | null, locale: Locale) {
+  return version ? `v${version}` : copy[locale].unpinned;
 }
 
 function formatLatency(ms: number | null | undefined, fallback: string) {
@@ -364,36 +386,38 @@ function formatCapabilities(skill: DeveloperProjectSkillRecord, locale: Locale) 
 
 function pricingLabel(skill: DeveloperProjectSkillRecord, locale: Locale) {
   if (skill.pricing.billingModel === "free") {
-    return locale === "zh" ? "免费" : "free";
+    return copy[locale].free;
   }
 
   if (skill.pricing.billingModel === "subscription") {
-    return locale === "zh" ? "订阅" : "subscription";
+    return copy[locale].subscription;
   }
 
   return `${formatMoney(skill.pricing.unitAmountCents, skill.pricing.currency)} / call`;
 }
 
 function skillAction(skill: DeveloperProjectSkillRecord, locale: Locale) {
+  const labels = copy[locale];
+
   if (skill.status === "suspended" || skill.policy.state === "suspended") {
-    return locale === "zh" ? "处理暂停原因" : "Resolve suspension";
+    return labels.resolveSuspension;
   }
 
   if (skill.incidents.openCount > 0) {
-    return locale === "zh" ? "排查运行事故" : "Investigate incident";
+    return labels.investigateIncident;
   }
 
   if (skill.policy.state === "owner_review") {
-    return locale === "zh" ? "审核策略权限" : "Approve policy";
+    return labels.ownerReview;
   }
 
   if (skill.updates.count > 0) {
-    return locale === "zh" ? "评估版本更新" : "Review update";
+    return labels.reviewUpdate;
   }
 
   if (skill.runtime.successRate !== null && skill.runtime.successRate < 0.95) {
-    return locale === "zh" ? "优化调用质量" : "Improve runtime quality";
+    return labels.improveRuntime;
   }
 
-  return locale === "zh" ? "持续监控" : "Monitor";
+  return labels.monitor;
 }

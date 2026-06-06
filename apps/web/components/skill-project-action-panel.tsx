@@ -23,7 +23,7 @@ const copy = {
     collection: "Collection",
     collectionPlaceholder: "evaluation",
     emptyBody: "Create or connect a developer project before saving, subscribing, or installing skills.",
-    emptyCta: "Open dashboard",
+    emptyCta: "Create project",
     heading: "Add this skill to a project",
     install: "Install to project",
     installing: "Working",
@@ -31,6 +31,7 @@ const copy = {
     nonBillableTest: "non-billable test",
     noOutput: "No output returned.",
     notBillable: "not billable",
+    openProject: "Open project",
     project: "Target project",
     save: "Save for evaluation",
     saving: "Working",
@@ -51,7 +52,7 @@ const copy = {
     collection: "\u96c6\u5408",
     collectionPlaceholder: "evaluation",
     emptyBody: "\u8bf7\u5148\u521b\u5efa\u6216\u8fde\u63a5\u4e00\u4e2a\u5f00\u53d1\u8005\u9879\u76ee\uff0c\u518d\u4fdd\u5b58\u3001\u8ba2\u9605\u6216\u5b89\u88c5\u6280\u80fd\u3002",
-    emptyCta: "\u6253\u5f00\u5de5\u4f5c\u53f0",
+    emptyCta: "\u521b\u5efa\u9879\u76ee",
     heading: "\u628a\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
     install: "\u5b89\u88c5\u5230\u9879\u76ee",
     installing: "\u5904\u7406\u4e2d",
@@ -59,6 +60,7 @@ const copy = {
     nonBillableTest: "\u975e\u8ba1\u8d39\u6d4b\u8bd5",
     noOutput: "\u6ca1\u6709\u8fd4\u56de\u8f93\u51fa\u3002",
     notBillable: "\u672a\u8ba1\u8d39",
+    openProject: "\u6253\u5f00\u9879\u76ee",
     project: "\u76ee\u6807\u9879\u76ee",
     save: "\u4fdd\u5b58\u7528\u4e8e\u8bc4\u4f30",
     saving: "\u5904\u7406\u4e2d",
@@ -185,17 +187,30 @@ export function SkillProjectActionPanel({
         </p>
       ) : null}
 
-      {state.status !== "idle" ? <ActionMessage state={state} /> : null}
+      {state.status !== "idle" ? <ActionMessage labels={labels} locale={locale} state={state} /> : null}
       {state.testResult ? <TestResult labels={labels} state={state} /> : null}
     </div>
   );
 }
 
-function ActionMessage({ state }: { state: SkillProjectActionState }) {
+function ActionMessage({
+  labels,
+  locale,
+  state
+}: {
+  labels: (typeof copy)[Locale];
+  locale: Locale;
+  state: SkillProjectActionState;
+}) {
   return (
     <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
       {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
       <span>{state.message}</span>
+      {state.status === "success" && state.projectSlug ? (
+        <a className="ghost-button ghost-button--inline" href={projectHref(state.projectSlug, locale)}>
+          {labels.openProject}
+        </a>
+      ) : null}
     </div>
   );
 }
@@ -253,4 +268,9 @@ function formatOutput(value: unknown) {
   }
 
   return JSON.stringify(value, null, 2);
+}
+
+function projectHref(projectSlug: string, locale: Locale) {
+  const href = `/dashboard/projects/${encodeURIComponent(projectSlug)}`;
+  return locale === "zh" ? `${href}?lang=zh` : href;
 }
