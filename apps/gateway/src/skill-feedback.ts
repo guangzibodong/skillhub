@@ -24,6 +24,15 @@ type SkillFeedbackDecisionInput = {
   reason?: unknown;
 };
 
+type PublisherFeedbackResponseInput = {
+  body?: unknown;
+};
+
+type PublisherFeedbackResponseContext = {
+  organizationId?: string | null;
+  userId?: string | null;
+};
+
 type SkillForFeedback = {
   id: string;
   organizationId: string | null;
@@ -48,6 +57,9 @@ export type SkillFeedbackRow = {
   status: FeedbackStatus;
   moderationReason: string | null;
   moderatedAt: string | null;
+  publisherResponseBody: string | null;
+  publisherRespondedAt: string | null;
+  publisherResponderDisplayName: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -79,6 +91,10 @@ const fallbackFeedback = [
     status: "published",
     moderationReason: "Public demo feedback.",
     moderatedAt: "demo",
+    publisherResponseBody:
+      "Thanks for the citation request. We are adding source timestamps and confidence fields to the next reviewed version.",
+    publisherRespondedAt: "demo",
+    publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -99,6 +115,10 @@ const fallbackFeedback = [
     status: "published",
     moderationReason: "Public demo feedback.",
     moderatedAt: "demo",
+    publisherResponseBody:
+      "This is on our roadmap for regulated workflows. The next manifest revision will expose richer source metadata.",
+    publisherRespondedAt: "demo",
+    publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -119,6 +139,9 @@ const fallbackFeedback = [
     status: "published",
     moderationReason: "Public demo feedback.",
     moderatedAt: "demo",
+    publisherResponseBody: null,
+    publisherRespondedAt: null,
+    publisherResponderDisplayName: null,
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -139,6 +162,9 @@ const fallbackFeedback = [
     status: "pending",
     moderationReason: null,
     moderatedAt: null,
+    publisherResponseBody: null,
+    publisherRespondedAt: null,
+    publisherResponderDisplayName: null,
     publishedAt: null,
     createdAt: "demo",
     updatedAt: "demo"
@@ -296,6 +322,56 @@ export async function decideSkillFeedback(
   });
 }
 
+export async function respondToSkillFeedback(
+  feedbackId: string,
+  input: PublisherFeedbackResponseInput,
+  context: PublisherFeedbackResponseContext
+) {
+  const sql = await requireSql();
+  const body = normalizeText(input.body, "publisher response", 1800);
+
+  return sql.begin(async (tx: Sql) => {
+    const feedback = await getFeedbackForPublisherResponse(tx, feedbackId);
+
+    if (!context.organizationId || feedback.publisherOrganizationId !== context.organizationId) {
+      throw new Error("Publisher feedback responses require the owning publisher organization.");
+    }
+
+    if (feedback.status !== "published") {
+      throw new Error("Only published feedback can receive a publisher response.");
+    }
+
+    await tx`
+      update skill_feedback
+      set
+        publisher_response_body = ${body},
+        publisher_responded_by_user_id = ${context.userId ?? null},
+        publisher_responded_at = now(),
+        updated_at = now()
+      where id = ${feedbackId}
+    `;
+
+    await recordFeedbackAudit(tx, context.userId, "skill_feedback.publisher_response", feedbackId, "Publisher responded to feedback.", {
+      previousResponsePresent: Boolean(feedback.publisherResponseBody),
+      rating: feedback.rating,
+      skillSlug: feedback.skillSlug
+    });
+    await recordFeedbackNotification(tx, feedback.reviewerOrganizationId, "skill.feedback.publisher_response", "Publisher responded to feedback", {
+      feedbackId,
+      rating: feedback.rating,
+      responsePreview: body.slice(0, 220),
+      skillName: feedback.skillName,
+      skillSlug: feedback.skillSlug
+    });
+
+    const feedbackRows = await listFeedbackRows(tx, {
+      feedbackId,
+      limit: 1
+    });
+    return feedbackRows[0];
+  });
+}
+
 async function listFeedbackRows(
   sql: Sql,
   options: {
@@ -326,12 +402,16 @@ async function listFeedbackRows(
       sf.status,
       sf.moderation_reason as "moderationReason",
       sf.moderated_at as "moderatedAt",
+      sf.publisher_response_body as "publisherResponseBody",
+      sf.publisher_responded_at as "publisherRespondedAt",
+      responder.display_name as "publisherResponderDisplayName",
       sf.published_at as "publishedAt",
       sf.created_at as "createdAt",
       sf.updated_at as "updatedAt"
     from skill_feedback sf
     join skills s on s.id = sf.skill_id
     left join users u on u.id = sf.reviewer_user_id
+    left join users responder on responder.id = sf.publisher_responded_by_user_id
     left join organizations o on o.id = sf.reviewer_organization_id
     left join projects p on p.id = sf.project_id
     where (${feedbackId}::uuid is null or sf.id = ${feedbackId}::uuid)
@@ -451,6 +531,39 @@ async function getFeedbackForDecision(sql: Sql, feedbackId: string) {
     id: string;
     publisherOrganizationId: string | null;
     rating: number;
+    skillName: string;
+    skillSlug: string;
+    status: FeedbackStatus;
+  }>;
+
+  if (!rows[0]) {
+    throw new Error("Skill feedback not found.");
+  }
+
+  return rows[0];
+}
+
+async function getFeedbackForPublisherResponse(sql: Sql, feedbackId: string) {
+  const rows = (await sql`
+    select
+      sf.id::text,
+      sf.rating,
+      sf.status,
+      sf.publisher_response_body as "publisherResponseBody",
+      sf.reviewer_organization_id::text as "reviewerOrganizationId",
+      s.slug as "skillSlug",
+      s.display_name as "skillName",
+      s.organization_id::text as "publisherOrganizationId"
+    from skill_feedback sf
+    join skills s on s.id = sf.skill_id
+    where sf.id = ${feedbackId}
+    limit 1
+  `) as Array<{
+    id: string;
+    publisherOrganizationId: string | null;
+    publisherResponseBody: string | null;
+    rating: number;
+    reviewerOrganizationId: string | null;
     skillName: string;
     skillSlug: string;
     status: FeedbackStatus;

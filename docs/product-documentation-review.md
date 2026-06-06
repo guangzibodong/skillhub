@@ -694,6 +694,14 @@ Added public agent integration guide depth, covering:
 - The page explains project-scoped keys, installed-skill governance, version pins, permission approval, budgets, subscriptions, logs, and usage events as the runtime boundary for real agent use.
 - This strengthens first-visit developer value because agent builders can understand how to connect SkillHub before they create a project, then continue into the developer console for the governed setup.
 
+Added publisher responses to buyer feedback, covering:
+
+- `026_skill_feedback_publisher_responses.sql` adds public publisher response fields to moderated feedback without changing the feedback moderation state machine.
+- Publishers can respond only to published feedback on skills owned by their organization; each response writes audit and buyer notification records.
+- `/v1/publisher/skills` now returns recent published feedback rows, and the publisher workspace exposes response forms so authors can address buyer concerns without leaving operations.
+- Public skill detail pages show publisher responses under the matching feedback, improving buyer trust and giving publishers a concrete retention loop after feedback is moderated.
+- Launch readiness now checks the response columns so production operators can catch a missing migration before feedback-response workflows silently fail.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

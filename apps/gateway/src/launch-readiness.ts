@@ -79,6 +79,7 @@ type DatabaseReadiness = {
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   payoutTables: boolean;
+  publisherFeedbackResponseColumns: boolean;
   publisherTermsAcceptanceColumns: boolean;
   userAuthIdentities: boolean;
   webhookDeliveryWorker: boolean;
@@ -288,6 +289,16 @@ function buildMarketplaceOperationsSection(
       status: database.operationsTables ? "ready" : "blocker"
     },
     {
+      action: database.publisherFeedbackResponseColumns ? "No action needed." : "Run migration 026_skill_feedback_publisher_responses.sql.",
+      description: "Publisher responses turn moderated buyer feedback into a public maintenance and trust loop.",
+      detail: database.publisherFeedbackResponseColumns
+        ? "Publisher feedback response columns are available."
+        : "Publisher feedback response columns are missing.",
+      key: "publisher_feedback_responses",
+      label: "Publisher feedback responses",
+      status: database.publisherFeedbackResponseColumns ? "ready" : "blocker"
+    },
+    {
       action: database.notificationDeliveryColumns ? "No action needed." : "Run migration 022_notification_delivery_operations.sql.",
       description: "External delivery queues need attempt, retry, provider, and error fields.",
       detail: database.notificationDeliveryColumns ? "Notification delivery columns are available." : "Notification delivery columns are missing.",
@@ -438,6 +449,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
+      publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
@@ -510,9 +522,33 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'publisher_profiles'
             and column_name = 'terms_accepted_by_user_id'
-        ) as "publisherTermsAcceptedByUserId"
+        ) as "publisherTermsAcceptedByUserId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_feedback'
+            and column_name = 'publisher_response_body'
+        ) as "publisherResponseBody",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_feedback'
+            and column_name = 'publisher_responded_at'
+        ) as "publisherRespondedAt",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_feedback'
+            and column_name = 'publisher_responded_by_user_id'
+        ) as "publisherRespondedByUserId"
     `) as Array<{
       notificationDeliveryColumns: boolean;
+      publisherResponseBody: boolean;
+      publisherRespondedAt: boolean;
+      publisherRespondedByUserId: boolean;
       publisherTermsAcceptedAt: boolean;
       publisherTermsAcceptedByUserId: boolean;
       publisherTermsVersion: boolean;
@@ -535,6 +571,10 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         tables.organizationWebhookEndpoints &&
         tables.notificationEvents,
       payoutTables: tables.payoutAccounts && tables.payouts,
+      publisherFeedbackResponseColumns:
+        columns.publisherResponseBody &&
+        columns.publisherRespondedAt &&
+        columns.publisherRespondedByUserId,
       publisherTermsAcceptanceColumns:
         columns.publisherTermsAcceptedAt &&
         columns.publisherTermsVersion &&
@@ -551,6 +591,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
+      publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false

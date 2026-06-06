@@ -161,6 +161,7 @@ API groups:
 - `/v1/publisher/reviews`
 - `/v1/publisher/runtime-checks`
 - `/v1/publisher/buyer-requests`
+- `/v1/publisher/skill-feedback/:feedbackId/response`
 
 Acceptance checks:
 
@@ -169,6 +170,7 @@ Acceptance checks:
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
 - Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
+- Publishers can respond to published buyer feedback only for skills owned by their organization; responses are public on skill detail pages and write audit plus notification records.
 - Publishers can see their current marketplace placement, operator reason, expiry, and safe improvement hints without exposing internal boost math.
 - Publishers can create and track marketplace distribution appeals when they have fixed quality gaps or need suppressed placement reconsidered.
 
@@ -485,6 +487,7 @@ Completed:
 - `/admin` now includes a skill feedback moderation queue beside trust, finance, and review operations so marketplace quality signals have an operator-owned path.
 - Skill search summaries now include published feedback count and average rating, and recommended ranking uses those signals alongside verification, permission risk, install evidence, runtime success, and freshness.
 - Publisher skill operations now expose average rating plus published/pending feedback counts so authors can see what buyers trust and what still needs moderation or response.
+- Publisher feedback responses now add migration `026_skill_feedback_publisher_responses.sql`, a publisher-scoped response API, recent published feedback rows in `/v1/publisher/skills`, public skill-detail response display, publisher workspace response forms, audit logs, buyer notifications, and launch-readiness schema checks.
 - Admin runtime incident APIs now let trust/platform operators list incidents, open a skill-scoped incident, update severity, and move incidents through `open`, `monitoring`, `resolved`, and `postmortem` with required reasons.
 - Incident decisions now write skill update events, admin audit logs, and publisher in-app notifications, so developer update inboxes and publisher notifications reflect operational recovery before email delivery exists.
 - `/admin` now includes a runtime incident operations queue and folds active incidents into risk metrics and command-center rows beside feedback, abuse, refund, dispute, and payout workflows.

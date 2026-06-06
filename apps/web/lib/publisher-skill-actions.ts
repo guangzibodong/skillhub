@@ -5,6 +5,7 @@ import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
 export type PublisherSkillActionState = {
+  feedbackId?: string;
   message: string;
   skillSlug?: string;
   status: "idle" | "success" | "error";
@@ -15,12 +16,16 @@ const actionCopy = {
     invalidBillingModel: "Billing model must be free, per_call, or subscription.",
     invalidManifest: "Manifest JSON is invalid.",
     invalidPriceStatus: "Price status must be draft, active, or archived.",
+    missingFeedback: "Missing feedback id.",
     missingManifest: "Paste a SkillHub manifest before saving a version.",
+    missingResponse: "Write a publisher response before saving.",
     missingSkill: "Missing skill slug.",
     missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing publisher skills.",
     priceSaved: "Skill price saved.",
+    responseSaved: "Publisher response saved.",
     reviewSubmitted: "Skill submitted for review.",
     unablePrice: "Unable to save skill price.",
+    unableResponse: "Unable to save publisher response.",
     unableReview: "Unable to submit skill for review.",
     unableVersion: "Unable to save skill version.",
     versionSaved: "Skill version saved."
@@ -29,12 +34,16 @@ const actionCopy = {
     invalidBillingModel: "计费模式必须是 free、per_call 或 subscription。",
     invalidManifest: "Manifest JSON 无效。",
     invalidPriceStatus: "价格状态必须是 draft、active 或 archived。",
+    missingFeedback: "缺少反馈 ID。",
     missingManifest: "请先粘贴 SkillHub manifest 再保存版本。",
+    missingResponse: "请先填写发布者回复。",
     missingSkill: "缺少技能 slug。",
     missingToken: "请先使用 SkillHub 用户 token 登录，或配置服务端备用 token，才能管理发布者技能。",
     priceSaved: "技能价格已保存。",
+    responseSaved: "发布者回复已保存。",
     reviewSubmitted: "技能已提交审核。",
     unablePrice: "无法保存技能价格。",
+    unableResponse: "无法保存发布者回复。",
     unableReview: "无法提交技能审核。",
     unableVersion: "无法保存技能版本。",
     versionSaved: "技能版本已保存。"
@@ -289,6 +298,66 @@ export async function requestMarketplaceCurationAppealAction(
   } catch (error) {
     return {
       message: error instanceof Error ? error.message : appealLabels.unable,
+      skillSlug,
+      status: "error"
+    };
+  }
+}
+
+export async function respondToSkillFeedbackAction(
+  locale: Locale,
+  _previousState: PublisherSkillActionState,
+  formData: FormData
+): Promise<PublisherSkillActionState> {
+  const labels = actionCopy[locale];
+  const token = await getWorkspaceToken();
+  const skillSlug = String(formData.get("skillSlug") ?? "").trim();
+  const feedbackId = String(formData.get("feedbackId") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+
+  if (!skillSlug) {
+    return { feedbackId, message: labels.missingSkill, status: "error" };
+  }
+
+  if (!feedbackId) {
+    return { message: labels.missingFeedback, skillSlug, status: "error" };
+  }
+
+  if (!body) {
+    return { feedbackId, message: labels.missingResponse, skillSlug, status: "error" };
+  }
+
+  if (!token) {
+    return { feedbackId, message: labels.missingToken, skillSlug, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/publisher/skill-feedback/${encodeURIComponent(feedbackId)}/response`, {
+      body: JSON.stringify({ body }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error ?? labels.unableResponse);
+    }
+
+    revalidatePublisherSkillPaths(skillSlug);
+
+    return {
+      feedbackId,
+      message: labels.responseSaved,
+      skillSlug,
+      status: "success"
+    };
+  } catch (error) {
+    return {
+      feedbackId,
+      message: error instanceof Error ? error.message : labels.unableResponse,
       skillSlug,
       status: "error"
     };

@@ -14,6 +14,9 @@ export type SkillFeedbackRecord = {
   status: "pending" | "published" | "hidden" | "rejected";
   moderationReason: string | null;
   moderatedAt: string | null;
+  publisherResponseBody: string | null;
+  publisherRespondedAt: string | null;
+  publisherResponderDisplayName: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -49,6 +52,10 @@ const fallbackFeedback = [
     status: "published",
     moderationReason: "Public demo feedback.",
     moderatedAt: "demo",
+    publisherResponseBody:
+      "Thanks for the production note. We are keeping output-shape changes behind reviewed versions so pinned projects stay stable.",
+    publisherRespondedAt: "demo",
+    publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -69,6 +76,10 @@ const fallbackFeedback = [
     status: "published",
     moderationReason: "Public demo feedback.",
     moderatedAt: "demo",
+    publisherResponseBody:
+      "Richer citation metadata is planned for the next reviewed release. We will keep the current contract pinned for existing installs.",
+    publisherRespondedAt: "demo",
+    publisherResponderDisplayName: "SkillHub Labs",
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -90,13 +101,17 @@ export async function getSkillFeedback(skillSlug: string, limit = 12): Promise<S
 
     return (await response.json()) as SkillFeedbackPayload;
   } catch {
-    const feedback = fallbackFeedback.filter((row) => row.skillSlug === skillSlug).slice(0, limit);
+    const feedback = fallbackFeedback.filter((row) => feedbackMatchesSkill(row.skillSlug, skillSlug)).slice(0, limit);
 
     return {
       feedback,
       summary: summarizeFeedback(feedback)
     };
   }
+}
+
+function feedbackMatchesSkill(rowSkillSlug: string, requestedSkillSlug: string) {
+  return rowSkillSlug === requestedSkillSlug || (requestedSkillSlug === "browser-research-pro" && rowSkillSlug === "browser-research");
 }
 
 function summarizeFeedback(feedback: SkillFeedbackRecord[]): SkillFeedbackSummary {

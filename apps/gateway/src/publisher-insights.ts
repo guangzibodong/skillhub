@@ -24,6 +24,30 @@ type MarketplaceImprovementHint = {
 
 type CommercialBlocker = "current_terms" | "payout" | "publisher_profile" | "publisher_status" | "review" | "terms";
 
+type PublisherSkillFeedbackSummary = {
+  body: string;
+  createdAt: string;
+  id: string;
+  moderatedAt: string | null;
+  moderationReason: string | null;
+  projectSlug: string | null;
+  publishedAt: string | null;
+  publisherResponseBody: string | null;
+  publisherRespondedAt: string | null;
+  publisherResponderDisplayName: string | null;
+  rating: number;
+  reviewerDisplayName: string | null;
+  reviewerEmail: string | null;
+  reviewerOrganizationName: string | null;
+  skillId: string;
+  skillName: string;
+  skillSlug: string;
+  status: "published";
+  title: string;
+  updatedAt: string;
+  useCase: string | null;
+};
+
 type PublisherSkillVersionSummary = {
   callCount: number;
   createdAt: string;
@@ -93,6 +117,7 @@ type PublisherSkillRow = {
   marketplaceReason: string | null;
   marketplaceEndsAt: string | null;
   marketplaceUpdatedAt: string | null;
+  recentFeedback: PublisherSkillFeedbackSummary[] | null;
   versions: PublisherSkillVersionSummary[] | null;
 };
 
@@ -156,6 +181,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       active_curation.reason as "marketplaceReason",
       active_curation.ends_at::text as "marketplaceEndsAt",
       active_curation.updated_at::text as "marketplaceUpdatedAt",
+      coalesce(recent_feedback.items, '[]'::jsonb) as "recentFeedback",
       coalesce(versions.items, '[]'::jsonb) as "versions"
     from skills s
     left join lateral (
@@ -260,6 +286,64 @@ export async function listPublisherSkills(organizationId: string | null | undefi
       order by updated_at desc
       limit 1
     ) active_curation on true
+    left join lateral (
+      select jsonb_agg(
+        jsonb_build_object(
+          'body', feedback_items.body,
+          'createdAt', feedback_items.created_at,
+          'id', feedback_items.id,
+          'moderatedAt', feedback_items.moderated_at,
+          'moderationReason', feedback_items.moderation_reason,
+          'projectSlug', feedback_items.project_slug,
+          'publishedAt', feedback_items.published_at,
+          'publisherResponseBody', feedback_items.publisher_response_body,
+          'publisherRespondedAt', feedback_items.publisher_responded_at,
+          'publisherResponderDisplayName', feedback_items.publisher_responder_display_name,
+          'rating', feedback_items.rating,
+          'reviewerDisplayName', feedback_items.reviewer_display_name,
+          'reviewerEmail', feedback_items.reviewer_email,
+          'reviewerOrganizationName', feedback_items.reviewer_organization_name,
+          'skillId', s.id::text,
+          'skillName', s.display_name,
+          'skillSlug', s.slug,
+          'status', feedback_items.status,
+          'title', feedback_items.title,
+          'updatedAt', feedback_items.updated_at,
+          'useCase', feedback_items.use_case
+        )
+        order by feedback_items.created_at desc
+      ) as items
+      from (
+        select
+          sf.id::text,
+          sf.rating,
+          sf.title,
+          sf.body,
+          sf.use_case,
+          sf.status,
+          sf.moderation_reason,
+          sf.moderated_at::text,
+          sf.published_at::text,
+          sf.publisher_response_body,
+          sf.publisher_responded_at::text,
+          responder.display_name as publisher_responder_display_name,
+          reviewer.email as reviewer_email,
+          reviewer.display_name as reviewer_display_name,
+          reviewer_org.name as reviewer_organization_name,
+          project.slug as project_slug,
+          sf.created_at::text,
+          sf.updated_at::text
+        from skill_feedback sf
+        left join users reviewer on reviewer.id = sf.reviewer_user_id
+        left join users responder on responder.id = sf.publisher_responded_by_user_id
+        left join organizations reviewer_org on reviewer_org.id = sf.reviewer_organization_id
+        left join projects project on project.id = sf.project_id
+        where sf.skill_id = s.id
+          and sf.status = 'published'
+        order by sf.created_at desc
+        limit 3
+      ) feedback_items
+    ) recent_feedback on true
     left join lateral (
       select jsonb_agg(
         jsonb_build_object(
@@ -479,6 +563,36 @@ async function fallbackPublisherSkills(limit: number) {
                 { key: "collect_feedback", severity: "warning" as const }
               ]
       },
+      recentFeedback:
+        index === 0
+          ? [
+              {
+                body:
+                  "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
+                createdAt: "demo",
+                id: "demo-feedback-browser-research-1",
+                moderationReason: "Public demo feedback.",
+                moderatedAt: "demo",
+                projectSlug: "research-agent",
+                publishedAt: "demo",
+                publisherResponseBody:
+                  "Thanks for the detailed production note. We are keeping source shape changes behind reviewed versions so pinned agent projects remain stable.",
+                publisherRespondedAt: "demo",
+                publisherResponderDisplayName: "SkillHub Labs",
+                rating: 5,
+                reviewerDisplayName: "Research Agent Ops",
+                reviewerEmail: null,
+                reviewerOrganizationName: "SkillHub Demo Org",
+                skillId: skill.id,
+                skillName: skill.displayName,
+                skillSlug: skill.slug,
+                status: "published" as const,
+                title: "Reliable source gathering for daily briefings",
+                updatedAt: "demo",
+                useCase: "Daily market and policy research briefings"
+              }
+            ]
+          : [],
       versions: [
         {
           callCount: calls,
@@ -695,6 +809,7 @@ function mapPublisherSkill(row: PublisherSkillRow, appeal: PublisherCurationAppe
         visibility: row.visibility
       })
     },
+    recentFeedback: normalizePublisherFeedback(row.recentFeedback),
     versions: normalizeVersionSummaries(row.versions),
     updatedAt: row.updatedAt
   };
@@ -755,6 +870,36 @@ function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSum
       version: String(version.version ?? "0.1.0")
     };
   });
+}
+
+function normalizePublisherFeedback(value: Array<Partial<PublisherSkillFeedbackSummary>> | null): PublisherSkillFeedbackSummary[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((feedback) => ({
+    body: String(feedback.body ?? ""),
+    createdAt: String(feedback.createdAt ?? "demo"),
+    id: String(feedback.id ?? "feedback"),
+    moderatedAt: feedback.moderatedAt ?? null,
+    moderationReason: feedback.moderationReason ?? null,
+    projectSlug: feedback.projectSlug ?? null,
+    publishedAt: feedback.publishedAt ?? null,
+    publisherResponseBody: feedback.publisherResponseBody ?? null,
+    publisherRespondedAt: feedback.publisherRespondedAt ?? null,
+    publisherResponderDisplayName: feedback.publisherResponderDisplayName ?? null,
+    rating: Math.max(1, Math.min(Number(feedback.rating ?? 5), 5)),
+    reviewerDisplayName: feedback.reviewerDisplayName ?? null,
+    reviewerEmail: feedback.reviewerEmail ?? null,
+    reviewerOrganizationName: feedback.reviewerOrganizationName ?? null,
+    skillId: String(feedback.skillId ?? ""),
+    skillName: String(feedback.skillName ?? ""),
+    skillSlug: String(feedback.skillSlug ?? ""),
+    status: "published",
+    title: String(feedback.title ?? "Feedback"),
+    updatedAt: String(feedback.updatedAt ?? feedback.createdAt ?? "demo"),
+    useCase: feedback.useCase ?? null
+  }));
 }
 
 function normalizeRuntimeChecks(value: RuntimeCheckSummary[] | null): RuntimeCheckSummary[] {

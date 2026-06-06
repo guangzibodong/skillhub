@@ -685,6 +685,7 @@ export type PublisherSkillRecord = {
     publishedCount: number;
     pendingCount: number;
   };
+  recentFeedback?: SkillFeedbackRecord[];
   quality: {
     score: number | null;
     installSuccessRate: number | null;
@@ -1989,6 +1990,9 @@ const fallbackSkillFeedback: SkillFeedbackRecord[] = [
     status: "pending",
     moderationReason: null,
     moderatedAt: null,
+    publisherResponseBody: null,
+    publisherRespondedAt: null,
+    publisherResponderDisplayName: null,
     publishedAt: null,
     createdAt: "demo",
     updatedAt: "demo"
@@ -2009,6 +2013,9 @@ const fallbackSkillFeedback: SkillFeedbackRecord[] = [
     status: "published",
     moderationReason: "Approved as useful implementation feedback.",
     moderatedAt: "demo",
+    publisherResponseBody: null,
+    publisherRespondedAt: null,
+    publisherResponderDisplayName: null,
     publishedAt: "demo",
     createdAt: "demo",
     updatedAt: "demo"
@@ -2075,6 +2082,33 @@ const fallbackPublisherSkills: PublisherSkillRecord[] = [
       publishedCount: 18,
       pendingCount: 2
     },
+    recentFeedback: [
+      {
+        body:
+          "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
+        createdAt: "demo",
+        id: "demo-feedback-browser-research-1",
+        moderationReason: "Public demo feedback.",
+        moderatedAt: "demo",
+        projectSlug: "research-agent",
+        publishedAt: "demo",
+        publisherResponseBody:
+          "Thanks for the detailed production note. We are keeping output-shape changes behind reviewed versions so pinned agent projects remain stable.",
+        publisherRespondedAt: "demo",
+        publisherResponderDisplayName: "SkillHub Labs",
+        rating: 5,
+        reviewerDisplayName: "Research Agent Ops",
+        reviewerEmail: null,
+        reviewerOrganizationName: "SkillHub Demo Org",
+        skillId: "demo-skill-browser-research",
+        skillName: "Browser Research",
+        skillSlug: "browser-research",
+        status: "published",
+        title: "Reliable source gathering for daily briefings",
+        updatedAt: "demo",
+        useCase: "Daily market and policy research briefings"
+      }
+    ],
     quality: {
       score: 86,
       installSuccessRate: 0.96,

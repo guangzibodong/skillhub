@@ -6946,6 +6946,30 @@ a {
   margin: 0;
 }
 
+.skill-feedback-publisher-response {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.07);
+  padding: 11px 12px;
+}
+
+.skill-feedback-publisher-response strong {
+  color: var(--signal);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.skill-feedback-publisher-response p,
+.skill-feedback-publisher-response small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .skill-feedback-stars,
 .skill-feedback-rating {
   display: inline-flex;
@@ -8455,6 +8479,147 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
+}
+
+.publisher-skill-feedback {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 13px;
+}
+
+.publisher-skill-feedback__head,
+.publisher-skill-feedback-card header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.publisher-skill-feedback__head strong,
+.publisher-skill-feedback-card header strong,
+.publisher-skill-feedback-response strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.publisher-skill-feedback__head strong,
+.publisher-skill-feedback-response strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.publisher-skill-feedback__head svg {
+  color: var(--cyan);
+}
+
+.publisher-skill-feedback > p,
+.publisher-skill-feedback-card header span,
+.publisher-skill-feedback-card p,
+.publisher-skill-feedback-meta,
+.publisher-skill-feedback-response p,
+.publisher-skill-feedback-response small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.publisher-skill-feedback-list {
+  display: grid;
+  gap: 10px;
+}
+
+.publisher-skill-feedback-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 12px;
+}
+
+.publisher-skill-feedback-card header div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.publisher-skill-feedback-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.publisher-skill-feedback-meta span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 5px 8px;
+}
+
+.publisher-skill-feedback-meta strong {
+  color: #7f8778;
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.publisher-skill-feedback-response {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.07);
+  padding: 10px;
+}
+
+.publisher-skill-feedback-response strong,
+.publisher-skill-feedback-response svg {
+  color: var(--signal);
+}
+
+.publisher-skill-feedback-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.publisher-skill-feedback-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.publisher-skill-feedback-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.publisher-skill-feedback-form textarea {
+  width: 100%;
+  min-height: 78px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 10px 11px;
+  resize: vertical;
 }
 
 .publisher-skill-commercial {
@@ -10433,6 +10598,7 @@ a {
   .key-create-form,
   .project-create-form,
   .publisher-skill-appeal-form,
+  .publisher-skill-feedback-form,
   .publisher-skill-price-form,
   .publisher-skill-version-layout,
   .policy-editor {
@@ -10450,6 +10616,7 @@ a {
 
   .project-create-form .primary-button,
   .publisher-skill-appeal-form .secondary-button,
+  .publisher-skill-feedback-form .secondary-button,
   .publisher-skill-price-form .primary-button,
   .publisher-skill-version-form .secondary-button,
   .publisher-skill-review-form .secondary-button,

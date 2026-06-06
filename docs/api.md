@@ -1040,7 +1040,7 @@ Placements are `featured`, `standard`, and `suppressed`. Improvement hints are p
 
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
-The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, marketplace distribution state, submit the latest version for review, and save free, per-call, or subscription pricing without leaving the workspace.
+The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, marketplace distribution state, recent published buyer feedback, submit the latest version for review, respond to published feedback, and save free, per-call, or subscription pricing without leaving the workspace.
 
 ## Buyer Request Board
 
@@ -1190,6 +1190,25 @@ curl -X POST "https://api.useskillhub.com/v1/admin/skill-feedback/$FEEDBACK_ID/d
 ```
 
 Decision actions are `publish`, `hide`, `reject`, and `reopen`. Decisions update moderation state, write an admin audit log, and queue an in-app notification for the skill publisher. The public skill detail page shows only `published` feedback and the rating summary.
+
+Publishers can respond to published feedback for skills owned by their organization:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/publisher/skill-feedback/$FEEDBACK_ID/response" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "body": "Thanks for the production note. The next reviewed version will add source timestamps while keeping the current output contract pinned."
+  }'
+```
+
+Rules:
+
+- The token must be user-scoped and organization-scoped with publisher, owner, admin, or super-admin privileges.
+- The feedback must belong to a skill owned by the token organization.
+- Only `published` feedback can receive a publisher response.
+- Saving a response updates the public feedback row, writes `skill_feedback.publisher_response` to `admin_audit_logs`, and queues an in-app `skill.feedback.publisher_response` notification for the reviewer organization when available.
+- `/v1/publisher/skills` includes recent published feedback rows and existing publisher response state so the publisher workspace can reply without a separate lookup.
 
 ## Runtime Incident Operations
 

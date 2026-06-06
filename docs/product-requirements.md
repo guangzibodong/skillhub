@@ -96,6 +96,7 @@ Repeat-visit value:
 - Track review status, runtime checks, installs, calls, errors, and latency.
 - Improve versions based on usage and feedback.
 - See moderated user feedback and rating signals that explain what buyers trust or dislike.
+- Respond publicly to published buyer feedback with roadmap, support, fix, or contract-clarification notes that improve buyer trust without exposing unmoderated feedback.
 - Respond to buyer requests, incidents, and review notes.
 - Track revenue ledger, balance, and payout readiness.
 

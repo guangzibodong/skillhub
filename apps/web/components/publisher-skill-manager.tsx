@@ -23,6 +23,7 @@ import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVe
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
   requestMarketplaceCurationAppealAction,
+  respondToSkillFeedbackAction,
   savePublisherSkillVersionAction,
   setPublisherSkillPriceAction,
   submitPublisherSkillReviewAction,
@@ -305,6 +306,33 @@ const commercialCopy = {
   }
 } as const;
 
+const feedbackResponseCopy = {
+  en: {
+    buyer: "Buyer",
+    empty: "No published buyer feedback is ready for a publisher response yet.",
+    project: "Project",
+    publisherResponse: "Publisher response",
+    recentFeedback: "Recent buyer feedback",
+    responsePlaceholder: "Respond with the fix, roadmap note, support guidance, or contract clarification buyers should see.",
+    responded: "Responded",
+    saveResponse: "Save response",
+    savingResponse: "Saving",
+    useCase: "Use case"
+  },
+  zh: {
+    buyer: "买方",
+    empty: "暂时没有可回复的公开买家反馈。",
+    project: "项目",
+    publisherResponse: "发布者回复",
+    recentFeedback: "最近买家反馈",
+    responsePlaceholder: "说明修复进展、路线图、支持建议，或买家需要看到的协议澄清。",
+    responded: "已回复",
+    saveResponse: "保存回复",
+    savingResponse: "保存中",
+    useCase: "使用场景"
+  }
+} as const;
+
 const initialState: PublisherSkillActionState = {
   message: "",
   status: "idle"
@@ -361,8 +389,13 @@ function PublisherSkillCard({
     requestMarketplaceCurationAppealAction.bind(null, locale),
     initialState
   );
+  const [feedbackResponseState, feedbackResponseAction, isFeedbackResponsePending] = useActionState(
+    respondToSkillFeedbackAction.bind(null, locale),
+    initialState
+  );
   const marketplaceLabels = marketplaceCopy[locale];
   const commercialLabels = commercialCopy[locale];
+  const feedbackLabels = feedbackResponseCopy[locale];
   const versions = skill.versions ?? [];
   const latestVersion = versions[0];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
@@ -374,6 +407,8 @@ function PublisherSkillCard({
   const versionMessageVisible = versionState.skillSlug === skill.slug && versionState.status !== "idle";
   const priceMessageVisible = priceState.skillSlug === skill.slug && priceState.status !== "idle";
   const appealMessageVisible = appealState.skillSlug === skill.slug && appealState.status !== "idle";
+  const feedbackResponseMessageVisible =
+    feedbackResponseState.skillSlug === skill.slug && feedbackResponseState.status !== "idle";
 
   return (
     <div className="publisher-skill-card">
@@ -532,6 +567,15 @@ function PublisherSkillCard({
         </div>
       ) : null}
 
+      <PublisherFeedbackResponsePanel
+        action={feedbackResponseAction}
+        isPending={isFeedbackResponsePending}
+        labels={feedbackLabels}
+        locale={locale}
+        messageState={feedbackResponseMessageVisible ? feedbackResponseState : null}
+        skill={skill}
+      />
+
       {skill.runtime.checks?.length ? (
         <div className="publisher-skill-checks" aria-label={labels.checks}>
           <strong>{labels.checks}</strong>
@@ -635,6 +679,108 @@ function CommercialReadinessPanel({
           <span className="quality-chip quality-chip--complete">{labels.ready}</span>
         )}
       </div>
+    </div>
+  );
+}
+
+function PublisherFeedbackResponsePanel({
+  action,
+  isPending,
+  labels,
+  locale,
+  messageState,
+  skill
+}: {
+  action: (payload: FormData) => void;
+  isPending: boolean;
+  labels: (typeof feedbackResponseCopy)["en"] | (typeof feedbackResponseCopy)["zh"];
+  locale: Locale;
+  messageState: PublisherSkillActionState | null;
+  skill: PublisherSkillRecord;
+}) {
+  const feedbackRows = skill.recentFeedback ?? [];
+
+  return (
+    <div className="publisher-skill-feedback">
+      <div className="publisher-skill-feedback__head">
+        <strong>
+          <MessageSquareText size={15} aria-hidden="true" />
+          {labels.recentFeedback}
+        </strong>
+        <span className="status-chip status-chip--neutral">{feedbackRows.length}</span>
+      </div>
+
+      {feedbackRows.length > 0 ? (
+        <div className="publisher-skill-feedback-list">
+          {feedbackRows.map((feedback) => {
+            const rowMessage = messageState?.feedbackId === feedback.id ? messageState : null;
+
+            return (
+              <section className="publisher-skill-feedback-card" key={feedback.id}>
+                <header>
+                  <div>
+                    <strong>{feedback.title}</strong>
+                    <span>
+                      {feedback.reviewerOrganizationName ?? feedback.reviewerDisplayName ?? feedback.reviewerEmail ?? labels.buyer}
+                    </span>
+                  </div>
+                  <div className="skill-feedback-rating" aria-label={`${feedback.rating} / 5`}>
+                    {Array.from({ length: 5 }, (_, index) => (
+                      <Star
+                        key={index}
+                        size={14}
+                        aria-hidden="true"
+                        fill={index < feedback.rating ? "currentColor" : "none"}
+                      />
+                    ))}
+                  </div>
+                </header>
+                <p>{feedback.body}</p>
+                <div className="publisher-skill-feedback-meta">
+                  <span>
+                    <strong>{labels.project}</strong>
+                    {feedback.projectSlug ?? "n/a"}
+                  </span>
+                  <span>
+                    <strong>{labels.useCase}</strong>
+                    {feedback.useCase ?? "n/a"}
+                  </span>
+                </div>
+                {feedback.publisherResponseBody ? (
+                  <div className="publisher-skill-feedback-response">
+                    <strong>
+                      <CheckCircle2 size={14} aria-hidden="true" />
+                      {labels.responded}
+                    </strong>
+                    <p>{feedback.publisherResponseBody}</p>
+                    {feedback.publisherRespondedAt ? <small>{formatDate(feedback.publisherRespondedAt, locale)}</small> : null}
+                  </div>
+                ) : null}
+                <form action={action} className="publisher-skill-feedback-form">
+                  <input name="feedbackId" type="hidden" value={feedback.id} />
+                  <input name="skillSlug" type="hidden" value={skill.slug} />
+                  <label>
+                    <span>{labels.publisherResponse}</span>
+                    <textarea
+                      defaultValue={feedback.publisherResponseBody ?? ""}
+                      name="body"
+                      placeholder={labels.responsePlaceholder}
+                      rows={3}
+                    />
+                  </label>
+                  <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+                    <Save size={15} aria-hidden="true" />
+                    <span>{isPending && rowMessage ? labels.savingResponse : labels.saveResponse}</span>
+                  </button>
+                </form>
+                {rowMessage ? <ActionMessage state={rowMessage} /> : null}
+              </section>
+            );
+          })}
+        </div>
+      ) : (
+        <p>{labels.empty}</p>
+      )}
     </div>
   );
 }

@@ -48,6 +48,7 @@ const copy = {
     feedbackBody: "Published feedback from teams that installed or evaluated this skill.",
     feedbackEmpty: "No published feedback yet.",
     feedbackProject: "Project",
+    publisherResponse: "Publisher response",
     feedbackUseCase: "Use case",
     averageRating: "Average rating",
     publishedFeedback: "Published feedback",
@@ -97,6 +98,7 @@ const copy = {
     feedbackBody: "来自已安装或评估该技能团队的公开反馈。",
     feedbackEmpty: "暂时还没有公开反馈。",
     feedbackProject: "项目",
+    publisherResponse: "发布者回复",
     feedbackUseCase: "使用场景",
     averageRating: "平均评分",
     publishedFeedback: "公开反馈",
@@ -344,6 +346,13 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                       </div>
                     </header>
                     <p>{feedback.body}</p>
+                    {feedback.publisherResponseBody ? (
+                      <div className="skill-feedback-publisher-response">
+                        <strong>{labels.publisherResponse}</strong>
+                        <p>{feedback.publisherResponseBody}</p>
+                        {feedback.publisherRespondedAt ? <small>{formatDate(feedback.publisherRespondedAt, locale)}</small> : null}
+                      </div>
+                    ) : null}
                     <div className="skill-feedback-meta">
                       <span>
                         <strong>{labels.feedbackUseCase}</strong>
@@ -517,6 +526,24 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
 function CircleDollarSignIcon() {
   return <WalletCards size={16} aria-hidden="true" />;
+}
+
+function formatDate(value: string, locale: "en" | "zh") {
+  if (value === "demo") {
+    return locale === "zh" ? "演示时间" : "Demo time";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(date);
 }
 
 function publisherTrustClass(trustLevel: "verified" | "active" | "limited" | "blocked") {

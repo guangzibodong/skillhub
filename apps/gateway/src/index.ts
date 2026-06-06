@@ -163,7 +163,8 @@ import {
   createSkillFeedback,
   decideSkillFeedback,
   listAdminSkillFeedback,
-  listPublicSkillFeedback
+  listPublicSkillFeedback,
+  respondToSkillFeedback
 } from "./skill-feedback.js";
 import {
   authorize,
@@ -2087,6 +2088,33 @@ app.post("/v1/admin/skill-feedback/:feedbackId/decision", async (c) => {
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update skill feedback." }, 400);
+  }
+});
+
+app.post("/v1/publisher/skill-feedback/:feedbackId/response", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  if (!authorization.subject.userId || !authorization.subject.organizationId) {
+    return c.json({ error: "Publisher feedback responses require an organization-scoped user token." }, 403);
+  }
+
+  try {
+    return c.json({
+      feedback: await respondToSkillFeedback(
+        c.req.param("feedbackId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        {
+          organizationId: authorization.subject.organizationId,
+          userId: authorization.subject.userId
+        }
+      )
+    });
+  } catch (error) {
+    return c.json({ error: error instanceof Error ? error.message : "Unable to respond to skill feedback." }, 400);
   }
 });
 
