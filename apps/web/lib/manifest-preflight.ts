@@ -7,7 +7,9 @@ export type ManifestPreflightCheck = {
   detail: string;
   id: "json" | "identity" | "runtime" | "schemas" | "permissions" | "commercial";
   label: string;
+  repairAction: string;
   state: PreflightState;
+  target: string;
 };
 
 export type ManifestPreflightResult = {
@@ -20,7 +22,10 @@ export type ManifestPreflightResult = {
   permissionRisk: PermissionRisk;
   readinessLabel: string;
   runtime: string;
+  runtimeTarget: string;
   score: number;
+  schemaFieldCount: number;
+  secretHandleCount: number;
   slug: string;
   tagCount: number;
   version: string;
@@ -145,13 +150,17 @@ export function analyzeManifestPreflight(manifestText: string, labels: PublishFo
       detail: hasValidJson ? labels.checks.validJson.ok : labels.checks.validJson.fail,
       id: "json",
       label: labels.checks.validJson.label,
-      state: hasValidJson ? "passed" : "blocked"
+      repairAction: labels.checks.validJson.action,
+      state: hasValidJson ? "passed" : "blocked",
+      target: "$"
     },
     {
       detail: hasIdentity ? (hasReviewableDescription ? labels.checks.identity.ok : labels.checks.identity.short) : labels.checks.identity.detail,
       id: "identity",
       label: labels.checks.identity.label,
-      state: hasIdentity ? (hasReviewableDescription ? "passed" : "warning") : "blocked"
+      repairAction: labels.checks.identity.action,
+      state: hasIdentity ? (hasReviewableDescription ? "passed" : "warning") : "blocked",
+      target: "schemaVersion / name / displayName / description / version / tags"
     },
     {
       detail: hasRuntime
@@ -163,13 +172,17 @@ export function analyzeManifestPreflight(manifestText: string, labels: PublishFo
         : labels.checks.runtime.fallback,
       id: "runtime",
       label: labels.checks.runtime.label,
-      state: hasRuntime ? (runtimeType === "local" || !isHttpsUrl(runtimeEndpoint) ? "warning" : "passed") : "blocked"
+      repairAction: labels.checks.runtime.action,
+      state: hasRuntime ? (runtimeType === "local" || !isHttpsUrl(runtimeEndpoint) ? "warning" : "passed") : "blocked",
+      target: "runtime.type / runtime.entrypoint / runtime.serverUrl / runtime.command"
     },
     {
       detail: hasSchemas ? (schemaPropertyCount > 0 ? labels.checks.schemas.ok : labels.checks.schemas.empty) : labels.checks.schemas.detail,
       id: "schemas",
       label: labels.checks.schemas.label,
-      state: hasSchemas ? (schemaPropertyCount > 0 ? "passed" : "warning") : "blocked"
+      repairAction: labels.checks.schemas.action,
+      state: hasSchemas ? (schemaPropertyCount > 0 ? "passed" : "warning") : "blocked",
+      target: "inputSchema / outputSchema"
     },
     {
       detail: hasPermissions
@@ -184,13 +197,17 @@ export function analyzeManifestPreflight(manifestText: string, labels: PublishFo
         : labels.checks.permissions.missing,
       id: "permissions",
       label: labels.checks.permissions.label,
-      state: hasPermissions ? (invalidSecretHandles || permissionRisk === "high" ? "warning" : "passed") : "blocked"
+      repairAction: labels.checks.permissions.action,
+      state: hasPermissions ? (invalidSecretHandles || permissionRisk === "high" ? "warning" : "passed") : "blocked",
+      target: "permissions.network / browser / filesystem / secrets"
     },
     {
       detail: labels.checks.commercial.detail,
       id: "commercial",
       label: labels.checks.commercial.label,
-      state: "warning"
+      repairAction: labels.checks.commercial.action,
+      state: "warning",
+      target: "terms / pricing / commission / payout"
     }
   ];
 
@@ -209,7 +226,10 @@ export function analyzeManifestPreflight(manifestText: string, labels: PublishFo
     readinessLabel:
       blockerCount > 0 ? labels.readiness.blocked : warningCount > 0 ? labels.readiness.warning : labels.readiness.ready,
     runtime: runtimeType,
+    runtimeTarget: toText(runtimeEndpoint, labels.unknown),
     score: Math.round((passedCount / checks.length) * 100),
+    schemaFieldCount: schemaPropertyCount,
+    secretHandleCount: secrets.length,
     slug: toText(manifest.name, "missing-name"),
     tagCount: tags.length,
     version: toText(manifest.version, "0.0.0"),

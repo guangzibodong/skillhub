@@ -12,6 +12,8 @@ import { JourneyRail } from "@/components/journey-rail";
 import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
 import { SiteHeader } from "@/components/site-header";
+import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getPublishCopy } from "@/lib/publish-copy";
 
@@ -28,6 +30,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
   const publishCopy = getPublishCopy(locale);
   const labels = publishCopy.page;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const session = await getWorkspaceSession();
   const signalIcons = [ClipboardCheck, ShieldCheck, Gauge, HandCoins];
   const stepIcons = [FileJson, ListChecks, ClipboardCheck, ShieldCheck, Gauge, BookOpenCheck, HandCoins];
 
@@ -102,6 +105,15 @@ export default async function PublishPage({ searchParams }: PageProps) {
           })}
         />
         <StatusChip tone="neutral">{labels.badge}</StatusChip>
+      </section>
+
+      <section className="publish-access-board">
+        <WorkspaceAccessPanel
+          locale={locale}
+          requiredRoles={["publisher", "owner", "admin", "super_admin"]}
+          session={session}
+          workspace="publisher"
+        />
       </section>
 
       <PublishForm apiUrl={apiUrl} labels={publishCopy.form} locale={locale} />

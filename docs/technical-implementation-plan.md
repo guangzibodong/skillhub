@@ -322,7 +322,7 @@ Acceptance checks:
 
 ### Publisher Workspace
 
-- `/publish`: package submission and manifest preflight.
+- `/publish`: package submission, role-aware publisher access, manifest preflight, repair queue, reviewer evidence packet, draft save, and immediate exact-version review submission.
 - `/publisher`: dedicated publisher command center for skills, reviews, runtime checks, analytics, buyer requests, earnings, payout readiness, and notification preferences.
 - Publisher evidence chain: publisher surfaces must use readiness, review, pricing-blocker, and payout signals to prove author work moves toward reviewed supply, monetization, and retained follow-up.
 
@@ -539,6 +539,7 @@ Completed:
 - `/agents` now functions as a real public integration guide with MCP client config, REST invocation, SDK discovery snippets, project-scoped key guidance, runtime governance, and production checklist.
 - `/publish` now exposes the Journey B operating entry with clean English/Chinese copy, no raw token field, signed-in session language, shared operational status components, manifest preflight for JSON/identity/runtime/schemas/permissions/commercial readiness, warning-vs-blocker save gates, and success actions into `/publisher` plus public skill detail.
 - `/publish` now preserves the saved draft's exact semantic version in the success state and lets publishers submit that version for review immediately, creating automated check evidence without forcing first-time authors to rediscover the version in `/publisher`.
+- `/publish` now shows the same role-aware publisher access state used by the operating workspace and converts client preflight output into a repair queue plus secret-safe reviewer evidence packet, including target fields, next actions, runtime target, schema field count, risk level, and secret-handle count.
 - `/publisher` now uses clean bilingual copy for the publisher command center, publisher skill cards, version/review/pricing/curation/feedback actions, and action-result messages; owned skill cards also show a derived next operating step so publishers know whether to create a version, submit review, fix checks, clear paid blockers, respond to feedback, appeal distribution, or monitor verified supply.
 - `/publisher` now adds a review repair loop on each owned skill card, combining latest exact version, review status, reviewer notes, automated check evidence, and repair action chips; the version workbench opens automatically when a fix, high-risk rationale, new version, or resubmission is the next needed step.
 - `/publisher` now adds a paid marketplace readiness command panel above the skill workbench, aggregating ready paid listings, blocked paid listings, draft paid prices, payout readiness, profile/terms gates, and per-skill paid activation next actions before authors edit individual versions or price records.

@@ -72,16 +72,19 @@ const publishCopy = {
       },
       checks: {
         commercial: {
+          action: "Continue through terms, payout readiness, pricing, and commission gates after the draft is saved.",
           detail: "Paid activation later requires verified review, accepted terms, active pricing, commission rule, and payout readiness.",
           label: "Commercial readiness"
         },
         identity: {
+          action: "Add every package identity field reviewers need before a version can be trusted.",
           detail: "Requires schemaVersion 0.1, valid slug, semver version, display name, description, and tags.",
           label: "Package identity",
           ok: "schemaVersion, slug, version, description, and tags are reviewable.",
           short: "Identity is valid, but the marketplace description is short for review."
         },
         permissions: {
+          action: "Declare least-privilege access, remove wildcard secrets, and expect owner approval for high-risk scope.",
           detail: "{filesystem} filesystem, {secrets} secret handles.",
           highRisk: "High-risk permission declared; reviewer notes and owner approval will be required.",
           invalidSecrets: "Secret handles must be explicit; blank or wildcard secret access is not allowed.",
@@ -89,6 +92,7 @@ const publishCopy = {
           missing: "Declare network, browser, filesystem, and secrets permissions."
         },
         runtime: {
+          action: "Use a hardened HTTPS HTTP/MCP endpoint or prepare local-runtime evidence for human review.",
           fallback: "Requires HTTP entrypoint, MCP serverUrl, or local command.",
           insecure: "Runtime URL is valid but not HTTPS; transport hardening should happen before review.",
           label: "Runtime declared",
@@ -96,12 +100,14 @@ const publishCopy = {
           ok: "{runtime} runtime uses a valid HTTPS endpoint."
         },
         schemas: {
+          action: "Attach object input/output schemas with concrete fields so agents know what to send and expect.",
           detail: "inputSchema and outputSchema must both be object schemas.",
           empty: "Schemas are objects, but fields are sparse; add concrete properties before review.",
           label: "Schemas attached",
           ok: "Input and output object schemas include concrete fields."
         },
         validJson: {
+          action: "Fix syntax first; SkillHub cannot create registry state from an unparseable contract.",
           fail: "Fix JSON syntax before saving.",
           label: "Valid JSON",
           ok: "Parser ready."
@@ -109,6 +115,18 @@ const publishCopy = {
       },
       editorHintInvalid: "Invalid JSON",
       editorHintValid: "Valid JSON",
+      evidencePacket: {
+        body: "This is the secret-safe packet a publisher can reason about before submitting the exact version for platform review.",
+        commercial: "Commercial gate",
+        identity: "Identity",
+        permissions: "Permissions",
+        risk: "Risk",
+        reviewGate: "Review gate",
+        runtime: "Runtime",
+        schemas: "Schema fields",
+        secrets: "Secret handles",
+        title: "Reviewer evidence packet"
+      },
       manifestLabel: "skillhub.json",
       nextActionsTitle: "Next operating steps",
       nextActions: [
@@ -126,6 +144,15 @@ const publishCopy = {
         ready: "Ready for draft save",
         warning: "Needs review attention",
         warnings: "Warnings"
+      },
+      repairQueue: {
+        blocker: "Blocker",
+        body: "Resolve blockers before saving. Warnings can be saved as draft, but they become reviewer evidence and may require notes.",
+        emptyBody: "Only commercial readiness remains after draft save; continue in the publisher workspace for terms, pricing, payout, and review.",
+        emptyTitle: "No manifest blockers",
+        target: "Target",
+        title: "Preflight repair queue",
+        warning: "Warning"
       },
       result: {
         detail: "View public detail",
@@ -229,16 +256,19 @@ const publishCopy = {
       },
       checks: {
         commercial: {
+          action: "草稿保存后继续完成条款、提现准备、定价和分佣规则闸口。",
           detail: "后续付费激活需要审核通过、接受条款、启用价格、分佣规则和提现状态就绪。",
           label: "商业准备"
         },
         identity: {
+          action: "补齐审核员判断可信版本所需的所有包身份字段。",
           detail: "需要 schemaVersion 0.1、合法 slug、语义版本、显示名称、描述和标签。",
           label: "包身份",
           ok: "schemaVersion、slug、版本、描述和标签都可进入审核。",
           short: "身份字段有效，但上架描述偏短，审核时可能要求补充。"
         },
         permissions: {
+          action: "声明最小权限，移除通配符密钥；高风险范围需要 owner 审批。",
           detail: "文件系统 {filesystem}，{secrets} 个密钥句柄。",
           highRisk: "已声明高风险权限；后续需要审核员备注和项目 owner 批准。",
           invalidSecrets: "密钥句柄必须明确；不允许空值或通配符密钥权限。",
@@ -246,6 +276,7 @@ const publishCopy = {
           missing: "需要声明 network、browser、filesystem 和 secrets 权限。"
         },
         runtime: {
+          action: "使用加固后的 HTTPS HTTP/MCP 端点，或准备本地运行时的人工审核证据。",
           fallback: "需要 HTTP entrypoint、MCP serverUrl 或本地 command。",
           insecure: "运行时 URL 有效但不是 HTTPS；审核前应完成传输加固。",
           label: "运行时已声明",
@@ -253,12 +284,14 @@ const publishCopy = {
           ok: "{runtime} 运行时使用了有效 HTTPS 端点。"
         },
         schemas: {
+          action: "补充带具体字段的输入/输出 object schema，让智能体知道发送什么、接收什么。",
           detail: "inputSchema 和 outputSchema 必须都是 object schema。",
           empty: "Schema 是 object，但字段偏少；审核前建议补充具体 properties。",
           label: "Schema 已附加",
           ok: "输入和输出 object schema 已包含具体字段。"
         },
         validJson: {
+          action: "先修复语法；SkillHub 不能从无法解析的合约创建注册表状态。",
           fail: "保存前请修复 JSON 语法。",
           label: "JSON 有效",
           ok: "解析器已就绪。"
@@ -266,6 +299,18 @@ const publishCopy = {
       },
       editorHintInvalid: "JSON 无效",
       editorHintValid: "JSON 有效",
+      evidencePacket: {
+        body: "这是发布者在提交准确版本给平台审核前，可以先检查的安全证据包。",
+        commercial: "商业闸口",
+        identity: "身份",
+        permissions: "权限",
+        risk: "风险",
+        reviewGate: "审核闸口",
+        runtime: "运行时",
+        schemas: "Schema 字段",
+        secrets: "密钥句柄",
+        title: "审核证据包"
+      },
       manifestLabel: "skillhub.json",
       nextActionsTitle: "下一步运营动作",
       nextActions: [
@@ -283,6 +328,15 @@ const publishCopy = {
         ready: "可保存草稿",
         warning: "需要审核关注",
         warnings: "警告"
+      },
+      repairQueue: {
+        blocker: "阻塞",
+        body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
+        emptyBody: "草稿保存后只剩商业准备；继续到发布者工作台处理条款、定价、提现和审核。",
+        emptyTitle: "没有 manifest 阻塞项",
+        target: "目标字段",
+        title: "预检修复队列",
+        warning: "警告"
       },
       result: {
         detail: "查看公开详情",

@@ -62,6 +62,8 @@ The latest dashboard pass turns `/dashboard` into a clearer workspace command ce
 
 The latest registry pass turns `/registry` into a product-level contract registry instead of a thin skill table. It now explains that SkillHub records versioned manifests before marketplace listing, shows the manifest quality bar, lifecycle, runtime resolution path, production demo-fallback boundary, public API endpoint, and registry evidence signals before rendering live registry rows. This reduces demo risk because evaluators can see the platform layer that makes marketplace listings governable, installable, auditable, and ready for runtime/ledger operations.
 
+The latest publish-entry pass strengthens Journey B's first mile. `/publish` now shows role-aware publisher access before the manifest form, then turns client preflight output into a repair queue and reviewer evidence packet with target fields, repair actions, runtime target, schema field count, risk level, and secret-handle count. This helps first-time publishers understand what is blocked, what can be saved as a warning, what reviewers will inspect, and why draft save is only the beginning of version review, commercial readiness, and publisher operations.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

@@ -337,6 +337,9 @@ Data source:
 Acceptance:
 
 - Shows preflight for JSON, identity, runtime, schemas, permissions, commercial readiness.
+- Shows current publisher access state with required roles, sign-in-required or role-required states, and the rule that gateway writes remain organization-scoped.
+- Turns preflight warnings/blockers into a repair queue with target fields and next actions.
+- Shows a secret-safe reviewer evidence packet before version submission.
 - Explains draft -> version submit -> automated checks -> review -> verified -> commercial readiness.
 - Does not ask users to paste raw admin/service tokens.
 - Success state links to publisher workspace and skill detail.

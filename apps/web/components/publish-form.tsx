@@ -1,6 +1,19 @@
 "use client";
 
-import { CheckCircle2, ClipboardCheck, FileJson, Gauge, KeyRound, LockKeyhole, Send, ShieldCheck, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardCheck,
+  FileJson,
+  Gauge,
+  KeyRound,
+  LockKeyhole,
+  PackageCheck,
+  Send,
+  ShieldCheck,
+  Wrench,
+  XCircle
+} from "lucide-react";
 import { useActionState, useMemo, useState } from "react";
 import { ActionResult, PreflightCheckList, RiskBadge, StatusChip } from "@/components/operational-status";
 import type { Locale } from "@/lib/i18n";
@@ -118,6 +131,18 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
   const preflight = useMemo(() => analyzeManifestPreflight(manifestText, labels), [labels, manifestText]);
   const canSubmit = preflight.canSaveDraft && !isPending;
   const readinessTone = preflight.blockerCount > 0 ? "danger" : preflight.warningCount > 0 ? "warning" : "success";
+  const attentionChecks = preflight.checks.filter((check) => check.state !== "passed");
+  const evidenceRows = [
+    [labels.evidencePacket.identity, `${preflight.slug} @ ${preflight.version}`],
+    [labels.evidencePacket.runtime, `${preflight.runtime}: ${preflight.runtimeTarget}`],
+    [labels.evidencePacket.schemas, String(preflight.schemaFieldCount)],
+    [
+      labels.evidencePacket.permissions,
+      `${labels.evidencePacket.risk}: ${labels.risk[preflight.permissionRisk]} / ${labels.evidencePacket.secrets}: ${preflight.secretHandleCount}`
+    ],
+    [labels.evidencePacket.reviewGate, `${preflight.blockerCount} ${labels.readiness.blockers} / ${preflight.warningCount} ${labels.readiness.warnings}`],
+    [labels.evidencePacket.commercial, preflight.checks.find((check) => check.id === "commercial")?.detail ?? labels.unknown]
+  ];
 
   return (
     <section className="publish-grid" aria-label="Publish skill">
@@ -296,6 +321,55 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
         </dl>
 
         <PreflightCheckList checks={preflight.checks} />
+
+        <div className="publish-repair-queue">
+          <div className="card-kicker">
+            <Wrench size={15} aria-hidden="true" />
+            <span>{labels.repairQueue.title}</span>
+          </div>
+          <p>{labels.repairQueue.body}</p>
+          <div className="publish-repair-list">
+            {attentionChecks.length > 0 ? (
+              attentionChecks.map((check) => (
+                <div className={`publish-repair-row publish-repair-row--${check.state}`} key={check.id}>
+                  {check.state === "blocked" ? <XCircle size={15} aria-hidden="true" /> : <AlertTriangle size={15} aria-hidden="true" />}
+                  <div>
+                    <span>{check.state === "blocked" ? labels.repairQueue.blocker : labels.repairQueue.warning}</span>
+                    <strong>{check.label}</strong>
+                    <small>{check.repairAction}</small>
+                    <code>
+                      {labels.repairQueue.target}: {check.target}
+                    </code>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="publish-repair-empty">
+                <CheckCircle2 size={16} aria-hidden="true" />
+                <div>
+                  <strong>{labels.repairQueue.emptyTitle}</strong>
+                  <span>{labels.repairQueue.emptyBody}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="publish-evidence-packet">
+          <div className="card-kicker">
+            <PackageCheck size={15} aria-hidden="true" />
+            <span>{labels.evidencePacket.title}</span>
+          </div>
+          <p>{labels.evidencePacket.body}</p>
+          <div className="publish-evidence-grid">
+            {evidenceRows.map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="publish-next-card">
           <div className="card-kicker">

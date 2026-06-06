@@ -2100,7 +2100,7 @@ curl -X POST "https://api.useskillhub.com/v1/skills" \
   -d '{"manifest": { ... }}'
 ```
 
-The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace.
+The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace. The page also shows role-aware publisher access state, client-side preflight, a repair queue, and a secret-safe reviewer evidence packet; these are publisher guidance and demo clarity surfaces, while the API remains the source of truth for organization ownership, role enforcement, immutable version review, automated checks, pricing blockers, and audit records.
 
 ## MCP Discovery
 
