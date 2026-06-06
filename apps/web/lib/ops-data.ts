@@ -91,6 +91,10 @@ export type AdminNotificationDeliveryProcessItem = {
 export type AdminNotificationDeliveryProcessResult = {
   deliveredCount: number;
   failedCount: number;
+  fanoutCount: number;
+  fanoutEmailCount: number;
+  fanoutSourceCount: number;
+  fanoutWebhookCount: number;
   mode: "deliver" | "dry_run";
   pendingCount: number;
   processed: AdminNotificationDeliveryProcessItem[];

@@ -1667,6 +1667,15 @@ Modes:
 - `dry_run`: reports what would happen without mutating delivery state.
 - `deliver`: processes due `queued` or retry-ready `failed` `email` and `webhook` events.
 
+In `deliver` mode, the processor first fans eligible queued in-app business notifications into external delivery rows:
+
+- Email fanout uses the notification topic derived from the event type, the target user's `notification_preferences`, and the user's email address. Missing preferences use the product default of email enabled.
+- Webhook fanout uses the notification organization, exact event type, and derived topic to create one organization-scoped webhook delivery event when an active endpoint is subscribed.
+- Generated external rows carry `fanoutSourceNotificationId` in their payload, so repeated processor runs do not duplicate the same source notification for the same channel/user or organization.
+- The response includes `fanoutCount`, `fanoutEmailCount`, `fanoutWebhookCount`, and `fanoutSourceCount` beside the existing processed/sent/failed/skipped counts.
+
+At delivery time, email and webhook processors look for an active `notification_templates` row matching `(eventType, channel, locale)`, falling back to the language code and then `en`. Email delivery uses the rendered template subject/body as the Resend text payload. Webhook fanout stores the rendered JSON body as `renderedPayload` in `webhook_delivery_events`, while preserving the original notification payload for audit and troubleshooting. Template rendering substitutes `{{payloadKey}}` and dotted paths such as `{{skill.slug}}`; missing values render as empty strings rather than exposing raw placeholders.
+
 Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider.
 
 Webhook processing fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The webhook outbox worker consumes those endpoint-level rows and records signed HTTP delivery state separately.

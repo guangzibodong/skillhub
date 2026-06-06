@@ -401,6 +401,8 @@ Added external notification delivery operations, covering:
 Added notification delivery batch processing, covering:
 
 - `/v1/admin/notification-deliveries/process` processes due external `email` and `webhook` events in `dry_run` or `deliver` mode.
+- In `deliver` mode, the processor now fans eligible in-app business events into email and webhook queue rows using user notification preferences and organization webhook endpoint subscriptions, then reports fanout counts to the admin console.
+- Email and webhook processing now render active `notification_templates` by event type, channel, and locale at delivery time, so default or operator-edited templates control actual outbound copy/payload without changing business event writers.
 - Resend-backed email sending is ready when `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM` are configured; missing provider configuration becomes an explicit failed state instead of a silent queue stall.
 - Webhook processing fans organization-scoped external events into `webhook_delivery_events` for active subscribed endpoints, then the dedicated webhook outbox worker handles signed network delivery and retry response capture.
 - `/admin` now exposes a compact Process due control and result summary so operators can run dry-runs and delivery batches without leaving the platform command center.

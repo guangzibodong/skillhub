@@ -37,7 +37,7 @@ const copy = {
     process: "Process due",
     processMode: "Mode",
     processLimit: "Limit",
-    processSummary: "Processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
+    processSummary: "Fanout {{fanout}} (email {{fanoutEmail}}, webhook {{fanoutWebhook}}) / processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
     retry: "Retry",
     saving: "Updating",
     skip: "Skip",
@@ -78,7 +78,7 @@ const copy = {
     process: "\u5904\u7406\u5230\u671f\u961f\u5217",
     processMode: "\u6a21\u5f0f",
     processLimit: "\u6570\u91cf",
-    processSummary: "\u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
+    processSummary: "\u6247\u51fa {{fanout}}\uff08\u90ae\u4ef6 {{fanoutEmail}}\uff0cWebhook {{fanoutWebhook}}\uff09/ \u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
     retry: "\u91cd\u8bd5",
     saving: "\u66f4\u65b0\u4e2d",
     skip: "\u8df3\u8fc7",
@@ -237,6 +237,9 @@ function ProcessMessage({
 }) {
   const summary = state.result
     ? labels.processSummary
+        .replace("{{fanout}}", String(state.result.fanoutCount ?? 0))
+        .replace("{{fanoutEmail}}", String(state.result.fanoutEmailCount ?? 0))
+        .replace("{{fanoutWebhook}}", String(state.result.fanoutWebhookCount ?? 0))
         .replace("{{processed}}", String(state.result.processedCount))
         .replace("{{sent}}", String(state.result.deliveredCount))
         .replace("{{failed}}", String(state.result.failedCount))

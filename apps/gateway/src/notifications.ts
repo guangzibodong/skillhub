@@ -16,6 +16,7 @@ type NotificationRow = {
   payload?: Record<string, unknown>;
   providerMessageId?: string | null;
   status: "queued" | "sent" | "failed" | "skipped";
+  userId?: string | null;
   createdAt: string;
   deliveredAt: string | null;
 };
@@ -43,6 +44,13 @@ type ProcessedDeliveryOutcome = {
   provider: string;
   providerMessageId: string | null;
   reason: string;
+};
+
+type NotificationFanoutSummary = {
+  createdCount: number;
+  emailCount: number;
+  sourceCount: number;
+  webhookCount: number;
 };
 
 type NotificationDeliveryRuntimeEnv = {
@@ -84,6 +92,10 @@ export type NotificationDeliveryProcessItem = {
 export type NotificationDeliveryProcessResult = {
   deliveredCount: number;
   failedCount: number;
+  fanoutCount: number;
+  fanoutEmailCount: number;
+  fanoutSourceCount: number;
+  fanoutWebhookCount: number;
   mode: NotificationDeliveryProcessMode;
   pendingCount: number;
   processed: NotificationDeliveryProcessItem[];
@@ -422,9 +434,19 @@ export async function processNotificationDeliveries(
   const sql = await requireSql();
   const limit = Math.min(Math.max(Math.trunc(Number(input.limit) || 10), 1), 50);
   const mode = normalizeProcessMode(input.mode);
+  const fanout =
+    mode === "deliver"
+      ? await fanOutExternalNotificationEvents(sql, limit)
+      : {
+          createdCount: 0,
+          emailCount: 0,
+          sourceCount: 0,
+          webhookCount: 0
+        };
   const rows = (await sql`
     select
       id::text,
+      user_id::text as "userId",
       organization_id::text as "organizationId",
       event_type as "eventType",
       channel,
@@ -455,7 +477,7 @@ export async function processNotificationDeliveries(
   for (const row of rows) {
     const outcome =
       row.channel === "email"
-        ? await processEmailDelivery(row, env, mode)
+        ? await processEmailDelivery(sql, row, env, mode)
         : await processWebhookDelivery(sql, row, mode);
 
     if (mode === "deliver") {
@@ -473,11 +495,11 @@ export async function processNotificationDeliveries(
     });
   }
 
-  if (processed.length > 0 && mode === "deliver") {
-    await recordDeliveryProcessAudit(sql, actorUserId, processed);
+  if ((processed.length > 0 || fanout.createdCount > 0) && mode === "deliver") {
+    await recordDeliveryProcessAudit(sql, actorUserId, processed, fanout);
   }
 
-  return summarizeProcessResult(mode, processed);
+  return summarizeProcessResult(mode, processed, fanout);
 }
 
 export async function listUserNotifications(userId: string, organizationId: string | null | undefined, limit = 25) {
@@ -636,6 +658,188 @@ export async function markUserNotificationRead(
   return notification;
 }
 
+async function fanOutExternalNotificationEvents(sql: Sql, limit: number): Promise<NotificationFanoutSummary> {
+  const sources = (await sql`
+    select
+      id::text,
+      user_id::text as "userId",
+      organization_id::text as "organizationId",
+      event_type as "eventType",
+      channel,
+      subject,
+      payload,
+      status,
+      created_at as "createdAt",
+      delivered_at as "deliveredAt"
+    from notification_events
+    where channel = 'in_app'
+      and status = 'queued'
+      and event_type not like 'platform.notification_delivery.%'
+      and event_type not like 'platform.webhook_delivery.%'
+    order by created_at asc
+    limit ${Math.min(Math.max(limit * 5, limit), 250)}
+  `) as NotificationRow[];
+  const summary: NotificationFanoutSummary = {
+    createdCount: 0,
+    emailCount: 0,
+    sourceCount: sources.length,
+    webhookCount: 0
+  };
+
+  for (const source of sources) {
+    const emailCount = await fanOutEmailNotifications(sql, source);
+    const webhookCount = await fanOutWebhookNotification(sql, source);
+
+    summary.emailCount += emailCount;
+    summary.webhookCount += webhookCount;
+    summary.createdCount += emailCount + webhookCount;
+
+    if (summary.createdCount >= limit) {
+      break;
+    }
+  }
+
+  return summary;
+}
+
+async function fanOutEmailNotifications(sql: Sql, source: NotificationRow) {
+  const topic = notificationPreferenceTopicForEventType(source.eventType);
+  const targets = await selectEmailFanoutTargets(sql, source, topic);
+  let createdCount = 0;
+
+  for (const target of targets) {
+    const existingRows = (await sql`
+      select id::text
+      from notification_events
+      where channel = 'email'
+        and user_id = ${target.userId}
+        and payload ->> 'fanoutSourceNotificationId' = ${source.id}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (existingRows[0]) {
+      continue;
+    }
+
+    await sql`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${target.userId},
+        ${target.organizationId},
+        ${source.eventType},
+        'email',
+        ${source.subject},
+        ${sql.json({
+          ...(source.payload ?? {}),
+          email: target.email,
+          fanoutSourceNotificationId: source.id,
+          fanoutTopic: topic,
+          locale: getPayloadText(source.payload, "locale") ?? target.locale,
+          to: target.email
+        })},
+        'queued'
+      )
+    `;
+    createdCount += 1;
+  }
+
+  return createdCount;
+}
+
+async function fanOutWebhookNotification(sql: Sql, source: NotificationRow) {
+  const organizationId = source.organizationId ?? null;
+
+  if (!organizationId) {
+    return 0;
+  }
+
+  const topic = webhookTopicForEventType(source.eventType);
+  const endpointRows = (await sql`
+    select count(*)::int as count
+    from organization_webhook_endpoints
+    where organization_id = ${organizationId}
+      and status = 'active'
+      and (${source.eventType} = any(events) or ${topic} = any(events))
+  `) as Array<{ count: number }>;
+
+  if ((endpointRows[0]?.count ?? 0) === 0) {
+    return 0;
+  }
+
+  const existingRows = (await sql`
+    select id::text
+    from notification_events
+    where channel = 'webhook'
+      and organization_id = ${organizationId}
+      and payload ->> 'fanoutSourceNotificationId' = ${source.id}
+    limit 1
+  `) as Array<{ id: string }>;
+
+  if (existingRows[0]) {
+    return 0;
+  }
+
+  await sql`
+    insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+    values (
+      ${organizationId},
+      ${source.eventType},
+      'webhook',
+      ${source.subject},
+      ${sql.json({
+        ...(source.payload ?? {}),
+        fanoutSourceNotificationId: source.id,
+        fanoutTopic: topic
+      })},
+      'queued'
+    )
+  `;
+
+  return 1;
+}
+
+async function selectEmailFanoutTargets(sql: Sql, source: NotificationRow, topic: string) {
+  const organizationId = source.organizationId ?? null;
+
+  if (source.userId) {
+    return (await sql`
+      select
+        u.id::text as "userId",
+        u.email,
+        coalesce(${organizationId}::uuid, om.organization_id)::text as "organizationId",
+        'en' as locale
+      from users u
+      left join organization_members om on om.user_id = u.id
+      left join notification_preferences np on np.user_id = u.id and np.event_type = ${topic}
+      where u.id = ${source.userId}
+        and coalesce(np.email_enabled, true) = true
+        and nullif(u.email, '') is not null
+      order by om.created_at asc nulls last
+      limit 1
+    `) as Array<{ email: string; locale: string; organizationId: string | null; userId: string }>;
+  }
+
+  if (!organizationId) {
+    return [];
+  }
+
+  return (await sql`
+    select distinct on (u.id)
+      u.id::text as "userId",
+      u.email,
+      om.organization_id::text as "organizationId",
+      'en' as locale
+    from organization_members om
+    join users u on u.id = om.user_id
+    left join notification_preferences np on np.user_id = u.id and np.event_type = ${topic}
+    where om.organization_id = ${organizationId}
+      and coalesce(np.email_enabled, true) = true
+      and nullif(u.email, '') is not null
+    order by u.id, om.created_at asc
+    limit 50
+  `) as Array<{ email: string; locale: string; organizationId: string | null; userId: string }>;
+}
+
 function normalizeLimit(limit: number) {
   return Math.min(Math.max(Math.trunc(Number(limit) || 25), 1), 100);
 }
@@ -651,12 +855,14 @@ function normalizeProcessMode(value: unknown): NotificationDeliveryProcessMode {
 }
 
 async function processEmailDelivery(
+  sql: Sql,
   row: NotificationRow,
   env: NotificationDeliveryRuntimeEnv | undefined,
   mode: NotificationDeliveryProcessMode
 ): Promise<ProcessedDeliveryOutcome> {
   const provider = normalizeEmailProvider(env);
   const recipient = getPayloadText(row.payload, "email") ?? getPayloadText(row.payload, "to");
+  const renderedTemplate = await resolveRenderedNotificationTemplate(sql, row, "email");
 
   if (!recipient) {
     return {
@@ -714,8 +920,8 @@ async function processEmailDelivery(
   const response = await fetch("https://api.resend.com/emails", {
     body: JSON.stringify({
       from,
-      subject: row.subject ?? "SkillHub notification",
-      text: renderEmailText(row),
+      subject: renderedTemplate?.subject ?? row.subject ?? "SkillHub notification",
+      text: renderedTemplate?.body ?? renderEmailText(row),
       to: [recipient]
     }),
     headers: {
@@ -752,6 +958,7 @@ async function processWebhookDelivery(
 ): Promise<ProcessedDeliveryOutcome> {
   const organizationId = row.organizationId ?? null;
   const provider = "webhook_outbox";
+  const renderedTemplate = await resolveRenderedNotificationTemplate(sql, row, "webhook");
 
   if (!organizationId) {
     return {
@@ -813,7 +1020,11 @@ async function processWebhookDelivery(
         ${row.eventType},
         ${sql.json({
           notificationEventId: row.id,
-          payload: row.payload ?? {}
+          payload: row.payload ?? {},
+          renderedPayload: renderedTemplate ? parseRenderedWebhookBody(renderedTemplate.body) : row.payload ?? {},
+          templateId: renderedTemplate?.templateId ?? null,
+          templateLocale: renderedTemplate?.locale ?? null,
+          templateSubject: renderedTemplate?.subject ?? row.subject ?? null
         })},
         'pending',
         0,
@@ -880,9 +1091,16 @@ async function applyProcessedDeliveryOutcome(sql: Sql, row: NotificationRow, out
 async function recordDeliveryProcessAudit(
   sql: Sql,
   actorUserId: string | null | undefined,
-  processed: NotificationDeliveryProcessItem[]
+  processed: NotificationDeliveryProcessItem[],
+  fanout: NotificationFanoutSummary
 ) {
-  const summary = summarizeProcessedItems(processed);
+  const summary = {
+    ...summarizeProcessedItems(processed),
+    fanoutCount: fanout.createdCount,
+    fanoutEmailCount: fanout.emailCount,
+    fanoutSourceCount: fanout.sourceCount,
+    fanoutWebhookCount: fanout.webhookCount
+  };
 
   await sql`
     insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
@@ -909,13 +1127,18 @@ async function recordDeliveryProcessAudit(
 
 function summarizeProcessResult(
   mode: NotificationDeliveryProcessMode,
-  processed: NotificationDeliveryProcessItem[]
+  processed: NotificationDeliveryProcessItem[],
+  fanout: NotificationFanoutSummary
 ): NotificationDeliveryProcessResult {
   const summary = summarizeProcessedItems(processed);
 
   return {
     deliveredCount: summary.deliveredCount,
     failedCount: summary.failedCount,
+    fanoutCount: fanout.createdCount,
+    fanoutEmailCount: fanout.emailCount,
+    fanoutSourceCount: fanout.sourceCount,
+    fanoutWebhookCount: fanout.webhookCount,
     mode,
     pendingCount: summary.pendingCount,
     processed,
@@ -975,6 +1198,97 @@ function normalizeEmailProvider(env: NotificationDeliveryRuntimeEnv | undefined)
   return "provider_deferred";
 }
 
+async function resolveRenderedNotificationTemplate(
+  sql: Sql,
+  row: NotificationRow,
+  channel: "email" | "webhook"
+): Promise<{ body: string; locale: string; subject: string; templateId: string } | null> {
+  const localeCandidates = notificationLocaleCandidates(row.payload);
+
+  for (const locale of localeCandidates) {
+    const rows = (await sql`
+      select
+        id::text,
+        locale,
+        subject,
+        body
+      from notification_templates
+      where template_key = ${row.eventType}
+        and channel = ${channel}
+        and locale = ${locale}
+        and status = 'active'
+      limit 1
+    `) as Array<{ body: string; id: string; locale: string; subject: string }>;
+    const template = rows[0];
+
+    if (template) {
+      return {
+        body: renderTemplateText(template.body, row.payload),
+        locale: template.locale,
+        subject: renderTemplateText(template.subject, row.payload),
+        templateId: template.id
+      };
+    }
+  }
+
+  return null;
+}
+
+function notificationLocaleCandidates(payload: Record<string, unknown> | undefined) {
+  const rawLocale = (getPayloadText(payload, "locale") ?? getPayloadText(payload, "preferredLocale") ?? "en")
+    .trim()
+    .toLowerCase()
+    .replace("_", "-");
+  const candidates = [rawLocale];
+  const language = rawLocale.split("-")[0];
+
+  if (language && language !== rawLocale) {
+    candidates.push(language);
+  }
+
+  candidates.push("en");
+  return Array.from(new Set(candidates.filter(Boolean)));
+}
+
+function renderTemplateText(template: string, payload: Record<string, unknown> | undefined) {
+  return template.replace(/{{\s*([a-zA-Z0-9_.-]+)\s*}}/g, (_match, key: string) => {
+    const value = getPayloadPathText(payload, key);
+    return value ?? "";
+  });
+}
+
+function getPayloadPathText(payload: Record<string, unknown> | undefined, path: string) {
+  let current: unknown = payload;
+
+  for (const part of path.split(".")) {
+    if (!current || typeof current !== "object" || !(part in current)) {
+      return null;
+    }
+
+    current = (current as Record<string, unknown>)[part];
+  }
+
+  if (typeof current === "string") {
+    return current;
+  }
+
+  if (typeof current === "number" || typeof current === "boolean") {
+    return String(current);
+  }
+
+  return null;
+}
+
+function parseRenderedWebhookBody(body: string) {
+  try {
+    return JSON.parse(body) as Record<string, unknown>;
+  } catch {
+    return {
+      body
+    };
+  }
+}
+
 function renderEmailText(row: NotificationRow) {
   if (row.eventType === "auth.email.code.requested") {
     const code = getPayloadText(row.payload, "code") ?? "------";
@@ -1020,6 +1334,34 @@ function webhookTopicForEventType(eventType: string) {
 
   if (eventType.includes("account") || eventType.includes("api_key")) {
     return "account.security";
+  }
+
+  return "skill.update";
+}
+
+function notificationPreferenceTopicForEventType(eventType: string) {
+  if (eventType.includes("buyer_request") || eventType.includes("buyer.request")) {
+    return "buyer.request";
+  }
+
+  if (eventType.includes("payout")) {
+    return "publisher.payout";
+  }
+
+  if (eventType.includes("billing") || eventType.includes("invoice") || eventType.includes("refund") || eventType.includes("dispute")) {
+    return "finance.billing";
+  }
+
+  if (eventType.includes("runtime") || eventType.includes("incident")) {
+    return "runtime.incident";
+  }
+
+  if (eventType.includes("account") || eventType.includes("api_key") || eventType.includes("auth.")) {
+    return "account.security";
+  }
+
+  if (eventType.includes("review") || eventType.includes("feedback")) {
+    return "skill.review";
   }
 
   return "skill.update";
