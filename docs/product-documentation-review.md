@@ -52,6 +52,8 @@ Console access is now more product-visible. The home, login, and account surface
 
 Workspace access is now visible inside the operating consoles as well. `/developer`, `/publisher`, and `/admin` show current session, token fingerprint, required roles, sign-in-required or role-required states, and the rule that gateway writes remain organization- and role-enforced. This reduces a second demo risk: customers can distinguish "not signed in", "signed in without the right role", and "signed in with operational access" before interpreting empty queues as a broken product.
 
+The public docs surface now behaves like a product reference instead of a thin manifest page. `/docs` maps the three frozen P0 journeys, manifest quality bar, runtime governance path, API groups, shared lifecycle/check/balance/delivery states, and launch/operator guardrails in one bilingual reference. This closes the page-matrix requirement that docs cover manifest requirements, runtime governance, publishing flow, pricing and ledger states, payout states, notification/webhook states, and admin readiness without forcing evaluators to read internal repository documents.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

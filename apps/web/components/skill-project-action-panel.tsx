@@ -1,7 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
-import { BookmarkPlus, CheckCircle2, CreditCard, Folder, PackageCheck, PlayCircle, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  BookmarkPlus,
+  CheckCircle2,
+  CreditCard,
+  Folder,
+  KeyRound,
+  PackageCheck,
+  PlayCircle,
+  Route,
+  ShieldCheck,
+  XCircle
+} from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectRecord } from "@/lib/ops-data";
 import { submitSkillProjectAction, type SkillProjectActionState } from "@/lib/skill-project-actions";
@@ -25,6 +37,11 @@ const copy = {
     emptyBody: "Create or connect a developer project before saving, subscribing, or installing skills.",
     emptyCta: "Create project",
     heading: "Add this skill to a project",
+    handoffAction: "Open developer workspace",
+    handoffBody:
+      "A saved or installed skill becomes project state. Finish policy approval, version pinning, runtime key setup, test invocation, updates, and billing from the project command center.",
+    handoffSteps: ["Policy", "Version pin", "Runtime key", "Test call", "Updates and billing"],
+    handoffTitle: "Next: finish the project handoff",
     install: "Install to project",
     installing: "Working",
     latestVersion: "Latest registry version",
@@ -54,6 +71,11 @@ const copy = {
     emptyBody: "\u8bf7\u5148\u521b\u5efa\u6216\u8fde\u63a5\u4e00\u4e2a\u5f00\u53d1\u8005\u9879\u76ee\uff0c\u518d\u4fdd\u5b58\u3001\u8ba2\u9605\u6216\u5b89\u88c5\u6280\u80fd\u3002",
     emptyCta: "\u521b\u5efa\u9879\u76ee",
     heading: "\u628a\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
+    handoffAction: "\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    handoffBody:
+      "\u4fdd\u5b58\u6216\u5b89\u88c5\u540e\uff0c\u6280\u80fd\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7b56\u7565\u5ba1\u6279\u3001\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u6d4b\u8bd5\u8c03\u7528\u3001\u66f4\u65b0\u548c\u8d26\u5355\u68c0\u67e5\u3002",
+    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u6d4b\u8bd5\u8c03\u7528", "\u66f4\u65b0\u548c\u8d26\u5355"],
+    handoffTitle: "\u4e0b\u4e00\u6b65\uff1a\u5b8c\u6210\u9879\u76ee\u4ea4\u63a5",
     install: "\u5b89\u88c5\u5230\u9879\u76ee",
     installing: "\u5904\u7406\u4e2d",
     latestVersion: "\u5f53\u524d\u6ce8\u518c\u8868\u7248\u672c",
@@ -100,6 +122,7 @@ export function SkillProjectActionPanel({
   );
   const hasProjects = projects.length > 0;
   const isSubscriptionSkill = billingModel === "subscription";
+  const handoffHref = state.projectSlug ? projectHref(state.projectSlug, locale) : dashboardHref;
 
   return (
     <div className="skill-project-action-panel">
@@ -180,6 +203,28 @@ export function SkillProjectActionPanel({
           </a>
         </div>
       )}
+
+      <div className="skill-project-handoff">
+        <div className="skill-project-handoff__copy">
+          <div className="skill-project-handoff__title">
+            <Route size={16} aria-hidden="true" />
+            <strong>{labels.handoffTitle}</strong>
+          </div>
+          <p>{labels.handoffBody}</p>
+          <div className="skill-project-handoff__steps" aria-label={labels.handoffTitle}>
+            {labels.handoffSteps.map((step, index) => (
+              <span key={step}>
+                {index === 0 ? <ShieldCheck size={13} aria-hidden="true" /> : index === 2 ? <KeyRound size={13} aria-hidden="true" /> : null}
+                {step}
+              </span>
+            ))}
+          </div>
+        </div>
+        <a className="ghost-button ghost-button--inline" href={handoffHref}>
+          <span>{state.projectSlug ? labels.openProject : labels.handoffAction}</span>
+          <ArrowRight size={15} aria-hidden="true" />
+        </a>
+      </div>
 
       {latestVersion ? (
         <p className="skill-project-action-footnote">
