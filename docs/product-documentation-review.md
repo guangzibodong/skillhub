@@ -682,6 +682,12 @@ Added publisher upload entry hardening, covering:
 - Client preflight separates blockers from warnings across JSON, identity, runtime, schemas, permissions, and commercial readiness, so publishers can save valid drafts while understanding what will affect review and paid activation later.
 - Success states route the publisher to the workspace and public skill detail, which strengthens the repeat-use loop after the first upload.
 
+Added publisher workspace copy and next-action hardening, covering:
+
+- `/publisher` now uses clean English and Chinese copy for the page, skill operations, review checks, version management, marketplace distribution, feedback response, and server-action result messages.
+- Skill cards now derive a next operating step from version, review, check, commercial, feedback, and distribution state.
+- This improves the repeat-use loop because publishers see what to do next after saving a draft instead of only seeing metrics and forms.
+
 Added developer project version adoption, covering:
 
 - Project update inbox rows now expose current installed version, target version, target review status, and adoption readiness.

@@ -34,6 +34,7 @@ import {
   getPublisherSkills,
   getUserNotificationInbox
 } from "@/lib/ops-data";
+import { getPublisherPageCopy, type PublisherPageCopy } from "@/lib/publisher-page-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -254,8 +255,6 @@ function buildReadinessTasks(
   ];
 }
 
-type PublisherPageCopy = (typeof copy)["en"] | (typeof copy)["zh"];
-
 function formatLedgerStatus(value: string, labels: PublisherPageCopy) {
   return labels.ledgerStatuses[value as keyof typeof labels.ledgerStatuses] ?? value.replaceAll("_", " ");
 }
@@ -297,7 +296,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
-  const labels = copy[locale];
+  const labels = getPublisherPageCopy(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.useskillhub.com";
   const publisherReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/publisher", locale)}`;

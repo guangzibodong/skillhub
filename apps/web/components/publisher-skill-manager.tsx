@@ -22,6 +22,13 @@ import type { Locale } from "@/lib/i18n";
 import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVersionRecord } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
+  getPublisherFeedbackResponseCopy,
+  getPublisherMarketplaceCopy,
+  getPublisherSkillCopy,
+  type PublisherFeedbackResponseCopy,
+  type PublisherSkillCopy
+} from "@/lib/publisher-skill-copy";
+import {
   requestMarketplaceCurationAppealAction,
   respondToSkillFeedbackAction,
   savePublisherSkillVersionAction,
@@ -339,7 +346,7 @@ const initialState: PublisherSkillActionState = {
 };
 
 export function PublisherSkillManager({ locale, skills }: PublisherSkillManagerProps) {
-  const labels = copy[locale];
+  const labels = getPublisherSkillCopy(locale);
 
   return (
     <article className="ops-panel publisher-skill-panel">
@@ -369,7 +376,7 @@ function PublisherSkillCard({
   locale,
   skill
 }: {
-  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  labels: PublisherSkillCopy;
   locale: Locale;
   skill: PublisherSkillRecord;
 }) {
@@ -393,9 +400,9 @@ function PublisherSkillCard({
     respondToSkillFeedbackAction.bind(null, locale),
     initialState
   );
-  const marketplaceLabels = marketplaceCopy[locale];
+  const marketplaceLabels = getPublisherMarketplaceCopy(locale);
   const commercialLabels = commercialCopy[locale];
-  const feedbackLabels = feedbackResponseCopy[locale];
+  const feedbackLabels = getPublisherFeedbackResponseCopy(locale);
   const versions = skill.versions ?? [];
   const latestVersion = versions[0];
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
@@ -409,6 +416,7 @@ function PublisherSkillCard({
   const appealMessageVisible = appealState.skillSlug === skill.slug && appealState.status !== "idle";
   const feedbackResponseMessageVisible =
     feedbackResponseState.skillSlug === skill.slug && feedbackResponseState.status !== "idle";
+  const nextOperatingStep = getNextOperatingStep(skill, labels);
 
   return (
     <div className="publisher-skill-card">
@@ -442,6 +450,14 @@ function PublisherSkillCard({
             </span>
           ))}
         </div>
+      </div>
+
+      <div className="publisher-skill-next-step">
+        <strong>
+          <ClipboardCheck size={15} aria-hidden="true" />
+          {labels.nextStep.title}
+        </strong>
+        <span>{nextOperatingStep}</span>
       </div>
 
       <details className="publisher-skill-version-workbench">
@@ -647,6 +663,47 @@ function PublisherSkillCard({
   );
 }
 
+function getNextOperatingStep(skill: PublisherSkillRecord, labels: PublisherSkillCopy) {
+  const checks = skill.runtime.checks ?? [];
+  const hasBlockingCheck = checks.some((check) => check.status === "failed" || check.status === "warning");
+  const hasOpenCheck = checks.some((check) => check.status === "queued" || check.status === "running");
+  const hasUnansweredFeedback = (skill.recentFeedback ?? []).some((feedback) => !feedback.publisherResponseBody);
+  const hasDistributionGap = Boolean(
+    skill.marketplace?.placement === "suppressed" ||
+      skill.marketplace?.improvementHints.some((hint) => hint.severity === "critical" || hint.severity === "warning")
+  );
+
+  if ((skill.versions ?? []).length === 0) {
+    return labels.nextStep.version;
+  }
+
+  if (skill.review.status === "queued" || skill.review.status === "in_review") {
+    return hasOpenCheck ? labels.nextStep.runtime : labels.nextStep.review;
+  }
+
+  if (hasBlockingCheck) {
+    return labels.nextStep.runtime;
+  }
+
+  if (skill.verificationStatus !== "verified") {
+    return labels.nextStep.review;
+  }
+
+  if (skill.commercial && !skill.commercial.paidActivationReady) {
+    return labels.nextStep.pricing;
+  }
+
+  if (hasUnansweredFeedback) {
+    return labels.nextStep.feedback;
+  }
+
+  if (hasDistributionGap) {
+    return labels.nextStep.curation;
+  }
+
+  return labels.nextStep.verified;
+}
+
 function CommercialReadinessPanel({
   commercial,
   labels
@@ -693,7 +750,7 @@ function PublisherFeedbackResponsePanel({
 }: {
   action: (payload: FormData) => void;
   isPending: boolean;
-  labels: (typeof feedbackResponseCopy)["en"] | (typeof feedbackResponseCopy)["zh"];
+  labels: PublisherFeedbackResponseCopy;
   locale: Locale;
   messageState: PublisherSkillActionState | null;
   skill: PublisherSkillRecord;
@@ -794,7 +851,7 @@ function VersionRow({
   version
 }: {
   isPending: boolean;
-  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  labels: PublisherSkillCopy;
   locale: Locale;
   reviewAction: (payload: FormData) => void;
   skillSlug: string;
@@ -954,11 +1011,11 @@ function formatCommercialBlocker(blocker: PublisherCommercialBlocker, labels: Re
   return labels[blocker] ?? blocker.replaceAll("_", " ");
 }
 
-function formatCheckType(checkType: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+function formatCheckType(checkType: string, labels: PublisherSkillCopy) {
   return labels.checkLabels[checkType as keyof typeof labels.checkLabels] ?? checkType;
 }
 
-function formatCheckStatus(status: string, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+function formatCheckStatus(status: string, labels: PublisherSkillCopy) {
   return labels.checkStatusLabels[status as keyof typeof labels.checkStatusLabels] ?? status;
 }
 

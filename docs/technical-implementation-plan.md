@@ -512,6 +512,7 @@ Completed:
 - OAuth provider readiness now exposes exact Google/GitHub callback URLs, missing secret-safe configuration names, and per-provider readiness booleans through `/v1/auth/providers`; `/login` shows callback success/error notices and provider setup hints instead of dead OAuth buttons.
 - `/agents` now functions as a real public integration guide with MCP client config, REST invocation, SDK discovery snippets, project-scoped key guidance, runtime governance, and production checklist.
 - `/publish` now exposes the Journey B operating entry with clean English/Chinese copy, no raw token field, signed-in session language, shared operational status components, manifest preflight for JSON/identity/runtime/schemas/permissions/commercial readiness, warning-vs-blocker save gates, and success actions into `/publisher` plus public skill detail.
+- `/publisher` now uses clean bilingual copy for the publisher command center, publisher skill cards, version/review/pricing/curation/feedback actions, and action-result messages; owned skill cards also show a derived next operating step so publishers know whether to create a version, submit review, fix checks, clear paid blockers, respond to feedback, appeal distribution, or monitor verified supply.
 
 Next:
 

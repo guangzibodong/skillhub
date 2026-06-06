@@ -20,7 +20,7 @@ const actionCopy = {
     missingManifest: "Paste a SkillHub manifest before saving a version.",
     missingResponse: "Write a publisher response before saving.",
     missingSkill: "Missing skill slug.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing publisher skills.",
+    missingToken: "Sign in with a SkillHub user session before managing publisher skills.",
     priceSaved: "Skill price saved.",
     responseSaved: "Publisher response saved.",
     reviewSubmitted: "Skill submitted for review.",
@@ -35,10 +35,10 @@ const actionCopy = {
     invalidManifest: "Manifest JSON 无效。",
     invalidPriceStatus: "价格状态必须是 draft、active 或 archived。",
     missingFeedback: "缺少反馈 ID。",
-    missingManifest: "请先粘贴 SkillHub manifest 再保存版本。",
+    missingManifest: "请先粘贴 SkillHub manifest，再保存版本。",
     missingResponse: "请先填写发布者回复。",
     missingSkill: "缺少技能 slug。",
-    missingToken: "请先使用 SkillHub 用户 token 登录，或配置服务端备用 token，才能管理发布者技能。",
+    missingToken: "请先使用 SkillHub 用户会话登录，再管理发布者技能。",
     priceSaved: "技能价格已保存。",
     responseSaved: "发布者回复已保存。",
     reviewSubmitted: "技能已提交审核。",
@@ -57,7 +57,7 @@ const appealCopy = {
     unable: "Unable to submit marketplace distribution review."
   },
   zh: {
-    missingReason: "说明技能已如何改进，或为什么需要复审分发。",
+    missingReason: "请说明技能已经如何改进，或为什么需要重新评估分发。",
     submitted: "市场分发复审申请已提交。",
     unable: "无法提交市场分发复审。"
   }
