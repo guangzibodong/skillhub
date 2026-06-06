@@ -1,5 +1,6 @@
 import { CheckCircle2, KeyRound, UserCircle, XCircle } from "lucide-react";
 import { AuthProviderPanel } from "@/components/auth-provider-panel";
+import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { SessionLoginForm } from "@/components/session-login-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -75,6 +76,8 @@ export default async function LoginPage({ searchParams }: PageProps) {
           </div>
         </section>
       ) : null}
+
+      <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
       <section className="auth-layout auth-layout--signup">
         <div className="auth-main-stack">

@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { AccountLoginMethodManager } from "@/components/account-login-method-manager";
 import { AccountSessionManager } from "@/components/account-session-manager";
+import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
@@ -159,6 +160,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
           </a>
         ) : null}
       </section>
+
+      <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
       <section className="account-layout">
         <div className="account-main">

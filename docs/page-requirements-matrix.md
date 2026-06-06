@@ -44,6 +44,7 @@ Acceptance:
 
 - First viewport communicates the product category.
 - Shows developer, publisher, and operator loops.
+- Shows an explicit console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including role expectations and no-shared-password guidance.
 - Shows public trust and operating proof.
 - Links to marketplace, publishers, agents, docs, publish, login/account, and terms.
 
@@ -248,6 +249,7 @@ Acceptance:
 - OAuth buttons are not fake: configuration-required state must show callback URLs and missing config names.
 - Email signup/login does not issue a session before code verification.
 - Token fallback is clearly for bootstrap, invitation, or operator recovery.
+- Login page must show where users go after access: account center, developer workspace, publisher workspace, and admin operations, with role-required states instead of implying a shared backend password.
 
 ### Account Center `/account`
 
@@ -276,6 +278,7 @@ Acceptance:
 - Shows only token fingerprints.
 - Prevents lockout when disconnecting OAuth identity.
 - Shows workspace readiness for team, tokens, projects, owned skills, unread notifications, billing, invoice, publisher and payout states.
+- Shows console shortcuts with role-aware status so users can understand why `/developer`, `/publisher`, or `/admin` is available, sign-in-required, or role-required.
 
 ## Publisher Workspace
 

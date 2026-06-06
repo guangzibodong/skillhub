@@ -341,6 +341,15 @@ OAuth provider rows include launch-operator fields:
 
 The `/login` page surfaces these fields directly and shows success or error notices after provider callbacks return with `?oauth=connected` or `?oauth=error`.
 
+The public app also exposes a console access map on `/`, `/login`, and `/account`. It links the product workspaces without relying on a shared password:
+
+- `/login` and `/account` for email-code access, OAuth readiness, connected identities, session fingerprints, and workspace readiness.
+- `/developer` for project, runtime key, install, policy, buyer-request, billing, team, notification, and webhook operations.
+- `/publisher` for skill publishing, review repair, pricing blockers, buyer demand, feedback, revenue, payout readiness, and notification operations.
+- `/admin` for review, trust, incidents, identity, launch readiness, ledger, payout, external delivery, webhook outbox, and audit operations.
+
+The console map uses the active `/v1/auth/me` subject when present to show sign-in-required, available, or role-required states. It does not display raw tokens, passwords, OAuth secrets, email provider keys, or service tokens.
+
 Start a provider login:
 
 ```bash
@@ -443,6 +452,7 @@ Web console session:
 - `/login` is now a product account entry. It shows email-code access, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
+- `/`, `/login`, and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a public password.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.

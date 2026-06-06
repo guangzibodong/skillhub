@@ -48,6 +48,8 @@ Payout operations now have stronger explainability: publisher payout summaries e
 
 Launch readiness now has customer-facing credibility thresholds instead of only infrastructure checks. `/v1/admin/launch-readiness` can warn operators when verified supply, publisher diversity, developer project activity, successful invocations, or published feedback are below the decided launch targets. This helps the team answer whether SkillHub has enough marketplace proof for customer demos and public launch, not just whether the server is configured.
 
+Console access is now more product-visible. The home, login, and account surfaces show a role-aware map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including the required user roles, current session state, and the rule that production access uses email code, configured OAuth, or invite/recovery tokens rather than a shared backend password. This directly addresses customer-demo confusion where the platform looked like a public home page but the operating workspaces were not obvious.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

@@ -403,6 +403,7 @@ Completed:
 - `/account` connected login method cards now expose provider disconnect controls with inline success/error feedback, audit records, and `account.security.identity_disconnected` notification events.
 - `/login` now behaves like a product account entry instead of a token-only console: email-code signup/login is active, Google/GitHub login paths become real provider redirects when configured, and token login remains the operator/team fallback.
 - `/account` now gives users a personal center for profile, connected login methods, provider email, connection time, provider disconnect guardrails, organization role, session/token security with old-session revocation, workspace readiness, workspace shortcuts, and notification preferences.
+- `/`, `/login`, and `/account` now expose a role-aware console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, making backend routes, required roles, no-shared-password access, OAuth configuration state, and token fallback boundaries visible before customers need private instructions.
 - Project mutations and project API key creation now persist under the authorized subject organization instead of the demo organization fallback.
 - Organization-scoped user tokens are required for project writes; service tokens retain demo fallback for bootstrap and controlled operator flows.
 - Publisher profile and payout-account onboarding endpoints.

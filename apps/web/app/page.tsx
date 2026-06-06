@@ -8,6 +8,7 @@ import {
   FileJson,
   Gauge,
   KeyRound,
+  LayoutDashboard,
   Network,
   PackageCheck,
   Plus,
@@ -21,8 +22,10 @@ import {
   WalletCards,
   Zap
 } from "lucide-react";
+import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getGatewayStats, getSkills } from "@/lib/registry";
 
@@ -171,7 +174,7 @@ export default async function Home({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [skills, gatewayStats] = await Promise.all([getSkills(), getGatewayStats()]);
+  const [skills, gatewayStats, session] = await Promise.all([getSkills(), getGatewayStats(), getWorkspaceSession()]);
   const verifiedSkills = skills.filter((skill) => skill.verificationStatus === "verified").length;
   const publishedFromGateway = toNumber(getMetricValue(gatewayStats, "Published skills", "0"));
   const verifiedFromGateway = toNumber(getMetricValue(gatewayStats, "Verified", "0"));
@@ -214,6 +217,10 @@ export default async function Home({ searchParams }: PageProps) {
             <a className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)}>
               <Code2 size={18} aria-hidden="true" />
               <span>{dictionary.common.viewContract}</span>
+            </a>
+            <a className="secondary-button secondary-button--large" href={localizedHref("/account", locale)}>
+              <LayoutDashboard size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u540e\u53f0\u5165\u53e3" : "Open consoles"}</span>
             </a>
           </div>
         </div>
@@ -259,6 +266,8 @@ tools: skillhub.search, skillhub.get`}</code>
             </pre>
           </div>
         </aside>
+
+        <ConsoleAccessPanel locale={locale} session={session} />
 
         <section className="operating-console reveal-item reveal-item--late" aria-labelledby="operating-heading">
           <div className="operating-console__intro">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Gauge, Menu, UploadCloud, UserCircle, X } from "lucide-react";
+import { Gauge, LayoutDashboard, Menu, UploadCloud, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
@@ -19,6 +19,7 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const consoleLabel = locale === "zh" ? "\u540e\u53f0\u5165\u53e3" : "Console";
   const navItems = [
     { id: "home", label: dictionary.nav.home, href: "/" },
     { id: "marketplace", label: dictionary.nav.marketplace, href: "/marketplace" },
@@ -85,8 +86,8 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
       <div className="site-actions">
         <LanguageSwitcher label={dictionary.common.language} locale={locale} pathname={pathname} />
         <a className="ghost-button site-action-secondary" href={localizedHref("/account", locale)}>
-          <UserCircle size={17} aria-hidden="true" />
-          <span>{locale === "zh" ? "账号" : "Account"}</span>
+          <LayoutDashboard size={17} aria-hidden="true" />
+          <span>{consoleLabel}</span>
         </a>
         <a className="ghost-button site-action-secondary" href={`${apiUrl}/health`}>
           <Gauge size={17} aria-hidden="true" />
@@ -124,8 +125,8 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
         </nav>
         <div className="site-mobile-panel__actions">
           <a className="ghost-button" href={localizedHref("/account", locale)}>
-            <UserCircle size={17} aria-hidden="true" />
-            <span>{locale === "zh" ? "账号" : "Account"}</span>
+            <LayoutDashboard size={17} aria-hidden="true" />
+            <span>{consoleLabel}</span>
           </a>
           <a className="ghost-button" href={`${apiUrl}/health`}>
             <Gauge size={17} aria-hidden="true" />
