@@ -561,6 +561,7 @@ Completed:
 - `/docs` now works as a bilingual operating reference for the full P0 product: journey maps, manifest quality requirements, runtime governance path, API groups, shared lifecycle/check/balance/delivery states, and launch/operator guardrails are visible from the public site instead of only internal repository docs.
 - A shared role-aware journey rail now connects the key P0 surfaces: home shows all three journey paths, developer pages show marketplace-to-project-to-runtime progression, publisher pages show publish-to-review-to-monetization progression, and admin shows readiness-to-review-to-finance-to-delivery governance. This is a UI/IA layer only; it adds no fake success state or new API contract.
 - `/dashboard` now starts with a role-aware workspace command center before the detailed operating panels. It combines session state, console access, all three P0 journey rails, the shared operating evidence chain, project/verified-skill/ledger/launch-readiness signals, and four role cards for account, developer, publisher, and admin entry without exposing credentials or replacing the dedicated workspaces.
+- `/dashboard` now includes a P0 operating proof chain for customer walkthroughs. It derives eight stages from existing data only: publisher upload, version checks, admin review, marketplace listing, developer install, policy/key/runtime test, ledger/payout, and notification/readiness/audit proof, then marks each stage as proof visible, needs attention, or waiting for data without adding a fake task API.
 
 Next:
 

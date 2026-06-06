@@ -19,6 +19,7 @@ import {
   UserCircle,
   WalletCards
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { JourneyRailDeck } from "@/components/journey-rail";
@@ -56,6 +57,19 @@ export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+type DemoChainStatus = "attention" | "ready" | "waiting";
+
+type DemoChainStep = {
+  detail: string;
+  evidence: string;
+  href: string;
+  icon: LucideIcon;
+  id: string;
+  next: string;
+  status: DemoChainStatus;
+  title: string;
 };
 
 const publisherIcons = [PackageCheck, CircleDollarSign, BarChart3] as const;
@@ -307,6 +321,132 @@ const dashboardCommandCopy = {
   }
 } as const;
 
+const dashboardDemoChainCopy = {
+  en: {
+    action: "Open",
+    allClear: "The visible demo chain has proof at every required stage. Keep clearing attention states in the dedicated workspaces before a customer walkthrough.",
+    body:
+      "This is the customer-demo proof path. It derives each stage from existing workspace, registry, review, runtime, ledger, payout, notification, and readiness state instead of inventing a fake task list.",
+    bottleneck: "Next bottleneck",
+    eyebrow: "P0 operating proof",
+    summary: {
+      attention: "attention",
+      ready: "ready",
+      waiting: "waiting"
+    },
+    status: {
+      attention: "Needs attention",
+      ready: "Proof visible",
+      waiting: "Waiting for data"
+    },
+    title: "Can we prove the full marketplace loop in one walkthrough?",
+    steps: {
+      publish: {
+        detail: "Publisher supply starts as organization-scoped draft or owned skill state.",
+        next: "Start from publish",
+        title: "Publisher upload"
+      },
+      checks: {
+        detail: "Exact versions carry review SLA and automated manifest/runtime/example/security evidence.",
+        next: "Repair or submit versions",
+        title: "Version submit and checks"
+      },
+      review: {
+        detail: "Human review turns acceptable contracts into trusted marketplace supply.",
+        next: "Open review operations",
+        title: "Admin review gate"
+      },
+      listing: {
+        detail: "Public listings connect verified supply to discovery, pricing, feedback, and publisher trust.",
+        next: "Inspect marketplace",
+        title: "Marketplace listing"
+      },
+      install: {
+        detail: "Developers move catalog decisions into organization projects and pinned install state.",
+        next: "Open developer projects",
+        title: "Developer install"
+      },
+      runtime: {
+        detail: "Project keys, policy, budget, subscription gates, REST, MCP, and console tests share one runtime path.",
+        next: "Open runtime command",
+        title: "Policy, key, and runtime test"
+      },
+      money: {
+        detail: "Billable usage and subscriptions should produce immutable transactions, splits, balances, and payout readiness.",
+        next: "Review ledger and payout",
+        title: "Ledger and payout"
+      },
+      readiness: {
+        detail: "Notifications, launch readiness, and admin audit surfaces prove operating decisions are recoverable.",
+        next: "Open admin readiness",
+        title: "Notification, readiness, audit"
+      }
+    }
+  },
+  zh: {
+    action: "\u6253\u5f00",
+    allClear:
+      "\u5f53\u524d\u6f14\u793a\u94fe\u8def\u6bcf\u4e2a\u9636\u6bb5\u90fd\u6709\u53ef\u89c1\u8bc1\u636e\u3002\u5ba2\u6237\u6f14\u793a\u524d\uff0c\u7ee7\u7eed\u5728\u5bf9\u5e94\u5de5\u4f5c\u53f0\u6e05\u7406\u9700\u5173\u6ce8\u72b6\u6001\u3002",
+    body:
+      "\u8fd9\u662f\u7ed9\u5ba2\u6237\u770b\u7684\u95ed\u73af\u8bc1\u660e\u8def\u5f84\u3002\u6bcf\u4e2a\u9636\u6bb5\u90fd\u4ece\u73b0\u6709\u5de5\u4f5c\u53f0\u3001\u6ce8\u518c\u8868\u3001\u5ba1\u6838\u3001\u8fd0\u884c\u3001\u8d26\u672c\u3001\u63d0\u73b0\u3001\u901a\u77e5\u548c\u4e0a\u7ebf\u5c31\u7eea\u72b6\u6001\u63a8\u5bfc\uff0c\u4e0d\u9020\u5047\u4efb\u52a1\u5217\u8868\u3002",
+    bottleneck: "\u4e0b\u4e00\u4e2a\u74f6\u9888",
+    eyebrow: "P0 \u8fd0\u8425\u8bc1\u660e",
+    summary: {
+      attention: "\u9700\u5173\u6ce8",
+      ready: "\u6709\u8bc1\u636e",
+      waiting: "\u7b49\u6570\u636e"
+    },
+    status: {
+      attention: "\u9700\u8981\u5904\u7406",
+      ready: "\u8bc1\u636e\u53ef\u89c1",
+      waiting: "\u7b49\u5f85\u6570\u636e"
+    },
+    title: "\u6211\u4eec\u80fd\u5426\u7528\u4e00\u6b21\u6f14\u793a\u8bc1\u660e\u5b8c\u6574\u5e02\u573a\u95ed\u73af\uff1f",
+    steps: {
+      publish: {
+        detail: "\u53d1\u5e03\u8005\u4f9b\u7ed9\u4ece\u7ec4\u7ec7\u8303\u56f4\u8349\u7a3f\u6216\u81ea\u6709\u6280\u80fd\u72b6\u6001\u5f00\u59cb\u3002",
+        next: "\u4ece\u53d1\u5e03\u5165\u53e3\u5f00\u59cb",
+        title: "\u53d1\u5e03\u8005\u4e0a\u4f20"
+      },
+      checks: {
+        detail: "\u7cbe\u786e\u7248\u672c\u5e26\u6709\u5ba1\u6838 SLA \u548c manifest/runtime/example/security \u81ea\u52a8\u68c0\u67e5\u8bc1\u636e\u3002",
+        next: "\u4fee\u590d\u6216\u63d0\u4ea4\u7248\u672c",
+        title: "\u7248\u672c\u63d0\u4ea4\u4e0e\u68c0\u67e5"
+      },
+      review: {
+        detail: "\u4eba\u5de5\u5ba1\u6838\u628a\u5408\u683c\u5408\u7ea6\u53d8\u6210\u53ef\u4fe1\u5e02\u573a\u4f9b\u7ed9\u3002",
+        next: "\u6253\u5f00\u5ba1\u6838\u8fd0\u8425",
+        title: "\u540e\u53f0\u5ba1\u6838\u95f8\u95e8"
+      },
+      listing: {
+        detail: "\u516c\u5f00\u4e0a\u67b6\u628a\u5df2\u5ba1\u6838\u4f9b\u7ed9\u8fde\u5230\u53d1\u73b0\u3001\u4ef7\u683c\u3001\u53cd\u9988\u548c\u53d1\u5e03\u8005\u4fe1\u4efb\u3002",
+        next: "\u68c0\u67e5\u5e02\u573a",
+        title: "\u5e02\u573a\u4e0a\u67b6"
+      },
+      install: {
+        detail: "\u5f00\u53d1\u8005\u628a\u76ee\u5f55\u51b3\u7b56\u53d8\u6210\u7ec4\u7ec7\u9879\u76ee\u548c\u56fa\u5b9a\u7248\u672c\u5b89\u88c5\u72b6\u6001\u3002",
+        next: "\u6253\u5f00\u5f00\u53d1\u8005\u9879\u76ee",
+        title: "\u5f00\u53d1\u8005\u5b89\u88c5"
+      },
+      runtime: {
+        detail: "\u9879\u76ee Key\u3001\u7b56\u7565\u3001\u9884\u7b97\u3001\u8ba2\u9605\u95e8\u69db\u3001REST\u3001MCP \u548c\u63a7\u5236\u53f0\u6d4b\u8bd5\u5171\u7528\u540c\u4e00\u8fd0\u884c\u8def\u5f84\u3002",
+        next: "\u6253\u5f00\u8fd0\u884c\u6307\u6325\u53f0",
+        title: "\u7b56\u7565\u3001Key \u4e0e\u8fd0\u884c\u6d4b\u8bd5"
+      },
+      money: {
+        detail: "\u53ef\u8ba1\u8d39\u7528\u91cf\u548c\u8ba2\u9605\u5e94\u4ea7\u751f\u4e0d\u53ef\u53d8\u4ea4\u6613\u3001\u5206\u8d26\u3001\u4f59\u989d\u548c\u63d0\u73b0\u5c31\u7eea\u3002",
+        next: "\u590d\u6838\u8d26\u672c\u548c\u63d0\u73b0",
+        title: "\u8d26\u672c\u4e0e\u63d0\u73b0"
+      },
+      readiness: {
+        detail: "\u901a\u77e5\u3001\u4e0a\u7ebf\u5c31\u7eea\u548c\u540e\u53f0\u5ba1\u8ba1\u8868\u660e\u8fd0\u8425\u51b3\u7b56\u53ef\u6062\u590d\u3001\u53ef\u8ffd\u6eaf\u3002",
+        next: "\u6253\u5f00\u540e\u53f0\u5c31\u7eea\u5ea6",
+        title: "\u901a\u77e5\u3001\u5c31\u7eea\u3001\u5ba1\u8ba1"
+      }
+    }
+  }
+} as const;
+
 export default async function DashboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
@@ -316,6 +456,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const dashboardReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/dashboard", locale)}`;
   const labels = dictionary.dashboardPage;
   const commandLabels = dashboardCommandCopy[locale];
+  const demoChainLabels = dashboardDemoChainCopy[locale];
   const ops = opsCopy[locale];
   const [
     financeLedger,
@@ -373,6 +514,41 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   ).length;
   const paidBlockerCount = publisherSkills.reduce((sum, skill) => sum + (skill.commercial?.blockers.length ?? 0), 0);
   const launchIssueCount = launchReadiness.summary.blocker + launchReadiness.summary.warning;
+  const submittedVersionCount = publisherSkills.filter(
+    (skill) =>
+      skill.verificationStatus === "submitted" ||
+      skill.verificationStatus === "verified" ||
+      skill.review.status === "queued" ||
+      skill.review.status === "in_review" ||
+      skill.review.status === "approved"
+  ).length;
+  const automatedCheckCount = publisherSkills.reduce((sum, skill) => sum + skill.runtime.checkCount, 0);
+  const automatedCheckProblemCount = publisherSkills.reduce(
+    (sum, skill) => sum + skill.runtime.failedCount + skill.runtime.warningCount,
+    0
+  );
+  const publicListingCount = publisherSkills.filter(
+    (skill) =>
+      skill.visibility === "public" &&
+      (skill.verificationStatus === "submitted" ||
+        skill.verificationStatus === "verified" ||
+        skill.verificationStatus === "deprecated")
+  ).length;
+  const activeProjectKeyCount = developerProjects.reduce((sum, project) => sum + project.apiKeys.activeCount, 0);
+  const ownerApprovalCount = developerProjects.reduce(
+    (sum, project) => sum + project.installs.ownerRequiredCount + project.policy.approvalRequiredCount,
+    0
+  );
+  const runtimeIssueCount = developerProjects.reduce(
+    (sum, project) => sum + project.runtime.errorCount + project.runtime.blockedCount,
+    0
+  );
+  const runtimeSuccessCount = developerProjects.reduce((sum, project) => sum + project.runtime.successCount, 0);
+  const payoutBlockerCount = payoutSummary.readiness?.blockers.length ?? 0;
+  const activePayoutWork = payoutSummary.payouts.filter((payout) => payout.status !== "paid").length;
+  const notificationIssueCount = userNotificationInbox.summary.failed + userNotificationInbox.summary.skipped;
+  const primaryProject = developerProjects.find((project) => project.installs.installedSkillCount > 0) ?? developerProjects[0];
+  const projectRuntimeHref = primaryProject ? `/dashboard/projects/${primaryProject.slug}` : "/developer";
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.availableBalanceCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
@@ -476,6 +652,130 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       title: commandLabels.cards.admin.title
     }
   ];
+  const demoChainSteps: DemoChainStep[] = [
+    {
+      detail: demoChainLabels.steps.publish.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(publisherSkills.length)} 个自有技能 / ${formatCompactNumber(publisherReviewWork)} 个待处理`
+          : `${formatCompactNumber(publisherSkills.length)} owned skills / ${formatCompactNumber(publisherReviewWork)} pending`,
+      href: "/publish",
+      icon: UploadCloud,
+      id: "publish",
+      next: demoChainLabels.steps.publish.next,
+      status: publisherSkills.length > 0 ? "ready" : "waiting",
+      title: demoChainLabels.steps.publish.title
+    },
+    {
+      detail: demoChainLabels.steps.checks.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(submittedVersionCount)} 个已提交/已验证版本 / ${formatCompactNumber(automatedCheckProblemCount)} 个检查问题`
+          : `${formatCompactNumber(submittedVersionCount)} submitted or verified / ${formatCompactNumber(automatedCheckProblemCount)} check issues`,
+      href: "/publisher#publisher-skills",
+      icon: ClipboardCheck,
+      id: "checks",
+      next: demoChainLabels.steps.checks.next,
+      status: automatedCheckProblemCount > 0 ? "attention" : submittedVersionCount > 0 && automatedCheckCount > 0 ? "ready" : "waiting",
+      title: demoChainLabels.steps.checks.title
+    },
+    {
+      detail: demoChainLabels.steps.review.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(verifiedPublisherSkills)} 个已验证 / ${formatCompactNumber(publisherReviewWork)} 个需跟进`
+          : `${formatCompactNumber(verifiedPublisherSkills)} verified / ${formatCompactNumber(publisherReviewWork)} need follow-up`,
+      href: "/admin#admin-reviews",
+      icon: ShieldCheck,
+      id: "review",
+      next: demoChainLabels.steps.review.next,
+      status: verifiedPublisherSkills > 0 ? "ready" : publisherReviewWork > 0 ? "attention" : "waiting",
+      title: demoChainLabels.steps.review.title
+    },
+    {
+      detail: demoChainLabels.steps.listing.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(publicListingCount)} 个可公开发现列表`
+          : `${formatCompactNumber(publicListingCount)} publicly discoverable listings`,
+      href: "/marketplace",
+      icon: BadgeCheck,
+      id: "listing",
+      next: demoChainLabels.steps.listing.next,
+      status: publicListingCount > 0 ? "ready" : verifiedPublisherSkills > 0 ? "attention" : "waiting",
+      title: demoChainLabels.steps.listing.title
+    },
+    {
+      detail: demoChainLabels.steps.install.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(developerProjects.length)} 个项目 / ${formatCompactNumber(totalInstalledSkills)} 个安装`
+          : `${formatCompactNumber(developerProjects.length)} projects / ${formatCompactNumber(totalInstalledSkills)} installs`,
+      href: "/developer",
+      icon: BriefcaseBusiness,
+      id: "install",
+      next: demoChainLabels.steps.install.next,
+      status: totalInstalledSkills > 0 ? "ready" : developerProjects.length > 0 ? "attention" : "waiting",
+      title: demoChainLabels.steps.install.title
+    },
+    {
+      detail: demoChainLabels.steps.runtime.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(activeProjectKeyCount)} 个活动 Key / ${formatCompactNumber(runtimeSuccessCount)} 次成功 / ${formatCompactNumber(ownerApprovalCount + runtimeIssueCount)} 个需处理`
+          : `${formatCompactNumber(activeProjectKeyCount)} active keys / ${formatCompactNumber(runtimeSuccessCount)} success / ${formatCompactNumber(ownerApprovalCount + runtimeIssueCount)} attention`,
+      href: projectRuntimeHref,
+      icon: RadioTower,
+      id: "runtime",
+      next: demoChainLabels.steps.runtime.next,
+      status:
+        ownerApprovalCount + runtimeIssueCount > 0
+          ? "attention"
+          : activeProjectKeyCount > 0 && totalRuntimeCalls > 0
+            ? "ready"
+            : "waiting",
+      title: demoChainLabels.steps.runtime.title
+    },
+    {
+      detail: demoChainLabels.steps.money.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(financeLedger.recentTransactions.length)} 条账本 / ${formatCompactNumber(activePayoutWork)} 个提现动作 / ${formatCompactNumber(payoutBlockerCount)} 个阻断`
+          : `${formatCompactNumber(financeLedger.recentTransactions.length)} ledger rows / ${formatCompactNumber(activePayoutWork)} payout actions / ${formatCompactNumber(payoutBlockerCount)} blockers`,
+      href: "/publisher#publisher-payouts",
+      icon: CircleDollarSign,
+      id: "money",
+      next: demoChainLabels.steps.money.next,
+      status: payoutBlockerCount > 0 ? "attention" : financeLedger.recentTransactions.length > 0 ? "ready" : "waiting",
+      title: demoChainLabels.steps.money.title
+    },
+    {
+      detail: demoChainLabels.steps.readiness.detail,
+      evidence:
+        locale === "zh"
+          ? `${formatCompactNumber(userNotificationInbox.summary.total)} 条通知 / ${launchReadiness.summary.blocker} 阻断 / ${launchReadiness.summary.warning} 警告`
+          : `${formatCompactNumber(userNotificationInbox.summary.total)} notifications / ${launchReadiness.summary.blocker} blockers / ${launchReadiness.summary.warning} warnings`,
+      href: "/admin#launch-readiness",
+      icon: Activity,
+      id: "readiness",
+      next: demoChainLabels.steps.readiness.next,
+      status:
+        launchIssueCount > 0 || notificationIssueCount > 0
+          ? "attention"
+          : userNotificationInbox.summary.total > 0 || launchReadiness.summary.ready > 0
+            ? "ready"
+            : "waiting",
+      title: demoChainLabels.steps.readiness.title
+    }
+  ];
+  const demoChainSummary = demoChainSteps.reduce(
+    (summary, step) => {
+      summary[step.status] += 1;
+      return summary;
+    },
+    { attention: 0, ready: 0, waiting: 0 } as Record<DemoChainStatus, number>
+  );
+  const demoChainBottleneck = demoChainSteps.find((step) => step.status !== "ready") ?? null;
 
   return (
     <main className="product-shell">
@@ -589,6 +889,64 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="p0-demo-chain" id="p0-demo-chain">
+        <div className="p0-demo-chain__head">
+          <div>
+            <div className="eyebrow">
+              <ClipboardCheck size={16} aria-hidden="true" />
+              <span>{demoChainLabels.eyebrow}</span>
+            </div>
+            <h2>{demoChainLabels.title}</h2>
+            <p>{demoChainLabels.body}</p>
+          </div>
+          <div className="p0-demo-chain__summary" aria-label={demoChainLabels.eyebrow}>
+            <div className="p0-demo-chain__summary-card p0-demo-chain__summary-card--ready">
+              <span>{demoChainLabels.summary.ready}</span>
+              <strong>{demoChainSummary.ready}/8</strong>
+            </div>
+            <div className="p0-demo-chain__summary-card p0-demo-chain__summary-card--attention">
+              <span>{demoChainLabels.summary.attention}</span>
+              <strong>{demoChainSummary.attention}</strong>
+            </div>
+            <div className="p0-demo-chain__summary-card">
+              <span>{demoChainLabels.summary.waiting}</span>
+              <strong>{demoChainSummary.waiting}</strong>
+            </div>
+          </div>
+        </div>
+
+        <ol className="p0-demo-chain__steps">
+          {demoChainSteps.map((step, index) => {
+            const Icon = step.icon;
+
+            return (
+              <li className={`p0-demo-step p0-demo-step--${step.status}`} key={step.id}>
+                <a href={localizedHref(step.href, locale)}>
+                  <span className="p0-demo-step__index">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="p0-demo-step__icon" aria-hidden="true">
+                    <Icon size={17} />
+                  </span>
+                  <span className="status-chip">{demoChainLabels.status[step.status]}</span>
+                  <strong>{step.title}</strong>
+                  <small>{step.detail}</small>
+                  <em>{step.evidence}</em>
+                  <span className="p0-demo-step__action">
+                    {demoChainLabels.action}
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="p0-demo-chain__bottleneck">
+          <span>{demoChainLabels.bottleneck}</span>
+          <strong>{demoChainBottleneck ? demoChainBottleneck.title : demoChainLabels.allClear}</strong>
+          {demoChainBottleneck ? <small>{demoChainBottleneck.next}</small> : null}
         </div>
       </section>
 

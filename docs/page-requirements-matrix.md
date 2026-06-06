@@ -446,6 +446,7 @@ Acceptance:
 - Shows a role-aware workspace command center before deep panels: account access, developer workspace, publisher workspace, and admin operations each expose required roles, sign-in-required, role-required, or available state.
 - Shows the three frozen P0 journeys together so signed-in users and customer evaluators understand where developer install/test, publisher upload/monetization, and admin governance continue.
 - Shows the shared operating evidence chain with dashboard-owned signals for projects, verified owned skills, ledger rows, and launch blocker/warning counts.
+- Shows a dashboard P0 demo chain that derives publish, checks, review, listing, install, runtime, ledger/payout, notification/readiness/audit proof from existing workspace state, marking each stage as proof visible, needs attention, or waiting for data without adding fake task rows.
 - Uses admin launch-readiness summary only as secret-safe counts and next-action context; it must not expose OAuth secrets, email keys, service tokens, raw tokens, passwords, or other credentials.
 - Keeps detailed project, publisher, finance, payout, notification, and admin work in the dedicated workspaces instead of turning `/dashboard` into an unbounded duplicate console.
 

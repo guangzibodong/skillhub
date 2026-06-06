@@ -275,6 +275,8 @@ The `/publisher` web console derives its top-level priority queue from the publi
 
 The `/admin` web console derives its top-level operations priority queue from the existing admin overview, launch readiness, review, risk, finance, notification, webhook, marketplace curation, identity, and audit endpoints. The queue is also a UI aggregation layer: it ranks launch blockers, review SLA/check/risk pressure, active incidents, open abuse reports, pending feedback moderation, payout/refund/dispute actions, external delivery retries, webhook outbox work, curation appeals, commission setup, and identity-health gaps without adding fake task rows or exposing secrets.
 
+The `/dashboard` web console also derives a customer-demo P0 operating proof chain from existing endpoint results. It summarizes publisher upload, version checks, admin review, marketplace listing, developer install, policy/key/runtime test, ledger/payout, and notification/readiness/audit proof as UI-only stages with `proof visible`, `needs attention`, or `waiting for data` state. It does not add a new task API and does not replace the dedicated developer, publisher, or admin workspaces.
+
 The public marketplace page uses `/v1/platform/overview` for its operating overview section. That section presents buyer/developer, publisher, and platform-operator loops side by side so visitors can see why teams return after first discovery: project controls and update inboxes for developers, review/runtime/revenue queues for publishers, and review/risk/money/notification queues for operators. If the API is unavailable, production-like runtimes return empty/zero operating signals unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
 
 ## Identity And RBAC
