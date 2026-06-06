@@ -19,17 +19,17 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const consoleLabel = locale === "zh" ? "\u540e\u53f0\u5165\u53e3" : "Console";
+  const labels = headerLabels(dictionary, locale);
   const navItems = [
-    { id: "home", label: dictionary.nav.home, href: "/" },
-    { id: "marketplace", label: dictionary.nav.marketplace, href: "/marketplace" },
-    { id: "registry", label: dictionary.nav.registry, href: "/registry" },
-    { id: "agents", label: dictionary.nav.agents, href: "/agents" },
-    { id: "docs", label: dictionary.nav.docs, href: "/docs" },
-    { id: "dashboard", label: dictionary.nav.dashboard, href: "/dashboard" },
-    { id: "developer", label: dictionary.nav.developer, href: "/developer" },
-    { id: "publisher", label: dictionary.nav.publisher, href: "/publisher" },
-    { id: "admin", label: dictionary.nav.admin, href: "/admin" }
+    { id: "home", label: labels.nav.home, href: "/" },
+    { id: "marketplace", label: labels.nav.marketplace, href: "/marketplace" },
+    { id: "registry", label: labels.nav.registry, href: "/registry" },
+    { id: "agents", label: labels.nav.agents, href: "/agents" },
+    { id: "docs", label: labels.nav.docs, href: "/docs" },
+    { id: "dashboard", label: labels.nav.dashboard, href: "/dashboard" },
+    { id: "developer", label: labels.nav.developer, href: "/developer" },
+    { id: "publisher", label: labels.nav.publisher, href: "/publisher" },
+    { id: "admin", label: labels.nav.admin, href: "/admin" }
   ] as const;
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
         </div>
       </a>
 
-      <nav className="site-nav" aria-label={locale === "zh" ? "主导航" : "Primary navigation"}>
+      <nav className="site-nav" aria-label={labels.primaryNavigation}>
         {navItems.map((item) => (
           <a
             className={active === item.id ? "site-nav__link site-nav__link--active" : "site-nav__link"}
@@ -84,25 +84,25 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
       </nav>
 
       <div className="site-actions">
-        <LanguageSwitcher label={dictionary.common.language} locale={locale} pathname={pathname} />
+        <LanguageSwitcher label={labels.language} locale={locale} pathname={pathname} />
         <a className="ghost-button site-action-secondary" href={localizedHref("/account", locale)}>
           <LayoutDashboard size={17} aria-hidden="true" />
-          <span>{consoleLabel}</span>
+          <span>{labels.console}</span>
         </a>
         <a className="ghost-button site-action-secondary" href={`${apiUrl}/health`}>
           <Gauge size={17} aria-hidden="true" />
-          <span>{dictionary.common.apiHealth}</span>
+          <span>{labels.apiHealth}</span>
         </a>
         <a className="primary-button site-action-publish" href={localizedHref("/publish", locale)}>
           <UploadCloud size={17} aria-hidden="true" />
-          <span>{dictionary.common.publish}</span>
+          <span>{labels.publish}</span>
         </a>
       </div>
 
       <button
         aria-controls="mobile-site-menu"
         aria-expanded={isMenuOpen}
-        aria-label={isMenuOpen ? (locale === "zh" ? "关闭导航" : "Close navigation") : locale === "zh" ? "打开导航" : "Open navigation"}
+        aria-label={isMenuOpen ? labels.closeNavigation : labels.openNavigation}
         className="site-mobile-menu-button"
         onClick={() => setIsMenuOpen((current) => !current)}
         ref={menuButtonRef}
@@ -112,7 +112,7 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
       </button>
 
       <div className={isMenuOpen ? "site-mobile-panel site-mobile-panel--open" : "site-mobile-panel"} id="mobile-site-menu">
-        <nav aria-label={locale === "zh" ? "移动导航" : "Mobile navigation"}>
+        <nav aria-label={labels.mobileNavigation}>
           {navItems.map((item) => (
             <a
               className={active === item.id ? "site-mobile-panel__link site-mobile-panel__link--active" : "site-mobile-panel__link"}
@@ -126,14 +126,52 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
         <div className="site-mobile-panel__actions">
           <a className="ghost-button" href={localizedHref("/account", locale)}>
             <LayoutDashboard size={17} aria-hidden="true" />
-            <span>{consoleLabel}</span>
+            <span>{labels.console}</span>
           </a>
           <a className="ghost-button" href={`${apiUrl}/health`}>
             <Gauge size={17} aria-hidden="true" />
-            <span>{dictionary.common.apiHealth}</span>
+            <span>{labels.apiHealth}</span>
           </a>
         </div>
       </div>
     </header>
   );
+}
+
+function headerLabels(dictionary: Dictionary, locale: Locale) {
+  if (locale === "zh") {
+    return {
+      apiHealth: "API 状态",
+      closeNavigation: "关闭导航",
+      console: "后台入口",
+      language: "语言",
+      mobileNavigation: "移动导航",
+      openNavigation: "打开导航",
+      primaryNavigation: "主导航",
+      publish: "发布",
+      nav: {
+        home: "首页",
+        marketplace: "市场",
+        registry: "技能库",
+        agents: "智能体",
+        docs: "文档",
+        dashboard: "工作台",
+        developer: "开发者",
+        publisher: "发布者",
+        admin: "后台"
+      }
+    };
+  }
+
+  return {
+    apiHealth: dictionary.common.apiHealth,
+    closeNavigation: "Close navigation",
+    console: "Console",
+    language: dictionary.common.language,
+    mobileNavigation: "Mobile navigation",
+    openNavigation: "Open navigation",
+    primaryNavigation: "Primary navigation",
+    publish: dictionary.common.publish,
+    nav: dictionary.nav
+  };
 }

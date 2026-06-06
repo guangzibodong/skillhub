@@ -23,7 +23,8 @@ const copy = {
     workspace: "Open dashboard"
   },
   zh: {
-    helper: "使用邀请或团队控制台生成的用户 token。SkillHub 会把它写入本站 httpOnly 浏览器 cookie。",
+    helper:
+      "使用邀请或团队控制台生成的用户 token。SkillHub 会把它写入本站 httpOnly 浏览器 cookie，原始 token 不会在页面里展示。",
     label: "用户访问 token",
     placeholder: "shub_user_...",
     submit: "连接工作区",

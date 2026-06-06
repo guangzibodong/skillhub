@@ -4013,6 +4013,224 @@ a {
   line-height: 1.45;
 }
 
+.login-entry-brief {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 18px;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto 22px;
+}
+
+.login-readiness-grid,
+.login-route-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.login-readiness-tile,
+.login-route-board,
+.login-route-card,
+.account-command-tile,
+.account-shortcut-card {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    rgba(20, 24, 18, 0.94);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.login-readiness-tile {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-height: 174px;
+  padding: 14px;
+}
+
+.login-readiness-tile--ready {
+  border-color: rgba(155, 226, 141, 0.24);
+}
+
+.login-readiness-tile--warning {
+  border-color: rgba(215, 168, 76, 0.24);
+}
+
+.login-readiness-tile__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.login-readiness-tile__head svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.login-readiness-tile__head span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.login-readiness-tile strong,
+.login-route-card strong,
+.account-command-tile strong,
+.account-shortcut-card strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.login-readiness-tile strong {
+  font-size: 16px;
+}
+
+.login-readiness-tile p,
+.login-route-card p,
+.account-command-tile p,
+.account-shortcut-card p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.52;
+}
+
+.login-route-board {
+  display: grid;
+  gap: 13px;
+  padding: 16px;
+}
+
+.login-route-board__head,
+.account-shortcut-card__head,
+.account-command-tile__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.login-route-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-height: 138px;
+  color: inherit;
+  padding: 13px;
+  text-decoration: none;
+}
+
+.login-route-card > svg:first-child,
+.account-shortcut-card__head > svg,
+.account-command-tile__head svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.login-route-card > svg:last-child {
+  color: var(--muted);
+}
+
+.login-route-card span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.login-route-card small,
+.account-command-tile small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: rgba(245, 241, 232, 0.58);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.login-route-card p {
+  grid-column: 1 / -1;
+}
+
+.login-route-card:hover,
+.account-shortcut-card:hover {
+  border-color: rgba(124, 199, 216, 0.25);
+  transform: translateY(-1px);
+}
+
+.account-command-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto 22px;
+}
+
+.account-command-tile {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 154px;
+  padding: 14px;
+}
+
+.account-command-tile__head {
+  justify-content: flex-start;
+}
+
+.account-command-tile__head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
+.account-command-tile strong {
+  font-size: 16px;
+}
+
+.account-shortcut-grid--cards {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-shortcut-card {
+  display: grid;
+  align-content: start;
+  gap: 11px;
+  min-height: 176px;
+  color: inherit;
+  padding: 14px;
+  text-decoration: none;
+}
+
+.account-shortcut-card--available {
+  border-color: rgba(155, 226, 141, 0.22);
+}
+
+.account-shortcut-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: end;
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.2;
+}
+
 .ops-list,
 .payout-list,
 .audit-list {
@@ -16814,6 +17032,41 @@ a {
 
   .terms-policy-card h2 {
     font-size: 22px;
+  }
+}
+
+@media (max-width: 980px) {
+  .login-entry-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .account-command-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .login-entry-brief,
+  .account-command-strip {
+    width: min(100% - 28px, 1220px);
+  }
+
+  .login-readiness-grid,
+  .login-route-list,
+  .account-command-strip,
+  .account-shortcut-grid--cards {
+    grid-template-columns: 1fr;
+  }
+
+  .login-readiness-tile,
+  .login-route-card,
+  .account-command-tile,
+  .account-shortcut-card {
+    min-height: 0;
+  }
+
+  .login-route-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
   }
 }
 

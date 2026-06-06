@@ -196,13 +196,13 @@ function localizedDescription(provider: AuthProviderStatus, locale: Locale) {
   if (provider.provider === "google") {
     return provider.status === "active"
       ? "Google OAuth 已配置，可以跳转到 Google 完成登录并回到 SkillHub。"
-      : "配置 Google client id、secret 和 API 回调地址后即可启用。";
+      : "配置 Google client id、secret、OAuth state secret 和 API 回调地址后即可启用。";
   }
 
   if (provider.provider === "github") {
     return provider.status === "active"
       ? "GitHub OAuth 已配置，适合开发者团队登录并进入工作区。"
-      : "配置 GitHub client id、secret 和 API 回调地址后即可启用。";
+      : "配置 GitHub client id、secret、OAuth state secret 和 API 回调地址后即可启用。";
   }
 
   return "团队邀请和运营兜底继续使用一次性用户 token，并写入 httpOnly cookie。";

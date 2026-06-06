@@ -1,5 +1,7 @@
 import {
+  ArrowRight,
   Bell,
+  BriefcaseBusiness,
   Building2,
   CreditCard,
   KeyRound,
@@ -17,8 +19,13 @@ import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
-import { getAccountSessions, getAccountSummary, type AccountSummary, type AuthProviderStatus } from "@/lib/account-data";
-import { getWorkspaceSession } from "@/lib/auth-session";
+import {
+  getAccountSessions,
+  getAccountSummary,
+  type AccountSessionRecord,
+  type AccountSummary
+} from "@/lib/account-data";
+import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { getNotificationPreferences } from "@/lib/ops-data";
 
@@ -32,14 +39,25 @@ const copy = {
   en: {
     account: "Account",
     accountEmpty: "Connect a workspace session to see profile, organization, billing, payout, and notification readiness.",
+    activeSessions: "Active sessions",
     activeTokens: "Active tokens",
     admin: "Admin",
+    adminBody: "Review, finance, launch readiness, trust, delivery, and audit operations.",
+    available: "Available",
     billing: "Billing",
+    commandIdentity: "Identity",
+    commandIdentityBody: "Profile, verified email, connected providers, and organization membership.",
+    commandOperations: "Operations",
+    commandOperationsBody: "Unread notifications, billing readiness, invoice readiness, and payout status.",
+    commandSecurity: "Security",
+    commandSecurityBody: "Session fingerprints and revocation controls without exposing raw tokens.",
+    commandWorkspace: "Workspace",
+    commandWorkspaceBody: "Team, project, owned-skill, and active-token readiness for real operations.",
     connectedAccounts: "Connected login methods",
-    connectedAt: "Connected",
-    created: "Created",
     dashboard: "Dashboard",
+    dashboardBody: "General command center for cross-role operating proof.",
     developer: "Developer workspace",
+    developerBody: "Projects, installs, API keys, runtime tests, billing, team, and webhooks.",
     email: "Email",
     empty: "Not connected",
     heroBody:
@@ -47,8 +65,6 @@ const copy = {
     heroEyebrow: "Personal center",
     heroTitle: "Your SkillHub account command center.",
     invoiceReady: "Invoice ready",
-    lastLogin: "Last login",
-    lastUsed: "Last used",
     memberSince: "Member since",
     no: "No",
     notificationPreferences: "Notification preferences",
@@ -57,39 +73,49 @@ const copy = {
     profile: "Profile",
     projects: "Projects",
     publisher: "Publisher workspace",
+    publisherBody: "Upload, review repair, pricing blockers, buyer demand, revenue, and payouts.",
     publisherStatus: "Publisher",
+    reviewAccount: "Review account",
     role: "Role",
+    roleRequired: "Role required",
     security: "Session security",
     signIn: "Sign in",
+    signInRequired: "Sign-in required",
     skills: "Skills",
-    scopes: "Scopes",
-    shortcuts: "Workspace shortcuts",
+    shortcuts: "Role-aware workspaces",
     team: "Team",
-    token: "Token",
     unread: "Unread notifications",
-    verifiedEmail: "Verified email",
     workspace: "Workspace readiness",
     yes: "Yes"
   },
   zh: {
     account: "账号",
     accountEmpty: "连接工作区会话后，可以查看资料、组织、账单、提现和通知准备度。",
+    activeSessions: "有效会话",
     activeTokens: "有效 token",
     admin: "后台",
+    adminBody: "审核、财务、上线就绪、信任、投递和审计运营。",
+    available: "可进入",
     billing: "账单",
+    commandIdentity: "身份",
+    commandIdentityBody: "资料、已验证邮箱、绑定 provider 和组织成员关系。",
+    commandOperations: "运营",
+    commandOperationsBody: "未读通知、账单准备、发票准备和提现状态。",
+    commandSecurity: "安全",
+    commandSecurityBody: "会话指纹和撤销控制，不暴露原始 token。",
+    commandWorkspace: "工作区",
+    commandWorkspaceBody: "团队、项目、已拥有技能和有效 token 的运营准备度。",
     connectedAccounts: "已连接登录方式",
-    connectedAt: "连接时间",
-    created: "创建时间",
     dashboard: "综合工作台",
+    dashboardBody: "跨角色运营证据和总览入口。",
     developer: "开发者工作台",
+    developerBody: "项目、安装、API Key、运行测试、账单、团队和 Webhook。",
     email: "邮箱",
     empty: "未连接",
     heroBody: "管理 SkillHub 运营背后的身份层：个人资料、组织角色、登录方式、token 安全、通知偏好和工作区准备度。",
     heroEyebrow: "个人中心",
     heroTitle: "你的 SkillHub 账号控制中心。",
     invoiceReady: "发票准备",
-    lastLogin: "最近登录",
-    lastUsed: "最近使用",
     memberSince: "加入时间",
     no: "否",
     notificationPreferences: "通知偏好",
@@ -98,21 +124,24 @@ const copy = {
     profile: "个人资料",
     projects: "项目",
     publisher: "发布者工作台",
+    publisherBody: "上传、审核修复、定价阻断、买方需求、收入和提现。",
     publisherStatus: "发布者",
+    reviewAccount: "检查账号",
     role: "角色",
+    roleRequired: "需要对应角色",
     security: "会话安全",
     signIn: "去登录",
+    signInRequired: "需要先登录",
     skills: "技能",
-    scopes: "权限范围",
-    shortcuts: "工作入口",
+    shortcuts: "按角色进入工作台",
     team: "团队",
-    token: "Token",
     unread: "未读通知",
-    verifiedEmail: "已验证邮箱",
     workspace: "工作区准备度",
     yes: "是"
   }
 } as const;
+
+type AccountLabels = (typeof copy)["en"] | (typeof copy)["zh"];
 
 export default async function AccountPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -163,6 +192,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
 
       <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
+      <AccountCommandStrip account={account} accountSessions={accountSessions} labels={labels} locale={locale} signedIn={signedIn} />
+
       <section className="account-layout">
         <div className="account-main">
           <article className="ops-panel account-profile-panel">
@@ -175,7 +206,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
                 <h2>{account.profile.displayName ?? account.profile.email ?? labels.account}</h2>
                 <p>{signedIn ? account.profile.email ?? labels.empty : labels.accountEmpty}</p>
               </div>
-              <span className="status-chip status-chip--success">{account.profile.platformRole}</span>
+              <span className={signedIn ? "status-chip status-chip--success" : "status-chip status-chip--neutral"}>
+                {signedIn ? account.profile.platformRole : labels.signInRequired}
+              </span>
             </div>
             <div className="account-meta-grid">
               <MetaItem label={labels.email} value={account.profile.email ?? labels.empty} />
@@ -223,11 +256,47 @@ export default async function AccountPage({ searchParams }: PageProps) {
               <LayoutDashboard size={16} aria-hidden="true" />
               <span>{labels.shortcuts}</span>
             </div>
-            <div className="account-shortcut-grid">
-              <Shortcut href="/developer" icon={LayoutDashboard} label={labels.developer} locale={locale} />
-              <Shortcut href="/publisher" icon={UploadCloud} label={labels.publisher} locale={locale} />
-              <Shortcut href="/dashboard" icon={Building2} label={labels.dashboard} locale={locale} />
-              <Shortcut href="/admin" icon={ShieldCheck} label={labels.admin} locale={locale} />
+            <div className="account-shortcut-grid account-shortcut-grid--cards">
+              <WorkspaceShortcutCard
+                body={labels.developerBody}
+                href="/developer"
+                icon={BriefcaseBusiness}
+                labels={labels}
+                locale={locale}
+                requiredRoles={["developer", "owner", "admin", "super_admin"]}
+                session={session}
+                title={labels.developer}
+              />
+              <WorkspaceShortcutCard
+                body={labels.publisherBody}
+                href="/publisher"
+                icon={UploadCloud}
+                labels={labels}
+                locale={locale}
+                requiredRoles={["publisher", "owner", "admin", "super_admin"]}
+                session={session}
+                title={labels.publisher}
+              />
+              <WorkspaceShortcutCard
+                body={labels.dashboardBody}
+                href="/dashboard"
+                icon={Building2}
+                labels={labels}
+                locale={locale}
+                requiredRoles={[]}
+                session={session}
+                title={labels.dashboard}
+              />
+              <WorkspaceShortcutCard
+                body={labels.adminBody}
+                href="/admin"
+                icon={ShieldCheck}
+                labels={labels}
+                locale={locale}
+                requiredRoles={["reviewer", "finance", "support", "admin", "super_admin"]}
+                session={session}
+                title={labels.admin}
+              />
             </div>
           </article>
         </div>
@@ -257,6 +326,76 @@ export default async function AccountPage({ searchParams }: PageProps) {
   );
 }
 
+function AccountCommandStrip({
+  account,
+  accountSessions,
+  labels,
+  locale,
+  signedIn
+}: {
+  account: AccountSummary;
+  accountSessions: AccountSessionRecord[];
+  labels: AccountLabels;
+  locale: Locale;
+  signedIn: boolean;
+}) {
+  const connectedMethods = account.loginMethods.filter((method) => method.status === "connected").length;
+  const configuredMethods = account.loginMethods.filter((method) => method.status === "active" || method.status === "connected").length;
+  const activeSessions = accountSessions.filter((session) => session.status === "active").length;
+  const workspaceTotal = account.workspace.teamMemberCount + account.workspace.projectCount + account.workspace.skillCount;
+
+  const tiles = [
+    {
+      body: labels.commandIdentityBody,
+      icon: UserCircle,
+      label: labels.commandIdentity,
+      status: signedIn ? account.profile.platformRole : labels.signInRequired,
+      value: account.profile.email ?? labels.empty
+    },
+    {
+      body: labels.commandSecurityBody,
+      icon: KeyRound,
+      label: labels.commandSecurity,
+      status: `${activeSessions} ${labels.activeSessions}`,
+      value: signedIn ? `${connectedMethods}/${configuredMethods}` : labels.empty
+    },
+    {
+      body: labels.commandWorkspaceBody,
+      icon: Building2,
+      label: labels.commandWorkspace,
+      status: organizationLabel(account, labels.empty),
+      value: formatNumber(workspaceTotal, locale)
+    },
+    {
+      body: labels.commandOperationsBody,
+      icon: Bell,
+      label: labels.commandOperations,
+      status: statusLabel(account.workspace.payoutStatus, locale),
+      value: `${formatNumber(account.workspace.unreadNotifications, locale)} ${labels.unread}`
+    }
+  ] as const;
+
+  return (
+    <section className="account-command-strip" aria-label={labels.workspace}>
+      {tiles.map((tile) => {
+        const Icon = tile.icon;
+
+        return (
+          <article className="account-command-tile" key={tile.label}>
+            <div className="account-command-tile__head">
+              <Icon size={17} aria-hidden="true" />
+              <span>{tile.label}</span>
+            </div>
+            <strong>{tile.value}</strong>
+            <small>{tile.status}</small>
+            <p>{tile.body}</p>
+          </article>
+        );
+      })}
+    </section>
+  );
+}
+
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -266,13 +405,79 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Shortcut({ href, icon: Icon, label, locale }: { href: string; icon: LucideIcon; label: string; locale: Locale }) {
+function WorkspaceShortcutCard({
+  body,
+  href,
+  icon: Icon,
+  labels,
+  locale,
+  requiredRoles,
+  session,
+  title
+}: {
+  body: string;
+  href: string;
+  icon: LucideIcon;
+  labels: AccountLabels;
+  locale: Locale;
+  requiredRoles: string[];
+  session: WorkspaceSession;
+  title: string;
+}) {
+  const state = workspaceShortcutState(requiredRoles, session, labels);
+  const targetHref = state.kind === "blocked" ? "/login" : state.kind === "forbidden" ? "/account" : href;
+
   return (
-    <a className="secondary-button account-shortcut" href={localizedHref(href, locale)}>
-      <Icon size={16} aria-hidden="true" />
-      <span>{label}</span>
+    <a className={`account-shortcut-card account-shortcut-card--${state.kind}`} href={localizedHref(targetHref, locale)}>
+      <div className="account-shortcut-card__head">
+        <Icon size={17} aria-hidden="true" />
+        <span className={state.kind === "available" ? "status-chip status-chip--success" : "status-chip status-chip--warning"}>
+          {state.label}
+        </span>
+      </div>
+      <strong>{title}</strong>
+      <p>{body}</p>
+      <span className="account-shortcut-card__action">
+        {state.action}
+        <ArrowRight size={15} aria-hidden="true" />
+      </span>
     </a>
   );
+}
+
+function workspaceShortcutState(requiredRoles: string[], session: WorkspaceSession, labels: AccountLabels) {
+  if (!session.subject) {
+    return {
+      action: labels.signIn,
+      kind: "blocked" as const,
+      label: labels.signInRequired
+    };
+  }
+
+  if (requiredRoles.length === 0) {
+    return {
+      action: labels.available,
+      kind: "available" as const,
+      label: labels.available
+    };
+  }
+
+  const roleSet = new Set([session.subject.platformRole, ...session.subject.roles].filter(Boolean));
+  const hasRole = requiredRoles.some((role) => roleSet.has(role));
+
+  if (!hasRole) {
+    return {
+      action: labels.reviewAccount,
+      kind: "forbidden" as const,
+      label: labels.roleRequired
+    };
+  }
+
+  return {
+    action: labels.available,
+    kind: "available" as const,
+    label: labels.available
+  };
 }
 
 function organizationLabel(account: AccountSummary, emptyLabel: string) {
@@ -313,60 +518,6 @@ function formatNumber(value: number, locale: Locale) {
   }).format(value);
 }
 
-function localizedMethodDescription(method: AuthProviderStatus, locale: Locale) {
-  if (locale !== "zh") {
-    return method.description;
-  }
-
-  if (method.provider === "email") {
-    return "邮箱工作区注册可用，正式邮箱验证会在邮件服务接入后补齐。";
-  }
-
-  if (method.provider === "google") {
-    return method.status === "active" ? "Google OAuth 已可用于登录。" : "配置 Google 凭证和回调后启用。";
-  }
-
-  if (method.provider === "github") {
-    return method.status === "active" ? "GitHub OAuth 已可用于登录。" : "配置 GitHub 凭证和回调后启用。";
-  }
-
-  return "团队邀请和运营兜底使用用户 token。";
-}
-
-function statusClass(status: AuthProviderStatus["status"]) {
-  if (status === "connected") {
-    return "status-chip status-chip--success";
-  }
-
-  if (status === "configuration_required") {
-    return "status-chip status-chip--warning";
-  }
-
-  if (status === "active") {
-    return "status-chip";
-  }
-
-  return "status-chip status-chip--neutral";
-}
-
-function statusText(status: AuthProviderStatus["status"], locale: Locale) {
-  if (locale === "zh") {
-    return {
-      active: "可用",
-      configuration_required: "待配置",
-      connected: "已连接",
-      deferred: "待回调"
-    }[status];
-  }
-
-  return {
-    active: "Active",
-    configuration_required: "Configuration required",
-    connected: "Connected",
-    deferred: "Callback pending"
-  }[status];
-}
-
 function statusLabel(value: string, locale: Locale) {
   if (locale !== "zh") {
     return value.replace(/_/g, " ");
@@ -386,20 +537,4 @@ function statusLabel(value: string, locale: Locale) {
   };
 
   return labels[value] ?? value.replace(/_/g, " ");
-}
-
-function providerLabel(provider: AuthProviderStatus, locale: Locale) {
-  if (locale !== "zh") {
-    return provider.label;
-  }
-
-  if (provider.provider === "email") {
-    return "邮箱注册";
-  }
-
-  if (provider.provider === "token") {
-    return "用户 token";
-  }
-
-  return provider.label;
 }

@@ -55,12 +55,12 @@ const copy = {
     email: "工作邮箱",
     emailLoginMode: "邮箱登录",
     emailPlaceholder: "you@company.com",
-    helper: "普通用户用邮箱验证码进入工作区。现在先记录邮件发送事件；团队邀请和运营仍保留 token 兜底。",
+    helper: "普通用户用邮箱验证码进入工作区。现在会先记录邮件发送事件；团队邀请和运营仍保留 token 兜底。",
     organizationName: "组织名称",
     organizationNamePlaceholder: "Acme Agent Lab",
     organizationSlug: "工作区 slug",
     organizationSlugPlaceholder: "acme-agent-lab",
-    owner: "所有者工作区",
+    owner: "负责人工作区",
     ownerHelp: "先获得完整工作区权限，可配置开发者、发布者、账单、提现和团队。",
     previewCode: "邮件供应商接入前的验证码预览",
     previewHelp: "仅在调试预览开启时显示，正式邮件供应商接入后会关闭。",
@@ -87,6 +87,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   const [mode, setMode] = useState<"login" | "signup">("signup");
   const [state, action, isPending] = useActionState(signUpAction.bind(null, locale), initialState);
   const showChallenge = Boolean(state.challenge && !state.subject);
+  const showPreviewCode = process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
 
   useEffect(() => {
     if (state.status === "success" && state.subject) {
@@ -178,7 +179,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
           <div className="auth-verification-panel">
             <strong>{state.challenge?.email}</strong>
             <span>{labels.codeHelp}</span>
-            {state.challenge?.deliveryPreviewCode ? (
+            {showPreviewCode && state.challenge?.deliveryPreviewCode ? (
               <code title={labels.previewHelp}>
                 {labels.previewCode}: {state.challenge.deliveryPreviewCode}
               </code>

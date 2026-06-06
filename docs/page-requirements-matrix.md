@@ -284,6 +284,7 @@ Acceptance:
 - Email signup/login does not issue a session before code verification.
 - Token fallback is clearly for bootstrap, invitation, or operator recovery.
 - Login page must show where users go after access: account center, developer workspace, publisher workspace, and admin operations, with role-required states instead of implying a shared backend password.
+- Login page must summarize account-entry readiness before the forms: email-code launch path, Google/GitHub configuration state, token fallback boundary, current session state, and post-login workspace destinations.
 
 ### Account Center `/account`
 
@@ -313,6 +314,7 @@ Acceptance:
 - Prevents lockout when disconnecting OAuth identity.
 - Shows workspace readiness for team, tokens, projects, owned skills, unread notifications, billing, invoice, publisher and payout states.
 - Shows console shortcuts with role-aware status so users can understand why `/developer`, `/publisher`, or `/admin` is available, sign-in-required, or role-required.
+- Shows a compact account command strip for identity, session security, workspace readiness, and operations readiness before detailed panels so the personal center feels like an account backend rather than a settings page.
 
 ## Publisher Workspace
 
