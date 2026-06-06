@@ -137,7 +137,7 @@ Required pages:
 - Marketplace.
 - Registry.
 - Skill detail.
-- Agent integration.
+- Agent integration with MCP, REST, SDK/CLI connection paths, project-scoped key guidance, runtime-governance explanation, copyable command shapes, and production-before-use checklist.
 - Docs.
 - Publish entry.
 - Login/register.

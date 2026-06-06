@@ -284,6 +284,8 @@ export const dictionaries = {
       title: "A common skill layer for every agent stack.",
       description:
         "SkillHub gives agents a predictable path from discovery to validation to execution, whether the runtime is HTTP, MCP, or local.",
+      ctaPrimary: "Find skills",
+      ctaSecondary: "Open developer console",
       cards: [
         {
           title: "Planner-friendly discovery",
@@ -300,8 +302,53 @@ export const dictionaries = {
       ],
       timelineTitle: "Agent call flow",
       timeline: ["Search by task", "Read manifest", "Check permissions", "Call runtime", "Return typed output"],
-      sdkTitle: "SDK-shaped integration",
-      sdkBody: "The product surface is ready for SDK, CLI, and MCP clients to share the same registry source."
+      integrationEyebrow: "Integration paths",
+      integrationTitle: "Connect agents through one governed project layer.",
+      integrationBody:
+        "A project-scoped key lets an agent list installed tools, invoke approved skills, and keep every call tied to policy, budget, subscription, invocation logs, and ledger-ready usage.",
+      integrationOptions: [
+        {
+          title: "MCP clients",
+          description: "Expose project-approved SkillHub skills as MCP tools for agent workbenches and assistants.",
+          tag: "POST /mcp"
+        },
+        {
+          title: "REST runtimes",
+          description: "Call a pinned skill directly from server workflows, schedulers, and custom agent loops.",
+          tag: "POST /v1/runtime/invoke"
+        },
+        {
+          title: "SDK and CLI",
+          description: "Keep discovery, install, and invocation automation in the same source-controlled workflow.",
+          tag: "@useskillhub/sdk"
+        }
+      ],
+      snippetsTitle: "Copy-ready runtime shapes",
+      snippets: {
+        mcpTitle: "MCP client",
+        restTitle: "REST invocation",
+        sdkTitle: "SDK discovery"
+      },
+      governanceEyebrow: "Runtime governance",
+      governanceTitle: "What stays enforced at runtime",
+      governanceBody:
+        "SkillHub is the control plane between agent intent and skill execution. Agents can move fast without losing ownership, review, or cost controls.",
+      governanceItems: [
+        "Project API keys are scoped and revocable.",
+        "Installed skills keep version pins and approval state.",
+        "High-risk permissions return to owner review.",
+        "Budgets, rate limits, subscriptions, logs, and usage events stay attached to every call."
+      ],
+      checklistTitle: "Before production agent use",
+      checklist: [
+        "Create a developer project and runtime key.",
+        "Install or save candidate skills from the marketplace.",
+        "Review permissions, budget, and subscription state.",
+        "Run a non-billable project test call.",
+        "Paste the REST or MCP snippet into the agent runtime."
+      ],
+      sdkTitle: "Three agent-ready integration shapes",
+      sdkBody: "MCP clients, direct REST calls, and SDK or CLI workflows all resolve back to the same governed SkillHub registry."
     },
     docsPage: {
       eyebrow: "Developer docs",
@@ -636,6 +683,8 @@ export const dictionaries = {
       title: "给所有智能体栈共用的一层技能系统。",
       description:
         "无论运行时是 HTTP、MCP 还是本地命令，SkillHub 都给智能体一条从发现、校验到执行的稳定路径。",
+      ctaPrimary: "查找技能",
+      ctaSecondary: "进入开发者控制台",
       cards: [
         {
           title: "适合规划器发现",
@@ -652,8 +701,53 @@ export const dictionaries = {
       ],
       timelineTitle: "智能体调用流程",
       timeline: ["按任务搜索", "读取 manifest", "检查权限", "调用运行时", "返回类型化输出"],
-      sdkTitle: "面向 SDK 的集成形态",
-      sdkBody: "产品界面已经为 SDK、CLI 和 MCP 客户端共享同一个注册表来源做好准备。"
+      integrationEyebrow: "接入路径",
+      integrationTitle: "通过同一个项目治理层连接智能体。",
+      integrationBody:
+        "项目级 Key 让智能体列出已安装工具、调用已批准技能，并把每次调用都绑定到策略、预算、订阅、调用日志和可计量用量。",
+      integrationOptions: [
+        {
+          title: "MCP 客户端",
+          description: "把项目已批准的 SkillHub 技能暴露成 MCP tools，给智能体工作台和助手使用。",
+          tag: "POST /mcp"
+        },
+        {
+          title: "REST 运行时",
+          description: "从服务端工作流、定时任务和自定义智能体循环直接调用固定版本的技能。",
+          tag: "POST /v1/runtime/invoke"
+        },
+        {
+          title: "SDK 和 CLI",
+          description: "把发现、安装和调用自动化放进同一套可版本化的工程流程。",
+          tag: "@useskillhub/sdk"
+        }
+      ],
+      snippetsTitle: "可复制的运行时形态",
+      snippets: {
+        mcpTitle: "MCP 客户端",
+        restTitle: "REST 调用",
+        sdkTitle: "SDK 发现"
+      },
+      governanceEyebrow: "运行时治理",
+      governanceTitle: "运行时仍然生效的治理",
+      governanceBody:
+        "SkillHub 是智能体意图和技能执行之间的控制平面。智能体可以快速接入，但不会绕过所有权、审核和成本控制。",
+      governanceItems: [
+        "项目 API Key 有范围并可撤销。",
+        "已安装技能保留版本固定和审批状态。",
+        "高风险权限更新会回到负责人审核。",
+        "预算、限流、订阅、日志和用量事件都会绑定到每次调用。"
+      ],
+      checklistTitle: "生产智能体使用前",
+      checklist: [
+        "创建开发者项目和运行 Key。",
+        "从市场安装或收藏候选技能。",
+        "检查权限、预算和订阅状态。",
+        "运行一次不计费的项目测试调用。",
+        "把 REST 或 MCP 片段接入智能体运行时。"
+      ],
+      sdkTitle: "智能体的三种接入形态",
+      sdkBody: "MCP 客户端、直接 REST 调用、SDK 或 CLI 工作流，最终都回到同一个受治理的 SkillHub 注册表。"
     },
     docsPage: {
       eyebrow: "开发者文档",

@@ -452,6 +452,13 @@ a {
   line-height: 1.7;
 }
 
+.page-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .gateway-card,
 .registry-workbench,
 .workflow-card,
@@ -1151,9 +1158,157 @@ a {
 }
 
 .agent-flow-section,
+.agent-integration-layout,
+.agent-snippet-section,
 .docs-layout {
   width: min(1220px, calc(100% - 48px));
   margin: 42px auto;
+}
+
+.agent-integration-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 0.72fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.agent-integration-copy,
+.agent-runtime-map,
+.agent-production-checklist {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.agent-integration-copy {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.agent-integration-copy .section-heading h2,
+.agent-snippet-section .section-heading h2 {
+  max-width: 760px;
+}
+
+.agent-integration-copy .section-heading p,
+.agent-snippet-section .section-heading p {
+  max-width: 780px;
+}
+
+.agent-integration-option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.agent-integration-option {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 14px;
+}
+
+.agent-integration-option div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.agent-integration-option svg,
+.agent-governance-item svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.agent-integration-option strong,
+.agent-checklist__item strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.agent-integration-option p {
+  min-width: 0;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.agent-integration-option code {
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: 999px;
+  background: rgba(155, 226, 141, 0.08);
+  color: #d6edc9;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.25;
+  padding: 5px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-runtime-map {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  overflow: hidden;
+  padding: 18px;
+}
+
+.agent-runtime-map::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(124, 199, 216, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(155, 226, 141, 0.06) 1px, transparent 1px);
+  background-size: 34px 34px;
+  content: "";
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.agent-runtime-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.16);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 12px;
+}
+
+.agent-runtime-node span,
+.agent-checklist__item span {
+  color: var(--signal);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.agent-runtime-node strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.agent-runtime-node svg {
+  color: var(--muted);
 }
 
 .timeline {
@@ -1191,6 +1346,64 @@ a {
   right: 12px;
   top: 14px;
   color: var(--muted);
+}
+
+.agent-snippet-section {
+  display: grid;
+  gap: 18px;
+}
+
+.agent-snippet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.agent-runtime-snippet {
+  min-width: 0;
+}
+
+.agent-runtime-snippet pre {
+  min-height: 260px;
+}
+
+.agent-governance-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.agent-governance-item {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.agent-production-checklist {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.agent-checklist {
+  display: grid;
+  gap: 9px;
+}
+
+.agent-checklist__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
 }
 
 .docs-layout {
@@ -9826,6 +10039,7 @@ a {
   .command-screen,
   .publish-grid,
   .contract-section,
+  .agent-integration-layout,
   .registry-layout,
   .auth-layout,
   .account-layout,
@@ -9885,6 +10099,8 @@ a {
   .workflow-grid,
   .trust-grid,
   .feature-grid,
+  .agent-integration-option-grid,
+  .agent-snippet-grid,
   .timeline,
   .pricing-grid,
   .finance-rule-grid,
@@ -9892,6 +10108,10 @@ a {
   .publisher-directory-card-grid,
   .terms-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .page-hero__actions {
+    justify-content: flex-start;
   }
 
   .marketplace-ops-strip,

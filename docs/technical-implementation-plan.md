@@ -291,6 +291,7 @@ Acceptance checks:
 - `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support, published feedback, and feedback submission.
 - `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
 - `/publishers/[slug]`: public publisher trust profile with marketplace-safe skill and operating signals.
+- `/agents`: public agent integration guide with MCP, REST, SDK/CLI paths, project-scoped key guidance, runtime-governance explanation, and production-before-use checklist.
 - `/docs`: manifest, API, SDK, MCP, publishing, review, pricing, payout states.
 - `/terms`: public operating terms for buyers, publishers, platform operators, refunds, disputes, data retention, takedown, notifications, and provider-deferred payment/email boundaries.
 
@@ -496,6 +497,7 @@ Completed:
 - Skill detail project actions now expose a JSON test input and runtime result panel beside save/install, giving developers an immediate install-to-test loop before they hand a project key to an agent.
 - Project detail now exposes a REST/MCP agent connection panel with copyable endpoint and command snippets, active-key state, project slug, and a governance reminder that runtime policy, budget, subscription, logging, and metering still apply.
 - OAuth provider readiness now exposes exact Google/GitHub callback URLs, missing secret-safe configuration names, and per-provider readiness booleans through `/v1/auth/providers`; `/login` shows callback success/error notices and provider setup hints instead of dead OAuth buttons.
+- `/agents` now functions as a real public integration guide with MCP client config, REST invocation, SDK discovery snippets, project-scoped key guidance, runtime governance, and production checklist.
 
 Next:
 

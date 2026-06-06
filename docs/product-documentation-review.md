@@ -688,6 +688,12 @@ Added OAuth provider readiness rollout, covering:
 - `/login` shows provider setup hints, exact callback URLs when available, missing configuration chips, and callback success/error notices after redirects return.
 - This closes the account-entry UX gap where OAuth buttons could look real without telling operators what still needed to be configured for production login.
 
+Added public agent integration guide depth, covering:
+
+- `/agents` now shows MCP, REST, and SDK/CLI integration paths with concrete command/config snippets instead of only describing the runtime concept.
+- The page explains project-scoped keys, installed-skill governance, version pins, permission approval, budgets, subscriptions, logs, and usage events as the runtime boundary for real agent use.
+- This strengthens first-visit developer value because agent builders can understand how to connect SkillHub before they create a project, then continue into the developer console for the governed setup.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
