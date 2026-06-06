@@ -511,6 +511,7 @@ Completed:
 - Project detail now exposes a REST/MCP agent connection panel with copyable endpoint and command snippets, active-key state, project slug, and a governance reminder that runtime policy, budget, subscription, logging, and metering still apply.
 - OAuth provider readiness now exposes exact Google/GitHub callback URLs, missing secret-safe configuration names, and per-provider readiness booleans through `/v1/auth/providers`; `/login` shows callback success/error notices and provider setup hints instead of dead OAuth buttons.
 - `/agents` now functions as a real public integration guide with MCP client config, REST invocation, SDK discovery snippets, project-scoped key guidance, runtime governance, and production checklist.
+- `/publish` now exposes the Journey B operating entry with clean English/Chinese copy, no raw token field, signed-in session language, shared operational status components, manifest preflight for JSON/identity/runtime/schemas/permissions/commercial readiness, warning-vs-blocker save gates, and success actions into `/publisher` plus public skill detail.
 
 Next:
 

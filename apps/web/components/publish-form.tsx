@@ -1,20 +1,18 @@
 "use client";
 
-import { CheckCircle2, FileJson, KeyRound, LockKeyhole, Send, ShieldCheck, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, FileJson, Gauge, KeyRound, LockKeyhole, Send, ShieldCheck, XCircle } from "lucide-react";
 import { useActionState, useMemo, useState } from "react";
-import type { Dictionary, Locale } from "@/lib/i18n";
+import { ActionResult, PreflightCheckList, RiskBadge, StatusChip } from "@/components/operational-status";
+import type { Locale } from "@/lib/i18n";
+import { localizedHref } from "@/lib/i18n";
+import { analyzeManifestPreflight } from "@/lib/manifest-preflight";
 import { publishSkillAction, type PublishSkillActionState } from "@/lib/publish-actions";
+import type { PublishFormCopy } from "@/lib/publish-copy";
 
 type PublishFormProps = {
   apiUrl: string;
-  labels: Dictionary["publishForm"];
+  labels: PublishFormCopy;
   locale: Locale;
-};
-
-type ReviewCheck = {
-  label: string;
-  ok: boolean;
-  detail: string;
 };
 
 const exampleManifest = {
@@ -22,7 +20,7 @@ const exampleManifest = {
   name: "email-brief",
   displayName: "Email Brief",
   version: "0.1.0",
-  description: "Summarize long email threads into decisions, blockers, and next actions.",
+  description: "Summarize long email threads into decisions, blockers, and next actions for autonomous agents.",
   author: {
     name: "SkillHub"
   },
@@ -54,6 +52,20 @@ const exampleManifest = {
         items: { type: "string" }
       }
     }
+  },
+  examples: [
+    {
+      input: {
+        thread: "Customer asks whether the contract renewal blocks rollout."
+      },
+      output: {
+        summary: "Renewal risk needs owner confirmation before rollout.",
+        nextActions: ["Confirm renewal date", "Send rollout risk note"]
+      }
+    }
+  ],
+  support: {
+    email: "support@useskillhub.com"
   }
 };
 
@@ -62,102 +74,41 @@ const initialActionState: PublishSkillActionState = {
   status: "idle"
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function toText(value: unknown, fallback: string) {
-  return typeof value === "string" && value.length > 0 ? value : fallback;
-}
-
 export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
   const [state, formAction, isPending] = useActionState(publishSkillAction.bind(null, locale), initialActionState);
   const [manifestText, setManifestText] = useState(JSON.stringify(exampleManifest, null, 2));
-
-  const parsedManifest = useMemo(() => {
-    try {
-      return JSON.parse(manifestText) as unknown;
-    } catch {
-      return undefined;
-    }
-  }, [manifestText]);
-
-  const review = useMemo(() => {
-    const manifest = isRecord(parsedManifest) ? parsedManifest : {};
-    const runtime = isRecord(manifest.runtime) ? manifest.runtime : {};
-    const permissions = isRecord(manifest.permissions) ? manifest.permissions : {};
-    const tags = Array.isArray(manifest.tags) ? manifest.tags : [];
-    const secrets = Array.isArray(permissions.secrets) ? permissions.secrets.length : 0;
-
-    const checks: ReviewCheck[] = [
-      {
-        label: labels.checks.validJson.label,
-        ok: Boolean(parsedManifest),
-        detail: parsedManifest ? labels.checks.validJson.ok : labels.checks.validJson.fail
-      },
-      {
-        label: labels.checks.identity.label,
-        ok: Boolean(manifest.name && manifest.displayName && manifest.version),
-        detail: labels.checks.identity.detail
-      },
-      {
-        label: labels.checks.runtime.label,
-        ok: Boolean(runtime.type),
-        detail: toText(runtime.type, labels.checks.runtime.fallback)
-      },
-      {
-        label: labels.checks.schemas.label,
-        ok: isRecord(manifest.inputSchema) && isRecord(manifest.outputSchema),
-        detail: labels.checks.schemas.detail
-      },
-      {
-        label: labels.checks.permissions.label,
-        ok: isRecord(manifest.permissions),
-        detail: labels.checks.permissions.detail
-          .replace("{filesystem}", String(permissions.filesystem ?? labels.unknown))
-          .replace("{secrets}", String(secrets))
-      }
-    ];
-
-    return {
-      checks,
-      displayName: toText(manifest.displayName, labels.untitledSkill),
-      name: toText(manifest.name, labels.missingName),
-      runtime: toText(runtime.type, labels.unknown),
-      version: toText(manifest.version, "0.0.0"),
-      tagCount: tags.length
-    };
-  }, [labels, parsedManifest]);
-
-  const canSubmit = Boolean(parsedManifest) && !isPending;
+  const preflight = useMemo(() => analyzeManifestPreflight(manifestText, labels), [labels, manifestText]);
+  const canSubmit = preflight.canSaveDraft && !isPending;
+  const readinessTone = preflight.blockerCount > 0 ? "danger" : preflight.warningCount > 0 ? "warning" : "success";
 
   return (
     <section className="publish-grid" aria-label="Publish skill">
       <form action={formAction} className="publish-main">
-        <div className="publish-card">
+        <div className="publish-card publish-access-card">
           <div className="publish-card__head">
             <div>
               <div className="card-kicker">
                 <KeyRound size={16} aria-hidden="true" />
-                <span>{labels.operatorAccess}</span>
+                <span>{labels.access.session}</span>
               </div>
-              <h2>{labels.adminToken}</h2>
+              <h2>{labels.access.title}</h2>
             </div>
-            <span className="private-badge">
-              <LockKeyhole size={14} aria-hidden="true" />
-              {labels.private}
-            </span>
+            <StatusChip icon={<LockKeyhole size={14} aria-hidden="true" />} tone="neutral">
+              httpOnly
+            </StatusChip>
           </div>
-
-          <div className="field-grid">
-            <label>
-              <span>{labels.adminToken}</span>
-              <input readOnly value={labels.private} />
-            </label>
-            <label>
-              <span>API</span>
-              <input readOnly value={apiUrl} />
-            </label>
+          <p>{labels.access.body}</p>
+          <div className="publish-access-grid">
+            <div>
+              <ClipboardCheck size={16} aria-hidden="true" />
+              <span>{labels.access.session}</span>
+              <strong>{labels.access.sessionDetail}</strong>
+            </div>
+            <div>
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{labels.access.api}</span>
+              <code>{apiUrl}</code>
+            </div>
           </div>
         </div>
 
@@ -165,12 +116,14 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
           <span className="manifest-editor__label">
             <span>
               <FileJson size={16} aria-hidden="true" />
-              skillhub.json
+              {labels.manifestLabel}
             </span>
-            <small>{parsedManifest ? labels.validJson : labels.invalidJson}</small>
+            <StatusChip tone={preflight.checks[0]?.state === "passed" ? "success" : "danger"}>
+              {preflight.checks[0]?.state === "passed" ? labels.editorHintValid : labels.editorHintInvalid}
+            </StatusChip>
           </span>
           <textarea
-            aria-invalid={!parsedManifest}
+            aria-invalid={preflight.checks[0]?.state !== "passed"}
             name="manifest"
             onChange={(event) => setManifestText(event.target.value)}
             spellCheck={false}
@@ -181,21 +134,36 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
         <div className="publish-actions">
           <button className="primary-button primary-button--large" disabled={!canSubmit} type="submit">
             <Send size={18} aria-hidden="true" />
-            <span>{isPending ? labels.publishing : labels.publishSkill}</span>
+            <span>{isPending ? labels.action.saving : labels.action.draftButton}</span>
           </button>
-          {state.status === "success" && (
-            <p className="form-message form-message--success">
-              <CheckCircle2 size={16} aria-hidden="true" />
-              <span>{state.message}</span>
-            </p>
-          )}
-          {state.status === "error" && (
-            <p className="form-message form-message--error">
-              <XCircle size={16} aria-hidden="true" />
-              <span>{state.message}</span>
-            </p>
-          )}
+          <StatusChip tone={canSubmit ? "success" : "danger"}>
+            {canSubmit ? labels.action.ready : labels.action.blocked}
+          </StatusChip>
         </div>
+
+        {state.status === "success" && state.skillSlug ? (
+          <ActionResult
+            actions={
+              <>
+                <a className="secondary-button" href={localizedHref("/publisher", locale)}>
+                  <Gauge size={16} aria-hidden="true" />
+                  <span>{labels.result.publisher}</span>
+                </a>
+                <a className="ghost-button" href={localizedHref(`/skills/${state.skillSlug}`, locale)}>
+                  <FileJson size={16} aria-hidden="true" />
+                  <span>{labels.result.detail}</span>
+                </a>
+              </>
+            }
+            body={labels.result.successBody}
+            title={labels.result.successTitle}
+            tone="success"
+          />
+        ) : null}
+
+        {state.status === "error" ? (
+          <ActionResult body={state.message} title={labels.result.errorTitle} tone="danger" />
+        ) : null}
       </form>
 
       <aside className="review-panel" aria-label="Manifest review">
@@ -209,36 +177,74 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
           </div>
         </div>
 
+        <div className={`preflight-score preflight-score--${readinessTone}`}>
+          <div>
+            <span>{labels.readiness.label}</span>
+            <strong>{preflight.readinessLabel}</strong>
+          </div>
+          <b>{preflight.score}%</b>
+        </div>
+
+        <div className="preflight-counts" aria-label={labels.readiness.countsLabel}>
+          <div>
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{labels.readiness.passed}</span>
+            <strong>{preflight.passedCount}</strong>
+          </div>
+          <div>
+            <ShieldCheck size={15} aria-hidden="true" />
+            <span>{labels.readiness.warnings}</span>
+            <strong>{preflight.warningCount}</strong>
+          </div>
+          <div>
+            <XCircle size={15} aria-hidden="true" />
+            <span>{labels.readiness.blockers}</span>
+            <strong>{preflight.blockerCount}</strong>
+          </div>
+        </div>
+
         <dl className="manifest-summary">
           <div>
-            <dt>{labels.package}</dt>
-            <dd>{review.displayName}</dd>
+            <dt>{labels.summary.package}</dt>
+            <dd>{preflight.displayName}</dd>
           </div>
           <div>
-            <dt>{labels.slug}</dt>
-            <dd>{review.name}</dd>
+            <dt>{labels.summary.slug}</dt>
+            <dd>{preflight.slug}</dd>
           </div>
           <div>
-            <dt>{labels.runtime}</dt>
-            <dd>{review.runtime}</dd>
+            <dt>{labels.summary.runtime}</dt>
+            <dd>{preflight.runtime}</dd>
           </div>
           <div>
-            <dt>{labels.version}</dt>
-            <dd>{review.version}</dd>
+            <dt>{labels.summary.version}</dt>
+            <dd>{preflight.version}</dd>
           </div>
           <div>
-            <dt>{labels.tags}</dt>
-            <dd>{review.tagCount}</dd>
+            <dt>{labels.summary.tags}</dt>
+            <dd>{preflight.tagCount}</dd>
+          </div>
+          <div>
+            <dt>{labels.risk.label}</dt>
+            <dd>
+              <RiskBadge label={labels.risk[preflight.permissionRisk]} level={preflight.permissionRisk} />
+            </dd>
           </div>
         </dl>
 
-        <div className="review-checks">
-          {review.checks.map((item) => (
-            <div className={item.ok ? "review-check review-check--ok" : "review-check"} key={item.label}>
-              {item.ok ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+        <PreflightCheckList checks={preflight.checks} />
+
+        <div className="publish-next-card">
+          <div className="card-kicker">
+            <Gauge size={15} aria-hidden="true" />
+            <span>{labels.nextActionsTitle}</span>
+          </div>
+          {labels.nextActions.map(([title, detail], index) => (
+            <div className="publish-next-row" key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
               <div>
-                <strong>{item.label}</strong>
-                <span>{item.detail}</span>
+                <strong>{title}</strong>
+                <small>{detail}</small>
               </div>
             </div>
           ))}

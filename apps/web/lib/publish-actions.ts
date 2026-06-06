@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
+import { getPublishCopy } from "@/lib/publish-copy";
 
 export type PublishSkillActionState = {
   message: string;
@@ -10,31 +11,12 @@ export type PublishSkillActionState = {
   status: "idle" | "success" | "error";
 };
 
-const copy = {
-  en: {
-    invalidManifest: "Manifest JSON is invalid.",
-    missingManifest: "Paste a SkillHub manifest before publishing.",
-    missingToken: "Sign in with a publisher, owner, or admin user token before publishing a skill.",
-    publishedPrefix: "Published",
-    publishedSuffix: "It is saved as a draft and ready for publisher review operations.",
-    unableToPublish: "Unable to publish skill."
-  },
-  zh: {
-    invalidManifest: "Manifest JSON 无效。",
-    missingManifest: "请先粘贴 SkillHub manifest 再发布。",
-    missingToken: "请先使用发布者、owner 或 admin 用户 token 登录，再发布技能。",
-    publishedPrefix: "已发布",
-    publishedSuffix: "当前已保存为草稿，可继续进入发布者工作台提交审核。",
-    unableToPublish: "无法发布技能。"
-  }
-} as const;
-
 export async function publishSkillAction(
   locale: Locale,
   _previousState: PublishSkillActionState,
   formData: FormData
 ): Promise<PublishSkillActionState> {
-  const labels = copy[locale];
+  const labels = getPublishCopy(locale).action;
   const manifestText = String(formData.get("manifest") ?? "").trim();
 
   if (!manifestText) {
