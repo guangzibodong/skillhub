@@ -66,6 +66,8 @@ The latest publish-entry pass strengthens Journey B's first mile. `/publish` now
 
 The latest developer-discovery pass strengthens Journey A's marketplace proof. `/marketplace` cards now show buyer-safe recommendation reasons derived from public discovery signals, plus an after-install strip that connects a copied command to project install, policy gate, runtime log, and usage ledger state. `/skills/[slug]` adds a developer handoff packet beside install commands and project actions, so the detail page shows how a listing becomes a pinned contract, organization-scoped project state, reveal-once runtime key, governed console test, and ledger-ready invocation record instead of stopping at a static catalog view.
 
+The latest publisher-operations pass strengthens Journey B's repeat-use loop. `/publisher` now turns organization-scoped readiness, skill review, runtime check, review SLA, paid activation, buyer request, feedback response, marketplace placement, payout, refund, and dispute signals into a ranked operations priority queue above the detailed panels. This makes the publisher workspace answer "what should I fix or follow up today?" before authors scroll into individual skill cards, while still using existing endpoints and avoiding fake task rows.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

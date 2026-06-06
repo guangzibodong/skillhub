@@ -271,6 +271,8 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals scoped to the token organization.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
+The `/publisher` web console derives its top-level priority queue from the publisher overview plus the existing publisher skills, buyer-request, payout, ledger, refund, dispute, profile, and notification endpoints. The queue is a UI aggregation layer: it ranks review repair, runtime checks, review SLA pressure, paid activation blockers, unanswered published feedback, buyer demand, marketplace placement or appeal work, payout readiness, and refund/dispute attention without exposing private admin curation math or requiring a separate fake task API.
+
 The public marketplace page uses `/v1/platform/overview` for its operating overview section. That section presents buyer/developer, publisher, and platform-operator loops side by side so visitors can see why teams return after first discovery: project controls and update inboxes for developers, review/runtime/revenue queues for publishers, and review/risk/money/notification queues for operators. If the API is unavailable, production-like runtimes return empty/zero operating signals unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
 
 ## Identity And RBAC

@@ -37,7 +37,9 @@ import {
   getPublisherRefunds,
   getPublisherSkills,
   getUserNotificationInbox,
+  type BuyerRequestRecord,
   type PublisherCommercialBlocker,
+  type PublisherPayoutSummary,
   type PublisherSkillRecord
 } from "@/lib/ops-data";
 import { getPublisherPageCopy, type PublisherPageCopy } from "@/lib/publisher-page-copy";
@@ -53,6 +55,17 @@ type ReadinessTask = {
   id: "session" | "profile" | "terms" | "publish" | "verified" | "payout";
   status: "blocked" | "current" | "done";
   title: string;
+};
+
+type PublisherPriorityItem = {
+  actionLabel: string;
+  detail: string;
+  href: string;
+  id: string;
+  metric: string;
+  priority: number;
+  title: string;
+  tone: "danger" | "ready" | "warning";
 };
 
 type CommercialSkillRow = {
@@ -93,6 +106,55 @@ const publisherCommandCopy = {
       pricing: "Paid blockers",
       readiness: "Launch readiness",
       review: "Review work"
+    },
+    queue: {
+      blockedMetric: "Blocked",
+      nextMetric: "Next",
+      readyMetric: "Healthy",
+      readyTitle: "Supply loop is healthy",
+      readyDetail:
+        "No urgent publisher blockers are visible. Keep watching reviews, feedback, buyer demand, revenue, payout state, and marketplace placement.",
+      title: "Priority queue"
+    },
+    queueActions: {
+      account: "Open publisher account",
+      demand: "Open demand board",
+      distribution: "Review marketplace placement",
+      feedback: "Open feedback responses",
+      ledger: "Review adjustments",
+      monitor: "Review publisher operations",
+      payout: "Open payout readiness",
+      pricing: "Open paid readiness",
+      review: "Open skill workbench",
+      runtime: "Open review evidence"
+    },
+    queueItems: {
+      adjustments: "Refund or dispute needs a publisher response",
+      demand: "Buyer request is waiting for a publisher action",
+      distribution: "Marketplace placement needs improvement or appeal follow-up",
+      feedback: "Published buyer feedback needs a publisher response",
+      payoutReady: "Payout can be requested",
+      payoutBlocked: "Payout readiness is blocked",
+      pricing: "Paid activation is blocked",
+      reviewRepair: "Review repair is blocking a skill",
+      reviewSla: "Review SLA needs follow-up",
+      runtime: "Runtime check needs repair"
+    },
+    queueTitles: {
+      adjustments: "Refund/dispute watch",
+      demand: "Buyer demand",
+      distribution: "Marketplace distribution",
+      feedback: "Feedback responses",
+      payout: "Payout readiness",
+      pricing: "Paid activation",
+      reviewRepair: "Review repair",
+      reviewSla: "Review SLA",
+      runtime: "Runtime checks"
+    },
+    queueTones: {
+      danger: "Urgent",
+      ready: "Ready",
+      warning: "Needs work"
     }
   },
   zh: {
@@ -119,9 +181,60 @@ const publisherCommandCopy = {
       pricing: "\u4ed8\u8d39\u963b\u65ad",
       readiness: "\u4e0a\u7ebf\u51c6\u5907",
       review: "\u5ba1\u6838\u5de5\u4f5c"
+    },
+    queue: {
+      blockedMetric: "\u963b\u585e",
+      nextMetric: "\u4e0b\u4e00\u6b65",
+      readyMetric: "\u5065\u5eb7",
+      readyTitle: "\u4f9b\u7ed9\u95ed\u73af\u6b63\u5e38",
+      readyDetail:
+        "\u5f53\u524d\u6ca1\u6709\u7d27\u6025\u53d1\u5e03\u8005\u963b\u585e\u3002\u7ee7\u7eed\u76d1\u63a7\u5ba1\u6838\u3001\u53cd\u9988\u3001\u4e70\u65b9\u9700\u6c42\u3001\u6536\u5165\u3001\u63d0\u73b0\u548c\u5e02\u573a\u4f4d\u7f6e\u3002",
+      title: "\u4f18\u5148\u7ea7\u961f\u5217"
+    },
+    queueActions: {
+      account: "\u6253\u5f00\u53d1\u5e03\u8005\u8d26\u6237",
+      demand: "\u6253\u5f00\u9700\u6c42\u677f",
+      distribution: "\u67e5\u770b\u5e02\u573a\u4f4d\u7f6e",
+      feedback: "\u6253\u5f00\u53cd\u9988\u56de\u590d",
+      ledger: "\u67e5\u770b\u8c03\u6574\u8bb0\u5f55",
+      monitor: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
+      payout: "\u6253\u5f00\u63d0\u73b0\u51c6\u5907",
+      pricing: "\u6253\u5f00\u4ed8\u8d39\u5c31\u7eea",
+      review: "\u6253\u5f00\u6280\u80fd\u5de5\u4f5c\u53f0",
+      runtime: "\u6253\u5f00\u5ba1\u6838\u8bc1\u636e"
+    },
+    queueItems: {
+      adjustments: "\u9000\u6b3e\u6216\u4e89\u8bae\u9700\u8981\u53d1\u5e03\u8005\u54cd\u5e94",
+      demand: "\u4e70\u65b9\u9700\u6c42\u6b63\u5728\u7b49\u5f85\u53d1\u5e03\u8005\u52a8\u4f5c",
+      distribution: "\u5e02\u573a\u4f4d\u7f6e\u9700\u8981\u6539\u8fdb\u6216\u8ddf\u8fdb\u7533\u8bc9",
+      feedback: "\u5df2\u516c\u5f00\u4e70\u5bb6\u53cd\u9988\u9700\u8981\u53d1\u5e03\u8005\u56de\u590d",
+      payoutReady: "\u5df2\u53ef\u4ee5\u7533\u8bf7\u63d0\u73b0",
+      payoutBlocked: "\u63d0\u73b0\u51c6\u5907\u88ab\u963b\u585e",
+      pricing: "\u4ed8\u8d39\u6fc0\u6d3b\u88ab\u963b\u585e",
+      reviewRepair: "\u5ba1\u6838\u4fee\u590d\u6b63\u5728\u963b\u585e\u6280\u80fd",
+      reviewSla: "\u5ba1\u6838 SLA \u9700\u8981\u8ddf\u8fdb",
+      runtime: "\u8fd0\u884c\u68c0\u67e5\u9700\u8981\u4fee\u590d"
+    },
+    queueTitles: {
+      adjustments: "\u9000\u6b3e/\u4e89\u8bae",
+      demand: "\u4e70\u65b9\u9700\u6c42",
+      distribution: "\u5e02\u573a\u5206\u53d1",
+      feedback: "\u53cd\u9988\u56de\u590d",
+      payout: "\u63d0\u73b0\u51c6\u5907",
+      pricing: "\u4ed8\u8d39\u6fc0\u6d3b",
+      reviewRepair: "\u5ba1\u6838\u4fee\u590d",
+      reviewSla: "\u5ba1\u6838 SLA",
+      runtime: "\u8fd0\u884c\u68c0\u67e5"
+    },
+    queueTones: {
+      danger: "\u7d27\u6025",
+      ready: "\u5df2\u5c31\u7eea",
+      warning: "\u5f85\u5904\u7406"
     }
   }
 } as const;
+
+type PublisherCommandCopy = (typeof publisherCommandCopy)[Locale];
 
 const copy = {
   en: {
@@ -327,6 +440,249 @@ function buildReadinessTasks(
   ];
 }
 
+function buildPublisherPriorityItems({
+  activeDemandCount,
+  blockedPaidListings,
+  commandLabels,
+  draftPaidPrices,
+  locale,
+  payoutSummary,
+  readinessTasks,
+  skillCount,
+  skills,
+  adjustmentActionCount
+}: {
+  activeDemandCount: number;
+  blockedPaidListings: number;
+  commandLabels: PublisherCommandCopy;
+  draftPaidPrices: number;
+  locale: Locale;
+  payoutSummary: PublisherPayoutSummary;
+  readinessTasks: ReadinessTask[];
+  skillCount: number;
+  skills: PublisherSkillRecord[];
+  adjustmentActionCount: number;
+}): PublisherPriorityItem[] {
+  const items: PublisherPriorityItem[] = [];
+  const currentReadinessTask =
+    readinessTasks.find((task) => task.status === "current") ??
+    readinessTasks.find((task) => task.status === "blocked") ??
+    null;
+
+  if (currentReadinessTask) {
+    items.push({
+      actionLabel: commandLabels.actions[currentReadinessTask.id],
+      detail: currentReadinessTask.detail,
+      href: getPublisherCommandHref(currentReadinessTask.id, locale),
+      id: `readiness-${currentReadinessTask.id}`,
+      metric: currentReadinessTask.status === "blocked" ? commandLabels.queue.blockedMetric : commandLabels.queue.nextMetric,
+      priority: currentReadinessTask.status === "blocked" ? 10 : 20,
+      title: currentReadinessTask.title,
+      tone: currentReadinessTask.status === "blocked" ? "danger" : "warning"
+    });
+  }
+
+  const reviewRepairCount = skills.filter((skill) => {
+    const reviewStatus = getPublisherReviewStatus(skill);
+    const hasVersion = (skill.versions ?? []).length > 0;
+
+    return (
+      reviewStatus === "rejected" ||
+      reviewStatus === "blocked" ||
+      (hasVersion && skill.verificationStatus !== "verified" && !["queued", "in_review", "approved"].includes(reviewStatus))
+    );
+  }).length;
+  const failedRuntimeCount = skills.filter((skill) =>
+    getPublisherRuntimeChecks(skill).some((check) => check.status === "failed" || check.isBlocking === true)
+  ).length;
+  const warningRuntimeCount = skills.filter((skill) =>
+    getPublisherRuntimeChecks(skill).some((check) => check.status === "warning" || check.status === "queued" || check.status === "running")
+  ).length;
+  const reviewSlaCount = skills.filter((skill) => {
+    const slaStatus = skill.versions?.[0]?.reviewSlaStatus ?? skill.review.reviewSlaStatus ?? null;
+
+    return slaStatus === "due_soon" || slaStatus === "overdue";
+  }).length;
+  const feedbackResponseCount = skills.reduce(
+    (count, skill) => count + (skill.recentFeedback ?? []).filter((feedback) => !feedback.publisherResponseBody).length,
+    0
+  );
+  const distributionActionCount = skills.filter((skill) => {
+    const activeAppeal = skill.marketplace?.appeal && ["open", "under_review"].includes(skill.marketplace.appeal.status);
+    const hasRiskHint = skill.marketplace?.improvementHints.some(
+      (hint) => hint.severity === "critical" || hint.severity === "warning"
+    );
+
+    return Boolean(skill.marketplace?.placement === "suppressed" || hasRiskHint || activeAppeal);
+  }).length;
+  const payoutReadiness = payoutSummary.readiness;
+  const payoutBlockerCount = payoutReadiness?.blockers.length ?? 0;
+  const latestPayout = payoutSummary.payouts[0];
+  const payoutNeedsAttention =
+    Boolean(payoutReadiness?.canRequest) ||
+    payoutBlockerCount > 0 ||
+    latestPayout?.status === "failed" ||
+    latestPayout?.status === "blocked";
+
+  if (reviewRepairCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.review,
+      detail: commandLabels.queueItems.reviewRepair,
+      href: localizedHref("/publisher#publisher-skills", locale),
+      id: "review-repair",
+      metric: formatCompactNumber(reviewRepairCount),
+      priority: 30,
+      title: commandLabels.queueTitles.reviewRepair,
+      tone: "danger"
+    });
+  }
+
+  if (failedRuntimeCount > 0 || warningRuntimeCount > 0) {
+    const hasFailedChecks = failedRuntimeCount > 0;
+
+    items.push({
+      actionLabel: commandLabels.queueActions.runtime,
+      detail: commandLabels.queueItems.runtime,
+      href: localizedHref("/publisher#publisher-skills", locale),
+      id: "runtime-checks",
+      metric: hasFailedChecks ? formatCompactNumber(failedRuntimeCount) : formatCompactNumber(warningRuntimeCount),
+      priority: hasFailedChecks ? 35 : 55,
+      title: commandLabels.queueTitles.runtime,
+      tone: hasFailedChecks ? "danger" : "warning"
+    });
+  }
+
+  if (reviewSlaCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.review,
+      detail: commandLabels.queueItems.reviewSla,
+      href: localizedHref("/publisher#publisher-skills", locale),
+      id: "review-sla",
+      metric: formatCompactNumber(reviewSlaCount),
+      priority: 40,
+      title: commandLabels.queueTitles.reviewSla,
+      tone: "warning"
+    });
+  }
+
+  if (blockedPaidListings > 0 || draftPaidPrices > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.pricing,
+      detail: commandLabels.queueItems.pricing,
+      href: localizedHref("/publisher#publisher-paid-readiness", locale),
+      id: "paid-activation",
+      metric: formatCompactNumber(blockedPaidListings || draftPaidPrices),
+      priority: blockedPaidListings > 0 ? 45 : 70,
+      title: commandLabels.queueTitles.pricing,
+      tone: blockedPaidListings > 0 ? "warning" : "ready"
+    });
+  }
+
+  if (feedbackResponseCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.feedback,
+      detail: commandLabels.queueItems.feedback,
+      href: localizedHref("/publisher#publisher-skills", locale),
+      id: "feedback-response",
+      metric: formatCompactNumber(feedbackResponseCount),
+      priority: 50,
+      title: commandLabels.queueTitles.feedback,
+      tone: "warning"
+    });
+  }
+
+  if (activeDemandCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.demand,
+      detail: commandLabels.queueItems.demand,
+      href: localizedHref("/publisher#publisher-demand", locale),
+      id: "buyer-demand",
+      metric: formatCompactNumber(activeDemandCount),
+      priority: 60,
+      title: commandLabels.queueTitles.demand,
+      tone: "warning"
+    });
+  }
+
+  if (distributionActionCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.distribution,
+      detail: commandLabels.queueItems.distribution,
+      href: localizedHref("/publisher#publisher-skills", locale),
+      id: "distribution",
+      metric: formatCompactNumber(distributionActionCount),
+      priority: 65,
+      title: commandLabels.queueTitles.distribution,
+      tone: "warning"
+    });
+  }
+
+  if (payoutNeedsAttention) {
+    items.push({
+      actionLabel: commandLabels.queueActions.payout,
+      detail: payoutReadiness?.canRequest ? commandLabels.queueItems.payoutReady : commandLabels.queueItems.payoutBlocked,
+      href: localizedHref("/publisher#publisher-payout", locale),
+      id: "payout",
+      metric: payoutReadiness?.canRequest ? commandLabels.queueTones.ready : formatCompactNumber(payoutBlockerCount),
+      priority: payoutReadiness?.canRequest ? 75 : 55,
+      title: commandLabels.queueTitles.payout,
+      tone: payoutReadiness?.canRequest ? "ready" : "warning"
+    });
+  }
+
+  if (adjustmentActionCount > 0) {
+    items.push({
+      actionLabel: commandLabels.queueActions.ledger,
+      detail: commandLabels.queueItems.adjustments,
+      href: localizedHref("/publisher#publisher-adjustments", locale),
+      id: "adjustments",
+      metric: formatCompactNumber(adjustmentActionCount),
+      priority: 58,
+      title: commandLabels.queueTitles.adjustments,
+      tone: "warning"
+    });
+  }
+
+  if (items.length === 0) {
+    items.push({
+      actionLabel: skillCount > 0 ? commandLabels.queueActions.monitor : commandLabels.actions.publish,
+      detail: skillCount > 0 ? commandLabels.queue.readyDetail : commandLabels.body,
+      href: skillCount > 0 ? localizedHref("/publisher#publisher-skills", locale) : localizedHref("/publish", locale),
+      id: "healthy-supply-loop",
+      metric: commandLabels.queue.readyMetric,
+      priority: 100,
+      title: skillCount > 0 ? commandLabels.queue.readyTitle : commandLabels.actions.publish,
+      tone: "ready"
+    });
+  }
+
+  return items.sort((a, b) => a.priority - b.priority).slice(0, 6);
+}
+
+function getPublisherReviewStatus(skill: PublisherSkillRecord) {
+  return skill.versions?.[0]?.reviewStatus ?? skill.review.status ?? skill.verificationStatus;
+}
+
+function getPublisherRuntimeChecks(skill: PublisherSkillRecord) {
+  return skill.versions?.[0]?.runtimeChecks?.length ? skill.versions[0].runtimeChecks : (skill.runtime.checks ?? []);
+}
+
+function countActivePublisherRequests(requests: BuyerRequestRecord[]) {
+  return requests.filter((request) => request.status === "open" || request.status === "claimed" || request.status === "submitted").length;
+}
+
+function countPublisherAdjustmentActions(
+  refunds: Array<{ status: string }>,
+  disputes: Array<{ status: string }>
+) {
+  const refundCount = refunds.filter((refund) => refund.status === "requested" || refund.status === "failed").length;
+  const disputeCount = disputes.filter(
+    (dispute) => dispute.status === "open" || dispute.status === "warning_needs_response" || dispute.status === "lost"
+  ).length;
+
+  return refundCount + disputeCount;
+}
+
 function formatLedgerStatus(value: string, labels: PublisherPageCopy) {
   return labels.ledgerStatuses[value as keyof typeof labels.ledgerStatuses] ?? value.replaceAll("_", " ");
 }
@@ -466,9 +822,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     getWorkspaceSession()
   ]);
   const verifiedSkillCount = publisherSkills.filter((skill) => skill.verificationStatus === "verified").length;
-  const activeDemandCount = publisherBuyerRequests.filter(
-    (request) => request.status === "open" || request.status === "claimed" || request.status === "submitted"
-  ).length;
+  const activeDemandCount = countActivePublisherRequests(publisherBuyerRequests);
   const visibleMetrics = [
     [labels.metrics.skills, formatCompactNumber(publisherSkills.length)],
     [labels.metrics.verified, formatCompactNumber(verifiedSkillCount)],
@@ -530,20 +884,24 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const readinessDone = readinessTasks.filter((task) => task.status === "done").length;
   const readinessPercent = Math.round((readinessDone / readinessTasks.length) * 100);
   const commandLabels = publisherCommandCopy[locale];
-  const currentReadinessTask =
-    readinessTasks.find((task) => task.status === "current") ??
-    readinessTasks.find((task) => task.status === "blocked") ??
-    null;
-  const priorityTask = currentReadinessTask ?? {
-    detail: commandLabels.completeDetail,
-    id: "verified" as const,
-    status: "done" as const,
-    title: commandLabels.completeTitle
-  };
   const reviewWorkCount = publisherSkills.filter((skill) => {
     const reviewStatus = skill.review.status ?? skill.verificationStatus;
     return skill.verificationStatus !== "verified" || reviewStatus === "rejected" || reviewStatus === "blocked";
   }).length;
+  const adjustmentActionCount = countPublisherAdjustmentActions(publisherRefunds, publisherDisputes);
+  const publisherPriorityItems = buildPublisherPriorityItems({
+    activeDemandCount,
+    adjustmentActionCount,
+    blockedPaidListings,
+    commandLabels,
+    draftPaidPrices,
+    locale,
+    payoutSummary,
+    readinessTasks,
+    skillCount: publisherSkills.length,
+    skills: publisherSkills
+  });
+  const primaryPriorityItem = publisherPriorityItems[0];
   const publisherCommandMetrics = [
     [commandLabels.metrics.readiness, `${readinessPercent}%`],
     [commandLabels.metrics.review, formatCompactNumber(reviewWorkCount)],
@@ -675,17 +1033,24 @@ export default async function PublisherPage({ searchParams }: PageProps) {
             <h2 id="publisher-priority-heading">{commandLabels.title}</h2>
             <p>{commandLabels.body}</p>
 
-            <div className={`publisher-priority-task publisher-priority-task--${priorityTask.status}`}>
-              <span>{currentReadinessTask ? labels.readiness[priorityTask.status] : commandLabels.ready}</span>
-              <strong>{priorityTask.title}</strong>
-              <p>{priorityTask.detail}</p>
+            <div className="publisher-priority-list" aria-label={commandLabels.queue.title}>
+              {publisherPriorityItems.map((item) => (
+                <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
+                  <span>
+                    {commandLabels.queueTones[item.tone]} / {item.metric}
+                  </span>
+                  <strong>{item.title}</strong>
+                  <p>{item.detail}</p>
+                  <b>
+                    {item.actionLabel}
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </b>
+                </a>
+              ))}
             </div>
 
-            <a
-              className="primary-button publisher-priority-card__action"
-              href={currentReadinessTask ? getPublisherCommandHref(currentReadinessTask.id, locale) : localizedHref("/publisher#publisher-skills", locale)}
-            >
-              <span>{currentReadinessTask ? commandLabels.actions[currentReadinessTask.id] : commandLabels.completeAction}</span>
+            <a className="primary-button publisher-priority-card__action" href={primaryPriorityItem.href}>
+              <span>{primaryPriorityItem.actionLabel}</span>
               <ArrowRight size={16} aria-hidden="true" />
             </a>
           </div>
@@ -779,13 +1144,15 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
           <PublisherSkillManager locale={locale} skills={publisherSkills} />
 
-          <BuyerRequestManager
-            developerRequests={[]}
-            locale={locale}
-            mode="publisher"
-            publisherRequests={publisherBuyerRequests}
-            publisherSkills={publisherSkills}
-          />
+          <div id="publisher-demand">
+            <BuyerRequestManager
+              developerRequests={[]}
+              locale={locale}
+              mode="publisher"
+              publisherRequests={publisherBuyerRequests}
+              publisherSkills={publisherSkills}
+            />
+          </div>
 
           <article className="ops-panel finance-panel">
             <div className="card-kicker">
@@ -847,7 +1214,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
             </div>
           </article>
 
-          <article className="ops-panel work-table-panel">
+          <article className="ops-panel work-table-panel" id="publisher-adjustments">
             <div className="card-kicker">
               <RotateCcw size={16} aria-hidden="true" />
               <span>{labels.adjustmentTitle}</span>
@@ -922,9 +1289,13 @@ export default async function PublisherPage({ searchParams }: PageProps) {
             </div>
           </article>
 
-          <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={publisherReturnUrl} />
+          <div id="publisher-account">
+            <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={publisherReturnUrl} />
+          </div>
 
-          <PublisherPayoutManager locale={locale} summary={payoutSummary} />
+          <div id="publisher-payout">
+            <PublisherPayoutManager locale={locale} summary={payoutSummary} />
+          </div>
 
           <NotificationInboxManager
             locale={locale}

@@ -379,6 +379,7 @@ Acceptance:
 
 - Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
 - Shows a role-aware workspace access panel explaining current session, required publisher roles, sign-in-required, role-required, and gateway-enforced write boundaries.
+- Shows a publisher operations priority queue above the detailed panels. The queue must derive ordered next actions from readiness, rejected/blocked/overdue reviews, automated check failures or warnings, paid activation blockers, buyer requests, unanswered published feedback, payout readiness, refund/dispute attention, and marketplace placement or appeal state.
 - Shows a paid marketplace readiness command panel that aggregates publisher profile, current terms, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers before the detailed skill cards.
 - Shows the publisher-focused operating evidence chain with live readiness, review, pricing, and payout signals so authors understand how upload work becomes reviewed supply and future revenue state.
 - Payout readiness explains pending, available, locked, paid, failed, and blocked money states; request blockers; minimum payout; manual review threshold; latest payout reason; retry condition; and next action.
@@ -387,7 +388,7 @@ Acceptance:
 - Active paid pricing controls must communicate when review, terms, payout, or publisher readiness blocks activation; publishers can still save draft pricing while the backend remains the source of truth.
 - Buyer request submission requires selecting an owned skill/version, delivery note, and evidence URL; request cards show the submitted skill, version, review state, evidence link, and buyer decision note where present.
 - Approved or installed versions cannot be edited in place.
-- Publisher sees why to come back next week.
+- Publisher sees why to come back next week because the top queue points to concrete review, runtime, pricing, feedback, demand, payout, distribution, ledger, or account work instead of only showing metrics.
 
 ## Developer Workspace
 
