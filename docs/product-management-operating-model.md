@@ -313,6 +313,7 @@ Before continuing broad UI development, maintain these artifacts:
 - Page and journey matrix: `docs/page-requirements-matrix.md`
 - Product decision log: `docs/product-decision-log.md`
 - Requirements freeze workshop: `docs/requirements-freeze-workshop.md`
+- P0 journey specs: `docs/p0-journey-specs.md`
 
 ## 48-Hour Product Focus
 

@@ -1,6 +1,6 @@
 # SkillHub Page Requirements Matrix
 
-This matrix is the product manager source of truth for page-level work. A page is ready for UI design only when its user, job, primary action, data source, states, and acceptance criteria are clear.
+This matrix is the product manager source of truth for page-level work. A page is ready for UI design only when its user, job, primary action, data source, states, and acceptance criteria are clear. Detailed P0 journey execution requirements live in [P0 Journey Specs](./p0-journey-specs.md).
 
 ## Page Standard
 
@@ -470,6 +470,8 @@ Acceptance:
 - Finance actions do not mutate historical splits silently.
 
 ## Core Journey Specs To Write Before More UI
+
+Status: approved in [P0 Journey Specs](./p0-journey-specs.md). The summaries below remain the page-matrix index for those specs.
 
 ### Journey A: Developer Discovers, Installs, And Tests A Skill
 

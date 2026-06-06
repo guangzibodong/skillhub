@@ -1,6 +1,6 @@
 # SkillHub Requirements Freeze Workshop
 
-Status: proposed for execution
+Status: approved for UI phase
 
 Date: 2026-06-06
 
@@ -85,6 +85,8 @@ The P0 user roles are:
 These roles should not be renamed or re-scoped during the UI phase without a formal decision-log update.
 
 ## Frozen P0 Journeys
+
+The detailed approved journey specs are maintained in [P0 Journey Specs](./p0-journey-specs.md). UI and implementation work should map to those specs.
 
 ### Journey A: Developer Discovers, Installs, And Tests A Skill
 
@@ -286,7 +288,7 @@ Additional advisors later:
 
 ### Wave 1: Requirements Finalization
 
-- PM locks Journey A/B/C specs.
+- PM locks Journey A/B/C specs in [P0 Journey Specs](./p0-journey-specs.md).
 - Architect locks API/data prerequisites.
 - UX locks information architecture and state language.
 - QA locks acceptance matrix.
