@@ -12,6 +12,9 @@ const copy = {
     checked: "Checked",
     empty: "Launch readiness data is unavailable.",
     environment: "Environment",
+    priorityCount: "{count} active gaps",
+    priorityEmpty: "No launch blockers, warnings, or deferred items.",
+    priorityTitle: "Next launch actions",
     title: "Launch readiness",
     statusLabels: {
       blocker: "Blocker",
@@ -30,6 +33,9 @@ const copy = {
     checked: "\u68c0\u67e5\u65f6\u95f4",
     empty: "\u6682\u65e0\u4e0a\u7ebf\u5c31\u7eea\u6570\u636e\u3002",
     environment: "\u73af\u5883",
+    priorityCount: "\u5171 {count} \u9879\u5f85\u5904\u7406",
+    priorityEmpty: "\u6682\u65e0\u963b\u65ad\u3001\u63d0\u9192\u6216\u5ef6\u540e\u9879\u3002",
+    priorityTitle: "\u4e0b\u4e00\u6279\u4e0a\u7ebf\u52a8\u4f5c",
     title: "\u4e0a\u7ebf\u5c31\u7eea\u5ea6",
     statusLabels: {
       blocker: "\u963b\u65ad",
@@ -49,6 +55,11 @@ const copy = {
 export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchReadinessPanelProps) {
   const labels = copy[locale];
   const visibleSections = readiness.sections.filter((section) => section.items.length > 0);
+  const priorityItems = visibleSections
+    .flatMap((section) => section.items.map((item) => ({ item, sectionTitle: section.title })))
+    .filter(({ item }) => item.status !== "ready")
+    .sort((a, b) => priorityOrder[a.item.status] - priorityOrder[b.item.status])
+    .slice(0, 3);
   const checkedAt = formatDate(readiness.checkedAt, locale);
 
   return (
@@ -75,6 +86,39 @@ export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchRead
         <SummaryItem label={labels.summaryLabels.deferred} status="deferred" value={readiness.summary.deferred} />
       </div>
 
+      <section className="launch-readiness-priority" aria-label={labels.priorityTitle}>
+        <div className="launch-readiness-priority__head">
+          <strong>{labels.priorityTitle}</strong>
+          <span>
+            {priorityItems.length > 0
+              ? labels.priorityCount.replace("{count}", String(priorityItems.length))
+              : labels.priorityEmpty}
+          </span>
+        </div>
+
+        {priorityItems.length > 0 ? (
+          <div className="launch-readiness-priority__list">
+            {priorityItems.map(({ item, sectionTitle }) => {
+              const Icon = statusIcon(item.status);
+
+              return (
+                <div className={`launch-readiness-priority__item launch-readiness-priority__item--${item.status}`} key={`${sectionTitle}-${item.key}`}>
+                  <Icon size={16} aria-hidden="true" />
+                  <div>
+                    <header>
+                      <span>{sectionTitle}</span>
+                      <span className={statusClass(item.status)}>{labels.statusLabels[item.status]}</span>
+                    </header>
+                    <strong>{item.label}</strong>
+                    <p>{item.action}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+      </section>
+
       {visibleSections.length > 0 ? (
         <div className="launch-readiness-sections">
           {visibleSections.map((section) => (
@@ -98,6 +142,13 @@ export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchRead
     </article>
   );
 }
+
+const priorityOrder: Record<LaunchReadinessStatus, number> = {
+  blocker: 0,
+  warning: 1,
+  deferred: 2,
+  ready: 3
+};
 
 function SummaryItem({ label, status, value }: { label: string; status: LaunchReadinessStatus; value: number }) {
   const Icon = statusIcon(status);

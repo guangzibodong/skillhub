@@ -1608,7 +1608,7 @@ curl -X PUT "https://api.useskillhub.com/v1/notifications/preferences" \
   }'
 ```
 
-These endpoints require a user-scoped token because preferences belong to a user, not the deployment service token. They persist channel state and audit records now; actual email-provider delivery is still deferred to the final provider integration phase.
+These endpoints require a user-scoped token because preferences belong to a user, not the deployment service token. They persist user channel state and audit records now; actual email-provider delivery is still deferred to the final provider integration phase. Organization webhook delivery is governed by `/v1/organization/webhooks` endpoint status and event subscriptions, not by an individual user's `webhookEnabled` preference.
 
 ## Admin Notifications
 
@@ -1670,7 +1670,7 @@ Modes:
 In `deliver` mode, the processor first fans eligible queued in-app business notifications into external delivery rows:
 
 - Email fanout uses the notification topic derived from the event type, the target user's `notification_preferences`, and the user's email address. Missing preferences use the product default of email enabled.
-- Webhook fanout uses the notification organization, exact event type, and derived topic to create one organization-scoped webhook delivery event when an active endpoint is subscribed.
+- Webhook fanout uses the notification organization, exact event type, and derived topic to create one organization-scoped webhook delivery event when an active endpoint is subscribed. Endpoint `status` plus `events` is the organization-level webhook preference; per-user `webhookEnabled` does not suppress organization webhook fanout.
 - Generated external rows carry `fanoutSourceNotificationId` in their payload, so repeated processor runs do not duplicate the same source notification for the same channel/user or organization.
 - The response includes `fanoutCount`, `fanoutEmailCount`, `fanoutWebhookCount`, and `fanoutSourceCount` beside the existing processed/sent/failed/skipped counts.
 

@@ -9,7 +9,9 @@
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "lint": "turbo lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "smoke": "node scripts/qa-smoke.mjs",
+    "smoke:prod": "node scripts/qa-smoke.mjs --api-url https://api.useskillhub.com --app-url https://app.useskillhub.com"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

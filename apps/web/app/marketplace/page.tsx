@@ -1,12 +1,17 @@
 import {
+  Activity,
   ArrowRight,
   BadgeCheck,
   BookOpenCheck,
   Building2,
+  CircleDollarSign,
   ClipboardList,
   Code2,
+  Gauge,
   HandCoins,
+  History,
   PackageSearch,
+  PlugZap,
   ShieldCheck,
   Store,
   Terminal,
@@ -65,7 +70,30 @@ const pageCopy = {
     publisherDirectoryTitle: "Supplier trust is part of discovery",
     publisherDirectoryBody:
       "Every marketplace card now links to the supplier behind the skill. The public directory lets teams compare verified listings, payout readiness, runtime evidence, and active paid inventory before installing.",
-    publisherDirectoryCta: "Browse publishers"
+    publisherDirectoryCta: "Browse publishers",
+    loopEyebrow: "Installed skill operations",
+    loopTitle: "The marketplace keeps a live path after install.",
+    loopBody:
+      "A useful skill store is not finished when an agent copies a command. Buyers need runtime evidence and spend controls; publishers need feedback, changelog pressure, and payout-ready usage records.",
+    loopSteps: [
+      ["Inspect", "Manifest, permissions, runtime, price, and publisher profile are visible before install.", "Public contract"],
+      ["Install", "Teams attach the skill to a project key or MCP server with explicit policy context.", "Project gate"],
+      ["Invoke", "Runtime calls carry typed input, budget checks, success signals, and reviewable output.", "Usage ledger"],
+      ["Return", "Feedback, incidents, changelog updates, and payout review create the next publisher action.", "Retention loop"]
+    ],
+    loopMetrics: {
+      callable: "Callable skills",
+      calls: "Recorded calls",
+      feedback: "Feedback signals",
+      payout: "Payout-ready publishers"
+    },
+    loopLedgerTitle: "What teams can revisit",
+    loopLedgerRows: [
+      ["Buyer view", "Install trail", "Command, permission profile, pricing model, and project policy stay inspectable."],
+      ["Agent view", "Runtime proof", "The agent can validate schema, latency, and success history before repeated calls."],
+      ["Publisher view", "Action queue", "Reviews, incidents, usage, and changelog pressure feed the next version."],
+      ["Finance view", "Payout audit", "Paid usage reaches ledger review before publisher payout."]
+    ]
   },
   zh: {
     eyebrow: "智能体技能市场",
@@ -106,9 +134,41 @@ const pageCopy = {
     publisherDirectoryTitle: "供应方信任也是发现的一部分",
     publisherDirectoryBody:
       "每张市场技能卡现在都会连接到背后的发布者。公开目录让团队在安装前比较已验证上架、提现准备、运行证据和活跃付费技能。",
-    publisherDirectoryCta: "浏览发布者"
+    publisherDirectoryCta: "浏览发布者",
+    loopEyebrow: "已安装技能运营",
+    loopTitle: "市场在安装后仍然保留一条实时路径。",
+    loopBody:
+      "有用的技能市场不止于复制一条命令。买家需要运行证据和预算控制；发布者需要反馈、更新压力和可进入提现审核的用量记录。",
+    loopSteps: [
+      ["检查", "安装前可以看到 manifest、权限、运行时、价格和发布者档案。", "公共合约"],
+      ["安装", "团队把技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
+      ["调用", "运行时调用携带类型化输入、预算检查、成功信号和可复核输出。", "用量账本"],
+      ["回访", "反馈、事故、更新记录和提现审核会形成下一次发布者行动。", "留存闭环"]
+    ],
+    loopMetrics: {
+      callable: "可调用技能",
+      calls: "已记录调用",
+      feedback: "反馈信号",
+      payout: "提现就绪发布者"
+    },
+    loopLedgerTitle: "团队可回访的信息",
+    loopLedgerRows: [
+      ["买家视角", "安装轨迹", "命令、权限画像、价格模型和项目策略都保持可检查。"],
+      ["Agent 视角", "运行证据", "Agent 可在重复调用前校验 schema、延迟和成功历史。"],
+      ["发布者视角", "行动队列", "评价、事故、用量和更新压力会进入下一版本。"],
+      ["财务视角", "提现审计", "付费用量先进入账本审核，再进入发布者提现。"]
+    ]
   }
 } as const;
+
+const loopStepIcons = [PackageSearch, PlugZap, Gauge, History] as const;
+
+function formatCompactMetric(value: number, locale: keyof typeof pageCopy) {
+  return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    maximumFractionDigits: 1,
+    notation: "compact"
+  }).format(value);
+}
 
 export default async function MarketplacePage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -118,12 +178,21 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const labels = pageCopy[locale];
   const [skills, publishers] = await Promise.all([getPublicMarketplaceSkills(), getPublicPublishers()]);
   const verifiedPublisherCount = publishers.filter((publisher) => publisher.trustLevel === "verified").length;
+  const payoutReadyPublisherCount = publishers.filter((publisher) => publisher.payoutStatus === "verified").length;
+  const totalCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
+  const feedbackCount = skills.reduce((sum, skill) => sum + (skill.feedbackCount ?? 0), 0);
   const metrics = [
     [labels.catalogMetric, String(skills.length)],
     [labels.publisherMetric, String(publishers.length)],
     [labels.verifiedPublisherMetric, String(verifiedPublisherCount)],
     [labels.reviewMetric, labels.reviewMetricValue],
     [labels.moneyMetric, labels.moneyMetricValue]
+  ];
+  const loopMetrics = [
+    [labels.loopMetrics.callable, String(skills.length)],
+    [labels.loopMetrics.calls, formatCompactMetric(totalCallCount, locale)],
+    [labels.loopMetrics.feedback, formatCompactMetric(feedbackCount, locale)],
+    [labels.loopMetrics.payout, `${payoutReadyPublisherCount}/${publishers.length}`]
   ];
 
   return (
@@ -198,6 +267,74 @@ skillhub install browser-research`}</code>
           <span>{labels.publisherDirectoryCta}</span>
           <ArrowRight size={14} aria-hidden="true" />
         </a>
+      </section>
+
+      <section className="market-operating-loop" aria-labelledby="market-loop-heading">
+        <div className="market-loop-copy">
+          <div className="card-kicker">
+            <Activity size={16} aria-hidden="true" />
+            <span>{labels.loopEyebrow}</span>
+          </div>
+          <div className="market-loop-copy__head">
+            <div>
+              <h2 id="market-loop-heading">{labels.loopTitle}</h2>
+              <p>{labels.loopBody}</p>
+            </div>
+            <span className="market-loop-live">
+              <span />
+              {labels.reviewMetricValue}
+            </span>
+          </div>
+
+          <div className="market-loop-metric-grid" aria-label={labels.loopEyebrow}>
+            {loopMetrics.map(([label, value]) => (
+              <div className="market-loop-metric" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="market-loop-steps">
+            {labels.loopSteps.map(([title, detail, meta], index) => {
+              const Icon = loopStepIcons[index];
+
+              return (
+                <article className="market-loop-step" key={title}>
+                  <div className="market-loop-step__top">
+                    <span className="market-loop-step__icon">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <small>{meta}</small>
+                  </div>
+                  <strong>{title}</strong>
+                  <p>{detail}</p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
+        <aside className="market-loop-ledger" aria-label={labels.loopLedgerTitle}>
+          <div className="market-loop-ledger__head">
+            <div className="card-kicker">
+              <CircleDollarSign size={16} aria-hidden="true" />
+              <span>{labels.loopLedgerTitle}</span>
+            </div>
+            <span>{labels.moneyMetricValue}</span>
+          </div>
+          <div className="market-loop-log">
+            {labels.loopLedgerRows.map(([phase, signal, detail]) => (
+              <div className="market-loop-log-row" key={phase}>
+                <span>{phase}</span>
+                <div>
+                  <strong>{signal}</strong>
+                  <p>{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
       </section>
 
       <div id="catalog">
