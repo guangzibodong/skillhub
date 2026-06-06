@@ -4,10 +4,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if [ ! -f .env ]; then
-  echo "Missing .env. Copy .env.production.example to .env and fill in secrets first." >&2
+  echo "Missing .env. Copy .env.example to .env and fill in secrets first." >&2
   exit 1
 fi
 
+docker compose -f docker-compose.1panel.yml up -d postgres
+./scripts/run-postgres-migrations.sh --no-start
 docker compose -f docker-compose.1panel.yml up -d --build
 
 echo "SkillHub stack started."

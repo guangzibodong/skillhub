@@ -122,6 +122,13 @@ Added [Technical Implementation Plan](./technical-implementation-plan.md), mappi
 - Frontend surfaces.
 - Acceptance checks.
 
+Added deployment migration-runner coverage, covering:
+
+- Existing 1Panel Postgres volumes no longer depend on manual migration lists.
+- Applied SQL files are tracked in `schema_migrations` with checksums.
+- Fresh databases, pre-runner production databases, and already-tracked databases have explicit migration start behavior.
+- The server update document now uses one migration command before rebuilding the web and API containers.
+
 Added the first retention operations migration, covering:
 
 - Installed skills and project skill policies.

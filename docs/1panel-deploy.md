@@ -22,10 +22,10 @@ Create a Compose project in 1Panel:
 - Working directory: `/opt/skillhub`
 - Compose file: `docker-compose.1panel.yml`
 
-Before starting the stack, create `.env` from `.env.production.example` and replace all placeholder secrets.
+Before starting the stack, create `.env` from `.env.example` and replace all placeholder secrets.
 
 ```bash
-cp .env.production.example .env
+cp .env.example .env
 ```
 
 Generate the deployment secrets:
@@ -33,19 +33,29 @@ Generate the deployment secrets:
 ```bash
 POSTGRES_PASSWORD=$(openssl rand -hex 32)
 SESSION_SECRET=$(openssl rand -hex 48)
+OAUTH_STATE_SECRET=$(openssl rand -hex 48)
+EMAIL_AUTH_SECRET=$(openssl rand -hex 48)
 API_KEY_SALT=$(openssl rand -hex 48)
 ADMIN_TOKEN=$(openssl rand -hex 32)
 
 sed -i "s|replace-with-a-long-random-password|$POSTGRES_PASSWORD|g" .env
-sed -i "s|replace-with-a-long-random-secret|$SESSION_SECRET|1" .env
-sed -i "s|replace-with-a-long-random-secret|$API_KEY_SALT|1" .env
+sed -i "s|replace-with-a-long-random-session-secret|$SESSION_SECRET|g" .env
+sed -i "s|replace-with-a-long-random-oauth-state-secret|$OAUTH_STATE_SECRET|g" .env
+sed -i "s|replace-with-a-long-random-email-auth-secret|$EMAIL_AUTH_SECRET|g" .env
+sed -i "s|replace-with-a-long-random-api-key-salt|$API_KEY_SALT|g" .env
 sed -i "s|replace-with-a-long-random-admin-token|$ADMIN_TOKEN|g" .env
+sed -i "s|SKILLHUB_ENV=development|SKILLHUB_ENV=production|g" .env
+sed -i "s|NEXT_PUBLIC_APP_URL=http://localhost:3000|NEXT_PUBLIC_APP_URL=https://app.useskillhub.com|g" .env
+sed -i "s|NEXT_PUBLIC_API_URL=http://localhost:8787|NEXT_PUBLIC_API_URL=https://api.useskillhub.com|g" .env
+sed -i "s|SKILLHUB_AUTH_CALLBACK_BASE_URL=http://localhost:8787|SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com|g" .env
+sed -i "s|SKILLHUB_AUTH_COOKIE_DOMAIN=|SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com|g" .env
+sed -i "s|SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true|SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false|g" .env
 ```
 
 Start the stack:
 
 ```bash
-docker compose -f docker-compose.1panel.yml up -d --build
+./scripts/deploy-1panel.sh
 ```
 
 ## Ports

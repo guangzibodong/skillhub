@@ -330,6 +330,7 @@ Acceptance checks:
 
 Completed:
 
+- 1Panel deployment now includes a Docker Compose Postgres migration runner that records applied SQL files in `schema_migrations`, auto-starts fresh databases from `001`, resumes tracked databases after the highest recorded migration, and starts existing pre-runner production databases from `018` so manual migration lists do not keep accumulating.
 - Retention and operations tables through migration `003_retention_operations.sql`.
 - Platform, developer, publisher, and admin overview API endpoints.
 - Dashboard and admin metric loading from the platform overview API with safe fallback data.

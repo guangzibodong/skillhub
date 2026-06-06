@@ -12,21 +12,23 @@ git pull --ff-only
 
 # Add a write-protection token for admin publish endpoints if it is not present.
 grep -q '^SKILLHUB_ADMIN_TOKEN=' .env || echo "SKILLHUB_ADMIN_TOKEN=$(openssl rand -hex 32)" >> .env
+grep -q '^SKILLHUB_API_KEY_SALT=' .env || echo "SKILLHUB_API_KEY_SALT=$(openssl rand -hex 48)" >> .env
+grep -q '^SKILLHUB_OAUTH_STATE_SECRET=' .env || echo "SKILLHUB_OAUTH_STATE_SECRET=$(openssl rand -hex 48)" >> .env
+grep -q '^SKILLHUB_EMAIL_AUTH_SECRET=' .env || echo "SKILLHUB_EMAIL_AUTH_SECRET=$(openssl rand -hex 48)" >> .env
 
 # Production consoles must not silently show demo operator data.
-grep -q '^SKILLHUB_ENV=' .env || echo "SKILLHUB_ENV=production" >> .env
+grep -q '^SKILLHUB_ENV=' .env && sed -i 's/^SKILLHUB_ENV=.*/SKILLHUB_ENV=production/' .env || echo "SKILLHUB_ENV=production" >> .env
+grep -q '^NEXT_PUBLIC_APP_URL=' .env && sed -i 's|^NEXT_PUBLIC_APP_URL=.*|NEXT_PUBLIC_APP_URL=https://app.useskillhub.com|' .env || echo "NEXT_PUBLIC_APP_URL=https://app.useskillhub.com" >> .env
+grep -q '^NEXT_PUBLIC_API_URL=' .env && sed -i 's|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://api.useskillhub.com|' .env || echo "NEXT_PUBLIC_API_URL=https://api.useskillhub.com" >> .env
+grep -q '^SKILLHUB_AUTH_CALLBACK_BASE_URL=' .env && sed -i 's|^SKILLHUB_AUTH_CALLBACK_BASE_URL=.*|SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com|' .env || echo "SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com" >> .env
+grep -q '^SKILLHUB_AUTH_COOKIE_DOMAIN=' .env && sed -i 's|^SKILLHUB_AUTH_COOKIE_DOMAIN=.*|SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com|' .env || echo "SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com" >> .env
+grep -q '^SKILLHUB_EMAIL_AUTH_DEBUG_CODES=' .env && sed -i 's/^SKILLHUB_EMAIL_AUTH_DEBUG_CODES=.*/SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false/' .env || echo "SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false" >> .env
 sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 
 # Existing Postgres volumes do not rerun docker-entrypoint init migrations.
-# Apply new idempotent migrations before rebuilding the API.
-docker compose -f docker-compose.1panel.yml up -d postgres
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/018_marketplace_curation.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/019_marketplace_curation_appeals.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/020_user_auth_identities.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/021_email_login_challenges.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/022_notification_delivery_operations.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/023_webhook_delivery_worker.sql
-docker exec -i skillhub-postgres psql -U skillhub -d skillhub < supabase/migrations/024_publisher_terms_acceptance.sql
+# Run the migration runner before rebuilding the API. It records applied files
+# in schema_migrations, and existing pre-runner 1Panel databases start at 018.
+./scripts/run-postgres-migrations.sh
 
 docker compose -f docker-compose.1panel.yml up -d --build
 

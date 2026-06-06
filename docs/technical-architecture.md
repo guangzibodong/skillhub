@@ -345,13 +345,14 @@ Current production:
 ```bash
 cd /opt/skillhub
 git pull --ff-only
+./scripts/run-postgres-migrations.sh
 docker compose -f docker-compose.1panel.yml up -d --build
 ```
 
 Future improvements:
 
 - Add CI build check before deployment.
-- Add database migration runner instead of relying only on container initialization.
+- Keep the database migration runner in every deployment path and track applied SQL in `schema_migrations`.
 - Add production backup plan for Postgres.
 - Add release notes and rollback steps.
 - Add uptime monitoring for app and API health.
