@@ -21,9 +21,12 @@ import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
+import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { SiteHeader } from "@/components/site-header";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
+import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams } from "@/lib/i18n";
 import {
   formatMoney,
@@ -223,7 +226,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     abuseReports,
     incidents,
     skillFeedback,
-    reviews
+    reviews,
+    session
   ] = await Promise.all([
     getFinanceLedger(),
     getAdminLaunchReadiness(),
@@ -240,7 +244,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminAbuseReports(),
     getAdminIncidents(),
     getAdminSkillFeedback(),
-    getAdminReviews()
+    getAdminReviews(),
+    getWorkspaceSession()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -311,6 +316,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
 
       <section className="console-board">
+        <SessionStatusPanel locale={locale} session={session} />
+        <WorkspaceAccessPanel
+          locale={locale}
+          requiredRoles={["reviewer", "finance", "support", "admin", "super_admin"]}
+          session={session}
+          workspace="admin"
+        />
+
         <div className="metric-strip metric-strip--four metric-strip--standalone">
           {visibleMetrics.map(([label, value]) => (
             <div className="metric" key={label}>

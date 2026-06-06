@@ -2349,6 +2349,100 @@ a {
   gap: 14px;
 }
 
+.workspace-access-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.workspace-access-panel--ready {
+  border-color: rgba(155, 226, 141, 0.2);
+}
+
+.workspace-access-panel--missing_role,
+.workspace-access-panel--no_session {
+  border-color: rgba(215, 168, 76, 0.22);
+}
+
+.workspace-access-panel__main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workspace-access-panel__main h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.workspace-access-panel__main p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.workspace-access-panel__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.workspace-access-panel__details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.workspace-access-meta,
+.workspace-access-note {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.workspace-access-meta {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.workspace-access-meta svg {
+  grid-row: span 2;
+  color: var(--cyan);
+}
+
+.workspace-access-meta span,
+.workspace-access-note span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.workspace-access-meta strong,
+.workspace-access-note strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.workspace-access-note {
+  grid-column: 1 / -1;
+  border-color: rgba(124, 199, 216, 0.16);
+  background: rgba(124, 199, 216, 0.055);
+}
+
 .auth-card p {
   margin: 0;
   color: var(--muted);
@@ -13458,6 +13552,7 @@ a {
   .publisher-priority-card,
   .operating-console__intro,
   .console-access-panel,
+  .workspace-access-panel,
   .schema-grid,
   .security-grid,
   .terms-layout,
@@ -13467,6 +13562,7 @@ a {
 
   .auth-provider-grid,
   .console-access-card-grid,
+  .workspace-access-panel__details,
   .account-method-grid,
   .account-stat-grid,
   .account-readiness-grid,
@@ -14324,6 +14420,7 @@ a {
   .status-grid,
   .auth-provider-grid,
   .console-access-card-grid,
+  .workspace-access-panel__details,
   .account-method-grid,
   .account-stat-grid,
   .account-readiness-grid,

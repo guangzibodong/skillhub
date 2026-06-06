@@ -341,6 +341,7 @@ Data source:
 Acceptance:
 
 - Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
+- Shows a role-aware workspace access panel explaining current session, required publisher roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Shows a paid marketplace readiness command panel that aggregates publisher profile, current terms, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers before the detailed skill cards.
 - Payout readiness explains pending, available, locked, paid, failed, and blocked money states; request blockers; minimum payout; manual review threshold; latest payout reason; retry condition; and next action.
 - Shows a review repair loop that combines the latest exact version, review submitted time, SLA due state, reviewer notes, automated check evidence, structured blocker/advisory semantics, target fields, and concrete repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
@@ -379,6 +380,7 @@ Data source:
 Acceptance:
 
 - Shows projects, active keys, installed skills, update counts, billing readiness, notification inbox, team access, webhook setup, and buyer requests.
+- Shows a role-aware workspace access panel explaining current session, required developer roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Developer can create a project without admin intervention.
 
 ### Dashboard `/dashboard`
@@ -473,6 +475,7 @@ Data source:
 Acceptance:
 
 - Privileged actions require reason where applicable.
+- Shows a role-aware workspace access panel explaining current session, required reviewer/finance/support/admin roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Review queue exposes SLA pressure, blocker, high-risk, and warning filters with recommended priority reasons so reviewers can decide what to process first.
 - Review cards expose the secret-safe evidence package before decision controls: publisher, payout readiness, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts.
 - Audit log is separate from notification events.

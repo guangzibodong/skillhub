@@ -50,6 +50,8 @@ Launch readiness now has customer-facing credibility thresholds instead of only 
 
 Console access is now more product-visible. The home, login, and account surfaces show a role-aware map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including the required user roles, current session state, and the rule that production access uses email code, configured OAuth, or invite/recovery tokens rather than a shared backend password. This directly addresses customer-demo confusion where the platform looked like a public home page but the operating workspaces were not obvious.
 
+Workspace access is now visible inside the operating consoles as well. `/developer`, `/publisher`, and `/admin` show current session, token fingerprint, required roles, sign-in-required or role-required states, and the rule that gateway writes remain organization- and role-enforced. This reduces a second demo risk: customers can distinguish "not signed in", "signed in without the right role", and "signed in with operational access" before interpreting empty queues as a broken product.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

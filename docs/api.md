@@ -453,6 +453,7 @@ Web console session:
 - `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - `/`, `/login`, and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a public password.
+- `/developer`, `/publisher`, and `/admin` show role-aware workspace access panels beside their operating metrics. These panels show current session, token fingerprint, required roles, sign-in-required or role-required states, and the reminder that gateway writes remain organization- and role-enforced.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.
 - Dashboard reads, project writes, publisher operations, billing controls, notification actions, trust reports, and invoice downloads prefer this cookie token.

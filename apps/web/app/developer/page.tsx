@@ -8,6 +8,7 @@ import { OrganizationWebhookManager } from "@/components/organization-webhook-ma
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
+import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
@@ -168,6 +169,12 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
 
       <section className="console-board developer-console-board">
         <SessionStatusPanel locale={locale} session={session} />
+        <WorkspaceAccessPanel
+          locale={locale}
+          requiredRoles={["developer", "owner", "admin", "super_admin"]}
+          session={session}
+          workspace="developer"
+        />
 
         <div className="metric-strip metric-strip--four metric-strip--standalone">
           {visibleMetrics.map(([label, value], index) => {
