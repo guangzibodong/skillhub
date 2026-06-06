@@ -17,6 +17,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { SkillInstallCommandPanel } from "@/components/skill-install-command-panel";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
@@ -230,14 +231,18 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               <Terminal size={16} aria-hidden="true" />
               <span>{labels.install}</span>
             </div>
-            <div className="install-command-list">
-              {installRows.map(([label, value]) => (
-                <div className="install-command-row" key={label}>
-                  <span>{label}</span>
-                  <code>{value}</code>
-                </div>
-              ))}
-            </div>
+            <SkillInstallCommandPanel
+              billingModel={skill.billing}
+              commands={installRows.map(([label, value]) => ({ label, value }))}
+              lastReviewed={skill.lastReviewed}
+              latestVersion={latestVersion}
+              locale={locale}
+              projectCount={projects.length}
+              risk={skill.risk}
+              runtime={skill.runtime}
+              verificationLabel={localizeText(skill.verification, locale)}
+              verificationLabelEn={skill.verification.en}
+            />
             <SkillProjectActionPanel
               billingModel={skill.billing}
               dashboardHref={localizedHref("/developer", locale)}

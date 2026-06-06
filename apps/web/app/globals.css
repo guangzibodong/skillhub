@@ -7555,9 +7555,15 @@ a {
   margin-top: 18px;
 }
 
+.skill-install-command-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
 .install-command-row {
   display: grid;
-  grid-template-columns: 70px minmax(0, 1fr);
+  grid-template-columns: 70px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   min-height: 48px;
@@ -7581,6 +7587,87 @@ a {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 12px;
   white-space: nowrap;
+}
+
+.install-command-row .icon-button {
+  justify-self: end;
+}
+
+.skill-install-readiness {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.skill-install-readiness__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.skill-install-readiness__head svg {
+  color: var(--cyan);
+}
+
+.skill-install-readiness__head strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.skill-install-readiness__head span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.skill-install-readiness__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.skill-install-readiness__item {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.14);
+  padding: 10px;
+}
+
+.skill-install-readiness__item svg {
+  color: var(--cyan);
+}
+
+.skill-install-readiness__item .status-chip {
+  justify-self: start;
+}
+
+.skill-install-readiness__item strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.skill-install-readiness__item small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .skill-project-action-panel {
@@ -12310,6 +12397,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .skill-install-readiness__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .buyer-request-composer__wide {
     grid-column: auto;
   }
@@ -12926,6 +13017,10 @@ a {
 
 @media (max-width: 480px) {
   .admin-review-evidence__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-install-readiness__grid {
     grid-template-columns: 1fr;
   }
 

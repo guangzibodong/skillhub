@@ -104,6 +104,7 @@ Data source:
 Acceptance:
 
 - Shows manifest, schemas, examples, permissions, runtime, pricing, changelog, support, feedback, publisher trust, incidents/deprecation state, and install paths.
+- Install paths are copyable and paired with a readiness checklist for review trust, permission risk, runtime posture, project availability, billing/subscription gate, latest version, and last-reviewed signal.
 - Signed-in project actions are scoped to the current organization.
 - Runtime test uses the same governance path as normal runtime calls.
 - Feedback enters moderation before public display.

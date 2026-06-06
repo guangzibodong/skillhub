@@ -299,7 +299,7 @@ Acceptance checks:
 
 - `/`: product value, trust model, registry preview.
 - `/marketplace`: searchable catalog with filters, install commands, trust, pricing, and request board.
-- `/skills/[slug]`: install, schemas, permissions, runtime, security notes, pricing, changelog, support, published feedback, and feedback submission.
+- `/skills/[slug]`: copyable CLI/MCP/SDK install commands, install-readiness checklist, project save/install/test actions, schemas, permissions, runtime, security notes, pricing, changelog, support, published feedback, and feedback submission.
 - `/publishers`: public publisher trust directory with supplier ranking, verified inventory, install evidence, runtime calls, payout readiness, and top public skills.
 - `/publishers/[slug]`: public publisher trust profile with marketplace-safe skill and operating signals.
 - `/agents`: public agent integration guide with MCP, REST, SDK/CLI paths, project-scoped key guidance, runtime-governance explanation, and production-before-use checklist.

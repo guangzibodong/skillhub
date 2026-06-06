@@ -326,6 +326,12 @@ Added skill detail project actions, covering:
 - The listing-to-project path uses the same organization-scoped saved-skill and install APIs as the project command center, so discovery becomes an operational state change rather than a static marketplace view.
 - This improves second-visit value because a developer's marketplace decisions reappear later in project policy, budget, update, invoice, and runtime-control surfaces.
 
+Added skill detail install readiness, covering:
+
+- CLI, MCP, and SDK command shapes are copyable from the skill detail page.
+- The same install panel shows review trust, permission risk, runtime posture, project availability, billing/subscription gate, latest version, and last-reviewed signals before the developer saves, subscribes, installs, or tests.
+- This reduces first-use friction because developers can move from "looks useful" to "ready for this project" without guessing which operational gate will block the agent later.
+
 Added developer-side subscription creation, covering:
 
 - Developers can start a provider-deferred subscription trial from the skill detail project action panel for subscription-priced skills.

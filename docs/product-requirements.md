@@ -194,6 +194,7 @@ Requirements:
 - Show price.
 - Show runtime.
 - Show install command.
+- Skill detail install commands for CLI, MCP, and SDK must be copyable and sit beside an install-readiness checklist covering review trust, permission risk, runtime posture, project availability, billing/subscription gate, latest version, and last-reviewed signal.
 - Show verification status.
 - Link to skill detail.
 - Show installed state for signed-in developers.

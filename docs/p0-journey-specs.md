@@ -94,16 +94,17 @@ Developer / Agent Builder
 3. Marketplace card shows display name, publisher, verification, risk, runtime, pricing, install command, rating/feedback, install/call evidence, and buyer-safe recommendation reason.
 4. Developer opens `/skills/[slug]`.
 5. Skill detail shows manifest, schemas, examples, permissions, runtime, pricing, changelog, support, publisher trust, published feedback, incidents/deprecation state, and similar/replacement skills.
-6. Signed-in developer selects a project.
-7. Developer saves the skill to a collection or installs it into the project.
-8. Install writes organization-scoped project install state with a pinned approved version where available.
-9. If skill risk is high, install enters owner approval before runtime use.
-10. Developer opens `/dashboard/projects/[slug]`.
-11. Project detail shows installed skills, policy controls, budget, rate limit, subscription state, runtime history, update inbox, API keys, invoices, saved skills, and REST/MCP snippets.
-12. Developer creates a project API key. Raw key is revealed once, then only fingerprint metadata remains.
-13. Developer runs a test invocation from the console. The test uses the same runtime policy path as production invocation, but is marked non-billable.
-14. Runtime record appears with status, latency, error code if any, skill version, and policy result.
-15. Developer sees usage, cost, subscription ledger state, invoice records, update/incident inbox, and notifications.
+6. Skill detail exposes copyable CLI, MCP, and SDK command shapes plus an install-readiness checklist for review trust, permission risk, runtime posture, project availability, billing/subscription gate, latest version, and last-reviewed signal.
+7. Signed-in developer selects a project.
+8. Developer saves the skill to a collection or installs it into the project.
+9. Install writes organization-scoped project install state with a pinned approved version where available.
+10. If skill risk is high, install enters owner approval before runtime use.
+11. Developer opens `/dashboard/projects/[slug]`.
+12. Project detail shows installed skills, policy controls, budget, rate limit, subscription state, runtime history, update inbox, API keys, invoices, saved skills, and REST/MCP snippets.
+13. Developer creates a project API key. Raw key is revealed once, then only fingerprint metadata remains.
+14. Developer runs a test invocation from the console. The test uses the same runtime policy path as production invocation, but is marked non-billable.
+15. Runtime record appears with status, latency, error code if any, skill version, and policy result.
+16. Developer sees usage, cost, subscription ledger state, invoice records, update/incident inbox, and notifications.
 
 ### Required UI States
 
