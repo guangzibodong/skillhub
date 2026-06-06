@@ -349,6 +349,7 @@ Requirements:
 - Skill update and deprecation inbox.
 - Project permission approvals.
 - Saved skills and collections.
+- Developer operations priority queue that ranks no-project setup, missing runtime keys, missing installs, owner approval, suspended installs or policy, update decisions, runtime quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests from existing project and organization state without a fake task API.
 
 ### Admin Dashboard
 

@@ -423,6 +423,7 @@ Acceptance:
 - Shows projects, active keys, installed skills, update counts, billing readiness, notification inbox, team access, webhook setup, and buyer requests.
 - Shows a role-aware workspace access panel explaining current session, required developer roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Shows the developer-focused operating evidence chain with live project, install, runtime call, and budget signals so an install command visibly becomes project governance state.
+- Shows a developer operations priority queue above the detailed panels. The queue must derive ordered next actions from no projects, missing active project keys, projects without installed skills, owner approval, suspended installs or policy, update inbox, runtime failures or low success rate, billing readiness, unread notifications, team setup, webhook setup, and buyer requests without adding fake task rows.
 - Developer can create a project without admin intervention.
 
 ### Dashboard `/dashboard`

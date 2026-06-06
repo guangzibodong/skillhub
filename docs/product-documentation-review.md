@@ -74,6 +74,8 @@ The latest publisher-operations pass strengthens Journey B's repeat-use loop. `/
 
 The latest admin-operations pass strengthens Journey C's command-center loop. `/admin` now turns launch readiness, review SLA/check/risk pressure, incidents, abuse reports, feedback moderation, payout/refund/dispute work, notification delivery, webhook outbox, curation appeals, commission rules, and identity health into a ranked operations priority queue above the detailed panels. This makes the admin workspace answer "what must operators process first today?" before reviewers, trust operators, finance users, and support staff scroll into specialized queues, while still using existing endpoints and avoiding fake task rows.
 
+The latest developer-operations pass strengthens Journey A's repeat-use loop. `/developer` now turns project creation, runtime key gaps, missing installs, owner approval, suspended runtime state, update inbox work, runtime-quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests into a ranked operations priority queue above the detailed panels. This makes the developer workspace answer "what should the agent team handle next?" before users scroll into project tables, billing, team, webhook, notification, and buyer-request panels, while still using existing endpoints and avoiding fake task rows.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

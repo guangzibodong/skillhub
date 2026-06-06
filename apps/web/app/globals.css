@@ -4522,6 +4522,21 @@ a {
   border-color: rgba(124, 199, 216, 0.18);
 }
 
+.developer-priority-card {
+  border-color: rgba(124, 199, 216, 0.18);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124, 199, 216, 0.08),
+      rgba(155, 226, 141, 0.035)
+    ),
+    rgba(18, 22, 17, 0.94);
+}
+
+.developer-priority-metric svg {
+  color: var(--cyan);
+}
+
 .admin-priority-metric svg {
   color: var(--cyan);
 }
