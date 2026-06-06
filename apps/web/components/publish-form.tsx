@@ -8,6 +8,7 @@ import { localizedHref } from "@/lib/i18n";
 import { analyzeManifestPreflight } from "@/lib/manifest-preflight";
 import { publishSkillAction, type PublishSkillActionState } from "@/lib/publish-actions";
 import type { PublishFormCopy } from "@/lib/publish-copy";
+import { submitPublisherSkillReviewAction, type PublisherSkillActionState } from "@/lib/publisher-skill-actions";
 
 type PublishFormProps = {
   apiUrl: string;
@@ -74,8 +75,45 @@ const initialActionState: PublishSkillActionState = {
   status: "idle"
 };
 
+const initialReviewState: PublisherSkillActionState = {
+  message: "",
+  status: "idle"
+};
+
+const reviewCopy = {
+  en: {
+    createdVersion: "New draft version",
+    reviewErrorTitle: "Version was not submitted",
+    reviewSuccessBody: "Automated manifest, runtime, example, and security checks were created for reviewer evidence.",
+    reviewSuccessTitle: "Version submitted for review",
+    submitReview: "Submit this version",
+    submittingReview: "Submitting review",
+    successBodyWithVersion:
+      "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing and commercial readiness.",
+    updatedVersion: "Draft version updated",
+    versionLabel: "Version"
+  },
+  zh: {
+    createdVersion: "\u65b0\u8349\u7a3f\u7248\u672c",
+    reviewErrorTitle: "\u7248\u672c\u672a\u63d0\u4ea4",
+    reviewSuccessBody: "\u5df2\u4e3a\u5ba1\u6838\u5458\u521b\u5efa manifest\u3001\u8fd0\u884c\u65f6\u3001\u793a\u4f8b\u548c\u5b89\u5168\u68c0\u67e5\u8bc1\u636e\u3002",
+    reviewSuccessTitle: "\u7248\u672c\u5df2\u63d0\u4ea4\u5ba1\u6838",
+    submitReview: "\u63d0\u4ea4\u8be5\u7248\u672c",
+    submittingReview: "\u63d0\u4ea4\u4e2d",
+    successBodyWithVersion:
+      "\u7248\u672c {version} \u5df2\u4fdd\u5b58\u4e3a\u7ec4\u7ec7\u62e5\u6709\u7684\u8349\u7a3f\u72b6\u6001\u3002\u4f60\u53ef\u4ee5\u73b0\u5728\u63d0\u4ea4\u5ba1\u6838\uff0c\u6216\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u7ee7\u7eed\u5b9a\u4ef7\u548c\u5546\u4e1a\u51c6\u5907\u3002",
+    updatedVersion: "\u8349\u7a3f\u7248\u672c\u5df2\u66f4\u65b0",
+    versionLabel: "\u7248\u672c"
+  }
+} as const;
+
 export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
+  const reviewLabels = reviewCopy[locale];
   const [state, formAction, isPending] = useActionState(publishSkillAction.bind(null, locale), initialActionState);
+  const [reviewState, reviewAction, isReviewPending] = useActionState(
+    submitPublisherSkillReviewAction.bind(null, locale),
+    initialReviewState
+  );
   const [manifestText, setManifestText] = useState(JSON.stringify(exampleManifest, null, 2));
   const preflight = useMemo(() => analyzeManifestPreflight(manifestText, labels), [labels, manifestText]);
   const canSubmit = preflight.canSaveDraft && !isPending;
@@ -142,27 +180,52 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
         </div>
 
         {state.status === "success" && state.skillSlug ? (
-          <ActionResult
-            actions={
-              <>
-                <a className="secondary-button" href={localizedHref("/publisher", locale)}>
-                  <Gauge size={16} aria-hidden="true" />
-                  <span>{labels.result.publisher}</span>
-                </a>
-                <a className="ghost-button" href={localizedHref(`/skills/${state.skillSlug}`, locale)}>
-                  <FileJson size={16} aria-hidden="true" />
-                  <span>{labels.result.detail}</span>
-                </a>
-              </>
-            }
-            body={labels.result.successBody}
-            title={labels.result.successTitle}
-            tone="success"
-          />
+          <>
+            <input name="skillSlug" type="hidden" value={state.skillSlug} />
+            {state.version ? <input name="version" type="hidden" value={state.version} /> : null}
+            <ActionResult
+              actions={
+                <>
+                  {state.version ? (
+                    <button className="primary-button" disabled={isReviewPending} formAction={reviewAction} type="submit">
+                      <ClipboardCheck size={16} aria-hidden="true" />
+                      <span>{isReviewPending ? reviewLabels.submittingReview : reviewLabels.submitReview}</span>
+                    </button>
+                  ) : null}
+                  <a className="secondary-button" href={localizedHref("/publisher", locale)}>
+                    <Gauge size={16} aria-hidden="true" />
+                    <span>{labels.result.publisher}</span>
+                  </a>
+                  <a className="ghost-button" href={localizedHref(`/skills/${state.skillSlug}`, locale)}>
+                    <FileJson size={16} aria-hidden="true" />
+                    <span>{labels.result.detail}</span>
+                  </a>
+                </>
+              }
+              body={formatSuccessBody(state, labels, reviewLabels)}
+              title={labels.result.successTitle}
+              tone="success"
+            />
+            <div className="publish-result-meta">
+              <span>
+                {reviewLabels.versionLabel}: <strong>{state.version ?? labels.unknown}</strong>
+              </span>
+              <span>{state.createdNewVersion ? reviewLabels.createdVersion : reviewLabels.updatedVersion}</span>
+              {state.versionId ? <code>...{state.versionId.slice(-8)}</code> : null}
+            </div>
+          </>
         ) : null}
 
         {state.status === "error" ? (
           <ActionResult body={state.message} title={labels.result.errorTitle} tone="danger" />
+        ) : null}
+
+        {reviewState.status === "success" ? (
+          <ActionResult body={reviewLabels.reviewSuccessBody} title={reviewLabels.reviewSuccessTitle} tone="success" />
+        ) : null}
+
+        {reviewState.status === "error" ? (
+          <ActionResult body={reviewState.message} title={reviewLabels.reviewErrorTitle} tone="danger" />
         ) : null}
       </form>
 
@@ -252,4 +315,16 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
       </aside>
     </section>
   );
+}
+
+function formatSuccessBody(
+  state: PublishSkillActionState,
+  labels: PublishFormCopy,
+  reviewLabels: (typeof reviewCopy)["en"] | (typeof reviewCopy)["zh"]
+) {
+  if (!state.version) {
+    return labels.result.successBody;
+  }
+
+  return reviewLabels.successBodyWithVersion.replace("{version}", state.version);
 }

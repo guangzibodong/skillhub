@@ -11589,6 +11589,41 @@ a {
   gap: 10px;
 }
 
+.publish-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 10px 12px;
+}
+
+.publish-result-meta span,
+.publish-result-meta code {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 0 9px;
+}
+
+.publish-result-meta strong {
+  color: var(--ink);
+  font-weight: 760;
+}
+
+.publish-result-meta code {
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
 .dot-status {
   color: var(--blue);
 }
@@ -12408,6 +12443,7 @@ a {
   .hero-actions .secondary-button,
   .hero-actions .ghost-button,
   .action-result__actions,
+  .action-result__actions .primary-button,
   .action-result__actions .secondary-button,
   .action-result__actions .ghost-button,
   .publish-pipeline__head .secondary-button,

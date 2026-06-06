@@ -6,9 +6,12 @@ import type { Locale } from "@/lib/i18n";
 import { getPublishCopy } from "@/lib/publish-copy";
 
 export type PublishSkillActionState = {
+  createdNewVersion?: boolean;
   message: string;
   skillSlug?: string;
   status: "idle" | "success" | "error";
+  version?: string;
+  versionId?: string;
 };
 
 export async function publishSkillAction(
@@ -47,7 +50,13 @@ export async function publishSkillAction(
       method: "POST"
     });
 
-    const payload = (await response.json().catch(() => ({}))) as { error?: string; slug?: string };
+    const payload = (await response.json().catch(() => ({}))) as {
+      createdNewVersion?: boolean;
+      error?: string;
+      slug?: string;
+      version?: string;
+      versionId?: string;
+    };
 
     if (!response.ok) {
       throw new Error(payload.error ?? labels.unableToPublish);
@@ -61,9 +70,12 @@ export async function publishSkillAction(
     revalidatePath(`/skills/${skillSlug}`);
 
     return {
+      createdNewVersion: Boolean(payload.createdNewVersion),
       message: `${labels.publishedPrefix} ${skillSlug}. ${labels.publishedSuffix}`,
       skillSlug,
-      status: "success"
+      status: "success",
+      version: payload.version,
+      versionId: payload.versionId
     };
   } catch (error) {
     return {

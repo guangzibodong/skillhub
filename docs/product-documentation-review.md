@@ -683,7 +683,7 @@ Added publisher upload entry hardening, covering:
 - The page explains draft save, exact-version submission, automated checks, reviewer decision, and commercial readiness before the publisher reaches `/publisher`.
 - The form uses signed-in session language and removes the old raw-token/admin-token mental model from the visible product UI.
 - Client preflight separates blockers from warnings across JSON, identity, runtime, schemas, permissions, and commercial readiness, so publishers can save valid drafts while understanding what will affect review and paid activation later.
-- Success states route the publisher to the workspace and public skill detail, which strengthens the repeat-use loop after the first upload.
+- Success states preserve the saved draft's exact version, expose whether it is a new or updated draft, let the publisher submit that version for review immediately, and still route to the workspace and public skill detail.
 
 Added publisher workspace copy and next-action hardening, covering:
 

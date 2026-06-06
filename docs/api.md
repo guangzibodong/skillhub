@@ -1049,6 +1049,7 @@ Placements are `featured`, `standard`, and `suppressed`. Improvement hints are p
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
 The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, install/call/success signals, marketplace distribution state, recent published buyer feedback, submit the latest version for review, respond to published feedback, and save free, per-call, or subscription pricing without leaving the workspace.
+The `/publish` entry page now also keeps the saved draft response's exact semantic version and can submit that same version for review immediately after draft save, so first-time publishers can move from manifest upload to automated review evidence without manually finding the version in `/publisher`.
 
 ## Buyer Request Board
 
