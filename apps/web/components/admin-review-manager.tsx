@@ -1,7 +1,18 @@
 "use client";
 
-import { useActionState } from "react";
-import { CheckCircle2, ClipboardCheck, Clock3, FileText, Save, ShieldAlert, XCircle } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowDownWideNarrow,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock3,
+  FileText,
+  ListFilter,
+  Save,
+  ShieldAlert,
+  XCircle
+} from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import type { AdminReviewRecord } from "@/lib/ops-data";
@@ -10,6 +21,22 @@ import { decideAdminReviewAction, type AdminReviewActionState } from "@/lib/admi
 type AdminReviewManagerProps = {
   locale: Locale;
   reviews: AdminReviewRecord[];
+};
+
+type ReviewFilter = "all" | "blockers" | "high_risk" | "sla" | "warnings";
+type ReviewSort = "due_first" | "oldest" | "priority" | "risk";
+type ReviewPriorityTone = "danger" | "neutral" | "ready" | "warning";
+
+type PrioritizedReview = {
+  index: number;
+  priority: {
+    detail: string;
+    label: string;
+    reasons: string[];
+    score: number;
+    tone: ReviewPriorityTone;
+  };
+  review: AdminReviewRecord;
 };
 
 const copy = {
@@ -37,10 +64,52 @@ const copy = {
     created: "Submitted",
     decision: "Decision",
     empty: "No skill reviews need operator action.",
+    emptyFiltered: "No reviews match this queue view.",
+    filters: {
+      all: "All",
+      blockers: "Blocking checks",
+      high_risk: "High risk",
+      sla: "SLA pressure",
+      warnings: "Warnings"
+    },
+    filterLabel: "Queue view",
     notes: "Reviewer notes",
-    reject: "Reject",
-    risk: "Risk",
+    priority: {
+      detail: {
+        danger: "Handle before normal queue work; this review is already late or blocked by evidence.",
+        neutral: "Keep in normal queue order unless the publisher asks for follow-up.",
+        ready: "Automated evidence is clean enough for a reviewer decision.",
+        warning: "Needs focused reviewer judgment before it can become trusted supply."
+      },
+      labels: {
+        blocking: "Blocked by checks",
+        decided: "Already decided",
+        dueSoon: "Due soon",
+        highRisk: "High-risk review",
+        missingChecks: "Missing evidence",
+        overdue: "Overdue",
+        ready: "Ready to decide",
+        waiting: "Normal queue",
+        warning: "Warning review"
+      },
+      reasons: {
+        blockedStatus: "Blocked review state",
+        blocking: "Blocking automated check",
+        dueSoon: "SLA due within 24h",
+        highRisk: "High-risk permission profile",
+        missingChecks: "No automated check evidence",
+        old: "Aging in queue",
+        openChecks: "Check still queued or running",
+        overdue: "SLA breached",
+        warning: "Warning needs reviewer notes"
+      },
+      score: "Priority"
+    },
+    priorityLabel: "Recommended priority",
     queueAge: "Queue age",
+    reject: "Reject",
+    resultCount: "Showing",
+    risk: "Risk",
     save: "Record decision",
     saving: "Saving",
     sla: "Review SLA",
@@ -51,7 +120,22 @@ const copy = {
       on_track: "On track",
       overdue: "Overdue"
     },
+    sort: {
+      due_first: "SLA due first",
+      oldest: "Oldest submitted",
+      priority: "Recommended priority",
+      risk: "Highest risk"
+    },
+    sortLabel: "Sort",
     status: "Status",
+    summary: {
+      blockers: "blocking",
+      highRisk: "high risk",
+      ready: "ready",
+      sla: "SLA pressure",
+      total: "reviews",
+      warnings: "warnings"
+    },
     title: "Skill review queue",
     version: "Version",
     viewSkill: "Open listing"
@@ -63,7 +147,7 @@ const copy = {
     checkLabels: {
       example: "示例",
       manifest: "清单",
-      runtime: "运行",
+      runtime: "运行时",
       security: "安全"
     },
     checkStatusLabels: {
@@ -80,10 +164,52 @@ const copy = {
     created: "提交时间",
     decision: "审核决定",
     empty: "当前没有需要处理的技能审核。",
+    emptyFiltered: "当前筛选下没有匹配的审核。",
+    filters: {
+      all: "全部",
+      blockers: "阻塞检查",
+      high_risk: "高风险",
+      sla: "SLA 压力",
+      warnings: "警告"
+    },
+    filterLabel: "队列视图",
     notes: "审核备注",
-    reject: "拒绝",
-    risk: "风险",
+    priority: {
+      detail: {
+        danger: "先于普通队列处理；这条审核已经超时或被证据阻塞。",
+        neutral: "保持正常队列顺序，除非发布者主动跟进。",
+        ready: "自动证据已经足够干净，可以进入人工决定。",
+        warning: "需要审核员集中判断，才能成为可信供给。"
+      },
+      labels: {
+        blocking: "检查阻塞",
+        decided: "已决定",
+        dueSoon: "即将到期",
+        highRisk: "高风险审核",
+        missingChecks: "缺少证据",
+        overdue: "已超期",
+        ready: "可做决定",
+        waiting: "正常排队",
+        warning: "警告审核"
+      },
+      reasons: {
+        blockedStatus: "审核已阻断",
+        blocking: "自动检查阻塞",
+        dueSoon: "24 小时内到期",
+        highRisk: "高风险权限画像",
+        missingChecks: "没有自动检查证据",
+        old: "排队时间较长",
+        openChecks: "检查仍在排队或运行",
+        overdue: "SLA 已超期",
+        warning: "警告需要审核备注"
+      },
+      score: "优先级"
+    },
+    priorityLabel: "推荐优先级",
     queueAge: "排队时长",
+    reject: "拒绝",
+    resultCount: "显示",
+    risk: "风险",
     save: "记录决定",
     saving: "保存中",
     sla: "审核 SLA",
@@ -94,7 +220,22 @@ const copy = {
       on_track: "正常",
       overdue: "已超期"
     },
+    sort: {
+      due_first: "SLA 最早到期",
+      oldest: "最早提交",
+      priority: "推荐优先级",
+      risk: "最高风险"
+    },
+    sortLabel: "排序",
     status: "状态",
+    summary: {
+      blockers: "阻塞",
+      highRisk: "高风险",
+      ready: "可决定",
+      sla: "SLA 压力",
+      total: "审核",
+      warnings: "警告"
+    },
     title: "技能审核队列",
     version: "版本",
     viewSkill: "打开列表"
@@ -108,7 +249,29 @@ const initialState: AdminReviewActionState = {
 
 export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps) {
   const labels = copy[locale];
+  const [filter, setFilter] = useState<ReviewFilter>("all");
+  const [sort, setSort] = useState<ReviewSort>("priority");
   const [state, action, isPending] = useActionState(decideAdminReviewAction.bind(null, locale), initialState);
+
+  const metrics = useMemo(() => buildReviewMetrics(reviews), [reviews]);
+  const prioritizedReviews = useMemo(
+    () => reviews.map((review, index) => ({ index, priority: buildReviewPriority(review, labels), review })),
+    [labels, reviews]
+  );
+  const visibleReviews = useMemo(
+    () =>
+      prioritizedReviews
+        .filter((item) => matchesFilter(item.review, filter))
+        .sort((first, second) => comparePrioritizedReviews(first, second, sort)),
+    [filter, prioritizedReviews, sort]
+  );
+  const filterOptions: Array<{ count: number; key: ReviewFilter; label: string }> = [
+    { count: metrics.total, key: "all", label: labels.filters.all },
+    { count: metrics.sla, key: "sla", label: labels.filters.sla },
+    { count: metrics.blockers, key: "blockers", label: labels.filters.blockers },
+    { count: metrics.highRisk, key: "high_risk", label: labels.filters.high_risk },
+    { count: metrics.warnings, key: "warnings", label: labels.filters.warnings }
+  ];
 
   return (
     <article className="ops-panel admin-review-manager">
@@ -120,9 +283,57 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
         <span className="status-chip status-chip--neutral">{reviews.length}</span>
       </div>
 
+      <div className="admin-review-summary" aria-label={labels.priorityLabel}>
+        <SummaryItem label={labels.summary.total} value={metrics.total} />
+        <SummaryItem label={labels.summary.sla} value={metrics.sla} tone={metrics.sla > 0 ? "warning" : "neutral"} />
+        <SummaryItem label={labels.summary.blockers} value={metrics.blockers} tone={metrics.blockers > 0 ? "danger" : "neutral"} />
+        <SummaryItem label={labels.summary.highRisk} value={metrics.highRisk} tone={metrics.highRisk > 0 ? "warning" : "neutral"} />
+        <SummaryItem label={labels.summary.warnings} value={metrics.warnings} tone={metrics.warnings > 0 ? "warning" : "neutral"} />
+        <SummaryItem label={labels.summary.ready} value={metrics.ready} tone={metrics.ready > 0 ? "ready" : "neutral"} />
+      </div>
+
+      <div className="admin-review-toolbar">
+        <div className="admin-review-filter-list" role="group" aria-label={labels.filterLabel}>
+          <span className="admin-review-toolbar__label">
+            <ListFilter size={14} aria-hidden="true" />
+            {labels.filterLabel}
+          </span>
+          {filterOptions.map((option) => (
+            <button
+              aria-pressed={filter === option.key}
+              className={filter === option.key ? "admin-review-filter is-active" : "admin-review-filter"}
+              key={option.key}
+              onClick={() => setFilter(option.key)}
+              type="button"
+            >
+              <span>{option.label}</span>
+              <em>{option.count}</em>
+            </button>
+          ))}
+        </div>
+
+        <label className="admin-review-sort">
+          <span>
+            <ArrowDownWideNarrow size={14} aria-hidden="true" />
+            {labels.sortLabel}
+          </span>
+          <select onChange={(event) => setSort(event.target.value as ReviewSort)} value={sort}>
+            {Object.entries(labels.sort).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="admin-review-result-count">
+        {labels.resultCount} {visibleReviews.length} / {reviews.length}
+      </div>
+
       <div className="admin-review-list">
-        {reviews.length > 0 ? (
-          reviews.map((review) => {
+        {visibleReviews.length > 0 ? (
+          visibleReviews.map(({ priority, review }) => {
             const rowState = state.reviewId === review.id ? state : null;
 
             return (
@@ -134,6 +345,24 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </div>
                   <span className={riskClass(review.riskLevel)}>{review.riskLevel ?? "unknown"}</span>
                 </header>
+
+                <div className={priorityClass(priority.tone)}>
+                  <div className="admin-review-priority__head">
+                    <AlertTriangle size={15} aria-hidden="true" />
+                    <strong>{priority.label}</strong>
+                    <span>
+                      {labels.priority.score} {priority.score}
+                    </span>
+                  </div>
+                  <p>{priority.detail}</p>
+                  {priority.reasons.length > 0 ? (
+                    <div className="admin-review-priority__reasons">
+                      {priority.reasons.map((reason) => (
+                        <span key={reason}>{reason}</span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
                 <div className="admin-review-meta">
                   <span>
@@ -234,10 +463,19 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
             );
           })
         ) : (
-          <div className="admin-review-empty">{labels.empty}</div>
+          <div className="admin-review-empty">{reviews.length > 0 ? labels.emptyFiltered : labels.empty}</div>
         )}
       </div>
     </article>
+  );
+}
+
+function SummaryItem({ label, tone = "neutral", value }: { label: string; tone?: "danger" | "neutral" | "ready" | "warning"; value: number }) {
+  return (
+    <div className={`admin-review-summary__item admin-review-summary__item--${tone}`}>
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
   );
 }
 
@@ -248,6 +486,159 @@ function ActionMessage({ state }: { state: AdminReviewActionState }) {
       <span>{state.message}</span>
     </div>
   );
+}
+
+function buildReviewMetrics(reviews: AdminReviewRecord[]) {
+  return reviews.reduce(
+    (metrics, review) => {
+      metrics.total += 1;
+      metrics.sla += hasSlaPressure(review) ? 1 : 0;
+      metrics.blockers += hasBlockingChecks(review) ? 1 : 0;
+      metrics.highRisk += review.riskLevel === "high" ? 1 : 0;
+      metrics.warnings += hasWarningChecks(review) ? 1 : 0;
+      metrics.ready += isDecisionReady(review) ? 1 : 0;
+      return metrics;
+    },
+    {
+      blockers: 0,
+      highRisk: 0,
+      ready: 0,
+      sla: 0,
+      total: 0,
+      warnings: 0
+    }
+  );
+}
+
+function buildReviewPriority(review: AdminReviewRecord, labels: (typeof copy)["en" | "zh"]) {
+  const reasons = new Set<string>();
+  const hasBlocker = hasBlockingChecks(review);
+  const hasWarning = hasWarningChecks(review);
+  const hasOpenCheck = hasOpenChecks(review);
+  const hasChecks = Boolean(review.runtimeChecks?.length);
+  const risk = riskWeight(review.riskLevel);
+  const queueAge = typeof review.reviewQueueAgeHours === "number" && Number.isFinite(review.reviewQueueAgeHours) ? review.reviewQueueAgeHours : 0;
+  let score = Math.min(queueAge, 168);
+  let label: string = labels.priority.labels.waiting;
+  let tone: ReviewPriorityTone = "neutral";
+
+  if (review.status === "approved" || review.status === "rejected" || review.reviewSlaStatus === "decided") {
+    return {
+      detail: labels.priority.detail.neutral,
+      label: labels.priority.labels.decided,
+      reasons: [],
+      score: 0,
+      tone: "neutral" as const
+    };
+  }
+
+  if (review.reviewSlaStatus === "overdue") {
+    score += 650;
+    label = labels.priority.labels.overdue;
+    tone = "danger";
+    reasons.add(labels.priority.reasons.overdue);
+  } else if (review.reviewSlaStatus === "due_soon") {
+    score += 460;
+    label = labels.priority.labels.dueSoon;
+    tone = "warning";
+    reasons.add(labels.priority.reasons.dueSoon);
+  }
+
+  if (review.status === "blocked") {
+    score += 420;
+    label = labels.priority.labels.blocking;
+    tone = "danger";
+    reasons.add(labels.priority.reasons.blockedStatus);
+  }
+
+  if (hasBlocker) {
+    score += 380;
+    label = labels.priority.labels.blocking;
+    tone = "danger";
+    reasons.add(labels.priority.reasons.blocking);
+  } else if (hasOpenCheck) {
+    score += 170;
+    label = labels.priority.labels.missingChecks;
+    tone = tone === "danger" ? tone : "warning";
+    reasons.add(labels.priority.reasons.openChecks);
+  }
+
+  if (!hasChecks) {
+    score += 140;
+    label = labels.priority.labels.missingChecks;
+    tone = tone === "danger" ? tone : "warning";
+    reasons.add(labels.priority.reasons.missingChecks);
+  }
+
+  if (review.riskLevel === "high") {
+    score += 260;
+    label = tone === "danger" ? label : labels.priority.labels.highRisk;
+    tone = tone === "danger" ? tone : "warning";
+    reasons.add(labels.priority.reasons.highRisk);
+  } else if (risk === 2) {
+    score += 90;
+  }
+
+  if (hasWarning) {
+    score += 130;
+    label = tone === "danger" ? label : labels.priority.labels.warning;
+    tone = tone === "danger" ? tone : "warning";
+    reasons.add(labels.priority.reasons.warning);
+  }
+
+  if (queueAge >= 48) {
+    reasons.add(labels.priority.reasons.old);
+  }
+
+  if (isDecisionReady(review)) {
+    score += 110;
+    label = labels.priority.labels.ready;
+    tone = "ready";
+  }
+
+  return {
+    detail: labels.priority.detail[tone],
+    label,
+    reasons: Array.from(reasons),
+    score: Math.round(score),
+    tone
+  };
+}
+
+function comparePrioritizedReviews(first: PrioritizedReview, second: PrioritizedReview, sort: ReviewSort) {
+  if (sort === "oldest") {
+    return compareOldest(first.review, second.review) || second.priority.score - first.priority.score || first.index - second.index;
+  }
+
+  if (sort === "due_first") {
+    return compareDueAt(first.review, second.review) || second.priority.score - first.priority.score || compareOldest(first.review, second.review);
+  }
+
+  if (sort === "risk") {
+    return riskWeight(second.review.riskLevel) - riskWeight(first.review.riskLevel) || second.priority.score - first.priority.score || compareOldest(first.review, second.review);
+  }
+
+  return second.priority.score - first.priority.score || compareDueAt(first.review, second.review) || compareOldest(first.review, second.review) || first.index - second.index;
+}
+
+function matchesFilter(review: AdminReviewRecord, filter: ReviewFilter) {
+  if (filter === "sla") {
+    return hasSlaPressure(review);
+  }
+
+  if (filter === "blockers") {
+    return hasBlockingChecks(review);
+  }
+
+  if (filter === "high_risk") {
+    return review.riskLevel === "high";
+  }
+
+  if (filter === "warnings") {
+    return hasWarningChecks(review);
+  }
+
+  return true;
 }
 
 function suggestedDecision(review: AdminReviewRecord) {
@@ -274,6 +665,77 @@ function hasBlockingChecks(review: AdminReviewRecord) {
   }
 
   return checks.some((check) => check.isBlocking === true || check.status === "failed" || check.status === "queued" || check.status === "running");
+}
+
+function hasOpenChecks(review: AdminReviewRecord) {
+  return (review.runtimeChecks ?? []).some((check) => check.status === "queued" || check.status === "running");
+}
+
+function hasWarningChecks(review: AdminReviewRecord) {
+  return (review.runtimeChecks ?? []).some((check) => check.status === "warning");
+}
+
+function hasSlaPressure(review: AdminReviewRecord) {
+  return review.reviewSlaStatus === "overdue" || review.reviewSlaStatus === "due_soon";
+}
+
+function isDecisionReady(review: AdminReviewRecord) {
+  return (
+    (review.status === "queued" || review.status === "in_review") &&
+    Boolean(review.runtimeChecks?.length) &&
+    !hasBlockingChecks(review) &&
+    !hasWarningChecks(review) &&
+    review.riskLevel !== "high"
+  );
+}
+
+function compareOldest(first: AdminReviewRecord, second: AdminReviewRecord) {
+  return compareNumbers(reviewSubmittedAtMs(first), reviewSubmittedAtMs(second));
+}
+
+function compareDueAt(first: AdminReviewRecord, second: AdminReviewRecord) {
+  return compareNumbers(reviewDueAtMs(first), reviewDueAtMs(second));
+}
+
+function reviewSubmittedAtMs(review: AdminReviewRecord) {
+  return parseDateMs(review.reviewSubmittedAt ?? review.createdAt, 0);
+}
+
+function reviewDueAtMs(review: AdminReviewRecord) {
+  return parseDateMs(review.reviewSlaDueAt, Number.POSITIVE_INFINITY);
+}
+
+function parseDateMs(value: string | null | undefined, fallback: number) {
+  if (!value || value === "demo") {
+    return fallback;
+  }
+
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? fallback : time;
+}
+
+function compareNumbers(first: number, second: number) {
+  if (first === second) {
+    return 0;
+  }
+
+  return first < second ? -1 : 1;
+}
+
+function riskWeight(risk: AdminReviewRecord["riskLevel"]) {
+  if (risk === "high") {
+    return 3;
+  }
+
+  if (risk === "medium") {
+    return 2;
+  }
+
+  if (risk === "low") {
+    return 1;
+  }
+
+  return 0;
 }
 
 function formatCheckType(checkType: string, labels: (typeof copy)["en" | "zh"]) {
@@ -342,6 +804,10 @@ function reviewSlaClass(status: AdminReviewRecord["reviewSlaStatus"]) {
   }
 
   return "status-chip status-chip--neutral";
+}
+
+function priorityClass(tone: ReviewPriorityTone) {
+  return `admin-review-priority admin-review-priority--${tone}`;
 }
 
 function formatReviewSlaStatus(status: AdminReviewRecord["reviewSlaStatus"], labels: (typeof copy)["en" | "zh"]) {

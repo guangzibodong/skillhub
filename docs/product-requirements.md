@@ -353,6 +353,7 @@ Requirements:
 - Platform metrics.
 - Skill review queue.
 - Skill review queue aging and SLA pressure, including due-soon and overdue rows derived from the submitted version timestamp.
+- Skill review queue prioritization with operator filters for SLA pressure, blocking automated checks, high-risk permission profiles, warning checks, and sort modes for recommended priority, oldest submitted, earliest SLA due time, and highest risk.
 - Risk command center.
 - Runtime incidents.
 - Finance ledger.

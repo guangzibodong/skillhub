@@ -465,6 +465,7 @@ Data source:
 Acceptance:
 
 - Privileged actions require reason where applicable.
+- Review queue exposes SLA pressure, blocker, high-risk, and warning filters with recommended priority reasons so reviewers can decide what to process first.
 - Audit log is separate from notification events.
 - Launch readiness is secret-safe.
 - No raw OAuth secrets, email keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords are displayed.

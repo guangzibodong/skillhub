@@ -430,14 +430,15 @@ Let platform operators run SkillHub as a real marketplace: review supply, govern
 1. Admin opens `/admin`.
 2. Command center shows blocker/warning/ready/deferred launch readiness, review queue, risk queue, finance queue, notification delivery failures, webhook outbox, identity signals, and audit stream.
 3. Reviewer opens skill review item.
-4. Review card shows publisher, skill, exact version, manifest summary, permissions, runtime, latest automated checks, risk, and notes.
-5. Reviewer approves, rejects, or blocks with required notes/reason.
-6. Trust operator moderates feedback, abuse reports, takedown actions, incidents, and curation appeals with required reasons.
-7. Finance admin processes usage/subscription posting, commission rules, balance release, payout decisions, refunds, and disputes without mutating historical splits.
-8. Admin manages notification templates and processes external email/webhook delivery queues.
-9. Admin processes webhook outbox rows with signed delivery, response capture, retry, and redacted payloads.
-10. Admin inspects identity directory and audit logs.
-11. Launch readiness separates public-launch blockers from paid-marketplace blockers and deferred integrations.
+4. Review queue can be filtered and sorted by SLA pressure, blocking automated checks, high-risk permissions, warning checks, oldest submission, earliest due time, and recommended priority.
+5. Review card shows publisher, skill, exact version, manifest summary, permissions, runtime, latest automated checks, risk, queue age, SLA state, priority reason, and notes.
+6. Reviewer approves, rejects, or blocks with required notes/reason.
+7. Trust operator moderates feedback, abuse reports, takedown actions, incidents, and curation appeals with required reasons.
+8. Finance admin processes usage/subscription posting, commission rules, balance release, payout decisions, refunds, and disputes without mutating historical splits.
+9. Admin manages notification templates and processes external email/webhook delivery queues.
+10. Admin processes webhook outbox rows with signed delivery, response capture, retry, and redacted payloads.
+11. Admin inspects identity directory and audit logs.
+12. Launch readiness separates public-launch blockers from paid-marketplace blockers and deferred integrations.
 
 ### Required UI States
 
@@ -448,6 +449,8 @@ Admin overview:
 - Launch blocker/warning/ready/deferred.
 - Empty queue.
 - Queue aging/overdue.
+- Review queue filters for SLA pressure, blocking automated checks, high-risk permissions, and warning checks.
+- Review queue sort modes for recommended priority, oldest submitted, earliest SLA due time, and highest risk.
 - Action pending/success/error.
 
 Review:

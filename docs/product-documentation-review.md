@@ -706,6 +706,13 @@ Added review SLA visibility, covering:
 - `/publisher` shows review submitted time, SLA, queue age, and decision state inside the review repair loop and version history, so authors understand whether to wait, repair, or follow up.
 - This improves publisher retention and operator credibility because review status is now a timed operating workflow instead of an opaque queued label.
 
+Added admin review queue prioritization, covering:
+
+- `/admin` now summarizes total reviews, SLA pressure, blocking automated checks, high-risk submissions, warning checks, and decision-ready items.
+- Reviewers can filter the queue by SLA pressure, blockers, high risk, or warnings and sort by recommended priority, oldest submitted, earliest SLA due time, or highest risk.
+- Each review card now shows the derived priority label, score, and reasons so admins can explain why a row should be handled before normal queue work.
+- This improves Journey C because the review page behaves like an operations queue instead of a passive list.
+
 Added developer project version adoption, covering:
 
 - Project update inbox rows now expose current installed version, target version, target review status, and adoption readiness.

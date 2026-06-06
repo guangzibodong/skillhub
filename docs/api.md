@@ -1925,6 +1925,8 @@ Each review row includes review SLA fields plus `runtimeChecks`, an array of the
 
 The approval gate refreshes missing or incomplete checks once before deciding. After that refresh, the admin console treats `failed`, `queued`, and `running` as blocking signals; `warning` can be approved only when the reviewer records notes that explain the accepted risk.
 
+The web admin console derives queue priority from this response without requiring extra API fields. It summarizes SLA pressure, blocking checks, high-risk permissions, warning checks, and decision-ready rows, then lets reviewers filter or sort by recommended priority, oldest submission, earliest SLA due time, or highest risk.
+
 Record a review decision:
 
 ```bash

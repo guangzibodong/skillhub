@@ -92,6 +92,7 @@ Acceptance checks:
 - A submitted skill version must have a valid manifest.
 - Review submission must create automated manifest, runtime, example, and security checks for the submitted version.
 - Review queue and publisher version APIs must derive submitted time, three-business-day SLA due time, queue age, hours remaining, and `not_submitted`/`on_track`/`due_soon`/`overdue`/`decided` status without storing secret or provider data.
+- The admin review console must turn those review SLA and automated-check fields into an operational queue view with counts, filters, recommended priority reasons, and sort modes so reviewers can process overdue, due-soon, high-risk, warning, and blocking submissions before normal queue work.
 - A verified skill version must have a review decision and no failed, queued, or running automated checks. Warning checks require reviewer notes.
 - A new version cannot silently replace a verified version.
 - Approved or installed versions cannot be overwritten; publishers must create a new semantic version.
@@ -526,6 +527,7 @@ Completed:
 - Review submission now stores structured remediation metadata for manifest, runtime, example, and security checks, so publishers and reviewers no longer have to infer repair steps from free-text messages.
 - `/v1/admin/reviews` and publisher skill/version APIs now return the remediation fields, and `/admin` plus `/publisher` display next action and target field beside check evidence.
 - Review queue and publisher skill/version APIs now derive a three-business-day review SLA from the submitted version timestamp, returning submitted time, due time, queue age, hours remaining, and `on_track`/`due_soon`/`overdue`/`decided`/`not_submitted` status; `/admin` and `/publisher` surface those signals so operators and publishers can manage queue pressure.
+- `/admin` now prioritizes the skill review queue with summary counts, SLA/blocker/high-risk/warning filters, recommended priority reasons, and sort modes for priority, oldest submission, earliest SLA due time, and highest risk.
 - Launch readiness now treats the runtime-check remediation columns as a schema prerequisite and expects migration `028_runtime_check_remediation.sql`.
 - Journey A developer surfaces now use clean bilingual copy across `/developer`, `/skills/[slug]`, `/dashboard/projects/[slug]`, project API keys, project policy, saved skills, update inbox, and agent connection panels.
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.
