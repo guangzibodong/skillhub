@@ -283,6 +283,7 @@ Acceptance checks:
 - Email verification challenge delivery status stays synchronized with the matching `auth.email.code.requested` delivery event without exposing the raw code in admin lists.
 - Admin/support operators can process due external delivery events in batches, including dry-run mode, Resend-backed email delivery when configured, explicit provider-configuration failure states, and webhook fan-out into `webhook_delivery_events`.
 - Admin/support operators can inspect launch readiness without exposing secrets, covering identity providers, email delivery, webhook worker schema, database migrations, notification templates, runtime key hashing, commission rules, publisher terms acceptance, payout state, demo fallback, legacy signup, service token presence, and final-provider-deferred areas.
+- Launch readiness exposes migration-runner history from `schema_migrations` so operators can see whether the server has run the current expected migration before the API depends on new columns or tables.
 
 ## Frontend Pages To Make Real
 
@@ -331,6 +332,7 @@ Acceptance checks:
 Completed:
 
 - 1Panel deployment now includes a Docker Compose Postgres migration runner that records applied SQL files in `schema_migrations`, auto-starts fresh databases from `001`, resumes tracked databases after the highest recorded migration, and starts existing pre-runner production databases from `018` so manual migration lists do not keep accumulating.
+- `/v1/admin/launch-readiness` now checks `schema_migrations` migration history, latest applied migration filename, recorded row count, and expected latest migration so deployment drift is visible from the admin command center.
 - Retention and operations tables through migration `003_retention_operations.sql`.
 - Platform, developer, publisher, and admin overview API endpoints.
 - Dashboard and admin metric loading from the platform overview API with safe fallback data.

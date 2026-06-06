@@ -1293,6 +1293,21 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
       ]
     },
     {
+      key: "marketplace_operations",
+      status: "ready",
+      title: "Marketplace operations",
+      items: [
+        {
+          action: "Run ./scripts/run-postgres-migrations.sh before each production rebuild.",
+          description: "Migration history is tracked in schema_migrations so operators can see whether SQL kept up with code.",
+          detail: "Demo latest migration: 026_skill_feedback_publisher_responses.sql.",
+          key: "schema_migrations",
+          label: "Migration history",
+          status: "ready"
+        }
+      ]
+    },
+    {
       key: "commercial",
       status: "deferred",
       title: "Commercial readiness",
@@ -1311,7 +1326,7 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
   summary: {
     blocker: 0,
     deferred: 1,
-    ready: 1,
+    ready: 2,
     status: "warning",
     warning: 1
   }

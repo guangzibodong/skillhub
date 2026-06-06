@@ -2,6 +2,9 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
+const expectedLatestMigrationFilename = "026_skill_feedback_publisher_responses.sql";
+const expectedLatestMigrationNumber = 26;
+
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
   GITHUB_CLIENT_ID?: string;
@@ -76,11 +79,16 @@ type DatabaseReadiness = {
   activeNotificationTemplates: number | null;
   databaseConnected: boolean;
   emailChallenges: boolean;
+  migrationHistoryCount: number | null;
+  migrationLatestAppliedAt: string | null;
+  migrationLatestFilename: string | null;
+  migrationLatestNumber: number | null;
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   payoutTables: boolean;
   publisherFeedbackResponseColumns: boolean;
   publisherTermsAcceptanceColumns: boolean;
+  schemaMigrations: boolean;
   userAuthIdentities: boolean;
   webhookDeliveryWorker: boolean;
 };
@@ -281,6 +289,14 @@ function buildMarketplaceOperationsSection(
       status: database.databaseConnected ? "ready" : "blocker"
     },
     {
+      action: migrationHistoryAction(database),
+      description: "Production updates should run the migration runner before rebuilding API and web containers.",
+      detail: migrationHistoryDetail(database),
+      key: "schema_migrations",
+      label: "Migration history",
+      status: migrationHistoryStatus(database)
+    },
+    {
       action: database.operationsTables ? "No action needed." : "Run retention, feedback, curation, team, and webhook migrations.",
       description: "Publisher/developer/admin dashboards require operational tables beyond the public registry.",
       detail: database.operationsTables ? "Core operations tables are available." : "One or more operations tables are missing.",
@@ -446,11 +462,16 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       activeNotificationTemplates: null,
       databaseConnected: false,
       emailChallenges: false,
+      migrationHistoryCount: null,
+      migrationLatestAppliedAt: null,
+      migrationLatestFilename: null,
+      migrationLatestNumber: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
+      schemaMigrations: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
     };
@@ -470,7 +491,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         to_regclass('public.notification_templates') is not null as "notificationTemplates",
         to_regclass('public.payout_accounts') is not null as "payoutAccounts",
         to_regclass('public.payouts') is not null as "payouts",
-        to_regclass('public.commission_rules') is not null as "commissionRules"
+        to_regclass('public.commission_rules') is not null as "commissionRules",
+        to_regclass('public.schema_migrations') is not null as "schemaMigrations"
     `) as Array<{
       commissionRules: boolean;
       emailChallenges: boolean;
@@ -481,6 +503,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       payoutAccounts: boolean;
       payouts: boolean;
       projectSkillInstalls: boolean;
+      schemaMigrations: boolean;
       skillFeedback: boolean;
       userAuthIdentities: boolean;
       webhookDeliveryEvents: boolean;
@@ -557,12 +580,17 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     const columns = columnRows[0];
     const activeCommissionRules = tables.commissionRules ? await countActiveCommissionRules(sql) : null;
     const activeNotificationTemplates = tables.notificationTemplates ? await countActiveNotificationTemplates(sql) : null;
+    const migrationHistory = tables.schemaMigrations ? await getMigrationHistory(sql) : null;
 
     return {
       activeCommissionRules,
       activeNotificationTemplates,
       databaseConnected: true,
       emailChallenges: tables.emailChallenges,
+      migrationHistoryCount: migrationHistory?.count ?? null,
+      migrationLatestAppliedAt: migrationHistory?.latestAppliedAt ?? null,
+      migrationLatestFilename: migrationHistory?.latestFilename ?? null,
+      migrationLatestNumber: migrationHistory?.latestNumber ?? null,
       notificationDeliveryColumns: columns.notificationDeliveryColumns,
       operationsTables:
         tables.projectSkillInstalls &&
@@ -579,6 +607,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         columns.publisherTermsAcceptedAt &&
         columns.publisherTermsVersion &&
         columns.publisherTermsAcceptedByUserId,
+      schemaMigrations: tables.schemaMigrations,
       userAuthIdentities: tables.userAuthIdentities,
       webhookDeliveryWorker: tables.webhookDeliveryEvents && columns.webhookLastAttemptedAt
     };
@@ -588,15 +617,46 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       activeNotificationTemplates: null,
       databaseConnected: false,
       emailChallenges: false,
+      migrationHistoryCount: null,
+      migrationLatestAppliedAt: null,
+      migrationLatestFilename: null,
+      migrationLatestNumber: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
       publisherFeedbackResponseColumns: false,
       publisherTermsAcceptanceColumns: false,
+      schemaMigrations: false,
       userAuthIdentities: false,
       webhookDeliveryWorker: false
     };
   }
+}
+
+async function getMigrationHistory(sql: Sql) {
+  const rows = (await sql`
+    select
+      filename,
+      coalesce((substring(filename from '^[0-9]+'))::int, 0) as "migrationNumber",
+      applied_at::text as "appliedAt",
+      count(*) over ()::int as count
+    from schema_migrations
+    order by coalesce((substring(filename from '^[0-9]+'))::int, 0) desc, filename desc
+    limit 1
+  `) as Array<{
+    appliedAt: string;
+    count: number;
+    filename: string;
+    migrationNumber: number;
+  }>;
+  const latest = rows[0];
+
+  return {
+    count: latest?.count ?? 0,
+    latestAppliedAt: latest?.appliedAt ?? null,
+    latestFilename: latest?.filename ?? null,
+    latestNumber: latest?.migrationNumber ?? null
+  };
 }
 
 async function countActiveCommissionRules(sql: Sql) {
@@ -618,6 +678,57 @@ async function countActiveNotificationTemplates(sql: Sql) {
   `) as Array<{ count: number }>;
 
   return rows[0]?.count ?? 0;
+}
+
+function migrationHistoryStatus(database: DatabaseReadiness): LaunchReadinessStatus {
+  if (!database.databaseConnected) {
+    return "blocker";
+  }
+
+  if (!database.schemaMigrations || database.migrationHistoryCount === null || database.migrationHistoryCount === 0) {
+    return "warning";
+  }
+
+  if ((database.migrationLatestNumber ?? 0) < expectedLatestMigrationNumber) {
+    return "blocker";
+  }
+
+  return "ready";
+}
+
+function migrationHistoryAction(database: DatabaseReadiness) {
+  if (!database.databaseConnected) {
+    return "Set DATABASE_URL, start Postgres, and run ./scripts/run-postgres-migrations.sh.";
+  }
+
+  if (!database.schemaMigrations || database.migrationHistoryCount === null || database.migrationHistoryCount === 0) {
+    return "Run ./scripts/run-postgres-migrations.sh once from /opt/skillhub.";
+  }
+
+  if ((database.migrationLatestNumber ?? 0) < expectedLatestMigrationNumber) {
+    return `Run ./scripts/run-postgres-migrations.sh; expected ${expectedLatestMigrationFilename}.`;
+  }
+
+  return "No action needed.";
+}
+
+function migrationHistoryDetail(database: DatabaseReadiness) {
+  if (!database.databaseConnected) {
+    return "Database connection is not available.";
+  }
+
+  if (!database.schemaMigrations) {
+    return "schema_migrations is missing; migration runner has not recorded deployment history.";
+  }
+
+  if (database.migrationHistoryCount === null || database.migrationHistoryCount === 0) {
+    return "schema_migrations exists but has no applied migration rows.";
+  }
+
+  const latest = database.migrationLatestFilename ?? "unknown";
+  const appliedAt = database.migrationLatestAppliedAt ? ` at ${database.migrationLatestAppliedAt}` : "";
+
+  return `${database.migrationHistoryCount} recorded migration(s). Latest: ${latest}${appliedAt}. Expected latest: ${expectedLatestMigrationFilename}.`;
 }
 
 function section(key: string, title: string, items: LaunchReadinessItem[]): LaunchReadinessSection {

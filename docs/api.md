@@ -1747,7 +1747,9 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
 - Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, commercial readiness, and production guardrails.
-- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration state, active templates, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration-runner history, latest applied migration, active templates, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+
+The migration history check reads `schema_migrations`, reports the recorded migration count, latest applied filename, latest applied time, and compares it with the current expected production migration. It returns a warning when the migration runner has never recorded history and a blocker when the recorded latest migration is older than the code expects.
 
 The endpoint reports only configured/missing state, URLs, counts, and next actions. It never returns OAuth secrets, Resend keys, service tokens, API-key salts, webhook signing secrets, raw email verification codes, user tokens, or passwords.
 

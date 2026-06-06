@@ -128,6 +128,7 @@ Added deployment migration-runner coverage, covering:
 - Applied SQL files are tracked in `schema_migrations` with checksums.
 - Fresh databases, pre-runner production databases, and already-tracked databases have explicit migration start behavior.
 - The server update document now uses one migration command before rebuilding the web and API containers.
+- Admin launch readiness now surfaces migration-runner history, latest applied migration, and expected latest migration so deployment drift is visible before operators discover missing columns in production workflows.
 
 Added the first retention operations migration, covering:
 
