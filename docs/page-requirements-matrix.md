@@ -76,6 +76,7 @@ Acceptance:
 - Filters cover category, pricing, runtime, permission risk, verification state, and ranking.
 - Cards show install command, risk, runtime, price, verification, rating, installs/calls when available.
 - Buyer-safe recommendation reasons are visible.
+- Cards show an after-install project handoff strip so developers can see that copying an install command leads to project install state, policy gate, runtime logs, and usage ledger state.
 - Publisher trust path is visible.
 - Shows the operating evidence chain from discovery to install, runtime governance, ledger, and payout so visitors can see the catalog is backed by operational state.
 - No internal curation boost/reason is exposed publicly.
@@ -138,6 +139,7 @@ Acceptance:
 
 - Shows manifest, schemas, examples, permissions, runtime, pricing, changelog, support, feedback, publisher trust, incidents/deprecation state, and install paths.
 - Install paths are copyable and paired with a readiness checklist for review trust, permission risk, runtime posture, project availability, billing/subscription gate, latest version, and last-reviewed signal.
+- The install section includes a developer handoff packet that summarizes contract pin, organization project state, policy gate, reveal-once runtime key, governed test, and usage-ledger implications before the developer leaves for the project command center.
 - Signed-in project actions are scoped to the current organization.
 - Runtime test uses the same governance path as normal runtime calls.
 - Feedback enters moderation before public display.

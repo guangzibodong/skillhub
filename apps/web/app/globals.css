@@ -9168,6 +9168,67 @@ a {
   padding: 0 9px;
 }
 
+.market-recommendation-reasons,
+.market-install-handoff {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.12);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.04);
+  padding: 10px;
+}
+
+.market-recommendation-reasons__title,
+.market-install-handoff strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.25;
+}
+
+.market-recommendation-reasons__title svg,
+.market-install-handoff strong svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.market-recommendation-reasons > div,
+.market-install-handoff > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.market-recommendation-reasons > div span,
+.market-install-handoff > div span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  min-height: 26px;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 11px;
+  font-weight: 740;
+  line-height: 1.15;
+  padding: 0 8px;
+}
+
+.market-recommendation-reasons > div span svg,
+.market-install-handoff > div span svg {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
 .install-strip {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -9572,6 +9633,96 @@ a {
 .skill-install-readiness__item small {
   min-width: 0;
   overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.skill-developer-handoff-packet {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin-top: 14px;
+  border: 1px solid rgba(155, 226, 141, 0.14);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(155, 226, 141, 0.06), rgba(124, 199, 216, 0.035)),
+    rgba(0, 0, 0, 0.12);
+  padding: 13px;
+}
+
+.skill-developer-handoff-packet__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.skill-developer-handoff-packet__head div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.skill-developer-handoff-packet__head strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.skill-developer-handoff-packet__head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.skill-developer-handoff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.skill-developer-handoff-row {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.skill-developer-handoff-row__icon {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(124, 199, 216, 0.11);
+  color: var(--cyan);
+}
+
+.skill-developer-handoff-row .status-chip {
+  justify-self: start;
+}
+
+.skill-developer-handoff-row strong,
+.skill-developer-handoff-row small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.skill-developer-handoff-row strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.skill-developer-handoff-row small {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.45;
@@ -15316,6 +15467,10 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .skill-developer-handoff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .buyer-request-composer__wide,
   .buyer-request-delivery-form__wide {
     grid-column: auto;
@@ -15653,6 +15808,10 @@ a {
   }
 
   .skill-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-developer-handoff-grid {
     grid-template-columns: 1fr;
   }
 

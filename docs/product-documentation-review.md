@@ -64,6 +64,8 @@ The latest registry pass turns `/registry` into a product-level contract registr
 
 The latest publish-entry pass strengthens Journey B's first mile. `/publish` now shows role-aware publisher access before the manifest form, then turns client preflight output into a repair queue and reviewer evidence packet with target fields, repair actions, runtime target, schema field count, risk level, and secret-handle count. This helps first-time publishers understand what is blocked, what can be saved as a warning, what reviewers will inspect, and why draft save is only the beginning of version review, commercial readiness, and publisher operations.
 
+The latest developer-discovery pass strengthens Journey A's marketplace proof. `/marketplace` cards now show buyer-safe recommendation reasons derived from public discovery signals, plus an after-install strip that connects a copied command to project install, policy gate, runtime log, and usage ledger state. `/skills/[slug]` adds a developer handoff packet beside install commands and project actions, so the detail page shows how a listing becomes a pinned contract, organization-scoped project state, reveal-once runtime key, governed console test, and ledger-ready invocation record instead of stopping at a static catalog view.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

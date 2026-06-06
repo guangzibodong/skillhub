@@ -5,7 +5,10 @@ import {
   BadgeCheck,
   Copy,
   ExternalLink,
+  PackageCheck,
+  RadioTower,
   RotateCcw,
+  Route,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -55,6 +58,21 @@ const labels = {
     emptyTitle: "No skills match these filters",
     emptyBody:
       "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
+    handoff: {
+      items: ["Project install", "Policy gate", "Runtime log", "Usage ledger"],
+      title: "After install"
+    },
+    recommendation: {
+      adoption: "Install evidence",
+      feedback: "Moderated feedback",
+      highRisk: "Owner approval required",
+      lowRisk: "Low-risk permissions",
+      mediumRisk: "Reviewed permissions",
+      runtimeObserved: "Runtime signal",
+      strongRuntime: "Strong runtime success",
+      title: "Recommendation reasons",
+      verified: "Verified review"
+    },
     sortOptions: {
       adoption: "Most installed",
       lowRisk: "Lowest risk",
@@ -103,6 +121,21 @@ const labels = {
     emptyTitle: "没有符合条件的技能",
     emptyBody:
       "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
+    handoff: {
+      items: ["项目安装", "策略网关", "运行日志", "用量账本"],
+      title: "安装后进入"
+    },
+    recommendation: {
+      adoption: "已有安装证据",
+      feedback: "已审核反馈",
+      highRisk: "需要负责人批准",
+      lowRisk: "低风险权限",
+      mediumRisk: "权限已纳入审核",
+      runtimeObserved: "已有运行信号",
+      strongRuntime: "运行成功率强",
+      title: "推荐理由",
+      verified: "已验证审核"
+    },
     sortOptions: {
       adoption: "安装最多",
       lowRisk: "风险最低",
@@ -445,6 +478,24 @@ export function MarketplaceBrowser({
                 </span>
               </div>
 
+              <div
+                className="market-recommendation-reasons"
+                aria-label={dictionary.recommendation.title}
+              >
+                <span className="market-recommendation-reasons__title">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  {dictionary.recommendation.title}
+                </span>
+                <div>
+                  {buildRecommendationReasons(skill, dictionary).map((reason) => (
+                    <span key={reason}>
+                      <BadgeCheck size={13} aria-hidden="true" />
+                      {reason}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <div className="tag-list">
                 {skill.tags[locale].slice(0, 4).map((tag) => (
                   <span key={tag}>{tag}</span>
@@ -466,6 +517,25 @@ export function MarketplaceBrowser({
                     ? dictionary.copied
                     : dictionary.copy}
                 </button>
+              </div>
+
+              <div className="market-install-handoff" aria-label={dictionary.handoff.title}>
+                <strong>
+                  <Route size={14} aria-hidden="true" />
+                  {dictionary.handoff.title}
+                </strong>
+                <div>
+                  {dictionary.handoff.items.map((item, index) => (
+                    <span key={item}>
+                      {index === 0 ? (
+                        <PackageCheck size={13} aria-hidden="true" />
+                      ) : index === 2 ? (
+                        <RadioTower size={13} aria-hidden="true" />
+                      ) : null}
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="market-skill-card__foot">
@@ -655,6 +725,43 @@ function formatFeedbackSignal(skill: MarketplaceSkill, feedbackLabel: string) {
   return count > 0
     ? `${skill.rating} / ${count} ${feedbackLabel}`
     : skill.rating;
+}
+
+function buildRecommendationReasons(
+  skill: MarketplaceSkill,
+  dictionary: (typeof labels)[Locale],
+) {
+  const reasons: string[] = [];
+
+  if (verificationKey(skill) === "verified") {
+    reasons.push(dictionary.recommendation.verified);
+  }
+
+  if (skill.risk === "low") {
+    reasons.push(dictionary.recommendation.lowRisk);
+  } else if (skill.risk === "medium") {
+    reasons.push(dictionary.recommendation.mediumRisk);
+  } else {
+    reasons.push(dictionary.recommendation.highRisk);
+  }
+
+  const success = parsePercent(skill.successRate);
+
+  if (success >= 0.98) {
+    reasons.push(dictionary.recommendation.strongRuntime);
+  } else if (success > 0) {
+    reasons.push(dictionary.recommendation.runtimeObserved);
+  }
+
+  if ((skill.feedbackCount ?? 0) > 0) {
+    reasons.push(dictionary.recommendation.feedback);
+  }
+
+  if (parseCompactNumber(skill.installs) > 0) {
+    reasons.push(dictionary.recommendation.adoption);
+  }
+
+  return reasons.slice(0, 4);
 }
 
 function parsePercent(value: string) {

@@ -8,9 +8,12 @@ import {
   FileJson,
   History,
   KeyRound,
+  ListChecks,
   MessageSquareText,
   PackageCheck,
   PackageSearch,
+  RadioTower,
+  Route,
   ShieldCheck,
   Star,
   Terminal,
@@ -50,6 +53,34 @@ const copy = {
     feedbackEmpty: "No published feedback yet.",
     feedbackProject: "Project",
     feedbackUseCase: "Use case",
+    developerPacket: {
+      billing: {
+        free: "No subscription gate",
+        per_call: "Metered usage gate",
+        subscription: "Trial or subscription gate"
+      },
+      body:
+        "The listing can become project state with a version pin, policy gate, reveal-once runtime key, governed test, and ledger-ready invocation record.",
+      keyValue: "Reveal-once key",
+      latest: "latest",
+      policy: {
+        detailHigh: "High-risk capabilities pause at owner approval before an agent can invoke them.",
+        detailNormal: "Project policy records approval, budget, and runtime limits before agent use.",
+        high: "Owner approval before runtime",
+        label: "Policy gate",
+        normal: "Project policy gate"
+      },
+      projectMissing: "Project required",
+      projectReady: "Project available",
+      rows: {
+        contract: ["Contract pin", "Schema, permissions, and runtime stay inspectable."],
+        key: ["Runtime key", "Managed from the project command center."],
+        ledger: ["Usage ledger", "Runtime evidence can feed invoice, audit, and payout readiness."],
+        project: ["Project state", "Saved or installed under one organization."],
+        test: ["Governed test", "Console test uses the same gateway path as agent calls."]
+      },
+      title: "Developer handoff packet"
+    },
     input: "Input example",
     install: "Install",
     installs: "Installs",
@@ -100,6 +131,34 @@ const copy = {
     feedbackEmpty: "暂时还没有公开反馈。",
     feedbackProject: "项目",
     feedbackUseCase: "使用场景",
+    developerPacket: {
+      billing: {
+        free: "无订阅门槛",
+        per_call: "按量计费门槛",
+        subscription: "试用或订阅门槛"
+      },
+      body:
+        "该上架项可以变成项目状态：版本固定、策略网关、一次性展示运行 Key、治理测试和可入账的调用记录。",
+      keyValue: "一次性展示 Key",
+      latest: "最新版本",
+      policy: {
+        detailHigh: "高风险能力会先停在负责人审批，批准后 agent 才能调用。",
+        detailNormal: "项目策略会记录审批、预算和运行限制，再交给 agent 使用。",
+        high: "运行前需要负责人批准",
+        label: "策略网关",
+        normal: "项目策略网关"
+      },
+      projectMissing: "需要先创建项目",
+      projectReady: "已有可用项目",
+      rows: {
+        contract: ["合约固定", "Schema、权限和运行时保持可检查。"],
+        key: ["运行 Key", "由项目命令中心管理。"],
+        ledger: ["用量账本", "运行证据可进入发票、审计和提现准备。"],
+        project: ["项目状态", "保存或安装都归属到一个组织。"],
+        test: ["治理测试", "控制台测试走与 agent 调用相同的网关路径。"]
+      },
+      title: "开发者交接包"
+    },
     input: "输入示例",
     install: "安装",
     installs: "安装量",
@@ -245,6 +304,14 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               runtime={skill.runtime}
               verificationLabel={localizeText(skill.verification, locale)}
               verificationLabelEn={skill.verification.en}
+            />
+            <DeveloperHandoffPacket
+              billingModel={skill.billing}
+              latestVersion={latestVersion}
+              locale={locale}
+              projectCount={projects.length}
+              risk={skill.risk}
+              runtime={skill.runtime}
             />
             <SkillProjectActionPanel
               billingModel={skill.billing}
@@ -529,6 +596,85 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         </aside>
       </section>
     </main>
+  );
+}
+
+function DeveloperHandoffPacket({
+  billingModel,
+  latestVersion,
+  locale,
+  projectCount,
+  risk,
+  runtime
+}: {
+  billingModel: "free" | "per_call" | "subscription";
+  latestVersion?: string;
+  locale: "en" | "zh";
+  projectCount: number;
+  risk: "high" | "low" | "medium";
+  runtime: "HTTP" | "Local" | "MCP";
+}) {
+  const labels = copy[locale].developerPacket;
+  const rows = [
+    {
+      detail: labels.rows.contract[1],
+      icon: <PackageCheck size={15} aria-hidden="true" />,
+      label: labels.rows.contract[0],
+      value: `${latestVersion ?? labels.latest} / ${runtime}`
+    },
+    {
+      detail: labels.rows.project[1],
+      icon: <Route size={15} aria-hidden="true" />,
+      label: labels.rows.project[0],
+      tone: projectCount > 0 ? "ready" : "warning",
+      value: projectCount > 0 ? `${projectCount} · ${labels.projectReady}` : labels.projectMissing
+    },
+    {
+      detail: risk === "high" ? labels.policy.detailHigh : labels.policy.detailNormal,
+      icon: <ShieldCheck size={15} aria-hidden="true" />,
+      label: labels.policy.label,
+      tone: risk === "high" ? "warning" : "ready",
+      value: risk === "high" ? labels.policy.high : labels.policy.normal
+    },
+    {
+      detail: labels.rows.key[1],
+      icon: <KeyRound size={15} aria-hidden="true" />,
+      label: labels.rows.key[0],
+      value: labels.keyValue
+    },
+    {
+      detail: labels.rows.test[1],
+      icon: <RadioTower size={15} aria-hidden="true" />,
+      label: labels.rows.test[0],
+      value: labels.billing[billingModel]
+    },
+    {
+      detail: labels.rows.ledger[1],
+      icon: <ListChecks size={15} aria-hidden="true" />,
+      label: labels.rows.ledger[0],
+      value: billingModel
+    }
+  ];
+
+  return (
+    <div className="skill-developer-handoff-packet">
+      <div className="skill-developer-handoff-packet__head">
+        <div>
+          <strong>{labels.title}</strong>
+          <p>{labels.body}</p>
+        </div>
+      </div>
+      <div className="skill-developer-handoff-grid">
+        {rows.map((row) => (
+          <div className="skill-developer-handoff-row" key={row.label}>
+            <span className="skill-developer-handoff-row__icon">{row.icon}</span>
+            <span className={row.tone === "warning" ? "status-chip status-chip--warning" : "status-chip"}>{row.label}</span>
+            <strong>{row.value}</strong>
+            <small>{row.detail}</small>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

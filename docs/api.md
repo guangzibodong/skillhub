@@ -54,6 +54,8 @@ Response:
 
 Recommended ranking combines query relevance, verification status, permission risk, install evidence, invocation volume, runtime success, published feedback rating, feedback count, freshness, and active marketplace curation signals. Search remains public because it returns marketplace-safe discovery metadata only. Internal curation fields such as manual boost, suppression reason, and operator notes are never included in the public search response.
 
+The web marketplace turns those safe public fields into visible card-level recommendation reasons such as verified review, permission profile, runtime success, moderated feedback, and install evidence. Cards also show the after-install operating handoff: project install state, project policy gate, runtime log, and usage ledger. This UI layer does not add private curation fields to the API response; it explains the already-public discovery contract so developers can see why a listing is recommended and what operational state it can create after install.
+
 ## Admin Marketplace Curation
 
 Marketplace curation lets operators improve discovery quality without editing skill records directly. Public search uses the active curation rule internally for `sort=recommended`; admin endpoints expose the rule, quality signals, and audit path.
