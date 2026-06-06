@@ -383,6 +383,13 @@ Added admin notification template management, covering:
 - Template lifecycle states are `draft`, `active`, and `archived`, allowing operators to stage copy before final email or webhook providers are connected.
 - Each template change writes an admin audit log and queues an in-app platform notification, keeping communication changes reviewable instead of hidden in code.
 
+Added default notification template seeding, covering:
+
+- `027_default_notification_templates.sql` seeds active templates for the main account, review, runtime, billing, payout, buyer-request, feedback, trust, marketplace-curation, and delivery-operation events.
+- User-facing defaults include English and Chinese variants where appropriate, while webhook defaults use compact JSON event bodies for downstream systems.
+- The seed uses `(template_key, channel, locale)` conflict protection and never overwrites templates that operators have already edited in `/admin`.
+- Launch readiness now expects migration 027, making missing default template coverage visible before a fresh production environment is treated as ready.
+
 Added external notification delivery operations, covering:
 
 - `notification_events` now stores delivery attempts, last attempt time, next retry time, provider name, and provider message id for external `email` and `webhook` events.

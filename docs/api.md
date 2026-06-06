@@ -1787,6 +1787,8 @@ curl -X POST "https://api.useskillhub.com/v1/admin/notification-templates" \
 
 Template channels are `in_app`, `email`, and `webhook`. Template statuses are `draft`, `active`, and `archived`. The API validates required `templateKey`, `subject`, and `body` fields, writes an admin audit row, and queues an in-app platform notification so template changes are operationally visible before final email and webhook delivery providers are connected.
 
+Migration `027_default_notification_templates.sql` seeds active default templates for the main operating events used by the platform: email-code access, workspace creation, skill review states, runtime incidents, usage and subscription ledger posting, subscription renewal, payout review/approval/failure/blocking, buyer requests, account-security changes, feedback, marketplace curation, trust reports, notification-template changes, external delivery batches, and webhook outbox batches. User-facing rows include English and Chinese variants where appropriate, and webhook rows use compact JSON bodies. The migration inserts by `(template_key, channel, locale)` and uses `on conflict do nothing`, so running the migration on an existing deployment will not overwrite templates that admins have already edited.
+
 ## Abuse Reports And Takedowns
 
 Developers and project operators can report a skill when runtime behavior, security, privacy, billing, quality, or spam signals need trust review:

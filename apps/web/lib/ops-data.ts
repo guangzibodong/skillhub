@@ -1384,6 +1384,36 @@ const fallbackAdminAuditLogs: AdminAuditLogRecord[] = [
 
 const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
   {
+    id: "demo-template-auth-code",
+    templateKey: "auth.email.code.requested",
+    channel: "email",
+    locale: "en",
+    subject: "Your SkillHub verification code",
+    body: "Use code {{code}} to continue signing in to SkillHub. The code expires soon.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-workspace-ready",
+    templateKey: "auth.email.signup.verified",
+    channel: "in_app",
+    locale: "en",
+    subject: "Workspace created",
+    body: "Your SkillHub workspace is ready. Create a project, install a skill, or publish your first skill package.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-review-submitted",
+    templateKey: "skill.review.submitted",
+    channel: "in_app",
+    locale: "en",
+    subject: "Skill submitted for review",
+    body: "Skill {{skillSlug}} entered review. Track automated checks and reviewer notes from the publisher workspace.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
     id: "demo-template-skill-review",
     templateKey: "skill.review.approved",
     channel: "in_app",
@@ -1400,17 +1430,47 @@ const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
     locale: "en",
     subject: "Runtime incident opened for {{skillName}}",
     body: "SkillHub opened a {{severity}} incident for {{skillName}}. Review the publisher workspace for recovery steps.",
-    status: "draft",
+    status: "active",
     updatedAt: "demo"
   },
   {
-    id: "demo-template-payout",
-    templateKey: "publisher.payout.review",
+    id: "demo-template-billing-subscription",
+    templateKey: "billing.subscription_posted",
+    channel: "in_app",
+    locale: "en",
+    subject: "Subscription period posted",
+    body: "A subscription period for {{skillName}} was posted to the ledger and is ready for invoice, split, balance, refund, and dispute workflows.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-payout-review",
+    templateKey: "payout.review",
+    channel: "in_app",
+    locale: "en",
+    subject: "Payout entered review",
+    body: "Payout {{payoutId}} entered finance review because it requires manual approval before provider processing.",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-webhook-billing",
+    templateKey: "billing.subscription_posted",
     channel: "webhook",
     locale: "en",
-    subject: "Payout request entered review",
-    body: "{\"event\":\"publisher.payout.review\",\"payoutId\":\"{{payoutId}}\",\"amountCents\":\"{{amountCents}}\"}",
-    status: "draft",
+    subject: "billing.subscription_posted",
+    body: "{\"event\":\"billing.subscription_posted\",\"skillName\":\"{{skillName}}\",\"transactionId\":\"{{transactionId}}\",\"amountCents\":\"{{amountCents}}\"}",
+    status: "active",
+    updatedAt: "demo"
+  },
+  {
+    id: "demo-template-marketplace-curation",
+    templateKey: "marketplace.curation.updated",
+    channel: "in_app",
+    locale: "en",
+    subject: "Marketplace placement updated",
+    body: "Marketplace placement for {{skillSlug}} changed. Review reason, expiry, quality gaps, and appeal path from the publisher workspace.",
+    status: "active",
     updatedAt: "demo"
   }
 ];
