@@ -33,9 +33,35 @@ const publisherSkillCopy = {
       feedback: "Respond to published buyer feedback to improve trust.",
       pricing: "Resolve paid activation blockers before activating paid pricing.",
       review: "Submit an exact version for review.",
-      runtime: "Fix failed or warning review checks before approval.",
+      runtime: "Resolve failed checks or document warnings before review can close.",
       verified: "Monitor installs, calls, buyer demand, revenue, and payouts.",
       version: "Create a semantic version from the saved draft."
+    },
+    reviewRepair: {
+      actions: "Repair actions",
+      actionLabels: {
+        clarify_risk: "Document high-risk permission rationale",
+        complete_commercial: "Clear paid activation blockers",
+        create_version: "Create a new semantic version",
+        fix_checks: "Fix failed checks or document warnings",
+        monitor: "Monitor operations",
+        resubmit_version: "Submit the fixed version",
+        submit_version: "Submit exact version",
+        wait_review: "Wait for reviewer decision"
+      },
+      checkEvidence: "Automated check evidence",
+      checkSummary: {
+        failed: "failed",
+        open: "open",
+        passed: "passed",
+        warning: "warning"
+      },
+      decided: "Decision",
+      latestVersion: "Latest version",
+      noNotes: "No reviewer notes yet. The version can still be prepared, submitted, or monitored from this workspace.",
+      notes: "Reviewer notes",
+      notDecided: "Pending",
+      title: "Review repair loop"
     },
     priceStatus: "Price status",
     priceStatuses: {
@@ -124,9 +150,35 @@ const publisherSkillCopy = {
       feedback: "回复已公开买家反馈，提升买家信任。",
       pricing: "先解决付费激活阻塞项，再启用付费价格。",
       review: "提交一个准确的语义版本进入审核。",
-      runtime: "修复失败或警告的审核检查，再等待批准。",
+      runtime: "\u4fee\u590d\u5931\u8d25\u68c0\u67e5\uff0c\u6216\u8865\u5145\u8b66\u544a\u9879\u8bf4\u660e\u540e\u518d\u5b8c\u6210\u5ba1\u6838\u3002",
       verified: "继续监控安装、调用、买方需求、收入和提现。",
       version: "从已保存草稿创建语义版本。"
+    },
+    reviewRepair: {
+      actions: "\u4fee\u590d\u52a8\u4f5c",
+      actionLabels: {
+        clarify_risk: "\u8865\u5145\u9ad8\u98ce\u9669\u6743\u9650\u8bf4\u660e",
+        complete_commercial: "\u6e05\u7406\u4ed8\u8d39\u6fc0\u6d3b\u963b\u585e",
+        create_version: "\u521b\u5efa\u65b0\u7684\u8bed\u4e49\u7248\u672c",
+        fix_checks: "\u4fee\u590d\u5931\u8d25\u68c0\u67e5\u6216\u8865\u5145\u8b66\u544a\u8bf4\u660e",
+        monitor: "\u6301\u7eed\u76d1\u63a7\u8fd0\u8425",
+        resubmit_version: "\u63d0\u4ea4\u4fee\u590d\u540e\u7248\u672c",
+        submit_version: "\u63d0\u4ea4\u51c6\u786e\u7248\u672c",
+        wait_review: "\u7b49\u5f85\u5ba1\u6838\u51b3\u5b9a"
+      },
+      checkEvidence: "\u81ea\u52a8\u68c0\u67e5\u8bc1\u636e",
+      checkSummary: {
+        failed: "\u5931\u8d25",
+        open: "\u672a\u5b8c\u6210",
+        passed: "\u901a\u8fc7",
+        warning: "\u8b66\u544a"
+      },
+      decided: "\u51b3\u5b9a",
+      latestVersion: "\u6700\u65b0\u7248\u672c",
+      noNotes: "\u6682\u65e0\u5ba1\u6838\u5907\u6ce8\u3002\u4f60\u4ecd\u7136\u53ef\u4ee5\u5728\u8fd9\u91cc\u51c6\u5907\u7248\u672c\u3001\u63d0\u4ea4\u5ba1\u6838\u6216\u76d1\u63a7\u8fd0\u8425\u3002",
+      notes: "\u5ba1\u6838\u5907\u6ce8",
+      notDecided: "\u5f85\u51b3\u5b9a",
+      title: "\u5ba1\u6838\u4fee\u590d\u95ed\u73af"
     },
     priceStatus: "价格状态",
     priceStatuses: {

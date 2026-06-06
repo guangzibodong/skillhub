@@ -337,6 +337,7 @@ Data source:
 Acceptance:
 
 - Shows review status, latest automated checks, version history, pricing blockers, feedback, usage, revenue, refunds/disputes, payout readiness, buyer requests, curation placement and appeal status.
+- Shows a review repair loop that combines the latest exact version, reviewer notes, automated check evidence, and concrete repair actions for rejected, blocked, warning, or unsubmitted versions.
 - Paid activation blockers are explicit.
 - Approved or installed versions cannot be edited in place.
 - Publisher sees why to come back next week.

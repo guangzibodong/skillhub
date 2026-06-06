@@ -689,6 +689,7 @@ Added publisher workspace copy and next-action hardening, covering:
 
 - `/publisher` now uses clean English and Chinese copy for the page, skill operations, review checks, version management, marketplace distribution, feedback response, and server-action result messages.
 - Skill cards now derive a next operating step from version, review, check, commercial, feedback, and distribution state.
+- Skill cards now include a review repair loop that combines latest exact version, reviewer notes, failed/warning/open check evidence, and repair actions; when repair or resubmission is needed, the version manager opens directly.
 - This improves the repeat-use loop because publishers see what to do next after saving a draft instead of only seeing metrics and forms.
 
 Added developer project version adoption, covering:

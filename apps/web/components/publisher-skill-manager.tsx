@@ -345,6 +345,24 @@ const initialState: PublisherSkillActionState = {
   status: "idle"
 };
 
+type PublisherRuntimeCheck = NonNullable<PublisherSkillRecord["runtime"]["checks"]>[number];
+type ReviewRepairActionKey = keyof PublisherSkillCopy["reviewRepair"]["actionLabels"];
+type ReviewRepairTone = "danger" | "neutral" | "ready" | "warning";
+
+type ReviewRepairPlan = {
+  actionKeys: ReviewRepairActionKey[];
+  decidedAt: string | null;
+  failedChecks: PublisherRuntimeCheck[];
+  latestVersion?: PublisherSkillVersionRecord;
+  notes: string | null;
+  openChecks: PublisherRuntimeCheck[];
+  openVersionWorkbench: boolean;
+  passedChecks: PublisherRuntimeCheck[];
+  status: string | null;
+  tone: ReviewRepairTone;
+  warningChecks: PublisherRuntimeCheck[];
+};
+
 export function PublisherSkillManager({ locale, skills }: PublisherSkillManagerProps) {
   const labels = getPublisherSkillCopy(locale);
 
@@ -417,6 +435,7 @@ function PublisherSkillCard({
   const feedbackResponseMessageVisible =
     feedbackResponseState.skillSlug === skill.slug && feedbackResponseState.status !== "idle";
   const nextOperatingStep = getNextOperatingStep(skill, labels);
+  const reviewRepairPlan = buildReviewRepairPlan(skill);
 
   return (
     <div className="publisher-skill-card">
@@ -460,7 +479,9 @@ function PublisherSkillCard({
         <span>{nextOperatingStep}</span>
       </div>
 
-      <details className="publisher-skill-version-workbench">
+      <ReviewRepairPanel labels={labels} locale={locale} plan={reviewRepairPlan} />
+
+      <details className="publisher-skill-version-workbench" open={reviewRepairPlan.openVersionWorkbench}>
         <summary>
           <span>
             <History size={15} aria-hidden="true" />
@@ -661,6 +682,156 @@ function PublisherSkillCard({
       {priceMessageVisible ? <ActionMessage state={priceState} /> : null}
     </div>
   );
+}
+
+function ReviewRepairPanel({
+  labels,
+  locale,
+  plan
+}: {
+  labels: PublisherSkillCopy;
+  locale: Locale;
+  plan: ReviewRepairPlan;
+}) {
+  const repairLabels = labels.reviewRepair;
+  const priorityChecks = [...plan.failedChecks, ...plan.warningChecks, ...plan.openChecks].slice(0, 4);
+
+  return (
+    <section className={reviewRepairClass(plan.tone)} aria-label={repairLabels.title}>
+      <div className="publisher-skill-review-repair__head">
+        <strong>
+          <ClipboardCheck size={15} aria-hidden="true" />
+          {repairLabels.title}
+        </strong>
+        <span className={reviewStatusClass(plan.status)}>{formatReviewStatus(plan.status, labels.reviewStatuses)}</span>
+      </div>
+
+      <div className="publisher-skill-review-repair__meta">
+        <span>
+          <strong>{repairLabels.latestVersion}</strong>
+          {plan.latestVersion ? `v${plan.latestVersion.version}` : "n/a"}
+        </span>
+        <span>
+          <strong>{repairLabels.decided}</strong>
+          {plan.decidedAt ? formatDate(plan.decidedAt, locale) : repairLabels.notDecided}
+        </span>
+      </div>
+
+      <div className="publisher-skill-review-repair__notes">
+        <strong>{repairLabels.notes}</strong>
+        <p>{plan.notes ?? repairLabels.noNotes}</p>
+      </div>
+
+      <div className="publisher-skill-review-repair__evidence" aria-label={repairLabels.checkEvidence}>
+        <span className={plan.failedChecks.length > 0 ? "quality-chip quality-chip--critical" : "quality-chip"}>
+          {plan.failedChecks.length} {repairLabels.checkSummary.failed}
+        </span>
+        <span className={plan.warningChecks.length > 0 ? "quality-chip quality-chip--attention" : "quality-chip"}>
+          {plan.warningChecks.length} {repairLabels.checkSummary.warning}
+        </span>
+        <span className={plan.openChecks.length > 0 ? "quality-chip quality-chip--attention" : "quality-chip"}>
+          {plan.openChecks.length} {repairLabels.checkSummary.open}
+        </span>
+        <span className={plan.passedChecks.length > 0 ? "quality-chip quality-chip--complete" : "quality-chip"}>
+          {plan.passedChecks.length} {repairLabels.checkSummary.passed}
+        </span>
+      </div>
+
+      {priorityChecks.length > 0 ? (
+        <div className="publisher-skill-review-repair__checks">
+          {priorityChecks.map((check) => (
+            <div className="publisher-skill-review-repair__check" key={`${check.checkType}-${check.status}-${check.createdAt ?? check.checkedAt ?? "check"}`}>
+              <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
+              <strong>{formatCheckType(check.checkType, labels)}</strong>
+              <small>{check.message ?? check.status}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="publisher-skill-review-repair__actions">
+        <strong>{repairLabels.actions}</strong>
+        <div>
+          {plan.actionKeys.map((actionKey) => (
+            <span className={reviewRepairActionClass(actionKey)} key={actionKey}>
+              {formatReviewRepairAction(actionKey, labels)}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function buildReviewRepairPlan(skill: PublisherSkillRecord): ReviewRepairPlan {
+  const latestVersion = skill.versions?.[0];
+  const checks = latestVersion?.runtimeChecks?.length ? latestVersion.runtimeChecks : (skill.runtime.checks ?? []);
+  const failedChecks = checks.filter((check) => check.status === "failed");
+  const warningChecks = checks.filter((check) => check.status === "warning");
+  const openChecks = checks.filter((check) => check.status === "queued" || check.status === "running");
+  const passedChecks = checks.filter((check) => check.status === "passed");
+  const status = latestVersion?.reviewStatus ?? skill.review.status;
+  const notes = latestVersion?.reviewNotes ?? skill.review.notes;
+  const decidedAt = latestVersion?.reviewDecidedAt ?? skill.review.decidedAt;
+  const actionKeys: ReviewRepairActionKey[] = [];
+
+  if (!latestVersion) {
+    pushReviewRepairAction(actionKeys, "create_version");
+  }
+
+  if (failedChecks.length > 0 || warningChecks.length > 0) {
+    pushReviewRepairAction(actionKeys, "fix_checks");
+  }
+
+  if (skill.permissionLevel === "high" && !notes) {
+    pushReviewRepairAction(actionKeys, "clarify_risk");
+  }
+
+  if (status === "rejected" || status === "blocked") {
+    pushReviewRepairAction(actionKeys, "create_version");
+    pushReviewRepairAction(actionKeys, "resubmit_version");
+  } else if (status === "queued" || status === "in_review") {
+    pushReviewRepairAction(actionKeys, "wait_review");
+  } else if (status === "approved") {
+    pushReviewRepairAction(actionKeys, skill.commercial && !skill.commercial.paidActivationReady ? "complete_commercial" : "monitor");
+  } else {
+    pushReviewRepairAction(actionKeys, "submit_version");
+  }
+
+  if (actionKeys.length === 0) {
+    pushReviewRepairAction(actionKeys, "monitor");
+  }
+
+  const tone: ReviewRepairTone =
+    status === "rejected" || status === "blocked" || failedChecks.length > 0
+      ? "danger"
+      : status === "approved" && failedChecks.length === 0 && warningChecks.length === 0 && openChecks.length === 0
+        ? "ready"
+        : status === "queued" || status === "in_review" || warningChecks.length > 0 || openChecks.length > 0
+          ? "warning"
+          : "neutral";
+
+  return {
+    actionKeys,
+    decidedAt,
+    failedChecks,
+    latestVersion,
+    notes,
+    openChecks,
+    openVersionWorkbench: actionKeys.some((actionKey) =>
+      ["clarify_risk", "create_version", "fix_checks", "resubmit_version", "submit_version"].includes(actionKey)
+    ),
+    passedChecks,
+    status,
+    tone,
+    warningChecks
+  };
+}
+
+function pushReviewRepairAction(actions: ReviewRepairActionKey[], action: ReviewRepairActionKey) {
+  if (!actions.includes(action)) {
+    actions.push(action);
+  }
 }
 
 function getNextOperatingStep(skill: PublisherSkillRecord, labels: PublisherSkillCopy) {
@@ -1011,6 +1182,10 @@ function formatCommercialBlocker(blocker: PublisherCommercialBlocker, labels: Re
   return labels[blocker] ?? blocker.replaceAll("_", " ");
 }
 
+function formatReviewRepairAction(action: ReviewRepairActionKey, labels: PublisherSkillCopy) {
+  return labels.reviewRepair.actionLabels[action] ?? action.replaceAll("_", " ");
+}
+
 function formatCheckType(checkType: string, labels: PublisherSkillCopy) {
   return labels.checkLabels[checkType as keyof typeof labels.checkLabels] ?? checkType;
 }
@@ -1106,6 +1281,44 @@ function hintClass(severity: NonNullable<PublisherSkillRecord["marketplace"]>["i
   }
 
   return "quality-chip quality-chip--attention";
+}
+
+function reviewRepairClass(tone: ReviewRepairTone) {
+  return tone === "ready"
+    ? "publisher-skill-review-repair publisher-skill-review-repair--ready"
+    : tone === "danger"
+      ? "publisher-skill-review-repair publisher-skill-review-repair--danger"
+      : tone === "warning"
+        ? "publisher-skill-review-repair publisher-skill-review-repair--warning"
+        : "publisher-skill-review-repair";
+}
+
+function reviewRepairActionClass(action: ReviewRepairActionKey) {
+  if (action === "monitor") {
+    return "quality-chip quality-chip--complete";
+  }
+
+  if (action === "fix_checks" || action === "resubmit_version" || action === "clarify_risk") {
+    return "quality-chip quality-chip--critical";
+  }
+
+  return "quality-chip quality-chip--attention";
+}
+
+function reviewStatusClass(status: string | null) {
+  if (status === "approved") {
+    return "status-chip";
+  }
+
+  if (status === "rejected" || status === "blocked") {
+    return "status-chip status-chip--danger";
+  }
+
+  if (status === "queued" || status === "in_review") {
+    return "status-chip status-chip--warning";
+  }
+
+  return "status-chip status-chip--neutral";
 }
 
 function checkStatusClass(status: string) {

@@ -168,6 +168,7 @@ API groups:
 Acceptance checks:
 
 - Publishers can see review status and reviewer notes.
+- Publisher workspaces must combine review status, reviewer notes, exact-version metadata, automated check evidence, and concrete repair actions into a single review repair loop so rejected, blocked, warning, or unsubmitted versions lead directly back to version editing and resubmission.
 - Runtime checks expose pass/fail/warning/queued/running state, latest messages, and next action.
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
@@ -518,6 +519,7 @@ Completed:
 - `/publish` now exposes the Journey B operating entry with clean English/Chinese copy, no raw token field, signed-in session language, shared operational status components, manifest preflight for JSON/identity/runtime/schemas/permissions/commercial readiness, warning-vs-blocker save gates, and success actions into `/publisher` plus public skill detail.
 - `/publish` now preserves the saved draft's exact semantic version in the success state and lets publishers submit that version for review immediately, creating automated check evidence without forcing first-time authors to rediscover the version in `/publisher`.
 - `/publisher` now uses clean bilingual copy for the publisher command center, publisher skill cards, version/review/pricing/curation/feedback actions, and action-result messages; owned skill cards also show a derived next operating step so publishers know whether to create a version, submit review, fix checks, clear paid blockers, respond to feedback, appeal distribution, or monitor verified supply.
+- `/publisher` now adds a review repair loop on each owned skill card, combining latest exact version, review status, reviewer notes, automated check evidence, and repair action chips; the version workbench opens automatically when a fix, high-risk rationale, new version, or resubmission is the next needed step.
 - Journey A developer surfaces now use clean bilingual copy across `/developer`, `/skills/[slug]`, `/dashboard/projects/[slug]`, project API keys, project policy, saved skills, update inbox, and agent connection panels.
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.
 - `/dashboard/projects/[slug]` now exposes a runtime readiness checklist for project keys, installed skills, high-risk policy approval, update inbox decisions, and runtime quality, making the marketplace-to-project-to-runtime governance loop visible from the project command center.
