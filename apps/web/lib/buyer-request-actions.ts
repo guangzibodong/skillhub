@@ -14,32 +14,38 @@ export type BuyerRequestActionState = {
 const copy = {
   en: {
     created: "Buyer request created.",
+    decisionSaved: "Buyer request decision recorded.",
     invalidBounty: "Bounty must be zero or greater.",
     invalidDecision: "Decision must be matched, closed, or canceled.",
+    invalidDeliverySkill: "Select a delivery skill and version.",
     invalidDueDate: "Due date must be a valid date.",
+    invalidEvidenceUrl: "Evidence URL must be a valid http or https URL.",
     invalidPublisherAction: "Publisher action must be claim or submit.",
+    missingDeliveryNote: "Add a delivery note for buyer review.",
     missingDescription: "Describe the requested skill outcome.",
     missingRequest: "Missing buyer request id.",
     missingTitle: "Enter a buyer request title.",
     missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing buyer requests.",
     publisherSaved: "Buyer request updated.",
-    decisionSaved: "Buyer request decision recorded.",
     unableCreate: "Unable to create buyer request.",
     unableDecision: "Unable to update buyer request decision.",
     unablePublisherUpdate: "Unable to update buyer request."
   },
   zh: {
     created: "买家需求已创建。",
+    decisionSaved: "买家需求处理结果已记录。",
     invalidBounty: "悬赏金额必须大于或等于 0。",
     invalidDecision: "处理结果必须是匹配、关闭或取消。",
+    invalidDeliverySkill: "请选择交付的技能和版本。",
     invalidDueDate: "截止日期必须是有效日期。",
+    invalidEvidenceUrl: "证据链接必须是有效的 http 或 https URL。",
     invalidPublisherAction: "发布者动作必须是认领或提交。",
+    missingDeliveryNote: "请填写给买家验收的交付说明。",
     missingDescription: "请描述需要交付的技能结果。",
     missingRequest: "缺少买家需求 ID。",
     missingTitle: "请输入买家需求标题。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理买家需求。",
+    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端 fallback token，才能管理买家需求。",
     publisherSaved: "买家需求已更新。",
-    decisionSaved: "买家需求处理结果已记录。",
     unableCreate: "无法创建买家需求。",
     unableDecision: "无法更新买家需求处理结果。",
     unablePublisherUpdate: "无法更新买家需求。"
@@ -110,6 +116,7 @@ export async function createBuyerRequestAction(
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/developer");
 
     return { intent: "create", message: labels.created, status: "success" };
   } catch (error) {
@@ -130,6 +137,11 @@ export async function updatePublisherBuyerRequestAction(
   const token = await getWorkspaceToken();
   const requestId = String(formData.get("requestId") ?? "").trim();
   const action = String(formData.get("action") ?? "").trim();
+  const deliverySkill = String(formData.get("deliverySkill") ?? "").trim();
+  const deliveryNote = String(formData.get("deliveryNote") ?? "").trim();
+  const evidenceUrl = String(formData.get("evidenceUrl") ?? "").trim();
+  let skillSlug = String(formData.get("skillSlug") ?? "").trim();
+  let version = String(formData.get("version") ?? "").trim();
 
   if (!requestId) {
     return { intent: "publisher", message: labels.missingRequest, status: "error" };
@@ -137,6 +149,25 @@ export async function updatePublisherBuyerRequestAction(
 
   if (!publisherActions.includes(action as (typeof publisherActions)[number])) {
     return { intent: "publisher", message: labels.invalidPublisherAction, requestId, status: "error" };
+  }
+
+  if (action === "submit") {
+    const parsedDelivery = parseDeliverySkill(deliverySkill);
+
+    skillSlug = parsedDelivery?.skillSlug ?? skillSlug;
+    version = parsedDelivery?.version ?? version;
+
+    if (!skillSlug || !version) {
+      return { intent: "publisher", message: labels.invalidDeliverySkill, requestId, status: "error" };
+    }
+
+    if (!deliveryNote) {
+      return { intent: "publisher", message: labels.missingDeliveryNote, requestId, status: "error" };
+    }
+
+    if (!isHttpUrl(evidenceUrl)) {
+      return { intent: "publisher", message: labels.invalidEvidenceUrl, requestId, status: "error" };
+    }
   }
 
   if (!token) {
@@ -147,8 +178,18 @@ export async function updatePublisherBuyerRequestAction(
     const response = await fetch(
       `${getApiUrl()}/v1/publisher/buyer-requests/${encodeURIComponent(requestId)}/${action}`,
       {
+        body:
+          action === "submit"
+            ? JSON.stringify({
+                deliveryNote,
+                evidenceUrl,
+                skillSlug,
+                version
+              })
+            : undefined,
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          ...(action === "submit" ? { "Content-Type": "application/json" } : {})
         },
         method: "POST"
       }
@@ -160,6 +201,7 @@ export async function updatePublisherBuyerRequestAction(
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/publisher");
 
     return { intent: "publisher", message: labels.publisherSaved, requestId, status: "success" };
   } catch (error) {
@@ -217,6 +259,7 @@ export async function decideDeveloperBuyerRequestAction(
     }
 
     revalidatePath("/dashboard");
+    revalidatePath("/developer");
 
     return { intent: "developer", message: labels.decisionSaved, requestId, status: "success" };
   } catch (error) {
@@ -254,6 +297,33 @@ function parseDueAt(value: FormDataEntryValue | null, invalidMessage: string) {
   }
 
   return date.toISOString();
+}
+
+function parseDeliverySkill(value: string) {
+  if (!value) {
+    return null;
+  }
+
+  const [skillSlug, version] = value.split("@@", 2).map((part) => part.trim());
+
+  if (!skillSlug || !version) {
+    return null;
+  }
+
+  return { skillSlug, version };
+}
+
+function isHttpUrl(value: string) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
 }
 
 function getApiUrl() {

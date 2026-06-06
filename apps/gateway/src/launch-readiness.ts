@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "028_runtime_check_remediation.sql";
-const expectedLatestMigrationNumber = 28;
+const expectedLatestMigrationFilename = "029_buyer_request_delivery_package.sql";
+const expectedLatestMigrationNumber = 29;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -77,6 +77,7 @@ export type LaunchReadinessReport = {
 type DatabaseReadiness = {
   activeCommissionRules: number | null;
   activeNotificationTemplates: number | null;
+  buyerRequestDeliveryColumns: boolean;
   databaseConnected: boolean;
   emailChallenges: boolean;
   migrationHistoryCount: number | null;
@@ -389,6 +390,16 @@ function buildMarketplaceOperationsSection(
       status: database.runtimeCheckRemediationColumns ? "ready" : "blocker"
     },
     {
+      action: database.buyerRequestDeliveryColumns ? "No action needed." : "Run migration 029_buyer_request_delivery_package.sql.",
+      description: "Buyer request submissions need an exact delivered skill version, delivery note, evidence URL, submitted time, and buyer decision record.",
+      detail: database.buyerRequestDeliveryColumns
+        ? "Buyer request delivery package columns are available."
+        : "Buyer request delivery package columns are missing.",
+      key: "buyer_request_delivery_package",
+      label: "Buyer request delivery package",
+      status: database.buyerRequestDeliveryColumns ? "ready" : "blocker"
+    },
+    {
       action: database.publisherFeedbackResponseColumns ? "No action needed." : "Run migration 026_skill_feedback_publisher_responses.sql.",
       description: "Publisher responses turn moderated buyer feedback into a public maintenance and trust loop.",
       detail: database.publisherFeedbackResponseColumns
@@ -544,6 +555,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     return {
       activeCommissionRules: null,
       activeNotificationTemplates: null,
+      buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
       migrationHistoryCount: null,
@@ -680,8 +692,64 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'skill_runtime_checks'
             and column_name = 'next_action'
-        ) as "runtimeCheckNextAction"
+        ) as "runtimeCheckNextAction",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'submitted_skill_id'
+        ) as "buyerRequestSubmittedSkillId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'submitted_skill_version_id'
+        ) as "buyerRequestSubmittedSkillVersionId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'delivery_note'
+        ) as "buyerRequestDeliveryNote",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'evidence_url'
+        ) as "buyerRequestEvidenceUrl",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'submitted_at'
+        ) as "buyerRequestSubmittedAt",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'decision_note'
+        ) as "buyerRequestDecisionNote",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'buyer_requests'
+            and column_name = 'decided_at'
+        ) as "buyerRequestDecidedAt"
     `) as Array<{
+      buyerRequestDecidedAt: boolean;
+      buyerRequestDecisionNote: boolean;
+      buyerRequestDeliveryNote: boolean;
+      buyerRequestEvidenceUrl: boolean;
+      buyerRequestSubmittedAt: boolean;
+      buyerRequestSubmittedSkillId: boolean;
+      buyerRequestSubmittedSkillVersionId: boolean;
       notificationDeliveryColumns: boolean;
       publisherResponseBody: boolean;
       publisherRespondedAt: boolean;
@@ -704,6 +772,14 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     return {
       activeCommissionRules,
       activeNotificationTemplates,
+      buyerRequestDeliveryColumns:
+        columns.buyerRequestSubmittedSkillId &&
+        columns.buyerRequestSubmittedSkillVersionId &&
+        columns.buyerRequestDeliveryNote &&
+        columns.buyerRequestEvidenceUrl &&
+        columns.buyerRequestSubmittedAt &&
+        columns.buyerRequestDecisionNote &&
+        columns.buyerRequestDecidedAt,
       databaseConnected: true,
       emailChallenges: tables.emailChallenges,
       migrationHistoryCount: migrationHistory?.count ?? null,
@@ -740,6 +816,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     return {
       activeCommissionRules: null,
       activeNotificationTemplates: null,
+      buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
       migrationHistoryCount: null,

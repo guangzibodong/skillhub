@@ -342,6 +342,7 @@ Acceptance:
 - Shows a review repair loop that combines the latest exact version, review submitted time, SLA due state, reviewer notes, automated check evidence, structured blocker/advisory semantics, target fields, and concrete repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
 - Paid activation blockers are explicit.
 - Active paid pricing controls must communicate when review, terms, payout, or publisher readiness blocks activation; publishers can still save draft pricing while the backend remains the source of truth.
+- Buyer request submission requires selecting an owned skill/version, delivery note, and evidence URL; request cards show the submitted skill, version, review state, evidence link, and buyer decision note where present.
 - Approved or installed versions cannot be edited in place.
 - Publisher sees why to come back next week.
 

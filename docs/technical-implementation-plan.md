@@ -175,6 +175,7 @@ Acceptance checks:
 - Runtime checks expose pass/fail/warning/queued/running state, latest messages, structured blocking semantics, target fields, fix categories, and next action.
 - Publisher analytics include installs, calls, success rate, latency, and errors.
 - Buyer requests can be opened, claimed, submitted, matched, and closed.
+- Submitted buyer-request builds must store an exact owned skill slug/version delivery package with delivery notes, evidence URL, platform review status, submitted time, buyer decision note, and decision time so demand, acceptance, disputes, and future bounty/commission workflows can point back to a reviewed SkillHub contract.
 - Publishers can receive moderated feedback signals that explain buyer adoption and quality gaps.
 - Publishers can respond to published buyer feedback only for skills owned by their organization; responses are public on skill detail pages and write audit plus notification records.
 - Publishers can see their current marketplace placement, operator reason, expiry, and safe improvement hints without exposing internal boost math.
@@ -426,6 +427,7 @@ Completed:
 - Buyer request board endpoints now let developer organizations create and decide requests while publishers can view open demand, claim requests, and submit builds under organization-scoped authorization.
 - Dashboard publisher workspace now shows a buyer request board with request, category, bounty, status, requester, due date, and next action signals.
 - Dashboard buyer request exchange now exposes creation, claim, submit, match, close, and cancel controls so buyer demand and publisher supply can move without leaving the workspace.
+- Buyer request delivery now requires a publisher-owned skill slug and exact reviewed/in-review version, stores delivery notes, evidence URL, submitted time, and buyer decision metadata, and shows the delivered skill/version/review state in publisher and developer request boards.
 - Project installed-skill status endpoint now lets project operators restore, suspend, or remove installs under organization-scoped authorization, with audit and notification records.
 - Suspending or removing an installed skill now requires a reason, writes that reason into audit and notification payloads, and the project console requires `SUSPEND` or `REMOVE` confirmation before submitting.
 - Project detail console now exposes pause, restore, and remove controls for installed skills; runtime invocation already blocks non-installed statuses.
@@ -531,7 +533,7 @@ Completed:
 - `/v1/admin/reviews` and publisher skill/version APIs now return the remediation fields, and `/admin` plus `/publisher` display next action and target field beside check evidence.
 - Review queue and publisher skill/version APIs now derive a three-business-day review SLA from the submitted version timestamp, returning submitted time, due time, queue age, hours remaining, and `on_track`/`due_soon`/`overdue`/`decided`/`not_submitted` status; `/admin` and `/publisher` surface those signals so operators and publishers can manage queue pressure.
 - `/admin` now prioritizes the skill review queue with summary counts, SLA/blocker/high-risk/warning filters, recommended priority reasons, and sort modes for priority, oldest submission, earliest SLA due time, and highest risk.
-- Launch readiness now treats the runtime-check remediation columns as a schema prerequisite and expects migration `028_runtime_check_remediation.sql`.
+- Launch readiness now treats the runtime-check remediation columns and buyer-request delivery package columns as schema prerequisites and expects migration `029_buyer_request_delivery_package.sql`.
 - Journey A developer surfaces now use clean bilingual copy across `/developer`, `/skills/[slug]`, `/dashboard/projects/[slug]`, project API keys, project policy, saved skills, update inbox, and agent connection panels.
 - `/developer` now derives a per-project next operating step from key, install, owner-review, suspension, update, runtime-quality, billing, and monitoring state so developer teams see why to return after first install.
 - `/dashboard/projects/[slug]` now exposes a runtime readiness checklist for project keys, installed skills, high-risk policy approval, update inbox decisions, and runtime quality, making the marketplace-to-project-to-runtime governance loop visible from the project command center.

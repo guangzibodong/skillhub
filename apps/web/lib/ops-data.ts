@@ -807,6 +807,18 @@ export type BuyerRequestRecord = {
   claimedByPublisherId: string | null;
   claimedByPublisherName: string | null;
   claimedByPublisherOrganizationId: string | null;
+  submittedSkillId: string | null;
+  submittedSkillSlug: string | null;
+  submittedSkillName: string | null;
+  submittedSkillVerificationStatus: string | null;
+  submittedSkillVersionId: string | null;
+  submittedSkillVersion: string | null;
+  submittedSkillReviewStatus: string | null;
+  deliveryNote: string | null;
+  evidenceUrl: string | null;
+  submittedAt: string | null;
+  decisionNote: string | null;
+  decidedAt: string | null;
   dueAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -2831,6 +2843,18 @@ const fallbackBuyerRequests: BuyerRequestRecord[] = [
     claimedByPublisherId: null,
     claimedByPublisherName: null,
     claimedByPublisherOrganizationId: null,
+    submittedSkillId: null,
+    submittedSkillSlug: null,
+    submittedSkillName: null,
+    submittedSkillVerificationStatus: null,
+    submittedSkillVersionId: null,
+    submittedSkillVersion: null,
+    submittedSkillReviewStatus: null,
+    deliveryNote: null,
+    evidenceUrl: null,
+    submittedAt: null,
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",
@@ -2850,6 +2874,18 @@ const fallbackBuyerRequests: BuyerRequestRecord[] = [
     claimedByPublisherId: "demo-publisher",
     claimedByPublisherName: "SkillHub Publisher",
     claimedByPublisherOrganizationId: "demo-org",
+    submittedSkillId: null,
+    submittedSkillSlug: null,
+    submittedSkillName: null,
+    submittedSkillVerificationStatus: null,
+    submittedSkillVersionId: null,
+    submittedSkillVersion: null,
+    submittedSkillReviewStatus: null,
+    deliveryNote: null,
+    evidenceUrl: null,
+    submittedAt: null,
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",
@@ -2869,6 +2905,18 @@ const fallbackBuyerRequests: BuyerRequestRecord[] = [
     claimedByPublisherId: "demo-publisher",
     claimedByPublisherName: "SkillHub Publisher",
     claimedByPublisherOrganizationId: "demo-org",
+    submittedSkillId: "demo-skill-slack-incident",
+    submittedSkillSlug: "slack-incident-summarizer",
+    submittedSkillName: "Slack Incident Summarizer",
+    submittedSkillVerificationStatus: "verified",
+    submittedSkillVersionId: "demo-version-slack-incident-010",
+    submittedSkillVersion: "0.1.0",
+    submittedSkillReviewStatus: "approved",
+    deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
+    evidenceUrl: "https://app.useskillhub.com/skills/slack-incident-summarizer",
+    submittedAt: "demo",
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",

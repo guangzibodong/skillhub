@@ -632,6 +632,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
             locale={locale}
             mode="publisher"
             publisherRequests={publisherBuyerRequests}
+            publisherSkills={publisherSkills}
           />
 
           <article className="ops-panel finance-panel">

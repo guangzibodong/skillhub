@@ -2455,8 +2455,15 @@ app.post("/v1/publisher/buyer-requests/:requestId/submit", async (c) => {
   }
 
   try {
+    const body = (await c.req.json().catch(() => ({}))) as {
+      deliveryNote?: string;
+      evidenceUrl?: string;
+      skillSlug?: string;
+      version?: string;
+    };
+
     return c.json({
-      request: await submitBuyerRequestBuild(authorization.subject.organizationId, c.req.param("requestId"))
+      request: await submitBuyerRequestBuild(authorization.subject.organizationId, c.req.param("requestId"), body)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to submit buyer request build." }, 400);

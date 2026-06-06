@@ -319,6 +319,7 @@ Requirements:
 - Paid marketplace readiness command center that aggregates publisher profile, current terms acceptance, payout readiness, paid-price drafts, active paid listings, and per-skill paid activation blockers so publishers know what prevents monetization before they edit individual skill cards.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.
 - Buyer request board.
+- Buyer request submissions must bind to an owned SkillHub skill slug and exact skill version, include delivery notes and an evidence URL, require the delivered version to have entered platform review, and expose the delivered skill/version/review state to both publisher and buyer before the buyer records `matched`, `closed`, or `canceled`.
 - Listing quality checklist.
 - Publisher quality score.
 - Marketplace placement, reason, expiry, quality gaps, and improvement path for each owned listing.

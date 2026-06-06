@@ -291,6 +291,7 @@ Added buyer request board depth, covering:
 - Every buyer request state change writes audit and in-app notification records before email delivery exists.
 - Dashboard now shows buyer request status, bounty, requester, due date, and next action, giving publishers a concrete demand loop.
 - Dashboard now lets developers create demand and decide submitted work, while publishers can claim requests and submit builds from the same buyer request exchange.
+- Buyer request submissions now bind to an owned SkillHub skill slug and exact reviewed/in-review version, include delivery notes and evidence URL, store submitted/decision timestamps, and show the delivered skill/version/review state to both publisher and buyer. This turns demand into an auditable delivery workflow instead of a lightweight message board.
 
 Added project installed-skill lifecycle controls, covering:
 

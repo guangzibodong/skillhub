@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2, ClipboardList, Gavel, Handshake, Plus, Send, XCircle } from "lucide-react";
+import { CheckCircle2, ClipboardList, ExternalLink, Gavel, Handshake, Plus, Send, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
-import type { BuyerRequestRecord } from "@/lib/ops-data";
+import type { BuyerRequestRecord, PublisherSkillRecord } from "@/lib/ops-data";
 import {
   createBuyerRequestAction,
   decideDeveloperBuyerRequestAction,
@@ -16,6 +16,15 @@ type BuyerRequestManagerProps = {
   locale: Locale;
   mode?: "developer" | "exchange" | "publisher";
   publisherRequests: BuyerRequestRecord[];
+  publisherSkills?: PublisherSkillRecord[];
+};
+
+type PublisherDeliveryOption = {
+  label: string;
+  reviewStatus: string;
+  skillSlug: string;
+  value: string;
+  version: string;
 };
 
 const copy = {
@@ -29,6 +38,15 @@ const copy = {
     creating: "Creating",
     currency: "Currency",
     decideReason: "Decision note",
+    decisionNote: "Decision",
+    deliveryEvidence: "Evidence",
+    deliveryEvidencePlaceholder: "https://example.com/runbook-or-demo",
+    deliveryNote: "Delivery note",
+    deliveryNotePlaceholder: "Summarize the build, review state, test evidence, and expected buyer acceptance path.",
+    deliverySkill: "Delivered skill version",
+    deliverySkillFallback: "Skill slug",
+    deliverySubmitted: "Submitted delivery",
+    deliveryVersionFallback: "Version",
     description: "Outcome",
     developerOnlyTitle: "Developer request board",
     dueAt: "Due date",
@@ -36,11 +54,14 @@ const copy = {
     emptyPublisher: "No open or assigned buyer requests.",
     match: "Mark matched",
     mine: "My buyer requests",
+    noDeliveryOptions: "Create a skill version and submit it for review before sending a build to the buyer.",
     noOwner: "Unclaimed",
     publisher: "Demand board",
     publisherOnlyTitle: "Publisher demand board",
+    review: "Review",
     status: "Status",
     submit: "Submit build",
+    submittedAt: "Submitted",
     title: "Buyer request exchange",
     titleField: "Request title",
     titlePlaceholder: "Describe the skill you need",
@@ -58,6 +79,15 @@ const copy = {
     creating: "创建中",
     currency: "币种",
     decideReason: "处理备注",
+    decisionNote: "买家决策",
+    deliveryEvidence: "证据链接",
+    deliveryEvidencePlaceholder: "https://example.com/runbook-or-demo",
+    deliveryNote: "交付说明",
+    deliveryNotePlaceholder: "说明构建内容、review 状态、测试证据和买家验收路径。",
+    deliverySkill: "交付技能版本",
+    deliverySkillFallback: "技能 slug",
+    deliverySubmitted: "已提交交付",
+    deliveryVersionFallback: "版本",
     description: "交付结果",
     developerOnlyTitle: "开发者需求板",
     dueAt: "截止日期",
@@ -65,15 +95,18 @@ const copy = {
     emptyPublisher: "暂无开放或已分配的买家需求。",
     match: "标记匹配",
     mine: "我的买家需求",
+    noDeliveryOptions: "请先创建技能版本并提交平台 review，再把构建交给买家验收。",
     noOwner: "未认领",
     publisher: "需求池",
     publisherOnlyTitle: "发布者需求池",
+    review: "Review",
     status: "状态",
     submit: "提交构建",
+    submittedAt: "提交时间",
     title: "买家需求交易台",
     titleField: "需求标题",
     titlePlaceholder: "描述你需要的技能",
-    categoryPlaceholder: "工作流",
+    categoryPlaceholder: "workflow",
     descriptionPlaceholder: "说明交付的技能要做什么，以及你会如何验收。",
     cancel: "取消"
   }
@@ -103,8 +136,15 @@ const initialState: BuyerRequestActionState = {
   status: "idle"
 };
 
-export function BuyerRequestManager({ developerRequests, locale, mode = "exchange", publisherRequests }: BuyerRequestManagerProps) {
+export function BuyerRequestManager({
+  developerRequests,
+  locale,
+  mode = "exchange",
+  publisherRequests,
+  publisherSkills
+}: BuyerRequestManagerProps) {
   const labels = copy[locale];
+  const deliveryOptions = buildPublisherDeliveryOptions(publisherSkills, locale);
   const isDeveloperOnly = mode === "developer";
   const isPublisherOnly = mode === "publisher";
   const title = isPublisherOnly ? labels.publisherOnlyTitle : isDeveloperOnly ? labels.developerOnlyTitle : labels.title;
@@ -170,122 +210,238 @@ export function BuyerRequestManager({ developerRequests, locale, mode = "exchang
 
       <div className={isPublisherOnly || isDeveloperOnly ? "buyer-request-board buyer-request-board--single" : "buyer-request-board"}>
         {!isDeveloperOnly ? (
-        <section className="buyer-request-board__section">
-          <header>
-            <strong>{labels.publisher}</strong>
-            <span>{publisherRequests.length}</span>
-          </header>
-          <div className="buyer-request-list">
-            {publisherRequests.length > 0 ? (
-              publisherRequests.map((request) => {
-                const rowState = publisherState.requestId === request.id ? publisherState : null;
-                const action = getPublisherAction(request);
+          <section className="buyer-request-board__section">
+            <header>
+              <strong>{labels.publisher}</strong>
+              <span>{publisherRequests.length}</span>
+            </header>
+            <div className="buyer-request-list">
+              {publisherRequests.length > 0 ? (
+                publisherRequests.map((request) => {
+                  const rowState = publisherState.requestId === request.id ? publisherState : null;
+                  const action = getPublisherAction(request);
 
-                return (
-                  <div className="buyer-request-item" key={request.id}>
-                    <div className="buyer-request-item__main">
-                      <strong>{request.title}</strong>
-                      <span>{request.description}</span>
+                  return (
+                    <div className="buyer-request-item" key={request.id}>
+                      <RequestBody labels={labels} locale={locale} request={request} />
+                      <DeliverySummary labels={labels} locale={locale} request={request} />
+                      {action ? (
+                        <form action={publisherAction} className="buyer-request-row-action">
+                          <input name="requestId" type="hidden" value={request.id} />
+                          {action === "submit" ? (
+                            <DeliveryFields
+                              deliveryOptions={deliveryOptions}
+                              labels={labels}
+                              publisherSkillsProvided={Boolean(publisherSkills)}
+                            />
+                          ) : null}
+                          <button
+                            className="secondary-button secondary-button--compact"
+                            disabled={isPublisherPending || (action === "submit" && Boolean(publisherSkills) && deliveryOptions.length === 0)}
+                            name="action"
+                            type="submit"
+                            value={action}
+                          >
+                            {action === "claim" ? <Handshake size={15} aria-hidden="true" /> : <Send size={15} aria-hidden="true" />}
+                            <span>{action === "claim" ? labels.claim : labels.submit}</span>
+                          </button>
+                        </form>
+                      ) : (
+                        <span className="status-chip status-chip--neutral">{localizeNextAction(request.nextAction, locale)}</span>
+                      )}
+                      {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
                     </div>
-                    <div className="buyer-request-item__meta">
-                      <span>{request.category}</span>
-                      <span>{formatMoney(request.bountyCents, request.currency)}</span>
-                      <span className={statusChipClass(request.status)}>{statusCopy[locale][request.status]}</span>
-                    </div>
-                    <div className="buyer-request-item__owner">
-                      <span>{labels.claimedBy}</span>
-                      <strong>{request.claimedByPublisherName ?? labels.noOwner}</strong>
-                    </div>
-                    {action ? (
-                      <form action={publisherAction} className="buyer-request-row-action">
-                        <input name="requestId" type="hidden" value={request.id} />
-                        <button
-                          className="secondary-button secondary-button--compact"
-                          disabled={isPublisherPending}
-                          name="action"
-                          type="submit"
-                          value={action}
-                        >
-                          {action === "claim" ? <Handshake size={15} aria-hidden="true" /> : <Send size={15} aria-hidden="true" />}
-                          <span>{action === "claim" ? labels.claim : labels.submit}</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <span className="status-chip status-chip--neutral">{localizeNextAction(request.nextAction, locale)}</span>
-                    )}
-                    {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
-                  </div>
-                );
-              })
-            ) : (
-              <div className="buyer-request-empty">{labels.emptyPublisher}</div>
-            )}
-          </div>
-        </section>
+                  );
+                })
+              ) : (
+                <div className="buyer-request-empty">{labels.emptyPublisher}</div>
+              )}
+            </div>
+          </section>
         ) : null}
 
         {!isPublisherOnly ? (
-        <section className="buyer-request-board__section">
-          <header>
-            <strong>{labels.mine}</strong>
-            <span>{developerRequests.length}</span>
-          </header>
-          <div className="buyer-request-list">
-            {developerRequests.length > 0 ? (
-              developerRequests.map((request) => {
-                const rowState = developerState.requestId === request.id ? developerState : null;
-                const decisions = getDeveloperDecisions(request.status);
+          <section className="buyer-request-board__section">
+            <header>
+              <strong>{labels.mine}</strong>
+              <span>{developerRequests.length}</span>
+            </header>
+            <div className="buyer-request-list">
+              {developerRequests.length > 0 ? (
+                developerRequests.map((request) => {
+                  const rowState = developerState.requestId === request.id ? developerState : null;
+                  const decisions = getDeveloperDecisions(request.status);
 
-                return (
-                  <div className="buyer-request-item" key={request.id}>
-                    <div className="buyer-request-item__main">
-                      <strong>{request.title}</strong>
-                      <span>{request.description}</span>
-                    </div>
-                    <div className="buyer-request-item__meta">
-                      <span>{formatDueDate(request.dueAt, locale)}</span>
-                      <span>{formatMoney(request.bountyCents, request.currency)}</span>
-                      <span className={statusChipClass(request.status)}>{statusCopy[locale][request.status]}</span>
-                    </div>
-                    <div className="buyer-request-item__owner">
-                      <span>{labels.claimedBy}</span>
-                      <strong>{request.claimedByPublisherName ?? labels.noOwner}</strong>
-                    </div>
-                    {decisions.length > 0 ? (
-                      <form action={developerAction} className="buyer-request-decision-form">
-                        <input name="requestId" type="hidden" value={request.id} />
-                        <input name="reason" placeholder={labels.decideReason} />
-                        <div>
-                          {decisions.map((decision) => (
-                            <button
-                              className={decision === "canceled" ? "ghost-button ghost-button--danger" : "secondary-button secondary-button--compact"}
-                              disabled={isDeveloperPending}
-                              key={decision}
-                              name="decision"
-                              type="submit"
-                              value={decision}
-                            >
-                              {decision === "matched" ? <Gavel size={15} aria-hidden="true" /> : <XCircle size={15} aria-hidden="true" />}
-                              <span>{decisionLabel(decision, labels)}</span>
-                            </button>
-                          ))}
+                  return (
+                    <div className="buyer-request-item" key={request.id}>
+                      <RequestBody labels={labels} locale={locale} request={request} />
+                      <DeliverySummary labels={labels} locale={locale} request={request} />
+                      {request.decisionNote ? (
+                        <div className="buyer-request-decision-note">
+                          <span>{labels.decisionNote}</span>
+                          <strong>{request.decisionNote}</strong>
                         </div>
-                      </form>
-                    ) : (
-                      <span className="status-chip status-chip--neutral">{localizeNextAction(request.nextAction, locale)}</span>
-                    )}
-                    {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
-                  </div>
-                );
-              })
-            ) : (
-              <div className="buyer-request-empty">{labels.emptyDeveloper}</div>
-            )}
-          </div>
-        </section>
+                      ) : null}
+                      {decisions.length > 0 ? (
+                        <form action={developerAction} className="buyer-request-decision-form">
+                          <input name="requestId" type="hidden" value={request.id} />
+                          <input name="reason" placeholder={labels.decideReason} />
+                          <div>
+                            {decisions.map((decision) => (
+                              <button
+                                className={decision === "canceled" ? "ghost-button ghost-button--danger" : "secondary-button secondary-button--compact"}
+                                disabled={isDeveloperPending}
+                                key={decision}
+                                name="decision"
+                                type="submit"
+                                value={decision}
+                              >
+                                {decision === "matched" ? <Gavel size={15} aria-hidden="true" /> : <XCircle size={15} aria-hidden="true" />}
+                                <span>{decisionLabel(decision, labels)}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </form>
+                      ) : (
+                        <span className="status-chip status-chip--neutral">{localizeNextAction(request.nextAction, locale)}</span>
+                      )}
+                      {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="buyer-request-empty">{labels.emptyDeveloper}</div>
+              )}
+            </div>
+          </section>
         ) : null}
       </div>
     </article>
+  );
+}
+
+function RequestBody({
+  labels,
+  locale,
+  request
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  request: BuyerRequestRecord;
+}) {
+  return (
+    <>
+      <div className="buyer-request-item__main">
+        <strong>{request.title}</strong>
+        <span>{request.description}</span>
+      </div>
+      <div className="buyer-request-item__meta">
+        <span>{request.category}</span>
+        <span>{formatDueDate(request.dueAt, locale)}</span>
+        <span>{formatMoney(request.bountyCents, request.currency)}</span>
+        <span className={statusChipClass(request.status)}>{statusCopy[locale][request.status]}</span>
+      </div>
+      <div className="buyer-request-item__owner">
+        <span>{labels.claimedBy}</span>
+        <strong>{request.claimedByPublisherName ?? labels.noOwner}</strong>
+      </div>
+    </>
+  );
+}
+
+function DeliveryFields({
+  deliveryOptions,
+  labels,
+  publisherSkillsProvided
+}: {
+  deliveryOptions: PublisherDeliveryOption[];
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  publisherSkillsProvided: boolean;
+}) {
+  if (publisherSkillsProvided && deliveryOptions.length === 0) {
+    return <div className="buyer-request-delivery-empty">{labels.noDeliveryOptions}</div>;
+  }
+
+  return (
+    <div className="buyer-request-delivery-form">
+      {deliveryOptions.length > 0 ? (
+        <label className="buyer-request-delivery-form__wide">
+          <span>{labels.deliverySkill}</span>
+          <select name="deliverySkill" required>
+            {deliveryOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <>
+          <label>
+            <span>{labels.deliverySkillFallback}</span>
+            <input name="skillSlug" required />
+          </label>
+          <label>
+            <span>{labels.deliveryVersionFallback}</span>
+            <input name="version" required />
+          </label>
+        </>
+      )}
+      <label>
+        <span>{labels.deliveryEvidence}</span>
+        <input name="evidenceUrl" placeholder={labels.deliveryEvidencePlaceholder} required type="url" />
+      </label>
+      <label className="buyer-request-delivery-form__wide">
+        <span>{labels.deliveryNote}</span>
+        <textarea name="deliveryNote" placeholder={labels.deliveryNotePlaceholder} required />
+      </label>
+    </div>
+  );
+}
+
+function DeliverySummary({
+  labels,
+  locale,
+  request
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  request: BuyerRequestRecord;
+}) {
+  if (!request.submittedSkillSlug && !request.deliveryNote && !request.evidenceUrl) {
+    return null;
+  }
+
+  const skillLabel = request.submittedSkillName ?? request.submittedSkillSlug ?? labels.deliverySubmitted;
+  const skillHref = request.submittedSkillSlug ? localizedSkillHref(request.submittedSkillSlug, locale) : null;
+
+  return (
+    <div className="buyer-request-delivery-summary">
+      <div>
+        <span>{labels.deliverySubmitted}</span>
+        <strong>
+          {skillHref ? <a href={skillHref}>{skillLabel}</a> : skillLabel}
+          {request.submittedSkillVersion ? ` ${request.submittedSkillVersion}` : ""}
+        </strong>
+      </div>
+      <div>
+        <span>{labels.review}</span>
+        <strong>{formatReviewStatus(request.submittedSkillReviewStatus, locale)}</strong>
+      </div>
+      {request.submittedAt ? (
+        <div>
+          <span>{labels.submittedAt}</span>
+          <strong>{formatDateTime(request.submittedAt, locale)}</strong>
+        </div>
+      ) : null}
+      {request.deliveryNote ? <p>{request.deliveryNote}</p> : null}
+      {request.evidenceUrl ? (
+        <a className="buyer-request-evidence-link" href={request.evidenceUrl} rel="noreferrer" target="_blank">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>{labels.deliveryEvidence}</span>
+        </a>
+      ) : null}
+    </div>
   );
 }
 
@@ -296,6 +452,40 @@ function ActionMessage({ state }: { state: BuyerRequestActionState }) {
       <span>{state.message}</span>
     </div>
   );
+}
+
+function buildPublisherDeliveryOptions(skills: PublisherSkillRecord[] | undefined, locale: Locale): PublisherDeliveryOption[] {
+  if (!skills) {
+    return [];
+  }
+
+  return skills.flatMap((skill) => {
+    const versions = skill.versions?.length
+      ? skill.versions
+      : skill.version
+        ? [
+            {
+              reviewStatus: skill.review.status,
+              status: skill.verificationStatus === "verified" ? "verified" : "draft",
+              version: skill.version
+            }
+          ]
+        : [];
+
+    return versions
+      .filter((version) => isDeliverableReviewStatus(version.reviewStatus))
+      .map((version) => ({
+        label: `${skill.displayName} / ${version.version} (${formatReviewStatus(version.reviewStatus, locale)})`,
+        reviewStatus: version.reviewStatus ?? "queued",
+        skillSlug: skill.slug,
+        value: `${skill.slug}@@${version.version}`,
+        version: version.version
+      }));
+  });
+}
+
+function isDeliverableReviewStatus(status: string | null | undefined) {
+  return Boolean(status && !["blocked", "rejected"].includes(status));
 }
 
 function getPublisherAction(request: BuyerRequestRecord) {
@@ -393,10 +583,56 @@ function formatDueDate(value: string | null, locale: Locale) {
   }).format(date);
 }
 
+function formatDateTime(value: string, locale: Locale) {
+  if (value === "demo") {
+    return locale === "zh" ? "演示时间" : "Demo time";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short"
+  }).format(date);
+}
+
 function formatMoney(cents: number, currency = "usd") {
   return new Intl.NumberFormat("en-US", {
     currency: currency.toUpperCase(),
     maximumFractionDigits: 0,
     style: "currency"
   }).format(cents / 100);
+}
+
+function formatReviewStatus(status: string | null | undefined, locale: Locale) {
+  if (!status) {
+    return locale === "zh" ? "未进入 review" : "Not reviewed";
+  }
+
+  const zhStatus: Record<string, string> = {
+    approved: "已批准",
+    blocked: "已阻断",
+    in_review: "Review 中",
+    queued: "排队中",
+    rejected: "已拒绝"
+  };
+  const enStatus: Record<string, string> = {
+    approved: "Approved",
+    blocked: "Blocked",
+    in_review: "In review",
+    queued: "Queued",
+    rejected: "Rejected"
+  };
+
+  return (locale === "zh" ? zhStatus : enStatus)[status] ?? status;
+}
+
+function localizedSkillHref(skillSlug: string, locale: Locale) {
+  return locale === "zh" ? `/skills/${skillSlug}?lang=zh` : `/skills/${skillSlug}`;
 }

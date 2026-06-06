@@ -373,6 +373,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           developerRequests={developerBuyerRequests}
           locale={locale}
           publisherRequests={publisherBuyerRequests}
+          publisherSkills={publisherSkills}
         />
       </section>
 

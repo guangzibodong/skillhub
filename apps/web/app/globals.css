@@ -11436,7 +11436,10 @@ a {
 .buyer-request-composer input,
 .buyer-request-composer select,
 .buyer-request-composer textarea,
-.buyer-request-decision-form input {
+.buyer-request-decision-form input,
+.buyer-request-delivery-form input,
+.buyer-request-delivery-form select,
+.buyer-request-delivery-form textarea {
   width: 100%;
   min-height: 38px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -11447,7 +11450,8 @@ a {
   padding: 0 10px;
 }
 
-.buyer-request-composer textarea {
+.buyer-request-composer textarea,
+.buyer-request-delivery-form textarea {
   min-height: 38px;
   padding: 9px 10px;
   resize: vertical;
@@ -11455,7 +11459,9 @@ a {
 
 .buyer-request-composer input::placeholder,
 .buyer-request-composer textarea::placeholder,
-.buyer-request-decision-form input::placeholder {
+.buyer-request-decision-form input::placeholder,
+.buyer-request-delivery-form input::placeholder,
+.buyer-request-delivery-form textarea::placeholder {
   color: #7d8476;
 }
 
@@ -11557,8 +11563,10 @@ a {
 }
 
 .buyer-request-row-action {
-  display: flex;
-  justify-content: flex-start;
+  display: grid;
+  gap: 9px;
+  justify-items: start;
+  min-width: 0;
 }
 
 .buyer-request-decision-form {
@@ -11577,6 +11585,96 @@ a {
 .buyer-request-decision-form .secondary-button,
 .buyer-request-row-action .secondary-button {
   width: max-content;
+}
+
+.buyer-request-delivery-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+}
+
+.buyer-request-delivery-form label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.buyer-request-delivery-form label span,
+.buyer-request-delivery-summary span,
+.buyer-request-decision-note span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.buyer-request-delivery-form__wide {
+  grid-column: 1 / -1;
+}
+
+.buyer-request-delivery-form textarea {
+  min-height: 70px;
+}
+
+.buyer-request-delivery-empty {
+  max-width: 620px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 10px;
+}
+
+.buyer-request-delivery-summary,
+.buyer-request-decision-note {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(155, 226, 141, 0.12);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.045);
+  padding: 10px;
+}
+
+.buyer-request-delivery-summary div,
+.buyer-request-decision-note {
+  min-width: 0;
+}
+
+.buyer-request-delivery-summary strong,
+.buyer-request-decision-note strong {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.buyer-request-delivery-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.buyer-request-evidence-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.buyer-request-evidence-link:hover {
+  text-decoration: underline;
 }
 
 .buyer-request-item .action-message {
@@ -12595,6 +12693,7 @@ a {
 
   .buyer-request-board,
   .buyer-request-composer,
+  .buyer-request-delivery-form,
   .admin-adjustment-grid {
     grid-template-columns: 1fr;
   }
@@ -12607,7 +12706,8 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .buyer-request-composer__wide {
+  .buyer-request-composer__wide,
+  .buyer-request-delivery-form__wide {
     grid-column: auto;
   }
 
@@ -13161,6 +13261,7 @@ a {
 
   .buyer-request-row-action,
   .buyer-request-row-action .secondary-button,
+  .buyer-request-evidence-link,
   .buyer-request-decision-form .ghost-button,
   .buyer-request-decision-form .secondary-button {
     width: 100%;

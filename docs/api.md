@@ -1094,14 +1094,21 @@ curl "https://api.useskillhub.com/v1/publisher/buyer-requests?limit=20" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Publishers see open requests plus requests claimed by their own publisher organization. They can claim open requests and submit builds:
+Publishers see open requests plus requests claimed by their own publisher organization. They can claim open requests and submit builds. A build submission is a delivery package, not just a status change: it must reference a skill and exact version owned by the publisher organization, and that version must already have entered platform review (`queued`, `in_review`, or `approved`; rejected or blocked versions are not accepted).
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/publisher/buyer-requests/$REQUEST_ID/claim" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 
 curl -X POST "https://api.useskillhub.com/v1/publisher/buyer-requests/$REQUEST_ID/submit" \
-  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "skillSlug": "slack-incident-summarizer",
+    "version": "0.1.0",
+    "deliveryNote": "Submitted the reviewed skill version with sample incident timeline output and console test evidence.",
+    "evidenceUrl": "https://example.com/skillhub/slack-incident-summarizer-demo"
+  }'
 ```
 
 Developers can match, close, or cancel requests owned by their organization:
@@ -1112,6 +1119,13 @@ curl -X POST "https://api.useskillhub.com/v1/developer/buyer-requests/$REQUEST_I
   -H "Content-Type: application/json" \
   -d '{"status":"matched","reason":"Submitted skill satisfies the request."}'
 ```
+
+Buyer request rows include the delivery package when a publisher has submitted work:
+
+- `submittedSkillId`, `submittedSkillSlug`, `submittedSkillName`, and `submittedSkillVerificationStatus`.
+- `submittedSkillVersionId`, `submittedSkillVersion`, and `submittedSkillReviewStatus`.
+- `deliveryNote`, `evidenceUrl`, and `submittedAt`.
+- `decisionNote` and `decidedAt` after the buyer records `matched`, `closed`, or `canceled`.
 
 Buyer request states:
 

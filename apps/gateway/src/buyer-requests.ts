@@ -19,6 +19,13 @@ type DeveloperDecisionInput = {
   reason?: string;
 };
 
+type BuyerRequestSubmissionInput = {
+  deliveryNote?: string;
+  evidenceUrl?: string;
+  skillSlug?: string;
+  version?: string;
+};
+
 type BuyerRequestRow = {
   id: string;
   requesterOrganizationId: string | null;
@@ -32,6 +39,18 @@ type BuyerRequestRow = {
   claimedByPublisherId: string | null;
   claimedByPublisherName: string | null;
   claimedByPublisherOrganizationId: string | null;
+  submittedSkillId: string | null;
+  submittedSkillSlug: string | null;
+  submittedSkillName: string | null;
+  submittedSkillVerificationStatus: string | null;
+  submittedSkillVersionId: string | null;
+  submittedSkillVersion: string | null;
+  submittedSkillReviewStatus: string | null;
+  deliveryNote: string | null;
+  evidenceUrl: string | null;
+  submittedAt: string | null;
+  decisionNote: string | null;
+  decidedAt: string | null;
   dueAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -41,6 +60,16 @@ type PublisherProfile = {
   id: string;
   organizationId: string;
   displayName: string;
+};
+
+type DeliverySkillVersion = {
+  reviewStatus: string | null;
+  skillId: string;
+  skillName: string;
+  skillSlug: string;
+  skillVerificationStatus: string;
+  version: string;
+  versionId: string;
 };
 
 const fallbackBuyerRequests = [
@@ -57,6 +86,18 @@ const fallbackBuyerRequests = [
     claimedByPublisherId: null,
     claimedByPublisherName: null,
     claimedByPublisherOrganizationId: null,
+    submittedSkillId: null,
+    submittedSkillSlug: null,
+    submittedSkillName: null,
+    submittedSkillVerificationStatus: null,
+    submittedSkillVersionId: null,
+    submittedSkillVersion: null,
+    submittedSkillReviewStatus: null,
+    deliveryNote: null,
+    evidenceUrl: null,
+    submittedAt: null,
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",
@@ -76,6 +117,18 @@ const fallbackBuyerRequests = [
     claimedByPublisherId: "demo-publisher",
     claimedByPublisherName: "SkillHub Publisher",
     claimedByPublisherOrganizationId: "demo-org",
+    submittedSkillId: null,
+    submittedSkillSlug: null,
+    submittedSkillName: null,
+    submittedSkillVerificationStatus: null,
+    submittedSkillVersionId: null,
+    submittedSkillVersion: null,
+    submittedSkillReviewStatus: null,
+    deliveryNote: null,
+    evidenceUrl: null,
+    submittedAt: null,
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",
@@ -95,6 +148,18 @@ const fallbackBuyerRequests = [
     claimedByPublisherId: "demo-publisher",
     claimedByPublisherName: "SkillHub Publisher",
     claimedByPublisherOrganizationId: "demo-org",
+    submittedSkillId: "demo-skill-slack-incident",
+    submittedSkillSlug: "slack-incident-summarizer",
+    submittedSkillName: "Slack Incident Summarizer",
+    submittedSkillVerificationStatus: "verified",
+    submittedSkillVersionId: "demo-version-slack-incident-010",
+    submittedSkillVersion: "0.1.0",
+    submittedSkillReviewStatus: "approved",
+    deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
+    evidenceUrl: "https://app.useskillhub.com/skills/slack-incident-summarizer",
+    submittedAt: "demo",
+    decisionNote: null,
+    decidedAt: null,
     dueAt: "demo",
     createdAt: "demo",
     updatedAt: "demo",
@@ -111,7 +176,7 @@ export async function listPublisherBuyerRequests(organizationId: string | null |
   }
 
   const safeLimit = normalizeLimit(limit);
-  const scopedOrganizationId = organizationId ?? null;
+  const scopedOrganizationId = requireOrganizationId(organizationId, "Publisher buyer request listing");
   const rows = (await sql`
     select
       br.id::text,
@@ -126,13 +191,34 @@ export async function listPublisherBuyerRequests(organizationId: string | null |
       claimed.id::text as "claimedByPublisherId",
       claimed.display_name as "claimedByPublisherName",
       claimed.organization_id::text as "claimedByPublisherOrganizationId",
+      submitted_skill.id::text as "submittedSkillId",
+      submitted_skill.slug as "submittedSkillSlug",
+      submitted_skill.display_name as "submittedSkillName",
+      submitted_skill.verification_status as "submittedSkillVerificationStatus",
+      submitted_version.id::text as "submittedSkillVersionId",
+      submitted_version.version as "submittedSkillVersion",
+      submitted_review.status as "submittedSkillReviewStatus",
+      br.delivery_note as "deliveryNote",
+      br.evidence_url as "evidenceUrl",
+      br.submitted_at as "submittedAt",
+      br.decision_note as "decisionNote",
+      br.decided_at as "decidedAt",
       br.due_at as "dueAt",
       br.created_at as "createdAt",
       br.updated_at as "updatedAt"
     from buyer_requests br
     left join organizations requester on requester.id = br.organization_id
     left join publisher_profiles claimed on claimed.id = br.claimed_by_publisher_id
-    where (${scopedOrganizationId}::uuid is null or br.status = 'open' or claimed.organization_id = ${scopedOrganizationId})
+    left join skills submitted_skill on submitted_skill.id = br.submitted_skill_id
+    left join skill_versions submitted_version on submitted_version.id = br.submitted_skill_version_id
+    left join lateral (
+      select status
+      from skill_reviews
+      where skill_version_id = br.submitted_skill_version_id
+      order by created_at desc
+      limit 1
+    ) submitted_review on true
+    where br.status = 'open' or claimed.organization_id = ${scopedOrganizationId}
     order by
       case br.status
         when 'open' then 0
@@ -157,7 +243,7 @@ export async function listDeveloperBuyerRequests(organizationId: string | null |
   }
 
   const safeLimit = normalizeLimit(limit);
-  const scopedOrganizationId = organizationId ?? null;
+  const scopedOrganizationId = requireOrganizationId(organizationId, "Developer buyer request listing");
   const rows = (await sql`
     select
       br.id::text,
@@ -172,13 +258,34 @@ export async function listDeveloperBuyerRequests(organizationId: string | null |
       claimed.id::text as "claimedByPublisherId",
       claimed.display_name as "claimedByPublisherName",
       claimed.organization_id::text as "claimedByPublisherOrganizationId",
+      submitted_skill.id::text as "submittedSkillId",
+      submitted_skill.slug as "submittedSkillSlug",
+      submitted_skill.display_name as "submittedSkillName",
+      submitted_skill.verification_status as "submittedSkillVerificationStatus",
+      submitted_version.id::text as "submittedSkillVersionId",
+      submitted_version.version as "submittedSkillVersion",
+      submitted_review.status as "submittedSkillReviewStatus",
+      br.delivery_note as "deliveryNote",
+      br.evidence_url as "evidenceUrl",
+      br.submitted_at as "submittedAt",
+      br.decision_note as "decisionNote",
+      br.decided_at as "decidedAt",
       br.due_at as "dueAt",
       br.created_at as "createdAt",
       br.updated_at as "updatedAt"
     from buyer_requests br
     left join organizations requester on requester.id = br.organization_id
     left join publisher_profiles claimed on claimed.id = br.claimed_by_publisher_id
-    where (${scopedOrganizationId}::uuid is null or br.organization_id = ${scopedOrganizationId})
+    left join skills submitted_skill on submitted_skill.id = br.submitted_skill_id
+    left join skill_versions submitted_version on submitted_version.id = br.submitted_skill_version_id
+    left join lateral (
+      select status
+      from skill_reviews
+      where skill_version_id = br.submitted_skill_version_id
+      order by created_at desc
+      limit 1
+    ) submitted_review on true
+    where br.organization_id = ${scopedOrganizationId}
     order by br.created_at desc
     limit ${safeLimit}
   `) as BuyerRequestRow[];
@@ -230,6 +337,18 @@ export async function createBuyerRequest(organizationId: string | null | undefin
         null::text as "claimedByPublisherId",
         null::text as "claimedByPublisherName",
         null::text as "claimedByPublisherOrganizationId",
+        null::text as "submittedSkillId",
+        null::text as "submittedSkillSlug",
+        null::text as "submittedSkillName",
+        null::text as "submittedSkillVerificationStatus",
+        null::text as "submittedSkillVersionId",
+        null::text as "submittedSkillVersion",
+        null::text as "submittedSkillReviewStatus",
+        null::text as "deliveryNote",
+        null::text as "evidenceUrl",
+        null::text as "submittedAt",
+        null::text as "decisionNote",
+        null::text as "decidedAt",
         due_at as "dueAt",
         created_at as "createdAt",
         updated_at as "updatedAt"
@@ -300,15 +419,29 @@ export async function claimBuyerRequest(organizationId: string | null | undefine
   });
 }
 
-export async function submitBuyerRequestBuild(organizationId: string | null | undefined, requestId: string) {
+export async function submitBuyerRequestBuild(
+  organizationId: string | null | undefined,
+  requestId: string,
+  input: BuyerRequestSubmissionInput
+) {
   const sql = await requireSql();
   const scopedOrganizationId = requireOrganizationId(organizationId, "Buyer request submission");
+  const skillSlug = normalizeSlug(input.skillSlug, "Delivery skill slug");
+  const version = normalizeRequiredText(input.version, "Delivery skill version");
+  const deliveryNote = normalizeRequiredText(input.deliveryNote, "Delivery note");
+  const evidenceUrl = normalizeUrl(input.evidenceUrl, "Evidence URL");
 
   return sql.begin(async (tx: Sql) => {
+    const delivery = await ensureOwnedDeliveryVersion(tx, scopedOrganizationId, skillSlug, version);
     const rows = (await tx`
       update buyer_requests br
       set
         status = 'submitted',
+        submitted_skill_id = ${delivery.skillId},
+        submitted_skill_version_id = ${delivery.versionId},
+        delivery_note = ${deliveryNote},
+        evidence_url = ${evidenceUrl},
+        submitted_at = now(),
         updated_at = now()
       from publisher_profiles pp
       where br.id = ${requestId}
@@ -324,17 +457,35 @@ export async function submitBuyerRequestBuild(organizationId: string | null | un
     }
 
     await recordAudit(tx, "buyer_request.submitted", "buyer_request", request.id, null, {
-      publisherOrganizationId: scopedOrganizationId
+      deliveryNote,
+      evidenceUrl,
+      publisherOrganizationId: scopedOrganizationId,
+      reviewStatus: delivery.reviewStatus,
+      skillId: delivery.skillId,
+      skillSlug: delivery.skillSlug,
+      skillVersionId: delivery.versionId,
+      version: delivery.version
     });
     await recordNotification(tx, scopedOrganizationId, "buyer_request.submitted", "Buyer request build submitted", {
       requestId: request.id,
-      title: request.title
+      title: request.title,
+      deliveryNote,
+      evidenceUrl,
+      reviewStatus: delivery.reviewStatus,
+      skillSlug: delivery.skillSlug,
+      skillVersion: delivery.version
     });
 
     if (request.requesterOrganizationId) {
       await recordNotification(tx, request.requesterOrganizationId, "buyer_request.submitted", "Buyer request build submitted", {
         requestId: request.id,
-        title: request.title
+        title: request.title,
+        deliveryNote,
+        evidenceUrl,
+        publisherSkillName: delivery.skillName,
+        reviewStatus: delivery.reviewStatus,
+        skillSlug: delivery.skillSlug,
+        skillVersion: delivery.version
       });
     }
 
@@ -376,6 +527,8 @@ export async function decideBuyerRequest(
       update buyer_requests
       set
         status = ${status},
+        decision_note = ${input.reason?.trim() || null},
+        decided_at = now(),
         updated_at = now()
       where id = ${requestId}
     `;
@@ -430,12 +583,33 @@ async function getBuyerRequestById(sql: Sql, requestId: string, organizationId?:
       claimed.id::text as "claimedByPublisherId",
       claimed.display_name as "claimedByPublisherName",
       claimed.organization_id::text as "claimedByPublisherOrganizationId",
+      submitted_skill.id::text as "submittedSkillId",
+      submitted_skill.slug as "submittedSkillSlug",
+      submitted_skill.display_name as "submittedSkillName",
+      submitted_skill.verification_status as "submittedSkillVerificationStatus",
+      submitted_version.id::text as "submittedSkillVersionId",
+      submitted_version.version as "submittedSkillVersion",
+      submitted_review.status as "submittedSkillReviewStatus",
+      br.delivery_note as "deliveryNote",
+      br.evidence_url as "evidenceUrl",
+      br.submitted_at as "submittedAt",
+      br.decision_note as "decisionNote",
+      br.decided_at as "decidedAt",
       br.due_at as "dueAt",
       br.created_at as "createdAt",
       br.updated_at as "updatedAt"
     from buyer_requests br
     left join organizations requester on requester.id = br.organization_id
     left join publisher_profiles claimed on claimed.id = br.claimed_by_publisher_id
+    left join skills submitted_skill on submitted_skill.id = br.submitted_skill_id
+    left join skill_versions submitted_version on submitted_version.id = br.submitted_skill_version_id
+    left join lateral (
+      select status
+      from skill_reviews
+      where skill_version_id = br.submitted_skill_version_id
+      order by created_at desc
+      limit 1
+    ) submitted_review on true
     where br.id = ${requestId}
     limit 1
   `) as BuyerRequestRow[];
@@ -493,6 +667,56 @@ async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise
   return rows[0];
 }
 
+async function ensureOwnedDeliveryVersion(
+  sql: Sql,
+  organizationId: string,
+  skillSlug: string,
+  version: string
+): Promise<DeliverySkillVersion> {
+  const rows = (await sql`
+    select
+      s.id::text as "skillId",
+      s.slug as "skillSlug",
+      s.display_name as "skillName",
+      s.verification_status as "skillVerificationStatus",
+      sv.id::text as "versionId",
+      sv.version,
+      review.status as "reviewStatus"
+    from skills s
+    join skill_versions sv on sv.skill_id = s.id
+    left join lateral (
+      select status
+      from skill_reviews
+      where skill_version_id = sv.id
+      order by created_at desc
+      limit 1
+    ) review on true
+    where s.organization_id = ${organizationId}
+      and s.slug = ${skillSlug}
+      and sv.version = ${version}
+    limit 1
+  `) as DeliverySkillVersion[];
+  const delivery = rows[0];
+
+  if (!delivery) {
+    throw new Error("Delivery skill version must exist and belong to this publisher organization.");
+  }
+
+  if (delivery.skillVerificationStatus === "suspended" || delivery.skillVerificationStatus === "rejected") {
+    throw new Error("Suspended or rejected skills cannot be submitted as buyer request delivery.");
+  }
+
+  if (!delivery.reviewStatus) {
+    throw new Error("Submit this skill version for platform review before sending it to a buyer request.");
+  }
+
+  if (delivery.reviewStatus === "rejected" || delivery.reviewStatus === "blocked") {
+    throw new Error("Rejected or blocked skill versions cannot be submitted as buyer request delivery.");
+  }
+
+  return delivery;
+}
+
 function mapBuyerRequest(row: BuyerRequestRow, activePublisherOrganizationId?: string | null) {
   const canClaim = row.status === "open" && !row.claimedByPublisherId;
   const isClaimedByActivePublisher =
@@ -545,6 +769,32 @@ function normalizeRequiredText(value: string | undefined, label: string) {
   }
 
   return normalized;
+}
+
+function normalizeSlug(value: string | undefined, label: string) {
+  const normalized = normalizeRequiredText(value, label).toLowerCase();
+
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,80}[a-z0-9])?$/.test(normalized)) {
+    throw new Error(`${label} must be a valid skill slug.`);
+  }
+
+  return normalized;
+}
+
+function normalizeUrl(value: string | undefined, label: string) {
+  const normalized = normalizeRequiredText(value, label);
+
+  try {
+    const url = new URL(normalized);
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      throw new Error("unsupported");
+    }
+
+    return url.toString();
+  } catch {
+    throw new Error(`${label} must be a valid http or https URL.`);
+  }
 }
 
 function normalizeBounty(value: number | undefined) {
