@@ -1756,7 +1756,7 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
 - Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, commercial readiness, and production guardrails.
-- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration-runner history, latest applied migration, active templates, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
 
 The migration history check reads `schema_migrations`, reports the recorded migration count, latest applied filename, latest applied time, and compares it with the current expected production migration. It returns a warning when the migration runner has never recorded history and a blocker when the recorded latest migration is older than the code expects.
 
@@ -1797,6 +1797,8 @@ curl -X POST "https://api.useskillhub.com/v1/admin/notification-templates" \
 Template channels are `in_app`, `email`, and `webhook`. Template statuses are `draft`, `active`, and `archived`. The API validates required `templateKey`, `subject`, and `body` fields, writes an admin audit row, and queues an in-app platform notification so template changes are operationally visible before final email and webhook delivery providers are connected.
 
 Migration `027_default_notification_templates.sql` seeds active default templates for the main operating events used by the platform: email-code access, workspace creation, skill review states, runtime incidents, usage and subscription ledger posting, subscription renewal, payout review/approval/failure/blocking, buyer requests, account-security changes, feedback, marketplace curation, trust reports, notification-template changes, external delivery batches, and webhook outbox batches. User-facing rows include English and Chinese variants where appropriate, and webhook rows use compact JSON bodies. The migration inserts by `(template_key, channel, locale)` and uses `on conflict do nothing`, so running the migration on an existing deployment will not overwrite templates that admins have already edited.
+
+Launch readiness treats required notification-template coverage as a launch prerequisite, not just a raw row count. If a critical active row is missing, `/v1/admin/launch-readiness` reports the missing `template_key::channel::locale` combinations in the notification template check detail and marks the check as a blocker until migration `027` is run or the rows are restored from `/admin`.
 
 ## Abuse Reports And Takedowns
 

@@ -389,6 +389,7 @@ Added default notification template seeding, covering:
 - User-facing defaults include English and Chinese variants where appropriate, while webhook defaults use compact JSON event bodies for downstream systems.
 - The seed uses `(template_key, channel, locale)` conflict protection and never overwrites templates that operators have already edited in `/admin`.
 - Launch readiness now expects migration 027, making missing default template coverage visible before a fresh production environment is treated as ready.
+- Launch readiness now also checks the required active template matrix by exact `template_key`, channel, and locale, so partial or accidentally archived template coverage becomes a concrete missing-template blocker instead of passing on total row count alone.
 
 Added external notification delivery operations, covering:
 

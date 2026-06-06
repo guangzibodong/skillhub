@@ -83,6 +83,7 @@ type DatabaseReadiness = {
   migrationLatestAppliedAt: string | null;
   migrationLatestFilename: string | null;
   migrationLatestNumber: number | null;
+  missingActiveNotificationTemplates: string[] | null;
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   payoutTables: boolean;
@@ -92,6 +93,78 @@ type DatabaseReadiness = {
   userAuthIdentities: boolean;
   webhookDeliveryWorker: boolean;
 };
+
+const requiredActiveNotificationTemplates = [
+  ["auth.email.code.requested", "email", "en"],
+  ["auth.email.code.requested", "email", "zh"],
+  ["auth.email.login.verified", "in_app", "en"],
+  ["auth.email.login.verified", "in_app", "zh"],
+  ["auth.email.signup.verified", "in_app", "en"],
+  ["auth.email.signup.verified", "in_app", "zh"],
+  ["account.security.identity_disconnected", "in_app", "en"],
+  ["account.security.identity_disconnected", "in_app", "zh"],
+  ["account.security.session_revoked", "in_app", "en"],
+  ["account.security.session_revoked", "in_app", "zh"],
+  ["skill.review.submitted", "in_app", "en"],
+  ["skill.review.submitted", "in_app", "zh"],
+  ["skill.review.approved", "in_app", "en"],
+  ["skill.review.approved", "in_app", "zh"],
+  ["skill.review.approved", "email", "en"],
+  ["skill.review.approved", "email", "zh"],
+  ["skill.review.rejected", "in_app", "en"],
+  ["skill.review.rejected", "in_app", "zh"],
+  ["skill.review.blocked", "in_app", "en"],
+  ["skill.review.blocked", "in_app", "zh"],
+  ["runtime.incident.opened", "in_app", "en"],
+  ["runtime.incident.opened", "in_app", "zh"],
+  ["runtime.incident.opened", "email", "en"],
+  ["runtime.incident.opened", "email", "zh"],
+  ["runtime.incident.opened", "webhook", "en"],
+  ["billing.usage_posted", "in_app", "en"],
+  ["billing.usage_posted", "in_app", "zh"],
+  ["billing.subscription_posted", "in_app", "en"],
+  ["billing.subscription_posted", "in_app", "zh"],
+  ["billing.subscription_posted", "webhook", "en"],
+  ["billing.subscription_period.renewed", "in_app", "en"],
+  ["billing.subscription_period.renewed", "in_app", "zh"],
+  ["billing.subscription_period.renewed", "webhook", "en"],
+  ["payout.requested", "in_app", "en"],
+  ["payout.requested", "in_app", "zh"],
+  ["payout.review", "in_app", "en"],
+  ["payout.review", "in_app", "zh"],
+  ["payout.approve", "in_app", "en"],
+  ["payout.approve", "in_app", "zh"],
+  ["payout.mark_paid", "in_app", "en"],
+  ["payout.mark_paid", "in_app", "zh"],
+  ["payout.fail", "in_app", "en"],
+  ["payout.fail", "in_app", "zh"],
+  ["payout.block", "in_app", "en"],
+  ["payout.block", "in_app", "zh"],
+  ["buyer_request.created", "in_app", "en"],
+  ["buyer_request.created", "in_app", "zh"],
+  ["buyer_request.submitted", "in_app", "en"],
+  ["buyer_request.submitted", "in_app", "zh"],
+  ["skill.feedback.created", "in_app", "en"],
+  ["skill.feedback.created", "in_app", "zh"],
+  ["skill.feedback.published", "in_app", "en"],
+  ["skill.feedback.published", "in_app", "zh"],
+  ["skill.feedback.publisher_response", "in_app", "en"],
+  ["skill.feedback.publisher_response", "in_app", "zh"],
+  ["trust.abuse_report.created", "in_app", "en"],
+  ["trust.abuse_report.created", "in_app", "zh"],
+  ["marketplace.curation.updated", "in_app", "en"],
+  ["marketplace.curation.updated", "in_app", "zh"],
+  ["marketplace.curation.appeal_created", "in_app", "en"],
+  ["marketplace.curation.appeal_created", "in_app", "zh"],
+  ["marketplace.curation.appeal_approved", "in_app", "en"],
+  ["marketplace.curation.appeal_approved", "in_app", "zh"],
+  ["platform.notification_template.updated", "in_app", "en"],
+  ["platform.notification_template.updated", "in_app", "zh"],
+  ["platform.notification_delivery.processed", "in_app", "en"],
+  ["platform.notification_delivery.processed", "in_app", "zh"],
+  ["platform.webhook_delivery.processed", "in_app", "en"],
+  ["platform.webhook_delivery.processed", "in_app", "zh"]
+] as const;
 
 export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<LaunchReadinessReport> {
   const database = await getDatabaseReadiness();
@@ -324,17 +397,17 @@ function buildMarketplaceOperationsSection(
     },
     {
       action:
-        database.activeNotificationTemplates && database.activeNotificationTemplates > 0
+        database.missingActiveNotificationTemplates?.length === 0
           ? "Review active template copy before launch."
-          : "Create active notification templates for review, billing, payout, and account-security events.",
-      description: "Templates make operational communication editable without code deploys.",
+          : "Run migration 027_default_notification_templates.sql or create the missing active templates from /admin.",
+      description: "Templates make operational communication editable without code deploys; launch needs the required account, review, runtime, billing, payout, buyer-request, feedback, trust, curation, and delivery-operation rows.",
       detail:
         database.activeNotificationTemplates === null
           ? "Template count unavailable."
-          : `${database.activeNotificationTemplates} active template(s).`,
+          : notificationTemplateReadinessDetail(database),
       key: "notification_templates",
       label: "Notification templates",
-      status: database.activeNotificationTemplates && database.activeNotificationTemplates > 0 ? "ready" : "warning"
+      status: notificationTemplateReadinessStatus(database)
     },
     {
       action: configured(env?.SKILLHUB_API_KEY_SALT, "SKILLHUB_API_KEY_SALT") ? "No action needed." : "Set SKILLHUB_API_KEY_SALT.",
@@ -466,6 +539,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       migrationLatestAppliedAt: null,
       migrationLatestFilename: null,
       migrationLatestNumber: null,
+      missingActiveNotificationTemplates: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
@@ -580,6 +654,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     const columns = columnRows[0];
     const activeCommissionRules = tables.commissionRules ? await countActiveCommissionRules(sql) : null;
     const activeNotificationTemplates = tables.notificationTemplates ? await countActiveNotificationTemplates(sql) : null;
+    const missingActiveNotificationTemplates = tables.notificationTemplates ? await listMissingActiveNotificationTemplates(sql) : null;
     const migrationHistory = tables.schemaMigrations ? await getMigrationHistory(sql) : null;
 
     return {
@@ -591,6 +666,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       migrationLatestAppliedAt: migrationHistory?.latestAppliedAt ?? null,
       migrationLatestFilename: migrationHistory?.latestFilename ?? null,
       migrationLatestNumber: migrationHistory?.latestNumber ?? null,
+      missingActiveNotificationTemplates,
       notificationDeliveryColumns: columns.notificationDeliveryColumns,
       operationsTables:
         tables.projectSkillInstalls &&
@@ -621,6 +697,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       migrationLatestAppliedAt: null,
       migrationLatestFilename: null,
       migrationLatestNumber: null,
+      missingActiveNotificationTemplates: null,
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutTables: false,
@@ -678,6 +755,54 @@ async function countActiveNotificationTemplates(sql: Sql) {
   `) as Array<{ count: number }>;
 
   return rows[0]?.count ?? 0;
+}
+
+async function listMissingActiveNotificationTemplates(sql: Sql) {
+  const rows = (await sql`
+    select
+      template_key as "templateKey",
+      channel,
+      locale
+    from notification_templates
+    where status = 'active'
+  `) as Array<{ channel: string; locale: string; templateKey: string }>;
+  const activeTemplates = new Set(rows.map((row) => templateIdentity(row.templateKey, row.channel, row.locale)));
+
+  return requiredActiveNotificationTemplates
+    .map(([templateKey, channel, locale]) => templateIdentity(templateKey, channel, locale))
+    .filter((identity) => !activeTemplates.has(identity));
+}
+
+function notificationTemplateReadinessStatus(database: DatabaseReadiness): LaunchReadinessStatus {
+  if (!database.databaseConnected) {
+    return "blocker";
+  }
+
+  if (database.activeNotificationTemplates === null || database.missingActiveNotificationTemplates === null) {
+    return "warning";
+  }
+
+  if (database.missingActiveNotificationTemplates.length > 0) {
+    return "blocker";
+  }
+
+  return "ready";
+}
+
+function notificationTemplateReadinessDetail(database: DatabaseReadiness) {
+  const activeCount = database.activeNotificationTemplates ?? 0;
+  const requiredCount = requiredActiveNotificationTemplates.length;
+  const missing = database.missingActiveNotificationTemplates ?? [];
+
+  if (missing.length === 0) {
+    return `${activeCount} active template(s). Required launch coverage ${requiredCount}/${requiredCount}.`;
+  }
+
+  return `${activeCount} active template(s). Missing required ${missing.length}/${requiredCount}: ${missing.slice(0, 8).join(", ")}${missing.length > 8 ? ", ..." : ""}.`;
+}
+
+function templateIdentity(templateKey: string, channel: string, locale: string) {
+  return `${templateKey.trim().toLowerCase()}::${channel.trim().toLowerCase()}::${locale.trim().toLowerCase()}`;
 }
 
 function migrationHistoryStatus(database: DatabaseReadiness): LaunchReadinessStatus {
