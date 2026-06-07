@@ -212,6 +212,45 @@ const SOURCE_MOJIBAKE_MARKERS = [
   "\u9422\u3126\u57DB",
   "\u6D93\u20AC",
 ];
+const PUBLIC_P0_PROD_GATE =
+  "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
+const PROTECTED_P0_PROD_GATE =
+  "pnpm smoke:p0 -- --prod --timeout-ms 30000";
+const DEPLOYMENT_RUNBOOK_GUARDS = [
+  {
+    file: "docs/server-update.md",
+    forbidden: [
+      'SKILLHUB_SMOKE_TOKEN="$ADMIN_TOKEN" pnpm smoke:prod',
+      "curl \"https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3\"",
+    ],
+    required: [
+      PUBLIC_P0_PROD_GATE,
+      PROTECTED_P0_PROD_GATE,
+      "SKILLHUB_P0_ADMIN_TOKEN",
+      "Do not run mutating P0 smokes against production during a routine update.",
+    ],
+  },
+  {
+    file: "docs/1panel-deploy.md",
+    forbidden: [],
+    required: [
+      PUBLIC_P0_PROD_GATE,
+      PROTECTED_P0_PROD_GATE,
+      "routine post-deploy public gate",
+      "Mutating P0 smokes",
+    ],
+  },
+  {
+    file: "docs/qa-smoke.md",
+    forbidden: [],
+    required: [
+      PUBLIC_P0_PROD_GATE,
+      PROTECTED_P0_PROD_GATE,
+      "routine 1Panel updates",
+      "performs no\nwrites and does not require an operator token",
+    ],
+  },
+];
 
 const smokeContext = {
   publicPublisherSlug: undefined,
@@ -274,6 +313,7 @@ if (!config.skipApp) {
 console.log("");
 
 await checkSourceMojibake();
+await checkDeploymentRunbookGate();
 
 if (!config.skipApi) {
   await checkStats(config);
@@ -943,6 +983,39 @@ async function collectSourceTextFiles(scanPath, files) {
     ) {
       files.push(fullPath);
     }
+  }
+}
+
+async function checkDeploymentRunbookGate() {
+  const name = "deployment runbook P0 gate guard";
+
+  try {
+    const failures = [];
+
+    for (const guard of DEPLOYMENT_RUNBOOK_GUARDS) {
+      const text = await readFile(guard.file, "utf8");
+
+      for (const required of guard.required) {
+        if (!text.includes(required)) {
+          failures.push(`${guard.file} missing ${JSON.stringify(required)}`);
+        }
+      }
+
+      for (const forbidden of guard.forbidden) {
+        if (text.includes(forbidden)) {
+          failures.push(`${guard.file} still contains ${JSON.stringify(forbidden)}`);
+        }
+      }
+    }
+
+    if (failures.length > 0) {
+      fail(name, failures.slice(0, 5).join("; "));
+      return;
+    }
+
+    pass(name, `runbooks=${DEPLOYMENT_RUNBOOK_GUARDS.length}`);
+  } catch (error) {
+    fail(name, error.message);
   }
 }
 

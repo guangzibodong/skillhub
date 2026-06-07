@@ -30,6 +30,19 @@ The same app check also fails on common Chinese mojibake markers across English 
 
 Before any API or app request, the general smoke also scans web source, QA scripts, and product docs for high-confidence encoding-corruption markers such as replacement characters, the U+951F/U+65A4/U+62F7 replacement sequence, and UTF-8-as-GBK fragments. This keeps bilingual copy and launch documentation from drifting into corrupted source text even when a terminal renders normal UTF-8 poorly.
 
+The same preflight now protects the deployment runbooks from release-gate drift.
+It requires `docs/server-update.md`, `docs/1panel-deploy.md`, and this QA guide
+to keep the routine 1Panel command on the no-write public P0 gate:
+
+```bash
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+```
+
+It also requires the protected Journey C command to stay documented separately
+for shells that already have an admin/super-admin user token configured, and it
+fails if the old service-token-shaped `smoke:prod` handoff returns to the
+routine server update path.
+
 ## Static quality gates
 
 Run these checks before committing product or QA changes:
