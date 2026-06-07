@@ -575,6 +575,7 @@ Completed:
 - `/dashboard` now includes a P0 operating proof chain for customer walkthroughs. It derives eight stages from existing data only: publisher upload, version checks, admin review, marketplace listing, developer install, policy/key/runtime test, ledger/payout, and notification/readiness/audit proof, then marks each stage as proof visible, needs attention, or waiting for data without adding a fake task API.
 - `/login` now opens with an account-entry readiness brief that summarizes email-code access, Google/GitHub configuration state, token fallback boundaries, current session state, and post-login workspace destinations before the forms. It keeps OAuth buttons disabled unless provider configuration is actually ready.
 - `/account` now opens with an account command strip for identity, session security, workspace readiness, and operations readiness, and its workspace shortcuts now show role-aware available, sign-in-required, or role-required states using the active session rather than implying every console is open to every user.
+- `/admin` launch readiness now adds secret-safe evidence drill-down. The panel turns each readiness check into an existing proof or fix target, and shows the five credibility thresholds as a customer-demo proof chain for verified public supply, active publishers, developer projects, successful governed invocations, and published feedback without adding fake task rows or exposing secrets.
 
 Next:
 

@@ -1926,6 +1926,8 @@ These are credibility warnings for customer-facing launch readiness, not final p
 
 The endpoint reports only configured/missing state, URLs, counts, and next actions. It never returns OAuth secrets, Resend keys, service tokens, API-key salts, webhook signing secrets, raw email verification codes, user tokens, or passwords.
 
+The web admin console uses the same secret-safe report to render a launch-readiness evidence drill-down. Each check links operators to an existing proof or fix surface such as marketplace verified supply, publisher directory, developer workspace, review queue, payout review, notification templates, delivery queues, webhook outbox, identity directory, terms, audit, or docs. The five launch credibility threshold rows are also grouped as a customer-demo proof chain, so operators can see whether real supply, demand, runtime, feedback, and trust evidence is ready without adding a separate fake task API.
+
 Admin/support operators can inspect the immutable admin audit trail:
 
 ```bash

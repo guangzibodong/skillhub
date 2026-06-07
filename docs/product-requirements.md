@@ -381,6 +381,7 @@ Requirements:
 - Initial launch credibility thresholds are configurable defaults: 5 verified public skills, 2 active publishers, 3 active developer projects, 20 successful invocations, and 5 published feedback rows.
 - Launch readiness must also expose migration-runner history from `schema_migrations`, including whether tracking exists, how many migration files have been recorded, the latest applied migration filename, and whether it has reached the current expected production migration.
 - Launch readiness output must expose only configured/missing states, counts, URLs, and operator actions. It must never reveal raw OAuth secrets, email provider keys, webhook secrets, service tokens, API-key salts, or user credentials.
+- The web admin launch-readiness panel must turn each secret-safe check into a visible evidence or fix target, and must summarize the five launch credibility thresholds as a customer-demo proof chain so operators know where to inspect real marketplace, publisher, developer, runtime, feedback, finance, delivery, identity, and audit evidence before public launch.
 - Marketplace quality dashboard.
 - Publisher quality dashboard.
 - Ranking/featured listing controls backed by curation rules, bounded boost, required reasons, expiry, audit logs, and quality-signal review.
