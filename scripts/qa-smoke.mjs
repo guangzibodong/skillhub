@@ -49,16 +49,48 @@ const PAGE_ASSERTIONS = {
     "/developer?lang=zh",
     "/publisher?lang=zh",
     "/admin?lang=zh",
+    "\u667a\u80fd\u4f53\u6280\u80fd\u57fa\u7840\u8bbe\u65bd",
+    "\u540e\u53f0\u5165\u53e3",
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
+  "/marketplace?lang=zh": [
+    "\u667a\u80fd\u4f53\u6280\u80fd\u5e02\u573a",
+    "\u53d1\u5e03\u8005\u76ee\u5f55",
+    "\u5b89\u88c5\u547d\u4ee4",
+  ],
   "/publishers": ["public publishers", "publisher trust", "marketplace"],
+  "/publishers?lang=zh": [
+    "\u53d1\u5e03\u8005\u4fe1\u4efb\u76ee\u5f55",
+    "\u516c\u5f00\u53d1\u5e03\u8005",
+    "\u4ee3\u8868\u6280\u80fd",
+  ],
   "/registry": ["registry protocol", "live registry", "manifest quality bar"],
+  "/registry?lang=zh": [
+    "\u516c\u5f00\u6280\u80fd\u5e93",
+    "\u53d1\u73b0\u7aef\u70b9",
+    "\u6280\u80fd\u5e93",
+  ],
+  "/agents?lang=zh": [
+    "\u667a\u80fd\u4f53\u8fd0\u884c\u5c42",
+    "\u63a5\u5165\u8def\u5f84",
+    "\u751f\u4ea7\u667a\u80fd\u4f53\u4f7f\u7528\u524d",
+  ],
+  "/docs?lang=zh": [
+    "\u8fd0\u8425\u53c2\u8003",
+    "\u64cd\u4f5c\u624b\u518c",
+    "\u8fd0\u8425\u5e73\u53f0 api \u5730\u56fe",
+  ],
   "/login": [
     "after login",
     "no shared backend password",
     "/developer?lang=en",
     "/publisher?lang=en",
     "/admin?lang=en",
+  ],
+  "/login?lang=zh": [
+    "\u8d26\u53f7\u5165\u53e3",
+    "\u6ca1\u6709\u5171\u4eab\u540e\u53f0\u5bc6\u7801",
+    "\u767b\u5f55\u540e\u53bb\u54ea\u91cc",
   ],
   "/dashboard": [
     "workspace-command-center",
@@ -67,10 +99,22 @@ const PAGE_ASSERTIONS = {
     "publisher workspace",
     "platform operations",
   ],
+  "/dashboard?lang=zh": [
+    "workspace-command-center",
+    "p0-demo-chain",
+    "\u5de5\u4f5c\u53f0\u603b\u63a7",
+    "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
+    "\u5e73\u53f0\u8fd0\u8425\u540e\u53f0",
+  ],
   "/publish": [
     "self-service publisher access",
     "preflight repair queue",
     "reviewer evidence packet",
+  ],
+  "/publish?lang=zh": [
+    "\u53d1\u5e03\u8005\u5de5\u4f5c\u6d41",
+    "\u9884\u68c0\u4fee\u590d\u961f\u5217",
+    "\u5ba1\u6838\u8bc1\u636e\u5305",
   ],
   "/publisher": [
     "publisher workspace",
@@ -78,10 +122,22 @@ const PAGE_ASSERTIONS = {
     "paid marketplace readiness",
     "payout readiness",
   ],
+  "/publisher?lang=zh": [
+    "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
+    "\u4f18\u5148\u7ea7\u961f\u5217",
+    "\u4ed8\u8d39\u963b\u65ad",
+    "\u63d0\u73b0\u51c6\u5907",
+  ],
   "/developer": [
     "developer workspace",
     "developer operations queue",
     "team access",
+    "webhook",
+  ],
+  "/developer?lang=zh": [
+    "\u5f00\u53d1\u8005\u8fd0\u8425\u961f\u5217",
+    "\u4f18\u5148\u7ea7\u961f\u5217",
+    "\u56e2\u961f\u6743\u9650",
     "webhook",
   ],
   "/admin": [
@@ -89,6 +145,22 @@ const PAGE_ASSERTIONS = {
     "launch-readiness",
     "review queue",
     "audit",
+  ],
+  "/admin?lang=zh": [
+    "\u7ba1\u7406\u5458\u8fd0\u8425\u961f\u5217",
+    "\u4e0a\u7ebf\u5c31\u7eea",
+    "\u5ba1\u6838\u961f\u5217",
+    "\u5ba1\u8ba1",
+  ],
+  "/account?lang=zh": [
+    "\u4e2a\u4eba\u4e2d\u5fc3",
+    "\u4f1a\u8bdd\u5b89\u5168",
+    "\u5de5\u4f5c\u533a\u51c6\u5907\u5ea6",
+  ],
+  "/terms?lang=zh": [
+    "\u8fd0\u8425\u6761\u6b3e",
+    "\u5e02\u573a\u89c4\u5219",
+    "\u6761\u6b3e\u6458\u8981",
   ],
 };
 const MOJIBAKE_MARKERS = [

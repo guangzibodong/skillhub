@@ -126,7 +126,7 @@ export function SiteHeader({
           <span>{labels.console}</span>
         </a>
         <a
-          className="ghost-button site-action-secondary"
+          className="ghost-button site-action-secondary site-action-health"
           href={`${apiUrl}/health`}
         >
           <Gauge size={17} aria-hidden="true" />

@@ -197,6 +197,10 @@ a {
   gap: 10px;
 }
 
+.site-action-health {
+  display: inline-flex;
+}
+
 .site-mobile-menu-button,
 .site-mobile-panel {
   display: none;
@@ -16238,6 +16242,37 @@ a {
   92%,
   100% {
     transform: translateX(0);
+  }
+}
+
+@media (max-width: 1360px) {
+  .site-header {
+    grid-template-columns: minmax(136px, auto) minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 0 18px;
+  }
+
+  .brand small {
+    display: none;
+  }
+
+  .site-nav {
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .site-nav a {
+    min-height: 32px;
+    font-size: 12px;
+    padding: 0 8px;
+  }
+
+  .site-actions {
+    gap: 7px;
+  }
+
+  .site-action-health {
+    display: none;
   }
 }
 
