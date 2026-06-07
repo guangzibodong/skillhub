@@ -30,6 +30,29 @@ type SkillRow = {
   updated_at: string;
 };
 
+type PublicSkillBaseRow = {
+  description: string;
+  display_name: string;
+  id: string;
+  manifest: SkillManifest;
+  slug: string;
+  tags: string[];
+  updated_at: string;
+  verification_status: SkillSummary["verificationStatus"];
+  version: string;
+};
+
+type PublicRegistrySchema = {
+  marketplaceCurationRules: boolean;
+  projectSkillInstalls: boolean;
+  skillFeedback: boolean;
+  skillInvocations: boolean;
+  skillPrices: boolean;
+  skillReviews: boolean;
+  skillVersions: boolean;
+  skills: boolean;
+};
+
 type SkillCurationSignal = {
   boost: number;
   placement: "featured" | "standard" | "suppressed";
@@ -94,7 +117,120 @@ export async function searchSkills(
   try {
     await seedDemoData(sql);
 
-    const rows = (await sql`
+    const schema = await getPublicRegistrySchema(sql);
+
+    if (!hasPublicRegistryCoreSchema(schema)) {
+      return fallbackSkillSummaries(options);
+    }
+
+    const rows = await listPublicSkillRows(sql, schema);
+    const curationBySkillId = await getActiveCurationBySkillId(sql, {
+      allowIncompleteSchema: options.allowIncompleteSchema,
+      schema,
+    });
+
+    return filterSummaries(
+      rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))),
+      options,
+    );
+  } catch (error) {
+    if (options.allowIncompleteSchema && isMissingRegistrySchemaError(error)) {
+      return fallbackSkillSummaries(options);
+    }
+
+    throw error;
+  }
+}
+
+async function getPublicRegistrySchema(
+  sql: NonNullable<SqlClient>,
+): Promise<PublicRegistrySchema> {
+  const rows = (await sql`
+    select
+      to_regclass('public.marketplace_curation_rules') is not null as "marketplaceCurationRules",
+      to_regclass('public.project_skill_installs') is not null as "projectSkillInstalls",
+      to_regclass('public.skill_feedback') is not null as "skillFeedback",
+      to_regclass('public.skill_invocations') is not null as "skillInvocations",
+      to_regclass('public.skill_prices') is not null as "skillPrices",
+      to_regclass('public.skill_reviews') is not null as "skillReviews",
+      to_regclass('public.skill_versions') is not null as "skillVersions",
+      to_regclass('public.skills') is not null as skills
+  `) as PublicRegistrySchema[];
+
+  return (
+    rows[0] ?? {
+      marketplaceCurationRules: false,
+      projectSkillInstalls: false,
+      skillFeedback: false,
+      skillInvocations: false,
+      skillPrices: false,
+      skillReviews: false,
+      skillVersions: false,
+      skills: false,
+    }
+  );
+}
+
+function hasPublicRegistryCoreSchema(schema: PublicRegistrySchema) {
+  return schema.skills && schema.skillVersions;
+}
+
+async function listPublicSkillRows(
+  sql: NonNullable<SqlClient>,
+  schema: PublicRegistrySchema,
+) {
+  const baseRows = await listPublicSkillBaseRows(sql, schema);
+  const [prices, installCounts, invocations, feedback] = await Promise.all([
+    schema.skillPrices
+      ? listActiveBillingModelsBySkillId(sql)
+      : emptyMap<string, SkillBillingModel>(),
+    schema.projectSkillInstalls
+      ? listInstallCountsBySkillId(sql)
+      : emptyMap<string, number>(),
+    schema.skillInvocations
+      ? listInvocationMetricsBySkillId(sql)
+      : emptyMap<
+          string,
+          {
+            avg_latency_ms: number | null;
+            invocation_count: number;
+            success_rate: number | null;
+          }
+        >(),
+    schema.skillFeedback
+      ? listFeedbackMetricsBySkillId(sql)
+      : emptyMap<
+          string,
+          {
+            average_rating: number | null;
+            feedback_count: number;
+          }
+        >(),
+  ]);
+
+  return baseRows.map((row) => {
+    const invocation = invocations.get(row.id);
+    const feedbackMetrics = feedback.get(row.id);
+
+    return {
+      ...row,
+      average_rating: feedbackMetrics?.average_rating ?? null,
+      avg_latency_ms: invocation?.avg_latency_ms ?? null,
+      billing_model: prices.get(row.id) ?? null,
+      feedback_count: feedbackMetrics?.feedback_count ?? 0,
+      install_count: installCounts.get(row.id) ?? 0,
+      invocation_count: invocation?.invocation_count ?? 0,
+      success_rate: invocation?.success_rate ?? null,
+    } satisfies SkillRow;
+  });
+}
+
+async function listPublicSkillBaseRows(
+  sql: NonNullable<SqlClient>,
+  schema: PublicRegistrySchema,
+) {
+  if (schema.skillReviews) {
+    return (await sql`
       select
         s.id::text,
         s.slug,
@@ -104,14 +240,7 @@ export async function searchSkills(
         s.verification_status,
         s.updated_at::text,
         latest.version,
-        latest.manifest,
-        price.billing_model,
-        coalesce(installs.install_count, 0)::int as install_count,
-        coalesce(invocations.invocation_count, 0)::int as invocation_count,
-        invocations.success_rate,
-        invocations.avg_latency_ms,
-        feedback.average_rating,
-        coalesce(feedback.feedback_count, 0)::int as feedback_count
+        latest.manifest
       from skills s
       join lateral (
         select sv.version, sv.manifest
@@ -134,68 +263,139 @@ export async function searchSkills(
           sv.created_at desc
         limit 1
       ) latest on true
-      left join lateral (
-        select billing_model
-        from skill_prices
-        where skill_id = s.id and status = 'active'
-        order by created_at desc
-        limit 1
-      ) price on true
-      left join lateral (
-        select count(*)::int as install_count
-        from project_skill_installs
-        where skill_id = s.id and status = 'installed'
-      ) installs on true
-      left join lateral (
-        select
-          count(*)::int as invocation_count,
-          (count(*) filter (where status = 'success'))::float / nullif(count(*), 0) as success_rate,
-          round(avg(latency_ms))::int as avg_latency_ms
-        from skill_invocations
-        where skill_id = s.id
-      ) invocations on true
-      left join lateral (
-        select
-          round(avg(rating)::numeric, 1)::float as average_rating,
-          count(*)::int as feedback_count
-        from skill_feedback
-        where skill_id = s.id
-          and status = 'published'
-      ) feedback on true
       where s.visibility = 'public'
         and s.verification_status in ('verified', 'submitted', 'deprecated')
         and s.verification_status not in ('draft', 'rejected', 'suspended')
       order by s.updated_at desc
-    `) as SkillRow[];
-
-    const curationBySkillId = await getActiveCurationBySkillId(sql, {
-      allowIncompleteSchema: options.allowIncompleteSchema,
-    });
-
-    return filterSummaries(
-      rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))),
-      options,
-    );
-  } catch (error) {
-    if (options.allowIncompleteSchema && isMissingRegistrySchemaError(error)) {
-      return fallbackSkillSummaries(options);
-    }
-
-    throw error;
+    `) as PublicSkillBaseRow[];
   }
+
+  return (await sql`
+    select
+      s.id::text,
+      s.slug,
+      s.display_name,
+      s.description,
+      s.tags,
+      s.verification_status,
+      s.updated_at::text,
+      latest.version,
+      latest.manifest
+    from skills s
+    join lateral (
+      select sv.version, sv.manifest
+      from skill_versions sv
+      where sv.skill_id = s.id
+      order by sv.created_at desc
+      limit 1
+    ) latest on true
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status not in ('draft', 'rejected', 'suspended')
+    order by s.updated_at desc
+  `) as PublicSkillBaseRow[];
 }
 
-export async function listSkillManifests(): Promise<SkillManifest[]> {
-  const sql = await getSql();
+async function listActiveBillingModelsBySkillId(sql: NonNullable<SqlClient>) {
+  const rows = (await sql`
+    select distinct on (s.id)
+      s.id::text as "skillId",
+      sp.billing_model as "billingModel"
+    from skills s
+    join skill_prices sp on sp.skill_id = s.id
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and sp.status = 'active'
+    order by s.id, sp.created_at desc
+  `) as Array<{ billingModel: SkillBillingModel; skillId: string }>;
 
-  if (!sql) {
-    return allowDemoFallback() ? demoSkills : [];
-  }
+  return new Map(rows.map((row) => [row.skillId, row.billingModel]));
+}
 
-  try {
-    await seedDemoData(sql);
+async function listInstallCountsBySkillId(sql: NonNullable<SqlClient>) {
+  const rows = (await sql`
+    select s.id::text as "skillId", count(*)::int as "installCount"
+    from skills s
+    join project_skill_installs psi on psi.skill_id = s.id
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and psi.status = 'installed'
+    group by s.id
+  `) as Array<{ installCount: number; skillId: string }>;
 
-    const rows = (await sql`
+  return new Map(rows.map((row) => [row.skillId, row.installCount]));
+}
+
+async function listInvocationMetricsBySkillId(sql: NonNullable<SqlClient>) {
+  const rows = (await sql`
+    select
+      s.id::text as "skillId",
+      count(*)::int as "invocationCount",
+      (count(*) filter (where si.status = 'success'))::float / nullif(count(*), 0) as "successRate",
+      round(avg(si.latency_ms))::int as "avgLatencyMs"
+    from skills s
+    join skill_invocations si on si.skill_id = s.id
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    group by s.id
+  `) as Array<{
+    avgLatencyMs: number | null;
+    invocationCount: number;
+    skillId: string;
+    successRate: number | null;
+  }>;
+
+  return new Map(
+    rows.map((row) => [
+      row.skillId,
+      {
+        avg_latency_ms: row.avgLatencyMs,
+        invocation_count: row.invocationCount,
+        success_rate: row.successRate,
+      },
+    ]),
+  );
+}
+
+async function listFeedbackMetricsBySkillId(sql: NonNullable<SqlClient>) {
+  const rows = (await sql`
+    select
+      s.id::text as "skillId",
+      round(avg(sf.rating)::numeric, 1)::float as "averageRating",
+      count(*)::int as "feedbackCount"
+    from skills s
+    join skill_feedback sf on sf.skill_id = s.id
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and sf.status = 'published'
+    group by s.id
+  `) as Array<{
+    averageRating: number | null;
+    feedbackCount: number;
+    skillId: string;
+  }>;
+
+  return new Map(
+    rows.map((row) => [
+      row.skillId,
+      {
+        average_rating: row.averageRating,
+        feedback_count: row.feedbackCount,
+      },
+    ]),
+  );
+}
+
+function emptyMap<K, V>() {
+  return new Map<K, V>();
+}
+
+async function listPublicSkillManifestRows(
+  sql: NonNullable<SqlClient>,
+  schema: PublicRegistrySchema,
+) {
+  if (schema.skillReviews) {
+    return (await sql`
       select latest.manifest
       from skills s
       join lateral (
@@ -223,32 +423,31 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
         and s.verification_status in ('verified', 'submitted', 'deprecated')
       order by s.updated_at desc
     `) as Array<{ manifest: SkillManifest }>;
-
-    return rows.map((row) => row.manifest);
-  } catch (error) {
-    if (isMissingRegistrySchemaError(error)) {
-      return allowDemoFallback() ? demoSkills : [];
-    }
-
-    throw error;
   }
+
+  return (await sql`
+    select latest.manifest
+    from skills s
+    join lateral (
+      select sv.manifest
+      from skill_versions sv
+      where sv.skill_id = s.id
+      order by sv.created_at desc
+      limit 1
+    ) latest on true
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    order by s.updated_at desc
+  `) as Array<{ manifest: SkillManifest }>;
 }
 
-export async function getSkillManifest(
+async function getPublicSkillManifestRows(
+  sql: NonNullable<SqlClient>,
   slug: string,
-): Promise<SkillManifest | undefined> {
-  const sql = await getSql();
-
-  if (!sql) {
-    return allowDemoFallback()
-      ? demoSkills.find((skill) => skill.name === slug)
-      : undefined;
-  }
-
-  try {
-    await seedDemoData(sql);
-
-    const rows = (await sql`
+  schema: PublicRegistrySchema,
+) {
+  if (schema.skillReviews) {
+    return (await sql`
       select latest.manifest
       from skills s
       join lateral (
@@ -277,6 +476,76 @@ export async function getSkillManifest(
         and s.verification_status in ('verified', 'submitted', 'deprecated')
       limit 1
     `) as Array<{ manifest: SkillManifest }>;
+  }
+
+  return (await sql`
+    select latest.manifest
+    from skills s
+    join lateral (
+      select sv.manifest
+      from skill_versions sv
+      where sv.skill_id = s.id
+      order by sv.created_at desc
+      limit 1
+    ) latest on true
+    where s.slug = ${slug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    limit 1
+  `) as Array<{ manifest: SkillManifest }>;
+}
+
+export async function listSkillManifests(): Promise<SkillManifest[]> {
+  const sql = await getSql();
+
+  if (!sql) {
+    return allowDemoFallback() ? demoSkills : [];
+  }
+
+  try {
+    await seedDemoData(sql);
+
+    const schema = await getPublicRegistrySchema(sql);
+
+    if (!hasPublicRegistryCoreSchema(schema)) {
+      return allowDemoFallback() ? demoSkills : [];
+    }
+
+    const rows = await listPublicSkillManifestRows(sql, schema);
+
+    return rows.map((row) => row.manifest);
+  } catch (error) {
+    if (isMissingRegistrySchemaError(error)) {
+      return allowDemoFallback() ? demoSkills : [];
+    }
+
+    throw error;
+  }
+}
+
+export async function getSkillManifest(
+  slug: string,
+): Promise<SkillManifest | undefined> {
+  const sql = await getSql();
+
+  if (!sql) {
+    return allowDemoFallback()
+      ? demoSkills.find((skill) => skill.name === slug)
+      : undefined;
+  }
+
+  try {
+    await seedDemoData(sql);
+
+    const schema = await getPublicRegistrySchema(sql);
+
+    if (!hasPublicRegistryCoreSchema(schema)) {
+      return allowDemoFallback()
+        ? demoSkills.find((skill) => skill.name === slug)
+        : undefined;
+    }
+
+    const rows = await getPublicSkillManifestRows(sql, slug, schema);
 
     return rows[0]?.manifest;
   } catch (error) {
@@ -841,8 +1110,14 @@ function recommendedScore(skill: RankedSkillSummary, query: string) {
 
 async function getActiveCurationBySkillId(
   sql: NonNullable<SqlClient>,
-  options: Pick<SearchOptions, "allowIncompleteSchema"> = {},
+  options: Pick<SearchOptions, "allowIncompleteSchema"> & {
+    schema?: PublicRegistrySchema;
+  } = {},
 ) {
+  if (options.schema && !options.schema.marketplaceCurationRules) {
+    return new Map<string, SkillCurationSignal>();
+  }
+
   try {
     const rows = (await sql`
       select
