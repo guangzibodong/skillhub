@@ -769,7 +769,7 @@ app.get("/v1/skills/search", async (c) => {
   const sort = parseSearchSort(c.req.query("sort"));
 
   try {
-    const skills = await searchSkills({ billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
+    const skills = await searchSkills({ allowIncompleteSchema: true, billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
 
     return c.json({ skills });
   } catch (error) {

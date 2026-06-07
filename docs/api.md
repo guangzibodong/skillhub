@@ -58,6 +58,8 @@ The web marketplace turns those safe public fields into visible card-level recom
 
 The web marketplace also accepts the same discovery concepts in page URLs (`q`, `category`, `pricing`/`billingModel`, `permissionLevel`, `runtime`, `verification`/`verificationStatus`, and `sort`). The browser initializes its catalog filters from those parameters, keeps client-side filter changes reflected in the URL, and lets the home-page registry search hand off to `/marketplace?q=...` without adding a separate task or fake search API.
 
+If a production deployment has the base API online but is missing registry-read migrations such as `skill_reviews`, public registry reads return an empty marketplace-safe result instead of a 500 or bundled fake supply. This fallback is limited to public read surfaces like `/v1/skills/search`, public manifest reads, and public MCP discovery. Internal operational probes, writes, admin queues, and `/v1/admin/launch-readiness` still surface missing migration state so operators run the migration rather than treating an empty catalog as launch-ready.
+
 ## Admin Marketplace Curation
 
 Marketplace curation lets operators improve discovery quality without editing skill records directly. Public search uses the active curation rule internally for `sort=recommended`; admin endpoints expose the rule, quality signals, and audit path.

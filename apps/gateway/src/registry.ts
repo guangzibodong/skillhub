@@ -48,6 +48,7 @@ type RegistryStats = {
 };
 
 type SearchOptions = {
+  allowIncompleteSchema?: boolean;
   billingModel?: SkillBillingModel;
   query?: string;
   tags?: string[];
@@ -66,6 +67,17 @@ type PublishSkillOptions = {
 let sqlPromise: Promise<unknown> | undefined;
 let seeded = false;
 
+const PUBLIC_REGISTRY_READ_TABLES = [
+  "marketplace_curation_rules",
+  "project_skill_installs",
+  "skill_feedback",
+  "skill_invocations",
+  "skill_prices",
+  "skill_reviews",
+  "skill_versions",
+  "skills",
+];
+
 export async function searchSkills(
   options: SearchOptions = {},
 ): Promise<SkillSummary[]> {
@@ -79,88 +91,98 @@ export async function searchSkills(
     return filterSummaries(demoSkills.map(toSummary), options);
   }
 
-  await seedDemoData(sql);
+  try {
+    await seedDemoData(sql);
 
-  const rows = (await sql`
-    select
-      s.id::text,
-      s.slug,
-      s.display_name,
-      s.description,
-      s.tags,
-      s.verification_status,
-      s.updated_at::text,
-      latest.version,
-      latest.manifest,
-      price.billing_model,
-      coalesce(installs.install_count, 0)::int as install_count,
-      coalesce(invocations.invocation_count, 0)::int as invocation_count,
-      invocations.success_rate,
-      invocations.avg_latency_ms,
-      feedback.average_rating,
-      coalesce(feedback.feedback_count, 0)::int as feedback_count
-    from skills s
-    join lateral (
-      select sv.version, sv.manifest
-      from skill_versions sv
+    const rows = (await sql`
+      select
+        s.id::text,
+        s.slug,
+        s.display_name,
+        s.description,
+        s.tags,
+        s.verification_status,
+        s.updated_at::text,
+        latest.version,
+        latest.manifest,
+        price.billing_model,
+        coalesce(installs.install_count, 0)::int as install_count,
+        coalesce(invocations.invocation_count, 0)::int as invocation_count,
+        invocations.success_rate,
+        invocations.avg_latency_ms,
+        feedback.average_rating,
+        coalesce(feedback.feedback_count, 0)::int as feedback_count
+      from skills s
+      join lateral (
+        select sv.version, sv.manifest
+        from skill_versions sv
+        left join lateral (
+          select status, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        where sv.skill_id = s.id
+        order by
+          case
+            when review.status = 'approved' then 0
+            when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+            else 2
+          end,
+          coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+          sv.created_at desc
+        limit 1
+      ) latest on true
       left join lateral (
-        select status, decided_at, created_at
-        from skill_reviews
-        where skill_version_id = sv.id
+        select billing_model
+        from skill_prices
+        where skill_id = s.id and status = 'active'
         order by created_at desc
         limit 1
-      ) review on true
-      where sv.skill_id = s.id
-      order by
-        case
-          when review.status = 'approved' then 0
-          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
-          else 2
-        end,
-        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
-        sv.created_at desc
-      limit 1
-    ) latest on true
-    left join lateral (
-      select billing_model
-      from skill_prices
-      where skill_id = s.id and status = 'active'
-      order by created_at desc
-      limit 1
-    ) price on true
-    left join lateral (
-      select count(*)::int as install_count
-      from project_skill_installs
-      where skill_id = s.id and status = 'installed'
-    ) installs on true
-    left join lateral (
-      select
-        count(*)::int as invocation_count,
-        (count(*) filter (where status = 'success'))::float / nullif(count(*), 0) as success_rate,
-        round(avg(latency_ms))::int as avg_latency_ms
-      from skill_invocations
-      where skill_id = s.id
-    ) invocations on true
-    left join lateral (
-      select
-        round(avg(rating)::numeric, 1)::float as average_rating,
-        count(*)::int as feedback_count
-      from skill_feedback
-      where skill_id = s.id
-        and status = 'published'
-    ) feedback on true
-    where s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
-      and s.verification_status not in ('draft', 'rejected', 'suspended')
-    order by s.updated_at desc
-  `) as SkillRow[];
+      ) price on true
+      left join lateral (
+        select count(*)::int as install_count
+        from project_skill_installs
+        where skill_id = s.id and status = 'installed'
+      ) installs on true
+      left join lateral (
+        select
+          count(*)::int as invocation_count,
+          (count(*) filter (where status = 'success'))::float / nullif(count(*), 0) as success_rate,
+          round(avg(latency_ms))::int as avg_latency_ms
+        from skill_invocations
+        where skill_id = s.id
+      ) invocations on true
+      left join lateral (
+        select
+          round(avg(rating)::numeric, 1)::float as average_rating,
+          count(*)::int as feedback_count
+        from skill_feedback
+        where skill_id = s.id
+          and status = 'published'
+      ) feedback on true
+      where s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+        and s.verification_status not in ('draft', 'rejected', 'suspended')
+      order by s.updated_at desc
+    `) as SkillRow[];
 
-  const curationBySkillId = await getActiveCurationBySkillId(sql);
+    const curationBySkillId = await getActiveCurationBySkillId(sql, {
+      allowIncompleteSchema: options.allowIncompleteSchema,
+    });
 
-  return filterSummaries(
-    rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))),
-    options,
-  );
+    return filterSummaries(
+      rows.map((row) => rowToSummary(row, curationBySkillId.get(row.id))),
+      options,
+    );
+  } catch (error) {
+    if (options.allowIncompleteSchema && isMissingRegistrySchemaError(error)) {
+      return fallbackSkillSummaries(options);
+    }
+
+    throw error;
+  }
 }
 
 export async function listSkillManifests(): Promise<SkillManifest[]> {
@@ -170,38 +192,46 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
     return allowDemoFallback() ? demoSkills : [];
   }
 
-  await seedDemoData(sql);
+  try {
+    await seedDemoData(sql);
 
-  const rows = (await sql`
-    select latest.manifest
-    from skills s
-    join lateral (
-      select sv.manifest
-      from skill_versions sv
-      left join lateral (
-        select status, decided_at, created_at
-        from skill_reviews
-        where skill_version_id = sv.id
-        order by created_at desc
+    const rows = (await sql`
+      select latest.manifest
+      from skills s
+      join lateral (
+        select sv.manifest
+        from skill_versions sv
+        left join lateral (
+          select status, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        where sv.skill_id = s.id
+        order by
+          case
+            when review.status = 'approved' then 0
+            when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+            else 2
+          end,
+          coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+          sv.created_at desc
         limit 1
-      ) review on true
-      where sv.skill_id = s.id
-      order by
-        case
-          when review.status = 'approved' then 0
-          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
-          else 2
-        end,
-        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
-        sv.created_at desc
-      limit 1
-    ) latest on true
-    where s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
-    order by s.updated_at desc
-  `) as Array<{ manifest: SkillManifest }>;
+      ) latest on true
+      where s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+      order by s.updated_at desc
+    `) as Array<{ manifest: SkillManifest }>;
 
-  return rows.map((row) => row.manifest);
+    return rows.map((row) => row.manifest);
+  } catch (error) {
+    if (isMissingRegistrySchemaError(error)) {
+      return allowDemoFallback() ? demoSkills : [];
+    }
+
+    throw error;
+  }
 }
 
 export async function getSkillManifest(
@@ -215,40 +245,50 @@ export async function getSkillManifest(
       : undefined;
   }
 
-  await seedDemoData(sql);
+  try {
+    await seedDemoData(sql);
 
-  const rows = (await sql`
-    select sv.manifest
-    from skills s
-    join lateral (
+    const rows = (await sql`
       select sv.manifest
-      from skill_versions sv
-      left join lateral (
-        select status, decided_at, created_at
-        from skill_reviews
-        where skill_version_id = sv.id
-        order by created_at desc
+      from skills s
+      join lateral (
+        select sv.manifest
+        from skill_versions sv
+        left join lateral (
+          select status, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        where sv.skill_id = s.id
+        order by
+          case
+            when review.status = 'approved' then 0
+            when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+            else 2
+          end,
+          coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+          sv.created_at desc
         limit 1
-      ) review on true
-      where sv.skill_id = s.id
-      order by
-        case
-          when review.status = 'approved' then 0
-          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
-          else 2
-        end,
-        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
-        sv.created_at desc
+      ) sv on true
+      where s.slug = ${slug}
+        and s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+      order by sv.created_at desc
       limit 1
-    ) sv on true
-    where s.slug = ${slug}
-      and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
-    order by sv.created_at desc
-    limit 1
-  `) as Array<{ manifest: SkillManifest }>;
+    `) as Array<{ manifest: SkillManifest }>;
 
-  return rows[0]?.manifest;
+    return rows[0]?.manifest;
+  } catch (error) {
+    if (isMissingRegistrySchemaError(error)) {
+      return allowDemoFallback()
+        ? demoSkills.find((skill) => skill.name === slug)
+        : undefined;
+    }
+
+    throw error;
+  }
 }
 
 export async function publishSkill(
@@ -764,7 +804,10 @@ function recommendedScore(skill: RankedSkillSummary, query: string) {
   return score;
 }
 
-async function getActiveCurationBySkillId(sql: NonNullable<SqlClient>) {
+async function getActiveCurationBySkillId(
+  sql: NonNullable<SqlClient>,
+  options: Pick<SearchOptions, "allowIncompleteSchema"> = {},
+) {
   try {
     const rows = (await sql`
       select
@@ -781,6 +824,10 @@ async function getActiveCurationBySkillId(sql: NonNullable<SqlClient>) {
 
     return new Map(rows.map((row) => [row.skillId, row]));
   } catch (error) {
+    if (options.allowIncompleteSchema && isMissingRegistrySchemaError(error)) {
+      return new Map<string, SkillCurationSignal>();
+    }
+
     if (isProductionRuntime()) {
       throw new Error(
         error instanceof Error
@@ -791,6 +838,55 @@ async function getActiveCurationBySkillId(sql: NonNullable<SqlClient>) {
 
     return new Map<string, SkillCurationSignal>();
   }
+}
+
+function fallbackSkillSummaries(options: SearchOptions): SkillSummary[] {
+  return allowDemoFallback()
+    ? filterSummaries(demoSkills.map(toSummary), options)
+    : [];
+}
+
+function isMissingRegistrySchemaError(error: unknown) {
+  const text = errorDetails(error).toLowerCase();
+  const code = errorCode(error);
+
+  if (code !== "42P01" && !text.includes("relation")) {
+    return false;
+  }
+
+  return PUBLIC_REGISTRY_READ_TABLES.some((table) => text.includes(table));
+}
+
+function errorCode(error: unknown) {
+  if (error && typeof error === "object" && "code" in error) {
+    return String((error as { code?: unknown }).code ?? "");
+  }
+
+  return "";
+}
+
+function errorDetails(error: unknown) {
+  const parts: string[] = [];
+
+  if (error instanceof Error) {
+    parts.push(error.message);
+  } else if (error !== undefined && error !== null) {
+    parts.push(String(error));
+  }
+
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+
+    for (const key of ["code", "detail", "hint", "schema_name", "table_name"]) {
+      const value = record[key];
+
+      if (value !== undefined && value !== null) {
+        parts.push(String(value));
+      }
+    }
+  }
+
+  return parts.join(" ");
 }
 
 function demoCurationSignal(slug: string): SkillCurationSignal | undefined {

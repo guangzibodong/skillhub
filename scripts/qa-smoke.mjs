@@ -143,6 +143,7 @@ console.log("");
 if (!config.skipApi) {
   await checkStats(config);
   await checkAuthProviders(config);
+  await checkPublicSkillSearch(config);
   await checkLaunchReadiness(config);
 }
 
@@ -238,6 +239,46 @@ async function checkAuthProviders({ apiUrl, timeoutMs }) {
       name,
       `providers=${json.providers.map((provider) => `${provider.provider}:${provider.status}`).join(", ")}`,
     );
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
+  const name = "GET /v1/skills/search";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/skills/search?limit=5"),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.skills)) {
+      fail(name, "expected skills array");
+      return;
+    }
+
+    const invalidSkill = json.skills.find(
+      (skill) =>
+        typeof skill?.slug !== "string" ||
+        typeof skill?.displayName !== "string" ||
+        typeof skill?.verificationStatus !== "string",
+    );
+
+    if (invalidSkill) {
+      fail(
+        name,
+        "skill rows should include slug, displayName, and verificationStatus",
+      );
+      return;
+    }
+
+    pass(name, `skills=${json.skills.length}`);
   } catch (error) {
     fail(name, error.message);
   }

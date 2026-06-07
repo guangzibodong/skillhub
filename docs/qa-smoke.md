@@ -4,12 +4,15 @@ This smoke path covers the minimum launch surface for local builds and productio
 
 - `GET /v1/stats`
 - `GET /v1/auth/providers`
+- `GET /v1/skills/search`
 - `GET /v1/admin/launch-readiness`
 - Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/skills/browser-research-pro`, `/publishers`, `/agents`, `/docs`, `/publish`, `/publisher`, `/developer`, `/dashboard`, `/account`, `/login`, `/admin`, `/terms`
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
 When a token is configured, the smoke now validates the launch-readiness contract, not only the summary shape. The response must keep the required sections for identity, email, webhook, marketplace operations, launch credibility, commercial readiness, and production guardrails; each section must keep its customer-demo evidence item keys, item statuses, operator actions, and summary counts. It also scans the authorized readiness body for authorization-shaped strings, user tokens, project API keys, webhook secrets, provider keys, raw API-key fields, and email-code previews. The smoke does not require blockers or warnings to be zero because real staging and production environments may legitimately report configuration gaps.
+
+The public discovery check requires `/v1/skills/search?limit=5` to return HTTP 200 with a `skills` array. Empty arrays are valid for production-like environments with no public supply or with incomplete public-read migrations, but HTTP 500 fails smoke because marketplace and registry pages depend on that endpoint.
 
 The app-page checks now validate more than HTTP 200. For key P0 pages, the script asserts that the rendered HTML still contains the expected operating markers:
 
