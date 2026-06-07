@@ -2210,6 +2210,11 @@ The script uses existing public and protected APIs rather than direct database a
 - `POST /v1/skills`.
 - `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`.
 - `POST /v1/admin/reviews/:reviewId/decision`.
+- `PUT /v1/publisher/profile`.
+- `POST /v1/publisher/terms/accept`.
+- `POST /v1/publisher/payout-account/onboarding`.
+- `POST /v1/publisher/payout-account/onboarding/complete`.
+- `POST /v1/skills/:slug/prices`.
 - `GET /v1/skills/search`.
 - `GET /v1/skills/:slug`.
 - `POST /v1/developer/projects`.
@@ -2218,16 +2223,19 @@ The script uses existing public and protected APIs rather than direct database a
 - `POST /v1/projects/:projectSlug/api-keys`.
 - `POST /v1/projects/:projectSlug/runtime/test`.
 - `POST /mcp` with `tools/list` and `tools/call`.
+- `POST /v1/admin/finance/process-usage`.
+- `GET /v1/admin/finance/ledger`.
+- `GET /v1/publisher/finance/ledger`.
 - `GET /v1/developer/projects/:projectSlug`.
 - `GET /v1/notifications`.
 - `GET /v1/admin/audit-logs`.
 - `GET /v1/admin/notifications`.
 
-Required tokens can be supplied as one org-scoped admin/owner token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
+Required tokens can be supplied as one org-scoped admin/super-admin token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, `SKILLHUB_P0_DEMO_FINANCE_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
 
-Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, and notification plus audit records were visible without exposing authorization-shaped secrets.
+Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed provider-deferred commercial readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, and notification plus audit records were visible without exposing authorization-shaped secrets.
 
-The script refuses production writes unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, project, install, key, invocation, usage, notification, and audit rows.
+The script refuses production writes unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, publisher profile/terms/payout-readiness, price, project, install, key, invocation, usage, transaction, split, balance, notification, and audit rows. `--skip-ledger` is available only for local debugging without a finance/admin token; full customer-demo readiness should leave ledger proof enabled.
 
 ## MCP Discovery
 

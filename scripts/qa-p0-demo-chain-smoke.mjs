@@ -4,6 +4,8 @@ const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_VERSION = "0.1.0";
+const CURRENT_PUBLISHER_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
+const DEFAULT_LEDGER_UNIT_AMOUNT_CENTS = 125;
 const runId = Date.now().toString(36);
 
 let args;
@@ -53,6 +55,18 @@ const config = {
     process.env.SKILLHUB_P0_DEVELOPER_TOKEN ??
     process.env.SKILLHUB_DEVELOPER_SMOKE_TOKEN ??
     sharedToken,
+  financeToken:
+    process.env.SKILLHUB_P0_DEMO_FINANCE_TOKEN ??
+    process.env.SKILLHUB_P0_ADMIN_FINANCE_TOKEN ??
+    process.env.SKILLHUB_P0_DEMO_ADMIN_TOKEN ??
+    process.env.SKILLHUB_P0_ADMIN_TOKEN ??
+    process.env.SKILLHUB_ADMIN_SMOKE_TOKEN ??
+    sharedToken,
+  ledgerUnitAmountCents: parsePositiveInteger(
+    args.ledgerUnitAmountCents ??
+      process.env.SKILLHUB_P0_DEMO_LEDGER_UNIT_AMOUNT_CENTS,
+    DEFAULT_LEDGER_UNIT_AMOUNT_CENTS,
+  ),
   projectSlug:
     args.projectSlug ??
     process.env.SKILLHUB_P0_DEMO_PROJECT_SLUG ??
@@ -76,6 +90,7 @@ const config = {
     process.env.SKILLHUB_P0_DEMO_RUNTIME_URL ??
     "https://api.useskillhub.com/demo/p0-demo-chain",
   skipApp: args.skipApp,
+  skipLedger: args.skipLedger,
   slug:
     args.slug ??
     process.env.SKILLHUB_P0_DEMO_SKILL_SLUG ??
@@ -98,6 +113,9 @@ if (!config.skipApp) {
 console.log(`Skill slug: ${config.slug}`);
 console.log(`Version: ${config.version}`);
 console.log(`Project slug: ${config.projectSlug}`);
+if (!config.skipLedger) {
+  console.log(`Paid ledger proof: per_call ${config.ledgerUnitAmountCents} cents`);
+}
 console.log("");
 
 guardProductionWrite(config);
@@ -107,6 +125,7 @@ const missingTokens = [
   ["reviewer token", config.reviewerToken],
   ["developer token", config.developerToken],
   ["admin token", config.adminToken],
+  ...(!config.skipLedger ? [["finance token", config.financeToken]] : []),
 ].filter(([, value]) => !value);
 
 if (missingTokens.length > 0) {
@@ -127,7 +146,18 @@ if (missingTokens.length > 0) {
   const draft = await createDraft(config, manifest);
   const review = draft ? await submitVersion(config, draft) : null;
   const decision = review ? await approveReview(config, draft, review) : null;
-  const published = decision ? await checkPublicDiscovery(config, draft) : null;
+  const commercialReadiness =
+    decision && !config.skipLedger
+      ? await preparePublisherCommercialReadiness(config)
+      : null;
+  const paidPrice =
+    decision && !config.skipLedger && commercialReadiness
+      ? await setActivePerCallPrice(config)
+      : null;
+  const published =
+    decision && (config.skipLedger || paidPrice)
+      ? await checkPublicDiscovery(config, draft)
+      : null;
 
   const project = published ? await createDeveloperProject(config) : null;
   const savedSkill = project ? await saveSkill(config) : null;
@@ -138,10 +168,14 @@ if (missingTokens.length > 0) {
   const mcpCall = mcpList ? await callMcpTool(config, apiKey) : null;
 
   if (project && savedSkill && install && apiKey && consoleRuntime && mcpCall) {
+    const ledgerProof = !config.skipLedger
+      ? await checkPaidLedgerProof(config, { mcpCall })
+      : null;
+
     await checkProjectDetail(config, { apiKey, consoleRuntime, mcpCall });
-    await checkNotifications(config, { apiKey, project });
+    await checkNotifications(config, { apiKey, ledgerProof, project });
     await checkAdminAuditLogs(config, { apiKey, install, project, review });
-    await checkAdminNotificationQueue(config);
+    await checkAdminNotificationQueue(config, { ledgerProof });
   }
 
   printSummary(results);
@@ -354,7 +388,7 @@ async function approveReview({ apiUrl, reviewerToken, timeoutMs }, draft, review
   }
 }
 
-async function checkPublicDiscovery({ apiUrl, slug, timeoutMs, version }) {
+async function checkPublicDiscovery({ apiUrl, skipLedger, slug, timeoutMs, version }) {
   const searchPath = `/v1/skills/search?${new URLSearchParams({
     limit: "20",
     q: slug,
@@ -382,6 +416,11 @@ async function checkPublicDiscovery({ apiUrl, slug, timeoutMs, version }) {
 
     if (!skill || skill.verificationStatus !== "verified") {
       fail(searchName, `missing verified public search row for ${slug}`);
+      return null;
+    }
+
+    if (!skipLedger && skill.billingModel !== "per_call") {
+      fail(searchName, `expected paid per-call discovery row, got pricing=${skill.billingModel}`);
       return null;
     }
 
@@ -418,6 +457,205 @@ async function checkPublicDiscovery({ apiUrl, slug, timeoutMs, version }) {
     return manifest;
   } catch (error) {
     fail(manifestName, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function preparePublisherCommercialReadiness({
+  apiUrl,
+  publisherToken,
+  slug,
+  timeoutMs,
+}) {
+  const profileName = "PUT /v1/publisher/profile";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/profile"),
+      {
+        body: JSON.stringify({
+          displayName: `P0 Demo Chain Publisher ${slug.slice(-6)}`,
+          status: "active",
+        }),
+        headers: authorizedHeaders(publisherToken),
+        method: "PUT",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(profileName, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (json?.publisherProfile?.status !== "active") {
+      fail(profileName, "publisher profile did not become active");
+      return null;
+    }
+
+    pass(profileName, `publisher profile active for ${slug}`);
+  } catch (error) {
+    fail(profileName, redactSecrets(error.message));
+    return null;
+  }
+
+  const termsName = "POST /v1/publisher/terms/accept";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/terms/accept"),
+      {
+        body: JSON.stringify({
+          termsVersion: CURRENT_PUBLISHER_TERMS_VERSION,
+        }),
+        headers: authorizedHeaders(publisherToken),
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(termsName, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (
+      json?.publisherProfile?.termsVersion !== CURRENT_PUBLISHER_TERMS_VERSION ||
+      !json?.publisherProfile?.termsAcceptedAt
+    ) {
+      fail(termsName, "publisher terms acceptance did not persist");
+      return null;
+    }
+
+    pass(termsName, `terms accepted: ${CURRENT_PUBLISHER_TERMS_VERSION}`);
+  } catch (error) {
+    fail(termsName, redactSecrets(error.message));
+    return null;
+  }
+
+  const onboardingName = "POST /v1/publisher/payout-account/onboarding";
+  let onboarding;
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/payout-account/onboarding"),
+      {
+        body: JSON.stringify({
+          provider: "manual_deferred",
+        }),
+        headers: authorizedHeaders(publisherToken),
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 201) {
+      fail(onboardingName, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    onboarding = json?.onboarding;
+
+    if (
+      !onboarding?.onboardingSession?.id ||
+      !onboarding?.payoutAccount?.id
+    ) {
+      fail(onboardingName, "unexpected payout onboarding payload shape");
+      return null;
+    }
+
+    pass(
+      onboardingName,
+      `provider-deferred onboarding created: account=...${onboarding.payoutAccount.id.slice(-8)}`,
+    );
+  } catch (error) {
+    fail(onboardingName, redactSecrets(error.message));
+    return null;
+  }
+
+  const completeName = "POST /v1/publisher/payout-account/onboarding/complete";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/payout-account/onboarding/complete"),
+      {
+        body: JSON.stringify({
+          reason:
+            "P0 demo-chain smoke verified provider-deferred payout readiness before active paid pricing.",
+          sessionId: onboarding.onboardingSession.id,
+          status: "verified",
+        }),
+        headers: authorizedHeaders(publisherToken),
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(completeName, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (json?.publisher?.publisherProfile?.payoutStatus !== "verified") {
+      fail(completeName, "publisher payout readiness did not become verified");
+      return null;
+    }
+
+    pass(completeName, "publisher payout readiness verified");
+    return json.publisher;
+  } catch (error) {
+    fail(completeName, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function setActivePerCallPrice({
+  apiUrl,
+  ledgerUnitAmountCents,
+  publisherToken,
+  slug,
+  timeoutMs,
+}) {
+  const path = `/v1/skills/${encodeURIComponent(slug)}/prices`;
+  const name = `POST ${path} per-call price`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        billingModel: "per_call",
+        currency: "usd",
+        status: "active",
+        unitAmountCents: ledgerUnitAmountCents,
+      }),
+      headers: authorizedHeaders(publisherToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const price = json?.price;
+
+    if (
+      !price ||
+      price.billingModel !== "per_call" ||
+      price.status !== "active" ||
+      price.unitAmountCents !== ledgerUnitAmountCents
+    ) {
+      fail(name, "unexpected active per-call price payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `active per-call price ${price.unitAmountCents} ${price.currency}`,
+    );
+    return price;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
     return null;
   }
 }
@@ -701,7 +939,10 @@ async function checkMcpToolList({ apiUrl, slug, timeoutMs }, apiKey) {
   }
 }
 
-async function callMcpTool({ apiUrl, projectSlug, slug, timeoutMs }, apiKey) {
+async function callMcpTool(
+  { apiUrl, ledgerUnitAmountCents, projectSlug, skipLedger, slug, timeoutMs },
+  apiKey,
+) {
   const name = "POST /mcp tools/call";
 
   try {
@@ -742,6 +983,18 @@ async function callMcpTool({ apiUrl, projectSlug, slug, timeoutMs }, apiKey) {
       return null;
     }
 
+    if (
+      !skipLedger &&
+      (structured.billable !== true ||
+        structured.amountCents !== ledgerUnitAmountCents)
+    ) {
+      fail(
+        name,
+        `expected billable per-call invocation amount=${ledgerUnitAmountCents}, got billable=${structured.billable}, amount=${structured.amountCents}`,
+      );
+      return null;
+    }
+
     pass(
       name,
       `MCP runtime invocation=...${structured.invocationId.slice(-8)}, billable=${structured.billable}`,
@@ -751,6 +1004,198 @@ async function callMcpTool({ apiUrl, projectSlug, slug, timeoutMs }, apiKey) {
     fail(name, redactSecrets(error.message));
     return null;
   }
+}
+
+async function checkPaidLedgerProof(config, { mcpCall }) {
+  const usageProcess = await processBillableUsage(config);
+  const adminTransaction = await checkAdminFinanceLedger(config, usageProcess);
+  const publisherTransaction = await checkPublisherFinanceLedger(config, adminTransaction);
+
+  if (!adminTransaction || !publisherTransaction) {
+    return null;
+  }
+
+  if (adminTransaction.id !== publisherTransaction.id) {
+    fail(
+      "paid ledger proof transaction match",
+      "admin and publisher ledgers did not expose the same posted transaction",
+    );
+    return null;
+  }
+
+  pass(
+    "paid ledger proof transaction match",
+    `transaction=...${adminTransaction.id.slice(-8)} from invocation=...${mcpCall.invocationId.slice(-8)}`,
+  );
+
+  return {
+    transaction: adminTransaction,
+    usageProcess,
+  };
+}
+
+async function processBillableUsage({ apiUrl, financeToken, timeoutMs }) {
+  const path = "/v1/admin/finance/process-usage";
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({ limit: 25 }),
+      headers: authorizedHeaders(financeToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (!isFiniteNumber(json?.processedCount) || !Array.isArray(json?.processed)) {
+      fail(name, "unexpected billable usage processing payload shape");
+      return null;
+    }
+
+    if (json.processedCount < 1) {
+      pass(name, "no queued usage processed; checking ledger for an already-posted transaction");
+      return json;
+    }
+
+    pass(name, `processed ${json.processedCount} billable usage event(s)`);
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkAdminFinanceLedger(
+  { apiUrl, financeToken, ledgerUnitAmountCents, slug, timeoutMs },
+  usageProcess,
+) {
+  const name = "GET /v1/admin/finance/ledger paid usage row";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/finance/ledger"),
+      {
+        headers: authorizedHeaders(financeToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const transaction = findLedgerTransaction(json, slug, ledgerUnitAmountCents);
+
+    if (!transaction) {
+      fail(name, `missing posted usage transaction for ${slug}`);
+      return null;
+    }
+
+    const splitOk =
+      isFiniteNumber(transaction.platformFeeCents) &&
+      isFiniteNumber(transaction.publisherShareCents) &&
+      transaction.platformFeeCents + transaction.publisherShareCents ===
+        transaction.grossCents;
+
+    if (!splitOk) {
+      fail(name, "transaction split does not add back to gross amount");
+      return null;
+    }
+
+    if (!["pending", "available"].includes(String(transaction.balanceState))) {
+      fail(name, `expected pending/available publisher balance, got ${transaction.balanceState}`);
+      return null;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive finance leak: ${leaks[0]}`);
+      return null;
+    }
+
+    const processedHint = usageProcess?.processedCount ?? 0;
+
+    pass(
+      name,
+      `usage transaction=...${transaction.id.slice(-8)}, gross=${transaction.grossCents}, processed=${processedHint}`,
+    );
+    return transaction;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkPublisherFinanceLedger(
+  { apiUrl, ledgerUnitAmountCents, publisherToken, slug, timeoutMs },
+  adminTransaction,
+) {
+  const name = "GET /v1/publisher/finance/ledger paid usage row";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/finance/ledger"),
+      {
+        headers: authorizedHeaders(publisherToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const transaction = findLedgerTransaction(json, slug, ledgerUnitAmountCents);
+
+    if (!transaction) {
+      fail(name, `missing publisher ledger row for ${slug}`);
+      return null;
+    }
+
+    if (adminTransaction && transaction.id !== adminTransaction.id) {
+      fail(name, "publisher ledger row does not match the admin ledger transaction");
+      return null;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive publisher ledger leak: ${leaks[0]}`);
+      return null;
+    }
+
+    pass(
+      name,
+      `publisher sees transaction=...${transaction.id.slice(-8)}, share=${transaction.publisherShareCents}`,
+    );
+    return transaction;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+function findLedgerTransaction(json, slug, amountCents) {
+  if (!Array.isArray(json?.recentTransactions)) {
+    return null;
+  }
+
+  return (
+    json.recentTransactions.find(
+      (item) =>
+        item?.sourceType === "usage" &&
+        item?.skillSlug === slug &&
+        item?.grossCents === amountCents &&
+        item?.status === "posted",
+    ) ?? null
+  );
 }
 
 async function checkProjectDetail(
@@ -822,10 +1267,11 @@ async function checkProjectDetail(
 
 async function checkNotifications(
   { apiUrl, developerToken, publisherToken, projectSlug, slug, timeoutMs, version },
-  { apiKey, project },
+  { apiKey, ledgerProof, project },
 ) {
   await checkPublisherNotifications({
     apiUrl,
+    ledgerProof,
     publisherToken,
     slug,
     timeoutMs,
@@ -844,6 +1290,7 @@ async function checkNotifications(
 
 async function checkPublisherNotifications({
   apiUrl,
+  ledgerProof,
   publisherToken,
   slug,
   timeoutMs,
@@ -871,20 +1318,40 @@ async function checkPublisherNotifications({
     }
 
     const required = [
-      "skill.review.submitted",
-      "skill.review.approved",
-    ].filter(
-      (eventType) =>
-        !json.notifications.some(
-          (item) =>
-            item?.eventType === eventType &&
-            item?.payload?.skillSlug === slug &&
-            item?.payload?.version === version,
-        ),
-    );
+      [
+        "skill.review.submitted",
+        (item) =>
+          item?.payload?.skillSlug === slug &&
+          item?.payload?.version === version,
+      ],
+      [
+        "skill.review.approved",
+        (item) =>
+          item?.payload?.skillSlug === slug &&
+          item?.payload?.version === version,
+      ],
+      ...(ledgerProof
+        ? [
+            [
+              "billing.usage_posted",
+              (item) =>
+                item?.payload?.transactionId === ledgerProof.transaction.id,
+            ],
+          ]
+        : []),
+    ];
 
-    if (required.length > 0) {
-      fail(name, `missing publisher notifications: ${required.join(", ")}`);
+    const missing = required
+      .filter(
+        ([eventType, predicate]) =>
+          !json.notifications.some(
+            (item) => item?.eventType === eventType && predicate(item),
+          ),
+      )
+      .map(([eventType]) => eventType);
+
+    if (missing.length > 0) {
+      fail(name, `missing publisher notifications: ${missing.join(", ")}`);
       return;
     }
 
@@ -1074,7 +1541,10 @@ async function checkAdminAuditLogs(
   }
 }
 
-async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
+async function checkAdminNotificationQueue(
+  { adminToken, apiUrl, timeoutMs },
+  { ledgerProof } = {},
+) {
   const name = "GET /v1/admin/notifications";
 
   try {
@@ -1096,7 +1566,11 @@ async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const required = ["skill.review.submitted", "skill.review.approved"];
+    const required = [
+      "skill.review.submitted",
+      "skill.review.approved",
+      ...(ledgerProof ? ["billing.usage_posted"] : []),
+    ];
     const missing = required.filter(
       (eventType) =>
         !json.notifications.some((item) => item?.eventType === eventType),
@@ -1270,9 +1744,11 @@ function parseArgs(argv) {
     apiUrl: undefined,
     appUrl: undefined,
     help: false,
+    ledgerUnitAmountCents: undefined,
     projectSlug: undefined,
     runtimeUrl: undefined,
     skipApp: false,
+    skipLedger: false,
     slug: undefined,
     timeoutMs: undefined,
     version: undefined,
@@ -1297,6 +1773,11 @@ function parseArgs(argv) {
 
     if (arg === "--skip-app") {
       parsed.skipApp = true;
+      continue;
+    }
+
+    if (arg === "--skip-ledger") {
+      parsed.skipLedger = true;
       continue;
     }
 
@@ -1328,6 +1809,11 @@ function parseArgs(argv) {
 
     if (arg === "--runtime-url") {
       parsed.runtimeUrl = nextValue().trim();
+      continue;
+    }
+
+    if (arg === "--ledger-unit-amount-cents") {
+      parsed.ledgerUnitAmountCents = nextValue();
       continue;
     }
 
@@ -1552,7 +2038,8 @@ function printHelp() {
 Mutating end-to-end P0 demo smoke:
   publisher draft -> exact-version review -> admin approval -> public discovery
   -> developer project save/install -> reveal-once key -> console runtime test
-  -> MCP tools/list and tools/call -> notifications and admin audit proof.
+  -> MCP tools/list and tools/call -> paid ledger posting -> notifications
+  and admin audit proof.
 
 Options:
   --api-url <url>          Gateway API URL. Default: ${DEFAULT_API_URL}
@@ -1561,16 +2048,22 @@ Options:
   --version <version>      Semantic version. Default: ${DEFAULT_VERSION}
   --project-slug <slug>    Developer project slug. Default: generated p0-demo-project-*
   --runtime-url <url>      Manifest HTTP runtime URL. Default: HTTPS demo URL
+  --ledger-unit-amount-cents <n>
+                           Active per-call price used for paid ledger proof.
+                           Default: ${DEFAULT_LEDGER_UNIT_AMOUNT_CENTS}
   --timeout-ms <ms>        Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}
   --skip-app               Skip public/app shell marker checks.
+  --skip-ledger            Skip paid price, billable invocation, ledger, and balance proof.
   --allow-production       Allow writes against https://api.useskillhub.com.
   -h, --help               Show this help.
 
 Tokens:
-  Set SKILLHUB_P0_DEMO_TOKEN for a single org-scoped admin/owner token, or use:
+  Set SKILLHUB_P0_DEMO_TOKEN for a single org-scoped admin or super-admin token,
+  or use split role tokens:
     SKILLHUB_P0_DEMO_PUBLISHER_TOKEN
     SKILLHUB_P0_DEMO_REVIEWER_TOKEN
     SKILLHUB_P0_DEMO_DEVELOPER_TOKEN
+    SKILLHUB_P0_DEMO_FINANCE_TOKEN
     SKILLHUB_P0_DEMO_ADMIN_TOKEN
 
 Production writes are blocked unless --allow-production or
