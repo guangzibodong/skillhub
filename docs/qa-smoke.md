@@ -20,6 +20,17 @@ The app-page checks now validate more than HTTP 200. For key P0 pages, the scrip
 
 The same app check also fails on common Chinese mojibake markers, so a deployment cannot quietly pass smoke while showing corrupted Chinese UI copy to customers.
 
+## Static quality gates
+
+Run these checks before committing product or QA changes:
+
+```bash
+pnpm typecheck
+pnpm lint
+```
+
+The web app has an explicit Next.js ESLint configuration, so `pnpm lint` must run non-interactively in CI and local release checks instead of opening Next's first-run ESLint setup prompt.
+
 ## P0 developer handoff
 
 The Journey A smoke is separate because it mutates project state. It proves that marketplace discovery can become durable developer workspace state without direct database checks:
