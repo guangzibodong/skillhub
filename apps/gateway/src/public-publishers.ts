@@ -13,6 +13,7 @@ type PublisherProfileRow = {
   createdAt: string;
   displayName: string;
   id: string | null;
+  organizationId: string;
   organizationName: string;
   organizationSlug: string;
   payoutStatus:
@@ -23,6 +24,40 @@ type PublisherProfileRow = {
   publicAuthorName: string | null;
   status: "pending" | "active" | "restricted" | "suspended";
   updatedAt: string;
+};
+
+type PublicPublisherSchema = {
+  organizations: boolean;
+  projectSkillInstalls: boolean;
+  publisherProfiles: boolean;
+  skillInvocations: boolean;
+  skillPrices: boolean;
+  skillReviews: boolean;
+  skillVersions: boolean;
+  skills: boolean;
+};
+
+type PublicSupplyRow = {
+  firstSkillCreatedAt: string;
+  latestSkillUpdatedAt: string;
+  organizationId: string;
+  organizationName: string;
+  organizationSlug: string;
+};
+
+type StoredPublisherProfileRow = {
+  createdAt: string;
+  displayName: string;
+  id: string;
+  organizationId: string;
+  payoutStatus: PublisherProfileRow["payoutStatus"];
+  status: PublisherProfileRow["status"];
+  updatedAt: string;
+};
+
+type PublicAuthorRow = {
+  organizationId: string;
+  publicAuthorName: string | null;
 };
 
 type PublicPublisherSkill = {
@@ -71,9 +106,14 @@ export async function listPublicPublishers(
     );
   }
 
-  const profiles = await listPublisherProfileRows(sql, normalizeLimit(limit));
+  const schema = await getPublicPublisherSchema(sql);
+  const profiles = await listPublisherProfileRows(
+    sql,
+    normalizeLimit(limit),
+    schema,
+  );
   const hydrated = await Promise.all(
-    profiles.map((profile) => hydratePublicPublisher(sql, profile)),
+    profiles.map((profile) => hydratePublicPublisher(sql, profile, schema)),
   );
   return hydrated.filter((profile) => profile.skills.length > 0);
 }
@@ -93,7 +133,8 @@ export async function getPublicPublisherProfile(
     );
   }
 
-  const profiles = await listPublisherProfileRows(sql, 100);
+  const schema = await getPublicPublisherSchema(sql);
+  const profiles = await listPublisherProfileRows(sql, 100, schema);
   const profile = profiles.find(
     (item) =>
       item.organizationSlug === normalizedSlug ||
@@ -108,41 +149,137 @@ export async function getPublicPublisherProfile(
     return null;
   }
 
-  const hydrated = await hydratePublicPublisher(sql, profile);
+  const hydrated = await hydratePublicPublisher(sql, profile, schema);
   return hydrated.skills.length > 0 ? hydrated : null;
 }
 
-async function listPublisherProfileRows(sql: Sql, limit: number) {
+async function getPublicPublisherSchema(
+  sql: Sql,
+): Promise<PublicPublisherSchema> {
+  const rows = (await sql`
+    select
+      to_regclass('public.organizations') is not null as organizations,
+      to_regclass('public.project_skill_installs') is not null as "projectSkillInstalls",
+      to_regclass('public.publisher_profiles') is not null as "publisherProfiles",
+      to_regclass('public.skill_invocations') is not null as "skillInvocations",
+      to_regclass('public.skill_prices') is not null as "skillPrices",
+      to_regclass('public.skill_reviews') is not null as "skillReviews",
+      to_regclass('public.skill_versions') is not null as "skillVersions",
+      to_regclass('public.skills') is not null as skills
+  `) as PublicPublisherSchema[];
+
+  return (
+    rows[0] ?? {
+      organizations: false,
+      projectSkillInstalls: false,
+      publisherProfiles: false,
+      skillInvocations: false,
+      skillPrices: false,
+      skillReviews: false,
+      skillVersions: false,
+      skills: false,
+    }
+  );
+}
+
+async function listPublisherProfileRows(
+  sql: Sql,
+  limit: number,
+  schema: PublicPublisherSchema,
+) {
+  if (!hasPublicPublisherCoreSchema(schema)) {
+    return [];
+  }
+
+  const supplyRows = await listPublicSupplyRows(sql);
+  const profileRows = schema.publisherProfiles
+    ? await listStoredPublisherProfiles(sql)
+    : [];
+  const authorRows = await listPublicAuthorRows(sql, schema);
+  const profileByOrganizationId = new Map(
+    profileRows.map((profile) => [profile.organizationId, profile]),
+  );
+  const authorByOrganizationId = new Map(
+    authorRows.map((author) => [
+      author.organizationId,
+      author.publicAuthorName,
+    ]),
+  );
+
+  return supplyRows
+    .map((supply) => {
+      const profile = profileByOrganizationId.get(supply.organizationId);
+      const publicAuthorName =
+        authorByOrganizationId.get(supply.organizationId) ?? null;
+
+      return {
+        createdAt: profile?.createdAt ?? supply.firstSkillCreatedAt,
+        displayName:
+          cleanDisplayName(profile?.displayName) ??
+          cleanDisplayName(publicAuthorName) ??
+          supply.organizationName,
+        id: profile?.id ?? null,
+        organizationId: supply.organizationId,
+        organizationName: supply.organizationName,
+        organizationSlug: supply.organizationSlug,
+        payoutStatus: profile?.payoutStatus ?? "not_configured",
+        publicAuthorName,
+        status: profile?.status ?? "pending",
+        updatedAt: profile?.updatedAt ?? supply.latestSkillUpdatedAt,
+      } satisfies PublisherProfileRow;
+    })
+    .sort(comparePublisherRows)
+    .slice(0, limit);
+}
+
+function hasPublicPublisherCoreSchema(schema: PublicPublisherSchema) {
+  return schema.organizations && schema.skills && schema.skillVersions;
+}
+
+async function listPublicSupplyRows(sql: Sql) {
   return (await sql`
-    with public_supply as (
       select
-        s.organization_id,
-        min(s.created_at) as first_skill_created_at,
-        max(s.updated_at) as latest_skill_updated_at
+        s.organization_id::text as "organizationId",
+        o.name as "organizationName",
+        o.slug as "organizationSlug",
+        min(s.created_at)::text as "firstSkillCreatedAt",
+        max(s.updated_at)::text as "latestSkillUpdatedAt"
       from skills s
+      join organizations o on o.id = s.organization_id
       where s.visibility = 'public'
         and s.verification_status in ('verified', 'submitted', 'deprecated')
-      group by s.organization_id
+      group by s.organization_id, o.name, o.slug
+      order by max(s.updated_at) desc
+  `) as PublicSupplyRow[];
+}
+
+async function listStoredPublisherProfiles(sql: Sql) {
+  return (await sql`
+    with public_supply as (
+      select distinct organization_id
+      from skills
+      where visibility = 'public'
+        and verification_status in ('verified', 'submitted', 'deprecated')
     )
     select
       pp.id::text,
-      coalesce(
-        nullif(trim(pp.display_name), ''),
-        nullif(trim(public_author.author_name), ''),
-        o.name
-      ) as "displayName",
-      coalesce(pp.status, 'pending') as status,
-      coalesce(pp.payout_status, 'not_configured') as "payoutStatus",
-      coalesce(pp.created_at, public_supply.first_skill_created_at, o.created_at)::text as "createdAt",
-      coalesce(pp.updated_at, public_supply.latest_skill_updated_at, o.created_at)::text as "updatedAt",
-      o.name as "organizationName",
-      o.slug as "organizationSlug",
-      nullif(trim(public_author.author_name), '') as "publicAuthorName"
-    from public_supply
-    join organizations o on o.id = public_supply.organization_id
-    left join publisher_profiles pp on pp.organization_id = public_supply.organization_id
-    left join lateral (
-      select latest.manifest -> 'author' ->> 'name' as author_name
+      pp.organization_id::text as "organizationId",
+      pp.display_name as "displayName",
+      pp.status,
+      pp.payout_status as "payoutStatus",
+      pp.created_at::text as "createdAt",
+      pp.updated_at::text as "updatedAt"
+    from publisher_profiles pp
+    join public_supply on public_supply.organization_id = pp.organization_id
+  `) as StoredPublisherProfileRow[];
+}
+
+async function listPublicAuthorRows(sql: Sql, schema: PublicPublisherSchema) {
+  if (schema.skillReviews) {
+    return (await sql`
+      select distinct on (s.organization_id)
+        s.organization_id::text as "organizationId",
+        nullif(trim(latest.manifest -> 'author' ->> 'name'), '') as "publicAuthorName"
       from skills s
       join lateral (
         select sv.manifest
@@ -165,120 +302,84 @@ async function listPublisherProfileRows(sql: Sql, limit: number) {
           sv.created_at desc
         limit 1
       ) latest on true
-      where s.organization_id = public_supply.organization_id
-        and s.visibility = 'public'
+      where s.visibility = 'public'
         and s.verification_status in ('verified', 'submitted', 'deprecated')
         and nullif(trim(latest.manifest -> 'author' ->> 'name'), '') is not null
       order by
+        s.organization_id,
         case s.verification_status when 'verified' then 0 when 'submitted' then 1 else 2 end,
         s.updated_at desc
+    `) as PublicAuthorRow[];
+  }
+
+  return (await sql`
+    select distinct on (s.organization_id)
+      s.organization_id::text as "organizationId",
+      nullif(trim(latest.manifest -> 'author' ->> 'name'), '') as "publicAuthorName"
+    from skills s
+    join lateral (
+      select sv.manifest
+      from skill_versions sv
+      where sv.skill_id = s.id
+      order by sv.created_at desc
       limit 1
-    ) public_author on true
+    ) latest on true
+    where s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and nullif(trim(latest.manifest -> 'author' ->> 'name'), '') is not null
     order by
-      case coalesce(pp.status, 'pending') when 'active' then 0 when 'pending' then 1 when 'restricted' then 2 else 3 end,
-      coalesce(pp.updated_at, public_supply.latest_skill_updated_at, o.created_at) desc
-    limit ${limit}
-  `) as PublisherProfileRow[];
+      s.organization_id,
+      case s.verification_status when 'verified' then 0 when 'submitted' then 1 else 2 end,
+      s.updated_at desc
+  `) as PublicAuthorRow[];
 }
 
 async function hydratePublicPublisher(
   sql: Sql,
   profile: PublisherProfileRow,
+  schema: PublicPublisherSchema,
 ): Promise<PublicPublisherProfile> {
-  const rows = (await sql`
-    select
-      s.slug,
-      s.display_name as "displayName",
-      s.description,
-      s.verification_status as "verificationStatus",
-      latest.version,
-      latest.manifest,
-      coalesce(installs.install_count, 0)::int as "installCount",
-      coalesce(invocations.call_count, 0)::int as "callCount",
-      coalesce(invocations.success_count, 0)::int as "successCount",
-      price.billing_model as "billingModel",
-      price.unit_amount_cents as "unitAmountCents",
-      price.status as "priceStatus"
-    from skills s
-    join organizations o on o.id = s.organization_id
-    left join lateral (
-      select sv.version, sv.manifest
-      from skill_versions sv
-      left join lateral (
-        select status, decided_at, created_at
-        from skill_reviews
-        where skill_version_id = sv.id
-        order by created_at desc
-        limit 1
-      ) review on true
-      where sv.skill_id = s.id
-      order by
-        case
-          when review.status = 'approved' then 0
-          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
-          else 2
-        end,
-        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
-        sv.created_at desc
-      limit 1
-    ) latest on true
-    left join lateral (
-      select count(*) as install_count
-      from project_skill_installs
-      where skill_id = s.id
-        and status = 'installed'
-    ) installs on true
-    left join lateral (
-      select
-        count(*) as call_count,
-        count(*) filter (where status = 'success') as success_count
-      from skill_invocations
-      where skill_id = s.id
-    ) invocations on true
-    left join lateral (
-      select billing_model, unit_amount_cents, status
-      from skill_prices
-      where skill_id = s.id
-      order by case when status = 'active' then 0 else 1 end, created_at desc
-      limit 1
-    ) price on true
-    where o.slug = ${profile.organizationSlug}
-      and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
-    order by
-      case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
-      s.updated_at desc
-    limit 12
-  `) as Array<{
-    billingModel: "free" | "per_call" | "subscription" | null;
-    callCount: number;
-    description: string;
-    displayName: string;
-    installCount: number;
-    manifest: SkillManifest | null;
-    priceStatus: "draft" | "active" | "archived" | null;
-    slug: string;
-    successCount: number;
-    unitAmountCents: number | null;
-    verificationStatus: SkillSummary["verificationStatus"];
-    version: string | null;
-  }>;
-  const skills = rows.map((row) => ({
-    billingModel: row.billingModel ?? "free",
-    callCount: row.callCount,
-    description: row.description,
-    displayName: row.displayName,
-    installCount: row.installCount,
-    permissionLevel: row.manifest?.permissions
-      ? getPermissionLevel(row.manifest.permissions)
-      : "medium",
-    priceStatus: row.priceStatus ?? "draft",
-    slug: row.slug,
-    successRate: row.callCount > 0 ? row.successCount / row.callCount : null,
-    unitAmountCents: row.unitAmountCents ?? 0,
-    verificationStatus: row.verificationStatus,
-    version: row.version,
-  }));
+  const rows = await listPublicPublisherSkillRows(sql, profile, schema);
+  const installCounts = schema.projectSkillInstalls
+    ? await listSkillInstallCounts(sql, profile)
+    : new Map<string, number>();
+  const invocationMetrics = schema.skillInvocations
+    ? await listSkillInvocationMetrics(sql, profile)
+    : new Map<string, { callCount: number; successCount: number }>();
+  const prices = schema.skillPrices
+    ? await listSkillPricesForPublisher(sql, profile)
+    : new Map<
+        string,
+        {
+          billingModel: "free" | "per_call" | "subscription" | null;
+          priceStatus: "draft" | "active" | "archived" | null;
+          unitAmountCents: number | null;
+        }
+      >();
+  const skills = rows.map((row) => {
+    const invocation = invocationMetrics.get(row.slug);
+    const price = prices.get(row.slug);
+
+    return {
+      billingModel: price?.billingModel ?? "free",
+      callCount: invocation?.callCount ?? 0,
+      description: row.description,
+      displayName: row.displayName,
+      installCount: installCounts.get(row.slug) ?? 0,
+      permissionLevel: row.manifest?.permissions
+        ? getPermissionLevel(row.manifest.permissions)
+        : "medium",
+      priceStatus: price?.priceStatus ?? "draft",
+      slug: row.slug,
+      successRate:
+        invocation && invocation.callCount > 0
+          ? invocation.successCount / invocation.callCount
+          : null,
+      unitAmountCents: price?.unitAmountCents ?? 0,
+      verificationStatus: row.verificationStatus,
+      version: row.version,
+    };
+  });
 
   return {
     createdAt: profile.createdAt,
@@ -291,6 +392,163 @@ async function hydratePublicPublisher(
     trustLevel: trustLevel(profile),
     updatedAt: profile.updatedAt,
   };
+}
+
+async function listPublicPublisherSkillRows(
+  sql: Sql,
+  profile: PublisherProfileRow,
+  schema: PublicPublisherSchema,
+) {
+  if (schema.skillReviews) {
+    return (await sql`
+      select
+        s.slug,
+        s.display_name as "displayName",
+        s.description,
+        s.verification_status as "verificationStatus",
+        latest.version,
+        latest.manifest
+      from skills s
+      join organizations o on o.id = s.organization_id
+      left join lateral (
+        select sv.version, sv.manifest
+        from skill_versions sv
+        left join lateral (
+          select status, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        where sv.skill_id = s.id
+        order by
+          case
+            when review.status = 'approved' then 0
+            when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+            else 2
+          end,
+          coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+          sv.created_at desc
+        limit 1
+      ) latest on true
+      where o.slug = ${profile.organizationSlug}
+        and s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+      order by
+        case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
+        s.updated_at desc
+      limit 12
+    `) as Array<{
+      description: string;
+      displayName: string;
+      manifest: SkillManifest | null;
+      slug: string;
+      verificationStatus: SkillSummary["verificationStatus"];
+      version: string | null;
+    }>;
+  }
+
+  return (await sql`
+    select
+      s.slug,
+      s.display_name as "displayName",
+      s.description,
+      s.verification_status as "verificationStatus",
+      latest.version,
+      latest.manifest
+    from skills s
+    join organizations o on o.id = s.organization_id
+    left join lateral (
+      select sv.version, sv.manifest
+      from skill_versions sv
+      where sv.skill_id = s.id
+      order by sv.created_at desc
+      limit 1
+    ) latest on true
+    where o.slug = ${profile.organizationSlug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    order by
+      case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
+      s.updated_at desc
+    limit 12
+  `) as Array<{
+    description: string;
+    displayName: string;
+    manifest: SkillManifest | null;
+    slug: string;
+    verificationStatus: SkillSummary["verificationStatus"];
+    version: string | null;
+  }>;
+}
+
+async function listSkillInstallCounts(sql: Sql, profile: PublisherProfileRow) {
+  const rows = (await sql`
+    select s.slug, count(*)::int as "installCount"
+    from skills s
+    join organizations o on o.id = s.organization_id
+    join project_skill_installs psi on psi.skill_id = s.id
+    where o.slug = ${profile.organizationSlug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and psi.status = 'installed'
+    group by s.slug
+  `) as Array<{ installCount: number; slug: string }>;
+
+  return new Map(rows.map((row) => [row.slug, row.installCount]));
+}
+
+async function listSkillInvocationMetrics(
+  sql: Sql,
+  profile: PublisherProfileRow,
+) {
+  const rows = (await sql`
+    select
+      s.slug,
+      count(*)::int as "callCount",
+      count(*) filter (where si.status = 'success')::int as "successCount"
+    from skills s
+    join organizations o on o.id = s.organization_id
+    join skill_invocations si on si.skill_id = s.id
+    where o.slug = ${profile.organizationSlug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    group by s.slug
+  `) as Array<{ callCount: number; slug: string; successCount: number }>;
+
+  return new Map(
+    rows.map((row) => [
+      row.slug,
+      { callCount: row.callCount, successCount: row.successCount },
+    ]),
+  );
+}
+
+async function listSkillPricesForPublisher(
+  sql: Sql,
+  profile: PublisherProfileRow,
+) {
+  const rows = (await sql`
+    select distinct on (s.slug)
+      s.slug,
+      sp.billing_model as "billingModel",
+      sp.unit_amount_cents as "unitAmountCents",
+      sp.status as "priceStatus"
+    from skills s
+    join organizations o on o.id = s.organization_id
+    join skill_prices sp on sp.skill_id = s.id
+    where o.slug = ${profile.organizationSlug}
+      and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
+    order by s.slug, case when sp.status = 'active' then 0 else 1 end, sp.created_at desc
+  `) as Array<{
+    billingModel: "free" | "per_call" | "subscription" | null;
+    priceStatus: "draft" | "active" | "archived" | null;
+    slug: string;
+    unitAmountCents: number | null;
+  }>;
+
+  return new Map(rows.map((row) => [row.slug, row]));
 }
 
 function fallbackPublicPublishers(): PublicPublisherProfile[] {
@@ -374,6 +632,38 @@ function trustLevel(
   }
 
   return "active";
+}
+
+function cleanDisplayName(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function comparePublisherRows(
+  first: PublisherProfileRow,
+  second: PublisherProfileRow,
+) {
+  return (
+    publisherStatusRank(first.status) - publisherStatusRank(second.status) ||
+    Date.parse(second.updatedAt) - Date.parse(first.updatedAt) ||
+    first.organizationSlug.localeCompare(second.organizationSlug)
+  );
+}
+
+function publisherStatusRank(status: PublisherProfileRow["status"]) {
+  if (status === "active") {
+    return 0;
+  }
+
+  if (status === "pending") {
+    return 1;
+  }
+
+  if (status === "restricted") {
+    return 2;
+  }
+
+  return 3;
 }
 
 function normalizeLimit(limit: number) {
