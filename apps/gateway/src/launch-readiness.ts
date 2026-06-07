@@ -96,6 +96,7 @@ type DatabaseReadiness = {
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   payoutExplainabilityColumns: boolean;
+  payoutOnboardingSessions: boolean;
   payoutTables: boolean;
   publishedFeedbackCount: number | null;
   publisherFeedbackResponseColumns: boolean;
@@ -539,9 +540,13 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.activeCommissionRules && database.activeCommissionRules > 0 ? "ready" : "warning"
     },
     {
-      action: database.payoutTables ? "No action needed." : "Run payout and onboarding migrations.",
-      description: "Publishers need payout-account and payout-request state before paid marketplace launch.",
-      detail: database.payoutTables ? "Payout tables are available." : "Payout tables are missing.",
+      action: database.payoutTables ? "No action needed." : "Run payout, payout onboarding, and payout workflow migrations.",
+      description: "Publishers need payout-account onboarding sessions and payout-request state before paid marketplace launch.",
+      detail: database.payoutTables
+        ? "Payout account, onboarding, and payout request tables are available."
+        : database.payoutOnboardingSessions
+          ? "Payout onboarding is available, but one or more payout account/request tables are missing."
+          : "Payout onboarding or payout request tables are missing.",
       key: "payout_state",
       label: "Payout state",
       status: database.payoutTables ? "ready" : "blocker"
@@ -659,6 +664,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutExplainabilityColumns: false,
+      payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,
       publisherFeedbackResponseColumns: false,
@@ -689,6 +695,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         to_regclass('public.notification_events') is not null as "notificationEvents",
         to_regclass('public.notification_templates') is not null as "notificationTemplates",
         to_regclass('public.payout_accounts') is not null as "payoutAccounts",
+        to_regclass('public.payout_account_onboarding_sessions') is not null as "payoutAccountOnboardingSessions",
         to_regclass('public.payouts') is not null as "payouts",
         to_regclass('public.commission_rules') is not null as "commissionRules",
         to_regclass('public.schema_migrations') is not null as "schemaMigrations"
@@ -700,6 +707,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationTemplates: boolean;
       organizationWebhookEndpoints: boolean;
       payoutAccounts: boolean;
+      payoutAccountOnboardingSessions: boolean;
       payouts: boolean;
       projects: boolean;
       projectSkillInstalls: boolean;
@@ -919,7 +927,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         tables.organizationWebhookEndpoints &&
         tables.notificationEvents,
       payoutExplainabilityColumns: columns.payoutRetryCondition && columns.payoutNextAction,
-      payoutTables: tables.payoutAccounts && tables.payouts,
+      payoutOnboardingSessions: tables.payoutAccountOnboardingSessions,
+      payoutTables: tables.payoutAccounts && tables.payoutAccountOnboardingSessions && tables.payouts,
       publishedFeedbackCount: launchCredibility.publishedFeedbackCount,
       publisherFeedbackResponseColumns:
         columns.publisherResponseBody &&
@@ -957,6 +966,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutExplainabilityColumns: false,
+      payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,
       publisherFeedbackResponseColumns: false,

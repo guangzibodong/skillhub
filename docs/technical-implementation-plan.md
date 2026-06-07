@@ -260,6 +260,7 @@ Purpose:
 Core tables:
 
 - `payout_accounts`
+- `payout_account_onboarding_sessions`
 - `payouts`
 - `notification_events`
 - `notification_templates`
@@ -283,6 +284,7 @@ API groups:
 Acceptance checks:
 
 - Paid publishing requires acceptable payout account state.
+- Payout account onboarding remains provider-deferred until final provider integration; the gateway accepts only `manual_deferred` and validates handoff URLs before storing onboarding sessions.
 - Payout requests above a threshold enter manual review.
 - Blocked payout records reason and retry condition.
 - Publisher payout summary exposes readiness blockers, request eligibility, expected initial payout status, balance-state explanations, latest payout reason, retry condition, and next action.
@@ -584,6 +586,7 @@ Completed:
 - `pnpm smoke:p0:demo` now adds a mutating end-to-end customer-demo smoke that creates a generated publisher draft, submits and approves the exact version, verifies public marketplace discovery, completes provider-deferred commercial readiness, activates a per-call price, creates a developer project, saves and installs the verified skill, creates a reveal-once project key, runs governed console runtime and billable MCP `tools/call` invocations, processes billable usage into posted transaction/split/publisher-balance rows, releases eligible balances, requests publisher payout, approves and marks the provider-deferred payout paid, then verifies project detail, publisher/admin finance and payout ledgers, notification, admin audit, and admin notification handoff without direct database access or credential exposure.
 - Launch-readiness QA now has shared contract and sensitive-output validators used by both the general smoke and `pnpm smoke:p0:admin`. The contract validator requires the identity, email, webhook, marketplace-operations, launch-credibility, commercial, and production-guardrail sections plus their customer-demo evidence item keys, item fields, valid statuses, and matching summary counts, while still allowing real environments to report blockers or warnings. The sensitive-output validator fails authorized smoke runs if readiness/admin responses expose authorization-shaped strings, user/project/webhook/provider keys, raw API-key fields, or email-code previews.
 - Web QA now has an explicit Next.js ESLint setup for `@useskillhub/web`, so `pnpm lint` runs as a non-interactive release gate instead of triggering Next's first-run ESLint setup prompt.
+- Provider-deferred payout onboarding now rejects unsupported provider names, validates return/refresh/onboarding handoff URLs, and launch readiness treats `payout_account_onboarding_sessions` as part of the required payout-state schema before paid marketplace rollout.
 
 Next:
 

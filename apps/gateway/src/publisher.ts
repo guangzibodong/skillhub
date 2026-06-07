@@ -41,6 +41,9 @@ type PublisherProfile = {
   updatedAt: string;
 };
 
+const supportedPayoutProviders = ["manual_deferred"] as const;
+type SupportedPayoutProvider = (typeof supportedPayoutProviders)[number];
+
 const fallbackPublisherAccountSummary = {
   publisherProfile: {
     id: "demo-publisher",
@@ -253,8 +256,8 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
   const sql = await requireSql();
   const scopedOrganizationId = requireOrganizationId(organizationId);
   const provider = normalizeProvider(input.provider);
-  const returnUrl = input.returnUrl?.trim() || null;
-  const refreshUrl = input.refreshUrl?.trim() || null;
+  const returnUrl = normalizeOptionalProviderHandoffUrl(input.returnUrl, "returnUrl");
+  const refreshUrl = normalizeOptionalProviderHandoffUrl(input.refreshUrl, "refreshUrl");
 
   return sql.begin(async (tx: Sql) => {
     const publisher = await ensurePublisherProfile(tx, scopedOrganizationId);
@@ -297,9 +300,11 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
     }>;
     const account = accountRows[0];
     const providerSessionId = `po_${randomToken(16)}`;
-    const onboardingUrl =
+    const onboardingUrl = normalizeProviderHandoffUrl(
       getProcessEnv("SKILLHUB_PAYOUT_ONBOARDING_URL") ??
-      `https://app.useskillhub.com/dashboard?payout_onboarding=${providerSessionId}`;
+        `https://app.useskillhub.com/dashboard?payout_onboarding=${providerSessionId}`,
+      "SKILLHUB_PAYOUT_ONBOARDING_URL"
+    );
     const sessionRows = (await tx`
       insert into payout_account_onboarding_sessions (
         publisher_profile_id,
@@ -633,8 +638,17 @@ function normalizeDisplay(value: string | undefined, fallback: string) {
   return value?.trim() || fallback;
 }
 
-function normalizeProvider(provider?: string) {
-  return provider?.trim().toLowerCase() || "manual_deferred";
+function normalizeProvider(provider?: string): SupportedPayoutProvider {
+  const normalized = String(provider ?? "manual_deferred")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_");
+
+  if (supportedPayoutProviders.includes(normalized as SupportedPayoutProvider)) {
+    return normalized as SupportedPayoutProvider;
+  }
+
+  throw new Error("Payout provider must be manual_deferred until final provider integration is enabled.");
 }
 
 function normalizePublisherStatus(status: PublisherStatus) {
@@ -656,6 +670,36 @@ function normalizePayoutStatus(status: PayoutStatus) {
 function normalizeTermsVersion(value: unknown) {
   const normalized = typeof value === "string" ? value.trim() : "";
   return normalized || CURRENT_PUBLISHER_TERMS_VERSION;
+}
+
+function normalizeOptionalProviderHandoffUrl(value: string | undefined, label: string) {
+  const normalized = value?.trim();
+  return normalized ? normalizeProviderHandoffUrl(normalized, label) : null;
+}
+
+function normalizeProviderHandoffUrl(value: string, label: string) {
+  const text = value.trim();
+
+  if (text.length > 500) {
+    throw new Error(`${label} must be 500 characters or fewer.`);
+  }
+
+  try {
+    const url = new URL(text);
+    const localhost = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+
+    if (url.protocol !== "https:" && !(url.protocol === "http:" && localhost)) {
+      throw new Error(`${label} must use https, except local development URLs.`);
+    }
+
+    return url.toString();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("must use https")) {
+      throw error;
+    }
+
+    throw new Error(`${label} must be a valid URL.`);
+  }
 }
 
 function randomToken(byteLength: number) {

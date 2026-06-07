@@ -1497,6 +1497,8 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding
 
 Current onboarding sessions are provider-deferred records. They model provider handoff URLs, session status, payout account status, publisher payout readiness, audit logs, and notification events before the final payment provider API is connected.
 
+For the provider-deferred phase, `provider` must be `manual_deferred`. `returnUrl`, `refreshUrl`, and the configured `SKILLHUB_PAYOUT_ONBOARDING_URL` handoff URL are validated before a session is stored: they must be valid URLs, must be 500 characters or fewer, and must use `https` except for local development URLs on `localhost`, `127.0.0.1`, or `[::1]`. This prevents an unconfigured or unexpected payout provider name from silently becoming durable commercial-readiness state before final provider integration is enabled.
+
 The dashboard publisher account panel uses these same endpoints. Publishers can edit the public publisher name, create a deferred payout-account handoff, open the handoff URL, and record a readiness decision against the latest onboarding session or payout account. The final Stripe/Connect-style provider integration can replace the manual provider handoff without changing the surrounding dashboard state model.
 
 Read publisher payout readiness:
@@ -1912,7 +1914,7 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
 - Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, launch credibility thresholds, commercial readiness, and production guardrails.
-- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, production-blocking Resend configuration, production debug-code/provider misconfiguration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, production-blocking Resend configuration, production debug-code/provider misconfiguration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout account, payout onboarding-session, payout request tables, demo fallback, legacy signup, service token presence, and public signup policy.
 
 The migration history check reads `schema_migrations`, reports the recorded migration count, latest applied filename, latest applied time, and compares it with the current expected production migration. It returns a warning when the migration runner has never recorded history and a blocker when the recorded latest migration is older than the code expects.
 
