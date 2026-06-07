@@ -208,7 +208,7 @@ async function checkAdminOverview({ adminToken, apiUrl, timeoutMs }) {
   const name = "GET /v1/admin/overview";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/overview"),
       authorized(adminToken, timeoutMs),
     );
@@ -234,6 +234,10 @@ async function checkAdminOverview({ adminToken, apiUrl, timeoutMs }) {
 
     if (missing.length > 0) {
       fail(name, `missing overview metrics: ${missing.join(", ")}`);
+      return;
+    }
+
+    if (!assertNoSensitiveLeaks(name, text, "overview")) {
       return;
     }
 
@@ -267,10 +271,7 @@ async function checkLaunchReadiness({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive launch-readiness leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "launch-readiness")) {
       return;
     }
 
@@ -316,10 +317,7 @@ async function checkAdminReviews({ apiUrl, reviewToken, timeoutMs }) {
     }
 
     const evidenceRows = json.reviews.filter((review) => review?.reviewEvidence);
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive review leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "review")) {
       return;
     }
 
@@ -355,7 +353,7 @@ async function checkFinanceLedger({ apiUrl, financeToken, timeoutMs }) {
   const name = "GET /v1/admin/finance/ledger";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/finance/ledger"),
       authorized(financeToken, timeoutMs),
     );
@@ -379,6 +377,10 @@ async function checkFinanceLedger({ apiUrl, financeToken, timeoutMs }) {
       return;
     }
 
+    if (!assertNoSensitiveLeaks(name, text, "finance ledger")) {
+      return;
+    }
+
     pass(
       name,
       `gross=${summary.grossCents}, pending=${summary.pendingBalanceCents}, rows=${json.recentTransactions.length}`,
@@ -392,7 +394,7 @@ async function checkCommissionRules({ apiUrl, financeToken, timeoutMs }) {
   const name = "GET /v1/admin/finance/commission-rules";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/finance/commission-rules?limit=20"),
       authorized(financeToken, timeoutMs),
     );
@@ -419,6 +421,10 @@ async function checkCommissionRules({ apiUrl, financeToken, timeoutMs }) {
       return;
     }
 
+    if (!assertNoSensitiveLeaks(name, text, "commission rules")) {
+      return;
+    }
+
     pass(name, `rules=${json.rules.length}`);
   } catch (error) {
     fail(name, redactSecrets(error.message));
@@ -429,7 +435,7 @@ async function checkAdjustmentQueue({ apiUrl, financeToken, key, path, timeoutMs
   const name = `GET ${path}`;
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, path),
       authorized(financeToken, timeoutMs),
     );
@@ -444,6 +450,10 @@ async function checkAdjustmentQueue({ apiUrl, financeToken, key, path, timeoutMs
       return;
     }
 
+    if (!assertNoSensitiveLeaks(name, text, key)) {
+      return;
+    }
+
     pass(name, `${key}=${json[key].length}`);
   } catch (error) {
     fail(name, redactSecrets(error.message));
@@ -454,7 +464,7 @@ async function checkAdminPayouts({ apiUrl, financeToken, timeoutMs }) {
   const name = "GET /v1/admin/payouts";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/payouts?limit=8"),
       authorized(financeToken, timeoutMs),
     );
@@ -475,6 +485,10 @@ async function checkAdminPayouts({ apiUrl, financeToken, timeoutMs }) {
 
     if (missingExplainability.length > 0) {
       fail(name, "payout rows must include nextAction and retryCondition fields");
+      return;
+    }
+
+    if (!assertNoSensitiveLeaks(name, text, "payout")) {
       return;
     }
 
@@ -509,10 +523,7 @@ async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive notification leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "notification")) {
       return;
     }
 
@@ -541,10 +552,7 @@ async function checkAdminNotificationDeliveries({ adminToken, apiUrl, timeoutMs 
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive delivery leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "delivery")) {
       return;
     }
 
@@ -608,10 +616,7 @@ async function checkAdminNotificationDeliveryDryRun({ adminToken, apiUrl, timeou
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive notification dry-run leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "notification dry-run")) {
       return;
     }
 
@@ -643,10 +648,7 @@ async function checkAdminWebhookDeliveries({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive webhook leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "webhook")) {
       return;
     }
 
@@ -705,10 +707,7 @@ async function checkAdminWebhookDeliveryDryRun({ adminToken, apiUrl, timeoutMs }
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive webhook dry-run leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "webhook dry-run")) {
       return;
     }
 
@@ -749,10 +748,7 @@ async function checkAdminIdentityDirectory({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive identity leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "identity")) {
       return;
     }
 
@@ -797,10 +793,7 @@ async function checkAdminAuditLogs({ adminToken, apiUrl, timeoutMs }) {
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive audit leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "audit")) {
       return;
     }
 
@@ -877,10 +870,7 @@ async function checkArrayEndpoint({ apiUrl, key, name, path, timeoutMs, token })
       return;
     }
 
-    const leaks = findSensitiveLeaks(text);
-
-    if (leaks.length > 0) {
-      fail(name, `possible sensitive payload leak: ${leaks[0]}`);
+    if (!assertNoSensitiveLeaks(name, text, "payload")) {
       return;
     }
 
@@ -1047,6 +1037,17 @@ function describeFetchError(error) {
 
 function safeError(json) {
   return redactSecrets(String(json?.error ?? "no response error body"));
+}
+
+function assertNoSensitiveLeaks(name, text, label) {
+  const leaks = findSensitiveLeaks(text);
+
+  if (leaks.length > 0) {
+    fail(name, `possible sensitive ${label} leak: ${leaks[0]}`);
+    return false;
+  }
+
+  return true;
 }
 
 function isFiniteNumber(value) {

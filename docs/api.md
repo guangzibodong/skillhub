@@ -2206,7 +2206,7 @@ The script verifies `/admin` page markers, protected admin API boundaries, and r
 
 Use `SKILLHUB_P0_ADMIN_TOKEN` or `SKILLHUB_ADMIN_SMOKE_TOKEN` for an admin/super-admin token. `SKILLHUB_P0_ADMIN_REVIEW_TOKEN`, `SKILLHUB_P0_ADMIN_FINANCE_TOKEN`, `SKILLHUB_P0_ADMIN_TRUST_TOKEN`, and `SKILLHUB_P0_ADMIN_CURATION_TOKEN` can override specialized role checks when the deployment uses separated operator accounts.
 
-Passing assertions mean the admin console can read launch readiness, preserve the required readiness section/item contract, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets.
+Passing assertions mean the admin console can read launch readiness, preserve the required readiness section/item contract, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets. The smoke scans protected overview, finance ledger, commission-rule, refund, dispute, and payout reads with the same sensitive-output validator used for launch readiness, review evidence, notifications, identity, and audit logs.
 
 ## P0 Demo Chain Smoke
 
