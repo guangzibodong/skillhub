@@ -167,6 +167,23 @@ const PAGE_ASSERTIONS = {
     "\u6761\u6b3e\u6458\u8981",
   ],
 };
+const COMMON_UTF8_AS_GBK_MARKERS = [
+  "\u9359\u5D89\uE6ED",
+  "\u93BB\u612A\u6C26",
+  "\u6924\u572D\u6D30",
+  "\u6769\u612F\uE511",
+  "\u7039\u590E\uE5CA",
+  "\u7487\u5CF0\u539B",
+  "\u6D93\u70AC\u59E4",
+  "\u9359\u621D\u7AF7",
+  "\u93C9\u51AE\u6ABA",
+  "\u6DC7\u2032\u6362",
+  "\u5BEE\u20AC\u9359",
+  "\u7039\u2103\u7273",
+  "\u934F\uE100\u7D11",
+  "\u752F\u509A\u6E80",
+  "\u7481\u3224\u69C4",
+];
 const MOJIBAKE_MARKERS = [
   "\uFFFD",
   "\u9359\u621D",
@@ -180,7 +197,20 @@ const MOJIBAKE_MARKERS = [
   "\u7487",
   "\u9286",
   "\u9428",
+  ...COMMON_UTF8_AS_GBK_MARKERS,
 ];
+const SKILL_DETAIL_ASSERTIONS = {
+  en: [
+    "developer handoff packet",
+    "share usage feedback",
+    "report a trust or runtime issue",
+  ],
+  zh: [
+    "\u5f00\u53d1\u8005\u4ea4\u63a5\u5305",
+    "\u5206\u4eab\u4f7f\u7528\u53cd\u9988",
+    "\u62a5\u544a\u4fe1\u4efb\u6216\u8fd0\u884c\u95ee\u9898",
+  ],
+};
 const SOURCE_MOJIBAKE_SCAN_PATHS = [
   "apps/web/app",
   "apps/web/components",
@@ -212,6 +242,7 @@ const SOURCE_MOJIBAKE_MARKERS = [
   "\u7039\u2103\u7273",
   "\u9422\u3126\u57DB",
   "\u6D93\u20AC",
+  ...COMMON_UTF8_AS_GBK_MARKERS,
 ];
 const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
@@ -1003,6 +1034,21 @@ async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
 
       if (!html.includes(slug.toLowerCase())) {
         fail(name, `expected skill detail HTML to include slug ${slug}`);
+        continue;
+      }
+
+      const expectedMarkers = isZhAppPath(path)
+        ? SKILL_DETAIL_ASSERTIONS.zh
+        : SKILL_DETAIL_ASSERTIONS.en;
+      const missingMarkers = expectedMarkers.filter(
+        (token) => !html.includes(token.toLowerCase()),
+      );
+
+      if (missingMarkers.length > 0) {
+        fail(
+          name,
+          `missing skill detail P0 controls in ${path}: ${missingMarkers.join(", ")}`,
+        );
         continue;
       }
 
