@@ -336,6 +336,12 @@ export async function publishSkill(
       throw new Error("Skill slug is already owned by another organization.");
     }
 
+    await ensurePublisherProfileForPublicSkill(
+      tx,
+      ownerOrganizationId,
+      manifest,
+    );
+
     const skillRows = (await tx`
       insert into skills (
         organization_id,
@@ -473,6 +479,36 @@ export async function publishSkill(
       versionId: version.id,
     };
   });
+}
+
+async function ensurePublisherProfileForPublicSkill(
+  sql: NonNullable<SqlClient>,
+  organizationId: string,
+  manifest: SkillManifest,
+) {
+  await sql`
+    insert into publisher_profiles (
+      organization_id,
+      display_name,
+      status,
+      payout_status
+    )
+    values (
+      ${organizationId},
+      ${publicPublisherDisplayName(manifest)},
+      'pending',
+      'not_configured'
+    )
+    on conflict (organization_id) do nothing
+  `;
+}
+
+function publicPublisherDisplayName(manifest: SkillManifest) {
+  return (
+    manifest.author?.name?.trim() ||
+    manifest.displayName.trim() ||
+    "SkillHub Publisher"
+  );
 }
 
 export async function getRegistryStats(): Promise<RegistryStats> {

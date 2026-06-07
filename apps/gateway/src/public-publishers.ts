@@ -12,7 +12,7 @@ type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 type PublisherProfileRow = {
   createdAt: string;
   displayName: string;
-  id: string;
+  id: string | null;
   organizationName: string;
   organizationSlug: string;
   payoutStatus:
@@ -20,6 +20,7 @@ type PublisherProfileRow = {
     | "verification_required"
     | "verified"
     | "blocked";
+  publicAuthorName: string | null;
   status: "pending" | "active" | "restricted" | "suspended";
   updatedAt: string;
 };
@@ -96,7 +97,11 @@ export async function getPublicPublisherProfile(
   const profile = profiles.find(
     (item) =>
       item.organizationSlug === normalizedSlug ||
-      normalizeSlug(item.displayName) === normalizedSlug,
+      normalizeSlug(item.displayName) === normalizedSlug ||
+      normalizeSlug(item.organizationName) === normalizedSlug ||
+      (item.publicAuthorName
+        ? normalizeSlug(item.publicAuthorName) === normalizedSlug
+        : false),
   );
 
   if (!profile) {
@@ -109,26 +114,69 @@ export async function getPublicPublisherProfile(
 
 async function listPublisherProfileRows(sql: Sql, limit: number) {
   return (await sql`
+    with public_supply as (
+      select
+        s.organization_id,
+        min(s.created_at) as first_skill_created_at,
+        max(s.updated_at) as latest_skill_updated_at
+      from skills s
+      where s.visibility = 'public'
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+      group by s.organization_id
+    )
     select
       pp.id::text,
-      pp.display_name as "displayName",
-      pp.status,
-      pp.payout_status as "payoutStatus",
-      pp.created_at as "createdAt",
-      pp.updated_at as "updatedAt",
+      coalesce(
+        nullif(trim(pp.display_name), ''),
+        nullif(trim(public_author.author_name), ''),
+        o.name
+      ) as "displayName",
+      coalesce(pp.status, 'pending') as status,
+      coalesce(pp.payout_status, 'not_configured') as "payoutStatus",
+      coalesce(pp.created_at, public_supply.first_skill_created_at, o.created_at)::text as "createdAt",
+      coalesce(pp.updated_at, public_supply.latest_skill_updated_at, o.created_at)::text as "updatedAt",
       o.name as "organizationName",
-      o.slug as "organizationSlug"
-    from publisher_profiles pp
-    join organizations o on o.id = pp.organization_id
-    where exists (
-      select 1
+      o.slug as "organizationSlug",
+      nullif(trim(public_author.author_name), '') as "publicAuthorName"
+    from public_supply
+    join organizations o on o.id = public_supply.organization_id
+    left join publisher_profiles pp on pp.organization_id = public_supply.organization_id
+    left join lateral (
+      select latest.manifest -> 'author' ->> 'name' as author_name
       from skills s
-      where s.organization_id = pp.organization_id
+      join lateral (
+        select sv.manifest
+        from skill_versions sv
+        left join lateral (
+          select status, decided_at, created_at
+          from skill_reviews
+          where skill_version_id = sv.id
+          order by created_at desc
+          limit 1
+        ) review on true
+        where sv.skill_id = s.id
+        order by
+          case
+            when review.status = 'approved' then 0
+            when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+            else 2
+          end,
+          coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+          sv.created_at desc
+        limit 1
+      ) latest on true
+      where s.organization_id = public_supply.organization_id
         and s.visibility = 'public'
-    )
+        and s.verification_status in ('verified', 'submitted', 'deprecated')
+        and nullif(trim(latest.manifest -> 'author' ->> 'name'), '') is not null
+      order by
+        case s.verification_status when 'verified' then 0 when 'submitted' then 1 else 2 end,
+        s.updated_at desc
+      limit 1
+    ) public_author on true
     order by
-      case pp.status when 'active' then 0 when 'pending' then 1 when 'restricted' then 2 else 3 end,
-      pp.updated_at desc
+      case coalesce(pp.status, 'pending') when 'active' then 0 when 'pending' then 1 when 'restricted' then 2 else 3 end,
+      coalesce(pp.updated_at, public_supply.latest_skill_updated_at, o.created_at) desc
     limit ${limit}
   `) as PublisherProfileRow[];
 }
@@ -154,10 +202,24 @@ async function hydratePublicPublisher(
     from skills s
     join organizations o on o.id = s.organization_id
     left join lateral (
-      select version, manifest
-      from skill_versions
-      where skill_id = s.id
-      order by created_at desc
+      select sv.version, sv.manifest
+      from skill_versions sv
+      left join lateral (
+        select status, decided_at, created_at
+        from skill_reviews
+        where skill_version_id = sv.id
+        order by created_at desc
+        limit 1
+      ) review on true
+      where sv.skill_id = s.id
+      order by
+        case
+          when review.status = 'approved' then 0
+          when s.verification_status = 'submitted' and review.status in ('queued', 'in_review') then 1
+          else 2
+        end,
+        coalesce(review.decided_at, review.created_at, sv.created_at) desc,
+        sv.created_at desc
       limit 1
     ) latest on true
     left join lateral (
@@ -182,6 +244,7 @@ async function hydratePublicPublisher(
     ) price on true
     where o.slug = ${profile.organizationSlug}
       and s.visibility = 'public'
+      and s.verification_status in ('verified', 'submitted', 'deprecated')
     order by
       case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
       s.updated_at desc

@@ -86,6 +86,7 @@ const MOJIBAKE_MARKERS = [
 ];
 
 const smokeContext = {
+  publicPublisherSlug: undefined,
   publicSkillSlug: undefined,
   stats: undefined,
 };
@@ -148,6 +149,7 @@ if (!config.skipApi) {
   await checkStats(config);
   await checkAuthProviders(config);
   await checkPublicSkillSearch(config);
+  await checkPublicPublishers(config);
   await checkLaunchReadiness(config);
 }
 
@@ -303,6 +305,62 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
   }
 }
 
+async function checkPublicPublishers({ apiUrl, timeoutMs }) {
+  const name = "GET /v1/publishers";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/publishers?limit=5"),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.publishers)) {
+      fail(name, "expected publishers array");
+      return;
+    }
+
+    if (
+      ((smokeContext.stats?.publishedSkills ?? 0) > 0 ||
+        smokeContext.publicSkillSlug) &&
+      json.publishers.length === 0
+    ) {
+      fail(
+        name,
+        "public skills exist but publisher directory returned none; inspect publisher profile derivation and public skill ownership",
+      );
+      return;
+    }
+
+    const invalidPublisher = json.publishers.find(
+      (publisher) =>
+        typeof publisher?.slug !== "string" ||
+        typeof publisher?.displayName !== "string" ||
+        typeof publisher?.trustLevel !== "string" ||
+        !Array.isArray(publisher?.skills) ||
+        !isFiniteNumber(publisher?.metrics?.publicSkillCount),
+    );
+
+    if (invalidPublisher) {
+      fail(
+        name,
+        "publisher rows should include slug, displayName, trustLevel, metrics, and public skills",
+      );
+      return;
+    }
+
+    smokeContext.publicPublisherSlug = json.publishers[0]?.slug;
+
+    pass(name, `publishers=${json.publishers.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
 async function checkLaunchReadiness({ apiUrl, timeoutMs, token }) {
   const name = "GET /v1/admin/launch-readiness";
   const headers = token ? { Authorization: "Bearer <redacted>" } : undefined;
@@ -412,6 +470,7 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
   }
 
   await checkPublicSkillDetailPage({ appUrl, timeoutMs });
+  await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
 }
 
 async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
@@ -440,6 +499,44 @@ async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
 
     if (!html.includes(slug.toLowerCase())) {
       fail(name, `expected skill detail HTML to include slug ${slug}`);
+      return;
+    }
+
+    pass(
+      name,
+      `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+    );
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicPublisherProfilePage({ appUrl, timeoutMs }) {
+  const slug = smokeContext.publicPublisherSlug;
+  const name = "GET app public publisher profile";
+
+  if (!slug) {
+    skip(
+      name,
+      "no public publisher returned by /v1/publishers; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  const path = `/publishers/${encodeURIComponent(slug)}`;
+
+  try {
+    const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+    if (response.status !== 200) {
+      fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
+      return;
+    }
+
+    const html = response.text.toLowerCase();
+
+    if (!html.includes("publisher") && !html.includes("发布者")) {
+      fail(name, `expected publisher profile HTML markers for ${path}`);
       return;
     }
 

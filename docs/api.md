@@ -191,6 +191,8 @@ The response includes:
 - Public skill count, verified skill count, install count, runtime call count, active paid skill count, and average success rate.
 - Public skill rows with verification status, permission risk, pricing model, install count, call count, success rate, and version.
 
+Publisher directory reads begin from real public marketplace supply, not from bundled demo rows. If an organization has public `submitted`, `verified`, or `deprecated` skills but has not completed a publisher profile yet, the API derives a conservative public publisher row from the public skill ownership and manifest author name. That row keeps `status=pending`, `payoutStatus=not_configured`, and trust below verified until the publisher completes profile, terms, payout, and review requirements. Migration `031_public_publisher_profile_backfill.sql` backfills the same conservative pending profile for existing public supply, and new publish writes ensure a missing profile is created without overwriting one the publisher already edited. This keeps `/publishers` and skill-detail trust panels from going blank when real public skills exist, while still avoiding fake production publisher verification.
+
 The web app uses this data for `/publishers`, `/publishers/[slug]`, marketplace publisher links, and skill-detail publisher trust panels. Production-like runtimes suppress bundled publisher fallback unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled, so public publisher trust signals remain tied to live registry data.
 
 ## Registry Stats
