@@ -78,6 +78,8 @@ The latest developer-operations pass strengthens Journey A's repeat-use loop. `/
 
 The latest project-operations pass tightens Journey A's final mile. `/dashboard/projects/[slug]` now turns one project detail response into a ranked project queue for missing runtime keys, missing installs, owner approval, suspended runtime state, update decisions, runtime-quality issues, missing governed test proof, subscription/ledger/invoice gaps, and saved-skill follow-up. This makes the project command center answer "what must happen before agents scale?" while linking directly into existing policy, runtime, key, update, saved-skill, subscription, and invoice panels.
 
+The latest project finance pass makes billing adjustments visible where developer operators actually look. `/dashboard/projects/[slug]` now reads tenant-scoped project refund and dispute history, renders a read-only impact panel beside subscriptions and invoices, and lets unresolved adjustment rows surface in the project priority queue. This closes a Journey A trust gap without giving project operators finance powers: admin finance workflows still create, approve, post, fail, win, or lose adjustment records.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

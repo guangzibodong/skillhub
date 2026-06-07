@@ -4165,6 +4165,60 @@ export async function getDeveloperProjectDetail(projectSlug: string): Promise<De
   }
 }
 
+export async function getProjectRefunds(projectSlug: string): Promise<RefundRecord[]> {
+  const fallback = demoFallback(fallbackRefunds.filter((refund) => refund.projectSlug === projectSlug), []);
+  const token = await readWorkspaceToken();
+
+  if (!token) {
+    return fallback;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/projects/${encodeURIComponent(projectSlug)}/refunds?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Project refunds failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { refunds: RefundRecord[] };
+    return safeOperationValue(payload.refunds, []);
+  } catch {
+    return fallback;
+  }
+}
+
+export async function getProjectDisputes(projectSlug: string): Promise<DisputeRecord[]> {
+  const fallback = demoFallback(fallbackDisputes.filter((dispute) => dispute.projectSlug === projectSlug), []);
+  const token = await readWorkspaceToken();
+
+  if (!token) {
+    return fallback;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/projects/${encodeURIComponent(projectSlug)}/disputes?limit=8`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Project disputes failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { disputes: DisputeRecord[] };
+    return safeOperationValue(payload.disputes, []);
+  } catch {
+    return fallback;
+  }
+}
+
 export async function getPublisherRefunds(): Promise<RefundRecord[]> {
   const token = await readWorkspaceToken();
 

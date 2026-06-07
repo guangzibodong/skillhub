@@ -333,7 +333,7 @@ Requirements:
 
 - Projects.
 - Project detail command center with installed skills, editable per-skill policies, API keys, actionable update inbox, runtime calls, manageable subscription lifecycle, subscription ledger posting state, renewal readiness, cost, invoice records, organization billing readiness, agent REST/MCP connection details, and next actions.
-- Project detail operations priority queue that ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update decisions, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, and saved-skill follow-up from the existing project detail state without a fake task API.
+- Project detail operations priority queue that ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update decisions, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, unresolved refund/dispute impact, and saved-skill follow-up from the existing project detail state without a fake task API.
 - Project API keys with create, reveal-once, copy, rotation, and revoke workflows.
 - Approved skills.
 - Version pins.
@@ -342,7 +342,7 @@ Requirements:
 - Subscriptions.
 - Subscription creation from marketplace skill detail for public verified subscription listings, with provider-deferred `trialing` or `active` state, audit logging, and in-app notification records before payment-provider checkout is connected.
 - Invoices.
-- Project-level refund and dispute history.
+- Project-level refund and dispute history, visible from the project command center as read-only impact context so developers can understand billing adjustments without gaining finance decision rights.
 - Webhook endpoints with HTTPS URL validation, event-topic subscriptions, active/paused/disabled state, one-time signing-secret creation/rotation, delivery-status history fields, signed HTTP delivery, response capture, retry backoff, audit events, and organization notifications.
 - Organization team access with member list, role assignment, member token issuance, member removal, token visibility/revocation, audit events, and organization notifications before the final auth provider is connected.
 - Notification inbox with unread/topic summaries, mark-one-read and mark-all-read actions, plus notification preferences with actual email protocol integration deferred until the final integration phase.

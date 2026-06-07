@@ -275,7 +275,7 @@ The `/publisher` web console derives its top-level priority queue from the publi
 
 The `/developer` web console derives its top-level operations priority queue from existing developer project, buyer-request, organization billing, team, webhook, and notification endpoints. The queue is a UI aggregation layer: it ranks no-project setup, missing active keys, missing installs, owner approval, suspended runtime state, update inbox work, runtime-quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests without adding fake task rows or requiring a separate task API.
 
-The `/dashboard/projects/[slug]` web console derives a project-level operations priority queue from the existing project detail response and related project action surfaces. The queue ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update inbox work, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, and saved-skill follow-up. It is also a UI aggregation layer: links point back into the exact project panels and no separate task endpoint or fake queue rows are introduced.
+The `/dashboard/projects/[slug]` web console derives a project-level operations priority queue from the existing project detail response and related project action surfaces. The queue ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update inbox work, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, unresolved refund/dispute impact, and saved-skill follow-up. It is also a UI aggregation layer: links point back into the exact project panels and no separate task endpoint or fake queue rows are introduced.
 
 The `/admin` web console derives its top-level operations priority queue from the existing admin overview, launch readiness, review, risk, finance, notification, webhook, marketplace curation, identity, and audit endpoints. The queue is also a UI aggregation layer: it ranks launch blockers, review SLA/check/risk pressure, active incidents, open abuse reports, pending feedback moderation, payout/refund/dispute actions, external delivery retries, webhook outbox work, curation appeals, commission setup, and identity-health gaps without adding fake task rows or exposing secrets.
 
@@ -572,7 +572,7 @@ curl "https://api.useskillhub.com/v1/developer/projects/research-agent" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, subscription records, and invoice summaries. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints.
+The response is scoped to the token organization and returns the project summary plus installed skills, per-skill policy and budget state, per-skill runtime and usage metrics, API key metadata, update inbox items, recent runtime invocations, subscription records, and invoice summaries. This powers `/dashboard/projects/[slug]` so developers can manage one agent project without stitching together many operational endpoints. The project command center also reads the tenant-scoped refund and dispute history endpoints below so project operators can see billing adjustment impact beside subscriptions and invoices without receiving finance decision rights.
 
 Subscription records in this response include buyer-safe ledger visibility for the current period:
 
@@ -1693,7 +1693,7 @@ curl "https://api.useskillhub.com/v1/projects/research-agent/disputes?limit=20" 
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-These endpoints return transaction, skill, project, amount, status, reason, and provider/reference fields. They do not create money movement; finance users still operate refund and dispute decisions through `/v1/admin/finance/*`.
+These endpoints return transaction, skill, project, amount, status, reason, and provider/reference fields. They do not create money movement; finance users still operate refund and dispute decisions through `/v1/admin/finance/*`. The project command center renders the project-scoped rows as a read-only refund and dispute impact panel and includes unresolved adjustment records in its UI-derived priority queue without adding a fake task API.
 
 ## Notification Preferences
 

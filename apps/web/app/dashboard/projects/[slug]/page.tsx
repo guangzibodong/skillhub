@@ -12,7 +12,9 @@ import {
   LockKeyhole,
   PackageCheck,
   RadioTower,
+  RotateCcw,
   ShieldCheck,
+  ShieldAlert,
   WalletCards
 } from "lucide-react";
 import { JourneyRail } from "@/components/journey-rail";
@@ -30,8 +32,12 @@ import {
   formatCompactNumber,
   formatMoney,
   formatPercent,
+  getProjectDisputes,
+  getProjectRefunds,
   getDeveloperProjectDetail,
-  type DeveloperProjectDetail
+  type DeveloperProjectDetail,
+  type DisputeRecord,
+  type RefundRecord
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -163,6 +169,7 @@ const projectPriorityCopy: Record<
     title: string;
     tones: Record<ProjectPriorityTone, string>;
     actions: {
+      adjustments: string;
       billing: string;
       install: string;
       keys: string;
@@ -174,6 +181,7 @@ const projectPriorityCopy: Record<
       updates: string;
     };
     items: {
+      adjustments: string;
       billing: string;
       install: string;
       keys: string;
@@ -185,6 +193,7 @@ const projectPriorityCopy: Record<
       updates: string;
     };
     titles: {
+      adjustments: string;
       billing: string;
       install: string;
       keys: string;
@@ -222,6 +231,7 @@ const projectPriorityCopy: Record<
       warning: "Needs work"
     },
     actions: {
+      adjustments: "Open refund history",
       billing: "Open subscriptions",
       install: "Browse marketplace",
       keys: "Open keys",
@@ -233,6 +243,8 @@ const projectPriorityCopy: Record<
       updates: "Open update inbox"
     },
     items: {
+      adjustments:
+        "Refunds or disputes tied to this project need visibility before the buyer, publisher, and finance story can be trusted.",
       billing:
         "A subscription period, renewal, or invoice row needs ledger proof before paid runtime can be explained cleanly.",
       install:
@@ -253,6 +265,7 @@ const projectPriorityCopy: Record<
         "Version updates or incident notices are waiting for adoption, scheduling, acknowledgement, or ignore decisions."
     },
     titles: {
+      adjustments: "Refund and dispute impact",
       billing: "Billing ledger proof",
       install: "Skill installation",
       keys: "Runtime key",
@@ -289,6 +302,7 @@ const projectPriorityCopy: Record<
       warning: "\u5f85\u5904\u7406"
     },
     actions: {
+      adjustments: "\u6253\u5f00\u9000\u6b3e\u5386\u53f2",
       billing: "\u6253\u5f00\u8ba2\u9605",
       install: "\u6d4f\u89c8\u5e02\u573a",
       keys: "\u6253\u5f00 Key",
@@ -300,6 +314,8 @@ const projectPriorityCopy: Record<
       updates: "\u6253\u5f00\u66f4\u65b0\u961f\u5217"
     },
     items: {
+      adjustments:
+        "\u4e0e\u8fd9\u4e2a\u9879\u76ee\u76f8\u5173\u7684\u9000\u6b3e\u6216\u4e89\u8bae\u9700\u8981\u53ef\u89c1\uff0c\u4e70\u65b9\u3001\u53d1\u5e03\u8005\u548c\u8d22\u52a1\u7684\u94fe\u8def\u624d\u80fd\u88ab\u4fe1\u4efb\u3002",
       billing:
         "\u8ba2\u9605\u5468\u671f\u3001\u7eed\u8ba2\u6216\u53d1\u7968\u884c\u9700\u8981\u8d26\u672c\u8bc1\u636e\uff0c\u624d\u80fd\u628a\u4ed8\u8d39\u8fd0\u884c\u8bf4\u6e05\u695a\u3002",
       install:
@@ -320,6 +336,7 @@ const projectPriorityCopy: Record<
         "\u7248\u672c\u66f4\u65b0\u6216\u4e8b\u6545\u901a\u77e5\u6b63\u5728\u7b49\u5f85\u91c7\u7528\u3001\u6392\u671f\u3001\u786e\u8ba4\u6216\u5ffd\u7565\u51b3\u7b56\u3002"
     },
     titles: {
+      adjustments: "\u9000\u6b3e\u4e0e\u4e89\u8bae\u5f71\u54cd",
       billing: "\u8d26\u672c\u8bc1\u636e",
       install: "\u6280\u80fd\u5b89\u88c5",
       keys: "\u8fd0\u884c Key",
@@ -333,12 +350,63 @@ const projectPriorityCopy: Record<
   }
 };
 
+const projectAdjustmentCopy = {
+  en: {
+    body:
+      "Read-only project history for finance adjustments. Finance operators still create and decide refunds or disputes from admin workflows, while developers can inspect the project impact here.",
+    dispute: "Dispute",
+    disputeStatuses: {
+      lost: "Lost",
+      open: "Open",
+      warning_needs_response: "Needs response",
+      won: "Won"
+    },
+    empty: "No refund or dispute records are tied to this project.",
+    reference: "Reference",
+    refund: "Refund",
+    refundStatuses: {
+      approved: "Approved",
+      failed: "Failed",
+      posted: "Posted",
+      rejected: "Rejected",
+      requested: "Requested"
+    },
+    title: "Refund and dispute impact"
+  },
+  zh: {
+    body:
+      "\u8fd9\u91cc\u662f\u9879\u76ee\u7ea7\u53ea\u8bfb\u8d22\u52a1\u8c03\u6574\u5386\u53f2\u3002\u9000\u6b3e\u6216\u4e89\u8bae\u4ecd\u7531\u8d22\u52a1\u5728\u7ba1\u7406\u540e\u53f0\u521b\u5efa\u548c\u51b3\u7b56\uff0c\u5f00\u53d1\u8005\u53ef\u4ee5\u5728\u8fd9\u91cc\u68c0\u67e5\u5b83\u5bf9\u672c\u9879\u76ee\u7684\u5f71\u54cd\u3002",
+    dispute: "\u4e89\u8bae",
+    disputeStatuses: {
+      lost: "\u5df2\u8d25\u8bc9",
+      open: "\u5904\u7406\u4e2d",
+      warning_needs_response: "\u9700\u56de\u5e94",
+      won: "\u5df2\u80dc\u8bc9"
+    },
+    empty: "\u8fd9\u4e2a\u9879\u76ee\u6682\u65e0\u9000\u6b3e\u6216\u4e89\u8bae\u8bb0\u5f55\u3002",
+    reference: "\u53c2\u8003",
+    refund: "\u9000\u6b3e",
+    refundStatuses: {
+      approved: "\u5df2\u6279\u51c6",
+      failed: "\u5931\u8d25",
+      posted: "\u5df2\u5165\u8d26",
+      rejected: "\u5df2\u62d2\u7edd",
+      requested: "\u5df2\u7533\u8bf7"
+    },
+    title: "\u9000\u6b3e\u4e0e\u4e89\u8bae\u5f71\u54cd"
+  }
+} as const;
+
 export default async function ProjectDetailPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const detail = await getDeveloperProjectDetail(slug);
+  const [detail, projectRefunds, projectDisputes] = await Promise.all([
+    getDeveloperProjectDetail(slug),
+    getProjectRefunds(slug),
+    getProjectDisputes(slug)
+  ]);
 
   if (!detail) {
     notFound();
@@ -361,7 +429,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   ] as const;
   const readinessItems = getReadinessItems(detail, locale);
   const projectPriorityLabels = projectPriorityCopy[locale];
-  const projectPriorityItems = buildProjectPriorityItems(detail, locale);
+  const projectPriorityItems = buildProjectPriorityItems(detail, locale, projectRefunds, projectDisputes);
   const primaryProjectPriorityItem = projectPriorityItems[0];
   const projectPriorityMetrics = [
     [projectPriorityLabels.metrics.keys, formatCompactNumber(project.apiKeys.activeCount), KeyRound],
@@ -599,9 +667,87 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
               titleLabel={labels.invoicesTitle}
             />
           </div>
+
+          <div id="project-adjustments">
+            <ProjectAdjustmentHistory
+              disputes={projectDisputes}
+              locale={locale}
+              noDateLabel={labels.noDate}
+              refunds={projectRefunds}
+            />
+          </div>
         </aside>
       </section>
     </main>
+  );
+}
+
+function ProjectAdjustmentHistory({
+  disputes,
+  locale,
+  noDateLabel,
+  refunds
+}: {
+  disputes: DisputeRecord[];
+  locale: Locale;
+  noDateLabel: string;
+  refunds: RefundRecord[];
+}) {
+  const labels = projectAdjustmentCopy[locale];
+  const rows = buildProjectAdjustmentRows(refunds, disputes, locale, noDateLabel);
+
+  return (
+    <article className="ops-panel project-adjustment-panel">
+      <div className="card-kicker">
+        <RotateCcw size={16} aria-hidden="true" />
+        <span>{labels.title}</span>
+      </div>
+      <p>{labels.body}</p>
+
+      <div className="project-adjustment-summary">
+        <span>
+          <RotateCcw size={14} aria-hidden="true" />
+          <b>{refunds.length}</b>
+          {labels.refund}
+        </span>
+        <span>
+          <ShieldAlert size={14} aria-hidden="true" />
+          <b>{disputes.length}</b>
+          {labels.dispute}
+        </span>
+      </div>
+
+      <div className="project-adjustment-list">
+        {rows.length > 0 ? (
+          rows.map((row) => {
+            const Icon = row.typeKey === "refund" ? RotateCcw : ShieldAlert;
+
+            return (
+              <section className={`project-adjustment-card project-adjustment-card--${row.typeKey}`} key={row.id}>
+                <header>
+                  <div>
+                    <Icon size={15} aria-hidden="true" />
+                    <span>{row.type}</span>
+                    <strong>{row.skill}</strong>
+                  </div>
+                  <span className={statusChipClass(row.rawStatus)}>{row.status}</span>
+                </header>
+                <div className="project-adjustment-card__meta">
+                  <span>{row.amount}</span>
+                  <span>{row.date}</span>
+                </div>
+                <p>{row.reason}</p>
+                <small>
+                  {labels.reference}: {row.reference}
+                </small>
+              </section>
+            );
+          })
+        ) : (
+          <div className="project-adjustment-empty">{labels.empty}</div>
+        )}
+      </div>
+    </article>
   );
 }
 
@@ -651,7 +797,12 @@ function getReadinessItems(detail: DeveloperProjectDetail, locale: Locale) {
   ];
 }
 
-function buildProjectPriorityItems(detail: DeveloperProjectDetail, locale: Locale): ProjectPriorityItem[] {
+function buildProjectPriorityItems(
+  detail: DeveloperProjectDetail,
+  locale: Locale,
+  refunds: RefundRecord[],
+  disputes: DisputeRecord[]
+): ProjectPriorityItem[] {
   const labels = projectPriorityCopy[locale];
   const items: ProjectPriorityItem[] = [];
   const { project } = detail;
@@ -660,6 +811,7 @@ function buildProjectPriorityItems(detail: DeveloperProjectDetail, locale: Local
   const updateCount = countOpenProjectUpdates(detail);
   const runtimeIssueCount = countRuntimeQualityIssues(detail);
   const billingActionCount = countProjectBillingActions(detail);
+  const adjustmentActionCount = countProjectAdjustmentActions(refunds, disputes);
   const savedFollowUpCount = detail.savedSkills.filter((skill) => !skill.installedStatus || skill.installedStatus !== "installed").length;
   const needsRuntimeProof =
     project.apiKeys.activeCount > 0 &&
@@ -776,6 +928,19 @@ function buildProjectPriorityItems(detail: DeveloperProjectDetail, locale: Local
     });
   }
 
+  if (adjustmentActionCount > 0) {
+    items.push({
+      actionLabel: labels.actions.adjustments,
+      detail: labels.items.adjustments,
+      href: projectAnchor(project.slug, "project-adjustments", locale),
+      id: "refund-dispute-impact",
+      metric: formatCompactNumber(adjustmentActionCount),
+      priority: hasDangerousProjectAdjustment(refunds, disputes) ? 46 : 54,
+      title: labels.titles.adjustments,
+      tone: hasDangerousProjectAdjustment(refunds, disputes) ? "danger" : "warning"
+    });
+  }
+
   if (savedFollowUpCount > 0) {
     items.push({
       actionLabel: labels.actions.saved,
@@ -867,6 +1032,63 @@ function countProjectBillingActions(detail: DeveloperProjectDetail) {
   ).length;
 
   return subscriptionActions + invoiceActions;
+}
+
+function countProjectAdjustmentActions(refunds: RefundRecord[], disputes: DisputeRecord[]) {
+  const refundActions = refunds.filter((refund) => ["approved", "failed", "requested"].includes(refund.status)).length;
+  const disputeActions = disputes.filter((dispute) => ["lost", "open", "warning_needs_response"].includes(dispute.status)).length;
+
+  return refundActions + disputeActions;
+}
+
+function hasDangerousProjectAdjustment(refunds: RefundRecord[], disputes: DisputeRecord[]) {
+  return (
+    refunds.some((refund) => refund.status === "failed" || refund.status === "requested") ||
+    disputes.some((dispute) => dispute.status === "lost" || dispute.status === "open" || dispute.status === "warning_needs_response")
+  );
+}
+
+function buildProjectAdjustmentRows(refunds: RefundRecord[], disputes: DisputeRecord[], locale: Locale, fallback: string) {
+  const labels = projectAdjustmentCopy[locale];
+  const rows = [
+    ...refunds.map((refund) => ({
+      amount: `-${formatMoney(refund.amountCents, refund.currency)}`,
+      createdAt: refund.requestedAt ?? refund.createdAt,
+      date: formatDateValue(refund.requestedAt ?? refund.createdAt, locale, fallback),
+      id: `refund-${refund.id}`,
+      rawStatus: refund.status,
+      reason: refund.reason ?? refund.providerReference ?? fallback,
+      reference: refund.adjustmentTransactionId ?? refund.transactionId ?? refund.providerReference ?? fallback,
+      skill: refund.skillName ?? refund.transactionId ?? fallback,
+      status: labels.refundStatuses[refund.status],
+      type: labels.refund,
+      typeKey: "refund" as const
+    })),
+    ...disputes.map((dispute) => ({
+      amount: formatMoney(dispute.amountCents, dispute.currency),
+      createdAt: dispute.createdAt,
+      date: formatDateValue(dispute.createdAt, locale, fallback),
+      id: `dispute-${dispute.id}`,
+      rawStatus: dispute.status,
+      reason: dispute.reason ?? dispute.externalReference ?? fallback,
+      reference: dispute.externalReference ?? dispute.transactionId ?? fallback,
+      skill: dispute.skillName ?? dispute.transactionId ?? fallback,
+      status: labels.disputeStatuses[dispute.status],
+      type: labels.dispute,
+      typeKey: "dispute" as const
+    }))
+  ];
+
+  return rows.sort((first, second) => adjustmentSortValue(second.createdAt) - adjustmentSortValue(first.createdAt));
+}
+
+function adjustmentSortValue(value: string | null | undefined) {
+  if (!value || value === "demo") {
+    return 0;
+  }
+
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function projectAnchor(projectSlug: string, anchor: string, locale: Locale) {
