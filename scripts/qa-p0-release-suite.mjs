@@ -304,6 +304,15 @@ Runs the P0 release gate in a safe order. By default it runs the public
 production-safe smoke plus the non-mutating Journey C admin operations smoke.
 Mutating Journey A, Journey B, and demo-chain checks are opt-in.
 
+Production modes:
+  Routine 1Panel public gate:
+    pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+    Performs no writes and does not require an operator token.
+
+  Full protected Journey C gate:
+    pnpm smoke:p0 -- --prod --timeout-ms 30000
+    Requires an admin/super-admin user token already configured in the shell.
+
 Options:
   --prod                 Use https://api.useskillhub.com and https://app.useskillhub.com.
   --api-url <url>        Gateway API URL. Overrides --prod.
@@ -326,8 +335,8 @@ Environment:
   Child scripts keep their own token variables, redaction, and production-write guards.
 
 Examples:
-  pnpm smoke:p0 -- --prod
-  pnpm smoke:p0 -- --prod --skip-admin
+  pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+  pnpm smoke:p0 -- --prod --timeout-ms 30000
   pnpm smoke:p0 -- --include-mutating
   pnpm smoke:p0 -- --include-demo --skip-demo-ledger
 `);

@@ -250,6 +250,17 @@ const DEPLOYMENT_RUNBOOK_GUARDS = [
       "performs no\nwrites and does not require an operator token",
     ],
   },
+  {
+    file: "docs/api.md",
+    forbidden: [],
+    required: [
+      PUBLIC_P0_PROD_GATE,
+      PROTECTED_P0_PROD_GATE,
+      "routine 1Panel updates",
+      "protected Journey C",
+      "Mutating journey checks are opt-in",
+    ],
+  },
 ];
 
 const smokeContext = {
@@ -1013,7 +1024,7 @@ async function checkDeploymentRunbookGate() {
       return;
     }
 
-    pass(name, `runbooks=${DEPLOYMENT_RUNBOOK_GUARDS.length}`);
+    pass(name, `guardedFiles=${DEPLOYMENT_RUNBOOK_GUARDS.length}`);
   } catch (error) {
     fail(name, error.message);
   }

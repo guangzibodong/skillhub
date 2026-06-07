@@ -2186,6 +2186,22 @@ pnpm smoke:p0 -- --prod
 
 The suite runs the public production-safe smoke first and then the non-mutating Journey C admin operations smoke. It keeps the admin smoke token requirements intact, so protected launch readiness, review, finance, payout, notification, webhook, identity, audit, trust, and curation reads are checked before the suite passes.
 
+For routine 1Panel updates, run the public production gate first:
+
+```bash
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+```
+
+This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails.
+
+For release signoff or customer walkthroughs where an admin/super-admin user token is already configured in the shell, run the full protected Journey C gate:
+
+```bash
+pnpm smoke:p0 -- --prod --timeout-ms 30000
+```
+
+That protected Journey C run is still non-mutating, but it verifies admin readiness, review, finance, payout, notification, webhook, identity, audit, trust, and curation reads before passing.
+
 Mutating journey checks are opt-in:
 
 ```bash
