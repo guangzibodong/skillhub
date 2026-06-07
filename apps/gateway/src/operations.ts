@@ -379,7 +379,9 @@ export async function upsertProjectPolicy(
   projectSlug: string,
   skillSlug: string,
   input: PolicyInput,
-  organizationId?: string | null
+  organizationId?: string | null,
+  actorUserId?: string | null,
+  canApproveOwnerReview = false
 ) {
   const sql = await requireSql();
   await seedRegistry(sql);
@@ -388,65 +390,124 @@ export async function upsertProjectPolicy(
   const project = await upsertProject(sql, writeOrganizationId, projectSlug);
   const skill = await getSkillRecord(sql, skillSlug);
   const defaults = policyDefaults(skill.manifest);
+  const approvalRequired = input.approvalRequired ?? defaults.approvalRequired;
 
-  const rows = (await sql`
-    insert into project_skill_policies (
-      project_id,
-      skill_id,
-      max_permission_level,
-      allow_network,
-      allow_browser,
-      filesystem_access,
-      allow_secret_access,
-      monthly_budget_cents,
-      rate_limit_per_minute,
-      approval_required,
-      approved_at,
-      updated_at
-    )
-    values (
-      ${project.id},
-      ${skill.id},
-      ${input.maxPermissionLevel ?? defaults.maxPermissionLevel},
-      ${input.allowNetwork ?? defaults.allowNetwork},
-      ${input.allowBrowser ?? defaults.allowBrowser},
-      ${input.filesystemAccess ?? defaults.filesystemAccess},
-      ${input.allowSecretAccess ?? defaults.allowSecretAccess},
-      ${input.monthlyBudgetCents ?? defaults.monthlyBudgetCents},
-      ${input.rateLimitPerMinute ?? defaults.rateLimitPerMinute},
-      ${input.approvalRequired ?? defaults.approvalRequired},
-      ${input.approvalRequired === false ? sql`now()` : null},
-      now()
-    )
-    on conflict (project_id, skill_id) do update set
-      max_permission_level = excluded.max_permission_level,
-      allow_network = excluded.allow_network,
-      allow_browser = excluded.allow_browser,
-      filesystem_access = excluded.filesystem_access,
-      allow_secret_access = excluded.allow_secret_access,
-      monthly_budget_cents = excluded.monthly_budget_cents,
-      rate_limit_per_minute = excluded.rate_limit_per_minute,
-      approval_required = excluded.approval_required,
-      approved_at = excluded.approved_at,
-      updated_at = now()
-    returning
-      max_permission_level as "maxPermissionLevel",
-      allow_network as "allowNetwork",
-      allow_browser as "allowBrowser",
-      filesystem_access as "filesystemAccess",
-      allow_secret_access as "allowSecretAccess",
-      monthly_budget_cents as "monthlyBudgetCents",
-      rate_limit_per_minute as "rateLimitPerMinute",
-      approval_required as "approvalRequired",
-      approved_at as "approvedAt",
-      updated_at as "updatedAt"
-  `) as Array<Record<string, unknown>>;
+  if (!approvalRequired && defaults.approvalRequired && !canApproveOwnerReview) {
+    throw new Error("Owner or admin role is required to approve high-risk project policy.");
+  }
 
-  return {
-    projectSlug,
-    skillSlug: skill.slug,
-    ...rows[0]
-  };
+  return sql.begin(async (tx: Sql) => {
+    const rows = (await tx`
+      insert into project_skill_policies (
+        project_id,
+        skill_id,
+        max_permission_level,
+        allow_network,
+        allow_browser,
+        filesystem_access,
+        allow_secret_access,
+        monthly_budget_cents,
+        rate_limit_per_minute,
+        approval_required,
+        approved_by_user_id,
+        approved_at,
+        updated_at
+      )
+      values (
+        ${project.id},
+        ${skill.id},
+        ${input.maxPermissionLevel ?? defaults.maxPermissionLevel},
+        ${input.allowNetwork ?? defaults.allowNetwork},
+        ${input.allowBrowser ?? defaults.allowBrowser},
+        ${input.filesystemAccess ?? defaults.filesystemAccess},
+        ${input.allowSecretAccess ?? defaults.allowSecretAccess},
+        ${input.monthlyBudgetCents ?? defaults.monthlyBudgetCents},
+        ${input.rateLimitPerMinute ?? defaults.rateLimitPerMinute},
+        ${approvalRequired},
+        ${approvalRequired ? null : actorUserId ?? null},
+        ${approvalRequired ? null : tx`now()`},
+        now()
+      )
+      on conflict (project_id, skill_id) do update set
+        max_permission_level = excluded.max_permission_level,
+        allow_network = excluded.allow_network,
+        allow_browser = excluded.allow_browser,
+        filesystem_access = excluded.filesystem_access,
+        allow_secret_access = excluded.allow_secret_access,
+        monthly_budget_cents = excluded.monthly_budget_cents,
+        rate_limit_per_minute = excluded.rate_limit_per_minute,
+        approval_required = excluded.approval_required,
+        approved_by_user_id = excluded.approved_by_user_id,
+        approved_at = excluded.approved_at,
+        updated_at = now()
+      returning
+        id::text,
+        max_permission_level as "maxPermissionLevel",
+        allow_network as "allowNetwork",
+        allow_browser as "allowBrowser",
+        filesystem_access as "filesystemAccess",
+        allow_secret_access as "allowSecretAccess",
+        monthly_budget_cents as "monthlyBudgetCents",
+        rate_limit_per_minute as "rateLimitPerMinute",
+        approval_required as "approvalRequired",
+        approved_by_user_id::text as "approvedByUserId",
+        approved_at as "approvedAt",
+        updated_at as "updatedAt"
+    `) as Array<Record<string, unknown>>;
+    const policy = rows[0];
+
+    const installRows = (await tx`
+      update project_skill_installs psi
+      set
+        approval_state = ${approvalRequired ? "owner_required" : "approved"},
+        updated_at = now()
+      where psi.project_id = ${project.id}
+        and psi.skill_id = ${skill.id}
+        and psi.status = 'installed'
+      returning psi.id::text, psi.approval_state as "approvalState"
+    `) as Array<{ id: string; approvalState: string }>;
+    const install = installRows[0] ?? null;
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${actorUserId ?? null},
+        'project_policy.updated',
+        'project_skill_policy',
+        ${String(policy.id)},
+        'Project skill policy saved and runtime approval state synchronized.',
+        ${tx.json({
+          approvalRequired,
+          installApprovalState: install?.approvalState ?? null,
+          projectSlug,
+          skillSlug: skill.slug
+        })}
+      )
+    `;
+
+    await tx`
+      insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${writeOrganizationId},
+        'project.policy.updated',
+        'in_app',
+        'Project skill policy updated',
+        ${tx.json({
+          approvalRequired,
+          installApprovalState: install?.approvalState ?? null,
+          projectSlug,
+          skillSlug: skill.slug
+        })},
+        'queued'
+      )
+    `;
+
+    return {
+      projectSlug,
+      skillSlug: skill.slug,
+      ...policy
+    };
+  });
 }
 
 export async function listProjectUpdateInbox(projectSlug: string, organizationId?: string | null) {

@@ -253,6 +253,10 @@ const financeOperatorRoles: AuthRole[] = ["super_admin", "admin", "finance"];
 const organizationBillingRoles: AuthRole[] = ["super_admin", "admin", "owner", "finance"];
 const organizationAdminRoles: AuthRole[] = ["super_admin", "admin", "owner"];
 const organizationWebhookRoles: AuthRole[] = ["super_admin", "admin", "owner", "developer"];
+
+function canApproveOwnerReview(roles: AuthRole[]) {
+  return roles.some((role) => organizationAdminRoles.includes(role));
+}
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
 const curationOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "support"];
@@ -1044,7 +1048,9 @@ app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
       projectSlug,
       c.req.param("skillSlug"),
       (await c.req.json()) as Record<string, unknown>,
-      authorization.subject.organizationId
+      authorization.subject.organizationId,
+      authorization.subject.userId,
+      canApproveOwnerReview(authorization.subject.roles)
     );
 
     return c.json({ policy });

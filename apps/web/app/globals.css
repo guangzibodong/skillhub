@@ -953,6 +953,31 @@ a {
   color: #7d8476;
 }
 
+.search-box__submit {
+  display: inline-flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(126, 231, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(126, 231, 255, 0.08);
+  color: var(--cyan);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.search-box__submit:hover,
+.search-box__submit:focus-visible {
+  border-color: rgba(126, 231, 255, 0.55);
+  background: rgba(126, 231, 255, 0.14);
+  transform: translateY(-1px);
+}
+
 .metric-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

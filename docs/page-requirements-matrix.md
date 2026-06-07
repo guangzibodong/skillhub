@@ -46,6 +46,7 @@ Acceptance:
 - Shows developer, publisher, and operator loops.
 - Shows an explicit console access map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including role expectations and no-shared-password guidance.
 - Shows a shared operating evidence chain that connects publisher supply, admin review, marketplace install, runtime governance, ledger split, payout, and audit without using fake production rows.
+- Registry search on the home page submits into `/marketplace` with a real query parameter instead of behaving like a decorative input.
 - Shows public trust and operating proof.
 - Links to marketplace, publishers, agents, docs, publish, login/account, and terms.
 
@@ -74,6 +75,7 @@ Data source:
 Acceptance:
 
 - Filters cover category, pricing, runtime, permission risk, verification state, and ranking.
+- Search and filter state is deep-linkable through URL parameters so homepage handoff, customer demos, and shared discovery links reproduce the same catalog view.
 - Cards show install command, risk, runtime, price, verification, rating, installs/calls when available.
 - Buyer-safe recommendation reasons are visible.
 - Cards show an after-install project handoff strip so developers can see that copying an install command leads to project install state, policy gate, runtime logs, and usage ledger state.
@@ -483,6 +485,7 @@ Acceptance:
 - Shows project-scoped refund and dispute impact history as read-only buyer/operator context, and unresolved adjustment records can surface in the project priority queue while finance decisions remain in admin workflows.
 - Runtime actions use project-scoped authorization.
 - High-risk permission changes require owner approval.
+- High-risk owner approval saves require owner/admin authority and must synchronize the installed-skill approval state, policy approval timestamp, audit trail, and notification event before runtime invocation is considered unblocked.
 - Version adoption only works for approved versions.
 - Subscription and budget gates are visible before runtime use.
 - API keys are reveal-once.

@@ -190,6 +190,7 @@ Requirements:
 - Filter by category.
 - Filter by pricing model.
 - Filter by runtime, permission risk, verification state, and installed/approved status.
+- Preserve search and filter state in shareable marketplace URLs, including homepage search handoff into the same discovery view.
 - Show risk level.
 - Show price.
 - Show runtime.
@@ -349,6 +350,7 @@ Requirements:
 - Installed skills by project.
 - Skill update and deprecation inbox.
 - Project permission approvals.
+- High-risk owner approval changes must be limited to owner/admin authority and update both the project policy and the installed-skill approval state so runtime calls are not left blocked after the UI says approval is complete.
 - Saved skills and collections.
 - Developer operations priority queue that ranks no-project setup, missing runtime keys, missing installs, owner approval, suspended installs or policy, update decisions, runtime quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests from existing project and organization state without a fake task API.
 

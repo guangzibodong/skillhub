@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BadgeCheck,
   Copy,
@@ -26,8 +26,19 @@ import {
 import { publisherSlugFromName } from "@/lib/public-publishers";
 
 type MarketplaceBrowserProps = {
+  initialFilters?: MarketplaceInitialFilters;
   locale: Locale;
   skills: MarketplaceSkill[];
+};
+
+type MarketplaceInitialFilters = {
+  category?: string;
+  pricing?: string;
+  query?: string;
+  risk?: string;
+  runtime?: string;
+  sort?: string;
+  verification?: string;
 };
 
 const labels = {
@@ -182,6 +193,13 @@ const sortOptions = [
   "recent",
 ] as const;
 
+type CategoryKey = (typeof marketplaceCategories)[number]["key"];
+type PricingKey = (typeof pricingOptions)[number]["key"];
+type RiskKey = (typeof riskOptions)[number];
+type RuntimeKey = (typeof runtimeOptions)[number];
+type VerificationKey = (typeof verificationOptions)[number];
+type SortKey = (typeof sortOptions)[number];
+
 const emptyCatalogCopy = {
   en: {
     body: "The live registry is not exposing public skills yet. Review launch readiness, approve real skill versions, or enable demo fallback only for a controlled staging demo.",
@@ -194,20 +212,29 @@ const emptyCatalogCopy = {
 } as const;
 
 export function MarketplaceBrowser({
+  initialFilters,
   locale,
   skills,
 }: MarketplaceBrowserProps) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] =
-    useState<(typeof marketplaceCategories)[number]["key"]>("all");
-  const [pricing, setPricing] =
-    useState<(typeof pricingOptions)[number]["key"]>("all");
-  const [risk, setRisk] = useState<(typeof riskOptions)[number]>("all");
-  const [runtime, setRuntime] =
-    useState<(typeof runtimeOptions)[number]>("all");
-  const [verification, setVerification] =
-    useState<(typeof verificationOptions)[number]>("all");
-  const [sort, setSort] = useState<(typeof sortOptions)[number]>("recommended");
+  const normalizedInitialFilters = useMemo(
+    () => normalizeInitialFilters(initialFilters),
+    [initialFilters],
+  );
+  const [query, setQuery] = useState(normalizedInitialFilters.query);
+  const [category, setCategory] = useState<CategoryKey>(
+    normalizedInitialFilters.category,
+  );
+  const [pricing, setPricing] = useState<PricingKey>(
+    normalizedInitialFilters.pricing,
+  );
+  const [risk, setRisk] = useState<RiskKey>(normalizedInitialFilters.risk);
+  const [runtime, setRuntime] = useState<RuntimeKey>(
+    normalizedInitialFilters.runtime,
+  );
+  const [verification, setVerification] = useState<VerificationKey>(
+    normalizedInitialFilters.verification,
+  );
+  const [sort, setSort] = useState<SortKey>(normalizedInitialFilters.sort);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const dictionary = labels[locale];
   const emptyCatalog = emptyCatalogCopy[locale];
@@ -220,6 +247,50 @@ export function MarketplaceBrowser({
     runtime !== "all" ||
     verification !== "all" ||
     sort !== "recommended";
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    const trimmedQuery = query.trim();
+
+    if (locale === "zh") {
+      params.set("lang", "zh");
+    }
+
+    if (trimmedQuery) {
+      params.set("q", trimmedQuery);
+    }
+
+    if (category !== "all") {
+      params.set("category", category);
+    }
+
+    if (pricing !== "all") {
+      params.set("pricing", pricing);
+    }
+
+    if (risk !== "all") {
+      params.set("permissionLevel", risk);
+    }
+
+    if (runtime !== "all") {
+      params.set("runtime", runtime.toLowerCase());
+    }
+
+    if (verification !== "all") {
+      params.set("verification", verification);
+    }
+
+    if (sort !== "recommended") {
+      params.set("sort", sort);
+    }
+
+    const nextPath = `/marketplace${params.toString() ? `?${params}` : ""}`;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+
+    if (currentPath !== nextPath) {
+      window.history.replaceState(null, "", nextPath);
+    }
+  }, [category, locale, pricing, query, risk, runtime, sort, verification]);
 
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -574,6 +645,56 @@ export function MarketplaceBrowser({
       )}
     </section>
   );
+}
+
+function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
+  return {
+    category: normalizeOption(
+      filters.category,
+      marketplaceCategories.map((item) => item.key),
+      "all",
+    ),
+    pricing: normalizeOption(filters.pricing, pricingOptions.map((item) => item.key), "all"),
+    query: String(filters.query ?? "").trim().slice(0, 120),
+    risk: normalizeOption(filters.risk, riskOptions, "all"),
+    runtime: normalizeRuntime(filters.runtime),
+    sort: normalizeSort(filters.sort),
+    verification: normalizeOption(filters.verification, verificationOptions, "all"),
+  };
+}
+
+function normalizeOption<T extends string>(
+  value: string | undefined,
+  options: readonly T[],
+  fallback: T,
+): T {
+  return options.includes(value as T) ? (value as T) : fallback;
+}
+
+function normalizeRuntime(value: string | undefined): RuntimeKey {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (normalized === "http") {
+    return "HTTP";
+  }
+
+  if (normalized === "mcp") {
+    return "MCP";
+  }
+
+  if (normalized === "local") {
+    return "Local";
+  }
+
+  return normalizeOption(value, runtimeOptions, "all");
+}
+
+function normalizeSort(value: string | undefined): SortKey {
+  if (value === "low_risk") {
+    return "lowRisk";
+  }
+
+  return normalizeOption(value, sortOptions, "recommended");
 }
 
 function FilterGroup({

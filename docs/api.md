@@ -56,6 +56,8 @@ Recommended ranking combines query relevance, verification status, permission ri
 
 The web marketplace turns those safe public fields into visible card-level recommendation reasons such as verified review, permission profile, runtime success, moderated feedback, and install evidence. Cards also show the after-install operating handoff: project install state, project policy gate, runtime log, and usage ledger. This UI layer does not add private curation fields to the API response; it explains the already-public discovery contract so developers can see why a listing is recommended and what operational state it can create after install.
 
+The web marketplace also accepts the same discovery concepts in page URLs (`q`, `category`, `pricing`/`billingModel`, `permissionLevel`, `runtime`, `verification`/`verificationStatus`, and `sort`). The browser initializes its catalog filters from those parameters, keeps client-side filter changes reflected in the URL, and lets the home-page registry search hand off to `/marketplace?q=...` without adding a separate task or fake search API.
+
 ## Admin Marketplace Curation
 
 Marketplace curation lets operators improve discovery quality without editing skill records directly. Public search uses the active curation rule internally for `sort=recommended`; admin endpoints expose the rule, quality signals, and audit path.
@@ -672,6 +674,8 @@ curl -X PUT "https://api.useskillhub.com/v1/projects/research-agent/policies/bro
     "approvalRequired": false
   }'
 ```
+
+Policy updates are organization scoped and write audit plus in-app notification records. When `approvalRequired` is `false`, SkillHub records the approving user on the policy, sets `approvedAt`, and moves the matching installed skill's `approvalState` to `approved` so REST and MCP runtime calls can pass the owner-approval gate. Clearing approval for a high-risk skill requires an owner, admin, or super-admin role; developer-role operators can still maintain ordinary low-risk policies. When `approvalRequired` is `true`, the matching installed skill returns to `owner_required` and runtime invocation remains blocked until an authorized owner/admin operator explicitly clears the approval requirement again.
 
 Read the installed-skill update inbox:
 

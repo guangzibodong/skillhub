@@ -1,5 +1,6 @@
 import {
   Activity,
+  ArrowRight,
   Boxes,
   Braces,
   CheckCircle2,
@@ -344,10 +345,19 @@ tools: skillhub.search, skillhub.get`}</code>
               <h2 id="registry-heading">{dictionary.home.registryTitle}</h2>
             </div>
             <div className="workbench-actions">
-              <div className="search-box">
+              <form action="/marketplace" className="search-box" method="get" role="search">
+                {locale === "zh" ? <input name="lang" type="hidden" value="zh" /> : null}
                 <Search size={17} aria-hidden="true" />
-                <input aria-label={dictionary.home.searchPlaceholder} placeholder={dictionary.home.searchPlaceholder} />
-              </div>
+                <input aria-label={dictionary.home.searchPlaceholder} name="q" placeholder={dictionary.home.searchPlaceholder} />
+                <button
+                  aria-label={locale === "zh" ? "搜索市场" : "Search marketplace"}
+                  className="search-box__submit"
+                  title={locale === "zh" ? "搜索市场" : "Search marketplace"}
+                  type="submit"
+                >
+                  <ArrowRight size={15} aria-hidden="true" />
+                </button>
+              </form>
               <a className="secondary-button" href={localizedHref("/publish", locale)}>
                 <Plus size={17} aria-hidden="true" />
                 <span>{dictionary.home.newSkill}</span>

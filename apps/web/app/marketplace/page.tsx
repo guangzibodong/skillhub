@@ -33,6 +33,8 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type SearchParamRecord = Record<string, string | string[] | undefined>;
+
 const pageCopy = {
   en: {
     eyebrow: "Agent skill marketplace",
@@ -332,6 +334,15 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
+  const initialFilters = {
+    category: firstSearchParam(params, "category"),
+    pricing: firstSearchParam(params, "pricing") ?? firstSearchParam(params, "billingModel"),
+    query: firstSearchParam(params, "q") ?? firstSearchParam(params, "query"),
+    risk: firstSearchParam(params, "permissionLevel") ?? firstSearchParam(params, "risk"),
+    runtime: firstSearchParam(params, "runtime"),
+    sort: firstSearchParam(params, "sort"),
+    verification: firstSearchParam(params, "verification") ?? firstSearchParam(params, "verificationStatus")
+  };
   const [skills, publishers, overview] = await Promise.all([
     getPublicMarketplaceSkills(),
     getPublicPublishers(),
@@ -634,7 +645,7 @@ skillhub install browser-research`}</code>
       </section>
 
       <div id="catalog">
-        <MarketplaceBrowser locale={locale} skills={skills} />
+        <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
       </div>
 
       <section className="market-operations-layout">
@@ -713,4 +724,14 @@ skillhub install browser-research`}</code>
       </section>
     </main>
   );
+}
+
+function firstSearchParam(params: SearchParamRecord, key: string) {
+  const value = params[key];
+
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
 }
