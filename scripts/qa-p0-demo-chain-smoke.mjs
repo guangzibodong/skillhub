@@ -1,0 +1,1580 @@
+#!/usr/bin/env node
+
+const DEFAULT_API_URL = "http://localhost:8787";
+const DEFAULT_APP_URL = "http://localhost:3000";
+const DEFAULT_TIMEOUT_MS = 10000;
+const DEFAULT_VERSION = "0.1.0";
+const runId = Date.now().toString(36);
+
+let args;
+
+try {
+  args = parseArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(error.message);
+  printHelp();
+  process.exit(1);
+}
+
+if (args.help) {
+  printHelp();
+  process.exit(0);
+}
+
+const sharedToken =
+  process.env.SKILLHUB_P0_DEMO_TOKEN ??
+  process.env.SKILLHUB_SMOKE_TOKEN ??
+  process.env.SKILLHUB_USER_TOKEN;
+
+const config = {
+  adminToken:
+    process.env.SKILLHUB_P0_DEMO_ADMIN_TOKEN ??
+    process.env.SKILLHUB_P0_ADMIN_TOKEN ??
+    process.env.SKILLHUB_ADMIN_SMOKE_TOKEN ??
+    sharedToken,
+  allowProduction:
+    args.allowProduction ||
+    parseBoolean(process.env.SKILLHUB_P0_DEMO_ALLOW_PRODUCTION),
+  apiUrl:
+    args.apiUrl ??
+    process.env.SKILLHUB_P0_DEMO_API_URL ??
+    process.env.SKILLHUB_SMOKE_API_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    process.env.SKILLHUB_API_URL ??
+    DEFAULT_API_URL,
+  appUrl:
+    args.appUrl ??
+    process.env.SKILLHUB_P0_DEMO_APP_URL ??
+    process.env.SKILLHUB_SMOKE_APP_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    DEFAULT_APP_URL,
+  developerToken:
+    process.env.SKILLHUB_P0_DEMO_DEVELOPER_TOKEN ??
+    process.env.SKILLHUB_P0_DEVELOPER_TOKEN ??
+    process.env.SKILLHUB_DEVELOPER_SMOKE_TOKEN ??
+    sharedToken,
+  projectSlug:
+    args.projectSlug ??
+    process.env.SKILLHUB_P0_DEMO_PROJECT_SLUG ??
+    `p0-demo-project-${runId}`,
+  publisherToken:
+    process.env.SKILLHUB_P0_DEMO_PUBLISHER_TOKEN ??
+    process.env.SKILLHUB_P0_PUBLISH_PUBLISHER_TOKEN ??
+    process.env.SKILLHUB_PUBLISH_SMOKE_PUBLISHER_TOKEN ??
+    sharedToken,
+  reviewerToken:
+    process.env.SKILLHUB_P0_DEMO_REVIEWER_TOKEN ??
+    process.env.SKILLHUB_P0_DEMO_ADMIN_TOKEN ??
+    process.env.SKILLHUB_P0_ADMIN_REVIEW_TOKEN ??
+    process.env.SKILLHUB_P0_ADMIN_TOKEN ??
+    process.env.SKILLHUB_P0_PUBLISH_ADMIN_TOKEN ??
+    process.env.SKILLHUB_PUBLISH_SMOKE_ADMIN_TOKEN ??
+    process.env.SKILLHUB_ADMIN_SMOKE_TOKEN ??
+    sharedToken,
+  runtimeUrl:
+    args.runtimeUrl ??
+    process.env.SKILLHUB_P0_DEMO_RUNTIME_URL ??
+    "https://api.useskillhub.com/demo/p0-demo-chain",
+  skipApp: args.skipApp,
+  slug:
+    args.slug ??
+    process.env.SKILLHUB_P0_DEMO_SKILL_SLUG ??
+    `p0-demo-chain-${runId}`,
+  timeoutMs: parsePositiveInteger(
+    args.timeoutMs ?? process.env.SKILLHUB_P0_DEMO_TIMEOUT_MS,
+    DEFAULT_TIMEOUT_MS,
+  ),
+  version:
+    args.version ?? process.env.SKILLHUB_P0_DEMO_VERSION ?? DEFAULT_VERSION,
+};
+
+const results = [];
+
+console.log("SkillHub P0 demo chain smoke");
+console.log(`API: ${config.apiUrl}`);
+if (!config.skipApp) {
+  console.log(`App: ${config.appUrl}`);
+}
+console.log(`Skill slug: ${config.slug}`);
+console.log(`Version: ${config.version}`);
+console.log(`Project slug: ${config.projectSlug}`);
+console.log("");
+
+guardProductionWrite(config);
+
+const missingTokens = [
+  ["publisher token", config.publisherToken],
+  ["reviewer token", config.reviewerToken],
+  ["developer token", config.developerToken],
+  ["admin token", config.adminToken],
+].filter(([, value]) => !value);
+
+if (missingTokens.length > 0) {
+  for (const [name] of missingTokens) {
+    fail(
+      name,
+      "set SKILLHUB_P0_DEMO_TOKEN or the role-specific SKILLHUB_P0_DEMO_* token for this smoke",
+    );
+  }
+  printSummary(results);
+  process.exitCode = 1;
+} else {
+  if (!config.skipApp) {
+    await checkAppShell(config);
+  }
+
+  const manifest = buildManifest(config);
+  const draft = await createDraft(config, manifest);
+  const review = draft ? await submitVersion(config, draft) : null;
+  const decision = review ? await approveReview(config, draft, review) : null;
+  const published = decision ? await checkPublicDiscovery(config, draft) : null;
+
+  const project = published ? await createDeveloperProject(config) : null;
+  const savedSkill = project ? await saveSkill(config) : null;
+  const install = savedSkill ? await installSkill(config) : null;
+  const apiKey = install ? await createProjectApiKey(config) : null;
+  const consoleRuntime = install ? await testProjectRuntime(config) : null;
+  const mcpList = apiKey ? await checkMcpToolList(config, apiKey) : null;
+  const mcpCall = mcpList ? await callMcpTool(config, apiKey) : null;
+
+  if (project && savedSkill && install && apiKey && consoleRuntime && mcpCall) {
+    await checkProjectDetail(config, { apiKey, consoleRuntime, mcpCall });
+    await checkNotifications(config, { apiKey, project });
+    await checkAdminAuditLogs(config, { apiKey, install, project, review });
+    await checkAdminNotificationQueue(config);
+  }
+
+  printSummary(results);
+
+  if (results.some((result) => result.status === "fail")) {
+    process.exitCode = 1;
+  }
+}
+
+async function checkAppShell({ appUrl, timeoutMs }) {
+  const pages = [
+    [
+      "/",
+      [
+        "/dashboard?lang=en#workspace-command-center",
+        "/developer?lang=en",
+        "/publisher?lang=en",
+        "/admin?lang=en",
+        "where the backend lives",
+      ],
+    ],
+    ["/marketplace", ["after install", "project install", "policy gate"]],
+    [
+      "/publish",
+      [
+        "self-service publisher access",
+        "preflight repair queue",
+        "reviewer evidence packet",
+      ],
+    ],
+    [
+      "/developer",
+      ["developer workspace", "developer operations queue", "webhook", "team access"],
+    ],
+    [
+      "/admin",
+      ["admin operations queue", "launch-readiness", "review queue", "audit"],
+    ],
+    ["/dashboard", ["workspace-command-center", "p0-demo-chain"]],
+  ];
+
+  for (const [path, markers] of pages) {
+    const name = `GET app ${path}`;
+
+    try {
+      const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+      if (response.status !== 200) {
+        fail(name, `expected HTTP 200, got ${response.status}`);
+        continue;
+      }
+
+      const html = response.text.toLowerCase();
+      const missing = markers.filter((marker) => !html.includes(marker));
+
+      if (!html.includes("<html") && !html.includes("<!doctype html")) {
+        fail(name, "expected an HTML document");
+        continue;
+      }
+
+      if (missing.length > 0) {
+        fail(name, `missing P0 shell markers: ${missing.join(", ")}`);
+        continue;
+      }
+
+      const mojibakeMarkers = findMojibakeMarkers(response.text);
+
+      if (mojibakeMarkers.length > 0) {
+        fail(name, `possible mojibake markers: ${mojibakeMarkers.join(", ")}`);
+        continue;
+      }
+
+      pass(name, `html bytes=${Buffer.byteLength(response.text, "utf8")}`);
+    } catch (error) {
+      fail(name, redactSecrets(error.message));
+    }
+  }
+}
+
+async function createDraft({ apiUrl, publisherToken, timeoutMs }, manifest) {
+  const name = "POST /v1/skills";
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, "/v1/skills"), {
+      body: JSON.stringify({ manifest }),
+      headers: authorizedHeaders(publisherToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (
+      json?.slug !== manifest.name ||
+      json?.version !== manifest.version ||
+      typeof json?.versionId !== "string"
+    ) {
+      fail(name, "unexpected draft payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `draft saved for ${json.slug}@${json.version}, versionId=...${json.versionId.slice(-8)}`,
+    );
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function submitVersion({ apiUrl, publisherToken, timeoutMs }, draft) {
+  const path = `/v1/publisher/skills/${encodeURIComponent(draft.slug)}/versions/${encodeURIComponent(draft.version)}/submit`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      headers: authorizedHeaders(publisherToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const review = json?.review;
+    const summary = review?.checkSummary;
+
+    if (
+      !review ||
+      typeof review.id !== "string" ||
+      review.skillSlug !== draft.slug ||
+      review.version !== draft.version ||
+      !isFiniteNumber(summary?.totalCount) ||
+      !isFiniteNumber(summary?.passedCount) ||
+      !isFiniteNumber(summary?.blockingCount)
+    ) {
+      fail(name, "unexpected review submission payload shape");
+      return null;
+    }
+
+    if (summary.totalCount < 4 || summary.blockingCount > 0) {
+      fail(
+        name,
+        `expected at least 4 non-blocking checks, got total=${summary.totalCount}, blocking=${summary.blockingCount}`,
+      );
+      return null;
+    }
+
+    pass(
+      name,
+      `review=...${review.id.slice(-8)}, status=${review.status}, checks=${summary.totalCount}`,
+    );
+    return review;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function approveReview({ apiUrl, reviewerToken, timeoutMs }, draft, review) {
+  const path = `/v1/admin/reviews/${encodeURIComponent(review.id)}/decision`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        status: "approved",
+        notes:
+          "P0 demo-chain smoke approved a low-risk generated skill after automated checks passed.",
+      }),
+      headers: authorizedHeaders(reviewerToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const decision = json?.review;
+
+    if (
+      !decision ||
+      decision.id !== review.id ||
+      decision.skillSlug !== draft.slug ||
+      decision.version !== draft.version ||
+      decision.status !== "approved" ||
+      decision.verificationStatus !== "verified"
+    ) {
+      fail(name, "unexpected review approval payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `${draft.slug}@${draft.version} approved and verification=${decision.verificationStatus}`,
+    );
+    return decision;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkPublicDiscovery({ apiUrl, slug, timeoutMs, version }) {
+  const searchPath = `/v1/skills/search?${new URLSearchParams({
+    limit: "20",
+    q: slug,
+    sort: "recent",
+    verificationStatus: "verified",
+  })}`;
+  const searchName = `GET ${searchPath}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, searchPath), {
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(searchName, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (!Array.isArray(json?.skills)) {
+      fail(searchName, "expected skills array");
+      return null;
+    }
+
+    const skill = json.skills.find((item) => item?.slug === slug);
+
+    if (!skill || skill.verificationStatus !== "verified") {
+      fail(searchName, `missing verified public search row for ${slug}`);
+      return null;
+    }
+
+    pass(
+      searchName,
+      `verified marketplace row found, runtime=${skill.runtimeType}, pricing=${skill.billingModel}`,
+    );
+  } catch (error) {
+    fail(searchName, redactSecrets(error.message));
+    return null;
+  }
+
+  const manifestName = `GET /v1/skills/${slug}`;
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(manifestName, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const manifest = json?.manifest ?? json;
+
+    if (manifest?.name !== slug || manifest?.version !== version) {
+      fail(manifestName, "unexpected public manifest payload shape");
+      return null;
+    }
+
+    pass(manifestName, `${slug}@${version} is public after review approval`);
+    return manifest;
+  } catch (error) {
+    fail(manifestName, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function createDeveloperProject({
+  apiUrl,
+  developerToken,
+  projectSlug,
+  timeoutMs,
+}) {
+  const name = "POST /v1/developer/projects";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/developer/projects"),
+      {
+        body: JSON.stringify({
+          name: `P0 Demo Chain ${projectSlug}`,
+          slug: projectSlug,
+        }),
+        headers: authorizedHeaders(developerToken),
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const project = json?.project;
+
+    if (
+      !project ||
+      project.slug !== projectSlug ||
+      typeof project.id !== "string"
+    ) {
+      fail(name, "unexpected developer project payload shape");
+      return null;
+    }
+
+    pass(name, `project created: ${project.slug}`);
+    return project;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function saveSkill({
+  apiUrl,
+  developerToken,
+  projectSlug,
+  slug,
+  timeoutMs,
+}) {
+  const path = `/v1/projects/${encodeURIComponent(projectSlug)}/saved-skills`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        collectionName: "p0-demo-chain",
+        skillSlug: slug,
+      }),
+      headers: authorizedHeaders(developerToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const savedSkill = json?.savedSkill;
+
+    if (
+      !savedSkill ||
+      savedSkill.skillSlug !== slug ||
+      savedSkill.projectSlug !== projectSlug
+    ) {
+      fail(name, "unexpected saved-skill payload shape");
+      return null;
+    }
+
+    pass(name, `${slug} saved to ${projectSlug}`);
+    return savedSkill;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function installSkill({
+  apiUrl,
+  developerToken,
+  projectSlug,
+  slug,
+  timeoutMs,
+  version,
+}) {
+  const path = `/v1/projects/${encodeURIComponent(projectSlug)}/installed-skills`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        skillSlug: slug,
+        version,
+      }),
+      headers: authorizedHeaders(developerToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const install = json?.install;
+
+    if (
+      !install ||
+      install.skillSlug !== slug ||
+      install.projectSlug !== projectSlug ||
+      install.version !== version ||
+      install.status !== "installed" ||
+      install.approvalState !== "approved"
+    ) {
+      fail(name, "unexpected install payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `${slug}@${version} installed with approval=${install.approvalState}`,
+    );
+    return install;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function createProjectApiKey({
+  apiUrl,
+  developerToken,
+  projectSlug,
+  timeoutMs,
+}) {
+  const path = `/v1/projects/${encodeURIComponent(projectSlug)}/api-keys`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({ name: "P0 demo chain project key" }),
+      headers: authorizedHeaders(developerToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const apiKey = json?.apiKey;
+
+    if (
+      !apiKey ||
+      typeof apiKey.id !== "string" ||
+      typeof apiKey.apiKey !== "string" ||
+      !apiKey.apiKey.startsWith("skh_") ||
+      apiKey.projectSlug !== projectSlug ||
+      typeof apiKey.keyLast4 !== "string"
+    ) {
+      fail(name, "unexpected reveal-once API-key payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `project API key created: id=...${apiKey.id.slice(-8)}, last4=${apiKey.keyLast4}`,
+    );
+    return apiKey;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function testProjectRuntime({
+  apiUrl,
+  developerToken,
+  projectSlug,
+  slug,
+  timeoutMs,
+}) {
+  const path = `/v1/projects/${encodeURIComponent(projectSlug)}/runtime/test`;
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        input: {
+          prompt: "Run the P0 demo chain through console governance.",
+        },
+        skillSlug: slug,
+      }),
+      headers: authorizedHeaders(developerToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (
+      json?.status !== "success" ||
+      json?.mode !== "console_test" ||
+      json?.skillSlug !== slug ||
+      json?.projectSlug !== projectSlug ||
+      json?.billable !== false ||
+      typeof json?.invocationId !== "string"
+    ) {
+      fail(name, "unexpected console runtime payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `console runtime invocation=...${json.invocationId.slice(-8)}, billable=${json.billable}`,
+    );
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkMcpToolList({ apiUrl, slug, timeoutMs }, apiKey) {
+  const name = "POST /mcp tools/list";
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "p0-demo-tools-list",
+        method: "tools/list",
+      }),
+      headers: authorizedHeaders(apiKey.apiKey),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const tools = json?.result?.tools;
+    const tool = Array.isArray(tools)
+      ? tools.find((item) => item?.name === slug)
+      : null;
+
+    if (!tool || tool?.annotations?.callable !== true) {
+      fail(name, `missing callable MCP tool for ${slug}`);
+      return null;
+    }
+
+    pass(name, `${slug} listed as callable MCP project tool`);
+    return tool;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function callMcpTool({ apiUrl, projectSlug, slug, timeoutMs }, apiKey) {
+  const name = "POST /mcp tools/call";
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "p0-demo-tools-call",
+        method: "tools/call",
+        params: {
+          name: slug,
+          arguments: {
+            prompt: "Run the P0 demo chain through MCP governance.",
+          },
+        },
+      }),
+      headers: authorizedHeaders(apiKey.apiKey),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const structured = json?.result?.structuredContent;
+
+    if (
+      json?.error ||
+      json?.result?.isError === true ||
+      structured?.status !== "success" ||
+      structured?.mode !== "agent_runtime" ||
+      structured?.projectSlug !== projectSlug ||
+      structured?.skillSlug !== slug ||
+      typeof structured?.invocationId !== "string"
+    ) {
+      fail(name, "unexpected MCP call payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `MCP runtime invocation=...${structured.invocationId.slice(-8)}, billable=${structured.billable}`,
+    );
+    return structured;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkProjectDetail(
+  { apiUrl, developerToken, projectSlug, slug, timeoutMs },
+  { apiKey, consoleRuntime, mcpCall },
+) {
+  const path = `/v1/developer/projects/${encodeURIComponent(projectSlug)}`;
+  const name = `GET ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      headers: authorizedHeaders(developerToken),
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    const detail = json?.project;
+
+    if (!detail || detail.project?.slug !== projectSlug) {
+      fail(name, "unexpected project detail shape");
+      return;
+    }
+
+    const installed = detail.installedSkills?.find(
+      (item) => item?.skillSlug === slug,
+    );
+    const listedKey = detail.apiKeys?.find((item) => item?.id === apiKey.id);
+    const saved = detail.savedSkills?.find((item) => item?.skillSlug === slug);
+    const invocationIds = new Set([
+      consoleRuntime.invocationId,
+      mcpCall.invocationId,
+    ]);
+    const seenInvocations = detail.recentInvocations?.filter((item) =>
+      invocationIds.has(item?.id),
+    );
+
+    if (!installed || !listedKey || !saved || seenInvocations?.length < 2) {
+      fail(
+        name,
+        `missing project state: ${[
+          installed ? null : "install",
+          listedKey ? null : "apiKey",
+          saved ? null : "savedSkill",
+          seenInvocations?.length >= 2 ? null : "runtimeInvocations",
+        ]
+          .filter(Boolean)
+          .join(", ")}`,
+      );
+      return;
+    }
+
+    if ("apiKey" in listedKey) {
+      fail(name, "listed project key must not expose raw API key after reveal");
+      return;
+    }
+
+    pass(
+      name,
+      `project detail includes saved/install/key plus console and MCP runtime logs for ${slug}`,
+    );
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkNotifications(
+  { apiUrl, developerToken, publisherToken, projectSlug, slug, timeoutMs, version },
+  { apiKey, project },
+) {
+  await checkPublisherNotifications({
+    apiUrl,
+    publisherToken,
+    slug,
+    timeoutMs,
+    version,
+  });
+  await checkDeveloperNotifications({
+    apiKey,
+    apiUrl,
+    developerToken,
+    project,
+    projectSlug,
+    slug,
+    timeoutMs,
+  });
+}
+
+async function checkPublisherNotifications({
+  apiUrl,
+  publisherToken,
+  slug,
+  timeoutMs,
+  version,
+}) {
+  const name = "GET /v1/notifications publisher review events";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/notifications?limit=100"),
+      {
+        headers: authorizedHeaders(publisherToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.notifications)) {
+      fail(name, "expected notifications array");
+      return;
+    }
+
+    const required = [
+      "skill.review.submitted",
+      "skill.review.approved",
+    ].filter(
+      (eventType) =>
+        !json.notifications.some(
+          (item) =>
+            item?.eventType === eventType &&
+            item?.payload?.skillSlug === slug &&
+            item?.payload?.version === version,
+        ),
+    );
+
+    if (required.length > 0) {
+      fail(name, `missing publisher notifications: ${required.join(", ")}`);
+      return;
+    }
+
+    pass(name, `publisher review notifications visible for ${slug}@${version}`);
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkDeveloperNotifications({
+  apiKey,
+  apiUrl,
+  developerToken,
+  project,
+  projectSlug,
+  slug,
+  timeoutMs,
+}) {
+  const name = "GET /v1/notifications developer project events";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, "/v1/notifications?limit=100"),
+      {
+        headers: authorizedHeaders(developerToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.notifications)) {
+      fail(name, "expected notifications array");
+      return;
+    }
+
+    const required = [
+      [
+        "project.created",
+        (item) =>
+          item?.payload?.projectSlug === projectSlug ||
+          item?.payload?.projectName === project.name,
+      ],
+      [
+        "project_saved_skill.saved",
+        (item) =>
+          item?.payload?.projectSlug === projectSlug &&
+          item?.payload?.skillSlug === slug,
+      ],
+      [
+        "project_install.installed",
+        (item) =>
+          item?.payload?.projectSlug === projectSlug &&
+          item?.payload?.skillSlug === slug,
+      ],
+      [
+        "project_api_key.created",
+        (item) =>
+          item?.payload?.projectSlug === projectSlug &&
+          item?.payload?.keyId === apiKey.id,
+      ],
+    ];
+
+    const missing = required
+      .filter(
+        ([eventType, predicate]) =>
+          !json.notifications.some(
+            (item) => item?.eventType === eventType && predicate(item),
+          ),
+      )
+      .map(([eventType]) => eventType);
+
+    if (missing.length > 0) {
+      fail(name, `missing developer notifications: ${missing.join(", ")}`);
+      return;
+    }
+
+    pass(name, `developer project notifications visible for ${projectSlug}`);
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkAdminAuditLogs(
+  { adminToken, apiUrl, projectSlug, slug, timeoutMs, version },
+  { apiKey, install, project, review },
+) {
+  const name = "GET /v1/admin/audit-logs";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/audit-logs?limit=100"),
+      {
+        headers: authorizedHeaders(adminToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.auditLogs)) {
+      fail(name, "expected auditLogs array");
+      return;
+    }
+
+    const required = [
+      [
+        "skill.version.created",
+        (item) =>
+          item?.metadata?.skillSlug === slug &&
+          item?.metadata?.version === version,
+      ],
+      [
+        "skill.review.submitted",
+        (item) =>
+          item?.entityId === review.id &&
+          item?.metadata?.skillSlug === slug &&
+          item?.metadata?.version === version,
+      ],
+      [
+        "review.approved",
+        (item) =>
+          item?.entityId === review.id &&
+          item?.metadata?.skillSlug === slug &&
+          item?.metadata?.verificationStatus === "verified",
+      ],
+      [
+        "project.created",
+        (item) =>
+          item?.entityId === project.id ||
+          item?.metadata?.projectSlug === projectSlug,
+      ],
+      [
+        "project_saved_skill.saved",
+        (item) =>
+          item?.metadata?.projectSlug === projectSlug &&
+          item?.metadata?.skillSlug === slug,
+      ],
+      [
+        "project_install.installed",
+        (item) =>
+          item?.entityId === install.id &&
+          item?.metadata?.projectSlug === projectSlug &&
+          item?.metadata?.skillSlug === slug,
+      ],
+      [
+        "project_api_key.created",
+        (item) =>
+          item?.entityId === apiKey.id &&
+          item?.metadata?.keyLast4 === apiKey.keyLast4,
+      ],
+    ];
+
+    const missing = required
+      .filter(
+        ([action, predicate]) =>
+          !json.auditLogs.some(
+            (item) => item?.action === action && predicate(item),
+          ),
+      )
+      .map(([action]) => action);
+
+    if (missing.length > 0) {
+      fail(name, `missing admin audit logs: ${missing.join(", ")}`);
+      return;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive audit leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(
+      name,
+      "audit records publish, review, install, key, and project handoff",
+    );
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
+  const name = "GET /v1/admin/notifications";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/notifications?limit=100"),
+      {
+        headers: authorizedHeaders(adminToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.notifications)) {
+      fail(name, "expected notifications array");
+      return;
+    }
+
+    const required = ["skill.review.submitted", "skill.review.approved"];
+    const missing = required.filter(
+      (eventType) =>
+        !json.notifications.some((item) => item?.eventType === eventType),
+    );
+
+    if (missing.length > 0) {
+      fail(name, `missing admin notification event types: ${missing.join(", ")}`);
+      return;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive notification leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(name, "admin notification queue includes review handoff events");
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+function buildManifest({ runtimeUrl, slug, version }) {
+  return {
+    schemaVersion: "0.1",
+    name: slug,
+    displayName: `P0 Demo Chain ${slug.slice(-6)}`,
+    version,
+    description:
+      "Generated low-risk skill used to prove the complete SkillHub P0 demo chain from publisher submission to developer runtime invocation.",
+    author: {
+      name: "SkillHub QA",
+      url: "https://useskillhub.com",
+    },
+    tags: ["qa", "p0", "demo-chain"],
+    runtime: {
+      type: "http",
+      entrypoint: runtimeUrl,
+    },
+    permissions: {
+      network: false,
+      browser: false,
+      filesystem: "none",
+      secrets: [],
+    },
+    inputSchema: {
+      type: "object",
+      required: ["prompt"],
+      properties: {
+        prompt: {
+          type: "string",
+        },
+      },
+    },
+    outputSchema: {
+      type: "object",
+      required: ["message"],
+      properties: {
+        message: {
+          type: "string",
+        },
+      },
+    },
+    examples: [
+      {
+        input: {
+          prompt: "Verify the SkillHub P0 demo chain.",
+        },
+        output: {
+          message: "P0 demo chain verified.",
+        },
+      },
+    ],
+    support: {
+      email: "support@useskillhub.com",
+    },
+  };
+}
+
+async function requestJson(url, options) {
+  const response = await request(url, options);
+  const text = await response.text();
+  let json;
+
+  try {
+    json = text ? JSON.parse(text) : undefined;
+  } catch {
+    throw new Error(
+      `expected JSON from ${url}, got non-JSON response with HTTP ${response.status}`,
+    );
+  }
+
+  return {
+    json,
+    status: response.status,
+    text,
+  };
+}
+
+async function requestText(url, options) {
+  const response = await request(url, options);
+
+  return {
+    status: response.status,
+    text: await response.text(),
+  };
+}
+
+async function request(url, { body, headers = {}, method = "GET", timeoutMs }) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      body,
+      headers: {
+        Accept: "application/json,text/html;q=0.9,*/*;q=0.8",
+        ...headers,
+      },
+      method,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(`request timed out after ${timeoutMs}ms: ${url}`);
+    }
+
+    throw new Error(`${describeFetchError(error)}: ${url}`);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function authorizedHeaders(token) {
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+}
+
+function guardProductionWrite({ allowProduction, apiUrl }) {
+  if (allowProduction || !isProductionUrl(apiUrl)) {
+    return;
+  }
+
+  fail(
+    "production write guard",
+    "refusing to run mutating P0 demo-chain smoke against production API without --allow-production",
+  );
+  printSummary(results);
+  process.exit(2);
+}
+
+function isProductionUrl(value) {
+  try {
+    const url = new URL(value);
+    return [
+      "api.useskillhub.com",
+      "useskillhub.com",
+      "app.useskillhub.com",
+    ].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function parseArgs(argv) {
+  const parsed = {
+    allowProduction: false,
+    apiUrl: undefined,
+    appUrl: undefined,
+    help: false,
+    projectSlug: undefined,
+    runtimeUrl: undefined,
+    skipApp: false,
+    slug: undefined,
+    timeoutMs: undefined,
+    version: undefined,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (arg === "--help" || arg === "-h") {
+      parsed.help = true;
+      continue;
+    }
+
+    if (arg === "--") {
+      continue;
+    }
+
+    if (arg === "--allow-production") {
+      parsed.allowProduction = true;
+      continue;
+    }
+
+    if (arg === "--skip-app") {
+      parsed.skipApp = true;
+      continue;
+    }
+
+    const nextValue = () => {
+      const value = argv[index + 1];
+
+      if (!value || value.startsWith("--")) {
+        throw new Error(`${arg} requires a value`);
+      }
+
+      index += 1;
+      return value;
+    };
+
+    if (arg === "--api-url") {
+      parsed.apiUrl = nextValue();
+      continue;
+    }
+
+    if (arg === "--app-url") {
+      parsed.appUrl = nextValue();
+      continue;
+    }
+
+    if (arg === "--project-slug") {
+      parsed.projectSlug = normalizeSlug(nextValue());
+      continue;
+    }
+
+    if (arg === "--runtime-url") {
+      parsed.runtimeUrl = nextValue().trim();
+      continue;
+    }
+
+    if (arg === "--slug") {
+      parsed.slug = normalizeSlug(nextValue());
+      continue;
+    }
+
+    if (arg === "--timeout-ms") {
+      parsed.timeoutMs = nextValue();
+      continue;
+    }
+
+    if (arg === "--version") {
+      parsed.version = nextValue().trim();
+      continue;
+    }
+
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return parsed;
+}
+
+function normalizeSlug(value) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function parsePositiveInteger(value, fallback) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return Math.trunc(parsed);
+}
+
+function parseBoolean(value) {
+  return ["1", "true", "yes", "on"].includes(String(value ?? "").toLowerCase());
+}
+
+function joinUrl(base, path) {
+  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
+  const parsed = new URL(base);
+
+  if (!parsed.pathname.endsWith("/")) {
+    parsed.pathname = `${parsed.pathname}/`;
+  }
+
+  return new URL(normalizedPath, parsed).toString();
+}
+
+function describeFetchError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  const cause =
+    error instanceof Error && error.cause instanceof Error
+      ? error.cause
+      : undefined;
+  const causeCode = cause && "code" in cause ? cause.code : undefined;
+
+  if (!cause) {
+    return message;
+  }
+
+  return `${message} (${[causeCode, cause.message].filter(Boolean).join(": ")})`;
+}
+
+function safeError(json) {
+  return redactSecrets(String(json?.error ?? "no response error body"));
+}
+
+function redactSecrets(value) {
+  return String(value)
+    .replace(/Bearer\s+[A-Za-z0-9._~+/-]+/gi, "Bearer <redacted>")
+    .replace(/shub_[A-Za-z0-9._~+/-]+/g, "shub_<redacted>")
+    .replace(/skh_[A-Za-z0-9._~+/-]+/g, "skh_<redacted>")
+    .replace(/whsec_[A-Za-z0-9._~+/-]+/g, "whsec_<redacted>")
+    .replace(/sk-[A-Za-z0-9._~+/-]+/g, "sk-<redacted>");
+}
+
+function findSensitiveLeaks(text) {
+  const leaks = [];
+  const rawPatterns = [
+    [/Bearer\s+[A-Za-z0-9._~+/-]+/i, "authorization bearer"],
+    [/shub_[A-Za-z0-9._~+/-]{8,}/, "user token"],
+    [/skh_[A-Za-z0-9._~+/-]{8,}/, "project api key"],
+    [/whsec_[A-Za-z0-9._~+/-]{8,}/, "webhook signing secret"],
+    [/sk-[A-Za-z0-9._~+/-]{20,}/, "provider key"],
+    [/"deliveryPreviewCode"\s*:/i, "email verification preview code"],
+    [/"apiKey"\s*:\s*"[^"<\[]/i, "raw apiKey field"],
+  ];
+
+  for (const [pattern, label] of rawPatterns) {
+    if (pattern.test(text)) {
+      leaks.push(label);
+    }
+  }
+
+  try {
+    const parsed = JSON.parse(text);
+    inspectSensitiveKeys(parsed, [], leaks);
+  } catch {
+    // Pattern scans above still protect non-JSON text.
+  }
+
+  return leaks;
+}
+
+function inspectSensitiveKeys(value, path, leaks) {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) =>
+      inspectSensitiveKeys(item, [...path, String(index)], leaks),
+    );
+    return;
+  }
+
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const nextPath = [...path, key];
+    const normalizedKey = key.toLowerCase();
+
+    if (
+      typeof child === "string" &&
+      normalizedKey === "code" &&
+      child &&
+      !isRedactedValue(child)
+    ) {
+      leaks.push(`${nextPath.join(".")} contains an unredacted code`);
+    }
+
+    if (
+      typeof child === "string" &&
+      (normalizedKey === "authorization" ||
+        normalizedKey === "password" ||
+        normalizedKey === "api_key" ||
+        normalizedKey === "apikey") &&
+      child &&
+      !isRedactedValue(child)
+    ) {
+      leaks.push(`${nextPath.join(".")} contains sensitive value`);
+    }
+
+    inspectSensitiveKeys(child, nextPath, leaks);
+  }
+}
+
+function isRedactedValue(value) {
+  const normalized = value.toLowerCase();
+  return (
+    normalized.includes("redacted") ||
+    normalized === "configured" ||
+    normalized === "missing" ||
+    normalized.startsWith("missing ") ||
+    normalized.includes("not configured")
+  );
+}
+
+function findMojibakeMarkers(text) {
+  const markers = [
+    "\uFFFD",
+    "\u9359\u621D",
+    "\u5BEE\u20AC",
+    "\u7039\u2103",
+    "\u7490\uFE40",
+    "\u9418\u8235",
+    "\u93B6\u20AC",
+    "\u6D93\u20AC",
+  ];
+
+  return markers
+    .filter((marker) => text.includes(marker))
+    .map(formatMarkerCodepoints);
+}
+
+function formatMarkerCodepoints(marker) {
+  return [...marker]
+    .map(
+      (character) =>
+        `U+${character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`,
+    )
+    .join("+");
+}
+
+function isFiniteNumber(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function pass(name, message) {
+  results.push({ message, name, status: "pass" });
+  console.log(`PASS ${name} - ${message}`);
+}
+
+function fail(name, message) {
+  results.push({ message, name, status: "fail" });
+  console.log(`FAIL ${name} - ${redactSecrets(message)}`);
+}
+
+function printSummary(items) {
+  const counts = items.reduce(
+    (acc, item) => {
+      acc[item.status] += 1;
+      return acc;
+    },
+    { fail: 0, pass: 0 },
+  );
+
+  console.log("");
+  console.log(`Summary: ${counts.pass} passed, ${counts.fail} failed`);
+}
+
+function printHelp() {
+  console.log(`Usage: node scripts/qa-p0-demo-chain-smoke.mjs [options]
+
+Mutating end-to-end P0 demo smoke:
+  publisher draft -> exact-version review -> admin approval -> public discovery
+  -> developer project save/install -> reveal-once key -> console runtime test
+  -> MCP tools/list and tools/call -> notifications and admin audit proof.
+
+Options:
+  --api-url <url>          Gateway API URL. Default: ${DEFAULT_API_URL}
+  --app-url <url>          Web app URL. Default: ${DEFAULT_APP_URL}
+  --slug <slug>            Skill slug to create. Default: generated p0-demo-chain-*
+  --version <version>      Semantic version. Default: ${DEFAULT_VERSION}
+  --project-slug <slug>    Developer project slug. Default: generated p0-demo-project-*
+  --runtime-url <url>      Manifest HTTP runtime URL. Default: HTTPS demo URL
+  --timeout-ms <ms>        Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}
+  --skip-app               Skip public/app shell marker checks.
+  --allow-production       Allow writes against https://api.useskillhub.com.
+  -h, --help               Show this help.
+
+Tokens:
+  Set SKILLHUB_P0_DEMO_TOKEN for a single org-scoped admin/owner token, or use:
+    SKILLHUB_P0_DEMO_PUBLISHER_TOKEN
+    SKILLHUB_P0_DEMO_REVIEWER_TOKEN
+    SKILLHUB_P0_DEMO_DEVELOPER_TOKEN
+    SKILLHUB_P0_DEMO_ADMIN_TOKEN
+
+Production writes are blocked unless --allow-production or
+SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true is set. Do not commit tokens or paste token
+values into reports; this script redacts authorization-shaped strings in output.
+`);
+}

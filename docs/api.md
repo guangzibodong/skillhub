@@ -2196,6 +2196,39 @@ Use `SKILLHUB_P0_ADMIN_TOKEN` or `SKILLHUB_ADMIN_SMOKE_TOKEN` for an admin/super
 
 Passing assertions mean the admin console can read launch readiness, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets.
 
+## P0 Demo Chain Smoke
+
+Local and staging operators can run a mutating end-to-end smoke test before customer walkthroughs:
+
+```bash
+pnpm smoke:p0:demo
+```
+
+The script uses existing public and protected APIs rather than direct database access:
+
+- `GET /`, `/marketplace`, `/publish`, `/developer`, `/admin`, and `/dashboard` app shell markers.
+- `POST /v1/skills`.
+- `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`.
+- `POST /v1/admin/reviews/:reviewId/decision`.
+- `GET /v1/skills/search`.
+- `GET /v1/skills/:slug`.
+- `POST /v1/developer/projects`.
+- `POST /v1/projects/:projectSlug/saved-skills`.
+- `POST /v1/projects/:projectSlug/installed-skills`.
+- `POST /v1/projects/:projectSlug/api-keys`.
+- `POST /v1/projects/:projectSlug/runtime/test`.
+- `POST /mcp` with `tools/list` and `tools/call`.
+- `GET /v1/developer/projects/:projectSlug`.
+- `GET /v1/notifications`.
+- `GET /v1/admin/audit-logs`.
+- `GET /v1/admin/notifications`.
+
+Required tokens can be supplied as one org-scoped admin/owner token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
+
+Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, and notification plus audit records were visible without exposing authorization-shaped secrets.
+
+The script refuses production writes unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, project, install, key, invocation, usage, notification, and audit rows.
+
 ## MCP Discovery
 
 The MCP endpoint exposes SkillHub to agent clients through JSON-RPC. Public calls can discover marketplace-safe tools and resources. Project-scoped calls should include a project API key; then `tools/list` returns the skills installed for that project and `tools/call` invokes the same runtime governance path as `/v1/runtime/invoke`.

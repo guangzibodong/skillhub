@@ -149,6 +149,44 @@ pnpm smoke:p0:admin
 
 The script also checks common Chinese mojibake markers and authorization-shaped secret leaks in admin responses. It performs no writes, so no `--allow-production` flag is needed.
 
+## P0 demo chain
+
+The P0 demo-chain smoke is mutating and should be used before customer walkthroughs when the team needs one proof that the three frozen journeys connect end to end:
+
+- Publisher creates a generated public draft skill through `POST /v1/skills`.
+- Publisher submits the exact semantic version through `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`.
+- Reviewer/admin approves the review through `POST /v1/admin/reviews/:reviewId/decision`.
+- Public discovery shows the verified skill through `GET /v1/skills/search` and `GET /v1/skills/:slug`.
+- Developer creates a project, saves the skill, installs the approved version, creates a reveal-once project key, and runs a governed console test.
+- MCP `tools/list` and `tools/call` use the reveal-once project key and the same installed-skill runtime governance path.
+- Publisher/developer notification inboxes and admin audit/notification queues expose the handoff without direct database checks.
+
+Run it against local or staging services with either one org-scoped admin/owner token or split role tokens:
+
+```bash
+export SKILLHUB_P0_DEMO_TOKEN="<org-scoped-admin-or-owner-user-token>"
+pnpm smoke:p0:demo
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SKILLHUB_P0_DEMO_TOKEN = "<org-scoped-admin-or-owner-user-token>"
+pnpm smoke:p0:demo
+```
+
+For separated operator accounts:
+
+```bash
+export SKILLHUB_P0_DEMO_PUBLISHER_TOKEN="<publisher-or-owner-user-token>"
+export SKILLHUB_P0_DEMO_REVIEWER_TOKEN="<reviewer-or-admin-user-token>"
+export SKILLHUB_P0_DEMO_DEVELOPER_TOKEN="<developer-or-owner-user-token>"
+export SKILLHUB_P0_DEMO_ADMIN_TOKEN="<admin-or-support-user-token>"
+pnpm smoke:p0:demo
+```
+
+The script creates generated `p0-demo-chain-*` and `p0-demo-project-*` records by default. Production writes are blocked unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, project, install, API-key, invocation, usage-event, notification, and audit state. Output is redacted and must not be used to share credentials.
+
 ## Production
 
 ```bash
