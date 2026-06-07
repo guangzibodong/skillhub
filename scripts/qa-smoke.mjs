@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import path from "node:path";
+import { readdir, readFile } from "node:fs/promises";
+
 import { validateLaunchReadinessContract } from "./qa-launch-readiness-contract.mjs";
 import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
 
@@ -177,6 +180,36 @@ const MOJIBAKE_MARKERS = [
   "\u9286",
   "\u9428",
 ];
+const SOURCE_MOJIBAKE_SCAN_PATHS = [
+  "apps/web/app",
+  "apps/web/components",
+  "apps/web/lib",
+  "scripts",
+];
+const SOURCE_MOJIBAKE_EXTENSIONS = new Set([
+  ".css",
+  ".js",
+  ".mjs",
+  ".ts",
+  ".tsx",
+]);
+const SOURCE_MOJIBAKE_IGNORED_DIRECTORIES = new Set([
+  ".next",
+  "coverage",
+  "dist",
+  "node_modules",
+  "output",
+]);
+const SOURCE_MOJIBAKE_MARKERS = [
+  "\uFFFD",
+  "\u951F\u65A4\u62F7",
+  "\u9359\u621D\u7AF7",
+  "\u93BA\u0443\u57D7",
+  "\u947D\u590C",
+  "\u7039\u2103\u7273",
+  "\u9422\u3126\u57DB",
+  "\u6D93\u20AC",
+];
 
 const smokeContext = {
   publicPublisherSlug: undefined,
@@ -237,6 +270,8 @@ if (!config.skipApp) {
   console.log(`App paths: ${config.appPaths.join(", ")}`);
 }
 console.log("");
+
+await checkSourceMojibake();
 
 if (!config.skipApi) {
   await checkStats(config);
@@ -677,6 +712,72 @@ async function checkPublicPublisherProfilePage({ appUrl, timeoutMs }) {
   }
 }
 
+async function checkSourceMojibake() {
+  const name = "source mojibake guard";
+
+  try {
+    const files = [];
+
+    for (const scanPath of SOURCE_MOJIBAKE_SCAN_PATHS) {
+      await collectSourceTextFiles(scanPath, files);
+    }
+
+    if (files.length === 0) {
+      fail(name, "no source files were found for mojibake scanning");
+      return;
+    }
+
+    const hits = [];
+
+    for (const file of files) {
+      const text = await readFile(file, "utf8");
+      const markers = SOURCE_MOJIBAKE_MARKERS.filter((marker) =>
+        text.includes(marker),
+      );
+
+      if (markers.length > 0) {
+        hits.push(
+          `${toDisplayPath(file)} (${markers.map(formatMarkerCodepoints).join(", ")})`,
+        );
+      }
+    }
+
+    if (hits.length > 0) {
+      fail(
+        name,
+        `possible mojibake markers in source: ${hits.slice(0, 5).join("; ")}`,
+      );
+      return;
+    }
+
+    pass(name, `files=${files.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function collectSourceTextFiles(scanPath, files) {
+  const entries = await readdir(scanPath, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(scanPath, entry.name);
+
+    if (entry.isDirectory()) {
+      if (!SOURCE_MOJIBAKE_IGNORED_DIRECTORIES.has(entry.name)) {
+        await collectSourceTextFiles(fullPath, files);
+      }
+      continue;
+    }
+
+    if (
+      entry.isFile() &&
+      SOURCE_MOJIBAKE_EXTENSIONS.has(path.extname(entry.name))
+    ) {
+      files.push(fullPath);
+    }
+  }
+}
+
 async function requestJson(url, { headers, timeoutMs }) {
   const response = await request(url, { headers, timeoutMs });
   const text = await response.text();
@@ -761,6 +862,10 @@ function basePathFromAppPath(path) {
 
 function isZhAppPath(path) {
   return path.includes("lang=zh");
+}
+
+function toDisplayPath(filePath) {
+  return path.relative(process.cwd(), filePath).replaceAll(path.sep, "/");
 }
 
 function parseArgs(argv) {
