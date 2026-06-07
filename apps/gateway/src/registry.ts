@@ -252,7 +252,7 @@ export async function getSkillManifest(
       select sv.manifest
       from skills s
       join lateral (
-        select sv.manifest
+        select sv.manifest, sv.created_at
         from skill_versions sv
         left join lateral (
           select status, decided_at, created_at
