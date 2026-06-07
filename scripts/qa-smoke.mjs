@@ -8,6 +8,51 @@ import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
 
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
+const PUBLIC_PUBLISHER_FORBIDDEN_FIELD_NAMES = new Set([
+  "adminauditlogs",
+  "adminnotes",
+  "apikey",
+  "api_key",
+  "auditlogs",
+  "billing",
+  "billingemail",
+  "billingprofile",
+  "boost",
+  "credential",
+  "credentials",
+  "curation",
+  "curationreason",
+  "curationrule",
+  "curationrules",
+  "email",
+  "internalnotes",
+  "membertokens",
+  "members",
+  "operatornotes",
+  "operatorreason",
+  "organizationid",
+  "organizationmembers",
+  "ownerid",
+  "password",
+  "paymentmethod",
+  "paymentmethods",
+  "payoutaccount",
+  "payoutaccountid",
+  "payoutaccounts",
+  "payoutonboardingsession",
+  "provider",
+  "provideraccountid",
+  "providercustomerid",
+  "providerreference",
+  "reason",
+  "secret",
+  "signingsecret",
+  "termsacceptedbyuserid",
+  "token",
+  "userid",
+  "userids",
+  "webhooksecret",
+]);
 const DEFAULT_APP_PATHS = [
   "/",
   "/?lang=zh",
@@ -665,7 +710,7 @@ async function checkPublicPublishers({ apiUrl, timeoutMs }) {
   const name = "GET /v1/publishers";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/publishers?limit=5"),
       { timeoutMs },
     );
@@ -706,6 +751,10 @@ async function checkPublicPublishers({ apiUrl, timeoutMs }) {
         name,
         "publisher rows should include slug, displayName, trustLevel, metrics, and public skills",
       );
+      return;
+    }
+
+    if (!assertNoPublicPublisherSensitiveBoundary(name, json, text)) {
       return;
     }
 
@@ -1427,6 +1476,10 @@ async function checkPublicPublisherProfileApi({ apiUrl, timeoutMs }) {
       return;
     }
 
+    if (!assertNoPublicPublisherSensitiveBoundary(name, json, text)) {
+      return;
+    }
+
     pass(
       name,
       `${publisher.slug}, skills=${publisher.skills.length}, trust=${publisher.trustLevel}`,
@@ -1980,6 +2033,82 @@ function findBoundarySensitiveLeaks(text) {
         '"code":"[redacted-public-error-code]"',
       ),
   );
+}
+
+function assertNoPublicPublisherSensitiveBoundary(name, payload, text) {
+  const leaks = findBoundarySensitiveLeaks(text);
+
+  if (leaks.length > 0) {
+    fail(name, `possible sensitive public publisher leak: ${leaks[0]}`);
+    return false;
+  }
+
+  const forbiddenPath = findPublicPublisherForbiddenField(payload);
+
+  if (forbiddenPath) {
+    fail(
+      name,
+      `public publisher payload must not expose private publisher/operator fields: ${forbiddenPath}`,
+    );
+    return false;
+  }
+
+  return true;
+}
+
+function findPublicPublisherForbiddenField(value, path = []) {
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const childPath = findPublicPublisherForbiddenField(value[index], [
+        ...path,
+        String(index),
+      ]);
+
+      if (childPath) {
+        return childPath;
+      }
+    }
+
+    return null;
+  }
+
+  if (!value || typeof value !== "object") {
+    if (
+      typeof value === "string" &&
+      hasEmbeddedCredentialsInPublicPublisherString(value)
+    ) {
+      return `${path.join(".") || "value"} contains embedded URL credentials`;
+    }
+
+    return null;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const nextPath = [...path, key];
+    const normalizedKey = key.toLowerCase();
+
+    if (PUBLIC_PUBLISHER_FORBIDDEN_FIELD_NAMES.has(normalizedKey)) {
+      return nextPath.join(".");
+    }
+
+    const childPath = findPublicPublisherForbiddenField(child, nextPath);
+
+    if (childPath) {
+      return childPath;
+    }
+  }
+
+  return null;
+}
+
+function hasEmbeddedCredentialsInPublicPublisherString(value) {
+  const text = String(value ?? "").trim();
+
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) {
+    return false;
+  }
+
+  return hasEmbeddedUrlCredentials(text);
 }
 
 function findPublicMcpInternalField(value) {
