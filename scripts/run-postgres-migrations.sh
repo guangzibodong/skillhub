@@ -180,6 +180,10 @@ checksum_file() {
   fi
 }
 
+sql_quote_literal() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+}
+
 if [ "$START_POSTGRES" -eq 1 ]; then
   compose up -d "$SERVICE"
 fi
@@ -248,11 +252,9 @@ while IFS= read -r migration_file; do
   fi
 
   checksum="$(checksum_file "$migration_file")"
-  recorded_checksum="$(
-    psql_exec -At \
-      -v "migration_filename=$filename" \
-      -c "select checksum from public.schema_migrations where filename = :'migration_filename';"
-  )"
+  filename_sql="$(sql_quote_literal "$filename")"
+  checksum_sql="$(sql_quote_literal "$checksum")"
+  recorded_checksum="$(psql_exec -At -c "select checksum from public.schema_migrations where filename = $filename_sql;")"
 
   if [ -n "$recorded_checksum" ]; then
     if [ "$recorded_checksum" != "$checksum" ]; then
@@ -276,12 +278,9 @@ while IFS= read -r migration_file; do
 
   echo "Applying migration: $filename"
   psql_exec < "$migration_file"
-  psql_exec \
-    -v "migration_filename=$filename" \
-    -v "migration_checksum=$checksum" \
-    -c "
+  psql_exec -c "
       insert into public.schema_migrations (filename, checksum)
-      values (:'migration_filename', :'migration_checksum')
+      values ($filename_sql, $checksum_sql)
       on conflict (filename) do nothing;
     "
   applied_count=$((applied_count + 1))
