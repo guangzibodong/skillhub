@@ -9,7 +9,6 @@ const DEFAULT_APP_PATHS = [
   "/",
   "/?lang=zh",
   "/marketplace",
-  "/skills/browser-research-pro",
   "/publishers",
   "/agents",
   "/docs",
@@ -85,6 +84,11 @@ const MOJIBAKE_MARKERS = [
   "\u93B6\u20AC",
   "\u6D93\u20AC",
 ];
+
+const smokeContext = {
+  publicSkillSlug: undefined,
+  stats: undefined,
+};
 
 let args;
 
@@ -185,6 +189,8 @@ async function checkStats({ apiUrl, timeoutMs }) {
       return;
     }
 
+    smokeContext.stats = json;
+
     pass(
       name,
       `published=${json.publishedSkills}, verified=${json.verifiedSkills}`,
@@ -263,6 +269,17 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
       return;
     }
 
+    if (
+      (smokeContext.stats?.publishedSkills ?? 0) > 0 &&
+      json.skills.length === 0
+    ) {
+      fail(
+        name,
+        "stats reports published skills but public search returned none; run registry migrations or inspect public listing filters",
+      );
+      return;
+    }
+
     const invalidSkill = json.skills.find(
       (skill) =>
         typeof skill?.slug !== "string" ||
@@ -277,6 +294,8 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
       );
       return;
     }
+
+    smokeContext.publicSkillSlug = json.skills[0]?.slug;
 
     pass(name, `skills=${json.skills.length}`);
   } catch (error) {
@@ -390,6 +409,46 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
     } catch (error) {
       fail(name, error.message);
     }
+  }
+
+  await checkPublicSkillDetailPage({ appUrl, timeoutMs });
+}
+
+async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
+  const slug = smokeContext.publicSkillSlug;
+  const name = "GET app public skill detail";
+
+  if (!slug) {
+    skip(
+      name,
+      "no public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  const path = `/skills/${encodeURIComponent(slug)}`;
+
+  try {
+    const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+    if (response.status !== 200) {
+      fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
+      return;
+    }
+
+    const html = response.text.toLowerCase();
+
+    if (!html.includes(slug.toLowerCase())) {
+      fail(name, `expected skill detail HTML to include slug ${slug}`);
+      return;
+    }
+
+    pass(
+      name,
+      `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+    );
+  } catch (error) {
+    fail(name, error.message);
   }
 }
 
