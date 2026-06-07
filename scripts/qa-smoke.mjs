@@ -9,17 +9,31 @@ const DEFAULT_APP_PATHS = [
   "/",
   "/?lang=zh",
   "/marketplace",
+  "/marketplace?lang=zh",
   "/publishers",
+  "/publishers?lang=zh",
+  "/registry",
+  "/registry?lang=zh",
   "/agents",
+  "/agents?lang=zh",
   "/docs",
+  "/docs?lang=zh",
   "/publish",
+  "/publish?lang=zh",
   "/publisher",
+  "/publisher?lang=zh",
   "/developer",
+  "/developer?lang=zh",
   "/dashboard",
+  "/dashboard?lang=zh",
   "/account",
+  "/account?lang=zh",
   "/login",
+  "/login?lang=zh",
   "/admin",
+  "/admin?lang=zh",
   "/terms",
+  "/terms?lang=zh",
 ];
 const DEFAULT_TIMEOUT_MS = 10000;
 const PAGE_ASSERTIONS = {
@@ -36,6 +50,9 @@ const PAGE_ASSERTIONS = {
     "/publisher?lang=zh",
     "/admin?lang=zh",
   ],
+  "/marketplace": ["marketplace", "publisher", "runtime"],
+  "/publishers": ["public publishers", "publisher trust", "marketplace"],
+  "/registry": ["registry protocol", "live registry", "manifest quality bar"],
   "/login": [
     "after login",
     "no shared backend password",
@@ -83,6 +100,10 @@ const MOJIBAKE_MARKERS = [
   "\u9418\u8235",
   "\u93B6\u20AC",
   "\u6D93\u20AC",
+  "\u934F",
+  "\u7487",
+  "\u9286",
+  "\u9428",
 ];
 
 const smokeContext = {
@@ -453,7 +474,10 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
         continue;
       }
 
-      const expectedContent = PAGE_ASSERTIONS[path] ?? [];
+      const expectedContent =
+        PAGE_ASSERTIONS[path] ??
+        (isZhAppPath(path) ? [] : PAGE_ASSERTIONS[basePathFromAppPath(path)]) ??
+        [];
       const missingContent = expectedContent.filter(
         (token) => !html.includes(token.toLowerCase()),
       );
@@ -485,29 +509,45 @@ async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
     return;
   }
 
-  const path = `/skills/${encodeURIComponent(slug)}`;
+  const paths = [
+    `/skills/${encodeURIComponent(slug)}`,
+    `/skills/${encodeURIComponent(slug)}?lang=zh`,
+  ];
 
-  try {
-    const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+  for (const path of paths) {
+    try {
+      const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
 
-    if (response.status !== 200) {
-      fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
-      return;
+      if (response.status !== 200) {
+        fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
+        continue;
+      }
+
+      const html = response.text.toLowerCase();
+      const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+        response.text.includes(marker),
+      );
+
+      if (mojibakeMarkers.length > 0) {
+        fail(
+          name,
+          `possible mojibake markers in ${path}: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+        );
+        continue;
+      }
+
+      if (!html.includes(slug.toLowerCase())) {
+        fail(name, `expected skill detail HTML to include slug ${slug}`);
+        continue;
+      }
+
+      pass(
+        name,
+        `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+      );
+    } catch (error) {
+      fail(name, error.message);
     }
-
-    const html = response.text.toLowerCase();
-
-    if (!html.includes(slug.toLowerCase())) {
-      fail(name, `expected skill detail HTML to include slug ${slug}`);
-      return;
-    }
-
-    pass(
-      name,
-      `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
-    );
-  } catch (error) {
-    fail(name, error.message);
   }
 }
 
@@ -523,29 +563,45 @@ async function checkPublicPublisherProfilePage({ appUrl, timeoutMs }) {
     return;
   }
 
-  const path = `/publishers/${encodeURIComponent(slug)}`;
+  const paths = [
+    `/publishers/${encodeURIComponent(slug)}`,
+    `/publishers/${encodeURIComponent(slug)}?lang=zh`,
+  ];
 
-  try {
-    const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+  for (const path of paths) {
+    try {
+      const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
 
-    if (response.status !== 200) {
-      fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
-      return;
+      if (response.status !== 200) {
+        fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
+        continue;
+      }
+
+      const html = response.text.toLowerCase();
+      const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+        response.text.includes(marker),
+      );
+
+      if (mojibakeMarkers.length > 0) {
+        fail(
+          name,
+          `possible mojibake markers in ${path}: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+        );
+        continue;
+      }
+
+      if (!html.includes("publisher") && !html.includes("\u53D1\u5E03\u8005")) {
+        fail(name, `expected publisher profile HTML markers for ${path}`);
+        continue;
+      }
+
+      pass(
+        name,
+        `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+      );
+    } catch (error) {
+      fail(name, error.message);
     }
-
-    const html = response.text.toLowerCase();
-
-    if (!html.includes("publisher") && !html.includes("发布者")) {
-      fail(name, `expected publisher profile HTML markers for ${path}`);
-      return;
-    }
-
-    pass(
-      name,
-      `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
-    );
-  } catch (error) {
-    fail(name, error.message);
   }
 }
 
@@ -625,6 +681,14 @@ function joinUrl(base, path) {
   }
 
   return new URL(normalizedPath, parsed).toString();
+}
+
+function basePathFromAppPath(path) {
+  return path.split("?")[0];
+}
+
+function isZhAppPath(path) {
+  return path.includes("lang=zh");
 }
 
 function parseArgs(argv) {

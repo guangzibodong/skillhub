@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "030_payout_explainability.sql";
-const expectedLatestMigrationNumber = 30;
+const expectedLatestMigrationFilename = "031_public_publisher_profile_backfill.sql";
+const expectedLatestMigrationNumber = 31;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;

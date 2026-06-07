@@ -1422,7 +1422,7 @@ const fallbackLaunchReadiness: LaunchReadinessReport = {
         {
           action: "Run ./scripts/run-postgres-migrations.sh before each production rebuild.",
           description: "Migration history is tracked in schema_migrations so operators can see whether SQL kept up with code.",
-          detail: "Demo latest migration: 030_payout_explainability.sql.",
+          detail: "Demo latest migration: 031_public_publisher_profile_backfill.sql.",
           key: "schema_migrations",
           label: "Migration history",
           status: "ready"

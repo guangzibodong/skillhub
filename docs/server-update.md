@@ -40,6 +40,7 @@ ADMIN_TOKEN="$(grep '^SKILLHUB_ADMIN_TOKEN=' .env | cut -d= -f2-)"
 curl https://api.useskillhub.com/health
 curl https://api.useskillhub.com/v1/stats
 curl "https://api.useskillhub.com/v1/skills/search?sort=recommended&limit=5"
+curl "https://api.useskillhub.com/v1/publishers?limit=5"
 curl "https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3" -H "Authorization: Bearer $ADMIN_TOKEN"
 
 # Full smoke gate for the public app, marketplace, workspaces, auth entry,

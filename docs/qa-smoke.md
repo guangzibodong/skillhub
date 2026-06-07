@@ -6,7 +6,7 @@ This smoke path covers the minimum launch surface for local builds and productio
 - `GET /v1/auth/providers`
 - `GET /v1/skills/search`
 - `GET /v1/admin/launch-readiness`
-- Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/publishers`, `/agents`, `/docs`, `/publish`, `/publisher`, `/developer`, `/dashboard`, `/account`, `/login`, `/admin`, `/terms`, plus the first real public skill detail returned by `/v1/skills/search` when one exists.
+- Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/marketplace?lang=zh`, `/publishers`, `/publishers?lang=zh`, `/registry`, `/registry?lang=zh`, `/agents`, `/agents?lang=zh`, `/docs`, `/docs?lang=zh`, `/publish`, `/publish?lang=zh`, `/publisher`, `/publisher?lang=zh`, `/developer`, `/developer?lang=zh`, `/dashboard`, `/dashboard?lang=zh`, `/account`, `/account?lang=zh`, `/login`, `/login?lang=zh`, `/admin`, `/admin?lang=zh`, `/terms`, and `/terms?lang=zh`, plus the first real public skill and publisher detail pages returned by public APIs in both English and Chinese when those rows exist.
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
@@ -21,7 +21,7 @@ The app-page checks now validate more than HTTP 200. For key P0 pages, the scrip
 - Dashboard must expose the workspace command center and P0 demo chain.
 - Publish, publisher, developer, and admin pages must expose their operating queue or evidence-panel markers.
 
-The same app check also fails on common Chinese mojibake markers, so a deployment cannot quietly pass smoke while showing corrupted Chinese UI copy to customers.
+The same app check also fails on common Chinese mojibake markers across English and Chinese page variants, so a deployment cannot quietly pass smoke while showing corrupted bilingual UI copy to customers.
 
 ## Static quality gates
 
