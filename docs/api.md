@@ -2140,6 +2140,29 @@ curl -X POST "https://api.useskillhub.com/v1/skills" \
 
 The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace. The page also shows role-aware publisher access state, client-side preflight, a repair queue, a secret-safe reviewer evidence packet, and the review handoff returned by the exact-version submission endpoint; these are publisher guidance and demo clarity surfaces, while the API remains the source of truth for organization ownership, role enforcement, immutable version review, automated checks, pricing blockers, and audit records.
 
+## P0 Publish Handoff Smoke
+
+Local and staging operators can run a mutating smoke test for the Journey B -> Journey C handoff:
+
+```bash
+pnpm smoke:p0:publish
+```
+
+The script uses the existing public and protected endpoints rather than direct database access:
+
+- `GET /publish`
+- `POST /v1/skills`
+- `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`
+- `GET /v1/publisher/skills`
+- `GET /v1/notifications`
+- `GET /v1/admin/reviews`
+- `GET /v1/admin/audit-logs`
+- `GET /v1/admin/notifications`
+
+Required tokens are supplied through environment variables such as `SKILLHUB_P0_PUBLISH_PUBLISHER_TOKEN` and `SKILLHUB_P0_PUBLISH_ADMIN_TOKEN`. The script redacts authorization-shaped strings in output and refuses production API writes unless `--allow-production` or `SKILLHUB_P0_PUBLISH_ALLOW_PRODUCTION=true` is set.
+
+Passing assertions mean a generated draft skill saved through `/v1/skills` produced an exact-version review submission, automated check summary, publisher workspace row, publisher in-app notification, admin review queue row, admin audit record, and admin notification queue signal. This is a QA harness for existing APIs; it does not add a fake task API or bypass SkillHub role enforcement.
+
 ## MCP Discovery
 
 The MCP endpoint exposes SkillHub to agent clients through JSON-RPC. Public calls can discover marketplace-safe tools and resources. Project-scoped calls should include a project API key; then `tools/list` returns the skills installed for that project and `tools/call` invokes the same runtime governance path as `/v1/runtime/invoke`.

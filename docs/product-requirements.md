@@ -476,6 +476,7 @@ Acceptance criteria:
 - Rejected and suspended skills record a reason.
 - Public marketplace should show only allowed public listings.
 - Public reviews and feedback should show only moderated `published` entries.
+- The P0 publish handoff smoke can verify draft save, exact-version review submission, publisher workspace visibility, admin review queue visibility, audit, and notification records without exposing credentials.
 
 ## Runtime Requirements
 
