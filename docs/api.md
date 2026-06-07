@@ -2226,8 +2226,13 @@ The script uses existing public and protected APIs rather than direct database a
 - `POST /v1/projects/:projectSlug/runtime/test`.
 - `POST /mcp` with `tools/list` and `tools/call`.
 - `POST /v1/admin/finance/process-usage`.
+- `POST /v1/admin/finance/release-balances`.
 - `GET /v1/admin/finance/ledger`.
 - `GET /v1/publisher/finance/ledger`.
+- `GET /v1/publisher/payouts`.
+- `POST /v1/publisher/payouts`.
+- `GET /v1/admin/payouts`.
+- `POST /v1/admin/payouts/:payoutId/decision`.
 - `GET /v1/developer/projects/:projectSlug`.
 - `GET /v1/notifications`.
 - `GET /v1/admin/audit-logs`.
@@ -2235,9 +2240,9 @@ The script uses existing public and protected APIs rather than direct database a
 
 Required tokens can be supplied as one org-scoped admin/super-admin token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, `SKILLHUB_P0_DEMO_FINANCE_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
 
-Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed provider-deferred commercial readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, and notification plus audit records were visible without exposing authorization-shaped secrets.
+Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed provider-deferred commercial readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, finance released eligible balances, the publisher requested payout, finance approved and marked the provider-deferred payout paid, and notification plus audit records were visible without exposing authorization-shaped secrets.
 
-The script refuses production writes unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, publisher profile/terms/payout-readiness, price, project, install, key, invocation, usage, transaction, split, balance, notification, and audit rows. `--skip-ledger` is available only for local debugging without a finance/admin token; full customer-demo readiness should leave ledger proof enabled.
+The script refuses production writes unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, publisher profile/terms/payout-readiness, price, project, install, key, invocation, usage, transaction, split, balance, payout, notification, and audit rows. `--skip-ledger` is available only for local debugging without a finance/admin token; full customer-demo readiness should leave ledger and payout proof enabled. Fresh local/staging rehearsals should run the gateway with `SKILLHUB_BALANCE_DELAY_DAYS=0` or use matured generated balances, because normal payout requests only reserve `available` balances.
 
 ## MCP Discovery
 

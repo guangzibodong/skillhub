@@ -5,7 +5,7 @@ const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_VERSION = "0.1.0";
 const CURRENT_PUBLISHER_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
-const DEFAULT_LEDGER_UNIT_AMOUNT_CENTS = 125;
+const DEFAULT_LEDGER_UNIT_AMOUNT_CENTS = 6250;
 const runId = Date.now().toString(36);
 
 let args;
@@ -114,7 +114,7 @@ console.log(`Skill slug: ${config.slug}`);
 console.log(`Version: ${config.version}`);
 console.log(`Project slug: ${config.projectSlug}`);
 if (!config.skipLedger) {
-  console.log(`Paid ledger proof: per_call ${config.ledgerUnitAmountCents} cents`);
+  console.log(`Paid ledger/payout proof: per_call ${config.ledgerUnitAmountCents} cents`);
 }
 console.log("");
 
@@ -171,11 +171,14 @@ if (missingTokens.length > 0) {
     const ledgerProof = !config.skipLedger
       ? await checkPaidLedgerProof(config, { mcpCall })
       : null;
+    const payoutProof = ledgerProof
+      ? await checkPayoutWorkflowProof(config, { ledgerProof })
+      : null;
 
     await checkProjectDetail(config, { apiKey, consoleRuntime, mcpCall });
-    await checkNotifications(config, { apiKey, ledgerProof, project });
-    await checkAdminAuditLogs(config, { apiKey, install, project, review });
-    await checkAdminNotificationQueue(config, { ledgerProof });
+    await checkNotifications(config, { apiKey, ledgerProof, payoutProof, project });
+    await checkAdminAuditLogs(config, { apiKey, install, payoutProof, project, review });
+    await checkAdminNotificationQueue(config, { ledgerProof, payoutProof });
   }
 
   printSummary(results);
@@ -1034,6 +1037,357 @@ async function checkPaidLedgerProof(config, { mcpCall }) {
   };
 }
 
+async function checkPayoutWorkflowProof(config, { ledgerProof }) {
+  const release = await releasePublisherBalances(config);
+  const payoutSummary = await checkPublisherPayoutReadiness(config, {
+    ledgerProof,
+    release,
+  });
+  const requested = payoutSummary
+    ? await requestPublisherPayout(config, { ledgerProof, payoutSummary })
+    : null;
+  const approved = requested ? await approvePublisherPayout(config, requested) : null;
+  const paid = approved ? await markPublisherPayoutPaid(config, approved) : null;
+  const publisherPaidSummary = paid
+    ? await checkPublisherPaidPayoutSummary(config, paid)
+    : null;
+  const adminPaidQueue = paid ? await checkAdminPayoutQueue(config, paid) : null;
+
+  if (!paid || !publisherPaidSummary || !adminPaidQueue) {
+    return null;
+  }
+
+  return {
+    adminPaidQueue,
+    approved,
+    paid,
+    publisherPaidSummary,
+    release,
+    requested,
+  };
+}
+
+async function releasePublisherBalances({ apiUrl, financeToken, timeoutMs }) {
+  const path = "/v1/admin/finance/release-balances";
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({ limit: 100 }),
+      headers: authorizedHeaders(financeToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    if (!isFiniteNumber(json?.releasedCount) || !Array.isArray(json?.balances)) {
+      fail(name, "unexpected balance release payload shape");
+      return null;
+    }
+
+    pass(name, `released ${json.releasedCount} matured publisher balance row(s)`);
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkPublisherPayoutReadiness(
+  { apiUrl, publisherToken, timeoutMs },
+  { ledgerProof, release },
+) {
+  const name = "GET /v1/publisher/payouts request readiness";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/payouts"),
+      {
+        headers: authorizedHeaders(publisherToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const balances = json?.balances;
+    const readiness = json?.readiness;
+    const availableCents = Number(balances?.availableCents ?? 0);
+    const minPayoutCents = Number(balances?.minPayoutCents ?? 0);
+
+    if (
+      !json?.publisherProfile ||
+      json.publisherProfile.status !== "active" ||
+      json.publisherProfile.payoutStatus !== "verified" ||
+      !Array.isArray(json?.payoutAccounts) ||
+      !json.payoutAccounts.some((account) => account?.status === "verified") ||
+      !readiness ||
+      !Array.isArray(readiness.blockers)
+    ) {
+      fail(name, "publisher payout profile/readiness payload is not verified");
+      return null;
+    }
+
+    if (!readiness.canRequest || availableCents < minPayoutCents) {
+      fail(
+        name,
+        `payout is not requestable: available=${availableCents}, min=${minPayoutCents}, blockers=${readiness.blockers.join(
+          ", ",
+        ) || "none"}, released=${release?.releasedCount ?? 0}, transactionShare=${
+          ledgerProof.transaction.publisherShareCents
+        }`,
+      );
+      return null;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive payout summary leak: ${leaks[0]}`);
+      return null;
+    }
+
+    pass(
+      name,
+      `available=${availableCents}, min=${minPayoutCents}, next=${readiness.nextAction}`,
+    );
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function requestPublisherPayout(
+  { apiUrl, publisherToken, timeoutMs },
+  { ledgerProof, payoutSummary },
+) {
+  const path = "/v1/publisher/payouts";
+  const name = `POST ${path}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({ currency: "usd" }),
+      headers: authorizedHeaders(publisherToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 201) {
+      fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const payout = json?.payout;
+    const minPayoutCents = Number(payoutSummary?.balances?.minPayoutCents ?? 0);
+
+    if (
+      !payout ||
+      typeof payout.id !== "string" ||
+      !["requested", "review"].includes(payout.status) ||
+      payout.nextAction !== "await_finance_review" ||
+      !isFiniteNumber(payout.amountCents) ||
+      payout.amountCents < minPayoutCents ||
+      payout.amountCents < ledgerProof.transaction.publisherShareCents ||
+      !isFiniteNumber(payout.balanceCount) ||
+      payout.balanceCount < 1
+    ) {
+      fail(name, "unexpected payout request payload shape");
+      return null;
+    }
+
+    pass(
+      name,
+      `payout=...${payout.id.slice(-8)}, status=${payout.status}, amount=${payout.amountCents}`,
+    );
+    return payout;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function approvePublisherPayout({ apiUrl, financeToken, timeoutMs }, payout) {
+  const path = `/v1/admin/payouts/${encodeURIComponent(payout.id)}/decision`;
+  const name = `POST ${path} approve`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        action: "approve",
+        reason: "P0 demo-chain smoke approved provider-deferred payout request.",
+      }),
+      headers: authorizedHeaders(financeToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const approved = json?.payout;
+
+    if (
+      !approved ||
+      approved.id !== payout.id ||
+      approved.status !== "processing" ||
+      approved.nextAction !== "await_provider_processing"
+    ) {
+      fail(name, "unexpected payout approval payload shape");
+      return null;
+    }
+
+    pass(name, `payout=...${approved.id.slice(-8)} moved to processing`);
+    return approved;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function markPublisherPayoutPaid({ apiUrl, financeToken, timeoutMs }, payout) {
+  const path = `/v1/admin/payouts/${encodeURIComponent(payout.id)}/decision`;
+  const name = `POST ${path} mark_paid`;
+  const providerReference = `p0-demo-payout-${runId}-${payout.id.slice(-8)}`;
+
+  try {
+    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+      body: JSON.stringify({
+        action: "mark_paid",
+        providerReference,
+        reason: "P0 demo-chain smoke recorded provider-deferred payout completion.",
+      }),
+      headers: authorizedHeaders(financeToken),
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const paid = json?.payout;
+
+    if (
+      !paid ||
+      paid.id !== payout.id ||
+      paid.status !== "paid" ||
+      paid.nextAction !== "complete" ||
+      paid.providerReference !== providerReference
+    ) {
+      fail(name, "unexpected paid payout payload shape");
+      return null;
+    }
+
+    pass(name, `payout=...${paid.id.slice(-8)} marked paid with provider reference`);
+    return paid;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkPublisherPaidPayoutSummary(
+  { apiUrl, publisherToken, timeoutMs },
+  paidPayout,
+) {
+  const name = "GET /v1/publisher/payouts paid proof";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/publisher/payouts"),
+      {
+        headers: authorizedHeaders(publisherToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const payout = json?.payouts?.find((item) => item?.id === paidPayout.id);
+
+    if (
+      !payout ||
+      payout.status !== "paid" ||
+      payout.providerReference !== paidPayout.providerReference ||
+      Number(json?.balances?.paidCents ?? 0) < paidPayout.amountCents
+    ) {
+      fail(name, "publisher payout summary did not expose the paid payout");
+      return null;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive paid payout leak: ${leaks[0]}`);
+      return null;
+    }
+
+    pass(name, `publisher sees paid payout=...${payout.id.slice(-8)}`);
+    return json;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkAdminPayoutQueue({ apiUrl, financeToken, timeoutMs }, paidPayout) {
+  const name = "GET /v1/admin/payouts paid queue proof";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/payouts?limit=100"),
+      {
+        headers: authorizedHeaders(financeToken),
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return null;
+    }
+
+    const payout = json?.payouts?.find((item) => item?.id === paidPayout.id);
+
+    if (
+      !payout ||
+      payout.status !== "paid" ||
+      payout.nextAction !== "complete" ||
+      payout.providerReference !== paidPayout.providerReference
+    ) {
+      fail(name, "admin payout queue did not expose the paid payout");
+      return null;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive admin payout leak: ${leaks[0]}`);
+      return null;
+    }
+
+    pass(name, `admin queue sees paid payout=...${payout.id.slice(-8)}`);
+    return payout;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
 async function processBillableUsage({ apiUrl, financeToken, timeoutMs }) {
   const path = "/v1/admin/finance/process-usage";
   const name = `POST ${path}`;
@@ -1267,11 +1621,12 @@ async function checkProjectDetail(
 
 async function checkNotifications(
   { apiUrl, developerToken, publisherToken, projectSlug, slug, timeoutMs, version },
-  { apiKey, ledgerProof, project },
+  { apiKey, ledgerProof, payoutProof, project },
 ) {
   await checkPublisherNotifications({
     apiUrl,
     ledgerProof,
+    payoutProof,
     publisherToken,
     slug,
     timeoutMs,
@@ -1291,6 +1646,7 @@ async function checkNotifications(
 async function checkPublisherNotifications({
   apiUrl,
   ledgerProof,
+  payoutProof,
   publisherToken,
   slug,
   timeoutMs,
@@ -1336,6 +1692,22 @@ async function checkPublisherNotifications({
               "billing.usage_posted",
               (item) =>
                 item?.payload?.transactionId === ledgerProof.transaction.id,
+            ],
+          ]
+        : []),
+      ...(payoutProof
+        ? [
+            [
+              `payout.${payoutProof.requested.status}`,
+              (item) => item?.payload?.payoutId === payoutProof.requested.id,
+            ],
+            [
+              "payout.approve",
+              (item) => item?.payload?.payoutId === payoutProof.paid.id,
+            ],
+            [
+              "payout.mark_paid",
+              (item) => item?.payload?.payoutId === payoutProof.paid.id,
             ],
           ]
         : []),
@@ -1440,7 +1812,7 @@ async function checkDeveloperNotifications({
 
 async function checkAdminAuditLogs(
   { adminToken, apiUrl, projectSlug, slug, timeoutMs, version },
-  { apiKey, install, project, review },
+  { apiKey, install, payoutProof, project, review },
 ) {
   const name = "GET /v1/admin/audit-logs";
 
@@ -1509,6 +1881,28 @@ async function checkAdminAuditLogs(
           item?.entityId === apiKey.id &&
           item?.metadata?.keyLast4 === apiKey.keyLast4,
       ],
+      ...(payoutProof
+        ? [
+            [
+              "payout.requested",
+              (item) =>
+                item?.entityId === payoutProof.requested.id &&
+                item?.metadata?.balanceCount === payoutProof.requested.balanceCount,
+            ],
+            [
+              "payout.approve",
+              (item) =>
+                item?.entityId === payoutProof.paid.id &&
+                item?.metadata?.previousStatus === payoutProof.requested.status,
+            ],
+            [
+              "payout.mark_paid",
+              (item) =>
+                item?.entityId === payoutProof.paid.id &&
+                item?.metadata?.providerReference === payoutProof.paid.providerReference,
+            ],
+          ]
+        : []),
     ];
 
     const missing = required
@@ -1543,7 +1937,7 @@ async function checkAdminAuditLogs(
 
 async function checkAdminNotificationQueue(
   { adminToken, apiUrl, timeoutMs },
-  { ledgerProof } = {},
+  { ledgerProof, payoutProof } = {},
 ) {
   const name = "GET /v1/admin/notifications";
 
@@ -1570,6 +1964,13 @@ async function checkAdminNotificationQueue(
       "skill.review.submitted",
       "skill.review.approved",
       ...(ledgerProof ? ["billing.usage_posted"] : []),
+      ...(payoutProof
+        ? [
+            `payout.${payoutProof.requested.status}`,
+            "payout.approve",
+            "payout.mark_paid",
+          ]
+        : []),
     ];
     const missing = required.filter(
       (eventType) =>
@@ -2038,8 +2439,8 @@ function printHelp() {
 Mutating end-to-end P0 demo smoke:
   publisher draft -> exact-version review -> admin approval -> public discovery
   -> developer project save/install -> reveal-once key -> console runtime test
-  -> MCP tools/list and tools/call -> paid ledger posting -> notifications
-  and admin audit proof.
+  -> MCP tools/list and tools/call -> paid ledger posting -> payout request
+  -> finance approve/mark paid -> notifications and admin audit proof.
 
 Options:
   --api-url <url>          Gateway API URL. Default: ${DEFAULT_API_URL}
@@ -2053,7 +2454,7 @@ Options:
                            Default: ${DEFAULT_LEDGER_UNIT_AMOUNT_CENTS}
   --timeout-ms <ms>        Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}
   --skip-app               Skip public/app shell marker checks.
-  --skip-ledger            Skip paid price, billable invocation, ledger, and balance proof.
+  --skip-ledger            Skip paid price, billable invocation, ledger, balance, and payout proof.
   --allow-production       Allow writes against https://api.useskillhub.com.
   -h, --help               Show this help.
 

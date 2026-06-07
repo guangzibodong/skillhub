@@ -163,6 +163,7 @@ The P0 demo-chain smoke is mutating and should be used before customer walkthrou
 - Developer creates a project, saves the skill, installs the approved version, creates a reveal-once project key, and runs a governed console test.
 - MCP `tools/list` and `tools/call` use the reveal-once project key and the same installed-skill runtime governance path; the agent runtime call is billable when the smoke's ledger proof is enabled.
 - Finance processing posts the billable usage into `transactions`, `transaction_splits`, and `publisher_balances`, then admin and publisher ledger reads must expose the same posted usage transaction.
+- Finance release processing moves matured publisher balances to `available`; the publisher then requests payout, finance approves it, finance marks provider-deferred payout completion with a synthetic provider reference, and publisher/admin payout reads must expose the paid state.
 - Publisher/developer notification inboxes and admin audit/notification queues expose the handoff without direct database checks.
 
 Run it against local or staging services with either one org-scoped admin/super-admin token or split role tokens:
@@ -190,9 +191,9 @@ export SKILLHUB_P0_DEMO_ADMIN_TOKEN="<admin-or-support-user-token>"
 pnpm smoke:p0:demo
 ```
 
-Use `--skip-ledger` only when a local developer lacks finance/admin credentials and needs to debug the non-money P0 chain. The full pre-demo run should keep ledger proof enabled.
+Use `--skip-ledger` only when a local developer lacks finance/admin credentials and needs to debug the non-money P0 chain. The full pre-demo run should keep ledger and payout proof enabled. For fresh local or staging rehearsals, configure the gateway with `SKILLHUB_BALANCE_DELAY_DAYS=0` or run against already matured generated balances; otherwise the smoke correctly reports that the new publisher balance is not yet eligible for payout.
 
-The script creates generated `p0-demo-chain-*` and `p0-demo-project-*` records by default. Production writes are blocked unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, profile/terms/payout-readiness, price, project, install, API-key, invocation, usage-event, transaction, split, balance, notification, and audit state. Output is redacted and must not be used to share credentials.
+The script creates generated `p0-demo-chain-*` and `p0-demo-project-*` records by default and uses a synthetic per-call amount large enough to satisfy the default minimum payout after the default commission split. Production writes are blocked unless `--allow-production` or `SKILLHUB_P0_DEMO_ALLOW_PRODUCTION=true` is set. Use that only for a planned production demo rehearsal because it creates skill, review, profile/terms/payout-readiness, price, project, install, API-key, invocation, usage-event, transaction, split, balance, payout, notification, and audit state. Output is redacted and must not be used to share credentials.
 
 ## Production
 
