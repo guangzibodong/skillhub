@@ -95,6 +95,7 @@ export type NotificationDeliveryProcessResult = {
   failedCount: number;
   fanoutCount: number;
   fanoutEmailCount: number;
+  fanoutMode: "created" | "preview";
   fanoutSourceCount: number;
   fanoutWebhookCount: number;
   mode: NotificationDeliveryProcessMode;
@@ -443,12 +444,7 @@ export async function processNotificationDeliveries(
   const fanout =
     mode === "deliver"
       ? await fanOutExternalNotificationEvents(sql, limit)
-      : {
-          createdCount: 0,
-          emailCount: 0,
-          sourceCount: 0,
-          webhookCount: 0
-        };
+      : await previewExternalNotificationFanout(sql, limit);
   const rows = (await sql`
     select
       id::text,
@@ -665,26 +661,7 @@ export async function markUserNotificationRead(
 }
 
 async function fanOutExternalNotificationEvents(sql: Sql, limit: number): Promise<NotificationFanoutSummary> {
-  const sources = (await sql`
-    select
-      id::text,
-      user_id::text as "userId",
-      organization_id::text as "organizationId",
-      event_type as "eventType",
-      channel,
-      subject,
-      payload,
-      status,
-      created_at as "createdAt",
-      delivered_at as "deliveredAt"
-    from notification_events
-    where channel = 'in_app'
-      and status = 'queued'
-      and event_type not like 'platform.notification_delivery.%'
-      and event_type not like 'platform.webhook_delivery.%'
-    order by created_at asc
-    limit ${Math.min(Math.max(limit * 5, limit), 250)}
-  `) as NotificationRow[];
+  const sources = await selectFanoutSources(sql, limit);
   const summary: NotificationFanoutSummary = {
     createdCount: 0,
     emailCount: 0,
@@ -706,6 +683,54 @@ async function fanOutExternalNotificationEvents(sql: Sql, limit: number): Promis
   }
 
   return summary;
+}
+
+async function previewExternalNotificationFanout(sql: Sql, limit: number): Promise<NotificationFanoutSummary> {
+  const sources = await selectFanoutSources(sql, limit);
+  const summary: NotificationFanoutSummary = {
+    createdCount: 0,
+    emailCount: 0,
+    sourceCount: sources.length,
+    webhookCount: 0
+  };
+
+  for (const source of sources) {
+    const emailCount = await previewEmailFanoutCount(sql, source);
+    const webhookCount = await previewWebhookFanoutCount(sql, source);
+
+    summary.emailCount += emailCount;
+    summary.webhookCount += webhookCount;
+    summary.createdCount += emailCount + webhookCount;
+
+    if (summary.createdCount >= limit) {
+      break;
+    }
+  }
+
+  return summary;
+}
+
+async function selectFanoutSources(sql: Sql, limit: number) {
+  return (await sql`
+    select
+      id::text,
+      user_id::text as "userId",
+      organization_id::text as "organizationId",
+      event_type as "eventType",
+      channel,
+      subject,
+      payload,
+      status,
+      created_at as "createdAt",
+      delivered_at as "deliveredAt"
+    from notification_events
+    where channel = 'in_app'
+      and status = 'queued'
+      and event_type not like 'platform.notification_delivery.%'
+      and event_type not like 'platform.webhook_delivery.%'
+    order by created_at asc
+    limit ${Math.min(Math.max(limit * 5, limit), 250)}
+  `) as NotificationRow[];
 }
 
 async function fanOutEmailNotifications(sql: Sql, source: NotificationRow) {
@@ -750,6 +775,29 @@ async function fanOutEmailNotifications(sql: Sql, source: NotificationRow) {
   }
 
   return createdCount;
+}
+
+async function previewEmailFanoutCount(sql: Sql, source: NotificationRow) {
+  const topic = notificationPreferenceTopicForEventType(source.eventType);
+  const targets = await selectEmailFanoutTargets(sql, source, topic);
+  let pendingCount = 0;
+
+  for (const target of targets) {
+    const existingRows = (await sql`
+      select id::text
+      from notification_events
+      where channel = 'email'
+        and user_id = ${target.userId}
+        and payload ->> 'fanoutSourceNotificationId' = ${source.id}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (!existingRows[0]) {
+      pendingCount += 1;
+    }
+  }
+
+  return pendingCount;
 }
 
 async function fanOutWebhookNotification(sql: Sql, source: NotificationRow) {
@@ -802,6 +850,38 @@ async function fanOutWebhookNotification(sql: Sql, source: NotificationRow) {
   `;
 
   return 1;
+}
+
+async function previewWebhookFanoutCount(sql: Sql, source: NotificationRow) {
+  const organizationId = source.organizationId ?? null;
+
+  if (!organizationId) {
+    return 0;
+  }
+
+  const topic = webhookTopicForEventType(source.eventType);
+  const endpointRows = (await sql`
+    select count(*)::int as count
+    from organization_webhook_endpoints
+    where organization_id = ${organizationId}
+      and status = 'active'
+      and (${source.eventType} = any(events) or ${topic} = any(events))
+  `) as Array<{ count: number }>;
+
+  if ((endpointRows[0]?.count ?? 0) === 0) {
+    return 0;
+  }
+
+  const existingRows = (await sql`
+    select id::text
+    from notification_events
+    where channel = 'webhook'
+      and organization_id = ${organizationId}
+      and payload ->> 'fanoutSourceNotificationId' = ${source.id}
+    limit 1
+  `) as Array<{ id: string }>;
+
+  return existingRows[0] ? 0 : 1;
 }
 
 async function selectEmailFanoutTargets(sql: Sql, source: NotificationRow, topic: string) {
@@ -1158,6 +1238,7 @@ function summarizeProcessResult(
     failedCount: summary.failedCount,
     fanoutCount: fanout.createdCount,
     fanoutEmailCount: fanout.emailCount,
+    fanoutMode: mode === "deliver" ? "created" : "preview",
     fanoutSourceCount: fanout.sourceCount,
     fanoutWebhookCount: fanout.webhookCount,
     mode,

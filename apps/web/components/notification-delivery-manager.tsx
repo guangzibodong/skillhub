@@ -37,7 +37,7 @@ const copy = {
     process: "Process due",
     processMode: "Mode",
     processLimit: "Limit",
-    processSummary: "Fanout {{fanout}} (email {{fanoutEmail}}, webhook {{fanoutWebhook}}) / processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
+    processSummary: "{{fanoutMode}} fanout {{fanout}} (email {{fanoutEmail}}, webhook {{fanoutWebhook}}) / processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
     retry: "Retry",
     saving: "Updating",
     skip: "Skip",
@@ -56,6 +56,10 @@ const copy = {
     processModes: {
       deliver: "Deliver",
       dry_run: "Dry run"
+    },
+    fanoutModes: {
+      created: "Created",
+      preview: "Preview"
     }
   },
   zh: {
@@ -78,7 +82,7 @@ const copy = {
     process: "\u5904\u7406\u5230\u671f\u961f\u5217",
     processMode: "\u6a21\u5f0f",
     processLimit: "\u6570\u91cf",
-    processSummary: "\u6247\u51fa {{fanout}}\uff08\u90ae\u4ef6 {{fanoutEmail}}\uff0cWebhook {{fanoutWebhook}}\uff09/ \u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
+    processSummary: "{{fanoutMode}}\u6247\u51fa {{fanout}}\uff08\u90ae\u4ef6 {{fanoutEmail}}\uff0cWebhook {{fanoutWebhook}}\uff09/ \u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
     retry: "\u91cd\u8bd5",
     saving: "\u66f4\u65b0\u4e2d",
     skip: "\u8df3\u8fc7",
@@ -97,6 +101,10 @@ const copy = {
     processModes: {
       deliver: "\u6295\u9012",
       dry_run: "\u6f14\u7ec3"
+    },
+    fanoutModes: {
+      created: "\u5df2\u521b\u5efa",
+      preview: "\u9884\u89c8"
     }
   }
 } as const;
@@ -235,8 +243,10 @@ function ProcessMessage({
   labels: (typeof copy)["en"] | (typeof copy)["zh"];
   state: NotificationDeliveryProcessActionState;
 }) {
+  const fanoutMode = state.result ? labels.fanoutModes[state.result.fanoutMode ?? "created"] : "";
   const summary = state.result
     ? labels.processSummary
+        .replace("{{fanoutMode}}", fanoutMode)
         .replace("{{fanout}}", String(state.result.fanoutCount ?? 0))
         .replace("{{fanoutEmail}}", String(state.result.fanoutEmailCount ?? 0))
         .replace("{{fanoutWebhook}}", String(state.result.fanoutWebhookCount ?? 0))

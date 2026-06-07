@@ -114,7 +114,9 @@ The Journey C smoke is non-mutating. It proves the admin console is an operating
 - `GET /v1/admin/payouts`
 - `GET /v1/admin/notifications`
 - `GET /v1/admin/notification-deliveries`
+- `POST /v1/admin/notification-deliveries/process` in `dry_run` mode, including secret-safe fanout preview counts.
 - `GET /v1/admin/webhook-deliveries`
+- `POST /v1/admin/webhook-deliveries/process` in `dry_run` mode.
 - `GET /v1/admin/identity-directory`
 - `GET /v1/admin/audit-logs`
 - `GET /v1/admin/abuse-reports`

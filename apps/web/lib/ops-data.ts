@@ -93,6 +93,7 @@ export type AdminNotificationDeliveryProcessResult = {
   failedCount: number;
   fanoutCount: number;
   fanoutEmailCount: number;
+  fanoutMode?: "created" | "preview";
   fanoutSourceCount: number;
   fanoutWebhookCount: number;
   mode: "deliver" | "dry_run";

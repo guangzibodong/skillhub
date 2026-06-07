@@ -510,6 +510,7 @@ async function checkAdminPayouts({ apiUrl, financeToken, timeoutMs }) {
 async function checkAdminNotifications({ adminToken, apiUrl, timeoutMs }) {
   await checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs });
   await checkAdminNotificationDeliveries({ adminToken, apiUrl, timeoutMs });
+  await checkAdminNotificationDeliveryDryRun({ adminToken, apiUrl, timeoutMs });
 }
 
 async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
@@ -576,6 +577,76 @@ async function checkAdminNotificationDeliveries({ adminToken, apiUrl, timeoutMs 
   }
 }
 
+async function checkAdminNotificationDeliveryDryRun({ adminToken, apiUrl, timeoutMs }) {
+  const name = "POST /v1/admin/notification-deliveries/process dry_run";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/notification-deliveries/process"),
+      {
+        body: JSON.stringify({ limit: 10, mode: "dry_run" }),
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (
+      json?.mode !== "dry_run" ||
+      !Array.isArray(json?.processed) ||
+      !isFiniteNumber(json?.processedCount) ||
+      !isFiniteNumber(json?.deliveredCount) ||
+      !isFiniteNumber(json?.failedCount) ||
+      !isFiniteNumber(json?.skippedCount) ||
+      !isFiniteNumber(json?.pendingCount) ||
+      !isFiniteNumber(json?.fanoutCount) ||
+      !isFiniteNumber(json?.fanoutEmailCount) ||
+      !isFiniteNumber(json?.fanoutWebhookCount) ||
+      !isFiniteNumber(json?.fanoutSourceCount) ||
+      json?.fanoutMode !== "preview"
+    ) {
+      fail(name, "unexpected notification delivery dry-run payload shape");
+      return;
+    }
+
+    const invalid = json.processed.filter(
+      (item) =>
+        typeof item?.id !== "string" ||
+        typeof item?.channel !== "string" ||
+        typeof item?.eventType !== "string" ||
+        typeof item?.status !== "string" ||
+        typeof item?.message !== "string",
+    );
+
+    if (invalid.length > 0) {
+      fail(name, "processed delivery rows must include id, channel, eventType, status, and message");
+      return;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive notification dry-run leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(
+      name,
+      `processed=${json.processedCount}, fanoutPreview=${json.fanoutCount}, sources=${json.fanoutSourceCount}`,
+    );
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
 async function checkAdminWebhookDeliveries({ adminToken, apiUrl, timeoutMs }) {
   const name = "GET /v1/admin/webhook-deliveries";
 
@@ -603,6 +674,68 @@ async function checkAdminWebhookDeliveries({ adminToken, apiUrl, timeoutMs }) {
     }
 
     pass(name, `webhookDeliveries=${json.deliveries.length}`);
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+
+  await checkAdminWebhookDeliveryDryRun({ adminToken, apiUrl, timeoutMs });
+}
+
+async function checkAdminWebhookDeliveryDryRun({ adminToken, apiUrl, timeoutMs }) {
+  const name = "POST /v1/admin/webhook-deliveries/process dry_run";
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/webhook-deliveries/process"),
+      {
+        body: JSON.stringify({ limit: 10, mode: "dry_run" }),
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        timeoutMs,
+      },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (
+      json?.mode !== "dry_run" ||
+      !Array.isArray(json?.processed) ||
+      !isFiniteNumber(json?.processedCount) ||
+      !isFiniteNumber(json?.deliveredCount) ||
+      !isFiniteNumber(json?.failedCount) ||
+      !isFiniteNumber(json?.skippedCount)
+    ) {
+      fail(name, "unexpected webhook delivery dry-run payload shape");
+      return;
+    }
+
+    const invalid = json.processed.filter(
+      (item) =>
+        typeof item?.id !== "string" ||
+        typeof item?.eventType !== "string" ||
+        typeof item?.status !== "string" ||
+        typeof item?.message !== "string",
+    );
+
+    if (invalid.length > 0) {
+      fail(name, "processed webhook rows must include id, eventType, status, and message");
+      return;
+    }
+
+    const leaks = findSensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive webhook dry-run leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(name, `processed=${json.processedCount}`);
   } catch (error) {
     fail(name, redactSecrets(error.message));
   }
