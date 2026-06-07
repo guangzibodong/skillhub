@@ -242,7 +242,16 @@ applied_count=0
 replayed_count=0
 skipped_count=0
 
-while IFS= read -r migration_file; do
+mapfile -t migration_files < <(find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' | sort)
+
+if [ "${#migration_files[@]}" -eq 0 ]; then
+  echo "No migration files found in $MIGRATIONS_DIR." >&2
+  exit 1
+fi
+
+echo "Found ${#migration_files[@]} migration file(s)."
+
+for migration_file in "${migration_files[@]}"; do
   filename="$(basename "$migration_file")"
   prefix="$(extract_prefix "$filename")"
   migration_number=$((10#$prefix))
@@ -284,7 +293,7 @@ while IFS= read -r migration_file; do
       on conflict (filename) do nothing;
     "
   applied_count=$((applied_count + 1))
-done < <(find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' | sort)
+done
 
 if [ "$repair_marketplace_base" -eq 1 ]; then
   marketplace_base_tables_exist="$(marketplace_base_schema_exists)"
