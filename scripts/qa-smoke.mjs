@@ -279,7 +279,9 @@ if (!config.skipApi) {
   await checkStats(config);
   await checkAuthProviders(config);
   await checkPublicSkillSearch(config);
+  await checkPublicSkillDetailApi(config);
   await checkPublicPublishers(config);
+  await checkPublicPublisherProfileApi(config);
   await checkLaunchReadiness(config);
 }
 
@@ -486,6 +488,170 @@ async function checkPublicPublishers({ apiUrl, timeoutMs }) {
     smokeContext.publicPublisherSlug = json.publishers[0]?.slug;
 
     pass(name, `publishers=${json.publishers.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillDetailApi({ apiUrl, timeoutMs }) {
+  const slug = smokeContext.publicSkillSlug;
+  const name = "GET /v1/skills/:slug";
+
+  if (!slug) {
+    skip(
+      name,
+      "no public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200 for ${slug}, got ${status}`);
+      return;
+    }
+
+    const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+      text.includes(marker),
+    );
+
+    if (mojibakeMarkers.length > 0) {
+      fail(
+        name,
+        `possible mojibake markers in manifest: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+      );
+      return;
+    }
+
+    const requiredFields = [
+      ["name", typeof json?.name === "string"],
+      ["displayName", typeof json?.displayName === "string"],
+      ["version", typeof json?.version === "string"],
+      ["description", typeof json?.description === "string"],
+      ["tags", Array.isArray(json?.tags)],
+      ["runtime.type", typeof json?.runtime?.type === "string"],
+      [
+        "permissions.filesystem",
+        typeof json?.permissions?.filesystem === "string",
+      ],
+      ["permissions.secrets", Array.isArray(json?.permissions?.secrets)],
+      ["inputSchema", isObjectRecord(json?.inputSchema)],
+      ["outputSchema", isObjectRecord(json?.outputSchema)],
+    ];
+    const missing = requiredFields
+      .filter(([, isValid]) => !isValid)
+      .map(([field]) => field);
+
+    if (missing.length > 0) {
+      fail(
+        name,
+        `manifest is missing required public fields: ${missing.join(", ")}`,
+      );
+      return;
+    }
+
+    if (json.name !== slug) {
+      fail(
+        name,
+        `manifest name ${json.name} did not match search slug ${slug}`,
+      );
+      return;
+    }
+
+    pass(name, `${json.name}@${json.version}, runtime=${json.runtime.type}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicPublisherProfileApi({ apiUrl, timeoutMs }) {
+  const slug = smokeContext.publicPublisherSlug;
+  const name = "GET /v1/publishers/:slug";
+
+  if (!slug) {
+    skip(
+      name,
+      "no public publisher returned by /v1/publishers; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, `/v1/publishers/${encodeURIComponent(slug)}`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200 for ${slug}, got ${status}`);
+      return;
+    }
+
+    const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+      text.includes(marker),
+    );
+
+    if (mojibakeMarkers.length > 0) {
+      fail(
+        name,
+        `possible mojibake markers in publisher profile: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+      );
+      return;
+    }
+
+    const publisher = json?.publisher;
+    const metrics = publisher?.metrics;
+    const requiredFields = [
+      ["publisher.slug", typeof publisher?.slug === "string"],
+      ["publisher.displayName", typeof publisher?.displayName === "string"],
+      ["publisher.trustLevel", typeof publisher?.trustLevel === "string"],
+      ["publisher.payoutStatus", typeof publisher?.payoutStatus === "string"],
+      ["publisher.skills", Array.isArray(publisher?.skills)],
+      [
+        "publisher.metrics.publicSkillCount",
+        isFiniteNumber(metrics?.publicSkillCount),
+      ],
+      [
+        "publisher.metrics.verifiedSkillCount",
+        isFiniteNumber(metrics?.verifiedSkillCount),
+      ],
+      ["publisher.metrics.installCount", isFiniteNumber(metrics?.installCount)],
+      ["publisher.metrics.callCount", isFiniteNumber(metrics?.callCount)],
+    ];
+    const missing = requiredFields
+      .filter(([, isValid]) => !isValid)
+      .map(([field]) => field);
+
+    if (missing.length > 0) {
+      fail(
+        name,
+        `publisher profile is missing required public fields: ${missing.join(", ")}`,
+      );
+      return;
+    }
+
+    if (publisher.slug !== slug) {
+      fail(
+        name,
+        `publisher slug ${publisher.slug} did not match directory slug ${slug}`,
+      );
+      return;
+    }
+
+    if (publisher.skills.length === 0) {
+      fail(name, "publisher profile should include at least one public skill");
+      return;
+    }
+
+    pass(
+      name,
+      `${publisher.slug}, skills=${publisher.skills.length}, trust=${publisher.trustLevel}`,
+    );
   } catch (error) {
     fail(name, error.message);
   }
@@ -966,6 +1132,10 @@ function parsePositiveInteger(value, fallback) {
 
 function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function isObjectRecord(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function formatMarkerCodepoints(marker) {

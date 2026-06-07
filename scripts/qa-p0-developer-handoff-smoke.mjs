@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
+
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_SKILL_SLUG = "browser-research";
@@ -200,17 +202,21 @@ async function checkPublicSkill({ apiUrl, skillSlug, timeoutMs }) {
   const name = `GET /v1/skills/${skillSlug}`;
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(skillSlug)}`),
       { timeoutMs },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
       return null;
     }
 
-    const manifest = json?.manifest;
+    const manifest = json?.manifest ?? json;
 
     if (
       !manifest ||
@@ -243,7 +249,7 @@ async function createDeveloperProject({
   const name = "POST /v1/developer/projects";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/developer/projects"),
       {
         body: JSON.stringify({
@@ -258,6 +264,10 @@ async function createDeveloperProject({
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 201) {
       fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
@@ -295,7 +305,7 @@ async function saveSkill({
   const name = `POST ${path}`;
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
       body: JSON.stringify({
         collectionName,
         skillSlug,
@@ -307,6 +317,10 @@ async function saveSkill({
       method: "POST",
       timeoutMs,
     });
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 201) {
       fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
@@ -344,7 +358,7 @@ async function installSkill({
   const name = `POST ${path}`;
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
       body: JSON.stringify({ skillSlug }),
       headers: {
         Authorization: `Bearer ${developerToken}`,
@@ -353,6 +367,10 @@ async function installSkill({
       method: "POST",
       timeoutMs,
     });
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 201) {
       fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
@@ -444,7 +462,7 @@ async function testProjectRuntime({
   const name = `POST ${path}`;
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
       body: JSON.stringify({
         input: {
           query: "P0 developer handoff smoke",
@@ -458,6 +476,10 @@ async function testProjectRuntime({
       method: "POST",
       timeoutMs,
     });
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -495,12 +517,16 @@ async function checkProjectDetail(
   const name = `GET ${path}`;
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
       headers: {
         Authorization: `Bearer ${developerToken}`,
       },
       timeoutMs,
     });
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -564,7 +590,7 @@ async function checkDeveloperNotifications(
   const name = "GET /v1/notifications";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/notifications?limit=100"),
       {
         headers: {
@@ -573,6 +599,10 @@ async function checkDeveloperNotifications(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -640,7 +670,7 @@ async function checkAdminAuditLogs(
   const name = "GET /v1/admin/audit-logs";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/audit-logs?limit=100"),
       {
         headers: {
@@ -649,6 +679,10 @@ async function checkAdminAuditLogs(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -717,7 +751,7 @@ async function requestJson(url, options) {
     json = { error: text.slice(0, 300) };
   }
 
-  return { json, status: response.status };
+  return { json, status: response.status, text };
 }
 
 async function requestText(url, options) {
@@ -857,12 +891,15 @@ function safeError(json) {
   return redactSecrets(String(json?.error ?? "no response error body"));
 }
 
-function redactSecrets(value) {
-  return String(value)
-    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [redacted]")
-    .replace(/skh_[A-Za-z0-9]+/g, "skh_[redacted]")
-    .replace(/token[=:]\s*[^,\s)]+/gi, "token=[redacted]")
-    .replace(/authorization[=:]\s*[^,\s)]+/gi, "authorization=[redacted]");
+function assertNoSensitiveLeaks(name, text) {
+  const leaks = findSensitiveLeaks(text);
+
+  if (leaks.length === 0) {
+    return true;
+  }
+
+  fail(name, `possible sensitive response leak: ${leaks[0]}`);
+  return false;
 }
 
 function formatMarkerCodepoints(marker) {

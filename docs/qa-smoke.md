@@ -5,6 +5,9 @@ This smoke path covers the minimum launch surface for local builds and productio
 - `GET /v1/stats`
 - `GET /v1/auth/providers`
 - `GET /v1/skills/search`
+- `GET /v1/skills/:slug` for the first real public skill returned by search
+- `GET /v1/publishers`
+- `GET /v1/publishers/:slug` for the first real public publisher returned by the directory
 - `GET /v1/admin/launch-readiness`
 - Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/marketplace?lang=zh`, `/publishers`, `/publishers?lang=zh`, `/registry`, `/registry?lang=zh`, `/agents`, `/agents?lang=zh`, `/docs`, `/docs?lang=zh`, `/publish`, `/publish?lang=zh`, `/publisher`, `/publisher?lang=zh`, `/developer`, `/developer?lang=zh`, `/dashboard`, `/dashboard?lang=zh`, `/account`, `/account?lang=zh`, `/login`, `/login?lang=zh`, `/admin`, `/admin?lang=zh`, `/terms`, and `/terms?lang=zh`, plus the first real public skill and publisher detail pages returned by public APIs in both English and Chinese when those rows exist.
 
@@ -12,7 +15,9 @@ The admin launch-readiness endpoint requires a user token with `support`, `admin
 
 When a token is configured, the smoke now validates the launch-readiness contract, not only the summary shape. The response must keep the required sections for identity, email, webhook, marketplace operations, launch credibility, commercial readiness, and production guardrails; each section must keep its customer-demo evidence item keys, item statuses, operator actions, and summary counts. It also scans the authorized readiness body for authorization-shaped strings, user tokens, project API keys, webhook secrets, provider keys, raw API-key fields, and email-code previews. The smoke does not require blockers or warnings to be zero because real staging and production environments may legitimately report configuration gaps.
 
-The public discovery check requires `/v1/skills/search?limit=5` to return HTTP 200 with a `skills` array. Empty arrays are valid only when public stats also report no published supply; if `/v1/stats` reports published skills but search returns none, smoke fails because that usually means registry migrations, review joins, or public listing filters are out of sync. When search returns at least one skill, the app smoke checks that real `/skills/:slug` detail page instead of assuming a bundled demo slug is present in production.
+The public discovery check requires `/v1/skills/search?limit=5` to return HTTP 200 with a `skills` array. Empty arrays are valid only when public stats also report no published supply; if `/v1/stats` reports published skills but search returns none, smoke fails because that usually means registry migrations, review joins, or public listing filters are out of sync. When search returns at least one skill, the smoke now checks that the same slug returns a valid `/v1/skills/:slug` manifest with runtime, permission, schema, and identity fields before the app smoke checks the real `/skills/:slug` detail page.
+
+The publisher directory check requires `/v1/publishers?limit=5` to return HTTP 200 with a `publishers` array. If public skill supply exists but no publisher row appears, smoke fails because the supplier-side trust chain would be invisible. When a publisher row exists, the smoke now verifies that `/v1/publishers/:slug` returns a profile with trust level, payout status, public metrics, and at least one public skill before the app smoke checks the public publisher profile page.
 
 The app-page checks now validate more than HTTP 200. For key P0 pages, the script asserts that the rendered HTML still contains the expected operating markers:
 
@@ -51,7 +56,7 @@ The Journey A smoke is separate because it mutates project state. It proves that
 - `GET /v1/notifications`
 - `GET /v1/admin/audit-logs`
 
-The smoke also verifies that listed project keys do not expose the raw reveal-once API key after creation, and that the runtime test is `console_test` and non-billable.
+The smoke also verifies that listed project keys do not expose the raw reveal-once API key after creation, that the runtime test is `console_test` and non-billable, and that protected project detail, notification, and admin audit responses do not expose authorization-shaped strings, raw project API keys, webhook secrets, provider keys, raw API-key fields, or email-code previews.
 
 Run it against local or staging services with an organization-scoped developer, owner, or admin token, plus an admin/support token for audit verification:
 
@@ -89,6 +94,8 @@ The Journey B -> Journey C smoke is separate because it mutates data. It proves 
 - `GET /v1/admin/reviews`
 - `GET /v1/admin/audit-logs`
 - `GET /v1/admin/notifications`
+
+Passing assertions mean the generated draft, exact-version review submission, publisher workspace row, publisher notification, admin review row, admin audit record, and admin notification queue are connected without direct database checks. The smoke also scans those protected publisher/admin responses for authorization-shaped strings, user/project/webhook/provider keys, raw API-key fields, and email-code previews.
 
 Run it against local or staging services with an organization-scoped publisher token and a reviewer/admin token:
 

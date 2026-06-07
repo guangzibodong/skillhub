@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
+
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -153,15 +155,22 @@ async function createDraft({ apiUrl, publisherToken, timeoutMs }, manifest) {
   const name = "POST /v1/skills";
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, "/v1/skills"), {
-      body: JSON.stringify({ manifest }),
-      headers: {
-        Authorization: `Bearer ${publisherToken}`,
-        "Content-Type": "application/json",
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/skills"),
+      {
+        body: JSON.stringify({ manifest }),
+        headers: {
+          Authorization: `Bearer ${publisherToken}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        timeoutMs,
       },
-      method: "POST",
-      timeoutMs,
-    });
+    );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 201) {
       fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
@@ -207,13 +216,17 @@ async function submitVersion({ apiUrl, publisherToken, timeoutMs }, draft) {
   const name = `POST ${path}`;
 
   try {
-    const { status, json } = await requestJson(joinUrl(apiUrl, path), {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
       headers: {
         Authorization: `Bearer ${publisherToken}`,
       },
       method: "POST",
       timeoutMs,
     });
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return null;
+    }
 
     if (status !== 201) {
       fail(name, `expected HTTP 201, got ${status}: ${safeError(json)}`);
@@ -266,7 +279,7 @@ async function checkPublisherSkills(
   const name = "GET /v1/publisher/skills";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/publisher/skills?limit=100"),
       {
         headers: {
@@ -275,6 +288,10 @@ async function checkPublisherSkills(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -335,7 +352,7 @@ async function checkPublisherNotification(
   const name = "GET /v1/notifications";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/notifications?limit=50"),
       {
         headers: {
@@ -344,6 +361,10 @@ async function checkPublisherNotification(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -388,7 +409,7 @@ async function checkAdminReviewQueue(
   const name = "GET /v1/admin/reviews";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/reviews"),
       {
         headers: {
@@ -397,6 +418,10 @@ async function checkAdminReviewQueue(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -450,7 +475,7 @@ async function checkAdminAuditLogs(
   const name = "GET /v1/admin/audit-logs";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/audit-logs?limit=100"),
       {
         headers: {
@@ -459,6 +484,10 @@ async function checkAdminAuditLogs(
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -496,7 +525,7 @@ async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
   const name = "GET /v1/admin/notifications";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, "/v1/admin/notifications?limit=50"),
       {
         headers: {
@@ -505,6 +534,10 @@ async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
         timeoutMs,
       },
     );
+
+    if (!assertNoSensitiveLeaks(name, text)) {
+      return;
+    }
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
@@ -550,6 +583,7 @@ async function requestJson(url, options) {
   return {
     json,
     status: response.status,
+    text,
   };
 }
 
@@ -796,15 +830,19 @@ function safeError(json) {
   return redactSecrets(String(json?.error ?? "no response error body"));
 }
 
-function redactSecrets(value) {
-  return value
-    .replace(/Bearer\s+[A-Za-z0-9._~+/-]+/gi, "Bearer <redacted>")
-    .replace(/shub_[A-Za-z0-9._~+/-]+/g, "shub_<redacted>")
-    .replace(/sk-[A-Za-z0-9._~+/-]+/g, "sk-<redacted>");
-}
-
 function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function assertNoSensitiveLeaks(name, text) {
+  const leaks = findSensitiveLeaks(text);
+
+  if (leaks.length === 0) {
+    return true;
+  }
+
+  fail(name, `possible sensitive response leak: ${leaks[0]}`);
+  return false;
 }
 
 function pass(name, message) {
