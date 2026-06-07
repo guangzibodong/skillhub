@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { validateLaunchReadinessContract } from "./qa-launch-readiness-contract.mjs";
+import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
 
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
@@ -285,6 +286,13 @@ async function checkLaunchReadiness({ apiUrl, timeoutMs, token }) {
       return;
     }
 
+    const leaks = findSensitiveLeaks(response.text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive launch-readiness leak: ${leaks[0]}`);
+      return;
+    }
+
     pass(
       name,
       `status=${summary.status}, blockers=${summary.blocker}, warnings=${summary.warning}, sections=${contract.sectionCount}, items=${contract.itemCount}`,
@@ -292,7 +300,7 @@ async function checkLaunchReadiness({ apiUrl, timeoutMs, token }) {
   } catch (error) {
     fail(
       name,
-      `${error.message}${headers ? " (authorization header was redacted)" : ""}`,
+      `${redactSecrets(error.message)}${headers ? " (authorization header was redacted)" : ""}`,
     );
   }
 }
@@ -360,6 +368,7 @@ async function requestJson(url, { headers, timeoutMs }) {
   return {
     json,
     status: response.status,
+    text,
   };
 }
 
