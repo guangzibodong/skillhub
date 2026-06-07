@@ -24,7 +24,10 @@ import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
-import { getPublicMarketplaceSkills } from "@/lib/public-marketplace";
+import {
+  getPublicMarketplaceSkills,
+  type PublicMarketplaceSearchOptions
+} from "@/lib/public-marketplace";
 import { getPublicPublishers } from "@/lib/public-publishers";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +37,16 @@ type PageProps = {
 };
 
 type SearchParamRecord = Record<string, string | string[] | undefined>;
+
+type MarketplaceInitialFilterState = {
+  category?: string;
+  pricing?: string;
+  query?: string;
+  risk?: string;
+  runtime?: string;
+  sort?: string;
+  verification?: string;
+};
 
 const pageCopy = {
   en: {
@@ -334,7 +347,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
-  const initialFilters = {
+  const initialFilters: MarketplaceInitialFilterState = {
     category: firstSearchParam(params, "category"),
     pricing: firstSearchParam(params, "pricing") ?? firstSearchParam(params, "billingModel"),
     query: firstSearchParam(params, "q") ?? firstSearchParam(params, "query"),
@@ -343,8 +356,9 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     sort: firstSearchParam(params, "sort"),
     verification: firstSearchParam(params, "verification") ?? firstSearchParam(params, "verificationStatus")
   };
+  const marketplaceSearchOptions = toPublicMarketplaceSearchOptions(initialFilters);
   const [skills, publishers, overview] = await Promise.all([
-    getPublicMarketplaceSkills(),
+    getPublicMarketplaceSkills(marketplaceSearchOptions),
     getPublicPublishers(),
     getPlatformOverview()
   ]);
@@ -734,4 +748,101 @@ function firstSearchParam(params: SearchParamRecord, key: string) {
   }
 
   return value;
+}
+
+function toPublicMarketplaceSearchOptions(
+  filters: MarketplaceInitialFilterState,
+): PublicMarketplaceSearchOptions {
+  return {
+    billingModel: parseMarketplaceBilling(filters.pricing),
+    category: parseMarketplaceCategory(filters.category),
+    limit: 50,
+    permissionLevel: parseMarketplaceRisk(filters.risk),
+    query: parseMarketplaceQuery(filters.query),
+    runtimeType: parseMarketplaceRuntime(filters.runtime),
+    sort: parseMarketplaceSort(filters.sort),
+    verificationStatus: parseMarketplaceVerification(filters.verification)
+  };
+}
+
+function parseMarketplaceQuery(value: string | undefined) {
+  const query = String(value ?? "").trim().slice(0, 120);
+  return query.length > 0 ? query : undefined;
+}
+
+function parseMarketplaceCategory(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["category"] {
+  if (
+    value === "data" ||
+    value === "ops" ||
+    value === "research" ||
+    value === "sales" ||
+    value === "security" ||
+    value === "support"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseMarketplaceBilling(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["billingModel"] {
+  if (value === "free" || value === "per_call" || value === "subscription") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseMarketplaceRisk(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["permissionLevel"] {
+  if (value === "low" || value === "medium" || value === "high") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function parseMarketplaceRuntime(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["runtimeType"] {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (normalized === "http" || normalized === "mcp" || normalized === "local") {
+    return normalized;
+  }
+
+  return undefined;
+}
+
+function parseMarketplaceVerification(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["verificationStatus"] {
+  if (value === "verified" || value === "submitted" || value === "deprecated") {
+    return value;
+  }
+
+  if (value === "review") {
+    return "submitted";
+  }
+
+  return undefined;
+}
+
+function parseMarketplaceSort(
+  value: string | undefined,
+): PublicMarketplaceSearchOptions["sort"] {
+  if (value === "adoption" || value === "recommended" || value === "recent" || value === "success") {
+    return value;
+  }
+
+  if (value === "lowRisk" || value === "low-risk" || value === "low_risk") {
+    return "low_risk";
+  }
+
+  return undefined;
 }

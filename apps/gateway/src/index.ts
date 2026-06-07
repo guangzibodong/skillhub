@@ -6,7 +6,8 @@ import {
   getSkillManifest,
   listSkillManifests,
   publishSkill,
-  searchSkills
+  searchSkills,
+  type PublicSkillCategory
 } from "./registry.js";
 import {
   getPublicPublisherProfile,
@@ -762,6 +763,7 @@ app.get("/v1/skills/search", async (c) => {
   const query = c.req.query("q")?.toLowerCase() ?? "";
   const tags = c.req.query("tags")?.split(",").filter(Boolean) ?? [];
   const limit = Number(c.req.query("limit") ?? "20");
+  const category = parseSkillCategory(c.req.query("category"));
   const permissionLevel = parsePermissionLevel(c.req.query("permissionLevel"));
   const runtimeType = parseRuntimeType(c.req.query("runtimeType") ?? c.req.query("runtime"));
   const billingModel = parseBillingModel(c.req.query("billingModel") ?? c.req.query("pricing"));
@@ -769,7 +771,7 @@ app.get("/v1/skills/search", async (c) => {
   const sort = parseSearchSort(c.req.query("sort"));
 
   try {
-    const skills = await searchSkills({ allowIncompleteSchema: true, billingModel, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
+    const skills = await searchSkills({ allowIncompleteSchema: true, billingModel, category, query, tags, limit, permissionLevel, runtimeType, sort, verificationStatus });
 
     return c.json({ skills });
   } catch (error) {
@@ -3031,6 +3033,21 @@ function parseOAuthProvider(value: string): OAuthProvider | null {
 
 function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {
   return value === "low" || value === "medium" || value === "high" ? value : undefined;
+}
+
+function parseSkillCategory(value: string | undefined): PublicSkillCategory | undefined {
+  if (
+    value === "data" ||
+    value === "ops" ||
+    value === "research" ||
+    value === "sales" ||
+    value === "security" ||
+    value === "support"
+  ) {
+    return value;
+  }
+
+  return undefined;
 }
 
 function parseRuntimeType(value: string | undefined): SkillRuntime["type"] | undefined {

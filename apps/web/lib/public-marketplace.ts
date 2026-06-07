@@ -16,8 +16,9 @@ type SkillPriceRecord = {
   createdAt: string;
 };
 
-type PublicMarketplaceSearchOptions = {
+export type PublicMarketplaceSearchOptions = {
   billingModel?: MarketplaceSkill["billing"];
+  category?: MarketplaceSkill["categoryKey"];
   limit?: number;
   permissionLevel?: MarketplaceSkill["risk"];
   query?: string;
@@ -44,6 +45,7 @@ export async function getPublicMarketplaceSkills(
     });
 
     appendSearchParam(searchParams, "billingModel", options.billingModel);
+    appendSearchParam(searchParams, "category", options.category);
     appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
     appendSearchParam(searchParams, "q", options.query);
     appendSearchParam(searchParams, "runtimeType", options.runtimeType);

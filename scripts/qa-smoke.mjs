@@ -12,6 +12,7 @@ const DEFAULT_APP_PATHS = [
   "/",
   "/?lang=zh",
   "/marketplace",
+  "/marketplace?q=browser&category=research&runtime=http&sort=lowRisk",
   "/marketplace?lang=zh",
   "/publishers",
   "/publishers?lang=zh",
@@ -343,6 +344,7 @@ if (!config.skipApi) {
   await checkAuthProviders(config);
   await checkAdminProtection(config);
   await checkPublicSkillSearch(config);
+  await checkPublicSkillCategorySearch(config);
   await checkPublicSkillDetailApi(config);
   await checkPublicPublishers(config);
   await checkPublicPublisherProfileApi(config);
@@ -572,6 +574,52 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
     }
 
     smokeContext.publicSkillSlug = json.skills[0]?.slug;
+
+    pass(name, `skills=${json.skills.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillCategorySearch({ apiUrl, timeoutMs }) {
+  const category = "research";
+  const name = `GET /v1/skills/search?category=${category}`;
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, `/v1/skills/search?category=${category}&limit=20`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.skills)) {
+      fail(name, "expected skills array");
+      return;
+    }
+
+    if (json.skills.length === 0) {
+      skip(
+        name,
+        "no research-category public skills returned; base public search reports whether empty supply is expected",
+      );
+      return;
+    }
+
+    const mismatch = json.skills.find(
+      (skill) => inferPublicSkillCategory(skill?.tags) !== category,
+    );
+
+    if (mismatch) {
+      fail(
+        name,
+        `category filter returned ${mismatch.slug ?? "an unknown skill"} outside ${category}`,
+      );
+      return;
+    }
 
     pass(name, `skills=${json.skills.length}`);
   } catch (error) {
@@ -1311,6 +1359,44 @@ function isFiniteNumber(value) {
 
 function isObjectRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function inferPublicSkillCategory(tags) {
+  const normalized = Array.isArray(tags)
+    ? tags.map((tag) => String(tag).toLowerCase())
+    : [];
+
+  if (
+    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
+  ) {
+    return "research";
+  }
+
+  if (normalized.some((tag) => ["crm", "sales", "revenue"].includes(tag))) {
+    return "sales";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["support", "ticket", "classification"].includes(tag),
+    )
+  ) {
+    return "support";
+  }
+
+  if (normalized.some((tag) => ["data", "analysis", "summary"].includes(tag))) {
+    return "data";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["security", "trust", "review", "schema"].includes(tag),
+    )
+  ) {
+    return "security";
+  }
+
+  return "ops";
 }
 
 function formatMarkerCodepoints(marker) {

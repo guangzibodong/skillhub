@@ -10,12 +10,14 @@ https://api.useskillhub.com
 
 ```bash
 curl "https://api.useskillhub.com/v1/skills/search?q=research"
+curl "https://api.useskillhub.com/v1/skills/search?category=research&runtime=http&sort=low_risk"
 curl "https://api.useskillhub.com/v1/skills/search?runtimeType=http&billingModel=per_call&verificationStatus=verified&sort=recommended"
 ```
 
 Supported public discovery parameters:
 
 - `q`: free-text search across slug, display name, description, and tags.
+- `category`: marketplace category inferred from public tags. Supported values are `research`, `sales`, `support`, `data`, `security`, and `ops`.
 - `tags`: comma-separated exact tag filters.
 - `limit`: result count, capped at 100.
 - `permissionLevel`: `low`, `medium`, or `high`.
@@ -58,7 +60,7 @@ The public production smoke enforces that contract. When `/v1/skills/search` ret
 
 The web marketplace turns those safe public fields into visible card-level recommendation reasons such as verified review, permission profile, runtime success, moderated feedback, and install evidence. Cards also show the after-install operating handoff: project install state, project policy gate, runtime log, and usage ledger. This UI layer does not add private curation fields to the API response; it explains the already-public discovery contract so developers can see why a listing is recommended and what operational state it can create after install.
 
-The web marketplace also accepts the same discovery concepts in page URLs (`q`, `category`, `pricing`/`billingModel`, `permissionLevel`, `runtime`, `verification`/`verificationStatus`, and `sort`). The browser initializes its catalog filters from those parameters, keeps client-side filter changes reflected in the URL, and lets the home-page registry search hand off to `/marketplace?q=...` without adding a separate task or fake search API.
+The web marketplace also accepts the same discovery concepts in page URLs (`q`, `category`, `pricing`/`billingModel`, `permissionLevel`, `runtime`, `verification`/`verificationStatus`, and `sort`). The server page forwards the recognized URL parameters into `/v1/skills/search` before rendering the first catalog response, then the browser initializes its filters from the same parameters and keeps client-side filter changes reflected in the URL. This lets the home-page registry search and shared discovery links hand off to `/marketplace?q=...` without adding a separate task or fake search API.
 
 If a production deployment has the base API online but is missing optional public discovery tables, `/v1/skills/search` keeps returning real public skills from `skills` and `skill_versions` with conservative defaults for review ordering, price, install count, runtime metrics, feedback, and curation signals. If the core registry tables themselves are missing, public registry reads return an empty marketplace-safe result instead of a 500 or bundled fake supply. This fallback is limited to public read surfaces like `/v1/skills/search`, public manifest reads, and public MCP discovery. Internal operational probes, writes, admin queues, and `/v1/admin/launch-readiness` still surface missing migration state so operators run the migration rather than treating degraded catalog signals as launch-ready.
 

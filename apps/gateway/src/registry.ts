@@ -73,6 +73,7 @@ type RegistryStats = {
 type SearchOptions = {
   allowIncompleteSchema?: boolean;
   billingModel?: SkillBillingModel;
+  category?: PublicSkillCategory;
   query?: string;
   tags?: string[];
   limit?: number;
@@ -86,6 +87,14 @@ type PublishSkillOptions = {
   actorUserId?: string | null;
   source?: "manifest_publish" | "publisher_version_manager";
 };
+
+export type PublicSkillCategory =
+  | "data"
+  | "ops"
+  | "research"
+  | "sales"
+  | "security"
+  | "support";
 
 let sqlPromise: Promise<unknown> | undefined;
 let seeded = false;
@@ -849,6 +858,9 @@ function filterSummaries(
 
       const tagMatch =
         tags.length === 0 || tags.every((tag) => normalizedTags.includes(tag));
+      const categoryMatch =
+        !options.category ||
+        inferCategoryKeyFromTags(skill.tags) === options.category;
       const permissionMatch =
         !options.permissionLevel ||
         skill.permissionLevel === options.permissionLevel;
@@ -869,6 +881,7 @@ function filterSummaries(
       return (
         queryMatch &&
         tagMatch &&
+        categoryMatch &&
         permissionMatch &&
         runtimeMatch &&
         billingMatch &&
@@ -883,6 +896,42 @@ function filterSummaries(
   return filtered
     .slice(0, Math.min(Math.max(limit, 1), 100))
     .map(stripCuration);
+}
+
+function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
+  const normalized = tags.map((tag) => tag.toLowerCase());
+
+  if (
+    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
+  ) {
+    return "research";
+  }
+
+  if (normalized.some((tag) => ["crm", "sales", "revenue"].includes(tag))) {
+    return "sales";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["support", "ticket", "classification"].includes(tag),
+    )
+  ) {
+    return "support";
+  }
+
+  if (normalized.some((tag) => ["data", "analysis", "summary"].includes(tag))) {
+    return "data";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["security", "trust", "review", "schema"].includes(tag),
+    )
+  ) {
+    return "security";
+  }
+
+  return "ops";
 }
 
 function rowToSummary(
