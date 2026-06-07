@@ -2196,7 +2196,7 @@ For routine 1Panel updates, run the public production gate first:
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
-This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls.
+This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and public price-row shape, then POSTs unauthenticated sample requests to the skill feedback, skill trust-report, and project subscription endpoints and requires `401` or `403` JSON errors. Routine 1Panel updates can therefore catch broken detail data contracts and accidental exposure of Journey A write actions without creating production rows.
 
 For release signoff or customer walkthroughs where an admin/super-admin user token is already configured in the shell, run the full protected Journey C gate:
 

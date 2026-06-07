@@ -377,6 +377,8 @@ if (!config.skipApi) {
   await checkPublicSkillSearch(config);
   await checkPublicSkillCategorySearch(config);
   await checkPublicSkillDetailApi(config);
+  await checkPublicSkillDetailSupportApis(config);
+  await checkPublicSkillActionProtection(config);
   await checkPublicPublishers(config);
   await checkPublicPublisherProfileApi(config);
   await checkLaunchReadiness(config);
@@ -787,6 +789,197 @@ async function checkPublicSkillDetailApi({ apiUrl, timeoutMs }) {
     pass(name, `${json.name}@${json.version}, runtime=${json.runtime.type}`);
   } catch (error) {
     fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillDetailSupportApis({ apiUrl, timeoutMs }) {
+  const slug = smokeContext.publicSkillSlug;
+
+  if (!slug) {
+    skip(
+      "GET /v1/skills/:slug/feedback",
+      "no public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+    );
+    skip(
+      "GET /v1/skills/:slug/prices",
+      "no public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  await checkPublicSkillFeedbackApi({ apiUrl, slug, timeoutMs });
+  await checkPublicSkillPricesApi({ apiUrl, slug, timeoutMs });
+}
+
+async function checkPublicSkillFeedbackApi({ apiUrl, slug, timeoutMs }) {
+  const name = "GET /v1/skills/:slug/feedback";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}/feedback?limit=12`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200 for ${slug}, got ${status}`);
+      return;
+    }
+
+    const ratingBreakdown = json?.summary?.ratingBreakdown;
+    const invalidSummary =
+      !isObjectRecord(json?.summary) ||
+      !Array.isArray(json?.feedback) ||
+      !isNullableFiniteNumber(json.summary.averageRating) ||
+      !isFiniteNumber(json.summary.publishedCount) ||
+      !isObjectRecord(ratingBreakdown) ||
+      !["1", "2", "3", "4", "5"].every((key) =>
+        isFiniteNumber(ratingBreakdown[key]),
+      );
+
+    if (invalidSummary) {
+      fail(name, "expected feedback array plus rating summary contract");
+      return;
+    }
+
+    const invalidFeedback = json.feedback.find(
+      (item) =>
+        typeof item?.id !== "string" ||
+        typeof item?.skillSlug !== "string" ||
+        typeof item?.title !== "string" ||
+        typeof item?.body !== "string" ||
+        !isFiniteNumber(item?.rating) ||
+        item.rating < 1 ||
+        item.rating > 5 ||
+        (item?.status !== undefined && item.status !== "published"),
+    );
+
+    if (invalidFeedback) {
+      fail(
+        name,
+        "feedback rows should be public published records with id, skillSlug, title, body, and rating",
+      );
+      return;
+    }
+
+    pass(
+      name,
+      `feedback=${json.feedback.length}, published=${json.summary.publishedCount}`,
+    );
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillPricesApi({ apiUrl, slug, timeoutMs }) {
+  const name = "GET /v1/skills/:slug/prices";
+
+  try {
+    const { status, json } = await requestJson(
+      joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}/prices`),
+      { timeoutMs },
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200 for ${slug}, got ${status}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.prices)) {
+      fail(name, "expected prices array");
+      return;
+    }
+
+    const invalidPrice = json.prices.find(
+      (price) =>
+        typeof price?.id !== "string" ||
+        typeof price?.skillSlug !== "string" ||
+        !["free", "per_call", "subscription"].includes(price?.billingModel) ||
+        typeof price?.currency !== "string" ||
+        !isFiniteNumber(price?.unitAmountCents) ||
+        !["draft", "active", "archived"].includes(price?.status),
+    );
+
+    if (invalidPrice) {
+      fail(
+        name,
+        "price rows should include id, skillSlug, billing model, currency, amount, and status",
+      );
+      return;
+    }
+
+    pass(name, `prices=${json.prices.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
+  const skillSlug = smokeContext.publicSkillSlug ?? "public-action-boundary";
+  const endpoints = [
+    {
+      body: {
+        body: "Routine public smoke should not be able to submit this feedback.",
+        rating: 5,
+        title: "Unauthorized feedback boundary",
+        useCase: "Public gate authorization check",
+      },
+      name: "POST /v1/skills/:slug/feedback without token",
+      path: `/v1/skills/${encodeURIComponent(skillSlug)}/feedback`,
+    },
+    {
+      body: {
+        category: "security",
+        description:
+          "Routine public smoke should not be able to submit this trust report.",
+        severity: "medium",
+        title: "Unauthorized trust report boundary",
+      },
+      name: "POST /v1/skills/:slug/abuse-reports without token",
+      path: `/v1/skills/${encodeURIComponent(skillSlug)}/abuse-reports`,
+    },
+    {
+      body: {
+        skillSlug,
+        status: "trialing",
+      },
+      name: "POST /v1/projects/:projectSlug/subscriptions without token",
+      path: "/v1/projects/public-action-boundary/subscriptions",
+    },
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const { status, json, text } = await requestJson(
+        joinUrl(apiUrl, endpoint.path),
+        {
+          body: JSON.stringify(endpoint.body),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          timeoutMs,
+        },
+      );
+
+      if (![401, 403].includes(status)) {
+        fail(endpoint.name, `expected HTTP 401/403, got ${status}`);
+        continue;
+      }
+
+      if (typeof json?.error !== "string" || json.error.length === 0) {
+        fail(endpoint.name, "expected a JSON error message");
+        continue;
+      }
+
+      const leaks = findBoundarySensitiveLeaks(text);
+
+      if (leaks.length > 0) {
+        fail(endpoint.name, `possible sensitive boundary leak: ${leaks[0]}`);
+        continue;
+      }
+
+      pass(endpoint.name, "protected by user/project authorization");
+    } catch (error) {
+      fail(endpoint.name, redactSecrets(error.message));
+    }
   }
 }
 
@@ -1215,8 +1408,8 @@ async function checkReleaseCommandGate() {
   }
 }
 
-async function requestJson(url, { headers, timeoutMs }) {
-  const response = await request(url, { headers, timeoutMs });
+async function requestJson(url, { body, headers, method, timeoutMs }) {
+  const response = await request(url, { body, headers, method, timeoutMs });
   const text = await response.text();
   let json;
 
@@ -1235,8 +1428,8 @@ async function requestJson(url, { headers, timeoutMs }) {
   };
 }
 
-async function requestText(url, { headers, timeoutMs }) {
-  const response = await request(url, { headers, timeoutMs });
+async function requestText(url, { body, headers, method, timeoutMs }) {
+  const response = await request(url, { body, headers, method, timeoutMs });
 
   return {
     status: response.status,
@@ -1244,16 +1437,18 @@ async function requestText(url, { headers, timeoutMs }) {
   };
 }
 
-async function request(url, { headers = {}, timeoutMs }) {
+async function request(url, { body, headers = {}, method = "GET", timeoutMs }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await fetch(url, {
+      body,
       headers: {
         Accept: "application/json,text/html;q=0.9,*/*;q=0.8",
         ...headers,
       },
+      method,
       signal: controller.signal,
     });
   } catch (error) {
@@ -1403,8 +1598,18 @@ function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+function isNullableFiniteNumber(value) {
+  return value === null || isFiniteNumber(value);
+}
+
 function isObjectRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function findBoundarySensitiveLeaks(text) {
+  return findSensitiveLeaks(
+    text.replace(/Bearer\s+token/gi, "Bearer <missing token>"),
+  );
 }
 
 function inferPublicSkillCategory(tags) {
