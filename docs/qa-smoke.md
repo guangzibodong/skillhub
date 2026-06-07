@@ -61,6 +61,20 @@ The default suite expects the same admin/super-admin token variables as `pnpm sm
 pnpm smoke:p0 -- --prod --skip-admin
 ```
 
+For routine 1Panel updates, run the public production gate first:
+
+```bash
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+```
+
+This path is intentionally safe for a normal server refresh: it performs no
+writes and does not require an operator token. When an admin/super-admin user
+token is already available in the shell, run the full protected Journey C gate:
+
+```bash
+pnpm smoke:p0 -- --prod --timeout-ms 30000
+```
+
 Mutating P0 checks are deliberately opt-in and keep their own production-write guards:
 
 ```bash

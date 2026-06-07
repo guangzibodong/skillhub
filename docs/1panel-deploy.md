@@ -88,6 +88,7 @@ After deployment:
 ```bash
 curl http://127.0.0.1:18787/health
 curl https://api.useskillhub.com/health
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
 The API should return:
@@ -99,6 +100,23 @@ The API should return:
   "env": "production"
 }
 ```
+
+`pnpm smoke:p0 -- --prod --skip-admin` is the routine post-deploy public gate:
+it checks production public APIs, app pages, marketplace/detail contracts,
+account entry, workspaces, docs, terms, and bilingual copy without writing data
+or requiring an operator token.
+
+For customer walkthroughs or release signoff, run the protected Journey C gate
+only from a shell where an admin/super-admin user token is already configured:
+
+```bash
+pnpm smoke:p0 -- --prod --timeout-ms 30000
+```
+
+Mutating P0 smokes (`--include-mutating` or `--include-demo`) create real
+marketplace, project, runtime, ledger, payout, notification, and audit rows.
+Use them against production only for a planned rehearsal with the scripts'
+explicit production-write approval flags.
 
 ## Updates
 

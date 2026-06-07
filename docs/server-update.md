@@ -41,11 +41,20 @@ curl https://api.useskillhub.com/health
 curl https://api.useskillhub.com/v1/stats
 curl "https://api.useskillhub.com/v1/skills/search?sort=recommended&limit=5"
 curl "https://api.useskillhub.com/v1/publishers?limit=5"
-curl "https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3" -H "Authorization: Bearer $ADMIN_TOKEN"
 
-# Full smoke gate for the public app, marketplace, workspaces, auth entry,
-# protected launch-readiness shape, and critical public pages.
-SKILLHUB_SMOKE_TOKEN="$ADMIN_TOKEN" pnpm smoke:prod -- --timeout-ms 30000
+# Public P0 gate for the production app, marketplace, public detail APIs,
+# account entry, workspaces, docs, terms, and bilingual/mojibake guards.
+# This path performs no writes and does not need an operator user token.
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+
+# Optional protected Journey C gate. Use this only when the shell already has
+# an admin/super-admin user token configured; do not paste token values into
+# terminals, docs, tickets, or reports.
+if [ -n "${SKILLHUB_P0_ADMIN_TOKEN:-}" ]; then
+  pnpm smoke:p0 -- --prod --timeout-ms 30000
+else
+  echo "Skipping protected admin P0 gate; set SKILLHUB_P0_ADMIN_TOKEN in the shell to run it."
+fi
 ```
 
 The expected health response is:
@@ -53,3 +62,9 @@ The expected health response is:
 ```json
 {"ok":true,"service":"skillhub-gateway","env":"production"}
 ```
+
+Do not run mutating P0 smokes against production during a routine update.
+`pnpm smoke:p0 -- --prod --include-mutating` and `pnpm smoke:p0 -- --prod --include-demo`
+create real marketplace, project, runtime, ledger, payout, notification, and
+audit rows, and still require the child scripts' explicit production-write
+approval flags.
