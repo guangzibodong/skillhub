@@ -184,11 +184,13 @@ const SOURCE_MOJIBAKE_SCAN_PATHS = [
   "apps/web/app",
   "apps/web/components",
   "apps/web/lib",
+  "docs",
   "scripts",
 ];
 const SOURCE_MOJIBAKE_EXTENSIONS = new Set([
   ".css",
   ".js",
+  ".md",
   ".mjs",
   ".ts",
   ".tsx",

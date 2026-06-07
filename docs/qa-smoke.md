@@ -23,6 +23,8 @@ The app-page checks now validate more than HTTP 200. For key P0 pages, the scrip
 
 The same app check also fails on common Chinese mojibake markers across English and Chinese page variants, so a deployment cannot quietly pass smoke while showing corrupted bilingual UI copy to customers.
 
+Before any API or app request, the general smoke also scans web source, QA scripts, and product docs for high-confidence encoding-corruption markers such as replacement characters, the U+951F/U+65A4/U+62F7 replacement sequence, and UTF-8-as-GBK fragments. This keeps bilingual copy and launch documentation from drifting into corrupted source text even when a terminal renders normal UTF-8 poorly.
+
 ## Static quality gates
 
 Run these checks before committing product or QA changes:
