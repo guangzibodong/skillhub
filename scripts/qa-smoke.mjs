@@ -216,7 +216,7 @@ const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
 const PROTECTED_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --timeout-ms 30000";
-const DEPLOYMENT_RUNBOOK_GUARDS = [
+const RELEASE_COMMAND_GUARDS = [
   {
     file: "docs/server-update.md",
     forbidden: [
@@ -259,6 +259,18 @@ const DEPLOYMENT_RUNBOOK_GUARDS = [
       "routine 1Panel updates",
       "protected Journey C",
       "Mutating journey checks are opt-in",
+    ],
+  },
+  {
+    file: "scripts/qa-p0-release-suite.mjs",
+    forbidden: [],
+    required: [
+      PUBLIC_P0_PROD_GATE,
+      PROTECTED_P0_PROD_GATE,
+      "Routine 1Panel public gate",
+      "Performs no writes and does not require an operator token.",
+      "Full protected Journey C gate",
+      "Requires an admin/super-admin user token already configured in the shell.",
     ],
   },
 ];
@@ -324,7 +336,7 @@ if (!config.skipApp) {
 console.log("");
 
 await checkSourceMojibake();
-await checkDeploymentRunbookGate();
+await checkReleaseCommandGate();
 
 if (!config.skipApi) {
   await checkStats(config);
@@ -997,13 +1009,13 @@ async function collectSourceTextFiles(scanPath, files) {
   }
 }
 
-async function checkDeploymentRunbookGate() {
-  const name = "deployment runbook P0 gate guard";
+async function checkReleaseCommandGate() {
+  const name = "release command P0 gate guard";
 
   try {
     const failures = [];
 
-    for (const guard of DEPLOYMENT_RUNBOOK_GUARDS) {
+    for (const guard of RELEASE_COMMAND_GUARDS) {
       const text = await readFile(guard.file, "utf8");
 
       for (const required of guard.required) {
@@ -1024,7 +1036,7 @@ async function checkDeploymentRunbookGate() {
       return;
     }
 
-    pass(name, `guardedFiles=${DEPLOYMENT_RUNBOOK_GUARDS.length}`);
+    pass(name, `guardedFiles=${RELEASE_COMMAND_GUARDS.length}`);
   } catch (error) {
     fail(name, error.message);
   }
