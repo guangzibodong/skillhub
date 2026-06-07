@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { validateLaunchReadinessContract } from "./qa-launch-readiness-contract.mjs";
+
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_TIMEOUT_MS = 10000;
@@ -13,13 +15,6 @@ const MOJIBAKE_MARKERS = [
   "\u93B6\u20AC",
   "\u6D93\u20AC",
 ];
-const VALID_READINESS_STATUSES = new Set([
-  "blocker",
-  "deferred",
-  "ready",
-  "warning",
-]);
-
 let args;
 
 try {
@@ -264,29 +259,10 @@ async function checkLaunchReadiness({ adminToken, apiUrl, timeoutMs }) {
     const readiness = json?.readiness;
     const summary = readiness?.summary;
 
-    if (
-      !readiness ||
-      typeof readiness !== "object" ||
-      !isFiniteNumber(summary?.blocker) ||
-      !isFiniteNumber(summary?.warning) ||
-      !isFiniteNumber(summary?.ready) ||
-      !isFiniteNumber(summary?.deferred) ||
-      !VALID_READINESS_STATUSES.has(String(summary?.status)) ||
-      !Array.isArray(readiness.sections)
-    ) {
-      fail(name, "unexpected launch readiness payload shape");
-      return;
-    }
+    const contract = validateLaunchReadinessContract(readiness);
 
-    const badSections = readiness.sections.filter(
-      (section) =>
-        typeof section?.key !== "string" ||
-        !VALID_READINESS_STATUSES.has(String(section?.status)) ||
-        !Array.isArray(section?.items),
-    );
-
-    if (badSections.length > 0) {
-      fail(name, "readiness sections must include key, status, and items");
+    if (contract.errors.length > 0) {
+      fail(name, `launch readiness contract drift: ${contract.errors[0]}`);
       return;
     }
 
@@ -299,7 +275,7 @@ async function checkLaunchReadiness({ adminToken, apiUrl, timeoutMs }) {
 
     pass(
       name,
-      `status=${summary.status}, blockers=${summary.blocker}, warnings=${summary.warning}, sections=${readiness.sections.length}`,
+      `status=${summary.status}, blockers=${summary.blocker}, warnings=${summary.warning}, sections=${contract.sectionCount}, items=${contract.itemCount}`,
     );
   } catch (error) {
     fail(name, redactSecrets(error.message));

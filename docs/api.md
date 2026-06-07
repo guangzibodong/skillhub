@@ -1930,6 +1930,8 @@ The endpoint reports only configured/missing state, URLs, counts, and next actio
 
 The web admin console uses the same secret-safe report to render a launch-readiness evidence drill-down. Each check links operators to an existing proof or fix surface such as marketplace verified supply, publisher directory, developer workspace, review queue, payout review, notification templates, delivery queues, webhook outbox, identity directory, terms, audit, or docs. The five launch credibility threshold rows are also grouped as a customer-demo proof chain, so operators can see whether real supply, demand, runtime, feedback, and trust evidence is ready without adding a separate fake task API.
 
+The general smoke and P0 admin smoke validate the launch-readiness response contract when an admin/support token is configured. They assert the required section keys and customer-demo evidence item keys are still present, each item exposes action/detail/status fields, and the summary counts match item statuses. These checks detect accidental API drift without requiring every environment's readiness blockers or warnings to be resolved.
+
 Admin/support operators can inspect the immutable admin audit trail:
 
 ```bash
@@ -2196,7 +2198,7 @@ The script verifies `/admin` page markers, protected admin API boundaries, and r
 
 Use `SKILLHUB_P0_ADMIN_TOKEN` or `SKILLHUB_ADMIN_SMOKE_TOKEN` for an admin/super-admin token. `SKILLHUB_P0_ADMIN_REVIEW_TOKEN`, `SKILLHUB_P0_ADMIN_FINANCE_TOKEN`, `SKILLHUB_P0_ADMIN_TRUST_TOKEN`, and `SKILLHUB_P0_ADMIN_CURATION_TOKEN` can override specialized role checks when the deployment uses separated operator accounts.
 
-Passing assertions mean the admin console can read launch readiness, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets.
+Passing assertions mean the admin console can read launch readiness, preserve the required readiness section/item contract, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets.
 
 ## P0 Demo Chain Smoke
 

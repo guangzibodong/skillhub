@@ -9,6 +9,8 @@ This smoke path covers the minimum launch surface for local builds and productio
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
+When a token is configured, the smoke now validates the launch-readiness contract, not only the summary shape. The response must keep the required sections for identity, email, webhook, marketplace operations, launch credibility, commercial readiness, and production guardrails; each section must keep its customer-demo evidence item keys, item statuses, operator actions, and summary counts. The smoke does not require blockers or warnings to be zero because real staging and production environments may legitimately report configuration gaps.
+
 The app-page checks now validate more than HTTP 200. For key P0 pages, the script asserts that the rendered HTML still contains the expected operating markers:
 
 - Home must expose the backend command-center handoff plus developer, publisher, and admin console links.
@@ -149,7 +151,7 @@ export SKILLHUB_P0_ADMIN_CURATION_TOKEN="<reviewer-or-admin-user-token>"
 pnpm smoke:p0:admin
 ```
 
-The script also checks common Chinese mojibake markers and authorization-shaped secret leaks in admin responses. It performs no writes, so no `--allow-production` flag is needed.
+The script also checks common Chinese mojibake markers, authorization-shaped secret leaks in admin responses, and launch-readiness contract drift across the required readiness sections and evidence item keys. It performs no writes, so no `--allow-production` flag is needed.
 
 ## P0 demo chain
 

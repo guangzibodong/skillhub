@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { validateLaunchReadinessContract } from "./qa-launch-readiness-contract.mjs";
+
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_APP_PATHS = [
@@ -276,25 +278,16 @@ async function checkLaunchReadiness({ apiUrl, timeoutMs, token }) {
 
     const readiness = response.json?.readiness;
     const summary = readiness?.summary;
-    const hasSummary =
-      isFiniteNumber(summary?.blocker) &&
-      isFiniteNumber(summary?.warning) &&
-      isFiniteNumber(summary?.ready) &&
-      isFiniteNumber(summary?.deferred);
+    const contract = validateLaunchReadinessContract(readiness);
 
-    if (
-      !readiness ||
-      typeof readiness !== "object" ||
-      !hasSummary ||
-      !Array.isArray(readiness.sections)
-    ) {
-      fail(name, "unexpected readiness payload shape");
+    if (contract.errors.length > 0) {
+      fail(name, `launch readiness contract drift: ${contract.errors[0]}`);
       return;
     }
 
     pass(
       name,
-      `blockers=${summary.blocker}, warnings=${summary.warning}, sections=${readiness.sections.length}`,
+      `status=${summary.status}, blockers=${summary.blocker}, warnings=${summary.warning}, sections=${contract.sectionCount}, items=${contract.itemCount}`,
     );
   } catch (error) {
     fail(
