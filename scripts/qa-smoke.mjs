@@ -986,6 +986,10 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
 
 async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
   await checkPublicMcpToolList({ apiUrl, timeoutMs });
+  const publicResource = await checkPublicMcpResourceList({ apiUrl, timeoutMs });
+  if (publicResource) {
+    await checkPublicMcpResourceRead({ apiUrl, resource: publicResource, timeoutMs });
+  }
   await checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs });
 }
 
@@ -1155,6 +1159,190 @@ async function checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs }) {
     }
 
     pass(name, "blocked before project runtime governance");
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkPublicMcpResourceList({ apiUrl, timeoutMs }) {
+  const name = "POST /mcp resources/list public discovery";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "public-resources-list-smoke",
+        method: "resources/list",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return null;
+    }
+
+    if (json?.jsonrpc !== "2.0" || json?.id !== "public-resources-list-smoke") {
+      fail(name, "expected a JSON-RPC 2.0 response with the request id");
+      return null;
+    }
+
+    if (json?.error) {
+      fail(name, `unexpected JSON-RPC error: ${safeJsonRpcError(json.error)}`);
+      return null;
+    }
+
+    const resources = json?.result?.resources;
+
+    if (!Array.isArray(resources)) {
+      fail(name, "expected result.resources array");
+      return null;
+    }
+
+    const invalidResource = resources.find(
+      (resource) =>
+        typeof resource?.uri !== "string" ||
+        !resource.uri.startsWith("skillhub://skills/") ||
+        typeof resource?.name !== "string" ||
+        typeof resource?.description !== "string" ||
+        resource?.mimeType !== "application/json",
+    );
+
+    if (invalidResource) {
+      fail(
+        name,
+        "public MCP resources should include skillhub URI, name, description, and JSON mime type",
+      );
+      return null;
+    }
+
+    const internalField = resources.find(findPublicMcpInternalField);
+
+    if (internalField) {
+      fail(name, "public MCP resources/list must not expose project or operator fields");
+      return null;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive MCP resource-list leak: ${leaks[0]}`);
+      return null;
+    }
+
+    if (!smokeContext.publicSkillSlug) {
+      pass(name, `resources=${resources.length}`);
+      return resources[0] ?? null;
+    }
+
+    const publicSkillResource = resources.find(
+      (resource) =>
+        resource?.uri === `skillhub://skills/${smokeContext.publicSkillSlug}`,
+    );
+
+    if (!publicSkillResource) {
+      fail(
+        name,
+        `public search returned ${smokeContext.publicSkillSlug} but MCP resources/list did not expose it`,
+      );
+      return null;
+    }
+
+    pass(name, `resources=${resources.length}`);
+    return publicSkillResource;
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+    return null;
+  }
+}
+
+async function checkPublicMcpResourceRead({ apiUrl, resource, timeoutMs }) {
+  const name = "POST /mcp resources/read public contract";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "public-resources-read-smoke",
+        method: "resources/read",
+        params: {
+          uri: resource.uri,
+        },
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (json?.jsonrpc !== "2.0" || json?.id !== "public-resources-read-smoke") {
+      fail(name, "expected a JSON-RPC 2.0 response with the request id");
+      return;
+    }
+
+    if (json?.error) {
+      fail(name, `unexpected JSON-RPC error: ${safeJsonRpcError(json.error)}`);
+      return;
+    }
+
+    const contents = json?.result?.contents;
+
+    if (!Array.isArray(contents)) {
+      fail(name, "expected result.contents array");
+      return;
+    }
+
+    const content = contents.find((item) => item?.uri === resource.uri);
+
+    if (
+      !content ||
+      content.mimeType !== "application/json" ||
+      typeof content.text !== "string"
+    ) {
+      fail(name, "expected matching JSON resource content");
+      return;
+    }
+
+    const publicContract = parseJsonText(content.text);
+
+    if (!isPublicMcpResourceContract(publicContract, resource.uri)) {
+      fail(
+        name,
+        "public MCP resource content should include safe manifest identity, runtime, permissions, and schemas",
+      );
+      return;
+    }
+
+    if (findPublicMcpInternalField(publicContract)) {
+      fail(name, "public MCP resources/read must not expose project or operator fields");
+      return;
+    }
+
+    if (hasUnsafeMcpPublicResourceFields(publicContract)) {
+      fail(
+        name,
+        "public MCP resources/read must not expose secret handles, embedded URL credentials, or local command details",
+      );
+      return;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(`${text}\n${content.text}`);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive MCP resource-read leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(
+      name,
+      `${publicContract.name}@${publicContract.version}, runtime=${publicContract.runtime.type}`,
+    );
   } catch (error) {
     fail(name, redactSecrets(error.message));
   }
@@ -1834,6 +2022,95 @@ function findPublicMcpInternalField(value) {
     !Array.isArray(annotations) &&
     Object.keys(annotations).some((key) => annotationForbiddenFields.has(key))
   );
+}
+
+function parseJsonText(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function isPublicMcpResourceContract(value, uri) {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const slug = String(uri).replace("skillhub://skills/", "");
+  const runtime = value.runtime;
+  const permissions = value.permissions;
+  const runtimeShapeValid =
+    isObjectRecord(runtime) &&
+    (runtime.type === "http"
+      ? typeof runtime.entrypoint === "string"
+      : runtime.type === "mcp"
+        ? typeof runtime.serverUrl === "string"
+        : runtime.type === "local" && typeof runtime.command === "string");
+
+  return (
+    value.schemaVersion === "0.1" &&
+    value.name === slug &&
+    typeof value.displayName === "string" &&
+    typeof value.version === "string" &&
+    typeof value.description === "string" &&
+    Array.isArray(value.tags) &&
+    runtimeShapeValid &&
+    ["low", "medium", "high"].includes(value.permissionLevel) &&
+    isObjectRecord(permissions) &&
+    typeof permissions.network === "boolean" &&
+    typeof permissions.browser === "boolean" &&
+    ["none", "read", "write"].includes(permissions.filesystem) &&
+    isFiniteNumber(permissions.secretCount) &&
+    !Object.hasOwn(permissions, "secrets") &&
+    isObjectRecord(value.inputSchema) &&
+    isObjectRecord(value.outputSchema)
+  );
+}
+
+function hasUnsafeMcpPublicResourceFields(value) {
+  if (!isObjectRecord(value)) {
+    return true;
+  }
+
+  const runtime = value.runtime;
+  const permissions = value.permissions;
+
+  if (isObjectRecord(permissions) && Object.hasOwn(permissions, "secrets")) {
+    return true;
+  }
+
+  if (!isObjectRecord(runtime)) {
+    return true;
+  }
+
+  if (runtime.type === "http") {
+    return hasEmbeddedUrlCredentials(runtime.entrypoint);
+  }
+
+  if (runtime.type === "mcp") {
+    return hasEmbeddedUrlCredentials(runtime.serverUrl);
+  }
+
+  return (
+    runtime.type === "local" &&
+    (runtime.command !== "[restricted local runtime]" ||
+      (Array.isArray(runtime.args) &&
+        runtime.args.some((arg) => !String(arg).includes("redacted"))))
+  );
+}
+
+function hasEmbeddedUrlCredentials(value) {
+  if (value === "[invalid runtime URL]") {
+    return false;
+  }
+
+  try {
+    const url = new URL(String(value ?? ""));
+    return Boolean(url.username || url.password);
+  } catch {
+    return true;
+  }
 }
 
 function safeJsonRpcError(error) {

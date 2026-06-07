@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getPermissionLevel, type SkillBillingModel, type SkillRuntime, type SkillSummary } from "@useskillhub/schema";
+import { getPermissionLevel, type SkillBillingModel, type SkillManifest, type SkillRuntime, type SkillSummary } from "@useskillhub/schema";
 import {
   getRegistryStats,
   getSkillManifest,
@@ -2890,7 +2890,7 @@ app.post("/mcp", async (c) => {
         {
           uri,
           mimeType: "application/json",
-          text: JSON.stringify(skill, null, 2)
+          text: JSON.stringify(publicMcpSkillResource(skill), null, 2)
         }
       ]
     });
@@ -2916,6 +2916,65 @@ function mcpToolCallText(body: Record<string, unknown>, isError: boolean) {
   const output = body.output;
 
   return typeof output === "string" ? output : JSON.stringify(output ?? body, null, 2);
+}
+
+function publicMcpSkillResource(skill: SkillManifest) {
+  return {
+    schemaVersion: skill.schemaVersion,
+    name: skill.name,
+    displayName: skill.displayName,
+    version: skill.version,
+    description: skill.description,
+    author: skill.author,
+    tags: skill.tags,
+    runtime: publicMcpRuntime(skill.runtime),
+    permissionLevel: getPermissionLevel(skill.permissions),
+    permissions: {
+      network: skill.permissions.network,
+      browser: skill.permissions.browser,
+      filesystem: skill.permissions.filesystem,
+      secretCount: skill.permissions.secrets.length
+    },
+    inputSchema: skill.inputSchema,
+    outputSchema: skill.outputSchema
+  };
+}
+
+function publicMcpRuntime(runtime: SkillRuntime): SkillRuntime {
+  if (runtime.type === "http") {
+    return {
+      type: runtime.type,
+      entrypoint: redactPublicRuntimeUrl(runtime.entrypoint)
+    };
+  }
+
+  if (runtime.type === "mcp") {
+    return {
+      type: runtime.type,
+      serverUrl: redactPublicRuntimeUrl(runtime.serverUrl)
+    };
+  }
+
+  return {
+    type: runtime.type,
+    command: "[restricted local runtime]",
+    args: runtime.args?.length ? [`[${runtime.args.length} redacted args]`] : undefined
+  };
+}
+
+function redactPublicRuntimeUrl(value: string) {
+  try {
+    const url = new URL(value);
+
+    if (url.username || url.password) {
+      url.username = "";
+      url.password = "";
+    }
+
+    return url.toString();
+  } catch {
+    return "[invalid runtime URL]";
+  }
 }
 
 function rpc(id: JsonRpcRequest["id"], result: unknown) {
