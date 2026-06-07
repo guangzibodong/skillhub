@@ -461,11 +461,11 @@ curl -X POST "https://api.useskillhub.com/v1/account/identities/github/disconnec
 Admin/support operators can inspect the platform identity directory:
 
 ```bash
-curl "https://api.useskillhub.com/v1/admin/identity?limit=12" \
+curl "https://api.useskillhub.com/v1/admin/identity-directory?limit=12" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-The directory returns summary counts for users, organizations, admin users, and active tokens, plus organization rows with member/project/skill/publisher/invocation/ledger signals and user rows with platform roles, memberships, token counts, and last token use. It is read-only so platform operators can understand adoption and access health before final OAuth/passwordless provider integration is connected.
+The directory returns summary counts for users, organizations, admin users, and active tokens, plus organization rows with member/project/skill/publisher/invocation/ledger signals and user rows with platform roles, memberships, token counts, and last token use. It is read-only so platform operators can understand adoption and access health before final OAuth/passwordless provider integration is connected. `/v1/admin/identity` remains as a backward-compatible alias; new docs and QA should use `/v1/admin/identity-directory` to match the P0 journey and page matrix.
 
 Web console session:
 
@@ -2162,6 +2162,39 @@ The script uses the existing public and protected endpoints rather than direct d
 Required tokens are supplied through environment variables such as `SKILLHUB_P0_PUBLISH_PUBLISHER_TOKEN` and `SKILLHUB_P0_PUBLISH_ADMIN_TOKEN`. The script redacts authorization-shaped strings in output and refuses production API writes unless `--allow-production` or `SKILLHUB_P0_PUBLISH_ALLOW_PRODUCTION=true` is set.
 
 Passing assertions mean a generated draft skill saved through `/v1/skills` produced an exact-version review submission, automated check summary, publisher workspace row, publisher in-app notification, admin review queue row, admin audit record, and admin notification queue signal. This is a QA harness for existing APIs; it does not add a fake task API or bypass SkillHub role enforcement.
+
+## P0 Admin Operations Smoke
+
+Local and staging operators can run a non-mutating smoke test for Journey C:
+
+```bash
+pnpm smoke:p0:admin
+```
+
+The script verifies `/admin` page markers, protected admin API boundaries, and read-only operations across:
+
+- `GET /v1/admin/overview`
+- `GET /v1/admin/launch-readiness`
+- `GET /v1/admin/reviews`
+- `GET /v1/admin/finance/ledger`
+- `GET /v1/admin/finance/commission-rules`
+- `GET /v1/admin/finance/refunds`
+- `GET /v1/admin/finance/disputes`
+- `GET /v1/admin/payouts`
+- `GET /v1/admin/notifications`
+- `GET /v1/admin/notification-deliveries`
+- `GET /v1/admin/webhook-deliveries`
+- `GET /v1/admin/identity-directory`
+- `GET /v1/admin/audit-logs`
+- `GET /v1/admin/abuse-reports`
+- `GET /v1/admin/incidents`
+- `GET /v1/admin/skill-feedback`
+- `GET /v1/admin/marketplace-curation`
+- `GET /v1/admin/marketplace-curation/appeals`
+
+Use `SKILLHUB_P0_ADMIN_TOKEN` or `SKILLHUB_ADMIN_SMOKE_TOKEN` for an admin/super-admin token. `SKILLHUB_P0_ADMIN_REVIEW_TOKEN`, `SKILLHUB_P0_ADMIN_FINANCE_TOKEN`, `SKILLHUB_P0_ADMIN_TRUST_TOKEN`, and `SKILLHUB_P0_ADMIN_CURATION_TOKEN` can override specialized role checks when the deployment uses separated operator accounts.
+
+Passing assertions mean the admin console can read launch readiness, review evidence, finance ledger state, payout explainability, notifications, webhook outbox, identity directory, audit logs, trust queues, and marketplace curation queues without writing data or exposing authorization-shaped secrets.
 
 ## MCP Discovery
 

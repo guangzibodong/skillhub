@@ -3698,7 +3698,7 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
   }
 
   try {
-    const response = await fetch(`${apiUrl}/v1/admin/identity?limit=12`, {
+    const response = await fetch(`${apiUrl}/v1/admin/identity-directory?limit=12`, {
       cache: "no-store",
       headers: {
         Authorization: `Bearer ${token}`

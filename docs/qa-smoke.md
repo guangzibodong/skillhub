@@ -98,6 +98,57 @@ Production writes are blocked by default. To run this against `https://api.usesk
 
 If the publisher token also has reviewer/admin access, the admin token can be omitted. `--skip-admin` is available for a partial publisher-only check, but the full P0 handoff proof should include admin review and audit checks before a customer demo.
 
+## P0 admin operations
+
+The Journey C smoke is non-mutating. It proves the admin console is an operating workspace for launch readiness, review, trust, finance, payout, notifications, webhooks, identity, marketplace curation, and audit rather than a decorative metrics page:
+
+- `GET /admin`
+- Protected-boundary checks for admin-only endpoints without a token.
+- `GET /v1/admin/overview`
+- `GET /v1/admin/launch-readiness`
+- `GET /v1/admin/reviews`
+- `GET /v1/admin/finance/ledger`
+- `GET /v1/admin/finance/commission-rules`
+- `GET /v1/admin/finance/refunds`
+- `GET /v1/admin/finance/disputes`
+- `GET /v1/admin/payouts`
+- `GET /v1/admin/notifications`
+- `GET /v1/admin/notification-deliveries`
+- `GET /v1/admin/webhook-deliveries`
+- `GET /v1/admin/identity-directory`
+- `GET /v1/admin/audit-logs`
+- `GET /v1/admin/abuse-reports`
+- `GET /v1/admin/incidents`
+- `GET /v1/admin/skill-feedback`
+- `GET /v1/admin/marketplace-curation`
+- `GET /v1/admin/marketplace-curation/appeals`
+
+Run it with an admin/super-admin token before customer demos:
+
+```bash
+export SKILLHUB_P0_ADMIN_TOKEN="<admin-or-super-admin-user-token>"
+pnpm smoke:p0:admin
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SKILLHUB_P0_ADMIN_TOKEN = "<admin-or-super-admin-user-token>"
+pnpm smoke:p0:admin
+```
+
+If operator duties are split across accounts, use specialized tokens:
+
+```bash
+export SKILLHUB_P0_ADMIN_REVIEW_TOKEN="<reviewer-or-admin-user-token>"
+export SKILLHUB_P0_ADMIN_FINANCE_TOKEN="<finance-or-admin-user-token>"
+export SKILLHUB_P0_ADMIN_TRUST_TOKEN="<trust-or-admin-user-token>"
+export SKILLHUB_P0_ADMIN_CURATION_TOKEN="<reviewer-or-admin-user-token>"
+pnpm smoke:p0:admin
+```
+
+The script also checks common Chinese mojibake markers and authorization-shaped secret leaks in admin responses. It performs no writes, so no `--allow-production` flag is needed.
+
 ## Production
 
 ```bash
