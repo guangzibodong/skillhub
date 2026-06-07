@@ -359,6 +359,7 @@ Completed:
 - Installed-skill update inbox API endpoint.
 - Skill review submission endpoint.
 - Admin review queue and review decision endpoints.
+- Skill review submission now writes actor-aware audit rows, organization-scoped publisher notifications, and a check summary for the exact submitted version, including the case where a queued or in-review record already exists.
 - Admin review console now reads the live review queue and exposes approve, reject, and block decisions with required reviewer notes.
 - Skill review submission now creates automated manifest, runtime declaration, example schema, and security permission checks for the submitted version.
 - Admin review queue responses now include the latest automated check results per type, and the admin console shows pass/fail/warning state inside each review card.
@@ -546,6 +547,7 @@ Completed:
 - `/publisher` now adds a paid marketplace readiness command panel above the skill workbench, aggregating ready paid listings, blocked paid listings, draft paid prices, payout readiness, profile/terms gates, and per-skill paid activation next actions before authors edit individual versions or price records.
 - `/publisher` now derives a top-level publisher operations priority queue from the existing organization-scoped publisher endpoints. The queue ranks readiness gaps, review repair, runtime checks, review SLA pressure, paid activation blockers, unanswered buyer feedback, buyer demand, marketplace placement/appeal work, payout readiness, and refund/dispute attention without adding fake rows or a new API contract.
 - `/admin` now derives a top-level admin operations priority queue from existing operator endpoints. The queue ranks launch blockers, review SLA/check/risk pressure, runtime incidents, abuse reports, feedback moderation, payout/refund/dispute work, notification and webhook delivery retries, curation appeals, commission setup, and identity-health gaps without adding fake task rows or a new API contract.
+- `/admin` now treats a completely empty commission-rule list the same as a missing active commission rule, so paid-marketplace ledger setup appears in the finance priority queue before the first rule exists.
 - Publisher pricing controls now show a pricing-gate preview beside each skill and disable the active paid-price option when the current paid listing still has commercial blockers, while draft pricing remains available and the backend remains the source of truth for enforcement.
 - Migration `028_runtime_check_remediation.sql` adds structured automated-check remediation fields to `skill_runtime_checks`: blocking flag, fix category, target field, and next action.
 - Review submission now stores structured remediation metadata for manifest, runtime, example, and security checks, so publishers and reviewers no longer have to infer repair steps from free-text messages.

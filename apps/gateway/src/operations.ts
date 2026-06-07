@@ -43,8 +43,17 @@ type RuntimeCheckResult = {
   latencyMs?: number;
 };
 
+type RuntimeCheckCreationSummary = {
+  blockingCount: number;
+  failedCount: number;
+  passedCount: number;
+  totalCount: number;
+  warningCount: number;
+};
+
 type SkillRecord = {
   id: string;
+  organization_id: string;
   slug: string;
   display_name: string;
   verification_status: SkillSummary["verificationStatus"];
@@ -568,73 +577,129 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
   `;
 }
 
-export async function submitSkillForReview(slug: string, organizationId?: string | null, version?: string) {
+export async function submitSkillForReview(
+  slug: string,
+  organizationId?: string | null,
+  version?: string,
+  actorUserId?: string | null
+) {
   const sql = await requireSql();
   await seedRegistry(sql);
 
   const skill = await getSkillRecord(sql, slug, version, organizationId);
   const riskLevel = getPermissionLevel(skill.manifest.permissions);
-  const existing = (await sql`
-    select id::text, status
-    from skill_reviews
-    where skill_version_id = ${skill.version_id}
-      and status in ('queued', 'in_review')
-    order by created_at desc
-    limit 1
-  `) as Array<{ id: string; status: string }>;
 
-  await sql`
-    update skills
-    set verification_status = 'submitted', updated_at = now()
-    where id = ${skill.id}
-  `;
+  return sql.begin(async (tx: Sql) => {
+    const existing = (await tx`
+      select id::text, status, created_at as "createdAt"
+      from skill_reviews
+      where skill_version_id = ${skill.version_id}
+        and status in ('queued', 'in_review')
+      order by created_at desc
+      limit 1
+      for update
+    `) as Array<{ id: string; status: string; createdAt: string }>;
 
-  await createRuntimeChecks(sql, skill.version_id, skill.manifest);
+    await tx`
+      update skills
+      set verification_status = 'submitted', updated_at = now()
+      where id = ${skill.id}
+    `;
 
-  if (existing[0]) {
+    const checkSummary = await createRuntimeChecks(tx, skill.version_id, skill.manifest);
+    const existingReview = existing[0] ?? null;
+
+    if (existingReview) {
+      await recordReviewSubmissionAudit(tx, {
+        actorUserId,
+        checkSummary,
+        existingReview: true,
+        reviewId: existingReview.id,
+        riskLevel,
+        skill
+      });
+      await recordNotification(
+        tx,
+        "skill.review.submitted",
+        "Skill review submission refreshed",
+        {
+          checkSummary,
+          existingReview: true,
+          reviewId: existingReview.id,
+          riskLevel,
+          skillSlug: skill.slug,
+          version: skill.version
+        },
+        skill.organization_id
+      );
+
+      return {
+        alreadyOpen: true,
+        checkSummary,
+        createdAt: existingReview.createdAt,
+        id: existingReview.id,
+        skillSlug: skill.slug,
+        displayName: skill.display_name,
+        version: skill.version,
+        status: existingReview.status,
+        riskLevel
+      };
+    }
+
+    const reviewRows = (await tx`
+      insert into skill_reviews (
+        skill_id,
+        skill_version_id,
+        status,
+        risk_level,
+        notes
+      )
+      values (
+        ${skill.id},
+        ${skill.version_id},
+        'queued',
+        ${riskLevel},
+        'Submitted through SkillHub review workflow.'
+      )
+      returning id::text, status, risk_level as "riskLevel", created_at as "createdAt"
+    `) as Array<{ id: string; status: string; riskLevel: string; createdAt: string }>;
+    const review = reviewRows[0];
+
+    await recordReviewSubmissionAudit(tx, {
+      actorUserId,
+      checkSummary,
+      existingReview: false,
+      reviewId: review.id,
+      riskLevel: review.riskLevel,
+      skill
+    });
+    await recordNotification(
+      tx,
+      "skill.review.submitted",
+      "Skill submitted for review",
+      {
+        checkSummary,
+        existingReview: false,
+        reviewId: review.id,
+        riskLevel: review.riskLevel,
+        skillSlug: skill.slug,
+        version: skill.version
+      },
+      skill.organization_id
+    );
+
     return {
-      id: existing[0].id,
+      alreadyOpen: false,
+      checkSummary,
+      id: review.id,
       skillSlug: skill.slug,
       displayName: skill.display_name,
       version: skill.version,
-      status: existing[0].status,
-      riskLevel
+      status: review.status,
+      riskLevel: review.riskLevel,
+      createdAt: review.createdAt
     };
-  }
-
-  const reviewRows = (await sql`
-    insert into skill_reviews (
-      skill_id,
-      skill_version_id,
-      status,
-      risk_level,
-      notes
-    )
-    values (
-      ${skill.id},
-      ${skill.version_id},
-      'queued',
-      ${riskLevel},
-      'Submitted through SkillHub review workflow.'
-    )
-    returning id::text, status, risk_level as "riskLevel", created_at as "createdAt"
-  `) as Array<{ id: string; status: string; riskLevel: string; createdAt: string }>;
-
-  await recordNotification(sql, "skill.review.submitted", "Skill submitted for review", {
-    skillSlug: skill.slug,
-    version: skill.version,
-    riskLevel
   });
-
-  return {
-    id: reviewRows[0].id,
-    skillSlug: skill.slug,
-    displayName: skill.display_name,
-    version: skill.version,
-    status: reviewRows[0].status,
-    riskLevel: reviewRows[0].riskLevel,
-    createdAt: reviewRows[0].createdAt
-  };
 }
 
 export async function listReviewQueue() {
@@ -742,7 +807,7 @@ export async function listReviewQueue() {
   }));
 }
 
-export async function decideReview(reviewId: string, input: ReviewDecisionInput) {
+export async function decideReview(reviewId: string, input: ReviewDecisionInput, actorUserId?: string | null) {
   const sql = await requireSql();
 
   const reviewRows = (await sql`
@@ -750,6 +815,7 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
       sr.id::text,
       sr.skill_id::text as "skillId",
       sr.skill_version_id::text as "skillVersionId",
+      s.organization_id::text as "organizationId",
       s.slug as "skillSlug",
       s.display_name as "displayName",
       sv.version,
@@ -763,6 +829,7 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
     id: string;
     skillId: string;
     skillVersionId: string | null;
+    organizationId: string;
     skillSlug: string;
     displayName: string;
     version: string | null;
@@ -805,8 +872,9 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
   `;
 
   await sql`
-    insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
     values (
+      ${actorUserId ?? null},
       ${`review.${input.status}`},
       'skill_review',
       ${reviewId},
@@ -820,11 +888,19 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput)
   `;
 
   await recordSkillUpdate(sql, review.skillId, review.skillVersionId, input.status, review.displayName, input.notes);
-  await recordNotification(sql, `skill.review.${input.status}`, `Skill review ${input.status}`, {
-    skillSlug: review.skillSlug,
-    version: review.version,
-    verificationStatus
-  });
+  await recordNotification(
+    sql,
+    `skill.review.${input.status}`,
+    `Skill review ${input.status}`,
+    {
+      notes: input.notes ?? null,
+      reviewId,
+      skillSlug: review.skillSlug,
+      version: review.version,
+      verificationStatus
+    },
+    review.organizationId
+  );
 
   return {
     id: decidedRows[0].id,
@@ -912,6 +988,7 @@ async function getSkillRecord(
   const rows = (await sql`
     select
       s.id::text,
+      s.organization_id::text,
       s.slug,
       s.display_name,
       s.verification_status,
@@ -1004,7 +1081,7 @@ function policyDefaults(manifest: SkillManifest) {
   };
 }
 
-async function createRuntimeChecks(sql: Sql, skillVersionId: string, manifest: SkillManifest) {
+async function createRuntimeChecks(sql: Sql, skillVersionId: string, manifest: SkillManifest): Promise<RuntimeCheckCreationSummary> {
   const checks = buildRuntimeChecks(manifest);
 
   for (const check of checks) {
@@ -1035,6 +1112,8 @@ async function createRuntimeChecks(sql: Sql, skillVersionId: string, manifest: S
       )
     `;
   }
+
+  return summarizeCreatedRuntimeChecks(checks);
 }
 
 async function requireApprovalChecks(sql: Sql, skillVersionId: string | null, manifest: SkillManifest | null) {
@@ -1501,9 +1580,57 @@ async function recordSkillUpdate(
   `;
 }
 
-async function recordNotification(sql: Sql, eventType: string, subject: string, payload: Record<string, unknown>) {
+async function recordReviewSubmissionAudit(
+  sql: Sql,
+  input: {
+    actorUserId?: string | null;
+    checkSummary: RuntimeCheckCreationSummary;
+    existingReview: boolean;
+    reviewId: string;
+    riskLevel: string;
+    skill: SkillRecord;
+  }
+) {
   await sql`
-    insert into notification_events (event_type, channel, subject, payload, status)
-    values (${eventType}, 'in_app', ${subject}, ${sql.json(payload)}, 'queued')
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (
+      ${input.actorUserId ?? null},
+      'skill.review.submitted',
+      'skill_review',
+      ${input.reviewId},
+      ${input.existingReview ? "Publisher refreshed an open skill review submission." : "Publisher submitted a skill version for review."},
+      ${sql.json({
+        checkSummary: input.checkSummary,
+        existingReview: input.existingReview,
+        organizationId: input.skill.organization_id,
+        riskLevel: input.riskLevel,
+        skillSlug: input.skill.slug,
+        version: input.skill.version,
+        versionId: input.skill.version_id
+      })}
+    )
   `;
+}
+
+async function recordNotification(
+  sql: Sql,
+  eventType: string,
+  subject: string,
+  payload: Record<string, unknown>,
+  organizationId?: string | null
+) {
+  await sql`
+    insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+    values (${organizationId ?? null}, ${eventType}, 'in_app', ${subject}, ${sql.json(payload)}, 'queued')
+  `;
+}
+
+function summarizeCreatedRuntimeChecks(checks: RuntimeCheckResult[]): RuntimeCheckCreationSummary {
+  return {
+    blockingCount: checks.filter((check) => check.isBlocking).length,
+    failedCount: checks.filter((check) => check.status === "failed").length,
+    passedCount: checks.filter((check) => check.status === "passed").length,
+    totalCount: checks.length,
+    warningCount: checks.filter((check) => check.status === "warning").length
+  };
 }

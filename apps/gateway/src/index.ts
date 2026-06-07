@@ -2332,7 +2332,8 @@ app.post("/v1/publisher/skills/:skillSlug/versions/:version/submit", async (c) =
         review: await submitSkillForReview(
           c.req.param("skillSlug"),
           authorization.subject.organizationId,
-          c.req.param("version")
+          c.req.param("version"),
+          authorization.subject.userId
         )
       },
       201
@@ -2654,7 +2655,12 @@ app.post("/v1/skills/:slug/submit", async (c) => {
   try {
     return c.json(
       {
-        review: await submitSkillForReview(c.req.param("slug"), authorization.subject.organizationId, body.version)
+        review: await submitSkillForReview(
+          c.req.param("slug"),
+          authorization.subject.organizationId,
+          body.version,
+          authorization.subject.userId
+        )
       },
       201
     );
@@ -2691,7 +2697,7 @@ app.post("/v1/admin/reviews/:reviewId/decision", async (c) => {
       review: await decideReview(c.req.param("reviewId"), {
         status: body.status,
         notes: body.notes
-      })
+      }, authorization.subject.userId)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to record review decision." }, 400);

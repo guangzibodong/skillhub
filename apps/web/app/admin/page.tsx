@@ -766,7 +766,7 @@ function buildAdminOperationsSummary(input: AdminPriorityInput): AdminOperations
   const pendingFeedback = input.skillFeedback.filter((feedback) => feedback.status === "pending").length;
   const payoutActions = countAdminPayoutActions(input.payouts);
   const adjustmentActions = countAdminAdjustmentActions(input.refunds, input.disputes);
-  const missingActiveCommission = input.commissionRules.length > 0 && !input.commissionRules.some((rule) => rule.isActive);
+  const missingActiveCommission = !input.commissionRules.some((rule) => rule.isActive);
   const deliveryActions = countNotificationDeliveryActions(input.notificationDeliveries) + countWebhookDeliveryActions(input.webhookDeliveries);
 
   return {
@@ -796,7 +796,7 @@ function buildAdminPriorityItems(input: AdminPriorityInput): AdminPriorityItem[]
   const payoutActions = countAdminPayoutActions(input.payouts);
   const urgentPayouts = input.payouts.filter((payout) => payout.status === "blocked" || payout.status === "failed").length;
   const adjustmentActions = countAdminAdjustmentActions(input.refunds, input.disputes);
-  const missingActiveCommission = input.commissionRules.length > 0 && !input.commissionRules.some((rule) => rule.isActive);
+  const missingActiveCommission = !input.commissionRules.some((rule) => rule.isActive);
   const notificationActions = countNotificationDeliveryActions(input.notificationDeliveries);
   const failedNotifications = input.notificationDeliveries.filter((delivery) => delivery.status === "failed").length;
   const webhookActions = countWebhookDeliveryActions(input.webhookDeliveries);

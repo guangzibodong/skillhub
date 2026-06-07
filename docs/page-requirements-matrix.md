@@ -533,6 +533,7 @@ Acceptance:
 - Shows a role-aware workspace access panel explaining current session, required reviewer/finance/support/admin roles, sign-in-required, role-required, and gateway-enforced write boundaries.
 - Shows the admin-focused operating evidence chain with live GMV, pending balance, review/risk, and ledger-row signals so operators can trace review, finance, payout, delivery, and audit work.
 - Shows an admin operations priority queue above the detailed panels. The queue must derive ordered next actions from launch readiness, skill review SLA and automated-check evidence, incidents, abuse reports, feedback moderation, payouts, refunds, disputes, notification delivery, webhook delivery, marketplace curation appeals, commission setup, and identity health.
+- Commission setup must appear in the admin priority queue when no commission rule exists or when rules exist but none is active.
 - Review queue exposes SLA pressure, blocker, high-risk, and warning filters with recommended priority reasons so reviewers can decide what to process first.
 - Review cards expose the secret-safe evidence package before decision controls: publisher, payout readiness, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts.
 - Audit log is separate from notification events.

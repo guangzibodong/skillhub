@@ -2002,6 +2002,8 @@ Submission also records the latest automated review checks for the submitted ski
 - `example`: input and output schema shape for example invocation review.
 - `security`: permission-risk profile, secret handles, and high-risk manual-review flags.
 
+Each submission now returns `checkSummary` with total, passed, warning, failed, and blocking check counts, plus `alreadyOpen` when the submitted version already has a queued or in-review record. The gateway writes `skill.review.submitted` to `admin_audit_logs` with the submitting actor when available, and queues an organization-scoped in-app notification so the publisher workspace notification inbox can show the review handoff without relying on a global platform event.
+
 Read the admin review queue:
 
 ```bash
@@ -2107,6 +2109,8 @@ Decision status can be:
 - `approved`: skill becomes verified only after automated checks exist and have no `failed`, `queued`, or `running` result. `warning` results are allowed with reviewer notes because high-risk permissions and local runtimes still require human judgment.
 - `rejected`: skill becomes rejected and keeps reviewer notes.
 - `blocked`: skill becomes suspended and writes risk/audit events.
+
+Review decisions store the reviewer actor id in `admin_audit_logs` when available and queue an organization-scoped `skill.review.approved`, `skill.review.rejected`, or `skill.review.blocked` in-app notification for the publisher organization. This keeps the Journey B repair loop and the Journey C audit stream aligned: the publisher sees the decision, while operators retain the reasoned audit trail.
 
 ## Publish Skill
 
