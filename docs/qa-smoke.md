@@ -9,6 +9,15 @@ This smoke path covers the minimum launch surface for local builds and productio
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
+The app-page checks now validate more than HTTP 200. For key P0 pages, the script asserts that the rendered HTML still contains the expected operating markers:
+
+- Home must expose the backend command-center handoff plus developer, publisher, and admin console links.
+- Login must show the post-login workspace map and no-shared-password guidance.
+- Dashboard must expose the workspace command center and P0 demo chain.
+- Publish, publisher, developer, and admin pages must expose their operating queue or evidence-panel markers.
+
+The same app check also fails on common Chinese mojibake markers, so a deployment cannot quietly pass smoke while showing corrupted Chinese UI copy to customers.
+
 ## P0 publish handoff
 
 The Journey B -> Journey C smoke is separate because it mutates data. It proves that a publisher draft can become an exact-version review handoff and that the same handoff appears in publisher operations, admin review, audit, and notification state:

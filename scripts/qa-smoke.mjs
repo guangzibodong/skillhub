@@ -20,6 +20,68 @@ const DEFAULT_APP_PATHS = [
   "/terms",
 ];
 const DEFAULT_TIMEOUT_MS = 10000;
+const PAGE_ASSERTIONS = {
+  "/": [
+    "/dashboard?lang=en#workspace-command-center",
+    "/developer?lang=en",
+    "/publisher?lang=en",
+    "/admin?lang=en",
+    "where the backend lives",
+  ],
+  "/?lang=zh": [
+    "/dashboard?lang=zh#workspace-command-center",
+    "/developer?lang=zh",
+    "/publisher?lang=zh",
+    "/admin?lang=zh",
+  ],
+  "/login": [
+    "after login",
+    "no shared backend password",
+    "/developer?lang=en",
+    "/publisher?lang=en",
+    "/admin?lang=en",
+  ],
+  "/dashboard": [
+    "workspace-command-center",
+    "p0-demo-chain",
+    "developer workspace",
+    "publisher workspace",
+    "platform operations",
+  ],
+  "/publish": [
+    "self-service publisher access",
+    "preflight repair queue",
+    "reviewer evidence packet",
+  ],
+  "/publisher": [
+    "publisher workspace",
+    "publisher operations queue",
+    "paid marketplace readiness",
+    "payout readiness",
+  ],
+  "/developer": [
+    "developer workspace",
+    "developer operations queue",
+    "team access",
+    "webhook",
+  ],
+  "/admin": [
+    "admin operations queue",
+    "launch-readiness",
+    "review queue",
+    "audit",
+  ],
+};
+const MOJIBAKE_MARKERS = [
+  "\uFFFD",
+  "\u9359\u621D",
+  "\u5BEE\u20AC",
+  "\u7039\u2103",
+  "\u7490\uFE40",
+  "\u9418\u8235",
+  "\u93B6\u20AC",
+  "\u6D93\u20AC",
+];
 
 let args;
 
@@ -255,9 +317,30 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
       }
 
       const html = response.text.toLowerCase();
+      const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+        response.text.includes(marker),
+      );
+
+      if (mojibakeMarkers.length > 0) {
+        fail(
+          name,
+          `possible mojibake markers in HTML: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+        );
+        continue;
+      }
 
       if (!html.includes("<html") && !html.includes("<!doctype html")) {
         fail(name, "expected an HTML document");
+        continue;
+      }
+
+      const expectedContent = PAGE_ASSERTIONS[path] ?? [];
+      const missingContent = expectedContent.filter(
+        (token) => !html.includes(token.toLowerCase()),
+      );
+
+      if (missingContent.length > 0) {
+        fail(name, `missing P0 page markers: ${missingContent.join(", ")}`);
         continue;
       }
 
@@ -441,6 +524,15 @@ function parsePositiveInteger(value, fallback) {
 
 function isFiniteNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function formatMarkerCodepoints(marker) {
+  return [...marker]
+    .map(
+      (character) =>
+        `U+${character.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`,
+    )
+    .join("+");
 }
 
 function pass(name, message) {

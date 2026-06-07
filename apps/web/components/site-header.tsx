@@ -7,7 +7,18 @@ import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
 
 type SiteHeaderProps = {
-  active: "home" | "marketplace" | "registry" | "agents" | "docs" | "dashboard" | "developer" | "publisher" | "admin" | "publish" | "account";
+  active:
+    | "home"
+    | "marketplace"
+    | "registry"
+    | "agents"
+    | "docs"
+    | "dashboard"
+    | "developer"
+    | "publisher"
+    | "admin"
+    | "publish"
+    | "account";
   apiUrl?: string;
   dictionary: Dictionary;
   locale: Locale;
@@ -15,7 +26,14 @@ type SiteHeaderProps = {
   subtitle?: string;
 };
 
-export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dictionary, locale, pathname, subtitle }: SiteHeaderProps) {
+export function SiteHeader({
+  active,
+  apiUrl = "https://api.useskillhub.com",
+  dictionary,
+  locale,
+  pathname,
+  subtitle,
+}: SiteHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -29,7 +47,7 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
     { id: "dashboard", label: labels.nav.dashboard, href: "/dashboard" },
     { id: "developer", label: labels.nav.developer, href: "/developer" },
     { id: "publisher", label: labels.nav.publisher, href: "/publisher" },
-    { id: "admin", label: labels.nav.admin, href: "/admin" }
+    { id: "admin", label: labels.nav.admin, href: "/admin" },
   ] as const;
 
   useEffect(() => {
@@ -45,7 +63,10 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
     };
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+      if (
+        headerRef.current &&
+        !headerRef.current.contains(event.target as Node)
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -61,7 +82,11 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
 
   return (
     <header className="site-header" ref={headerRef}>
-      <a className="brand brand--link" href={localizedHref("/", locale)} aria-label="SkillHub home">
+      <a
+        className="brand brand--link"
+        href={localizedHref("/", locale)}
+        aria-label="SkillHub home"
+      >
         <div className="brand__mark" aria-hidden="true">
           <span />
         </div>
@@ -74,7 +99,11 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
       <nav className="site-nav" aria-label={labels.primaryNavigation}>
         {navItems.map((item) => (
           <a
-            className={active === item.id ? "site-nav__link site-nav__link--active" : "site-nav__link"}
+            className={
+              active === item.id
+                ? "site-nav__link site-nav__link--active"
+                : "site-nav__link"
+            }
             href={localizedHref(item.href, locale)}
             key={item.id}
           >
@@ -84,16 +113,29 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
       </nav>
 
       <div className="site-actions">
-        <LanguageSwitcher label={labels.language} locale={locale} pathname={pathname} />
-        <a className="ghost-button site-action-secondary" href={localizedHref("/account", locale)}>
+        <LanguageSwitcher
+          label={labels.language}
+          locale={locale}
+          pathname={pathname}
+        />
+        <a
+          className="ghost-button site-action-secondary"
+          href={localizedHref("/dashboard#workspace-command-center", locale)}
+        >
           <LayoutDashboard size={17} aria-hidden="true" />
           <span>{labels.console}</span>
         </a>
-        <a className="ghost-button site-action-secondary" href={`${apiUrl}/health`}>
+        <a
+          className="ghost-button site-action-secondary"
+          href={`${apiUrl}/health`}
+        >
           <Gauge size={17} aria-hidden="true" />
           <span>{labels.apiHealth}</span>
         </a>
-        <a className="primary-button site-action-publish" href={localizedHref("/publish", locale)}>
+        <a
+          className="primary-button site-action-publish"
+          href={localizedHref("/publish", locale)}
+        >
           <UploadCloud size={17} aria-hidden="true" />
           <span>{labels.publish}</span>
         </a>
@@ -108,14 +150,29 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
         ref={menuButtonRef}
         type="button"
       >
-        {isMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+        {isMenuOpen ? (
+          <X size={18} aria-hidden="true" />
+        ) : (
+          <Menu size={18} aria-hidden="true" />
+        )}
       </button>
 
-      <div className={isMenuOpen ? "site-mobile-panel site-mobile-panel--open" : "site-mobile-panel"} id="mobile-site-menu">
+      <div
+        className={
+          isMenuOpen
+            ? "site-mobile-panel site-mobile-panel--open"
+            : "site-mobile-panel"
+        }
+        id="mobile-site-menu"
+      >
         <nav aria-label={labels.mobileNavigation}>
           {navItems.map((item) => (
             <a
-              className={active === item.id ? "site-mobile-panel__link site-mobile-panel__link--active" : "site-mobile-panel__link"}
+              className={
+                active === item.id
+                  ? "site-mobile-panel__link site-mobile-panel__link--active"
+                  : "site-mobile-panel__link"
+              }
               href={localizedHref(item.href, locale)}
               key={item.id}
             >
@@ -124,7 +181,10 @@ export function SiteHeader({ active, apiUrl = "https://api.useskillhub.com", dic
           ))}
         </nav>
         <div className="site-mobile-panel__actions">
-          <a className="ghost-button" href={localizedHref("/account", locale)}>
+          <a
+            className="ghost-button"
+            href={localizedHref("/dashboard#workspace-command-center", locale)}
+          >
             <LayoutDashboard size={17} aria-hidden="true" />
             <span>{labels.console}</span>
           </a>
@@ -158,8 +218,8 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
         dashboard: "工作台",
         developer: "开发者",
         publisher: "发布者",
-        admin: "后台"
-      }
+        admin: "后台",
+      },
     };
   }
 
@@ -172,6 +232,6 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
     openNavigation: "Open navigation",
     primaryNavigation: "Primary navigation",
     publish: dictionary.common.publish,
-    nav: dictionary.nav
+    nav: dictionary.nav,
   };
 }
