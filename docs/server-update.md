@@ -28,7 +28,10 @@ sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 
 # Existing Postgres volumes do not rerun docker-entrypoint init migrations.
 # Run the migration runner before rebuilding the API. It records applied files
-# in schema_migrations, and existing pre-runner 1Panel databases start at 018.
+# in schema_migrations. Existing databases with core tables but missing early
+# marketplace/review tables are repaired from 002; complete pre-runner 1Panel
+# databases continue from 018, and tracked databases continue after the latest
+# recorded migration unless that early marketplace baseline is missing.
 ./scripts/run-postgres-migrations.sh
 
 docker compose -f docker-compose.1panel.yml up -d --build

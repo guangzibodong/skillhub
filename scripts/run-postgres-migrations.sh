@@ -40,9 +40,12 @@ Options:
 
 Auto mode:
   - Fresh database with no existing SkillHub tables: starts at 001.
-  - Existing pre-runner 1Panel database: starts at 018 by default.
+  - Existing database missing early marketplace operations tables: starts at
+    002 to repair the public registry/review baseline without rerunning 001.
+  - Existing pre-runner 1Panel database with the early marketplace baseline:
+    starts at 018 by default.
   - Database already tracked by schema_migrations: starts after the highest
-    recorded migration number.
+    recorded migration number unless the early marketplace baseline is missing.
 
 Set SKILLHUB_EXISTING_MIGRATION_START to change the pre-runner baseline.
 USAGE
@@ -132,6 +135,27 @@ wait_for_postgres() {
   exit 1
 }
 
+marketplace_base_schema_exists() {
+  psql_exec -At -c "
+    select
+      to_regclass('public.users') is not null
+      and to_regclass('public.organization_members') is not null
+      and to_regclass('public.publisher_profiles') is not null
+      and to_regclass('public.skill_reviews') is not null
+      and to_regclass('public.skill_prices') is not null
+      and to_regclass('public.subscriptions') is not null
+      and to_regclass('public.commission_rules') is not null
+      and to_regclass('public.transactions') is not null
+      and to_regclass('public.transaction_splits') is not null
+      and to_regclass('public.publisher_balances') is not null
+      and to_regclass('public.payout_accounts') is not null
+      and to_regclass('public.payouts') is not null
+      and to_regclass('public.refunds') is not null
+      and to_regclass('public.disputes') is not null
+      and to_regclass('public.admin_audit_logs') is not null;
+  "
+}
+
 extract_prefix() {
   local value="$1"
   local prefix
@@ -173,6 +197,7 @@ psql_exec -c "
 history_count="$(psql_exec -At -c "select count(*) from public.schema_migrations;")"
 max_recorded="$(psql_exec -At -c "select coalesce(max((substring(filename from '^[0-9]+'))::int), 0) from public.schema_migrations;")"
 core_tables_exist="$(psql_exec -At -c "select to_regclass('public.organizations') is not null;")"
+marketplace_base_tables_exist="$(marketplace_base_schema_exists)"
 pre_runner_tables_exist="$(
   psql_exec -At -c "
     select
@@ -181,9 +206,17 @@ pre_runner_tables_exist="$(
       and to_regclass('public.organization_webhook_endpoints') is not null;
   "
 )"
+repair_marketplace_base=0
+
+if [ "$core_tables_exist" = "t" ] && [ "$marketplace_base_tables_exist" != "t" ]; then
+  repair_marketplace_base=1
+fi
 
 if [ "$START_FROM" = "auto" ]; then
-  if [ "$history_count" -gt 0 ]; then
+  if [ "$repair_marketplace_base" -eq 1 ]; then
+    start_number=2
+    echo "Detected existing database with incomplete marketplace operations schema; starting at migration 002 to repair it without rerunning 001."
+  elif [ "$history_count" -gt 0 ]; then
     start_number=$((max_recorded + 1))
   elif [ "$core_tables_exist" = "t" ] && [ "$pre_runner_tables_exist" = "t" ]; then
     existing_start="$(extract_prefix "${SKILLHUB_EXISTING_MIGRATION_START:-018}")"
@@ -202,6 +235,7 @@ else
 fi
 
 applied_count=0
+replayed_count=0
 skipped_count=0
 
 while IFS= read -r migration_file; do
@@ -228,6 +262,13 @@ while IFS= read -r migration_file; do
       exit 1
     fi
 
+    if [ "$repair_marketplace_base" -eq 1 ] && [ "$migration_number" -eq 2 ]; then
+      echo "Replaying recorded migration to repair marketplace operations schema: $filename"
+      psql_exec < "$migration_file"
+      replayed_count=$((replayed_count + 1))
+      continue
+    fi
+
     echo "Skipping already applied migration: $filename"
     skipped_count=$((skipped_count + 1))
     continue
@@ -246,4 +287,14 @@ while IFS= read -r migration_file; do
   applied_count=$((applied_count + 1))
 done < <(find "$MIGRATIONS_DIR" -maxdepth 1 -type f -name '*.sql' | sort)
 
-echo "Migration run complete. Applied: $applied_count. Skipped: $skipped_count."
+if [ "$repair_marketplace_base" -eq 1 ]; then
+  marketplace_base_tables_exist="$(marketplace_base_schema_exists)"
+
+  if [ "$marketplace_base_tables_exist" != "t" ]; then
+    echo "Marketplace operations schema is still incomplete after migration repair." >&2
+    echo "Inspect migration 002_marketplace_operations.sql and database errors before rebuilding the API." >&2
+    exit 1
+  fi
+fi
+
+echo "Migration run complete. Applied: $applied_count. Replayed: $replayed_count. Skipped: $skipped_count."

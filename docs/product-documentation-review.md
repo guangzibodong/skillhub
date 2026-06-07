@@ -40,7 +40,7 @@ SkillHub must become an operating workspace:
 
 ## Latest Implementation Review
 
-The latest production check found a real public-discovery failure pattern: app pages can return HTTP 200 while `/v1/skills/search` still fails or returns no rows because the deployment database has not run the marketplace operations migration that creates `skill_reviews`. Public registry reads now treat missing registry-read tables as an incomplete public catalog and return empty marketplace-safe responses instead of fake demo rows or HTTP 500, while internal operational probes, admin queues, and launch readiness still expose the migration blocker. The general smoke now checks `/v1/skills/search?limit=5`, fails when `/v1/stats` reports published supply but search is empty, and checks the first real public skill detail page when search returns one, so this kind of "homepage works, marketplace/detail API broken" regression is caught before a customer demo.
+The latest production check found a real public-discovery failure pattern: app pages can return HTTP 200 while `/v1/skills/search` still fails or returns no rows because the deployment database has not run the marketplace operations migration that creates `skill_reviews`. Public registry reads now treat missing registry-read tables as an incomplete public catalog and return empty marketplace-safe responses instead of fake demo rows or HTTP 500, while internal operational probes, admin queues, and launch readiness still expose the migration blocker. The migration runner now detects existing core SkillHub databases that are missing the early marketplace operations baseline and starts from `002_marketplace_operations.sql` without rerunning non-idempotent `001_initial.sql`, even if later migration history exists. The general smoke now checks `/v1/skills/search?limit=5`, fails when `/v1/stats` reports published supply but search is empty, and checks the first real public skill detail page when search returns one, so this kind of "homepage works, marketplace/detail API broken" regression is caught before a customer demo.
 
 Admin review is now closer to an operating workflow rather than a status list: each review row is expected to carry a secret-safe evidence package with publisher readiness, payout state, exact version, manifest summary, redacted runtime target, permission flags, and schema field counts. This directly supports Journey C because reviewers can judge supply quality and risk before approving, rejecting, or blocking a skill version.
 
@@ -210,7 +210,8 @@ Added deployment migration-runner coverage, covering:
 
 - Existing 1Panel Postgres volumes no longer depend on manual migration lists.
 - Applied SQL files are tracked in `schema_migrations` with checksums.
-- Fresh databases, pre-runner production databases, and already-tracked databases have explicit migration start behavior.
+- Fresh databases, incomplete early marketplace baselines, complete pre-runner production databases, and already-tracked databases have explicit migration start behavior.
+- The runner repairs missing `002_marketplace_operations.sql` baseline tables such as `skill_reviews`, `publisher_profiles`, `skill_prices`, and `admin_audit_logs` without rerunning non-idempotent `001_initial.sql`.
 - The server update document now uses one migration command before rebuilding the web and API containers.
 - Admin launch readiness now surfaces migration-runner history, latest applied migration, and expected latest migration so deployment drift is visible before operators discover missing columns in production workflows.
 

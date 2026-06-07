@@ -351,7 +351,7 @@ Acceptance checks:
 
 Completed:
 
-- 1Panel deployment now includes a Docker Compose Postgres migration runner that records applied SQL files in `schema_migrations`, auto-starts fresh databases from `001`, resumes tracked databases after the highest recorded migration, and starts existing pre-runner production databases from `018` so manual migration lists do not keep accumulating.
+- 1Panel deployment now includes a Docker Compose Postgres migration runner that records applied SQL files in `schema_migrations`, auto-starts fresh databases from `001`, repairs existing databases that have core tables but are missing the early marketplace operations baseline from `002` without rerunning non-idempotent `001`, resumes complete tracked databases after the highest recorded migration, and starts complete pre-runner production databases from `018` so manual migration lists do not keep accumulating.
 - `/v1/admin/launch-readiness` now checks `schema_migrations` migration history, latest applied migration filename, recorded row count, and expected latest migration so deployment drift is visible from the admin command center.
 - Retention and operations tables through migration `003_retention_operations.sql`.
 - Platform, developer, publisher, and admin overview API endpoints.
