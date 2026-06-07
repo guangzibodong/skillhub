@@ -912,7 +912,7 @@ async function executeSkill(manifest: SkillManifest, input: unknown) {
       inputAccepted: true,
       message:
         "SkillHub recorded and metered this invocation. External runtime proxy is disabled until SKILLHUB_RUNTIME_PROXY=enabled.",
-      receivedInput: input ?? null
+      inputSummary: summarizeValue(input) ?? null
     }
   };
 }
@@ -1135,8 +1135,88 @@ function summarizeValue(value: unknown) {
     return undefined;
   }
 
-  const text = JSON.stringify(value);
+  const text = JSON.stringify(redactSummaryValue(value));
   return text.length > 500 ? `${text.slice(0, 497)}...` : text;
+}
+
+const SENSITIVE_SUMMARY_KEY_PATTERN =
+  /(authorization|api[_-]?key|bearer|client[_-]?secret|code|cookie|credential|oauth|password|private[_-]?key|refresh[_-]?token|secret|session|token)/i;
+const SENSITIVE_SUMMARY_STRING_PATTERNS = [
+  /\b(?:bearer|basic)\s+[a-z0-9._~+/=-]{12,}/i,
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
+  /\b[a-z0-9_-]{20,}\.[a-z0-9_-]{20,}\.[a-z0-9_-]{20,}\b/i,
+  /\b[a-z0-9_+=/-]{48,}\b/i,
+];
+
+function redactSummaryValue(
+  value: unknown,
+  depth = 0,
+  seen = new WeakSet<object>(),
+): unknown {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return summarizeString(value);
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value !== "object") {
+    return `[${typeof value}]`;
+  }
+
+  if (seen.has(value)) {
+    return "[circular]";
+  }
+
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    if (depth >= 4) {
+      return `[array:${value.length}]`;
+    }
+
+    const items = value
+      .slice(0, 10)
+      .map((item) => redactSummaryValue(item, depth + 1, seen));
+
+    if (value.length > items.length) {
+      items.push(`[truncated:${value.length - items.length}]`);
+    }
+
+    return items;
+  }
+
+  if (depth >= 4) {
+    return "[object]";
+  }
+
+  const output: Record<string, unknown> = {};
+  const entries = Object.entries(value as Record<string, unknown>);
+
+  for (const [key, entryValue] of entries.slice(0, 20)) {
+    output[key] = SENSITIVE_SUMMARY_KEY_PATTERN.test(key)
+      ? "[redacted]"
+      : redactSummaryValue(entryValue, depth + 1, seen);
+  }
+
+  if (entries.length > 20) {
+    output.__truncatedKeys = entries.length - 20;
+  }
+
+  return output;
+}
+
+function summarizeString(value: string) {
+  if (SENSITIVE_SUMMARY_STRING_PATTERNS.some((pattern) => pattern.test(value))) {
+    return "[redacted]";
+  }
+
+  return value.length > 160 ? `[string:${value.length}]` : value;
 }
 
 function getProcessEnv(key: string): string | undefined {

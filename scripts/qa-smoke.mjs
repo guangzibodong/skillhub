@@ -341,6 +341,7 @@ await checkReleaseCommandGate();
 if (!config.skipApi) {
   await checkStats(config);
   await checkAuthProviders(config);
+  await checkAdminProtection(config);
   await checkPublicSkillSearch(config);
   await checkPublicSkillDetailApi(config);
   await checkPublicPublishers(config);
@@ -447,6 +448,39 @@ async function checkAuthProviders({ apiUrl, timeoutMs }) {
   }
 }
 
+async function checkAdminProtection({ apiUrl, timeoutMs }) {
+  const paths = [
+    "/v1/admin/reviews",
+    "/v1/admin/finance/ledger",
+    "/v1/admin/payouts",
+    "/v1/admin/notifications",
+    "/v1/admin/notification-deliveries",
+    "/v1/admin/webhook-deliveries",
+    "/v1/admin/identity-directory",
+    "/v1/admin/audit-logs",
+    "/v1/admin/marketplace-curation",
+  ];
+
+  for (const path of paths) {
+    const name = `GET ${path} without token`;
+
+    try {
+      const { status } = await requestJson(joinUrl(apiUrl, path), {
+        timeoutMs,
+      });
+
+      if (![401, 403].includes(status)) {
+        fail(name, `expected HTTP 401/403, got ${status}`);
+        continue;
+      }
+
+      pass(name, "protected by role-aware authorization");
+    } catch (error) {
+      fail(name, redactSecrets(error.message));
+    }
+  }
+}
+
 async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
   const name = "GET /v1/skills/search";
 
@@ -477,17 +511,62 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
       return;
     }
 
-    const invalidSkill = json.skills.find(
-      (skill) =>
+    const invalidSkill = json.skills.find((skill) => {
+      const successRateValid =
+        skill?.successRate === null ||
+        (isFiniteNumber(skill?.successRate) &&
+          skill.successRate >= 0 &&
+          skill.successRate <= 1);
+      const avgLatencyValid =
+        skill?.avgLatencyMs === null ||
+        (isFiniteNumber(skill?.avgLatencyMs) && skill.avgLatencyMs >= 0);
+      const averageRatingValid =
+        skill?.averageRating === null ||
+        (isFiniteNumber(skill?.averageRating) &&
+          skill.averageRating >= 0 &&
+          skill.averageRating <= 5);
+
+      return (
         typeof skill?.slug !== "string" ||
         typeof skill?.displayName !== "string" ||
-        typeof skill?.verificationStatus !== "string",
-    );
+        typeof skill?.description !== "string" ||
+        !Array.isArray(skill?.tags) ||
+        typeof skill?.version !== "string" ||
+        !["draft", "submitted", "verified", "deprecated", "rejected", "suspended"].includes(
+          skill?.verificationStatus,
+        ) ||
+        !["low", "medium", "high"].includes(skill?.permissionLevel) ||
+        !["http", "mcp", "local"].includes(skill?.runtimeType) ||
+        !["free", "per_call", "subscription"].includes(skill?.billingModel) ||
+        !isFiniteNumber(skill?.installCount) ||
+        !isFiniteNumber(skill?.invocationCount) ||
+        !successRateValid ||
+        !avgLatencyValid ||
+        !averageRatingValid ||
+        !isFiniteNumber(skill?.feedbackCount)
+      );
+    });
 
     if (invalidSkill) {
       fail(
         name,
-        "skill rows should include slug, displayName, and verificationStatus",
+        "skill rows should include public marketplace operating signals: identity, version, verification, permission risk, runtime, billing, install/call counts, success, latency, rating, and feedback",
+      );
+      return;
+    }
+
+    const leakedCurationField = json.skills.find(
+      (skill) =>
+        Object.hasOwn(skill, "curation") ||
+        Object.hasOwn(skill, "boost") ||
+        Object.hasOwn(skill, "reason") ||
+        Object.hasOwn(skill, "operatorReason"),
+    );
+
+    if (leakedCurationField) {
+      fail(
+        name,
+        "public search rows must not expose internal curation fields",
       );
       return;
     }
