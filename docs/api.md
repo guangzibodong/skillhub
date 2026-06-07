@@ -745,7 +745,7 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/saved-skill
   }'
 ```
 
-The public skill detail page exposes the same project-scoped workflow: developers can choose one of their projects, save the current listing into a named evaluation collection, or install the skill directly into the project's installed-skill inventory. The install action calls `/v1/projects/:projectSlug/installed-skills`; high-permission skills still enter owner-review policy state through the existing project install rules.
+The public skill detail page exposes the same project-scoped workflow: developers can choose one of their projects, save the current listing into a named evaluation collection, or install the skill directly into the project's installed-skill inventory. The install action calls `/v1/projects/:projectSlug/installed-skills`; high-permission skills still enter owner-review policy state through the existing project install rules. Each install writes `project_install.installed` audit and in-app notification records so the marketplace-to-project handoff is visible to operators and the developer organization.
 
 Remove a saved skill:
 
@@ -754,7 +754,7 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/saved-skill
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-Project installed skills, project policies, update inbox reads, and saved skill reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Update actions and saved-skill changes write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
+Project installed skills, project policies, update inbox reads, and saved skill reads are protected by user access tokens and scoped to the token organization. Writes are protected by user access tokens and role checks. Install, update, and saved-skill changes write project-scoped state, admin audit records, and in-app notifications. Project API keys are separate runtime credentials and cannot manage project policy.
 
 The project detail console at `/dashboard/projects/[slug]` exposes the same policy, install, update-inbox, and saved-skill controls so developers can approve owner-review skills, adjust permission limits, set filesystem/network/browser/secret access, tune rate limits, update monthly budget caps, pause risky skills, restore suspended installs, handle version/security/incidents updates, save candidate skills for evaluation, or remove skills without leaving the workspace.
 
@@ -853,7 +853,7 @@ Organization billing is scoped to the token organization and available to owner/
 ## Project API Keys
 
 Project API keys authenticate agent runtime calls. The raw key is returned only once when it is created; SkillHub stores only a hash plus display metadata.
-Project API key management is tenant scoped: project operators can list, create, and revoke keys only for projects in their authorized organization. The project detail console at `/dashboard/projects/[slug]` exposes the same create-and-revoke workflow and shows the raw key only immediately after creation.
+Project API key management is tenant scoped: project operators can list, create, and revoke keys only for projects in their authorized organization. Key creation writes `project_api_key.created` audit and in-app notification records using key metadata only. The project detail console at `/dashboard/projects/[slug]` exposes the same create-and-revoke workflow and shows the raw key only immediately after creation.
 
 Create a project API key:
 

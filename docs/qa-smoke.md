@@ -18,6 +18,47 @@ The app-page checks now validate more than HTTP 200. For key P0 pages, the scrip
 
 The same app check also fails on common Chinese mojibake markers, so a deployment cannot quietly pass smoke while showing corrupted Chinese UI copy to customers.
 
+## P0 developer handoff
+
+The Journey A smoke is separate because it mutates project state. It proves that marketplace discovery can become durable developer workspace state without direct database checks:
+
+- `GET /marketplace`, skill detail, `/developer`, and `/dashboard`
+- `GET /v1/skills/:skillSlug`
+- `POST /v1/developer/projects`
+- `POST /v1/projects/:projectSlug/saved-skills`
+- `POST /v1/projects/:projectSlug/installed-skills`
+- `POST /v1/projects/:projectSlug/api-keys`
+- `POST /v1/projects/:projectSlug/runtime/test`
+- `GET /v1/developer/projects/:projectSlug`
+- `GET /v1/notifications`
+- `GET /v1/admin/audit-logs`
+
+The smoke also verifies that listed project keys do not expose the raw reveal-once API key after creation, and that the runtime test is `console_test` and non-billable.
+
+Run it against local or staging services with an organization-scoped developer, owner, or admin token, plus an admin/support token for audit verification:
+
+```bash
+export SKILLHUB_P0_DEVELOPER_TOKEN="<developer-or-owner-user-token>"
+export SKILLHUB_P0_DEVELOPER_ADMIN_TOKEN="<admin-or-support-user-token>"
+pnpm smoke:p0:developer
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SKILLHUB_P0_DEVELOPER_TOKEN = "<developer-or-owner-user-token>"
+$env:SKILLHUB_P0_DEVELOPER_ADMIN_TOKEN = "<admin-or-support-user-token>"
+pnpm smoke:p0:developer
+```
+
+The script creates a generated `p0-dev-smoke-*` project slug by default and installs `browser-research`. Use `--project-slug` and `--skill-slug` only when you intentionally want a stable smoke fixture:
+
+```bash
+pnpm smoke:p0:developer -- --project-slug p0-dev-smoke-staging --skill-slug browser-research
+```
+
+Production writes are blocked by default. To run this against `https://api.useskillhub.com`, operators must explicitly pass `--allow-production` or set `SKILLHUB_P0_DEVELOPER_ALLOW_PRODUCTION=true`. Do this only for a planned production smoke because it creates project, saved-skill, install, key, invocation, notification, and audit state. `--skip-admin` is available for a partial developer-only check, but the full P0 handoff proof should include admin audit verification before a customer demo.
+
 ## P0 publish handoff
 
 The Journey B -> Journey C smoke is separate because it mutates data. It proves that a publisher draft can become an exact-version review handoff and that the same handoff appears in publisher operations, admin review, audit, and notification state:

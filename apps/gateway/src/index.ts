@@ -973,6 +973,7 @@ app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
 
   try {
     const install = await installSkill({
+      actorUserId: authorization.subject.userId,
       organizationId: authorization.subject.organizationId,
       projectSlug,
       skillSlug: body.skillSlug,
@@ -1363,7 +1364,7 @@ app.post("/v1/projects/:projectSlug/api-keys", async (c) => {
   try {
     return c.json(
       {
-        apiKey: await createProjectApiKey(projectSlug, body.name, authorization.subject.organizationId)
+        apiKey: await createProjectApiKey(projectSlug, body.name, authorization.subject.organizationId, authorization.subject.userId)
       },
       201
     );

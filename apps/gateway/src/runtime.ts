@@ -119,7 +119,12 @@ export async function listProjectApiKeys(projectSlug: string, organizationId?: s
   `;
 }
 
-export async function createProjectApiKey(projectSlug: string, name = "Project API key", organizationId?: string | null) {
+export async function createProjectApiKey(
+  projectSlug: string,
+  name = "Project API key",
+  organizationId?: string | null,
+  actorUserId?: string | null
+) {
   const sql = await requireSql();
   const writeOrganizationId = await resolveWriteOrganizationId(sql, organizationId);
   const project = await upsertProject(sql, writeOrganizationId, projectSlug);
@@ -127,34 +132,74 @@ export async function createProjectApiKey(projectSlug: string, name = "Project A
   const keyHash = await sha256Hex(rawKey);
   const keyLast4 = rawKey.slice(-4);
 
-  const rows = (await sql`
-    insert into api_keys (
-      project_id,
-      name,
-      key_hash,
-      key_prefix,
-      key_last4
-    )
-    values (
-      ${project.id},
-      ${name},
-      ${keyHash},
-      'skh',
-      ${keyLast4}
-    )
-    returning
-      id::text,
-      name,
-      key_prefix as "keyPrefix",
-      key_last4 as "keyLast4",
-      created_at as "createdAt"
-  `) as Array<{
-    id: string;
-    name: string;
-    keyPrefix: string;
-    keyLast4: string;
-    createdAt: string;
-  }>;
+  const rows = await sql.begin(async (tx: Sql) => {
+    const keyRows = (await tx`
+      insert into api_keys (
+        project_id,
+        name,
+        key_hash,
+        key_prefix,
+        key_last4
+      )
+      values (
+        ${project.id},
+        ${name},
+        ${keyHash},
+        'skh',
+        ${keyLast4}
+      )
+      returning
+        id::text,
+        name,
+        key_prefix as "keyPrefix",
+        key_last4 as "keyLast4",
+        created_at as "createdAt"
+    `) as Array<{
+      id: string;
+      name: string;
+      keyPrefix: string;
+      keyLast4: string;
+      createdAt: string;
+    }>;
+    const key = keyRows[0];
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (
+        ${actorUserId ?? null},
+        'project_api_key.created',
+        'api_key',
+        ${key.id},
+        'Project API key created with reveal-once raw secret.',
+        ${tx.json({
+          keyId: key.id,
+          keyLast4: key.keyLast4,
+          keyName: key.name,
+          organizationId: writeOrganizationId,
+          projectSlug
+        })}
+      )
+    `;
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (
+        ${actorUserId ?? null},
+        ${writeOrganizationId},
+        'project_api_key.created',
+        'in_app',
+        'Project API key created',
+        ${tx.json({
+          keyId: key.id,
+          keyLast4: key.keyLast4,
+          keyName: key.name,
+          projectSlug
+        })},
+        'queued'
+      )
+    `;
+
+    return keyRows;
+  });
 
   return {
     ...rows[0],

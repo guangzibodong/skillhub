@@ -5,6 +5,7 @@ import { buildReviewSlaFields } from "./review-sla.js";
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
 type ProjectInstallInput = {
+  actorUserId?: string | null;
   organizationId?: string | null;
   projectSlug: string;
   skillSlug: string;
@@ -238,6 +239,42 @@ export async function installSkill(input: ProjectInstallInput) {
   `) as Array<{ id: string; status: string; approvalState: string; installedAt: string }>;
 
   await upsertDefaultPolicy(sql, project.id, skill);
+  await sql`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (
+      ${input.actorUserId ?? null},
+      'project_install.installed',
+      'project_skill_install',
+      ${installRows[0].id},
+      'Skill installed into a developer project.',
+      ${sql.json({
+        approvalState,
+        organizationId,
+        permissionLevel,
+        projectSlug: input.projectSlug,
+        skillSlug: skill.slug,
+        version: skill.version
+      })}
+    )
+  `;
+  await sql`
+    insert into notification_events (organization_id, event_type, channel, subject, payload, status)
+    values (
+      ${organizationId},
+      'project_install.installed',
+      'in_app',
+      'Project skill installed',
+      ${sql.json({
+        approvalState,
+        displayName: skill.display_name,
+        permissionLevel,
+        projectSlug: input.projectSlug,
+        skillSlug: skill.slug,
+        version: skill.version
+      })},
+      'queued'
+    )
+  `;
 
   return {
     id: installRows[0].id,
