@@ -249,7 +249,7 @@ export async function getSkillManifest(
     await seedDemoData(sql);
 
     const rows = (await sql`
-      select sv.manifest
+      select latest.manifest
       from skills s
       join lateral (
         select sv.manifest, sv.created_at
@@ -271,11 +271,10 @@ export async function getSkillManifest(
           coalesce(review.decided_at, review.created_at, sv.created_at) desc,
           sv.created_at desc
         limit 1
-      ) sv on true
+      ) latest on true
       where s.slug = ${slug}
         and s.visibility = 'public'
         and s.verification_status in ('verified', 'submitted', 'deprecated')
-      order by sv.created_at desc
       limit 1
     `) as Array<{ manifest: SkillManifest }>;
 
