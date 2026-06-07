@@ -41,6 +41,35 @@ pnpm lint
 
 The web app has an explicit Next.js ESLint configuration, so `pnpm lint` must run non-interactively in CI and local release checks instead of opening Next's first-run ESLint setup prompt.
 
+## P0 release suite
+
+Use the P0 release suite when preparing a deployment or customer walkthrough. It runs the public production-safe smoke and the non-mutating Journey C admin operations smoke in a fixed order:
+
+```bash
+pnpm smoke:p0
+```
+
+For the production URLs:
+
+```bash
+pnpm smoke:p0 -- --prod
+```
+
+The default suite expects the same admin/super-admin token variables as `pnpm smoke:p0:admin` so it can verify protected Journey C operations. If an operator intentionally wants only public checks, use:
+
+```bash
+pnpm smoke:p0 -- --prod --skip-admin
+```
+
+Mutating P0 checks are deliberately opt-in and keep their own production-write guards:
+
+```bash
+pnpm smoke:p0 -- --include-mutating
+pnpm smoke:p0 -- --include-demo
+```
+
+`--include-mutating` runs the Journey A developer handoff and Journey B publish handoff smokes. `--include-demo` runs the full P0 demo chain. Passing `--allow-production` through the suite only enables production writes for selected child scripts; use it only for a planned production rehearsal.
+
 ## P0 developer handoff
 
 The Journey A smoke is separate because it mutates project state. It proves that marketplace discovery can become durable developer workspace state without direct database checks:

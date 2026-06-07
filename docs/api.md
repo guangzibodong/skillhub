@@ -2175,6 +2175,26 @@ Required tokens are supplied through environment variables such as `SKILLHUB_P0_
 
 Passing assertions mean a generated draft skill saved through `/v1/skills` produced an exact-version review submission, automated check summary, publisher workspace row, publisher in-app notification, admin review queue row, admin audit record, and admin notification queue signal. This is a QA harness for existing APIs; it does not add a fake task API or bypass SkillHub role enforcement.
 
+## P0 Release Smoke Suite
+
+Operators can run the P0 release suite before deployment or customer walkthroughs:
+
+```bash
+pnpm smoke:p0
+pnpm smoke:p0 -- --prod
+```
+
+The suite runs the public production-safe smoke first and then the non-mutating Journey C admin operations smoke. It keeps the admin smoke token requirements intact, so protected launch readiness, review, finance, payout, notification, webhook, identity, audit, trust, and curation reads are checked before the suite passes.
+
+Mutating journey checks are opt-in:
+
+```bash
+pnpm smoke:p0 -- --include-mutating
+pnpm smoke:p0 -- --include-demo
+```
+
+`--include-mutating` runs the Journey A developer handoff and Journey B publish handoff smokes. `--include-demo` runs the full P0 demo-chain smoke. The child scripts still block production writes unless `--allow-production` is explicitly passed through the suite.
+
 ## P0 Admin Operations Smoke
 
 Local and staging operators can run a non-mutating smoke test for Journey C:
