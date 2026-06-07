@@ -688,13 +688,20 @@ function normalizeProviderHandoffUrl(value: string, label: string) {
     const url = new URL(text);
     const localhost = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
 
+    if (url.username || url.password) {
+      throw new Error(`${label} must not include embedded credentials.`);
+    }
+
     if (url.protocol !== "https:" && !(url.protocol === "http:" && localhost)) {
       throw new Error(`${label} must use https, except local development URLs.`);
     }
 
     return url.toString();
   } catch (error) {
-    if (error instanceof Error && error.message.includes("must use https")) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("must use https") || error.message.includes("must not include embedded credentials"))
+    ) {
       throw error;
     }
 

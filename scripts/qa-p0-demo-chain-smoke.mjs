@@ -559,17 +559,39 @@ async function preparePublisherCommercialReadiness({
 
     onboarding = json?.onboarding;
 
-    if (
-      !onboarding?.onboardingSession?.id ||
-      !onboarding?.payoutAccount?.id
-    ) {
+    if (!onboarding?.onboardingSession?.id || !onboarding?.payoutAccount?.id) {
       fail(onboardingName, "unexpected payout onboarding payload shape");
+      return null;
+    }
+
+    const session = onboarding.onboardingSession;
+    const account = onboarding.payoutAccount;
+
+    if (account.provider !== "manual_deferred" || session.provider !== "manual_deferred") {
+      fail(onboardingName, "payout onboarding used an unexpected provider");
+      return null;
+    }
+
+    if (!String(session.providerSessionId ?? "").startsWith("po_")) {
+      fail(onboardingName, "payout onboarding provider session id is missing or malformed");
+      return null;
+    }
+
+    const handoffUrlError = validateProviderHandoffUrl(session.onboardingUrl);
+
+    if (handoffUrlError) {
+      fail(onboardingName, `payout onboarding URL ${handoffUrlError}`);
+      return null;
+    }
+
+    if (session.returnUrl != null || session.refreshUrl != null) {
+      fail(onboardingName, "default payout onboarding unexpectedly persisted return or refresh URLs");
       return null;
     }
 
     pass(
       onboardingName,
-      `provider-deferred onboarding created: account=...${onboarding.payoutAccount.id.slice(-8)}`,
+      `provider-deferred onboarding created: account=...${account.id.slice(-8)} provider/url verified`,
     );
   } catch (error) {
     fail(onboardingName, redactSecrets(error.message));
@@ -2136,6 +2158,32 @@ function isProductionUrl(value) {
     ].includes(url.hostname);
   } catch {
     return false;
+  }
+}
+
+function validateProviderHandoffUrl(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return "is missing";
+  }
+
+  try {
+    const url = new URL(value);
+    const localhost =
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1" ||
+      url.hostname === "[::1]";
+
+    if (url.username || url.password) {
+      return "includes embedded credentials";
+    }
+
+    if (url.protocol !== "https:" && !(url.protocol === "http:" && localhost)) {
+      return "must use https except for local development URLs";
+    }
+
+    return "";
+  } catch {
+    return "is not a valid URL";
   }
 }
 

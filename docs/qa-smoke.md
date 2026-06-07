@@ -172,7 +172,7 @@ The P0 demo-chain smoke is mutating and should be used before customer walkthrou
 - Publisher submits the exact semantic version through `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`.
 - Reviewer/admin approves the review through `POST /v1/admin/reviews/:reviewId/decision`.
 - Public discovery shows the verified skill through `GET /v1/skills/search` and `GET /v1/skills/:slug`.
-- Publisher commercial readiness is completed through publisher profile, terms acceptance, provider-deferred payout onboarding, and active per-call pricing.
+- Publisher commercial readiness is completed through publisher profile, terms acceptance, provider-deferred payout onboarding, and active per-call pricing. The onboarding step asserts the `manual_deferred` provider, `po_` provider-session id, safe handoff URL protocol, and absence of embedded URL credentials.
 - Developer creates a project, saves the skill, installs the approved version, creates a reveal-once project key, and runs a governed console test.
 - MCP `tools/list` and `tools/call` use the reveal-once project key and the same installed-skill runtime governance path; the agent runtime call is billable when the smoke's ledger proof is enabled.
 - Finance processing posts the billable usage into `transactions`, `transaction_splits`, and `publisher_balances`, then admin and publisher ledger reads must expose the same posted usage transaction.
