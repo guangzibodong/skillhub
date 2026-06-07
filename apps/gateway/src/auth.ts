@@ -85,6 +85,7 @@ type OAuthRuntimeEnv = {
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   NEXT_PUBLIC_APP_URL?: string;
+  NODE_ENV?: string;
   SESSION_SECRET?: string;
   SKILLHUB_AUTH_BASE_URL?: string;
   SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
@@ -97,6 +98,7 @@ type OAuthRuntimeEnv = {
   SKILLHUB_EMAIL_AUTH_SECRET?: string;
   SKILLHUB_ENV?: string;
   SKILLHUB_OAUTH_STATE_SECRET?: string;
+  VERCEL_ENV?: string;
 };
 
 const organizationRoles: OrganizationRole[] = ["owner", "admin", "developer", "publisher", "reviewer", "finance"];
@@ -1654,14 +1656,28 @@ function inferredCookieDomain(env?: OAuthRuntimeEnv) {
 }
 
 function shouldExposeEmailDebugCode(env?: OAuthRuntimeEnv) {
+  if (isAuthProductionLike(env)) {
+    return false;
+  }
+
   const configured = getConfiguredValue(env?.SKILLHUB_EMAIL_AUTH_DEBUG_CODES, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES")?.toLowerCase();
 
   if (configured) {
     return configured === "1" || configured === "true" || configured === "yes";
   }
 
-  const runtimeEnv = getConfiguredValue(env?.SKILLHUB_ENV, "SKILLHUB_ENV")?.toLowerCase();
-  return runtimeEnv !== "production";
+  return false;
+}
+
+function isAuthProductionLike(env?: OAuthRuntimeEnv) {
+  return [
+    env?.SKILLHUB_ENV,
+    env?.NODE_ENV,
+    env?.VERCEL_ENV,
+    getProcessEnv("SKILLHUB_ENV"),
+    getProcessEnv("NODE_ENV"),
+    getProcessEnv("VERCEL_ENV")
+  ].some((value) => value?.trim().toLowerCase() === "production");
 }
 
 function getConfiguredValue(value: string | undefined, ...keys: string[]) {

@@ -165,6 +165,7 @@ Personal center requirements:
 - Show connected or available login methods: email, Google, GitHub, and token fallback.
 - Store connected provider identities separately from raw session tokens, including provider user id, verified provider email, connection time, and latest login time.
 - Store short-lived email verification challenges with HMAC-hashed codes, expiry, attempt limits, delivery status, and single-use consumption before issuing a session.
+- Email-code debug previews are allowed only for explicit non-production testing. Production-like runtimes must never return verification codes in API responses, debug email providers must not mark production verification emails as sent, and sent email-code notification payloads must not retain the raw code after provider handoff.
 - Show token-session metadata without exposing the raw token after first reveal.
 - List current, active, expired, and revoked account sessions using token fingerprints only, and let users revoke old non-current sessions from the personal center.
 - Let users disconnect Google or GitHub identities with lockout-safe guardrails that require another OAuth provider or a separate active token fallback before the identity is removed.

@@ -400,6 +400,7 @@ Completed:
 - `/v1/auth/me` endpoint for inspecting the active subject and roles.
 - `/v1/auth/providers` endpoint now exposes product-visible login-method readiness for email registration, Google OAuth, GitHub OAuth, and token fallback, activating provider redirects only when credentials, callback base URL, and state secret are configured.
 - Email verification-code access is modeled through migration `021_email_login_challenges.sql`, `/v1/auth/email/request-code`, and `/v1/auth/email/verify-code`, with HMAC-hashed 6-digit codes, 10-minute expiry, attempt limits, single-use transaction consumption, queued email notification events, verified email identity updates, 14-day user session tokens, audit logs, and httpOnly web-session storage.
+- Email verification-code debug preview is now production-guarded and fail-closed in the gateway: only explicit non-production debug mode returns `deliveryPreviewCode`, production-like runtimes never return it, the email delivery processor rejects `debug_preview` in production, and sent email-code notification payloads are scrubbed of the raw code after provider handoff.
 - The legacy `/v1/auth/signup` direct-token endpoint is disabled by default and requires `SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN=true`, so public users no longer bypass email verification through the product login flow.
 - Google and GitHub OAuth start/callback endpoints now sign state, exchange provider codes, require verified email, create or reuse the user and organization membership, mint a 14-day user session token, set the httpOnly `skillhub_user_token` cookie, and redirect back to the app account flow.
 - `user_auth_identities` migration `020_user_auth_identities.sql` now records email, Google, and GitHub login identities with provider user id, verified provider email, connection time, latest login time, avatar URL, and metadata.
@@ -578,6 +579,7 @@ Completed:
 Next:
 
 - Resolve any launch-readiness blockers reported by `/admin` before public launch or paid marketplace rollout.
+- Configure real production email delivery with `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`; `/v1/admin/launch-readiness` treats missing production email delivery as a blocker, and debug preview is limited to non-production testing.
 - Finalize legal review of `/terms` once payment provider, payout provider, tax/KYC region, refund window, and minimum payout decisions are locked.
 - Provider-specific payout account integration to replace manual deferred onboarding URLs.
 - Payment-provider customer/session integration after billing states are stable.

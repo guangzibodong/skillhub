@@ -726,6 +726,7 @@ Added email verification-code access, covering:
 - `/v1/auth/email/verify-code` consumes the challenge in a transaction, verifies the email identity, creates or logs into the correct workspace, mints a 14-day user session, writes audit and in-app notification events, and lets the web app store the token in an httpOnly cookie without showing a long-lived token on screen.
 - `/login` now has a two-step email-code form for creating a workspace or logging into an existing workspace, while token fallback remains for invitations and operators.
 - The legacy `/v1/auth/signup` direct-token endpoint is disabled by default, reducing the biggest remaining account-onboarding shortcut before production OAuth and email-provider delivery are fully configured.
+- Production email-code handling now has a hard debug boundary: the request-code API suppresses `deliveryPreviewCode` unless explicit non-production debug mode is enabled, the delivery worker rejects `debug_preview` in production instead of marking verification emails sent without a provider, sent code payloads are scrubbed after provider handoff, and launch readiness treats missing real production email delivery as a blocker.
 - This strengthens first-visit trust because normal users can enter through an expected email-code flow instead of copying a raw token, and it strengthens launch readiness because the email-provider worker can attach to existing queued email events.
 
 Added publisher skill version management, covering:

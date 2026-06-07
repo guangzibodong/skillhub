@@ -60,6 +60,7 @@ type NotificationDeliveryRuntimeEnv = {
   SKILLHUB_EMAIL_FROM?: string;
   SKILLHUB_EMAIL_PROVIDER?: string;
   SKILLHUB_ENV?: string;
+  VERCEL_ENV?: string;
 };
 
 export type NotificationDeliveryRecord = {
@@ -363,7 +364,12 @@ export async function decideNotificationDelivery(
         next_attempt_at = ${action === "retry" ? nextAttemptAt : null},
         delivered_at = ${action === "mark_sent" ? sql`now()` : null},
         delivery_provider = ${action === "mark_sent" || action === "mark_failed" ? provider : previous.deliveryProvider ?? null},
-        provider_message_id = ${action === "mark_sent" || action === "mark_failed" ? providerMessageId : null}
+        provider_message_id = ${action === "mark_sent" || action === "mark_failed" ? providerMessageId : null},
+        payload = case
+          when ${action === "mark_sent"} and event_type = 'auth.email.code.requested'
+            then coalesce(payload, '{}'::jsonb) - 'code'
+          else payload
+        end
       where id = ${id}
       returning
         id::text,
@@ -874,6 +880,16 @@ async function processEmailDelivery(
     };
   }
 
+  if (provider === "debug_preview" && isProductionLike(env)) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: "Debug email delivery is disabled in production. Configure SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM."
+    };
+  }
+
   if (provider === "debug_preview") {
     return {
       action: "mark_sent",
@@ -1061,7 +1077,12 @@ async function applyProcessedDeliveryOutcome(sql: Sql, row: NotificationRow, out
       next_attempt_at = ${outcome.nextAttemptAt},
       delivered_at = ${outcome.action === "mark_sent" ? sql`now()` : null},
       delivery_provider = ${outcome.provider},
-      provider_message_id = ${outcome.providerMessageId}
+      provider_message_id = ${outcome.providerMessageId},
+      payload = case
+        when ${outcome.action === "mark_sent"} and event_type = 'auth.email.code.requested'
+          then coalesce(payload, '{}'::jsonb) - 'code'
+        else payload
+      end
     where id = ${row.id}
       and channel in ('email', 'webhook')
       and status in ('queued', 'failed')
@@ -1380,7 +1401,9 @@ function getProcessEnv(key: string): string | undefined {
 }
 
 function isProductionLike(env: NotificationDeliveryRuntimeEnv | undefined) {
-  return getRuntimeEnv(env, "SKILLHUB_ENV") === "production" || getRuntimeEnv(env, "NODE_ENV") === "production";
+  return [getRuntimeEnv(env, "SKILLHUB_ENV"), getRuntimeEnv(env, "NODE_ENV"), getRuntimeEnv(env, "VERCEL_ENV")].some(
+    (value) => value?.trim().toLowerCase() === "production"
+  );
 }
 
 function isTruthy(value: string | undefined) {

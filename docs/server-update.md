@@ -23,6 +23,7 @@ grep -q '^NEXT_PUBLIC_API_URL=' .env && sed -i 's|^NEXT_PUBLIC_API_URL=.*|NEXT_P
 grep -q '^SKILLHUB_AUTH_CALLBACK_BASE_URL=' .env && sed -i 's|^SKILLHUB_AUTH_CALLBACK_BASE_URL=.*|SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com|' .env || echo "SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com" >> .env
 grep -q '^SKILLHUB_AUTH_COOKIE_DOMAIN=' .env && sed -i 's|^SKILLHUB_AUTH_COOKIE_DOMAIN=.*|SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com|' .env || echo "SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com" >> .env
 grep -q '^SKILLHUB_EMAIL_AUTH_DEBUG_CODES=' .env && sed -i 's/^SKILLHUB_EMAIL_AUTH_DEBUG_CODES=.*/SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false/' .env || echo "SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false" >> .env
+grep -q '^SKILLHUB_EMAIL_PROVIDER=debug_preview' .env && sed -i 's/^SKILLHUB_EMAIL_PROVIDER=debug_preview/SKILLHUB_EMAIL_PROVIDER=resend/' .env || true
 sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 
 # Existing Postgres volumes do not rerun docker-entrypoint init migrations.

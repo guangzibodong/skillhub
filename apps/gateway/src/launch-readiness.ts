@@ -41,6 +41,7 @@ type LaunchReadinessEnv = {
   SKILLHUB_OAUTH_STATE_SECRET?: string;
   SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
   SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
+  VERCEL_ENV?: string;
 };
 
 export type LaunchReadinessStatus = "blocker" | "deferred" | "ready" | "warning";
@@ -285,12 +286,14 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
     "SESSION_SECRET"
   );
   const provider = (configured(env?.SKILLHUB_EMAIL_PROVIDER, "SKILLHUB_EMAIL_PROVIDER") ?? "provider_deferred").toLowerCase();
+  const debugProvider = provider === "debug_preview";
   const resendReady =
     provider === "resend" &&
     Boolean(configured(env?.RESEND_API_KEY, "RESEND_API_KEY")) &&
     Boolean(configured(env?.SKILLHUB_EMAIL_FROM, "SKILLHUB_EMAIL_FROM"));
   const debugEnabled = truthy(configured(env?.SKILLHUB_EMAIL_AUTH_DEBUG_CODES, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES"));
   const production = isProductionLike(env);
+  const emailProviderStatus: LaunchReadinessStatus = resendReady ? "ready" : production ? "blocker" : "warning";
   const items: LaunchReadinessItem[] = [
     {
       action: emailSecret ? "Keep this secret stable; changing it invalidates pending codes." : "Set SKILLHUB_EMAIL_AUTH_SECRET.",
@@ -309,17 +312,32 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
       status: database.emailChallenges ? "ready" : "blocker"
     },
     {
-      action: resendReady ? "Run an email delivery smoke test." : "Set SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM.",
+      action:
+        production && debugProvider
+          ? "Replace SKILLHUB_EMAIL_PROVIDER=debug_preview with resend and configure RESEND_API_KEY plus SKILLHUB_EMAIL_FROM."
+          : resendReady
+            ? "Run an email delivery smoke test."
+            : "Set SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM.",
       description: "Production email-code login needs provider delivery, not debug preview.",
-      detail: resendReady ? "Resend delivery is configured." : `${provider} is not fully production-ready.`,
+      detail:
+        production && debugProvider
+          ? "debug_preview is disabled for production delivery."
+          : resendReady
+            ? "Resend delivery is configured."
+            : `${provider} is not fully production-ready.`,
       key: "email_provider",
       label: "Email provider",
-      status: resendReady ? "ready" : "warning"
+      status: production && debugProvider ? "blocker" : emailProviderStatus
     },
     {
       action: production && debugEnabled ? "Set SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false." : "No action needed.",
-      description: "Production must not expose login codes in API responses.",
-      detail: debugEnabled ? "Debug code preview is enabled." : "Debug code preview is disabled.",
+      description: "Production must not expose login codes in API responses; the gateway suppresses previews even if this flag is misconfigured.",
+      detail:
+        production && debugEnabled
+          ? "Debug preview is configured but blocked by the production gateway guard."
+          : debugEnabled
+            ? "Debug code preview is enabled."
+            : "Debug code preview is disabled.",
       key: "email_debug_codes",
       label: "Email debug code preview",
       status: production && debugEnabled ? "blocker" : "ready"
@@ -1337,10 +1355,8 @@ function cookieDomainReady(env: LaunchReadinessEnv | undefined) {
 }
 
 function isProductionLike(env: LaunchReadinessEnv | undefined) {
-  return (
-    (configured(env?.SKILLHUB_ENV, "SKILLHUB_ENV") ?? configured(env?.NODE_ENV, "NODE_ENV") ?? "")
-      .trim()
-      .toLowerCase() === "production"
+  return [configured(env?.SKILLHUB_ENV, "SKILLHUB_ENV"), configured(env?.NODE_ENV, "NODE_ENV"), configured(env?.VERCEL_ENV, "VERCEL_ENV")].some(
+    (value) => value?.trim().toLowerCase() === "production"
   );
 }
 

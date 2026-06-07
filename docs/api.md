@@ -331,7 +331,7 @@ curl -X POST "https://api.useskillhub.com/v1/auth/email/request-code" \
   -d '{"mode":"login","email":"builder@example.com"}'
 ```
 
-`POST /v1/auth/email/request-code` creates an `email_login_challenges` record with a 10-minute HMAC-hashed 6-digit code, queues an `auth.email.code.requested` email notification event, and returns a challenge id. In non-production or when `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true`, the response may include `deliveryPreviewCode` for provider-deferred testing before the email provider is connected. Production email delivery should send the queued notification payload and keep code preview disabled.
+`POST /v1/auth/email/request-code` creates an `email_login_challenges` record with a 10-minute HMAC-hashed 6-digit code, queues an `auth.email.code.requested` email notification event, and returns a challenge id. In non-production, explicitly setting `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` can include `deliveryPreviewCode` for provider-deferred testing before the email provider is connected. Production-like runtimes (`SKILLHUB_ENV`, `NODE_ENV`, or `VERCEL_ENV` set to `production`) never return the preview code even if the debug flag is misconfigured.
 
 Verify the code and create the browser/session token:
 
@@ -1830,7 +1830,7 @@ In `deliver` mode, the processor first fans eligible queued in-app business noti
 
 At delivery time, email and webhook processors look for an active `notification_templates` row matching `(eventType, channel, locale)`, falling back to the language code and then `en`. Email delivery uses the rendered template subject/body as the Resend text payload. Webhook fanout stores the rendered JSON body as `renderedPayload` in `webhook_delivery_events`, while preserving the original notification payload for audit and troubleshooting. Template rendering substitutes `{{payloadKey}}` and dotted paths such as `{{skill.slug}}`; missing values render as empty strings rather than exposing raw placeholders.
 
-Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider.
+Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider. Production delivery rejects `debug_preview` and reports a configuration failure instead of pretending the code was sent. Once an email-code event is marked sent, the processor removes the raw `code` from the stored notification payload while preserving challenge and provider metadata for audit.
 
 Webhook processing fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The webhook outbox worker consumes those endpoint-level rows and records signed HTTP delivery state separately.
 
@@ -1910,7 +1910,7 @@ curl "https://api.useskillhub.com/v1/admin/launch-readiness" \
 - Environment metadata: app URL, OAuth callback base URL, production-like flag, runtime label, and check time.
 - Summary counts for `blocker`, `warning`, `ready`, and `deferred`.
 - Sectioned checks for identity/OAuth, email-code delivery, webhook worker schema, marketplace operations, launch credibility thresholds, commercial readiness, and production guardrails.
-- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, Resend configuration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
+- Operator actions for missing callbacks, cookie domain, OAuth state secret, email-code secret, production-blocking Resend configuration, production debug-code/provider misconfiguration, migration-runner history, latest applied migration, required active notification-template coverage, runtime API-key salt, commission rules, publisher terms acceptance columns, payout tables, demo fallback, legacy signup, service token presence, and public signup policy.
 
 The migration history check reads `schema_migrations`, reports the recorded migration count, latest applied filename, latest applied time, and compares it with the current expected production migration. It returns a warning when the migration runner has never recorded history and a blocker when the recorded latest migration is older than the code expects.
 
