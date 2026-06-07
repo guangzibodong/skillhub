@@ -379,6 +379,7 @@ if (!config.skipApi) {
   await checkPublicSkillDetailApi(config);
   await checkPublicSkillDetailSupportApis(config);
   await checkPublicSkillActionProtection(config);
+  await checkPublicMcpDiscovery(config);
   await checkPublicPublishers(config);
   await checkPublicPublisherProfileApi(config);
   await checkLaunchReadiness(config);
@@ -980,6 +981,182 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
     } catch (error) {
       fail(endpoint.name, redactSecrets(error.message));
     }
+  }
+}
+
+async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
+  await checkPublicMcpToolList({ apiUrl, timeoutMs });
+  await checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs });
+}
+
+async function checkPublicMcpToolList({ apiUrl, timeoutMs }) {
+  const name = "POST /mcp tools/list public discovery";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "public-tools-list-smoke",
+        method: "tools/list",
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (json?.jsonrpc !== "2.0" || json?.id !== "public-tools-list-smoke") {
+      fail(name, "expected a JSON-RPC 2.0 response with the request id");
+      return;
+    }
+
+    if (json?.error) {
+      fail(name, `unexpected JSON-RPC error: ${safeJsonRpcError(json.error)}`);
+      return;
+    }
+
+    const tools = json?.result?.tools;
+
+    if (!Array.isArray(tools)) {
+      fail(name, "expected result.tools array");
+      return;
+    }
+
+    if (smokeContext.publicSkillSlug) {
+      const publicSkillTool = tools.find(
+        (tool) => tool?.name === smokeContext.publicSkillSlug,
+      );
+
+      if (!publicSkillTool) {
+        fail(
+          name,
+          `public search returned ${smokeContext.publicSkillSlug} but MCP tools/list did not expose it`,
+        );
+        return;
+      }
+    }
+
+    const invalidTool = tools.find(
+      (tool) =>
+        typeof tool?.name !== "string" ||
+        typeof tool?.title !== "string" ||
+        typeof tool?.description !== "string" ||
+        !isObjectRecord(tool?.inputSchema) ||
+        !isObjectRecord(tool?.outputSchema) ||
+        !isObjectRecord(tool?.annotations) ||
+        !Array.isArray(tool.annotations.tags) ||
+        typeof tool.annotations.version !== "string" ||
+        !["http", "mcp", "local"].includes(tool.annotations.runtimeType) ||
+        !["low", "medium", "high"].includes(tool.annotations.permissionLevel),
+    );
+
+    if (invalidTool) {
+      fail(
+        name,
+        "public MCP tools should include marketplace-safe identity, schema, version, runtime, tags, and permission annotations",
+      );
+      return;
+    }
+
+    const internalField = tools.find(findPublicMcpInternalField);
+
+    if (internalField) {
+      fail(
+        name,
+        "public MCP tools/list must not expose project install, approval, curation, or operator fields",
+      );
+      return;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive MCP discovery leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(name, `tools=${tools.length}`);
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs }) {
+  const skillSlug = smokeContext.publicSkillSlug ?? "public-action-boundary";
+  const name = "POST /mcp tools/call without project key";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "public-tools-call-boundary-smoke",
+        method: "tools/call",
+        params: {
+          name: skillSlug,
+          arguments: {
+            query: "Routine public smoke should not execute this MCP call.",
+          },
+        },
+      }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200 JSON-RPC boundary response, got ${status}`);
+      return;
+    }
+
+    if (json?.jsonrpc !== "2.0" || json?.id !== "public-tools-call-boundary-smoke") {
+      fail(name, "expected a JSON-RPC 2.0 response with the request id");
+      return;
+    }
+
+    const result = json?.result;
+    const structured = result?.structuredContent;
+
+    if (
+      !result ||
+      result.isError !== true ||
+      !Array.isArray(result.content) ||
+      structured?.code !== "missing_api_key" ||
+      typeof structured?.error !== "string"
+    ) {
+      fail(
+        name,
+        "expected an MCP isError result with missing_api_key and no runtime execution",
+      );
+      return;
+    }
+
+    if (
+      structured.invocationId ||
+      structured.status === "success" ||
+      structured.billable === true ||
+      structured.output
+    ) {
+      fail(
+        name,
+        "unauthenticated MCP tools/call must not return invocation, billable, or output state",
+      );
+      return;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive MCP boundary leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(name, "blocked before project runtime governance");
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
   }
 }
 
@@ -1608,7 +1785,64 @@ function isObjectRecord(value) {
 
 function findBoundarySensitiveLeaks(text) {
   return findSensitiveLeaks(
-    text.replace(/Bearer\s+token/gi, "Bearer <missing token>"),
+    text
+      .replace(/Bearer\s+token/gi, "Bearer <missing token>")
+      .replace(
+        /"code"\s*:\s*"[a-z]+(?:_[a-z0-9]+)+"/gi,
+        '"code":"[redacted-public-error-code]"',
+      ),
+  );
+}
+
+function findPublicMcpInternalField(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const toolForbiddenFields = new Set([
+    "boost",
+    "curation",
+    "operatorNotes",
+    "operatorReason",
+    "projectSlug",
+  ]);
+  const annotationForbiddenFields = new Set([
+    "approvalState",
+    "boost",
+    "callable",
+    "curation",
+    "installStatus",
+    "maxPermissionLevel",
+    "operatorNotes",
+    "operatorReason",
+    "projectSlug",
+  ]);
+
+  const toolHasInternalField = Object.keys(value).some((key) =>
+    toolForbiddenFields.has(key),
+  );
+
+  if (toolHasInternalField) {
+    return true;
+  }
+
+  const annotations = value.annotations;
+
+  return (
+    annotations !== null &&
+    typeof annotations === "object" &&
+    !Array.isArray(annotations) &&
+    Object.keys(annotations).some((key) => annotationForbiddenFields.has(key))
+  );
+}
+
+function safeJsonRpcError(error) {
+  if (!error || typeof error !== "object") {
+    return redactSecrets(String(error));
+  }
+
+  return redactSecrets(
+    `${error.code ?? "unknown"} ${error.message ?? "unknown error"}`,
   );
 }
 

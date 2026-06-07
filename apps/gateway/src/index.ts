@@ -2813,8 +2813,11 @@ app.post("/mcp", async (c) => {
         title: skill.displayName,
         description: skill.description,
         inputSchema: skill.inputSchema,
+        outputSchema: skill.outputSchema,
         annotations: {
           tags: skill.tags,
+          version: skill.version,
+          runtimeType: skill.runtime.type,
           permissionLevel: getPermissionLevel(skill.permissions)
         }
       }))

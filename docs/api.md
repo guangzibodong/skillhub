@@ -2196,7 +2196,7 @@ For routine 1Panel updates, run the public production gate first:
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
-This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and public price-row shape, then POSTs unauthenticated sample requests to the skill feedback, skill trust-report, and project subscription endpoints and requires `401` or `403` JSON errors. Routine 1Panel updates can therefore catch broken detail data contracts and accidental exposure of Journey A write actions without creating production rows.
+This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and public price-row shape, then POSTs unauthenticated sample requests to the skill feedback, skill trust-report, and project subscription endpoints and requires `401` or `403` JSON errors. It also exercises public MCP discovery with `tools/list` and verifies that unauthenticated `tools/call` returns an MCP `isError` boundary instead of runtime, billable, or invocation state. Routine 1Panel updates can therefore catch broken detail data contracts, public MCP contract drift, and accidental exposure of Journey A write actions without creating production rows.
 
 For release signoff or customer walkthroughs where an admin/super-admin user token is already configured in the shell, run the full protected Journey C gate:
 
@@ -2306,6 +2306,14 @@ curl -X POST "https://api.useskillhub.com/mcp" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
+Public `tools/list` returns only marketplace-safe contract data for public skills:
+
+- Tool identity: `name`, `title`, and `description`.
+- Schemas: `inputSchema` and `outputSchema`.
+- Safe annotations: public `tags`, semantic `version`, `runtimeType`, and permission risk.
+
+It must not include project install state, project slug, approval state, callable state, internal curation boost/reason, or operator notes. The routine public smoke verifies this shape and also requires a public skill returned by `/v1/skills/search` to be discoverable through public MCP `tools/list`.
+
 Project-scoped tool listing:
 
 ```bash
@@ -2334,7 +2342,7 @@ curl -X POST "https://api.useskillhub.com/mcp" \
   }'
 ```
 
-`tools/call` is not a shortcut around SkillHub policy. The gateway authenticates the project API key, checks the project install, version pin, verification state, owner approval, permission policy, rate limit, budget, and subscription state, then records invocation and usage events just like `/v1/runtime/invoke`. A blocked or failed call returns an MCP `isError` result with the SkillHub error code and invocation id where available.
+`tools/call` is not a shortcut around SkillHub policy. The gateway authenticates the project API key, checks the project install, version pin, verification state, owner approval, permission policy, rate limit, budget, and subscription state, then records invocation and usage events just like `/v1/runtime/invoke`. Without a project API key, `tools/call` returns an MCP `isError` result with `missing_api_key` and no invocation, billable, or runtime output state. A blocked or failed project-scoped call returns an MCP `isError` result with the SkillHub error code and invocation id where available.
 
 The project command center at `/dashboard/projects/[slug]` surfaces the same REST and MCP endpoints with copyable command snippets. The UI shows only the project API-key environment variable name and active-key count; raw project keys remain reveal-once through the key-creation workflow.
 
