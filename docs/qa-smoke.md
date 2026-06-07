@@ -191,6 +191,8 @@ The P0 demo-chain smoke is mutating and should be used before customer walkthrou
 - Finance release processing moves matured publisher balances to `available`; the publisher then requests payout, finance approves it, finance marks provider-deferred payout completion with a synthetic provider reference, and publisher/admin payout reads must expose the paid state.
 - Publisher/developer notification inboxes and admin audit/notification queues expose the handoff without direct database checks.
 
+The demo-chain smoke reuses the shared sensitive-output validator used by the focused P0 scripts. It scans protected project detail, publisher/developer notifications, publisher/admin ledger and payout reads, admin audit rows, and admin notification queue responses for authorization-shaped strings, raw user/project/webhook/provider keys, raw API-key fields, and email-code previews. The reveal-once project API-key creation response remains the only intentionally unscanned raw project-key response.
+
 Run it against local or staging services with either one org-scoped admin/super-admin token or split role tokens:
 
 ```bash
