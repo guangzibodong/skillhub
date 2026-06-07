@@ -333,6 +333,7 @@ Requirements:
 
 - Projects.
 - Project detail command center with installed skills, editable per-skill policies, API keys, actionable update inbox, runtime calls, manageable subscription lifecycle, subscription ledger posting state, renewal readiness, cost, invoice records, organization billing readiness, agent REST/MCP connection details, and next actions.
+- Project detail operations priority queue that ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update decisions, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, and saved-skill follow-up from the existing project detail state without a fake task API.
 - Project API keys with create, reveal-once, copy, rotation, and revoke workflows.
 - Approved skills.
 - Version pins.

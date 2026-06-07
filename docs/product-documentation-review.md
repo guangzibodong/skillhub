@@ -76,6 +76,8 @@ The latest admin-operations pass strengthens Journey C's command-center loop. `/
 
 The latest developer-operations pass strengthens Journey A's repeat-use loop. `/developer` now turns project creation, runtime key gaps, missing installs, owner approval, suspended runtime state, update inbox work, runtime-quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests into a ranked operations priority queue above the detailed panels. This makes the developer workspace answer "what should the agent team handle next?" before users scroll into project tables, billing, team, webhook, notification, and buyer-request panels, while still using existing endpoints and avoiding fake task rows.
 
+The latest project-operations pass tightens Journey A's final mile. `/dashboard/projects/[slug]` now turns one project detail response into a ranked project queue for missing runtime keys, missing installs, owner approval, suspended runtime state, update decisions, runtime-quality issues, missing governed test proof, subscription/ledger/invoice gaps, and saved-skill follow-up. This makes the project command center answer "what must happen before agents scale?" while linking directly into existing policy, runtime, key, update, saved-skill, subscription, and invoice panels.
+
 ## Two-Sided Marketplace Risk
 
 SkillHub has two external user groups:

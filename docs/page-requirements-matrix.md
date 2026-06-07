@@ -478,6 +478,8 @@ Data source:
 
 Acceptance:
 
+- Shows a project operations priority queue above detailed panels. The queue must derive ordered next actions from missing active keys, missing installed skills, owner approval, suspended installs or policy, update inbox decisions, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, and saved-skill follow-up without adding fake task rows.
+- Priority queue actions link into the exact project panels for policies, runtime test, runtime calls, API keys, update inbox, saved skills, subscriptions, and invoices.
 - Runtime actions use project-scoped authorization.
 - High-risk permission changes require owner approval.
 - Version adoption only works for approved versions.

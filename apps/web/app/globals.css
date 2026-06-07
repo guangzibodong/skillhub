@@ -11562,6 +11562,14 @@ a {
   min-width: 0;
 }
 
+.project-detail-main > div,
+.project-detail-side > div,
+.project-detail-main > div > .ops-panel,
+.project-detail-side > div > .ops-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .agent-connection-panel {
   display: grid;
   gap: 14px;
@@ -11672,6 +11680,7 @@ a {
 
 .agent-snippet pre {
   min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -16062,6 +16071,12 @@ a {
 
   .agent-connection-status-grid {
     grid-template-columns: 1fr;
+  }
+
+  .agent-snippet code {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .skill-install-readiness__grid {
