@@ -2634,7 +2634,11 @@ app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
 
   try {
     return c.json({
-      payout: await decidePayout(c.req.param("payoutId"), (await c.req.json()) as Record<string, unknown>)
+      payout: await decidePayout(
+        c.req.param("payoutId"),
+        (await c.req.json()) as Record<string, unknown>,
+        authorization.subject.userId
+      )
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update payout." }, 400);

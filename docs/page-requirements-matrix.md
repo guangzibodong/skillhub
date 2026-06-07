@@ -349,6 +349,7 @@ Acceptance:
 - Explains draft -> version submit -> automated checks -> review -> verified -> commercial readiness.
 - Does not ask users to paste raw admin/service tokens.
 - Success state links to publisher workspace and skill detail.
+- Immediate review-submission success shows the real review handoff: queued/refreshed state, review id, risk, automated-check counts, and links into publisher review, paid-readiness, and account/terms workspace sections.
 - Does not claim a skill is verified just because draft save succeeded.
 
 ### Publisher Workspace `/publisher`

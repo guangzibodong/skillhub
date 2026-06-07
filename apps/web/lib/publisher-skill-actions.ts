@@ -7,8 +7,25 @@ import type { Locale } from "@/lib/i18n";
 export type PublisherSkillActionState = {
   feedbackId?: string;
   message: string;
+  review?: PublisherSkillReviewResult;
   skillSlug?: string;
   status: "idle" | "success" | "error";
+};
+
+export type PublisherSkillReviewResult = {
+  alreadyOpen?: boolean;
+  checkSummary?: {
+    blockingCount: number;
+    failedCount: number;
+    passedCount: number;
+    totalCount: number;
+    warningCount: number;
+  };
+  createdAt?: string;
+  id?: string;
+  riskLevel?: string;
+  status?: string;
+  version?: string;
 };
 
 const actionCopy = {
@@ -50,6 +67,27 @@ const actionCopy = {
   }
 } as const;
 
+type ActionCopy = Record<keyof typeof actionCopy.en, string>;
+
+const zhActionCopy: ActionCopy = {
+  invalidBillingModel: "计费模式必须是 free、per_call 或 subscription。",
+  invalidManifest: "Manifest JSON 无效。",
+  invalidPriceStatus: "价格状态必须是 draft、active 或 archived。",
+  missingFeedback: "缺少反馈 ID。",
+  missingManifest: "请先粘贴 SkillHub manifest，再保存版本。",
+  missingResponse: "请先填写发布者回复。",
+  missingSkill: "缺少技能 slug。",
+  missingToken: "请先使用 SkillHub 用户会话登录，再管理发布者技能。",
+  priceSaved: "技能价格已保存。",
+  responseSaved: "发布者回复已保存。",
+  reviewSubmitted: "技能已提交审核。",
+  unablePrice: "无法保存技能价格。",
+  unableResponse: "无法保存发布者回复。",
+  unableReview: "无法提交技能审核。",
+  unableVersion: "无法保存技能版本。",
+  versionSaved: "技能版本已保存。"
+};
+
 const appealCopy = {
   en: {
     missingReason: "Explain what changed or why the listing should be reviewed.",
@@ -63,6 +101,14 @@ const appealCopy = {
   }
 } as const;
 
+type AppealCopy = Record<keyof typeof appealCopy.en, string>;
+
+const zhAppealCopy: AppealCopy = {
+  missingReason: "请说明技能已经如何改进，或为什么需要重新评估分发。",
+  submitted: "市场分发复审申请已提交。",
+  unable: "无法提交市场分发复审。"
+};
+
 const billingModels = ["free", "per_call", "subscription"] as const;
 const priceStatuses = ["draft", "active", "archived"] as const;
 
@@ -71,7 +117,7 @@ export async function submitPublisherSkillReviewAction(
   _previousState: PublisherSkillActionState,
   formData: FormData
 ): Promise<PublisherSkillActionState> {
-  const labels = actionCopy[locale];
+  const labels = getActionLabels(locale);
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const version = String(formData.get("version") ?? "").trim();
@@ -97,8 +143,12 @@ export async function submitPublisherSkillReviewAction(
       method: "POST"
     });
 
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      review?: PublisherSkillReviewResult;
+    };
+
     if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
       throw new Error(payload.error ?? labels.unableReview);
     }
 
@@ -107,6 +157,7 @@ export async function submitPublisherSkillReviewAction(
 
     return {
       message: labels.reviewSubmitted,
+      review: payload.review,
       skillSlug,
       status: "success"
     };
@@ -124,7 +175,7 @@ export async function savePublisherSkillVersionAction(
   _previousState: PublisherSkillActionState,
   formData: FormData
 ): Promise<PublisherSkillActionState> {
-  const labels = actionCopy[locale];
+  const labels = getActionLabels(locale);
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const manifestText = String(formData.get("manifest") ?? "").trim();
@@ -185,7 +236,7 @@ export async function setPublisherSkillPriceAction(
   _previousState: PublisherSkillActionState,
   formData: FormData
 ): Promise<PublisherSkillActionState> {
-  const labels = actionCopy[locale];
+  const labels = getActionLabels(locale);
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const billingModel = String(formData.get("billingModel") ?? "free");
@@ -249,8 +300,8 @@ export async function requestMarketplaceCurationAppealAction(
   _previousState: PublisherSkillActionState,
   formData: FormData
 ): Promise<PublisherSkillActionState> {
-  const labels = actionCopy[locale];
-  const appealLabels = appealCopy[locale];
+  const labels = getActionLabels(locale);
+  const appealLabels = getAppealLabels(locale);
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const appealReason = String(formData.get("appealReason") ?? "").trim();
@@ -309,7 +360,7 @@ export async function respondToSkillFeedbackAction(
   _previousState: PublisherSkillActionState,
   formData: FormData
 ): Promise<PublisherSkillActionState> {
-  const labels = actionCopy[locale];
+  const labels = getActionLabels(locale);
   const token = await getWorkspaceToken();
   const skillSlug = String(formData.get("skillSlug") ?? "").trim();
   const feedbackId = String(formData.get("feedbackId") ?? "").trim();
@@ -370,6 +421,14 @@ function revalidatePublisherSkillPaths(skillSlug: string) {
   revalidatePath("/marketplace");
   revalidatePath("/registry");
   revalidatePath(`/skills/${skillSlug}`);
+}
+
+function getActionLabels(locale: Locale): ActionCopy {
+  return locale === "zh" ? zhActionCopy : actionCopy.en;
+}
+
+function getAppealLabels(locale: Locale): AppealCopy {
+  return locale === "zh" ? zhAppealCopy : appealCopy.en;
 }
 
 function getApiUrl() {

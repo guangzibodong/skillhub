@@ -1102,7 +1102,7 @@ Placements are `featured`, `standard`, and `suppressed`. Improvement hints are p
 If a skill slug already belongs to another organization, SkillHub rejects the publish/update request instead of moving ownership silently.
 
 The dashboard publisher skill operations panel uses this view with the review-submission and pricing endpoints below. Publishers can inspect each owned skill's quality checklist, latest automated review-check reasons, review SLA, install/call/success signals, marketplace distribution state, recent published buyer feedback, submit the latest version for review, respond to published feedback, and save free, per-call, or subscription pricing without leaving the workspace. The same response powers the review repair loop by combining `review`, `versions`, and `runtime.checks` into exact-version status, reviewer notes, automated check evidence, SLA pressure, and repair actions for rejected, blocked, warning, overdue, or unsubmitted versions.
-The `/publish` entry page now also keeps the saved draft response's exact semantic version and can submit that same version for review immediately after draft save, so first-time publishers can move from manifest upload to automated review evidence without manually finding the version in `/publisher`.
+The `/publish` entry page now also keeps the saved draft response's exact semantic version and can submit that same version for review immediately after draft save, so first-time publishers can move from manifest upload to automated review evidence without manually finding the version in `/publisher`. When the review submission succeeds, the page renders the returned `alreadyOpen`, `id`, `riskLevel`, `status`, and `checkSummary` fields as a handoff packet, then links directly into `/publisher#publisher-skills`, `/publisher#publisher-paid-readiness`, and `/publisher#publisher-account` for review repair, monetization blockers, and terms/profile follow-up.
 
 ## Buyer Request Board
 
@@ -1590,9 +1590,22 @@ curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" 
 Supported payout actions:
 
 - `approve`: moves `requested` or `review` payouts to `processing`, clears retry condition, and sets `nextAction` to `await_provider_processing`.
-- `mark_paid`: marks the payout paid, moves linked publisher balances to `paid`, stores `providerReference`, and sets `nextAction` to `complete`.
+- `mark_paid`: marks the payout paid, requires and stores `providerReference`, moves linked publisher balances to `paid`, and sets `nextAction` to `complete`.
 - `fail`: marks the payout failed, releases linked balances back to `available`, stores `failureReason`, stores an optional `retryCondition`, and sets `nextAction` to `request_again_after_failure`.
 - `block`: blocks the payout, keeps linked balances blocked, requires both `reason` and `retryCondition`, and sets `nextAction` to `resolve_blocker_before_retry`.
+
+Example paid decision:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "mark_paid",
+    "reason": "Provider payout completed.",
+    "providerReference": "manual-payout-2026-06-07-001"
+  }'
+```
 
 Example blocked decision:
 
@@ -1607,7 +1620,7 @@ curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" 
   }'
 ```
 
-Every payout request and decision records an audit log and a queued in-app notification event.
+Every payout request and decision records an audit log and a queued in-app notification event. Admin payout decisions store the acting finance operator in `admin_audit_logs.actor_user_id` when available.
 
 ## Refund And Dispute Workflow
 
@@ -2123,7 +2136,7 @@ curl -X POST "https://api.useskillhub.com/v1/skills" \
   -d '{"manifest": { ... }}'
 ```
 
-The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace. The page also shows role-aware publisher access state, client-side preflight, a repair queue, and a secret-safe reviewer evidence packet; these are publisher guidance and demo clarity surfaces, while the API remains the source of truth for organization ownership, role enforcement, immutable version review, automated checks, pricing blockers, and audit records.
+The `/publish` web page uses the signed-in SkillHub user session for the same endpoint, so publishers can paste a manifest and submit it without exposing the raw token in the browser form. The submitted skill starts as `draft`; publishers can continue with review submission and pricing from the publisher workspace. The page also shows role-aware publisher access state, client-side preflight, a repair queue, a secret-safe reviewer evidence packet, and the review handoff returned by the exact-version submission endpoint; these are publisher guidance and demo clarity surfaces, while the API remains the source of truth for organization ownership, role enforcement, immutable version review, automated checks, pricing blockers, and audit records.
 
 ## MCP Discovery
 

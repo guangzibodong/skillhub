@@ -2,11 +2,13 @@
 
 import {
   AlertTriangle,
+  BellRing,
   CheckCircle2,
   ClipboardCheck,
   FileJson,
   Gauge,
   KeyRound,
+  ListChecks,
   LockKeyhole,
   PackageCheck,
   Send,
@@ -21,7 +23,11 @@ import { localizedHref } from "@/lib/i18n";
 import { analyzeManifestPreflight } from "@/lib/manifest-preflight";
 import { publishSkillAction, type PublishSkillActionState } from "@/lib/publish-actions";
 import type { PublishFormCopy } from "@/lib/publish-copy";
-import { submitPublisherSkillReviewAction, type PublisherSkillActionState } from "@/lib/publisher-skill-actions";
+import {
+  submitPublisherSkillReviewAction,
+  type PublisherSkillActionState,
+  type PublisherSkillReviewResult
+} from "@/lib/publisher-skill-actions";
 
 type PublishFormProps = {
   apiUrl: string;
@@ -95,28 +101,62 @@ const initialReviewState: PublisherSkillActionState = {
 
 const reviewCopy = {
   en: {
+    alreadyOpenBody: "An open review already existed for this version, so SkillHub refreshed its automated evidence and publisher notification.",
+    alreadyOpenLabel: "Open review refreshed",
+    blocking: "Blocking",
     createdVersion: "New draft version",
+    failed: "Failed",
+    handoffBody: "This handoff is now visible in the publisher workspace, admin review queue, notification inbox, and audit stream.",
+    handoffTitle: "Review handoff evidence",
+    newReviewBody: "The version is queued for platform review with fresh automated evidence.",
+    newReviewLabel: "New review queued",
+    openAccount: "Account and terms",
+    openPaid: "Paid readiness",
+    openReview: "Review workbench",
+    passed: "Passed",
+    reviewId: "Review id",
     reviewErrorTitle: "Version was not submitted",
     reviewSuccessBody: "Automated manifest, runtime, example, and security checks were created for reviewer evidence.",
     reviewSuccessTitle: "Version submitted for review",
+    risk: "Risk",
+    status: "Status",
     submitReview: "Submit this version",
     submittingReview: "Submitting review",
     successBodyWithVersion:
       "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing and commercial readiness.",
+    total: "Total checks",
     updatedVersion: "Draft version updated",
-    versionLabel: "Version"
+    versionLabel: "Version",
+    warnings: "Warnings"
   },
   zh: {
+    alreadyOpenBody: "该版本已经有打开中的审核记录，SkillHub 已刷新自动检查证据和发布者通知。",
+    alreadyOpenLabel: "已刷新打开中的审核",
+    blocking: "阻塞",
     createdVersion: "\u65b0\u8349\u7a3f\u7248\u672c",
+    failed: "失败",
+    handoffBody: "这次交接现在会出现在发布者工作台、管理员审核队列、通知收件箱和审计流中。",
+    handoffTitle: "审核交接证据",
+    newReviewBody: "该版本已带着最新自动检查证据进入平台审核队列。",
+    newReviewLabel: "新审核已排队",
+    openAccount: "账号和条款",
+    openPaid: "付费准备",
+    openReview: "审核工作台",
+    passed: "通过",
+    reviewId: "审核 ID",
     reviewErrorTitle: "\u7248\u672c\u672a\u63d0\u4ea4",
     reviewSuccessBody: "\u5df2\u4e3a\u5ba1\u6838\u5458\u521b\u5efa manifest\u3001\u8fd0\u884c\u65f6\u3001\u793a\u4f8b\u548c\u5b89\u5168\u68c0\u67e5\u8bc1\u636e\u3002",
     reviewSuccessTitle: "\u7248\u672c\u5df2\u63d0\u4ea4\u5ba1\u6838",
+    risk: "风险",
+    status: "状态",
     submitReview: "\u63d0\u4ea4\u8be5\u7248\u672c",
     submittingReview: "\u63d0\u4ea4\u4e2d",
     successBodyWithVersion:
       "\u7248\u672c {version} \u5df2\u4fdd\u5b58\u4e3a\u7ec4\u7ec7\u62e5\u6709\u7684\u8349\u7a3f\u72b6\u6001\u3002\u4f60\u53ef\u4ee5\u73b0\u5728\u63d0\u4ea4\u5ba1\u6838\uff0c\u6216\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u7ee7\u7eed\u5b9a\u4ef7\u548c\u5546\u4e1a\u51c6\u5907\u3002",
+    total: "检查总数",
     updatedVersion: "\u8349\u7a3f\u7248\u672c\u5df2\u66f4\u65b0",
-    versionLabel: "\u7248\u672c"
+    versionLabel: "\u7248\u672c",
+    warnings: "警告"
   }
 } as const;
 
@@ -217,9 +257,9 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
                       <span>{isReviewPending ? reviewLabels.submittingReview : reviewLabels.submitReview}</span>
                     </button>
                   ) : null}
-                  <a className="secondary-button" href={localizedHref("/publisher", locale)}>
+                  <a className="secondary-button" href={localizedHref("/publisher#publisher-skills", locale)}>
                     <Gauge size={16} aria-hidden="true" />
-                    <span>{labels.result.publisher}</span>
+                    <span>{reviewLabels.openReview}</span>
                   </a>
                   <a className="ghost-button" href={localizedHref(`/skills/${state.skillSlug}`, locale)}>
                     <FileJson size={16} aria-hidden="true" />
@@ -246,7 +286,32 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
         ) : null}
 
         {reviewState.status === "success" ? (
-          <ActionResult body={reviewLabels.reviewSuccessBody} title={reviewLabels.reviewSuccessTitle} tone="success" />
+          <>
+            <ActionResult
+              actions={
+                <>
+                  <a className="secondary-button" href={localizedHref("/publisher#publisher-skills", locale)}>
+                    <ListChecks size={16} aria-hidden="true" />
+                    <span>{reviewLabels.openReview}</span>
+                  </a>
+                  <a className="ghost-button" href={localizedHref("/publisher#publisher-paid-readiness", locale)}>
+                    <Gauge size={16} aria-hidden="true" />
+                    <span>{reviewLabels.openPaid}</span>
+                  </a>
+                  <a className="ghost-button" href={localizedHref("/publisher#publisher-account", locale)}>
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <span>{reviewLabels.openAccount}</span>
+                  </a>
+                </>
+              }
+              body={formatReviewSuccessBody(reviewState.review, reviewLabels)}
+              title={reviewLabels.reviewSuccessTitle}
+              tone="success"
+            />
+            {reviewState.review ? (
+              <ReviewHandoffEvidence labels={reviewLabels} locale={locale} review={reviewState.review} />
+            ) : null}
+          </>
         ) : null}
 
         {reviewState.status === "error" ? (
@@ -391,6 +456,89 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
   );
 }
 
+function ReviewHandoffEvidence({
+  labels,
+  locale,
+  review
+}: {
+  labels: (typeof reviewCopy)["en"] | (typeof reviewCopy)["zh"];
+  locale: Locale;
+  review: PublisherSkillReviewResult;
+}) {
+  const summary = review.checkSummary;
+  const tone =
+    summary && (summary.blockingCount > 0 || summary.failedCount > 0)
+      ? "danger"
+      : summary && summary.warningCount > 0
+        ? "warning"
+        : "success";
+  const reviewLabel = review.alreadyOpen ? labels.alreadyOpenLabel : labels.newReviewLabel;
+  const reviewBody = review.alreadyOpen ? labels.alreadyOpenBody : labels.newReviewBody;
+
+  return (
+    <div className="publish-review-handoff">
+      <div className="publish-review-handoff__head">
+        <div>
+          <div className="card-kicker">
+            <BellRing size={15} aria-hidden="true" />
+            <span>{labels.handoffTitle}</span>
+          </div>
+          <p>{reviewBody}</p>
+        </div>
+        <StatusChip tone={tone}>{reviewLabel}</StatusChip>
+      </div>
+
+      <div className="publish-review-handoff__meta">
+        <span>
+          {labels.status}: <strong>{review.status ?? "queued"}</strong>
+        </span>
+        <span>
+          {labels.risk}: <strong>{review.riskLevel ?? "unknown"}</strong>
+        </span>
+        {review.id ? (
+          <code>
+            {labels.reviewId}: ...{review.id.slice(-8)}
+          </code>
+        ) : null}
+      </div>
+
+      {summary ? (
+        <div className="publish-review-check-grid" aria-label={labels.handoffTitle}>
+          <ReviewCheckMetric label={labels.total} value={summary.totalCount} />
+          <ReviewCheckMetric label={labels.passed} value={summary.passedCount} />
+          <ReviewCheckMetric label={labels.warnings} value={summary.warningCount} />
+          <ReviewCheckMetric label={labels.failed} value={summary.failedCount} />
+          <ReviewCheckMetric label={labels.blocking} value={summary.blockingCount} />
+        </div>
+      ) : null}
+
+      <div className="publish-review-handoff__links">
+        <a className="secondary-button secondary-button--compact" href={localizedHref("/publisher#publisher-skills", locale)}>
+          <ListChecks size={15} aria-hidden="true" />
+          <span>{labels.openReview}</span>
+        </a>
+        <a className="ghost-button" href={localizedHref("/publisher#publisher-paid-readiness", locale)}>
+          <Gauge size={15} aria-hidden="true" />
+          <span>{labels.openPaid}</span>
+        </a>
+        <a className="ghost-button" href={localizedHref("/publisher#publisher-account", locale)}>
+          <ShieldCheck size={15} aria-hidden="true" />
+          <span>{labels.openAccount}</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function ReviewCheckMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 function formatSuccessBody(
   state: PublishSkillActionState,
   labels: PublishFormCopy,
@@ -401,4 +549,15 @@ function formatSuccessBody(
   }
 
   return reviewLabels.successBodyWithVersion.replace("{version}", state.version);
+}
+
+function formatReviewSuccessBody(
+  review: PublisherSkillReviewResult | undefined,
+  labels: (typeof reviewCopy)["en"] | (typeof reviewCopy)["zh"]
+) {
+  if (!review) {
+    return labels.reviewSuccessBody;
+  }
+
+  return review.alreadyOpen ? labels.alreadyOpenBody : labels.newReviewBody;
 }

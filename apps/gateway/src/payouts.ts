@@ -299,7 +299,7 @@ export async function requestPublisherPayout(input: RequestPayoutInput) {
   });
 }
 
-export async function decidePayout(payoutId: string, input: PayoutDecisionInput) {
+export async function decidePayout(payoutId: string, input: PayoutDecisionInput, actorUserId?: string | null) {
   const sql = await requireSql();
   const action = input.action;
 
@@ -313,6 +313,10 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
 
   if (action === "block" && !retryCondition) {
     throw new Error("Blocked payout requires a retry condition.");
+  }
+
+  if (action === "mark_paid" && !providerReference) {
+    throw new Error("Paid payout requires a provider reference.");
   }
 
   return sql.begin(async (tx: Sql) => {
@@ -416,7 +420,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput)
       previousStatus: payout.status,
       providerReference: providerReference ?? null,
       retryCondition: retryCondition ?? null
-    });
+    }, actorUserId);
     await recordPayoutNotification(
       tx,
       {
@@ -601,11 +605,12 @@ async function recordPayoutAudit(
   action: string,
   payoutId: string,
   reason: string | null | undefined,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  actorUserId?: string | null
 ) {
   await sql`
-    insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
-    values (${action}, 'payout', ${payoutId}, ${reason ?? null}, ${sql.json(metadata)})
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${actorUserId ?? null}, ${action}, 'payout', ${payoutId}, ${reason ?? null}, ${sql.json(metadata)})
   `;
 }
 

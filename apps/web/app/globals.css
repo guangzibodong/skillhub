@@ -15452,6 +15452,92 @@ a {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
+.publish-review-handoff {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(155, 226, 141, 0.08), rgba(124, 199, 216, 0.035)),
+    rgba(255, 255, 255, 0.035);
+  padding: 14px;
+}
+
+.publish-review-handoff__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.publish-review-handoff__head p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.publish-review-handoff__meta,
+.publish-review-handoff__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+.publish-review-handoff__meta span,
+.publish-review-handoff__meta code {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 0 9px;
+}
+
+.publish-review-handoff__meta strong {
+  color: var(--ink);
+}
+
+.publish-review-handoff__meta code {
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.publish-review-check-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publish-review-check-grid div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  padding: 10px;
+}
+
+.publish-review-check-grid span {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.publish-review-check-grid strong {
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
+
 .dot-status {
   color: var(--blue);
 }
@@ -17104,10 +17190,17 @@ a {
 
   .publish-access-grid,
   .publish-hero__signals,
+  .publish-review-check-grid,
   .preflight-counts,
   .journey-rail__state,
   .operational-flow-list {
     grid-template-columns: 1fr;
+  }
+
+  .publish-review-handoff__head,
+  .publish-review-handoff__links {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .operational-flow-step {
