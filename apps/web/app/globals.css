@@ -16264,7 +16264,7 @@ a {
   }
 }
 
-@media (max-width: 1360px) {
+@media (max-width: 1480px) {
   .site-header {
     grid-template-columns: minmax(136px, auto) minmax(0, 1fr) auto;
     gap: 12px;
