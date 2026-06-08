@@ -375,7 +375,7 @@ OAuth provider rows include launch-operator fields:
 
 The `/login` page surfaces these fields directly and shows success or error notices after provider callbacks return with `?oauth=connected` or `?oauth=error`.
 
-The public app also exposes a console access map on `/`, `/login`, and `/account`. It links the product workspaces without relying on a shared password:
+The public app also exposes a console access map on `/`, `/login`, and `/account`. The convenience `/admin-login` route redirects operators to the `/login` admin-entry section, so there is still one account entry instead of a separate shared admin password. The map links the product workspaces without relying on a shared password:
 
 - `/login` and `/account` for email-code access, OAuth readiness, connected identities, session fingerprints, and workspace readiness.
 - `/developer` for project, runtime key, install, policy, buyer-request, billing, team, notification, and webhook operations.
@@ -484,12 +484,12 @@ The directory returns summary counts for users, organizations, admin users, and 
 Web console session:
 
 - `/login` is now a product account entry. It shows email-code access, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
-- `/login` also summarizes email-code readiness, OAuth configuration gaps, token fallback boundaries, current session state, and the account/developer/publisher/admin destinations before the user reaches the forms.
+- `/login` also summarizes email-code readiness, OAuth configuration gaps, token fallback boundaries, current session state, and the account/developer/publisher/admin destinations before the user reaches the forms. `/admin-login` redirects to that same page section for operators who expect a dedicated admin-login URL.
 - `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
 - Email-code preview and OAuth callback debug messages are hidden in the web UI unless `NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW=true` or `NEXT_PUBLIC_SKILLHUB_SHOW_OAUTH_DEBUG_ERROR=true` is explicitly set for a controlled debug build.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - `/account` summarizes identity, session security, workspace readiness, and operations readiness above the detailed panels, then marks developer, publisher, dashboard, and admin shortcuts as available, sign-in-required, or role-required using the active `/v1/auth/me` subject.
-- `/`, `/login`, and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a public password.
+- `/`, `/login`, and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a public password. The global sign-in action lands on `/login`; the admin workspace remains `/admin`.
 - `/developer`, `/publisher`, and `/admin` show role-aware workspace access panels beside their operating metrics. These panels show current session, token fingerprint, required roles, sign-in-required or role-required states, and the reminder that gateway writes remain organization- and role-enforced.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.

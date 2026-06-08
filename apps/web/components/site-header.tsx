@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Gauge, LayoutDashboard, Menu, UploadCloud, X } from "lucide-react";
+import { Gauge, LogIn, Menu, UploadCloud, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
@@ -120,9 +120,9 @@ export function SiteHeader({
         />
         <a
           className="ghost-button site-action-secondary"
-          href={localizedHref("/dashboard#workspace-command-center", locale)}
+          href={localizedHref("/login", locale)}
         >
-          <LayoutDashboard size={17} aria-hidden="true" />
+          <LogIn size={17} aria-hidden="true" />
           <span>{labels.console}</span>
         </a>
         <a
@@ -183,9 +183,9 @@ export function SiteHeader({
         <div className="site-mobile-panel__actions">
           <a
             className="ghost-button"
-            href={localizedHref("/dashboard#workspace-command-center", locale)}
+            href={localizedHref("/login", locale)}
           >
-            <LayoutDashboard size={17} aria-hidden="true" />
+            <LogIn size={17} aria-hidden="true" />
             <span>{labels.console}</span>
           </a>
           <a className="ghost-button" href={`${apiUrl}/health`}>
@@ -203,7 +203,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
     return {
       apiHealth: "API 状态",
       closeNavigation: "关闭导航",
-      console: "后台入口",
+      console: "登录入口",
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
@@ -226,7 +226,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
   return {
     apiHealth: dictionary.common.apiHealth,
     closeNavigation: "Close navigation",
-    console: "Console",
+    console: "Sign in",
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",

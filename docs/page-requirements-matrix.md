@@ -287,6 +287,7 @@ Acceptance:
 - Token fallback is clearly for bootstrap, invitation, or operator recovery.
 - Login page must show where users go after access: account center, developer workspace, publisher workspace, and admin operations, with role-required states instead of implying a shared backend password.
 - Login page must summarize account-entry readiness before the forms: email-code launch path, Google/GitHub configuration state, token fallback boundary, current session state, and post-login workspace destinations.
+- `/admin-login` must not introduce a separate shared admin password; it redirects to the same `/login` admin-entry section, and `/admin` remains the real admin workspace after an operator has a reviewer, finance, support, admin, or super_admin role.
 
 ### Account Center `/account`
 

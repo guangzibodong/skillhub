@@ -4194,6 +4194,15 @@ a {
   grid-column: 1 / -1;
 }
 
+.login-route-board__note {
+  margin: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .login-route-card:hover,
 .account-shortcut-card:hover {
   border-color: rgba(124, 199, 216, 0.25);

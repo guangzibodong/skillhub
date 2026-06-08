@@ -32,6 +32,9 @@ const copy = {
   en: {
     account: "Account center",
     active: "active",
+    adminShortcut: "Admin login",
+    adminShortcutBody:
+      "Platform operators use this same login page first, then open /admin with reviewer, finance, support, admin, or super_admin access.",
     body:
       "Enter with email code, Google, GitHub, or a limited token fallback. After access, SkillHub routes each user into role-aware developer, publisher, and admin workspaces.",
     connected: "Connected",
@@ -90,6 +93,8 @@ const copy = {
   zh: {
     account: "个人中心",
     active: "可用",
+    adminShortcut: "管理员登录",
+    adminShortcutBody: "平台运营先从本页登录，再用审核、财务、客服、管理员或超级管理员角色进入 /admin。",
     body: "通过邮箱验证码、Google、GitHub 或受限 token 兜底进入。登录后，SkillHub 会按角色把用户带到开发者、发布者和平台运营工作台。",
     connected: "已连接",
     configurationRequired: "待配置",
@@ -168,10 +173,16 @@ export default async function LoginPage({ searchParams }: PageProps) {
           <h1>{labels.title}</h1>
           <p>{labels.body}</p>
         </div>
-        <a className="secondary-button secondary-button--large" href={localizedHref("/account", locale)}>
-          <UserCircle size={17} aria-hidden="true" />
-          <span>{labels.account}</span>
-        </a>
+        <div className="page-hero__actions">
+          <a className="primary-button primary-button--large" href={localizedHref("/admin", locale)}>
+            <ShieldCheck size={17} aria-hidden="true" />
+            <span>{labels.adminShortcut}</span>
+          </a>
+          <a className="secondary-button secondary-button--large" href={localizedHref("/account", locale)}>
+            <UserCircle size={17} aria-hidden="true" />
+            <span>{labels.account}</span>
+          </a>
+        </div>
       </section>
 
       {notice ? (
@@ -251,7 +262,7 @@ function LoginEntryBrief({ locale, providers, session }: { locale: Locale; provi
           <LoginReadinessTile key={tile.title} {...tile} />
         ))}
       </div>
-      <article className="login-route-board">
+      <article className="login-route-board" id="admin-entry">
         <div className="login-route-board__head">
           <div className="card-kicker">
             <Route size={16} aria-hidden="true" />
@@ -264,6 +275,7 @@ function LoginEntryBrief({ locale, providers, session }: { locale: Locale; provi
             <LoginRouteCard key={route.href} locale={locale} route={route} />
           ))}
         </div>
+        <p className="login-route-board__note">{labels.adminShortcutBody}</p>
       </article>
     </section>
   );
