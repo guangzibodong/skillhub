@@ -5,7 +5,7 @@ import { findSensitiveLeaks, redactSecrets } from "./qa-sensitive-output.mjs";
 const DEFAULT_API_URL = "http://localhost:8787";
 const DEFAULT_APP_URL = "http://localhost:3000";
 const DEFAULT_SKILL_SLUG = "browser-research";
-const DEFAULT_SKILL_PAGE_PATH = "/skills/browser-research-pro";
+const DEFAULT_SKILL_PAGE_PATH = "/skills/browser-research";
 const DEFAULT_TIMEOUT_MS = 10000;
 const MOJIBAKE_MARKERS = [
   "\uFFFD",

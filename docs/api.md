@@ -2038,7 +2038,7 @@ Launch readiness treats required notification-template coverage as a launch prer
 Developers and project operators can report a skill when runtime behavior, security, privacy, billing, quality, or spam signals need trust review:
 
 ```bash
-curl -X POST "https://api.useskillhub.com/v1/skills/browser-research-pro/abuse-reports" \
+curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/abuse-reports" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
