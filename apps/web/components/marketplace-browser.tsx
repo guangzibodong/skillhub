@@ -68,6 +68,8 @@ const labels = {
     runtime: "Runtime",
     verification: "Verification",
     sort: "Sort",
+    activeFilters: "Active filters",
+    queryFilter: "Search",
     reset: "Reset filters",
     emptyTitle: "No skills match these filters",
     emptyBody:
@@ -134,6 +136,8 @@ const labels = {
     runtime: "运行时",
     verification: "验证状态",
     sort: "排序",
+    activeFilters: "当前筛选",
+    queryFilter: "搜索",
     reset: "重置筛选",
     emptyTitle: "没有符合条件的技能",
     emptyBody:
@@ -254,6 +258,42 @@ export function MarketplaceBrowser({
     runtime !== "all" ||
     verification !== "all" ||
     sort !== "recommended";
+  const activeFilterPills = useMemo(() => {
+    const pills: string[] = [];
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery) {
+      pills.push(`${dictionary.queryFilter}: ${trimmedQuery}`);
+    }
+
+    if (category !== "all") {
+      const categoryLabel = marketplaceCategories.find((item) => item.key === category)?.label;
+      pills.push(`${dictionary.category}: ${categoryLabel ? localizeText(categoryLabel, locale) : category}`);
+    }
+
+    if (pricing !== "all") {
+      const pricingLabel = pricingOptions.find((item) => item.key === pricing)?.label;
+      pills.push(`${dictionary.pricing}: ${pricingLabel ? localizeText(pricingLabel, locale) : pricing}`);
+    }
+
+    if (risk !== "all") {
+      pills.push(`${dictionary.permissionRisk}: ${dictionary.risk[risk]}`);
+    }
+
+    if (runtime !== "all") {
+      pills.push(`${dictionary.runtime}: ${runtime}`);
+    }
+
+    if (verification !== "all") {
+      pills.push(`${dictionary.verification}: ${dictionary.verificationLabels[verification]}`);
+    }
+
+    if (sort !== "recommended") {
+      pills.push(`${dictionary.sort}: ${dictionary.sortOptions[sort]}`);
+    }
+
+    return pills;
+  }, [category, dictionary, locale, pricing, query, risk, runtime, sort, verification]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -399,22 +439,31 @@ export function MarketplaceBrowser({
         </label>
       </div>
 
+      {hasActiveFilters ? (
+        <div className="market-active-filters" aria-label={dictionary.activeFilters}>
+          <span>{dictionary.activeFilters}</span>
+          <div>
+            {activeFilterPills.map((pill) => (
+              <strong key={pill}>{pill}</strong>
+            ))}
+          </div>
+          <button
+            className="filter-reset-button"
+            onClick={resetFilters}
+            type="button"
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+            {dictionary.reset}
+          </button>
+        </div>
+      ) : null}
+
       <div className="market-filter-panel" aria-label={dictionary.filters}>
         <div className="market-filter-panel__head">
           <span>
             <SlidersHorizontal size={15} aria-hidden="true" />
             {dictionary.filters}
           </span>
-          {hasActiveFilters && (
-            <button
-              className="filter-reset-button"
-              onClick={resetFilters}
-              type="button"
-            >
-              <RotateCcw size={14} aria-hidden="true" />
-              {dictionary.reset}
-            </button>
-          )}
         </div>
 
         <FilterGroup label={dictionary.category}>
