@@ -53,6 +53,60 @@ const PUBLIC_PUBLISHER_FORBIDDEN_FIELD_NAMES = new Set([
   "userids",
   "webhooksecret",
 ]);
+const PUBLIC_SKILL_FEEDBACK_FORBIDDEN_FIELD_NAMES = new Set([
+  "adminnotes",
+  "auditlogs",
+  "credential",
+  "credentials",
+  "internalnotes",
+  "moderatedat",
+  "moderationreason",
+  "operatornotes",
+  "organizationid",
+  "projectid",
+  "projectslug",
+  "reason",
+  "reviewerdisplayname",
+  "revieweremail",
+  "reviewerorganizationid",
+  "reviewerorganizationname",
+  "secret",
+  "skillid",
+  "token",
+  "userid",
+  "userids",
+]);
+const PUBLIC_SKILL_PRICE_FORBIDDEN_FIELD_NAMES = new Set([
+  "apikey",
+  "api_key",
+  "balance",
+  "commission",
+  "commissionrule",
+  "commissionruleid",
+  "credential",
+  "credentials",
+  "customerid",
+  "invoiceid",
+  "ledger",
+  "organizationid",
+  "paymentmethod",
+  "platformfeebps",
+  "platformfeecents",
+  "projectid",
+  "projectslug",
+  "provider",
+  "providerpriceid",
+  "providerreference",
+  "publisherprofileid",
+  "publishersharebps",
+  "publishersharecents",
+  "secret",
+  "subscriptionid",
+  "token",
+  "transaction",
+  "transactionid",
+  "transactions",
+]);
 const DEFAULT_APP_PATHS = [
   "/",
   "/?lang=zh",
@@ -869,7 +923,7 @@ async function checkPublicSkillFeedbackApi({ apiUrl, slug, timeoutMs }) {
   const name = "GET /v1/skills/:slug/feedback";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}/feedback?limit=12`),
       { timeoutMs },
     );
@@ -915,6 +969,10 @@ async function checkPublicSkillFeedbackApi({ apiUrl, slug, timeoutMs }) {
       return;
     }
 
+    if (!assertNoPublicSkillFeedbackSensitiveBoundary(name, json, text)) {
+      return;
+    }
+
     pass(
       name,
       `feedback=${json.feedback.length}, published=${json.summary.publishedCount}`,
@@ -928,7 +986,7 @@ async function checkPublicSkillPricesApi({ apiUrl, slug, timeoutMs }) {
   const name = "GET /v1/skills/:slug/prices";
 
   try {
-    const { status, json } = await requestJson(
+    const { status, json, text } = await requestJson(
       joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}/prices`),
       { timeoutMs },
     );
@@ -950,14 +1008,18 @@ async function checkPublicSkillPricesApi({ apiUrl, slug, timeoutMs }) {
         !["free", "per_call", "subscription"].includes(price?.billingModel) ||
         typeof price?.currency !== "string" ||
         !isFiniteNumber(price?.unitAmountCents) ||
-        !["draft", "active", "archived"].includes(price?.status),
+        price?.status !== "active",
     );
 
     if (invalidPrice) {
       fail(
         name,
-        "price rows should include id, skillSlug, billing model, currency, amount, and status",
+        "public price rows should include id, skillSlug, billing model, currency, amount, and active status",
       );
+      return;
+    }
+
+    if (!assertNoPublicSkillPriceSensitiveBoundary(name, json, text)) {
       return;
     }
 
@@ -2058,6 +2120,103 @@ function assertNoPublicPublisherSensitiveBoundary(name, payload, text) {
   }
 
   return true;
+}
+
+function assertNoPublicSkillFeedbackSensitiveBoundary(name, payload, text) {
+  const leaks = findBoundarySensitiveLeaks(text);
+
+  if (leaks.length > 0) {
+    fail(name, `possible sensitive public feedback leak: ${leaks[0]}`);
+    return false;
+  }
+
+  const forbiddenPath = findForbiddenPublicField(
+    payload,
+    PUBLIC_SKILL_FEEDBACK_FORBIDDEN_FIELD_NAMES,
+  );
+
+  if (forbiddenPath) {
+    fail(
+      name,
+      `public feedback payload must not expose reviewer, project, moderation, operator, or credential fields: ${forbiddenPath}`,
+    );
+    return false;
+  }
+
+  return true;
+}
+
+function assertNoPublicSkillPriceSensitiveBoundary(name, payload, text) {
+  const leaks = findBoundarySensitiveLeaks(text);
+
+  if (leaks.length > 0) {
+    fail(name, `possible sensitive public price leak: ${leaks[0]}`);
+    return false;
+  }
+
+  const forbiddenPath = findForbiddenPublicField(
+    payload,
+    PUBLIC_SKILL_PRICE_FORBIDDEN_FIELD_NAMES,
+  );
+
+  if (forbiddenPath) {
+    fail(
+      name,
+      `public price payload must not expose provider, project, ledger, commission, payout, or credential fields: ${forbiddenPath}`,
+    );
+    return false;
+  }
+
+  return true;
+}
+
+function findForbiddenPublicField(value, forbiddenNames, path = []) {
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const childPath = findForbiddenPublicField(value[index], forbiddenNames, [
+        ...path,
+        String(index),
+      ]);
+
+      if (childPath) {
+        return childPath;
+      }
+    }
+
+    return null;
+  }
+
+  if (!value || typeof value !== "object") {
+    if (
+      typeof value === "string" &&
+      hasEmbeddedCredentialsInPublicPublisherString(value)
+    ) {
+      return `${path.join(".") || "value"} contains embedded URL credentials`;
+    }
+
+    return null;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const nextPath = [...path, key];
+    const normalizedKey = key.toLowerCase();
+
+    if (forbiddenNames.has(normalizedKey)) {
+      return nextPath.join(".");
+    }
+
+    const childPath = findForbiddenPublicField(
+      child,
+      forbiddenNames,
+      nextPath,
+    );
+
+    if (childPath) {
+      return childPath;
+    }
+  }
+
+  return null;
 }
 
 function findPublicPublisherForbiddenField(value, path = []) {

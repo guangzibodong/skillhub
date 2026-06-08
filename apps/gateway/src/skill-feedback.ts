@@ -66,6 +66,22 @@ export type SkillFeedbackRow = {
   updatedAt: string;
 };
 
+export type PublicSkillFeedbackRow = {
+  id: string;
+  skillSlug: string;
+  skillName: string;
+  rating: number;
+  title: string;
+  body: string;
+  useCase: string | null;
+  status: "published";
+  publisherResponseBody: string | null;
+  publisherRespondedAt: string | null;
+  publisherResponderDisplayName: string | null;
+  publishedAt: string | null;
+  createdAt: string;
+};
+
 export type SkillFeedbackSummary = {
   averageRating: number | null;
   publishedCount: number;
@@ -186,7 +202,7 @@ export async function listPublicSkillFeedback(skillSlug: string, limit = 12) {
   const sql = await getSql();
 
   if (!sql) {
-    const feedback = demoFallback(
+    const feedbackRows = demoFallback(
       fallbackFeedback
         .filter(
           (row) => row.skillSlug === skillSlug && row.status === "published",
@@ -194,21 +210,22 @@ export async function listPublicSkillFeedback(skillSlug: string, limit = 12) {
         .slice(0, normalizeLimit(limit, 24)),
       [],
     );
+    const feedback = feedbackRows.map(toPublicFeedbackRow);
 
     return {
       feedback,
-      summary: summarizeFeedback(feedback),
+      summary: summarizeFeedback(feedbackRows),
     };
   }
 
-  const feedback = await listFeedbackRows(sql, {
+  const feedbackRows = await listFeedbackRows(sql, {
     limit,
     skillSlug,
     status: "published",
   });
 
   return {
-    feedback,
+    feedback: feedbackRows.map(toPublicFeedbackRow),
     summary: await getFeedbackSummary(sql, skillSlug),
   };
 }
@@ -708,6 +725,24 @@ function summarizeFeedback(feedback: SkillFeedbackRow[]): SkillFeedbackSummary {
         : null,
     publishedCount: published.length,
     ratingBreakdown,
+  };
+}
+
+function toPublicFeedbackRow(row: SkillFeedbackRow): PublicSkillFeedbackRow {
+  return {
+    id: row.id,
+    skillSlug: row.skillSlug,
+    skillName: row.skillName,
+    rating: row.rating,
+    title: row.title,
+    body: row.body,
+    useCase: row.useCase,
+    status: "published",
+    publisherResponseBody: row.publisherResponseBody,
+    publisherRespondedAt: row.publisherRespondedAt,
+    publisherResponderDisplayName: row.publisherResponderDisplayName,
+    publishedAt: row.publishedAt,
+    createdAt: row.createdAt,
   };
 }
 

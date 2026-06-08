@@ -433,10 +433,12 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                         <strong>{labels.feedbackUseCase}</strong>
                         {feedback.useCase ?? "n/a"}
                       </span>
-                      <span>
-                        <strong>{labels.feedbackProject}</strong>
-                        {feedback.projectSlug ?? "n/a"}
-                      </span>
+                      {feedback.projectSlug ? (
+                        <span>
+                          <strong>{labels.feedbackProject}</strong>
+                          {feedback.projectSlug}
+                        </span>
+                      ) : null}
                     </div>
                   </section>
                 ))

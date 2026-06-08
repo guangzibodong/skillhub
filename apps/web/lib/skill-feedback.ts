@@ -2,26 +2,26 @@ import { demoFallback } from "@/lib/demo-fallback";
 
 export type SkillFeedbackRecord = {
   id: string;
-  skillId: string;
+  skillId?: string;
   skillSlug: string;
   skillName: string;
-  reviewerEmail: string | null;
-  reviewerDisplayName: string | null;
-  reviewerOrganizationName: string | null;
-  projectSlug: string | null;
+  reviewerEmail?: string | null;
+  reviewerDisplayName?: string | null;
+  reviewerOrganizationName?: string | null;
+  projectSlug?: string | null;
   rating: number;
   title: string;
   body: string;
   useCase: string | null;
   status: "pending" | "published" | "hidden" | "rejected";
-  moderationReason: string | null;
-  moderatedAt: string | null;
+  moderationReason?: string | null;
+  moderatedAt?: string | null;
   publisherResponseBody: string | null;
   publisherRespondedAt: string | null;
   publisherResponderDisplayName: string | null;
   publishedAt: string | null;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 };
 
 export type SkillFeedbackSummary = {

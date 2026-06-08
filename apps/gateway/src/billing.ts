@@ -112,6 +112,7 @@ export async function listSkillPrices(slug: string) {
     from skill_prices sp
     join skills s on s.id = sp.skill_id
     where s.slug = ${slug}
+      and sp.status = 'active'
     order by sp.created_at desc
   `;
 }

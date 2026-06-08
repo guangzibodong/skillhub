@@ -1200,6 +1200,8 @@ Read skill prices:
 curl "https://api.useskillhub.com/v1/skills/browser-research/prices"
 ```
 
+The public price read returns active marketplace price rows only. Publisher draft prices, archived prices, provider references, project/customer state, commission splits, transactions, balances, payouts, invoices, and internal ledger metadata remain behind publisher/admin authorization.
+
 Set a skill price:
 
 ```bash
@@ -1243,6 +1245,8 @@ Read published feedback and rating summary:
 ```bash
 curl "https://api.useskillhub.com/v1/skills/browser-research/feedback?limit=12"
 ```
+
+The public feedback read is a buyer-safe contract, not the raw moderation row. It returns the public feedback id, skill slug/name, rating, title, body, use case, published state, publish/create timestamps, and any publisher response. It does not expose reviewer email/display name, reviewer organization, organization ids, project slug/id, moderation reason, moderator metadata, audit fields, tokens, credentials, or operator notes.
 
 Submit feedback for moderation:
 
@@ -2200,7 +2204,7 @@ For routine 1Panel updates, run the public production gate first:
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
-This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and public price-row shape, then POSTs unauthenticated sample requests to the skill feedback, skill trust-report, and project subscription endpoints and requires `401` or `403` JSON errors. It also exercises public MCP discovery with `tools/list`, `resources/list`, and `resources/read`, and verifies that unauthenticated `tools/call` returns an MCP `isError` boundary instead of runtime, billable, or invocation state. Routine 1Panel updates can therefore catch broken detail data contracts, public MCP contract drift, and accidental exposure of Journey A write actions without creating production rows.
+This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and active public price-row shape, rejects reviewer/project/moderation/provider/ledger/commission fields on those public payloads, then POSTs unauthenticated sample requests to the skill feedback, skill trust-report, and project subscription endpoints and requires `401` or `403` JSON errors. It also exercises public MCP discovery with `tools/list`, `resources/list`, and `resources/read`, and verifies that unauthenticated `tools/call` returns an MCP `isError` boundary instead of runtime, billable, or invocation state. Routine 1Panel updates can therefore catch broken detail data contracts, public MCP contract drift, and accidental exposure of Journey A write actions without creating production rows.
 
 For release signoff or customer walkthroughs where an admin/super-admin user token is already configured in the shell, run the full protected Journey C gate:
 
