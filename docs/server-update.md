@@ -34,6 +34,12 @@ sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 # recorded migration unless that early marketplace baseline is missing.
 ./scripts/run-postgres-migrations.sh
 
+# Optional: configure Google/GitHub OAuth client IDs and secrets without
+# echoing secret values into the terminal history. Use this after creating or
+# rotating provider credentials, then let the script rebuild and verify the
+# providers endpoint.
+./scripts/configure-oauth.sh
+
 # Rebuild the application images from the pulled source and recreate the app
 # containers. The compose service names are api/web; the resulting containers
 # are skillhub-api/skillhub-web. A plain docker restart is not enough because it
