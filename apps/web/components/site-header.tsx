@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Gauge, LogIn, Menu, UploadCloud, X } from "lucide-react";
+import { Gauge, LogIn, Menu, UploadCloud, UserCircle, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 import { LanguageSwitcher } from "./language-switcher";
@@ -148,6 +148,9 @@ export function SiteHeader({
         ref={menuButtonRef}
         type="button"
       >
+        <span className="visually-hidden">
+          {isMenuOpen ? labels.closeNavigation : labels.openNavigation}
+        </span>
         {isMenuOpen ? (
           <X size={18} aria-hidden="true" />
         ) : (
@@ -179,12 +182,13 @@ export function SiteHeader({
           ))}
         </nav>
         <div className="site-mobile-panel__actions">
-          <a
-            className="ghost-button"
-            href={localizedHref("/login", locale)}
-          >
+          <a className="ghost-button" href={localizedHref("/login", locale)}>
             <LogIn size={17} aria-hidden="true" />
             <span>{labels.console}</span>
+          </a>
+          <a className="ghost-button" href={localizedHref("/account", locale)}>
+            <UserCircle size={17} aria-hidden="true" />
+            <span>{labels.account}</span>
           </a>
           <a className="ghost-button" href={`${apiUrl}/health`}>
             <Gauge size={17} aria-hidden="true" />
@@ -200,6 +204,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
   if (locale === "zh") {
     return {
       apiHealth: "API 状态",
+      account: "个人中心",
       closeNavigation: "关闭导航",
       console: "登录入口",
       language: "语言",
@@ -224,6 +229,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
 
   return {
     apiHealth: dictionary.common.apiHealth,
+    account: "Account center",
     closeNavigation: "Close navigation",
     console: "Sign in",
     language: dictionary.common.language,

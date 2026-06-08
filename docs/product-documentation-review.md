@@ -40,6 +40,8 @@ SkillHub must become an operating workspace:
 
 ## Latest Implementation Review
 
+The latest mobile-navigation polish makes the compact header more useful for account entry without exposing admin login. The mobile menu button now has hidden text in addition to its icon and ARIA label, and the opened mobile menu includes the account center beside sign-in and API health. This keeps public discovery focused on home, marketplace, publishers, registry, agents, and docs while giving mobile users a direct route to normal account/workspace readiness after login.
+
 The latest login-route polish fills the desktop `/login` dead space with a concise post-sign-in path: choose configured OAuth or username/email password, review the account center, then continue into developer, publisher, or role-gated operator workspaces. The guidance stays off the narrow mobile layout so first-screen account entry remains focused on Google/GitHub and password access, and the public smoke now asserts the English and Chinese route markers.
 
 The latest error-state polish replaces the default framework 404 with a SkillHub recovery page. Broken public routes and stale skill links now keep the user inside the product shell, show bilingual recovery copy, and route users back to marketplace discovery, login, docs, publish, or home instead of dropping them onto a generic English-only error. The routine public P0 smoke now checks a missing skill detail route for that custom 404, so launch QA covers invalid-link recovery as well as happy-path pages.
