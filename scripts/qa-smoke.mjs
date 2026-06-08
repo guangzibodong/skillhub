@@ -1078,7 +1078,26 @@ async function checkPublicSkillPricesApi({ apiUrl, slug, timeoutMs }) {
 
 async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
   const skillSlug = smokeContext.publicSkillSlug ?? "public-action-boundary";
+  const projectSlug = "public-action-boundary";
   const endpoints = [
+    {
+      body: {
+        manifest: {
+          description: "Unauthorized publish boundary smoke.",
+          displayName: "Unauthorized Publish Boundary",
+          inputSchema: { type: "object" },
+          name: skillSlug,
+          outputSchema: { type: "object" },
+          permissions: { browser: false, filesystem: "none", network: false },
+          runtime: { entrypoint: "https://example.com/runtime", type: "http" },
+          schemaVersion: "0.1",
+          tags: ["ops"],
+          version: "0.1.0",
+        },
+      },
+      name: "POST /v1/skills without token",
+      path: "/v1/skills",
+    },
     {
       body: {
         body: "Routine public smoke should not be able to submit this feedback.",
@@ -1106,7 +1125,193 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
         status: "trialing",
       },
       name: "POST /v1/projects/:projectSlug/subscriptions without token",
-      path: "/v1/projects/public-action-boundary/subscriptions",
+      path: `/v1/projects/${projectSlug}/subscriptions`,
+    },
+    {
+      body: {
+        email: "unauthorized-smoke@example.com",
+        role: "developer",
+      },
+      name: "POST /v1/organization/team/members without token",
+      path: "/v1/organization/team/members",
+    },
+    {
+      body: {
+        name: "Unauthorized member token boundary",
+      },
+      name: "POST /v1/organization/team/members/:userId/tokens without token",
+      path: "/v1/organization/team/members/public-user-boundary/tokens",
+    },
+    {
+      body: {
+        events: ["skill.review.approved"],
+        url: "https://example.com/skillhub-webhook-boundary",
+      },
+      name: "POST /v1/organization/webhooks without token",
+      path: "/v1/organization/webhooks",
+    },
+    {
+      body: {
+        status: "paused",
+      },
+      method: "PUT",
+      name: "PUT /v1/organization/webhooks/:endpointId without token",
+      path: "/v1/organization/webhooks/public-webhook-boundary",
+    },
+    {
+      body: {},
+      name: "POST /v1/organization/webhooks/:endpointId/rotate-secret without token",
+      path: "/v1/organization/webhooks/public-webhook-boundary/rotate-secret",
+    },
+    {
+      body: {
+        billingEmail: "unauthorized-smoke@example.com",
+      },
+      method: "PUT",
+      name: "PUT /v1/organization/billing/profile without token",
+      path: "/v1/organization/billing/profile",
+    },
+    {
+      body: {
+        name: "Unauthorized boundary project",
+        slug: projectSlug,
+      },
+      name: "POST /v1/developer/projects without token",
+      path: "/v1/developer/projects",
+    },
+    {
+      body: {
+        description: "Unauthorized buyer request boundary.",
+        title: "Unauthorized buyer request",
+      },
+      name: "POST /v1/developer/buyer-requests without token",
+      path: "/v1/developer/buyer-requests",
+    },
+    {
+      body: {
+        skillSlug,
+      },
+      name: "POST /v1/projects/:projectSlug/saved-skills without token",
+      path: `/v1/projects/${projectSlug}/saved-skills`,
+    },
+    {
+      body: {
+        skillSlug,
+      },
+      name: "POST /v1/projects/:projectSlug/installed-skills without token",
+      path: `/v1/projects/${projectSlug}/installed-skills`,
+    },
+    {
+      body: {
+        maxCallsPerDay: 10,
+        status: "enabled",
+      },
+      method: "PUT",
+      name: "PUT /v1/projects/:projectSlug/policies/:skillSlug without token",
+      path: `/v1/projects/${projectSlug}/policies/${encodeURIComponent(skillSlug)}`,
+    },
+    {
+      body: {
+        name: "Unauthorized runtime key boundary",
+      },
+      name: "POST /v1/projects/:projectSlug/api-keys without token",
+      path: `/v1/projects/${projectSlug}/api-keys`,
+    },
+    {
+      body: {
+        input: {},
+        skillSlug,
+      },
+      name: "POST /v1/projects/:projectSlug/runtime/test without token",
+      path: `/v1/projects/${projectSlug}/runtime/test`,
+    },
+    {
+      body: {
+        input: {},
+        skillSlug,
+      },
+      name: "POST /v1/runtime/invoke without project key",
+      path: "/v1/runtime/invoke",
+    },
+    {
+      body: {
+        currency: "USD",
+        billingModel: "free",
+        status: "active",
+        unitAmountCents: 0,
+      },
+      name: "POST /v1/skills/:slug/prices without token",
+      path: `/v1/skills/${encodeURIComponent(skillSlug)}/prices`,
+    },
+    {
+      body: {
+        manifest: {
+          description: "Unauthorized version boundary smoke.",
+          displayName: "Unauthorized Version Boundary",
+          inputSchema: { type: "object" },
+          name: skillSlug,
+          outputSchema: { type: "object" },
+          permissions: { browser: false, filesystem: "none", network: false },
+          runtime: { entrypoint: "https://example.com/runtime", type: "http" },
+          schemaVersion: "0.1",
+          tags: ["ops"],
+          version: "0.1.1",
+        },
+      },
+      name: "POST /v1/publisher/skills/:skillSlug/versions without token",
+      path: `/v1/publisher/skills/${encodeURIComponent(skillSlug)}/versions`,
+    },
+    {
+      body: {},
+      name: "POST /v1/publisher/skills/:skillSlug/versions/:version/submit without token",
+      path: `/v1/publisher/skills/${encodeURIComponent(skillSlug)}/versions/0.1.1/submit`,
+    },
+    {
+      body: {
+        appealReason: "Unauthorized marketplace appeal boundary.",
+        evidenceUrl: "https://example.com/skillhub-appeal-boundary",
+        requestedPlacement: "standard",
+      },
+      name: "POST /v1/publisher/skills/:skillSlug/marketplace-appeals without token",
+      path: `/v1/publisher/skills/${encodeURIComponent(skillSlug)}/marketplace-appeals`,
+    },
+    {
+      body: {
+        body: "Unauthorized publisher feedback response boundary.",
+      },
+      name: "POST /v1/publisher/skill-feedback/:feedbackId/response without token",
+      path: "/v1/publisher/skill-feedback/public-feedback-boundary/response",
+    },
+    {
+      body: {
+        displayName: "Unauthorized Publisher Boundary",
+      },
+      method: "PUT",
+      name: "PUT /v1/publisher/profile without token",
+      path: "/v1/publisher/profile",
+    },
+    {
+      body: {
+        termsVersion: "2026-06-05-prelaunch-operating-terms",
+      },
+      name: "POST /v1/publisher/terms/accept without token",
+      path: "/v1/publisher/terms/accept",
+    },
+    {
+      body: {
+        provider: "manual_deferred",
+        refreshUrl: "https://example.com/refresh",
+        returnUrl: "https://example.com/return",
+      },
+      name: "POST /v1/publisher/payout-account/onboarding without token",
+      path: "/v1/publisher/payout-account/onboarding",
+    },
+    {
+      body: {
+        currency: "USD",
+      },
+      name: "POST /v1/publisher/payouts without token",
+      path: "/v1/publisher/payouts",
     },
   ];
 
@@ -1117,7 +1322,7 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
         {
           body: JSON.stringify(endpoint.body),
           headers: { "Content-Type": "application/json" },
-          method: "POST",
+          method: endpoint.method ?? "POST",
           timeoutMs,
         },
       );
@@ -1139,7 +1344,10 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
         continue;
       }
 
-      pass(endpoint.name, "protected by user/project authorization");
+      pass(
+        endpoint.name,
+        "protected by user/project/workspace authorization",
+      );
     } catch (error) {
       fail(endpoint.name, redactSecrets(error.message));
     }
