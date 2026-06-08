@@ -28,7 +28,7 @@ Question:
 Decision:
 
 - Public launch blockers include account entry, core public pages, marketplace discovery, skill detail, publish path, publisher workspace, developer project path, admin review/risk visibility, migration readiness, notification-template coverage, secret-safe launch readiness, and production demo fallback disabled.
-- OAuth providers can be configuration-required for public launch if email-code access is working and the UI/readiness panel explains missing callback/client configuration.
+- OAuth providers can be configuration-required for public launch if username/email password access is working and the UI/readiness panel explains missing callback/client configuration.
 - Payment capture, provider-specific payout automation, and final legal terms are paid-marketplace blockers, not public-launch blockers.
 
 Acceptance impact:
@@ -195,11 +195,13 @@ Question:
 
 Decision:
 
-- Email-code access is required. Google and GitHub can remain configuration-required until production OAuth credentials are configured, but the UI must show exact callback URLs and missing configuration names.
+- Username/email password registration and login are required for public launch.
+- Email-code access remains supported as a verification fallback.
+- Google and GitHub can remain configuration-required until production OAuth credentials are configured, but operator readiness surfaces must show exact callback URLs and missing configuration names.
 
 Acceptance impact:
 
-- `/login`, `/account`, and `/admin/launch-readiness` must show provider status without fake OAuth buttons.
+- `/login` must show a normal customer-facing password login/register flow, configured OAuth buttons must start real redirects, unconfigured OAuth buttons must stay disabled with user-friendly copy, and `/admin/launch-readiness` must expose provider setup details for operators.
 
 ### D009: Notification And Webhook Governance
 

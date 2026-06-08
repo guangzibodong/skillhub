@@ -475,9 +475,9 @@ export function getAuthProviderStatuses(
       connectedAt: emailIdentity?.connectedAt ?? null,
       description: emailIdentity
         ? `Email workspace identity is connected for ${emailIdentity.email}.`
-        : "Email verification code access is live for workspace signup and existing-user login. Provider delivery can be connected without changing the account model.",
+        : "Username/email password access is live; email-code access remains available as a verification fallback.",
       emailVerified: emailIdentity?.emailVerified ?? false,
-      label: "Email code",
+      label: "Email / password",
       lastLoginAt: emailIdentity?.lastLoginAt ?? null,
       provider: "email",
       providerEmail: emailIdentity?.email ?? null,
@@ -549,7 +549,7 @@ export function getAuthProviderStatuses(
     },
     {
       connectedAt: null,
-      description: "User access tokens remain the operator and team-invite fallback until OAuth/passwordless sessions are connected.",
+      description: "User access tokens remain the operator and team-invite fallback beside password and OAuth sessions.",
       emailVerified: false,
       label: "User token",
       lastLoginAt: null,

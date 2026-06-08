@@ -59,6 +59,16 @@ type EmailAccessVerifyInput = {
   code?: unknown;
 };
 
+type PasswordSignupInput = SignupTokenInput & {
+  password?: unknown;
+  username?: unknown;
+};
+
+type PasswordLoginInput = {
+  identifier?: unknown;
+  password?: unknown;
+};
+
 export type OAuthProvider = "github" | "google";
 
 type OAuthProviderConfig = {
@@ -549,6 +559,295 @@ export async function verifyEmailAccessCode(input: EmailAccessVerifyInput, env?:
     return challenge.mode === "signup"
       ? completeEmailSignup(tx, challenge)
       : completeEmailLogin(tx, challenge);
+  });
+}
+
+export async function createPasswordSignup(input: PasswordSignupInput) {
+  const sql = await requireSql();
+
+  if (!(await isPasswordCredentialsTableAvailable(sql))) {
+    throw new Error("Password credential storage is not available.");
+  }
+
+  const email = normalizeEmail(String(input.email ?? ""));
+  const username = normalizeUsername(input.username);
+  const password = normalizePassword(input.password);
+  const displayName = normalizeDisplay(String(input.displayName ?? ""), username);
+  const organizationName = normalizeDisplay(String(input.organizationName ?? ""), `${displayName}'s workspace`);
+  const organizationSlug = normalizeSignupSlug(String(input.organizationSlug ?? ""), organizationName);
+  const role = normalizeSignupRole(input.role);
+  const passwordCredential = await hashPassword(password);
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+
+  return sql.begin(async (tx: Sql) => {
+    const existingUserRows = (await tx`
+      select id::text
+      from users
+      where email = ${email}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (existingUserRows.length > 0) {
+      throw new Error("This email is already registered. Sign in instead.");
+    }
+
+    const existingUsernameRows = (await tx`
+      select user_id::text as "userId"
+      from user_password_credentials
+      where username = ${username}
+      limit 1
+    `) as Array<{ userId: string }>;
+
+    if (existingUsernameRows.length > 0) {
+      throw new Error("This username is already taken.");
+    }
+
+    const existingOrganizationRows = (await tx`
+      select id::text
+      from organizations
+      where slug = ${organizationSlug}
+      limit 1
+    `) as Array<{ id: string }>;
+
+    if (existingOrganizationRows.length > 0) {
+      throw new Error("Workspace slug is already taken.");
+    }
+
+    const userRows = (await tx`
+      insert into users (email, display_name, platform_role)
+      values (${email}, ${displayName}, 'user')
+      returning id::text, email, display_name as "displayName", platform_role as "platformRole"
+    `) as Array<{ id: string; email: string; displayName: string | null; platformRole: PlatformRole }>;
+    const user = userRows[0];
+
+    await tx`
+      insert into user_password_credentials (
+        user_id,
+        username,
+        password_hash,
+        password_salt,
+        password_iterations,
+        password_algorithm
+      )
+      values (
+        ${user.id},
+        ${username},
+        ${passwordCredential.hash},
+        ${passwordCredential.salt},
+        ${passwordCredential.iterations},
+        'pbkdf2-sha256'
+      )
+    `;
+
+    const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(tx);
+
+    if (authIdentitiesAvailable) {
+      await upsertEmailAuthIdentity(tx, {
+        displayName,
+        email,
+        emailVerified: false,
+        source: "password_signup",
+        userId: user.id
+      });
+    }
+
+    const organizationRows = (await tx`
+      insert into organizations (name, slug)
+      values (${organizationName}, ${organizationSlug})
+      returning id::text, name, slug
+    `) as Array<{ id: string; name: string; slug: string }>;
+    const organization = organizationRows[0];
+
+    await tx`
+      insert into organization_members (organization_id, user_id, role)
+      values (${organization.id}, ${user.id}, ${role})
+    `;
+
+    const tokenRows = (await tx`
+      insert into user_access_tokens (
+        user_id,
+        organization_id,
+        name,
+        token_hash,
+        token_prefix,
+        token_last4,
+        scopes,
+        expires_at
+      )
+      values (
+        ${user.id},
+        ${organization.id},
+        'Password signup session',
+        ${tokenHash},
+        'shub_user',
+        ${rawToken.slice(-4)},
+        ${[] as string[]},
+        now() + interval '14 days'
+      )
+      returning
+        id::text,
+        name,
+        token_prefix as "tokenPrefix",
+        token_last4 as "tokenLast4",
+        expires_at as "expiresAt",
+        created_at as "createdAt"
+    `) as Array<{ createdAt: string; expiresAt: string | null; id: string; name: string; tokenLast4: string; tokenPrefix: string }>;
+    const token = tokenRows[0];
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${user.id}, 'auth.password.signup', 'organization', ${organization.id}, 'Password workspace signup completed.', ${tx.json({
+        organizationSlug,
+        role,
+        tokenId: token.id,
+        username
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (${user.id}, ${organization.id}, 'auth.password.signup', 'in_app', 'SkillHub workspace created', ${tx.json({
+        organizationSlug,
+        role,
+        userId: user.id
+      })}, 'queued')
+    `;
+
+    return {
+      accessToken: {
+        ...token,
+        token: rawToken
+      },
+      organization,
+      returnTo: "/account",
+      user
+    };
+  });
+}
+
+export async function createPasswordLogin(input: PasswordLoginInput) {
+  const sql = await requireSql();
+
+  if (!(await isPasswordCredentialsTableAvailable(sql))) {
+    throw new Error("Password credential storage is not available.");
+  }
+
+  const identifier = normalizePasswordIdentifier(input.identifier);
+  const password = normalizePassword(input.password);
+  const credential = await findPasswordCredential(sql, identifier);
+
+  if (!credential || !(await verifyPassword(password, credential.passwordHash, credential.passwordSalt, credential.passwordIterations))) {
+    throw new Error("Email/username or password is incorrect.");
+  }
+
+  const rawToken = `shub_user_${randomToken(32)}`;
+  const tokenHash = await sha256Hex(rawToken);
+
+  return sql.begin(async (tx: Sql) => {
+    const membershipRows = (await tx`
+      select
+        om.organization_id::text as "organizationId",
+        o.name,
+        o.slug,
+        om.role
+      from organization_members om
+      join organizations o on o.id = om.organization_id
+      where om.user_id = ${credential.userId}
+      order by om.created_at asc
+      limit 1
+    `) as Array<{ organizationId: string; name: string; role: OrganizationRole; slug: string }>;
+    const membership = membershipRows[0];
+
+    if (!membership) {
+      throw new Error("No SkillHub workspace was found for this account.");
+    }
+
+    await tx`
+      update user_password_credentials
+      set last_login_at = now(),
+          updated_at = now()
+      where user_id = ${credential.userId}
+    `;
+
+    const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(tx);
+
+    if (authIdentitiesAvailable) {
+      await upsertEmailAuthIdentity(tx, {
+        displayName: credential.displayName,
+        email: credential.email,
+        emailVerified: false,
+        source: "password_login",
+        userId: credential.userId
+      });
+    }
+
+    const tokenRows = (await tx`
+      insert into user_access_tokens (
+        user_id,
+        organization_id,
+        name,
+        token_hash,
+        token_prefix,
+        token_last4,
+        scopes,
+        expires_at
+      )
+      values (
+        ${credential.userId},
+        ${membership.organizationId},
+        'Password login session',
+        ${tokenHash},
+        'shub_user',
+        ${rawToken.slice(-4)},
+        ${[] as string[]},
+        now() + interval '14 days'
+      )
+      returning
+        id::text,
+        name,
+        token_prefix as "tokenPrefix",
+        token_last4 as "tokenLast4",
+        expires_at as "expiresAt",
+        created_at as "createdAt"
+    `) as Array<{ createdAt: string; expiresAt: string | null; id: string; name: string; tokenLast4: string; tokenPrefix: string }>;
+    const token = tokenRows[0];
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${credential.userId}, 'auth.password.login', 'user', ${credential.userId}, 'Password login completed.', ${tx.json({
+        organizationId: membership.organizationId,
+        tokenId: token.id,
+        username: credential.username
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (${credential.userId}, ${membership.organizationId}, 'auth.password.login', 'in_app', 'Password login completed', ${tx.json({
+        organizationSlug: membership.slug,
+        userId: credential.userId
+      })}, 'queued')
+    `;
+
+    return {
+      accessToken: {
+        ...token,
+        token: rawToken
+      },
+      organization: {
+        id: membership.organizationId,
+        name: membership.name,
+        slug: membership.slug
+      },
+      returnTo: "/account",
+      user: {
+        id: credential.userId,
+        email: credential.email,
+        displayName: credential.displayName,
+        platformRole: credential.platformRole
+      }
+    };
   });
 }
 
@@ -1147,6 +1446,68 @@ async function isEmailChallengesTableAvailable(sql: Sql) {
   return rows[0]?.exists === true;
 }
 
+async function isPasswordCredentialsTableAvailable(sql: Sql) {
+  const rows = (await sql`
+    select to_regclass('public.user_password_credentials') is not null as "exists"
+  `) as Array<{ exists: boolean }>;
+
+  return rows[0]?.exists === true;
+}
+
+async function findPasswordCredential(sql: Sql, identifier: { email?: string; username?: string }) {
+  const rows = identifier.email
+    ? ((await sql`
+        select
+          c.user_id::text as "userId",
+          c.username,
+          c.password_hash as "passwordHash",
+          c.password_salt as "passwordSalt",
+          c.password_iterations as "passwordIterations",
+          u.email,
+          u.display_name as "displayName",
+          u.platform_role as "platformRole"
+        from user_password_credentials c
+        join users u on u.id = c.user_id
+        where u.email = ${identifier.email}
+        limit 1
+      `) as Array<{
+        displayName: string | null;
+        email: string;
+        passwordHash: string;
+        passwordIterations: number;
+        passwordSalt: string;
+        platformRole: PlatformRole;
+        userId: string;
+        username: string;
+      }>)
+    : ((await sql`
+        select
+          c.user_id::text as "userId",
+          c.username,
+          c.password_hash as "passwordHash",
+          c.password_salt as "passwordSalt",
+          c.password_iterations as "passwordIterations",
+          u.email,
+          u.display_name as "displayName",
+          u.platform_role as "platformRole"
+        from user_password_credentials c
+        join users u on u.id = c.user_id
+        where c.username = ${identifier.username}
+        limit 1
+      `) as Array<{
+        displayName: string | null;
+        email: string;
+        passwordHash: string;
+        passwordIterations: number;
+        passwordSalt: string;
+        platformRole: PlatformRole;
+        userId: string;
+        username: string;
+      }>);
+
+  return rows[0] ?? null;
+}
+
 function readBearer(header?: string): string | undefined {
   if (!header?.startsWith("Bearer ")) {
     return undefined;
@@ -1170,6 +1531,68 @@ function randomToken(byteLength: number) {
 async function sha256Hex(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function hashPassword(password: string) {
+  const salt = randomToken(16);
+  const iterations = 210_000;
+
+  return {
+    hash: await pbkdf2Sha256Hex(password, salt, iterations),
+    iterations,
+    salt
+  };
+}
+
+async function verifyPassword(password: string, expectedHash: string, salt: string, iterations: number) {
+  const actualHash = await pbkdf2Sha256Hex(password, salt, iterations);
+  return constantTimeEqual(actualHash, expectedHash);
+}
+
+async function pbkdf2Sha256Hex(password: string, saltHex: string, iterations: number) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    {
+      hash: "SHA-256",
+      iterations,
+      name: "PBKDF2",
+      salt: hexToBytes(saltHex)
+    },
+    key,
+    256
+  );
+
+  return Array.from(new Uint8Array(bits), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function hexToBytes(hex: string) {
+  const normalized = hex.trim();
+
+  if (!/^[0-9a-f]+$/i.test(normalized) || normalized.length % 2 !== 0) {
+    throw new Error("Password salt is invalid.");
+  }
+
+  const bytes = new Uint8Array(normalized.length / 2);
+
+  for (let index = 0; index < normalized.length; index += 2) {
+    bytes[index / 2] = Number.parseInt(normalized.slice(index, index + 2), 16);
+  }
+
+  return bytes;
+}
+
+function constantTimeEqual(left: string, right: string) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  let diff = 0;
+
+  for (let index = 0; index < left.length; index += 1) {
+    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+
+  return diff === 0;
 }
 
 async function emailCodeHash(email: string, code: string, env?: OAuthRuntimeEnv) {
@@ -1198,6 +1621,44 @@ function normalizeEmail(email?: string) {
   }
 
   return value;
+}
+
+function normalizeUsername(value: unknown) {
+  const username = String(value ?? "").trim().toLowerCase();
+
+  if (!/^[a-z0-9][a-z0-9_-]{2,31}$/.test(username)) {
+    throw new Error("Username must be 3-32 characters using letters, numbers, underscores, or hyphens.");
+  }
+
+  return username;
+}
+
+function normalizePassword(value: unknown) {
+  const password = String(value ?? "");
+
+  if (password.length < 8 || password.length > 128) {
+    throw new Error("Password must be 8-128 characters.");
+  }
+
+  return password;
+}
+
+function normalizePasswordIdentifier(value: unknown) {
+  const identifier = String(value ?? "").trim().toLowerCase();
+
+  if (!identifier) {
+    throw new Error("Email or username is required.");
+  }
+
+  if (identifier.includes("@")) {
+    return {
+      email: normalizeEmail(identifier)
+    };
+  }
+
+  return {
+    username: normalizeUsername(identifier)
+  };
 }
 
 function normalizeEmailAccessMode(value: unknown): EmailAccessMode {

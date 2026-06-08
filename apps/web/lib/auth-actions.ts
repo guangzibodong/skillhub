@@ -34,12 +34,15 @@ const copy = {
     emailRequired: "Enter a valid email address.",
     invalidToken: "Enter a valid SkillHub user access token.",
     organizationRequired: "Enter an organization or workspace name.",
+    passwordRequired: "Enter a password with at least 8 characters.",
     publicSignupDisabled: "Public email access is disabled for this deployment.",
     signedIn: "Workspace session connected.",
     signedOut: "Workspace session cleared.",
-    signedUp: "Email verified. Workspace session connected.",
+    signedUp: "Workspace session connected.",
     slugTaken: "This workspace slug is already taken.",
+    usernameRequired: "Enter a username using letters, numbers, underscores, or hyphens.",
     unableEmail: "Unable to complete email verification.",
+    unablePasswordAuth: "Unable to complete password login.",
     unableSignIn: "Unable to verify this token."
   },
   zh: {
@@ -48,12 +51,15 @@ const copy = {
     emailRequired: "请输入有效的邮箱地址。",
     invalidToken: "请输入有效的 SkillHub 用户访问 token。",
     organizationRequired: "请输入组织或工作区名称。",
+    passwordRequired: "请输入至少 8 位密码。",
     publicSignupDisabled: "当前部署已关闭公开邮箱访问。",
     signedIn: "工作区会话已连接。",
     signedOut: "工作区会话已清除。",
-    signedUp: "邮箱已验证，工作区会话已连接。",
+    signedUp: "工作区会话已连接。",
     slugTaken: "这个工作区 slug 已被使用。",
+    usernameRequired: "请输入用户名，可使用字母、数字、下划线或连字符。",
     unableEmail: "无法完成邮箱验证。",
+    unablePasswordAuth: "无法完成密码登录。",
     unableSignIn: "无法验证这个 token。"
   }
 } as const;
@@ -93,6 +99,10 @@ export async function signUpAction(
 ): Promise<SignupActionState> {
   const intent = String(formData.get("intent") ?? "request").trim();
 
+  if (intent === "password") {
+    return passwordAuthAction(locale, formData);
+  }
+
   if (intent === "verify") {
     return verifyEmailCodeAction(locale, previousState, formData);
   }
@@ -104,6 +114,98 @@ export async function signOutAction(locale: Locale) {
   await clearSessionCookie();
   revalidateWorkspace();
   redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
+}
+
+async function passwordAuthAction(locale: Locale, formData: FormData): Promise<SignupActionState> {
+  const labels = copy[locale];
+  const mode = normalizeEmailMode(formData.get("mode"));
+  const username = String(formData.get("username") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const identifier = String(formData.get("identifier") ?? (email || username)).trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const displayName = String(formData.get("displayName") ?? "").trim();
+  const organizationName = String(formData.get("organizationName") ?? "").trim();
+  const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
+  const role = String(formData.get("role") ?? "owner").trim();
+
+  if (mode === "signup" && !/^[a-z0-9][a-z0-9_-]{2,31}$/.test(username)) {
+    return { message: labels.usernameRequired, status: "error" };
+  }
+
+  if (mode === "signup" && (!email || !email.includes("@"))) {
+    return { message: labels.emailRequired, status: "error" };
+  }
+
+  if (mode === "login" && !identifier) {
+    return { message: labels.emailRequired, status: "error" };
+  }
+
+  if (password.length < 8) {
+    return { message: labels.passwordRequired, status: "error" };
+  }
+
+  if (mode === "signup" && !organizationName) {
+    return { message: labels.organizationRequired, status: "error" };
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/auth/password/${mode === "signup" ? "signup" : "login"}`, {
+      body: JSON.stringify(
+        mode === "signup"
+          ? {
+              displayName,
+              email,
+              organizationName,
+              organizationSlug,
+              password,
+              role,
+              username
+            }
+          : {
+              identifier,
+              password
+            }
+      ),
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      login?: {
+        accessToken?: {
+          token?: string;
+        };
+        organization?: {
+          name?: string;
+          slug?: string;
+        };
+      };
+    };
+    const token = payload.login?.accessToken?.token;
+
+    if (!response.ok || !token) {
+      return { message: emailErrorMessage(payload.error, labels), status: "error" };
+    }
+
+    await setSessionCookie(token);
+    const subject = await fetchSessionSubject(token);
+    revalidateWorkspace();
+
+    return {
+      message: mode === "signup" ? labels.signedUp : labels.signedIn,
+      organization: {
+        name: payload.login?.organization?.name ?? (organizationName || "SkillHub workspace"),
+        slug: payload.login?.organization?.slug ?? organizationSlug
+      },
+      status: "success",
+      subject: subject ?? undefined
+    };
+  } catch {
+    return { message: labels.unablePasswordAuth, status: "error" };
+  }
 }
 
 async function requestEmailCodeAction(locale: Locale, formData: FormData): Promise<SignupActionState> {

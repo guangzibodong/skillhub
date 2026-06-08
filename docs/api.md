@@ -365,6 +365,20 @@ curl -X POST "https://api.useskillhub.com/v1/auth/email/verify-code" \
 
 `POST /v1/auth/email/verify-code` locks and consumes the challenge in one transaction, enforces expiry and attempt limits, then either creates the new user/workspace membership for `signup` or logs an existing user into their first workspace for `login`. Successful verification writes the `email` identity with verified state, creates a 14-day `shub_user_...` session token, records audit logs, queues in-app notifications, and returns the token once so the web app can store it in the `skillhub_user_token` httpOnly cookie without showing it on the page.
 
+Password registration and login are also first-class account paths:
+
+```bash
+curl -X POST "https://api.useskillhub.com/v1/auth/password/signup" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"asha","email":"asha@example.com","password":"replace-with-user-password","organizationName":"Acme Agent Lab","organizationSlug":"acme-agent-lab","role":"owner"}'
+
+curl -X POST "https://api.useskillhub.com/v1/auth/password/login" \
+  -H "Content-Type: application/json" \
+  -d '{"identifier":"asha","password":"replace-with-user-password"}'
+```
+
+Password credentials are stored in `user_password_credentials` as PBKDF2-SHA256 salted hashes with per-user salts and no raw password persistence. Successful password signup/login creates the same 14-day user session token, httpOnly web session, audit row, and in-app notification path used by email-code and OAuth login. `identifier` accepts either username or email.
+
 Set `SKILLHUB_DISABLE_PUBLIC_SIGNUP=true` to turn public email workspace creation off for invite-only deployments; existing users can still request `mode=login` codes. The old `/v1/auth/signup` direct-token endpoint is legacy and disabled by default; it only works when `SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN=true` is explicitly set.
 
 Read public login-method readiness:
@@ -373,7 +387,7 @@ Read public login-method readiness:
 curl "https://api.useskillhub.com/v1/auth/providers"
 ```
 
-The response lists `email`, `google`, `github`, and `token` methods. Email code signup/login is active through `/v1/auth/email/request-code` and `/v1/auth/email/verify-code`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
+The response lists `email`, `google`, `github`, and `token` methods. Password signup/login uses `/v1/auth/password/signup` and `/v1/auth/password/login`; email code signup/login remains available through `/v1/auth/email/request-code` and `/v1/auth/email/verify-code`. Google and GitHub report `active` only when client id, client secret, OAuth state secret, and callback base URL are configured; otherwise the UI shows `configuration_required` instead of a fake redirect button.
 
 OAuth provider rows include launch-operator fields:
 
@@ -381,11 +395,11 @@ OAuth provider rows include launch-operator fields:
 - `missingConfiguration`: secret-safe environment variable names still needed before live redirect can start.
 - `configuration`: boolean readiness for client id, client secret, callback base URL, and OAuth state secret.
 
-The `/login` page surfaces these fields directly and shows success or error notices after provider callbacks return with `?oauth=connected` or `?oauth=error`.
+The `/login` page keeps these details out of the primary customer-facing copy and shows success or error notices after provider callbacks return with `?oauth=connected` or `?oauth=error`.
 
-The public app also exposes a console access map on `/`, `/login`, and `/account`. The convenience `/admin-login` route redirects operators to the `/login` admin-entry section, so there is still one account entry instead of a separate shared admin password. The map links the product workspaces without relying on a shared password:
+The public app exposes a console access map on `/` and `/account`. The convenience `/admin-login` route remains available as a direct operator link, but the public `/login` page does not advertise an admin login shortcut.
 
-- `/login` and `/account` for email-code access, OAuth readiness, connected identities, session fingerprints, and workspace readiness.
+- `/login` and `/account` for password access, email-code fallback, OAuth readiness, connected identities, session fingerprints, and workspace readiness.
 - `/developer` for project, runtime key, install, policy, buyer-request, billing, team, notification, and webhook operations.
 - `/publisher` for skill publishing, review repair, pricing blockers, buyer demand, feedback, revenue, payout readiness, and notification operations.
 - `/admin` for review, trust, incidents, identity, launch readiness, ledger, payout, external delivery, webhook outbox, and audit operations.
@@ -491,13 +505,13 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` is now a customer-facing product account entry. It shows Google/GitHub buttons first, then email-code access, with token fallback kept in a secondary recovery section. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
+- `/login` is now a customer-facing product account entry. It shows Google/GitHub buttons first, then username/email password sign-in and registration, with token fallback kept in a secondary recovery section. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` keeps public OAuth disabled states user-friendly instead of exposing operator setup details. Callback URLs, missing configuration names, and readiness booleans remain available through `/v1/auth/providers`, the deployment runbook, and admin launch-readiness output. `/admin-login` redirects to the same account entry for operators who expect a dedicated admin-login URL.
-- `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
+- `/login` lets a new user create a workspace with username, email, and password, or an existing user log in with username/email plus password. Email-code access remains available through API flows, and token fallback is reserved for invites, bootstrap, or the team console.
 - Email-code preview and OAuth callback debug messages are hidden in the web UI unless `NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW=true` or `NEXT_PUBLIC_SKILLHUB_SHOW_OAUTH_DEBUG_ERROR=true` is explicitly set for a controlled debug build.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - `/account` summarizes identity, session security, workspace readiness, and operations readiness above the detailed panels, then marks developer, publisher, dashboard, and admin shortcuts as available, sign-in-required, or role-required using the active `/v1/auth/me` subject.
-- `/`, `/login`, and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a public password. The global sign-in action lands on `/login`; the admin workspace remains `/admin`.
+- `/` and `/account` show the role-aware console access map so customers can discover backend routes and understand that production access uses account login, OAuth, or invite/recovery tokens rather than a shared admin password. The public `/login` page keeps the normal user path first; the admin workspace remains `/admin`.
 - `/developer`, `/publisher`, and `/admin` show role-aware workspace access panels beside their operating metrics. These panels show current session, token fingerprint, required roles, sign-in-required or role-required states, and the reminder that gateway writes remain organization- and role-enforced.
 - The web app validates the token with `/v1/auth/me` before storing it.
 - The raw token is stored only in an httpOnly browser cookie named `skillhub_user_token`.

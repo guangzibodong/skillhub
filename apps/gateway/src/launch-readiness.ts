@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "032_manual_payout_accounts.sql";
-const expectedLatestMigrationNumber = 32;
+const expectedLatestMigrationFilename = "033_password_credentials.sql";
+const expectedLatestMigrationNumber = 33;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -96,6 +96,7 @@ type DatabaseReadiness = {
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
   manualPayoutAccountColumns: boolean;
+  passwordCredentials: boolean;
   payoutExplainabilityColumns: boolean;
   payoutOnboardingSessions: boolean;
   payoutTables: boolean;
@@ -314,6 +315,14 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
       key: "email_challenge_storage",
       label: "Email challenge storage",
       status: database.emailChallenges ? "ready" : "blocker"
+    },
+    {
+      action: database.passwordCredentials ? "No action needed." : "Run migration 033_password_credentials.sql.",
+      description: "Password login and registration require salted hash credential storage.",
+      detail: database.passwordCredentials ? "user_password_credentials is available." : "Password credential storage is missing.",
+      key: "password_credential_storage",
+      label: "Password credential storage",
+      status: database.passwordCredentials ? "ready" : "blocker"
     },
     {
       action:
@@ -678,6 +687,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       operationsTables: false,
       payoutExplainabilityColumns: false,
       manualPayoutAccountColumns: false,
+      passwordCredentials: false,
       payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,
@@ -697,6 +707,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       select
         to_regclass('public.user_auth_identities') is not null as "userAuthIdentities",
         to_regclass('public.email_login_challenges') is not null as "emailChallenges",
+        to_regclass('public.user_password_credentials') is not null as "passwordCredentials",
         to_regclass('public.skills') is not null as "skills",
         to_regclass('public.projects') is not null as "projects",
         to_regclass('public.skill_invocations') is not null as "skillInvocations",
@@ -716,6 +727,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
     `) as Array<{
       commissionRules: boolean;
       emailChallenges: boolean;
+      passwordCredentials: boolean;
       marketplaceCurationRules: boolean;
       notificationEvents: boolean;
       notificationTemplates: boolean;
@@ -961,6 +973,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         columns.buyerRequestDecidedAt,
       databaseConnected: true,
       emailChallenges: tables.emailChallenges,
+      passwordCredentials: tables.passwordCredentials,
       migrationHistoryCount: migrationHistory?.count ?? null,
       migrationLatestAppliedAt: migrationHistory?.latestAppliedAt ?? null,
       migrationLatestFilename: migrationHistory?.latestFilename ?? null,
@@ -1019,6 +1032,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       operationsTables: false,
       payoutExplainabilityColumns: false,
       manualPayoutAccountColumns: false,
+      passwordCredentials: false,
       payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,

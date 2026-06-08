@@ -162,7 +162,8 @@ Acceptance:
 
 ### Account And Auth
 
-- Email-code access is required for public launch.
+- Username/email password registration and login are required for public launch.
+- Email-code access remains a supported verification fallback.
 - Google and GitHub login are supported when configured.
 - If OAuth credentials are missing, the UI must show configuration-required state with callback URLs and missing config names.
 - Token fallback is only for bootstrap, invitations, and recovery.

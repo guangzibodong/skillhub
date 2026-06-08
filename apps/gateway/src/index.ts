@@ -172,6 +172,8 @@ import {
   completeOAuthLogin,
   createBootstrapUserToken,
   createOAuthAuthorizationUrl,
+  createPasswordLogin,
+  createPasswordSignup,
   createSignupUserToken,
   oauthErrorRedirectUrl,
   oauthSuccessRedirectUrl,
@@ -483,6 +485,33 @@ app.post("/v1/auth/email/verify-code", async (c) => {
   try {
     return c.json({
       login: await verifyEmailAccessCode((await c.req.json().catch(() => ({}))) as Record<string, unknown>, c.env)
+    });
+  } catch (error) {
+    return c.json({ error: emailAccessErrorMessage(error) }, emailAccessErrorStatus(error));
+  }
+});
+
+app.post("/v1/auth/password/signup", async (c) => {
+  if (isPublicSignupDisabled(c.env)) {
+    return c.json({ error: "Public signup is disabled for this deployment." }, 403);
+  }
+
+  try {
+    return c.json(
+      {
+        login: await createPasswordSignup((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+      },
+      201
+    );
+  } catch (error) {
+    return c.json({ error: emailAccessErrorMessage(error) }, emailAccessErrorStatus(error));
+  }
+});
+
+app.post("/v1/auth/password/login", async (c) => {
+  try {
+    return c.json({
+      login: await createPasswordLogin((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     });
   } catch (error) {
     return c.json({ error: emailAccessErrorMessage(error) }, emailAccessErrorStatus(error));

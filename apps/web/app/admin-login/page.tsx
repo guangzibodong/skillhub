@@ -8,5 +8,5 @@ type PageProps = {
 export default async function AdminLoginPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(await searchParams);
 
-  redirect(locale === "zh" ? "/login?lang=zh#admin-entry" : "/login?lang=en#admin-entry");
+  redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
 }

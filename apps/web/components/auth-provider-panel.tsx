@@ -10,13 +10,13 @@ type AuthProviderPanelProps = {
 
 const copy = {
   en: {
-    disabledAction: "available soon",
+    disabledAction: "setup required",
     helper: "Fastest for teams already using Google or GitHub. If a provider is unavailable, use email below.",
     oauthAction: "Continue with",
     title: "Continue with Google or GitHub"
   },
   zh: {
-    disabledAction: "即将可用",
+    disabledAction: "待配置",
     helper: "团队已使用 Google 或 GitHub 时，这是最快入口。若暂不可用，可先使用下方邮箱登录。",
     oauthAction: "继续使用",
     title: "使用 Google 或 GitHub 继续"

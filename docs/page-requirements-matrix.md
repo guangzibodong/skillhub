@@ -264,30 +264,34 @@ Primary user: New or returning user.
 
 Page job:
 
-- Let users enter through email code, Google, GitHub, or token fallback.
+- Let users enter through username/email plus password, Google, GitHub, or recovery token fallback.
 
 Primary action:
 
-- Request email code.
-- Verify email code.
+- Sign in with username/email and password.
+- Register with username, email, password, and workspace details.
 - Start Google/GitHub login.
 - Use token fallback.
 
 Data source:
 
 - `/v1/auth/providers`
+- `/v1/auth/password/signup`
+- `/v1/auth/password/login`
 - `/v1/auth/email/request-code`
 - `/v1/auth/email/verify-code`
 - OAuth start/callback endpoints.
 
 Acceptance:
 
-- OAuth buttons are not fake: configuration-required state must show callback URLs and missing config names.
-- Email signup/login does not issue a session before code verification.
+- OAuth buttons are not fake: configured providers must start a real OAuth redirect, and configuration-required providers must be disabled with user-friendly copy on the public login page.
+- Callback URLs, missing configuration names, and readiness booleans must stay available to operators through `/v1/auth/providers`, `/admin` launch readiness, and deployment runbooks instead of being exposed as primary customer-facing login copy.
+- Password registration stores only salted hashes and never returns, logs, or displays raw passwords.
+- Email-code fallback does not issue a session before code verification.
 - Token fallback is clearly for bootstrap, invitation, or operator recovery.
-- Login page must show where users go after access: account center, developer workspace, publisher workspace, and admin operations, with role-required states instead of implying a shared backend password.
-- Login page must summarize account-entry readiness before the forms: email-code launch path, Google/GitHub configuration state, token fallback boundary, current session state, and post-login workspace destinations.
-- `/admin-login` must not introduce a separate shared admin password; it redirects to the same `/login` admin-entry section, and `/admin` remains the real admin workspace after an operator has a reviewer, finance, support, admin, or super_admin role.
+- Login page must keep the normal user path first: Google/GitHub when configured, username/email password login/register, then secondary account/recovery links.
+- Account and admin readiness surfaces must show where users go after access: account center, developer workspace, publisher workspace, and admin operations, with role-required states instead of implying a shared backend password.
+- `/admin-login` must not be advertised on the public login page and must not introduce a separate shared admin password; `/admin` remains the real admin workspace after an operator has a reviewer, finance, support, admin, or super_admin role.
 
 ### Account Center `/account`
 

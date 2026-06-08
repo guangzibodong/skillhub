@@ -154,6 +154,7 @@ Account UX is part of the product, not an internal bootstrap console.
 
 Login/register must support these paths:
 
+- Username/email plus password registration and login, with salted password hashes and no raw password persistence.
 - Email verification-code registration for a new organization workspace and email-code login for existing users.
 - Google OAuth login with provider credentials, consent screen, server callback, verified email, state validation, and httpOnly web session.
 - GitHub OAuth login with provider credentials, callback, verified email, state validation, and httpOnly web session.
@@ -164,6 +165,7 @@ Personal center requirements:
 - Show profile identity, email, platform role, organization, and membership role.
 - Show connected or available login methods: email, Google, GitHub, and token fallback.
 - Store connected provider identities separately from raw session tokens, including provider user id, verified provider email, connection time, and latest login time.
+- Store password credentials separately from profile rows, using per-user salts, PBKDF2-SHA256 hashes, and migration-gated credential storage.
 - Store short-lived email verification challenges with HMAC-hashed codes, expiry, attempt limits, delivery status, and single-use consumption before issuing a session.
 - Email-code debug previews are allowed only for explicit non-production testing. Production-like runtimes must never return verification codes in API responses, debug email providers must not mark production verification emails as sent, and sent email-code notification payloads must not retain the raw code after provider handoff.
 - Show token-session metadata without exposing the raw token after first reveal.
@@ -172,7 +174,7 @@ Personal center requirements:
 - Show workspace readiness: team members, active tokens, project count, owned skill count, unread notifications, notification preference coverage, billing readiness, invoice readiness, publisher status, and payout status.
 - Let the user reach developer, publisher, dashboard, and admin workspaces from one place.
 - Let the user manage notification preferences before the final email/webhook delivery providers are connected.
-- Avoid treating Google/GitHub as fake buttons: if OAuth credentials/callbacks are not configured, show a clear deferred/configuration-required state with the required callback URL and missing launch configuration names, and show callback success or failure state after provider redirects.
+- Avoid treating Google/GitHub as fake buttons: if OAuth credentials/callbacks are not configured, show a clear user-friendly deferred/configuration-required state on the public login page, keep callback URL and missing launch configuration names in operator readiness surfaces, and show callback success or failure state after provider redirects.
 
 The public website must explain:
 

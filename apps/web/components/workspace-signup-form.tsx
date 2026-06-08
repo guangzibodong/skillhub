@@ -15,22 +15,26 @@ const copy = {
     code: "Verification code",
     codeHelp: "The code expires in 10 minutes and can be used once.",
     codePlaceholder: "123456",
-    createMode: "Create workspace",
+    createAccount: "Create account",
+    createMode: "Register",
     developer: "Developer workspace",
     developerHelp: "Build projects, install skills, and create API keys for agents.",
     displayName: "Your name",
     displayNamePlaceholder: "Asha Chen",
     email: "Work email",
-    emailLoginMode: "Email login",
+    emailLoginMode: "Sign in",
     emailPlaceholder: "you@company.com",
-    helper:
-      "Enter your work email and we will send a 6-digit code. New teams can switch to Create workspace.",
+    helper: "Use your email or username with a password. New teams can create a workspace in the register tab.",
+    identifier: "Email or username",
+    identifierPlaceholder: "you@company.com or asha",
     organizationName: "Organization name",
     organizationNamePlaceholder: "Acme Agent Lab",
     organizationSlug: "Workspace slug",
     organizationSlugPlaceholder: "acme-agent-lab",
     owner: "Owner workspace",
     ownerHelp: "Start with full access across developer, publisher, billing, payout, and team setup.",
+    password: "Password",
+    passwordPlaceholder: "At least 8 characters",
     previewCode: "Provider-deferred code preview",
     previewHelp: "Visible only when debug code preview is enabled before the email provider is connected.",
     publisher: "Publisher workspace",
@@ -38,7 +42,11 @@ const copy = {
     requestCode: "Send code",
     requestingCode: "Sending",
     role: "Primary workspace path",
-    title: "Sign in with email",
+    signIn: "Sign in",
+    submitting: "Please wait",
+    title: "Sign in or register",
+    username: "Username",
+    usernamePlaceholder: "asha",
     verify: "Verify and enter",
     verifying: "Verifying",
     workspace: "Open dashboard"
@@ -47,21 +55,26 @@ const copy = {
     code: "验证码",
     codeHelp: "验证码 10 分钟内有效，只能使用一次。",
     codePlaceholder: "123456",
-    createMode: "创建工作区",
+    createAccount: "创建账号",
+    createMode: "注册",
     developer: "开发者工作区",
     developerHelp: "创建项目、安装技能，并为智能体生成 API Key。",
     displayName: "你的姓名",
     displayNamePlaceholder: "陈明",
     email: "工作邮箱",
-    emailLoginMode: "邮箱登录",
+    emailLoginMode: "登录",
     emailPlaceholder: "you@company.com",
-    helper: "普通用户用邮箱验证码进入工作区。现在会先记录邮件发送事件；团队邀请和运营仍保留 token 兜底。",
+    helper: "使用邮箱或用户名加密码登录。新团队可切换到注册并创建工作区。",
+    identifier: "邮箱或用户名",
+    identifierPlaceholder: "you@company.com 或 asha",
     organizationName: "组织名称",
     organizationNamePlaceholder: "Acme Agent Lab",
     organizationSlug: "工作区 slug",
     organizationSlugPlaceholder: "acme-agent-lab",
     owner: "负责人工作区",
     ownerHelp: "先获得完整工作区权限，可配置开发者、发布者、账单、提现和团队。",
+    password: "密码",
+    passwordPlaceholder: "至少 8 位",
     previewCode: "邮件供应商接入前的验证码预览",
     previewHelp: "仅在调试预览开启时显示，正式邮件供应商接入后会关闭。",
     publisher: "发布者工作区",
@@ -69,7 +82,11 @@ const copy = {
     requestCode: "发送验证码",
     requestingCode: "发送中",
     role: "主要使用路径",
-    title: "邮箱访问",
+    signIn: "登录",
+    submitting: "处理中",
+    title: "登录或注册",
+    username: "用户名",
+    usernamePlaceholder: "asha",
     verify: "验证并进入",
     verifying: "验证中",
     workspace: "打开工作台"
@@ -105,7 +122,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
 
       {!showChallenge && !state.subject ? (
         <form action={action} className="auth-form auth-form--stack">
-          <input name="intent" type="hidden" value="request" />
+          <input name="intent" type="hidden" value="password" />
           <input name="mode" type="hidden" value={mode} />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
@@ -126,12 +143,20 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
             </button>
           </div>
           <div className={mode === "login" ? "auth-form-grid auth-form-grid--single" : "auth-form-grid"}>
-            <label>
-              <span>{labels.email}</span>
-              <input autoComplete="email" name="email" placeholder={labels.emailPlaceholder} required type="email" />
-            </label>
             {mode === "signup" ? (
               <>
+                <label>
+                  <span>{labels.username}</span>
+                  <input autoComplete="username" name="username" placeholder={labels.usernamePlaceholder} required />
+                </label>
+                <label>
+                  <span>{labels.email}</span>
+                  <input autoComplete="email" name="email" placeholder={labels.emailPlaceholder} required type="email" />
+                </label>
+                <label className="auth-form-grid__wide">
+                  <span>{labels.password}</span>
+                  <input autoComplete="new-password" name="password" placeholder={labels.passwordPlaceholder} required type="password" />
+                </label>
                 <label>
                   <span>{labels.displayName}</span>
                   <input autoComplete="name" name="displayName" placeholder={labels.displayNamePlaceholder} />
@@ -153,7 +178,18 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
                   </select>
                 </label>
               </>
-            ) : null}
+            ) : (
+              <>
+                <label>
+                  <span>{labels.identifier}</span>
+                  <input autoComplete="username" name="identifier" placeholder={labels.identifierPlaceholder} required />
+                </label>
+                <label>
+                  <span>{labels.password}</span>
+                  <input autoComplete="current-password" name="password" placeholder={labels.passwordPlaceholder} required type="password" />
+                </label>
+              </>
+            )}
           </div>
           {mode === "signup" ? (
             <div className="auth-role-hints">
@@ -167,7 +203,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
           ) : null}
           <button className="primary-button" disabled={isPending} type="submit">
             <Send size={16} aria-hidden="true" />
-            <span>{isPending ? labels.requestingCode : labels.requestCode}</span>
+            <span>{isPending ? labels.submitting : mode === "signup" ? labels.createAccount : labels.signIn}</span>
           </button>
         </form>
       ) : null}
