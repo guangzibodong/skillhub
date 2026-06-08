@@ -857,7 +857,13 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        <JourneyRail currentStep="publisher" journey="publisher" locale={locale} />
+        <JourneyRail
+          actionHrefOverride={hasWorkspaceSession ? "/account" : "/login"}
+          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          currentStep="publisher"
+          journey="publisher"
+          locale={locale}
+        />
 
         <section className="console-board publisher-console-board">
           <SessionStatusPanel locale={locale} session={session} />

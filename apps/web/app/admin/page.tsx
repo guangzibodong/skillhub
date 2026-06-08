@@ -415,7 +415,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        <JourneyRail currentStep="admin" journey="admin" locale={locale} />
+        <JourneyRail
+          actionHrefOverride={hasWorkspaceSession ? "/account" : "/login"}
+          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          currentStep="admin"
+          journey="admin"
+          locale={locale}
+        />
 
         <section className="console-board">
           <SessionStatusPanel locale={locale} session={session} />

@@ -4025,6 +4025,14 @@ a {
   gap: 14px;
 }
 
+.auth-status-panel--signed-out {
+  border-color: rgba(215, 168, 76, 0.22);
+}
+
+.auth-status-panel--signed-out .card-kicker {
+  color: var(--amber);
+}
+
 .workspace-access-panel {
   display: grid;
   grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
@@ -4311,6 +4319,11 @@ a {
   border-radius: var(--radius);
   background: rgba(155, 226, 141, 0.055);
   padding: 12px;
+}
+
+.auth-empty-state__action {
+  width: fit-content;
+  margin-top: 6px;
 }
 
 .auth-token-result {

@@ -120,7 +120,7 @@ export function WorkspaceAccessPanel({ locale, requiredRoles, session, workspace
         <div className="workspace-access-meta">
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.currentRoles}</span>
-          <strong>{subject ? formatRoles([subject.platformRole, ...subject.roles]) : labels.noSessionBody}</strong>
+          <strong>{subject ? formatRoles([subject.platformRole, ...subject.roles]) : labels.noSession}</strong>
         </div>
         <div className="workspace-access-meta">
           <LockKeyhole size={16} aria-hidden="true" />

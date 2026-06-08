@@ -321,12 +321,16 @@ const copy: Record<
 };
 
 export function JourneyRail({
+  actionHrefOverride,
+  actionLabelOverride,
   className,
   currentStep,
   journey,
   locale,
   publicSurface = false
 }: {
+  actionHrefOverride?: string;
+  actionLabelOverride?: string;
   className?: string;
   currentStep: JourneyStepId;
   journey: JourneyId;
@@ -342,6 +346,8 @@ export function JourneyRail({
   const next = labels.steps[currentIndex + 1] ?? current;
   const JourneyIcon = journeyIcons[journey];
   const hideOperatorAction = publicSurface && journey === "admin";
+  const actionHref = actionHrefOverride ?? next.href;
+  const actionLabel = actionLabelOverride ?? next.action;
   const operatorOnlyLabel =
     locale === "zh" ? "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5" : "Operator direct link only";
 
@@ -390,8 +396,8 @@ export function JourneyRail({
           <ShieldCheck size={15} aria-hidden="true" />
         </span>
       ) : (
-        <a className="journey-rail__action" href={localizedHref(next.href, locale)}>
-          <span>{next.action}</span>
+        <a className="journey-rail__action" href={localizedHref(actionHref, locale)}>
+          <span>{actionLabel}</span>
           <ArrowRight size={15} aria-hidden="true" />
         </a>
       )}
