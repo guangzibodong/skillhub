@@ -180,6 +180,7 @@ async function checkAdminProtection({ apiUrl, timeoutMs }) {
     "/v1/admin/launch-readiness",
     "/v1/admin/reviews",
     "/v1/admin/finance/ledger",
+    "/v1/admin/notification-templates",
     "/v1/admin/identity-directory",
     "/v1/admin/audit-logs",
   ];
@@ -500,6 +501,7 @@ async function checkAdminPayouts({ apiUrl, financeToken, timeoutMs }) {
 
 async function checkAdminNotifications({ adminToken, apiUrl, timeoutMs }) {
   await checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs });
+  await checkAdminNotificationTemplates({ adminToken, apiUrl, timeoutMs });
   await checkAdminNotificationDeliveries({ adminToken, apiUrl, timeoutMs });
   await checkAdminNotificationDeliveryDryRun({ adminToken, apiUrl, timeoutMs });
 }
@@ -528,6 +530,58 @@ async function checkAdminNotificationQueue({ adminToken, apiUrl, timeoutMs }) {
     }
 
     pass(name, `notifications=${json.notifications.length}`);
+  } catch (error) {
+    fail(name, redactSecrets(error.message));
+  }
+}
+
+async function checkAdminNotificationTemplates({ adminToken, apiUrl, timeoutMs }) {
+  const name = "GET /v1/admin/notification-templates";
+  const allowedChannels = new Set(["email", "in_app", "webhook"]);
+  const allowedStatuses = new Set(["draft", "active", "archived"]);
+
+  try {
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/v1/admin/notification-templates?limit=24"),
+      authorized(adminToken, timeoutMs),
+    );
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}: ${safeError(json)}`);
+      return;
+    }
+
+    if (!Array.isArray(json?.templates)) {
+      fail(name, "expected templates array");
+      return;
+    }
+
+    const invalid = json.templates.filter(
+      (template) =>
+        typeof template?.id !== "string" ||
+        typeof template?.templateKey !== "string" ||
+        typeof template?.locale !== "string" ||
+        typeof template?.subject !== "string" ||
+        typeof template?.body !== "string" ||
+        typeof template?.updatedAt !== "string" ||
+        !allowedChannels.has(template?.channel) ||
+        !allowedStatuses.has(template?.status),
+    );
+
+    if (invalid.length > 0) {
+      fail(
+        name,
+        "template rows must include id, templateKey, channel, locale, subject, body, status, and updatedAt",
+      );
+      return;
+    }
+
+    if (!assertNoSensitiveLeaks(name, text, "notification templates")) {
+      return;
+    }
+
+    const activeCount = json.templates.filter((template) => template.status === "active").length;
+    pass(name, `templates=${json.templates.length}, active=${activeCount}`);
   } catch (error) {
     fail(name, redactSecrets(error.message));
   }

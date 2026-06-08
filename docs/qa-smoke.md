@@ -198,6 +198,7 @@ The Journey C smoke is non-mutating. It proves the admin console is an operating
 - `GET /v1/admin/finance/disputes`
 - `GET /v1/admin/payouts`
 - `GET /v1/admin/notifications`
+- `GET /v1/admin/notification-templates`
 - `GET /v1/admin/notification-deliveries`
 - `POST /v1/admin/notification-deliveries/process` in `dry_run` mode, including secret-safe fanout preview counts.
 - `GET /v1/admin/webhook-deliveries`
@@ -234,7 +235,7 @@ export SKILLHUB_P0_ADMIN_CURATION_TOKEN="<reviewer-or-admin-user-token>"
 pnpm smoke:p0:admin
 ```
 
-The script also checks common Chinese mojibake markers, authorization-shaped secret leaks in admin responses, and launch-readiness contract drift across the required readiness sections and evidence item keys. The protected secret scan includes overview, launch readiness, review, finance ledger, commission rules, refunds, disputes, payouts, notification delivery, webhook delivery, identity, audit, trust, and curation reads. It performs no writes, so no `--allow-production` flag is needed.
+The script also checks common Chinese mojibake markers, authorization-shaped secret leaks in admin responses, and launch-readiness contract drift across the required readiness sections and evidence item keys. The protected secret scan includes overview, launch readiness, review, finance ledger, commission rules, refunds, disputes, payouts, notification templates, notification delivery, webhook delivery, identity, audit, trust, and curation reads. It performs no writes, so no `--allow-production` flag is needed.
 
 ## P0 demo chain
 

@@ -591,6 +591,7 @@ async function checkAdminProtection({ apiUrl, timeoutMs }) {
     "/v1/admin/finance/ledger",
     "/v1/admin/payouts",
     "/v1/admin/notifications",
+    "/v1/admin/notification-templates",
     "/v1/admin/notification-deliveries",
     "/v1/admin/webhook-deliveries",
     "/v1/admin/identity-directory",
