@@ -347,6 +347,7 @@ const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
 const PROTECTED_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --timeout-ms 30000";
+const PRIMARY_PROD_APP_URL = "https://useskillhub.com";
 const ONE_PANEL_IMAGE_REBUILD =
   "docker compose -f docker-compose.1panel.yml build --no-cache api web";
 const ONE_PANEL_CONTAINER_RECREATE =
@@ -363,6 +364,7 @@ const RELEASE_COMMAND_GUARDS = [
       PROTECTED_P0_PROD_GATE,
       ONE_PANEL_IMAGE_REBUILD,
       ONE_PANEL_CONTAINER_RECREATE,
+      `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
       "SKILLHUB_P0_ADMIN_TOKEN",
       "docker restart skillhub-api skillhub-web",
       "Do not run mutating P0 smokes against production during a routine update.",
@@ -376,6 +378,9 @@ const RELEASE_COMMAND_GUARDS = [
       PROTECTED_P0_PROD_GATE,
       ONE_PANEL_IMAGE_REBUILD,
       ONE_PANEL_CONTAINER_RECREATE,
+      "`useskillhub.com` -> `http://127.0.0.1:3100`",
+      "`www.useskillhub.com` -> `http://127.0.0.1:3100`",
+      `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
       "do not rely on `docker restart`",
       "routine post-deploy public gate",
       "Mutating P0 smokes",
@@ -409,6 +414,7 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      PRIMARY_PROD_APP_URL,
       "routine 1Panel updates",
       "protected Journey C",
       "Mutating journey checks are opt-in",
@@ -420,6 +426,7 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      PRIMARY_PROD_APP_URL,
       "Routine 1Panel public gate",
       "Performs no writes and does not require an operator token.",
       "Full protected Journey C gate",

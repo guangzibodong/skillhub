@@ -29,6 +29,8 @@ deploy/docker   Docker images for web and gateway
 Production currently runs on a Debian server through Docker Compose:
 
 ```text
+useskillhub.com     -> reverse proxy -> skillhub-web -> Next.js
+www.useskillhub.com -> reverse proxy -> skillhub-web -> Next.js
 app.useskillhub.com -> reverse proxy -> skillhub-web -> Next.js
 api.useskillhub.com -> reverse proxy -> skillhub-api -> Hono gateway
 Postgres            -> skillhub-postgres

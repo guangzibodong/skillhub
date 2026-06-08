@@ -801,6 +801,7 @@ function isProductionUrl(value) {
     return [
       "api.useskillhub.com",
       "useskillhub.com",
+      "www.useskillhub.com",
       "app.useskillhub.com",
     ].includes(url.hostname);
   } catch {

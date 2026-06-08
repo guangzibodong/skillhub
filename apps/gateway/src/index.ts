@@ -265,7 +265,12 @@ const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "sup
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000", "https://useskillhub.com", "https://app.useskillhub.com"],
+    origin: [
+      "http://localhost:3000",
+      "https://useskillhub.com",
+      "https://www.useskillhub.com",
+      "https://app.useskillhub.com"
+    ],
     allowHeaders: ["Authorization", "Content-Type"],
     allowMethods: ["GET", "POST", "PUT", "OPTIONS"]
   })

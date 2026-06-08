@@ -156,7 +156,7 @@ const fallbackBuyerRequests = [
     submittedSkillVersion: "0.1.0",
     submittedSkillReviewStatus: "approved",
     deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
-    evidenceUrl: "https://app.useskillhub.com/skills/slack-incident-summarizer",
+    evidenceUrl: "https://useskillhub.com/skills/slack-incident-summarizer",
     submittedAt: "demo",
     decisionNote: null,
     decidedAt: null,

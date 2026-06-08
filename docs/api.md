@@ -213,7 +213,7 @@ curl "https://api.useskillhub.com/v1/stats"
 
 ## Public Registry Surface
 
-The public registry page at `https://app.useskillhub.com/registry` uses `/v1/skills/search` and `/v1/stats` to explain SkillHub's contract layer before marketplace comparison. It should show versioned manifest requirements, lifecycle state, runtime resolution, high-risk/verified/MCP evidence, and the public API endpoint. It intentionally avoids a non-stateful search box because marketplace discovery and ranking belong to `/marketplace`.
+The public registry page at `https://useskillhub.com/registry` uses `/v1/skills/search` and `/v1/stats` to explain SkillHub's contract layer before marketplace comparison. It should show versioned manifest requirements, lifecycle state, runtime resolution, high-risk/verified/MCP evidence, and the public API endpoint. It intentionally avoids a non-stateful search box because marketplace discovery and ranking belong to `/marketplace`.
 
 Production-like runtimes must keep the same demo-fallback rule as marketplace and skill detail pages: bundled supply is suppressed unless `SKILLHUB_ENABLE_DEMO_FALLBACK=true` is explicitly enabled for a controlled demo.
 
@@ -222,8 +222,8 @@ Production-like runtimes must keep the same demo-fallback rule as marketplace an
 The web app exposes public marketplace operating terms at:
 
 ```txt
-https://app.useskillhub.com/terms
-https://app.useskillhub.com/terms?lang=zh
+https://useskillhub.com/terms
+https://useskillhub.com/terms?lang=zh
 ```
 
 The terms page is not an API endpoint. It documents the current operating policy for buyer/developer use, publisher responsibilities, review and takedown, commission and payout states, refunds and disputes, data retention, notifications and webhooks, and provider-deferred payment/email integrations. It is intended to make pre-launch marketplace rules visible while final payment-provider, tax/KYC automation, refund-window, and minimum-payout decisions remain open; P0 publisher payout movement is the decided manual PayPal/Alipay transfer workflow.
@@ -405,7 +405,7 @@ Connected login identities are stored in `user_auth_identities`. Google and GitH
 Required OAuth environment:
 
 ```env
-NEXT_PUBLIC_APP_URL=https://app.useskillhub.com
+NEXT_PUBLIC_APP_URL=https://useskillhub.com
 SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com
 SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
 SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-secret
@@ -1503,8 +1503,8 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding
     "manualAccount": "publisher-paypal@example.com",
     "manualAccountHolder": "SkillHub Publisher",
     "manualNotes": "Optional finance instructions",
-    "returnUrl": "https://app.useskillhub.com/dashboard",
-    "refreshUrl": "https://app.useskillhub.com/dashboard"
+    "returnUrl": "https://useskillhub.com/dashboard",
+    "refreshUrl": "https://useskillhub.com/dashboard"
   }'
 ```
 

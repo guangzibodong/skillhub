@@ -720,14 +720,14 @@ export async function completeOAuthLogin(provider: OAuthProvider, input: { code?
 }
 
 export function oauthSuccessRedirectUrl(returnTo: string | null | undefined, env?: OAuthRuntimeEnv) {
-  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://app.useskillhub.com";
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://useskillhub.com";
   const url = new URL(normalizeReturnTo(returnTo), appUrl);
   url.searchParams.set("oauth", "connected");
   return url.toString();
 }
 
 export function oauthErrorRedirectUrl(message: string, env?: OAuthRuntimeEnv) {
-  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://app.useskillhub.com";
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://useskillhub.com";
   const url = new URL("/login", appUrl);
   url.searchParams.set("oauth", "error");
   url.searchParams.set("message", message.slice(0, 160));

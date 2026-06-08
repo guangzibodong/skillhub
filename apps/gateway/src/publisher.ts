@@ -83,7 +83,7 @@ const fallbackPublisherAccountSummary = {
       payoutAccountId: "demo-payout-account",
       provider: "manual_deferred",
       providerSessionId: "po_demo_session",
-      onboardingUrl: "https://app.useskillhub.com/dashboard?payout_onboarding=demo",
+      onboardingUrl: "https://useskillhub.com/dashboard?payout_onboarding=demo",
       returnUrl: null,
       refreshUrl: null,
       status: "created",
@@ -337,7 +337,7 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
     const providerSessionId = `po_${randomToken(16)}`;
     const onboardingUrl = normalizeProviderHandoffUrl(
       getProcessEnv("SKILLHUB_PAYOUT_ONBOARDING_URL") ??
-        `https://app.useskillhub.com/dashboard?payout_onboarding=${providerSessionId}`,
+        `https://useskillhub.com/dashboard?payout_onboarding=${providerSessionId}`,
       "SKILLHUB_PAYOUT_ONBOARDING_URL"
     );
     const sessionRows = (await tx`

@@ -11,7 +11,7 @@ services:
       - .env
     environment:
       SKILLHUB_ENV: production
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.useskillhub.com}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
     ports:
       - "127.0.0.1:3100:3000"

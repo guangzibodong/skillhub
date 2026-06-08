@@ -84,6 +84,10 @@ For the production URLs:
 pnpm smoke:p0 -- --prod
 ```
 
+In production mode, the suite targets `https://api.useskillhub.com` for the API
+and `https://useskillhub.com` as the primary public web entry. `www` and `app`
+remain valid web aliases, but the release gate should prove the brand domain.
+
 The default suite expects the same admin/super-admin token variables as `pnpm smoke:p0:admin` so it can verify protected Journey C operations. If an operator intentionally wants only public checks, use:
 
 ```bash

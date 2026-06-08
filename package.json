@@ -16,7 +16,7 @@
     "smoke:p0:demo": "node scripts/qa-p0-demo-chain-smoke.mjs",
     "smoke:p0:developer": "node scripts/qa-p0-developer-handoff-smoke.mjs",
     "smoke:p0:publish": "node scripts/qa-p0-publish-handoff-smoke.mjs",
-    "smoke:prod": "node scripts/qa-smoke.mjs --api-url https://api.useskillhub.com --app-url https://app.useskillhub.com"
+    "smoke:prod": "node scripts/qa-smoke.mjs --api-url https://api.useskillhub.com --app-url https://useskillhub.com"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

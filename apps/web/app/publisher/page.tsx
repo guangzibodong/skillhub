@@ -796,7 +796,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = getPublisherPageCopy(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.useskillhub.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://useskillhub.com";
   const publisherReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/publisher", locale)}`;
   const [
     financeLedger,

@@ -1397,7 +1397,7 @@ const fallbackWebhookDeliveries: AdminWebhookDelivery[] = [
 const fallbackLaunchReadiness: LaunchReadinessReport = {
   checkedAt: "demo",
   environment: {
-    appUrl: "https://app.useskillhub.com",
+    appUrl: "https://useskillhub.com",
     callbackBaseUrl: "https://api.useskillhub.com",
     isProductionLike: false,
     runtime: "development"
@@ -2294,7 +2294,7 @@ const fallbackPublisherAccountSummary: PublisherAccountSummary = {
       payoutAccountId: "demo-payout-account",
       provider: "manual_deferred",
       providerSessionId: "po_demo_session",
-      onboardingUrl: "https://app.useskillhub.com/dashboard?payout_onboarding=demo",
+      onboardingUrl: "https://useskillhub.com/dashboard?payout_onboarding=demo",
       returnUrl: null,
       refreshUrl: null,
       status: "created",
@@ -3031,7 +3031,7 @@ const fallbackBuyerRequests: BuyerRequestRecord[] = [
     submittedSkillVersion: "0.1.0",
     submittedSkillReviewStatus: "approved",
     deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
-    evidenceUrl: "https://app.useskillhub.com/skills/slack-incident-summarizer",
+    evidenceUrl: "https://useskillhub.com/skills/slack-incident-summarizer",
     submittedAt: "demo",
     decisionNote: null,
     decidedAt: null,

@@ -11,6 +11,8 @@ Target server:
 
 Point these records to `185.231.220.165`:
 
+- `useskillhub.com`
+- `www.useskillhub.com`
 - `app.useskillhub.com`
 - `api.useskillhub.com`
 
@@ -45,7 +47,7 @@ sed -i "s|replace-with-a-long-random-email-auth-secret|$EMAIL_AUTH_SECRET|g" .en
 sed -i "s|replace-with-a-long-random-api-key-salt|$API_KEY_SALT|g" .env
 sed -i "s|replace-with-a-long-random-admin-token|$ADMIN_TOKEN|g" .env
 sed -i "s|SKILLHUB_ENV=development|SKILLHUB_ENV=production|g" .env
-sed -i "s|NEXT_PUBLIC_APP_URL=http://localhost:3000|NEXT_PUBLIC_APP_URL=https://app.useskillhub.com|g" .env
+sed -i "s|NEXT_PUBLIC_APP_URL=http://localhost:3000|NEXT_PUBLIC_APP_URL=https://useskillhub.com|g" .env
 sed -i "s|NEXT_PUBLIC_API_URL=http://localhost:8787|NEXT_PUBLIC_API_URL=https://api.useskillhub.com|g" .env
 sed -i "s|SKILLHUB_AUTH_CALLBACK_BASE_URL=http://localhost:8787|SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com|g" .env
 sed -i "s|SKILLHUB_AUTH_COOKIE_DOMAIN=|SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com|g" .env
@@ -81,12 +83,16 @@ The stack only binds application ports to localhost:
 
 ## 1Panel Websites
 
-Create two reverse proxy websites in 1Panel:
+Create these reverse proxy websites in 1Panel:
 
+- `useskillhub.com` -> `http://127.0.0.1:3100`
+- `www.useskillhub.com` -> `http://127.0.0.1:3100`
 - `app.useskillhub.com` -> `http://127.0.0.1:3100`
 - `api.useskillhub.com` -> `http://127.0.0.1:18787`
 
-Enable HTTPS for both sites in 1Panel.
+Enable HTTPS for all four sites in 1Panel. `useskillhub.com` is the primary
+public web entry; `www.useskillhub.com` and `app.useskillhub.com` should remain
+valid aliases to the same web container.
 
 If 1Panel asks for custom OpenResty config, use:
 

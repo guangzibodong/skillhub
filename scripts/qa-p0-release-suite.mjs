@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 const DEFAULT_LOCAL_API_URL = "http://localhost:8787";
 const DEFAULT_LOCAL_APP_URL = "http://localhost:3000";
 const DEFAULT_PROD_API_URL = "https://api.useskillhub.com";
-const DEFAULT_PROD_APP_URL = "https://app.useskillhub.com";
+const DEFAULT_PROD_APP_URL = "https://useskillhub.com";
 const DEFAULT_TIMEOUT_MS = 30000;
 
 let args;
@@ -314,7 +314,7 @@ Production modes:
     Requires an admin/super-admin user token already configured in the shell.
 
 Options:
-  --prod                 Use https://api.useskillhub.com and https://app.useskillhub.com.
+  --prod                 Use https://api.useskillhub.com and https://useskillhub.com.
   --api-url <url>        Gateway API URL. Overrides --prod.
   --app-url <url>        Web app URL. Overrides --prod.
   --timeout-ms <ms>      Request timeout for child smoke scripts. Default: ${DEFAULT_TIMEOUT_MS}
