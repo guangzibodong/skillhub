@@ -15826,8 +15826,8 @@ a {
 .journey-rail-step {
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 9px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
   min-width: 0;
   min-height: 124px;
   align-content: start;
@@ -15894,7 +15894,8 @@ a {
 
 .journey-rail-step strong {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
   color: var(--ink);
   font-size: 13px;
   line-height: 1.22;
@@ -15902,7 +15903,8 @@ a {
 
 .journey-rail-step small {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
   color: var(--muted);
   font-size: 11px;
   line-height: 1.45;
