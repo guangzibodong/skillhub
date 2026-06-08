@@ -86,6 +86,17 @@ export default async function PublishPage({ searchParams }: PageProps) {
 
       <JourneyRail currentStep="publish" journey="publisher" locale={locale} />
 
+      <section className="publish-access-board">
+        <WorkspaceAccessPanel
+          locale={locale}
+          requiredRoles={publisherRoles}
+          session={session}
+          workspace="publisher"
+        />
+      </section>
+
+      <PublishForm access={accessNotice} apiUrl={apiUrl} labels={publishCopy.form} locale={locale} />
+
       <section className="publish-pipeline" aria-labelledby="publish-pipeline-heading">
         <div className="publish-pipeline__head">
           <div>
@@ -115,17 +126,6 @@ export default async function PublishPage({ searchParams }: PageProps) {
         />
         <StatusChip tone="neutral">{labels.badge}</StatusChip>
       </section>
-
-      <section className="publish-access-board">
-        <WorkspaceAccessPanel
-          locale={locale}
-          requiredRoles={publisherRoles}
-          session={session}
-          workspace="publisher"
-        />
-      </section>
-
-      <PublishForm access={accessNotice} apiUrl={apiUrl} labels={publishCopy.form} locale={locale} />
     </main>
   );
 }

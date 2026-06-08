@@ -15638,7 +15638,7 @@ a {
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 18px;
   width: min(1220px, calc(100% - 48px));
-  margin: 0 auto;
+  margin: 0 auto 18px;
 }
 
 .publish-main {
