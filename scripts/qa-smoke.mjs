@@ -197,11 +197,7 @@ const PAGE_ASSERTIONS = {
     "\u6ce8\u518c",
     "Google",
   ],
-  "/admin-login": [
-    "Sign in to SkillHub",
-    "Account password",
-    "Register",
-  ],
+  "/admin-login": ["Sign in to SkillHub", "Account password", "Register"],
   "/admin-login?lang=zh": [
     "\u767b\u5f55 SkillHub",
     "\u8d26\u53f7\u5bc6\u7801",
@@ -357,8 +353,7 @@ const SOURCE_MOJIBAKE_MARKERS = [
 ];
 const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
-const PROTECTED_P0_PROD_GATE =
-  "pnpm smoke:p0 -- --prod --timeout-ms 30000";
+const PROTECTED_P0_PROD_GATE = "pnpm smoke:p0 -- --prod --timeout-ms 30000";
 const PRIMARY_PROD_API_URL = "https://api.useskillhub.com";
 const PRIMARY_PROD_APP_URL = "https://useskillhub.com";
 const PROD_API_HEALTH_GATE = "production API health gate";
@@ -377,7 +372,7 @@ const RELEASE_COMMAND_GUARDS = [
     file: "docs/server-update.md",
     forbidden: [
       'SKILLHUB_SMOKE_TOKEN="$ADMIN_TOKEN" pnpm smoke:prod',
-      "curl \"https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3\"",
+      'curl "https://api.useskillhub.com/v1/admin/marketplace-curation?limit=3"',
     ],
     required: [
       PUBLIC_P0_PROD_GATE,
@@ -571,9 +566,12 @@ async function checkHealth({ apiUrl, timeoutMs }) {
   const name = "GET /health";
 
   try {
-    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/health"), {
-      timeoutMs,
-    });
+    const { status, json, text } = await requestJson(
+      joinUrl(apiUrl, "/health"),
+      {
+        timeoutMs,
+      },
+    );
 
     if (status !== 200) {
       fail(name, `expected HTTP 200, got ${status}`);
@@ -869,9 +867,14 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
         typeof skill?.description !== "string" ||
         !Array.isArray(skill?.tags) ||
         typeof skill?.version !== "string" ||
-        !["draft", "submitted", "verified", "deprecated", "rejected", "suspended"].includes(
-          skill?.verificationStatus,
-        ) ||
+        ![
+          "draft",
+          "submitted",
+          "verified",
+          "deprecated",
+          "rejected",
+          "suspended",
+        ].includes(skill?.verificationStatus) ||
         !["low", "medium", "high"].includes(skill?.permissionLevel) ||
         !["http", "mcp", "local"].includes(skill?.runtimeType) ||
         !["free", "per_call", "subscription"].includes(skill?.billingModel) ||
@@ -901,10 +904,7 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
     );
 
     if (leakedCurationField) {
-      fail(
-        name,
-        "public search rows must not expose internal curation fields",
-      );
+      fail(name, "public search rows must not expose internal curation fields");
       return;
     }
 
@@ -1126,7 +1126,10 @@ async function checkPublicSkillFeedbackApi({ apiUrl, slug, timeoutMs }) {
 
   try {
     const { status, json, text } = await requestJson(
-      joinUrl(apiUrl, `/v1/skills/${encodeURIComponent(slug)}/feedback?limit=12`),
+      joinUrl(
+        apiUrl,
+        `/v1/skills/${encodeURIComponent(slug)}/feedback?limit=12`,
+      ),
       { timeoutMs },
     );
 
@@ -1467,7 +1470,8 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
     },
     {
       body: {
-        reason: "Routine no-token boundary probe for finance payout verification.",
+        reason:
+          "Routine no-token boundary probe for finance payout verification.",
         sessionId: "public-payout-session-boundary",
         status: "verified",
       },
@@ -1507,7 +1511,8 @@ async function checkAdminActionProtection({ apiUrl, timeoutMs }) {
         name: "Unauthorized commission boundary",
         platformFeeBps: 2000,
         publisherShareBps: 8000,
-        reason: "Routine public smoke should not be able to create commission rules.",
+        reason:
+          "Routine public smoke should not be able to create commission rules.",
       },
       name: "POST /v1/admin/finance/commission-rules without token",
       path: "/v1/admin/finance/commission-rules",
@@ -1684,9 +1689,16 @@ async function checkAdminActionProtection({ apiUrl, timeoutMs }) {
 
 async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
   await checkPublicMcpToolList({ apiUrl, timeoutMs });
-  const publicResource = await checkPublicMcpResourceList({ apiUrl, timeoutMs });
+  const publicResource = await checkPublicMcpResourceList({
+    apiUrl,
+    timeoutMs,
+  });
   if (publicResource) {
-    await checkPublicMcpResourceRead({ apiUrl, resource: publicResource, timeoutMs });
+    await checkPublicMcpResourceRead({
+      apiUrl,
+      resource: publicResource,
+      timeoutMs,
+    });
   }
   await checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs });
 }
@@ -1814,7 +1826,10 @@ async function checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs }) {
       return;
     }
 
-    if (json?.jsonrpc !== "2.0" || json?.id !== "public-tools-call-boundary-smoke") {
+    if (
+      json?.jsonrpc !== "2.0" ||
+      json?.id !== "public-tools-call-boundary-smoke"
+    ) {
       fail(name, "expected a JSON-RPC 2.0 response with the request id");
       return;
     }
@@ -1919,7 +1934,10 @@ async function checkPublicMcpResourceList({ apiUrl, timeoutMs }) {
     const internalField = resources.find(findPublicMcpInternalField);
 
     if (internalField) {
-      fail(name, "public MCP resources/list must not expose project or operator fields");
+      fail(
+        name,
+        "public MCP resources/list must not expose project or operator fields",
+      );
       return null;
     }
 
@@ -2018,7 +2036,10 @@ async function checkPublicMcpResourceRead({ apiUrl, resource, timeoutMs }) {
     }
 
     if (findPublicMcpInternalField(publicContract)) {
-      fail(name, "public MCP resources/read must not expose project or operator fields");
+      fail(
+        name,
+        "public MCP resources/read must not expose project or operator fields",
+      );
       return;
     }
 
@@ -2249,15 +2270,62 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
     }
   }
 
+  await checkAppNotFoundPage({ appUrl, timeoutMs });
   await checkPublicSkillDetailPage({ appUrl, timeoutMs });
   await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
 }
 
-async function checkProductionAppAliases({
-  appAliasUrls,
-  appUrl,
-  timeoutMs,
-}) {
+async function checkAppNotFoundPage({ appUrl, timeoutMs }) {
+  const path = "/skills/__missing-skillhub-smoke__?lang=zh";
+  const name = `GET app custom 404 ${path}`;
+
+  try {
+    const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+    if (response.status !== 404) {
+      fail(name, `expected HTTP 404, got ${response.status}`);
+      return;
+    }
+
+    const html = response.text.toLowerCase();
+    const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+      response.text.includes(marker),
+    );
+
+    if (mojibakeMarkers.length > 0) {
+      fail(
+        name,
+        `possible mojibake markers in custom 404 HTML: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+      );
+      return;
+    }
+
+    const expectedMarkers = [
+      "page not found",
+      "\u9875\u9762\u6ca1\u6709\u627e\u5230",
+      "back to marketplace",
+      "\u8fd4\u56de\u5e02\u573a",
+      "safe recovery state",
+    ];
+    const missingMarkers = expectedMarkers.filter(
+      (token) => !html.includes(token.toLowerCase()),
+    );
+
+    if (missingMarkers.length > 0) {
+      fail(
+        name,
+        `missing custom 404 recovery markers: ${missingMarkers.join(", ")}`,
+      );
+      return;
+    }
+
+    pass(name, `html bytes=${Buffer.byteLength(response.text, "utf8")}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkProductionAppAliases({ appAliasUrls, appUrl, timeoutMs }) {
   if (!appAliasUrls || appAliasUrls.length === 0) {
     return;
   }
@@ -2311,7 +2379,9 @@ async function checkProductionAppAliases({
 
         const expectedContent =
           PAGE_ASSERTIONS[path] ??
-          (isZhAppPath(path) ? [] : PAGE_ASSERTIONS[basePathFromAppPath(path)]) ??
+          (isZhAppPath(path)
+            ? []
+            : PAGE_ASSERTIONS[basePathFromAppPath(path)]) ??
           [];
         const missingContent = expectedContent.filter(
           (token) => !html.includes(token.toLowerCase()),
@@ -2542,7 +2612,9 @@ async function checkReleaseCommandGate() {
 
       for (const forbidden of guard.forbidden) {
         if (text.includes(forbidden)) {
-          failures.push(`${guard.file} still contains ${JSON.stringify(forbidden)}`);
+          failures.push(
+            `${guard.file} still contains ${JSON.stringify(forbidden)}`,
+          );
         }
       }
     }
@@ -2927,11 +2999,7 @@ function findForbiddenPublicField(value, forbiddenNames, path = []) {
       return nextPath.join(".");
     }
 
-    const childPath = findForbiddenPublicField(
-      child,
-      forbiddenNames,
-      nextPath,
-    );
+    const childPath = findForbiddenPublicField(child, forbiddenNames, nextPath);
 
     if (childPath) {
       return childPath;
@@ -3193,7 +3261,10 @@ function hasUnsafePublicSkillManifestFields(value) {
     return true;
   }
 
-  if (runtime.type === "http" && hasEmbeddedUrlCredentials(runtime.entrypoint)) {
+  if (
+    runtime.type === "http" &&
+    hasEmbeddedUrlCredentials(runtime.entrypoint)
+  ) {
     return true;
   }
 
@@ -3212,7 +3283,9 @@ function hasUnsafePublicSkillManifestFields(value) {
 
   return (
     Array.isArray(permissions.secrets) &&
-    permissions.secrets.some((secret) => !isPublicSecretHandlePlaceholder(secret))
+    permissions.secrets.some(
+      (secret) => !isPublicSecretHandlePlaceholder(secret),
+    )
   );
 }
 
