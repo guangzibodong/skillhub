@@ -67,6 +67,14 @@ set_env_value() {
   local key="$1"
   local value="$2"
   local tmp
+
+  value="$(printf '%s' "$value" | tr -d '\r\n')"
+
+  if [ -z "$value" ]; then
+    echo "$key cannot be empty." >&2
+    exit 1
+  fi
+
   tmp="$(mktemp)"
   grep -v "^${key}=" .env > "$tmp" || true
   printf '%s=%s\n' "$key" "$value" >> "$tmp"
@@ -102,7 +110,7 @@ prompt_visible() {
         printf '%s' "$value"
         break
       fi
-      echo "$label is required."
+      echo "$label is required." >&2
     done
   fi
 }
@@ -114,17 +122,17 @@ prompt_secret() {
 
   if [ -n "$existing" ]; then
     read -r -s -p "$label [press Enter to keep existing]: " value
-    echo
+    echo >&2
     printf '%s' "${value:-$existing}"
   else
     while true; do
       read -r -s -p "$label: " value
-      echo
+      echo >&2
       if [ -n "$value" ]; then
         printf '%s' "$value"
         break
       fi
-      echo "$label is required."
+      echo "$label is required." >&2
     done
   fi
 }
