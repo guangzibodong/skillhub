@@ -3520,6 +3520,10 @@ a {
   margin: 42px auto 76px;
 }
 
+.login-screen--signed-in {
+  grid-template-columns: minmax(0, 0.84fr) minmax(360px, 460px);
+}
+
 .login-screen__copy {
   display: grid;
   gap: 18px;
@@ -3610,7 +3614,27 @@ a {
   padding: 13px;
 }
 
+.login-switch-account-details {
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.16);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.04);
+  padding: 13px;
+}
+
 .login-recovery-details summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+  list-style: none;
+}
+
+.login-switch-account-details summary {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3626,8 +3650,19 @@ a {
   display: none;
 }
 
+.login-switch-account-details summary::-webkit-details-marker {
+  display: none;
+}
+
 .login-recovery-details > p {
   margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.login-switch-account-details > p {
+  margin: 9px 0 14px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
@@ -3636,6 +3671,13 @@ a {
 .login-recovery-details .auth-card {
   margin-top: 12px;
   border-color: rgba(215, 168, 76, 0.16);
+  box-shadow: none;
+}
+
+.login-switch-account-details > .ops-panel,
+.login-switch-account-details > .auth-card,
+.login-switch-account-details > .login-recovery-details {
+  margin-top: 12px;
   box-shadow: none;
 }
 
@@ -4069,6 +4111,18 @@ a {
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.035);
   padding: 12px;
+}
+
+.auth-status-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.auth-status-actions .primary-button,
+.auth-status-actions .secondary-button {
+  justify-content: center;
+  width: 100%;
 }
 
 .auth-provider-panel {
@@ -17046,6 +17100,11 @@ a {
 
   .login-secondary-links {
     gap: 4px;
+  }
+
+  .auth-status-actions,
+  .auth-status-grid {
+    grid-template-columns: 1fr;
   }
 
   .login-auth-stack .ops-panel {

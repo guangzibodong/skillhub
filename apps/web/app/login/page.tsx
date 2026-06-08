@@ -31,6 +31,11 @@ const copy = {
     oauthConnected: "OAuth login completed. Your browser session is now connected to the workspace.",
     oauthError: "OAuth login needs attention.",
     oauthErrorFallback: "The provider callback could not complete. Check provider configuration and try again.",
+    signedInBody: "Your browser is already connected to a SkillHub workspace. Continue to the account center or dashboard, or switch accounts below.",
+    signedInEyebrow: "Signed-in account",
+    signedInTitle: "You are already signed in.",
+    switchAccount: "Use another account",
+    switchAccountBody: "Open this only when you need to connect a different Google, GitHub, password, or recovery-token session.",
     title: "Sign in to SkillHub.",
     tokenFallback: "Token fallback",
     tokenFallbackBody: "Reserved for bootstrap, invitations, and recovery. Normal users should use account password or configured OAuth."
@@ -44,6 +49,11 @@ const copy = {
     oauthConnected: "OAuth 登录已完成，浏览器会话已连接到工作区。",
     oauthError: "OAuth 登录需要处理",
     oauthErrorFallback: "Provider 回调没有完成，请检查配置后重试。",
+    signedInBody: "当前浏览器已经连接 SkillHub 工作区。继续进入个人中心或工作台；需要换号时再展开下方入口。",
+    signedInEyebrow: "已登录账号",
+    signedInTitle: "你已登录 SkillHub。",
+    switchAccount: "切换账号或重新登录",
+    switchAccountBody: "只有需要换 Google、GitHub、账号密码或恢复 token 时才打开这里。",
     title: "登录 SkillHub。",
     tokenFallback: "Token 兜底",
     tokenFallbackBody: "仅用于初始化、团队邀请和运营恢复。正常用户应使用账号密码或已配置的 OAuth。"
@@ -58,19 +68,20 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const [providers, session] = await Promise.all([getAuthProviders(), getWorkspaceSession()]);
   const notice = oauthNotice(params, labels);
+  const isSignedIn = Boolean(session.subject);
 
   return (
     <main className="product-shell">
       <SiteHeader active="dashboard" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/login" />
 
-      <section className="login-screen">
+      <section className={isSignedIn ? "login-screen login-screen--signed-in" : "login-screen"}>
         <div className="login-screen__copy">
           <div className="eyebrow">
             <ShieldCheck size={16} aria-hidden="true" />
-            <span>{labels.eyebrow}</span>
+            <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
           </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.body}</p>
+          <h1>{isSignedIn ? labels.signedInTitle : labels.title}</h1>
+          <p>{isSignedIn ? labels.signedInBody : labels.body}</p>
         </div>
 
         <div className="login-auth-stack">
@@ -84,32 +95,63 @@ export default async function LoginPage({ searchParams }: PageProps) {
             </section>
           ) : null}
 
-          <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
+          {isSignedIn ? (
+            <>
+              <SessionStatusPanel locale={locale} session={session} />
 
-          <div className="login-divider">
-            <MailCheck size={15} aria-hidden="true" />
-            <span>{labels.emailCode}</span>
-          </div>
+              <details className="login-switch-account-details">
+                <summary>
+                  <UserCircle size={15} aria-hidden="true" />
+                  <span>{labels.switchAccount}</span>
+                </summary>
+                <p>{labels.switchAccountBody}</p>
+                <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
 
-          <WorkspaceSignupForm locale={locale} />
+                <div className="login-divider">
+                  <MailCheck size={15} aria-hidden="true" />
+                  <span>{labels.emailCode}</span>
+                </div>
 
-          {session.subject ? <SessionStatusPanel locale={locale} session={session} /> : null}
+                <WorkspaceSignupForm locale={locale} />
 
-          <details className="login-recovery-details">
-            <summary>
-              <KeyRound size={15} aria-hidden="true" />
-              <span>{labels.tokenFallback}</span>
-            </summary>
-            <p>{labels.tokenFallbackBody}</p>
-            <SessionLoginForm locale={locale} />
-          </details>
+                <details className="login-recovery-details">
+                  <summary>
+                    <KeyRound size={15} aria-hidden="true" />
+                    <span>{labels.tokenFallback}</span>
+                  </summary>
+                  <p>{labels.tokenFallbackBody}</p>
+                  <SessionLoginForm locale={locale} />
+                </details>
+              </details>
+            </>
+          ) : (
+            <>
+              <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
 
-          <div className="login-secondary-links">
-            <a className="login-account-link" href={localizedHref("/account", locale)}>
-              <UserCircle size={17} aria-hidden="true" />
-              <span>{labels.account}</span>
-            </a>
-          </div>
+              <div className="login-divider">
+                <MailCheck size={15} aria-hidden="true" />
+                <span>{labels.emailCode}</span>
+              </div>
+
+              <WorkspaceSignupForm locale={locale} />
+
+              <details className="login-recovery-details">
+                <summary>
+                  <KeyRound size={15} aria-hidden="true" />
+                  <span>{labels.tokenFallback}</span>
+                </summary>
+                <p>{labels.tokenFallbackBody}</p>
+                <SessionLoginForm locale={locale} />
+              </details>
+
+              <div className="login-secondary-links">
+                <a className="login-account-link" href={localizedHref("/account", locale)}>
+                  <UserCircle size={17} aria-hidden="true" />
+                  <span>{labels.account}</span>
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </main>
