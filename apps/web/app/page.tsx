@@ -56,7 +56,7 @@ const operatingIcons = [Code2, PackageCheck, ShieldCheck] as const;
 
 const proofCopy = {
   en: {
-    action: "Open launch readiness",
+    action: "View workspace proof",
     body: "These are not brochure claims. They are the operating surfaces a buyer, publisher, or platform operator can revisit after the first install.",
     eyebrow: "Operating proof",
     items: [
@@ -88,7 +88,7 @@ const proofCopy = {
     title: "A customer can inspect the platform, not just the pitch.",
   },
   zh: {
-    action: "\u67e5\u770b\u4e0a\u7ebf\u5c31\u7eea\u5ea6",
+    action: "\u67e5\u770b\u5de5\u4f5c\u53f0\u8bc1\u636e",
     body: "\u8fd9\u4e0d\u662f\u5ba3\u4f20\u6587\u6848\u3002\u8fd9\u4e9b\u662f\u4e70\u5bb6\u3001\u53d1\u5e03\u8005\u548c\u5e73\u53f0\u8fd0\u8425\u5728\u9996\u6b21\u5b89\u88c5\u540e\u4ecd\u7136\u4f1a\u56de\u6765\u5904\u7406\u7684\u771f\u5b9e\u754c\u9762\u548c\u72b6\u6001\u3002",
     eyebrow: "\u8fd0\u8425\u8bc1\u636e",
     items: [
@@ -146,9 +146,9 @@ const operatingCopy = {
         status: "Draft -> review -> improve",
       },
       {
-        action: "Open admin operations",
+        action: "Operator direct link only",
         body: "Prioritize reviews, govern abuse and incidents, process ledger states, manage notification delivery, and inspect launch readiness without exposing secrets.",
-        href: "/admin",
+        href: null,
         label: "Platform Operator",
         metric: "Trust and finance",
         status: "Review -> govern -> launch",
@@ -186,9 +186,9 @@ const operatingCopy = {
         status: "\u8349\u7a3f -> \u5ba1\u6838 -> \u6539\u8fdb",
       },
       {
-        action: "\u6253\u5f00\u5e73\u53f0\u540e\u53f0",
+        action: "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5",
         body: "\u5904\u7406\u5ba1\u6838\u4f18\u5148\u7ea7\uff0c\u6cbb\u7406\u6ee5\u7528\u548c\u4e8b\u6545\uff0c\u5904\u7406\u8d26\u672c\u72b6\u6001\uff0c\u7ba1\u7406\u901a\u77e5\u6295\u9012\uff0c\u5e76\u7528\u4e0d\u66b4\u9732\u5bc6\u94a5\u7684\u65b9\u5f0f\u68c0\u67e5\u4e0a\u7ebf\u5c31\u7eea\u5ea6\u3002",
-        href: "/admin",
+        href: null,
         label: "\u5e73\u53f0\u8fd0\u8425",
         metric: "\u4fe1\u4efb\u548c\u8d22\u52a1",
         status: "\u5ba1\u6838 -> \u6cbb\u7406 -> \u4e0a\u7ebf",
@@ -324,7 +324,7 @@ export default async function Home({ searchParams }: PageProps) {
             >
               <LayoutDashboard size={18} aria-hidden="true" />
               <span>
-                {locale === "zh" ? "\u540e\u53f0\u5165\u53e3" : "Open consoles"}
+                {locale === "zh" ? "\u5de5\u4f5c\u53f0\u5165\u53e3" : "Open workspace"}
               </span>
             </a>
           </div>
@@ -402,7 +402,7 @@ tools: skillhub.search, skillhub.get`}</code>
 
         <ConsoleAccessPanel locale={locale} session={session} />
 
-        <JourneyRailDeck locale={locale} />
+        <JourneyRailDeck locale={locale} publicSurface />
 
         <section
           className="operating-console reveal-item reveal-item--late"
@@ -448,11 +448,20 @@ tools: skillhub.search, skillhub.get`}</code>
                   </div>
                   <p>{loop.body}</p>
                   <div className="operating-loop-card__foot">
-                    <span>{loop.status}</span>
-                    <a href={localizedHref(loop.href, locale)}>
-                      {loop.action}
-                      <Rocket size={15} aria-hidden="true" />
-                    </a>
+                    <span className="operating-loop-card__status">
+                      {loop.status}
+                    </span>
+                    {loop.href ? (
+                      <a href={localizedHref(loop.href, locale)}>
+                        {loop.action}
+                        <Rocket size={15} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <span className="operating-loop-card__locked">
+                        {loop.action}
+                        <ShieldCheck size={15} aria-hidden="true" />
+                      </span>
+                    )}
                   </div>
                 </article>
               );
@@ -545,7 +554,7 @@ tools: skillhub.search, skillhub.get`}</code>
           <p>{proof.body}</p>
           <a
             className="secondary-button secondary-button--large"
-            href={localizedHref("/admin#launch-readiness", locale)}
+            href={localizedHref("/dashboard#dashboard-proof-chain", locale)}
           >
             <Gauge size={18} aria-hidden="true" />
             <span>{proof.action}</span>

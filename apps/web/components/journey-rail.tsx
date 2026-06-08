@@ -324,12 +324,14 @@ export function JourneyRail({
   className,
   currentStep,
   journey,
-  locale
+  locale,
+  publicSurface = false
 }: {
   className?: string;
   currentStep: JourneyStepId;
   journey: JourneyId;
   locale: Locale;
+  publicSurface?: boolean;
 }) {
   const labels = copy[locale][journey];
   const currentIndex = Math.max(
@@ -339,6 +341,9 @@ export function JourneyRail({
   const current = labels.steps[currentIndex] ?? labels.steps[0];
   const next = labels.steps[currentIndex + 1] ?? current;
   const JourneyIcon = journeyIcons[journey];
+  const hideOperatorAction = publicSurface && journey === "admin";
+  const operatorOnlyLabel =
+    locale === "zh" ? "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5" : "Operator direct link only";
 
   return (
     <section className={["journey-rail", `journey-rail--${journey}`, className].filter(Boolean).join(" ")} aria-label={labels.title}>
@@ -379,15 +384,28 @@ export function JourneyRail({
         })}
       </ol>
 
-      <a className="journey-rail__action" href={localizedHref(next.href, locale)}>
-        <span>{next.action}</span>
-        <ArrowRight size={15} aria-hidden="true" />
-      </a>
+      {hideOperatorAction ? (
+        <span className="journey-rail__action journey-rail__action--locked">
+          <span>{operatorOnlyLabel}</span>
+          <ShieldCheck size={15} aria-hidden="true" />
+        </span>
+      ) : (
+        <a className="journey-rail__action" href={localizedHref(next.href, locale)}>
+          <span>{next.action}</span>
+          <ArrowRight size={15} aria-hidden="true" />
+        </a>
+      )}
     </section>
   );
 }
 
-export function JourneyRailDeck({ locale }: { locale: Locale }) {
+export function JourneyRailDeck({
+  locale,
+  publicSurface = false
+}: {
+  locale: Locale;
+  publicSurface?: boolean;
+}) {
   return (
     <section className="journey-rail-deck" aria-label={locale === "zh" ? "\u4e09\u6761 P0 \u4ea7\u54c1\u8def\u5f84" : "Three P0 product journeys"}>
       <div className="journey-rail-deck__head">
@@ -402,9 +420,9 @@ export function JourneyRailDeck({ locale }: { locale: Locale }) {
         </p>
       </div>
       <div className="journey-rail-deck__grid">
-        <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
-        <JourneyRail currentStep="publish" journey="publisher" locale={locale} />
-        <JourneyRail currentStep="admin" journey="admin" locale={locale} />
+        <JourneyRail currentStep="marketplace" journey="developer" locale={locale} publicSurface={publicSurface} />
+        <JourneyRail currentStep="publish" journey="publisher" locale={locale} publicSurface={publicSurface} />
+        <JourneyRail currentStep="admin" journey="admin" locale={locale} publicSurface={publicSurface} />
       </div>
     </section>
   );

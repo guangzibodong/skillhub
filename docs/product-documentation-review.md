@@ -967,6 +967,13 @@ Added publisher-directory and detail-hero mobile QA polish, covering:
 - Public publisher skill chips now use larger touch targets, making the directory easier to browse on mobile without changing the marketplace trust model or publisher ranking rules.
 - This keeps the launch UI closer to the frozen mobile acceptance criteria: no overflow, clear CTA hierarchy, and usable touch targets across discovery and supplier-trust pages.
 
+Added public home admin-entry tightening, covering:
+
+- The public home page no longer exposes direct `/admin` links from the operating-loop cards, proof CTA, or P0 journey deck.
+- Operator governance remains visible as marketplace trust evidence, but the public CTA now routes people toward the role-aware workspace map while admins keep their dedicated direct route.
+- This aligns the public entry model with the login/register requirement: normal users see marketplace, publishing, account, and workspace paths first; privileged admin routes are not advertised as shared public login destinations.
+- The public smoke gate now enforces this rule by checking that home, login, marketplace, and publisher-directory pages do not advertise direct admin links.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

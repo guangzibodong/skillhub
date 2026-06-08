@@ -144,18 +144,20 @@ const DEFAULT_TIMEOUT_MS = 10000;
 const PAGE_ASSERTIONS = {
   "/": [
     "/dashboard?lang=en#workspace-command-center",
+    "/dashboard?lang=en#dashboard-proof-chain",
     "/developer?lang=en",
     "/publisher?lang=en",
-    "/admin?lang=en",
+    "operator direct link only",
     "where the backend lives",
   ],
   "/?lang=zh": [
     "/dashboard?lang=zh#workspace-command-center",
+    "/dashboard?lang=zh#dashboard-proof-chain",
     "/developer?lang=zh",
     "/publisher?lang=zh",
-    "/admin?lang=zh",
+    "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5",
     "\u667a\u80fd\u4f53\u6280\u80fd\u57fa\u7840\u8bbe\u65bd",
-    "\u540e\u53f0\u5165\u53e3",
+    "\u5de5\u4f5c\u53f0\u5165\u53e3",
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
   "/marketplace?lang=zh": [
@@ -278,6 +280,23 @@ const PAGE_ASSERTIONS = {
     "\u6761\u6b3e\u6458\u8981",
   ],
 };
+const PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS = new Set([
+  "/",
+  "/?lang=zh",
+  "/login",
+  "/login?lang=zh",
+  "/marketplace",
+  "/marketplace?q=browser&category=research&runtime=http&sort=lowRisk",
+  "/marketplace?lang=zh",
+  "/publishers",
+  "/publishers?lang=zh",
+]);
+const PUBLIC_ADMIN_LINK_MARKERS = [
+  'href="/admin',
+  "href='/admin",
+  "/admin?lang=en",
+  "/admin?lang=zh",
+];
 const COMMON_UTF8_AS_GBK_MARKERS = [
   "\u9359\u5D89\uE6ED",
   "\u93BB\u612A\u6C26",
@@ -2266,6 +2285,20 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
       if (missingContent.length > 0) {
         fail(name, `missing P0 page markers: ${missingContent.join(", ")}`);
         continue;
+      }
+
+      if (PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS.has(path)) {
+        const adminLinkMarkers = PUBLIC_ADMIN_LINK_MARKERS.filter((token) =>
+          html.includes(token),
+        );
+
+        if (adminLinkMarkers.length > 0) {
+          fail(
+            name,
+            `public page should not advertise admin links: ${adminLinkMarkers.join(", ")}`,
+          );
+          continue;
+        }
       }
 
       pass(name, `html bytes=${Buffer.byteLength(response.text, "utf8")}`);

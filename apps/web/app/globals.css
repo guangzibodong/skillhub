@@ -1169,7 +1169,8 @@ a {
 
 .operating-loop-card strong,
 .operating-loop-card span,
-.operating-loop-card a {
+.operating-loop-card a,
+.operating-loop-card__locked {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -1201,7 +1202,7 @@ a {
   align-self: end;
 }
 
-.operating-loop-card__foot > span {
+.operating-loop-card__status {
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
@@ -1225,6 +1226,28 @@ a {
   color: var(--signal);
   font-size: 13px;
   font-weight: 760;
+}
+
+.operating-loop-card__locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.2;
+  padding: 0 10px;
+}
+
+.operating-loop-card__locked svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
 }
 
 .console-access-panel {
@@ -16737,6 +16760,19 @@ a {
   border-color: rgba(155, 226, 141, 0.44);
   background: rgba(155, 226, 141, 0.13);
   transform: translateY(-1px);
+}
+
+.journey-rail__action--locked {
+  cursor: default;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+}
+
+.journey-rail__action--locked:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.035);
+  transform: none;
 }
 
 .journey-rail__action span {
