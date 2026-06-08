@@ -347,6 +347,10 @@ const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
 const PROTECTED_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --timeout-ms 30000";
+const ONE_PANEL_IMAGE_REBUILD =
+  "docker compose -f docker-compose.1panel.yml build --no-cache api web";
+const ONE_PANEL_CONTAINER_RECREATE =
+  "docker compose -f docker-compose.1panel.yml up -d --force-recreate api web";
 const RELEASE_COMMAND_GUARDS = [
   {
     file: "docs/server-update.md",
@@ -357,7 +361,10 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      ONE_PANEL_IMAGE_REBUILD,
+      ONE_PANEL_CONTAINER_RECREATE,
       "SKILLHUB_P0_ADMIN_TOKEN",
+      "docker restart skillhub-api skillhub-web",
       "Do not run mutating P0 smokes against production during a routine update.",
     ],
   },
@@ -367,6 +374,9 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      ONE_PANEL_IMAGE_REBUILD,
+      ONE_PANEL_CONTAINER_RECREATE,
+      "do not rely on `docker restart`",
       "routine post-deploy public gate",
       "Mutating P0 smokes",
     ],
@@ -377,8 +387,20 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      ONE_PANEL_IMAGE_REBUILD,
+      ONE_PANEL_CONTAINER_RECREATE,
+      "stale-image failure mode",
       "routine 1Panel updates",
       "performs no\nwrites and does not require an operator token",
+    ],
+  },
+  {
+    file: "scripts/deploy-1panel.sh",
+    forbidden: ["docker compose -f docker-compose.1panel.yml up -d --build"],
+    required: [
+      ONE_PANEL_IMAGE_REBUILD,
+      ONE_PANEL_CONTAINER_RECREATE,
+      "docker compose -f docker-compose.1panel.yml up -d postgres redis",
     ],
   },
   {

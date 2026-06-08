@@ -8,9 +8,10 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
-docker compose -f docker-compose.1panel.yml up -d postgres
+docker compose -f docker-compose.1panel.yml up -d postgres redis
 ./scripts/run-postgres-migrations.sh --no-start
-docker compose -f docker-compose.1panel.yml up -d --build
+docker compose -f docker-compose.1panel.yml build --no-cache api web
+docker compose -f docker-compose.1panel.yml up -d --force-recreate api web
 
 echo "SkillHub stack started."
 echo "Web: http://127.0.0.1:3100"

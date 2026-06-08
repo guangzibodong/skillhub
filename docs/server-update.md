@@ -34,7 +34,12 @@ sed -i '/^SKILLHUB_ENABLE_DEMO_FALLBACK=/d' .env
 # recorded migration unless that early marketplace baseline is missing.
 ./scripts/run-postgres-migrations.sh
 
-docker compose -f docker-compose.1panel.yml up -d --build
+# Rebuild the application images from the pulled source and recreate the app
+# containers. The compose service names are api/web; the resulting containers
+# are skillhub-api/skillhub-web. A plain docker restart is not enough because it
+# restarts the old image and can leave production serving stale API code.
+docker compose -f docker-compose.1panel.yml build --no-cache api web
+docker compose -f docker-compose.1panel.yml up -d --force-recreate api web
 
 ADMIN_TOKEN="$(grep '^SKILLHUB_ADMIN_TOKEN=' .env | cut -d= -f2-)"
 curl https://api.useskillhub.com/health
@@ -62,6 +67,11 @@ The expected health response is:
 ```json
 {"ok":true,"service":"skillhub-gateway","env":"production"}
 ```
+
+If the public smoke repeats the same API failures after `git pull` and
+`pnpm build`, check that the no-cache compose rebuild above actually completed.
+`docker restart skillhub-api skillhub-web` is only a process restart; it does
+not bake the new repository code into the running containers.
 
 Do not run mutating P0 smokes against production during a routine update.
 `pnpm smoke:p0 -- --prod --include-mutating` and `pnpm smoke:p0 -- --prod --include-demo`

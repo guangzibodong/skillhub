@@ -42,6 +42,18 @@ to keep the routine 1Panel command on the no-write public P0 gate:
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
+It also requires the 1Panel runbooks and deploy script to rebuild the application
+images from the pulled source before recreating containers:
+
+```bash
+docker compose -f docker-compose.1panel.yml build --no-cache api web
+docker compose -f docker-compose.1panel.yml up -d --force-recreate api web
+```
+
+This protects against the stale-image failure mode where `git pull`, `pnpm build`,
+or `docker restart skillhub-api skillhub-web` succeeds but production still serves
+old gateway code from the previous Docker image.
+
 It also requires the protected Journey C command to stay documented separately
 for shells that already have an admin/super-admin user token configured, and it
 fails if the old service-token-shaped `smoke:prod` handoff returns to the

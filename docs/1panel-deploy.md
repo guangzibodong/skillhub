@@ -58,6 +58,18 @@ Start the stack:
 ./scripts/deploy-1panel.sh
 ```
 
+The deploy script starts Postgres/Redis, runs migrations, then rebuilds the
+`api` and `web` compose services with `--no-cache` and recreates the
+`skillhub-api` and `skillhub-web` containers. If you update the repository
+later, do not rely on `docker restart`; restart alone keeps the old image.
+
+The manual equivalent for the application rebuild is:
+
+```bash
+docker compose -f docker-compose.1panel.yml build --no-cache api web
+docker compose -f docker-compose.1panel.yml up -d --force-recreate api web
+```
+
 ## Ports
 
 The stack only binds application ports to localhost:
