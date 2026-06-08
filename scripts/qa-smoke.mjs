@@ -836,6 +836,10 @@ async function checkPublicSkillDetailApi({ apiUrl, timeoutMs }) {
       return;
     }
 
+    if (!assertNoPublicSkillManifestSensitiveBoundary(name, json, text)) {
+      return;
+    }
+
     pass(name, `${json.name}@${json.version}, runtime=${json.runtime.type}`);
   } catch (error) {
     fail(name, error.message);
@@ -2227,6 +2231,112 @@ function hasUnsafeMcpPublicResourceFields(value) {
       (Array.isArray(runtime.args) &&
         runtime.args.some((arg) => !String(arg).includes("redacted"))))
   );
+}
+
+function assertNoPublicSkillManifestSensitiveBoundary(name, payload, text) {
+  const leaks = findBoundarySensitiveLeaks(text);
+
+  if (leaks.length > 0) {
+    fail(name, `possible sensitive public skill manifest leak: ${leaks[0]}`);
+    return false;
+  }
+
+  if (findPublicSkillManifestInternalField(payload)) {
+    fail(
+      name,
+      "public skill manifest must not expose project, operator, curation, invocation, billing, payout, or audit fields",
+    );
+    return false;
+  }
+
+  if (hasUnsafePublicSkillManifestFields(payload)) {
+    fail(
+      name,
+      "public skill manifest must sanitize runtime targets, local command details, author URLs, and secret handles",
+    );
+    return false;
+  }
+
+  return true;
+}
+
+function findPublicSkillManifestInternalField(value) {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const forbiddenTopLevelFields = new Set([
+    "auditLogs",
+    "billing",
+    "billingState",
+    "boost",
+    "curation",
+    "invocation",
+    "invocations",
+    "operatorNotes",
+    "operatorReason",
+    "payout",
+    "payoutState",
+    "project",
+    "projectSlug",
+    "reviewEvidence",
+    "usage",
+    "usageEvents",
+  ]);
+
+  return Object.keys(value).some((key) => forbiddenTopLevelFields.has(key));
+}
+
+function hasUnsafePublicSkillManifestFields(value) {
+  if (!isObjectRecord(value)) {
+    return true;
+  }
+
+  const runtime = value.runtime;
+  const permissions = value.permissions;
+  const author = value.author;
+
+  if (!isObjectRecord(runtime) || !isObjectRecord(permissions)) {
+    return true;
+  }
+
+  if (!["http", "mcp", "local"].includes(runtime.type)) {
+    return true;
+  }
+
+  if (
+    isObjectRecord(author) &&
+    typeof author.url === "string" &&
+    hasEmbeddedUrlCredentials(author.url)
+  ) {
+    return true;
+  }
+
+  if (runtime.type === "http" && hasEmbeddedUrlCredentials(runtime.entrypoint)) {
+    return true;
+  }
+
+  if (runtime.type === "mcp" && hasEmbeddedUrlCredentials(runtime.serverUrl)) {
+    return true;
+  }
+
+  if (
+    runtime.type === "local" &&
+    (runtime.command !== "[restricted local runtime]" ||
+      (Array.isArray(runtime.args) &&
+        runtime.args.some((arg) => !String(arg).includes("redacted"))))
+  ) {
+    return true;
+  }
+
+  return (
+    Array.isArray(permissions.secrets) &&
+    permissions.secrets.some((secret) => !isPublicSecretHandlePlaceholder(secret))
+  );
+}
+
+function isPublicSecretHandlePlaceholder(value) {
+  return /^\[\d+ secret handles? required\]$/.test(String(value));
 }
 
 function hasEmbeddedUrlCredentials(value) {

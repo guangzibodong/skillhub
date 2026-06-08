@@ -2730,7 +2730,7 @@ app.get("/v1/skills/:slug", async (c) => {
     return c.json({ error: "Skill not found." }, 404);
   }
 
-  return c.json(skill);
+  return c.json(publicSkillManifest(skill));
 });
 
 app.post("/v1/skills", async (c) => {
@@ -2938,6 +2938,38 @@ function publicMcpSkillResource(skill: SkillManifest) {
     inputSchema: skill.inputSchema,
     outputSchema: skill.outputSchema
   };
+}
+
+function publicSkillManifest(skill: SkillManifest): SkillManifest {
+  return {
+    ...skill,
+    author: publicMcpAuthor(skill.author),
+    runtime: publicMcpRuntime(skill.runtime),
+    permissions: {
+      ...skill.permissions,
+      secrets: publicSecretHandles(skill.permissions.secrets)
+    }
+  };
+}
+
+function publicMcpAuthor(author: SkillManifest["author"]) {
+  if (!author) {
+    return undefined;
+  }
+
+  return {
+    name: author.name,
+    ...(author.url ? { url: redactPublicRuntimeUrl(author.url) } : {})
+  };
+}
+
+function publicSecretHandles(secrets: string[]) {
+  if (secrets.length === 0) {
+    return [];
+  }
+
+  const label = secrets.length === 1 ? "secret handle" : "secret handles";
+  return [`[${secrets.length} ${label} required]`];
 }
 
 function publicMcpRuntime(runtime: SkillRuntime): SkillRuntime {
