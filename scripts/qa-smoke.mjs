@@ -361,7 +361,9 @@ const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
 const PROTECTED_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --timeout-ms 30000";
+const PRIMARY_PROD_API_URL = "https://api.useskillhub.com";
 const PRIMARY_PROD_APP_URL = "https://useskillhub.com";
+const PROD_API_HEALTH_GATE = "production API health gate";
 const DEFAULT_PROD_APP_ALIAS_URLS = [
   "https://www.useskillhub.com",
   "https://app.useskillhub.com",
@@ -384,6 +386,7 @@ const RELEASE_COMMAND_GUARDS = [
       PROTECTED_P0_PROD_GATE,
       ONE_PANEL_IMAGE_REBUILD,
       ONE_PANEL_CONTAINER_RECREATE,
+      PROD_API_HEALTH_GATE,
       `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
       PROD_APP_ALIAS_GATE,
       "SKILLHUB_P0_ADMIN_TOKEN",
@@ -401,6 +404,7 @@ const RELEASE_COMMAND_GUARDS = [
       ONE_PANEL_CONTAINER_RECREATE,
       "`useskillhub.com` -> `http://127.0.0.1:3100`",
       "`www.useskillhub.com` -> `http://127.0.0.1:3100`",
+      PROD_API_HEALTH_GATE,
       `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
       PROD_APP_ALIAS_GATE,
       "do not rely on `docker restart`",
@@ -418,6 +422,7 @@ const RELEASE_COMMAND_GUARDS = [
       ONE_PANEL_CONTAINER_RECREATE,
       "stale-image failure mode",
       "routine 1Panel updates",
+      PROD_API_HEALTH_GATE,
       PROD_APP_ALIAS_GATE,
       "performs no\nwrites and does not require an operator token",
     ],
@@ -437,9 +442,11 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      PRIMARY_PROD_API_URL,
       PRIMARY_PROD_APP_URL,
       "routine 1Panel updates",
       "protected Journey C",
+      PROD_API_HEALTH_GATE,
       PROD_APP_ALIAS_GATE,
       "Mutating journey checks are opt-in",
     ],
@@ -450,7 +457,9 @@ const RELEASE_COMMAND_GUARDS = [
     required: [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
+      PRIMARY_PROD_API_URL,
       PRIMARY_PROD_APP_URL,
+      PROD_API_HEALTH_GATE,
       PROD_APP_ALIAS_GATE,
       "Routine 1Panel public gate",
       "Performs no writes and does not require an operator token.",
@@ -532,6 +541,7 @@ await checkSourceMojibake();
 await checkReleaseCommandGate();
 
 if (!config.skipApi) {
+  await checkHealth(config);
   await checkStats(config);
   await checkAuthProviders(config);
   await checkAdminProtection(config);
@@ -557,6 +567,45 @@ printSummary(results);
 
 if (results.some((result) => result.status === "fail")) {
   process.exitCode = 1;
+}
+
+async function checkHealth({ apiUrl, timeoutMs }) {
+  const name = "GET /health";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/health"), {
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (json?.ok !== true || json?.service !== "skillhub-gateway") {
+      fail(name, "expected SkillHub gateway health payload");
+      return;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive health leak: ${leaks[0]}`);
+      return;
+    }
+
+    if (isPrimaryProductionApiUrl(apiUrl) && json?.env !== "production") {
+      fail(
+        name,
+        `${PROD_API_HEALTH_GATE}: expected env=production for ${PRIMARY_PROD_API_URL}, got ${json?.env ?? "missing"}`,
+      );
+      return;
+    }
+
+    pass(name, `service=${json.service}, env=${json.env ?? "unknown"}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
 }
 
 async function checkStats({ apiUrl, timeoutMs }) {
@@ -2707,6 +2756,18 @@ function parseAppAliasUrls(value, appUrl) {
   }
 
   return isPrimaryProductionAppUrl(appUrl) ? DEFAULT_PROD_APP_ALIAS_URLS : [];
+}
+
+function isPrimaryProductionApiUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname.toLowerCase() === new URL(PRIMARY_PROD_API_URL).hostname
+    );
+  } catch {
+    return false;
+  }
 }
 
 function isPrimaryProductionAppUrl(value) {

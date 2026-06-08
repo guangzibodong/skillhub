@@ -50,6 +50,7 @@ curl "https://api.useskillhub.com/v1/publishers?limit=5"
 # Public P0 gate for the production app, marketplace, public detail APIs,
 # account entry, workspaces, docs, terms, and bilingual/mojibake guards.
 # This path performs no writes and does not need an operator user token.
+# It includes the production API health gate for api.useskillhub.com and env=production.
 # Because the app target is useskillhub.com, this also runs the production web alias gate
 # for www.useskillhub.com and app.useskillhub.com.
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000

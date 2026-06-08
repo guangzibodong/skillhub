@@ -2,6 +2,7 @@
 
 This smoke path covers the minimum launch surface for local builds and production:
 
+- `GET /health`
 - `GET /v1/stats`
 - `GET /v1/auth/providers`
 - `GET /v1/skills/search`
@@ -20,6 +21,13 @@ The same no-token smoke also checks protected organization, developer, publisher
 When a token is configured, the smoke now validates the launch-readiness contract, not only the summary shape. The response must keep the required sections for identity, email, webhook, marketplace operations, launch credibility, commercial readiness, and production guardrails; each section must keep its customer-demo evidence item keys, item statuses, operator actions, and summary counts. It also scans the authorized readiness body for authorization-shaped strings, user tokens, project API keys, webhook secrets, provider keys, raw API-key fields, and email-code previews. The smoke does not require blockers or warnings to be zero because real staging and production environments may legitimately report configuration gaps.
 
 The public discovery check requires `/v1/skills/search?limit=5` to return HTTP 200 with a `skills` array. Empty arrays are valid only when public stats also report no published supply; if `/v1/stats` reports published skills but search returns none, smoke fails because that usually means registry migrations, review joins, or public listing filters are out of sync. When search returns at least one skill, the smoke now checks that the same slug returns a valid `/v1/skills/:slug` manifest with runtime, permission, schema, and identity fields before the app smoke checks the real `/skills/:slug` detail page.
+
+The public API check now starts with a `production API health gate`. It requires
+`/health` to return the SkillHub gateway payload, scans the body for sensitive
+output, and when the API target is `https://api.useskillhub.com` it also requires
+`env=production`. This catches wrong reverse proxies, stale containers, and
+production deployments that accidentally boot in a non-production mode before the
+rest of the release gate spends time on deeper endpoint checks.
 
 The publisher directory check requires `/v1/publishers?limit=5` to return HTTP 200 with a `publishers` array. If public skill supply exists but no publisher row appears, smoke fails because the supplier-side trust chain would be invisible. When a publisher row exists, the smoke now verifies that `/v1/publishers/:slug` returns a profile with trust level, payout status, public metrics, and at least one public skill before the app smoke checks the public publisher profile page.
 
