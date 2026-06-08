@@ -14684,6 +14684,16 @@ a {
   flex: 0 0 auto;
 }
 
+.action-message span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.auth-form__feedback {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 .action-message .ghost-button--inline {
   margin-left: auto;
 }

@@ -134,6 +134,8 @@ export default async function LoginPage({ searchParams }: PageProps) {
           {notice ? (
             <section
               className={`auth-callback-notice auth-callback-notice--${notice.kind}`}
+              aria-atomic="true"
+              aria-live={notice.kind === "error" ? "assertive" : "polite"}
               role={notice.kind === "error" ? "alert" : "status"}
             >
               {notice.kind === "success" ? (

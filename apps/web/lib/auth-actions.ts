@@ -31,7 +31,10 @@ const copy = {
   en: {
     codeRequired: "Enter the 6-digit email verification code.",
     codeSent: "Verification code queued for email delivery.",
+    codeUsed: "This verification code has already been used. Request a new code.",
+    emailAlreadyRegistered: "This email is already registered. Sign in instead.",
     emailRequired: "Enter a valid email address.",
+    invalidCredentials: "Email/username or password is incorrect.",
     invalidToken: "Enter a valid SkillHub user access token.",
     organizationRequired: "Enter an organization or workspace name.",
     passwordRequired: "Enter a password with at least 8 characters.",
@@ -40,6 +43,8 @@ const copy = {
     signedOut: "Workspace session cleared.",
     signedUp: "Workspace session connected.",
     slugTaken: "This workspace slug is already taken.",
+    tooManyAttempts: "Too many failed attempts. Please wait, then try again.",
+    usernameTaken: "This username is already taken.",
     usernameRequired: "Enter a username using letters, numbers, underscores, or hyphens.",
     unableEmail: "Unable to complete email verification.",
     unablePasswordAuth: "Unable to complete password login.",
@@ -48,7 +53,10 @@ const copy = {
   zh: {
     codeRequired: "请输入 6 位邮箱验证码。",
     codeSent: "验证码已进入邮件发送队列。",
+    codeUsed: "这个验证码已经用过，请重新获取验证码。",
+    emailAlreadyRegistered: "这个邮箱已经注册，请直接登录。",
     emailRequired: "请输入有效的邮箱地址。",
+    invalidCredentials: "邮箱/用户名或密码不正确。",
     invalidToken: "请输入有效的 SkillHub 用户访问 token。",
     organizationRequired: "请输入组织或工作区名称。",
     passwordRequired: "请输入至少 8 位密码。",
@@ -57,6 +65,8 @@ const copy = {
     signedOut: "工作区会话已清除。",
     signedUp: "工作区会话已连接。",
     slugTaken: "这个工作区 slug 已被使用。",
+    tooManyAttempts: "失败次数过多，请稍后再试。",
+    usernameTaken: "这个用户名已被使用。",
     usernameRequired: "请输入用户名，可使用字母、数字、下划线或连字符。",
     unableEmail: "无法完成邮箱验证。",
     unablePasswordAuth: "无法完成密码登录。",
@@ -187,7 +197,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
     const token = payload.login?.accessToken?.token;
 
     if (!response.ok || !token) {
-      return { message: emailErrorMessage(payload.error, labels), status: "error" };
+      return { message: passwordErrorMessage(payload.error, labels), status: "error" };
     }
 
     await setSessionCookie(token);
@@ -369,15 +379,45 @@ function getApiUrl() {
 }
 
 function emailErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+  return sharedAuthErrorMessage(error, labels) ?? labels.unableEmail;
+}
+
+function passwordErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+  const message = error?.toLowerCase() ?? "";
+
+  if (message.includes("email/username or password") || message.includes("password is incorrect")) {
+    return labels.invalidCredentials;
+  }
+
+  return sharedAuthErrorMessage(error, labels) ?? labels.unablePasswordAuth;
+}
+
+function sharedAuthErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
   const message = error?.toLowerCase() ?? "";
 
   if (message.includes("slug") && message.includes("taken")) {
     return labels.slugTaken;
   }
 
+  if (message.includes("email") && message.includes("already registered")) {
+    return labels.emailAlreadyRegistered;
+  }
+
+  if (message.includes("username") && message.includes("taken")) {
+    return labels.usernameTaken;
+  }
+
   if (message.includes("public") && message.includes("disabled")) {
     return labels.publicSignupDisabled;
   }
 
-  return error || labels.unableEmail;
+  if (message.includes("too many failed attempts")) {
+    return labels.tooManyAttempts;
+  }
+
+  if (message.includes("already been used")) {
+    return labels.codeUsed;
+  }
+
+  return null;
 }

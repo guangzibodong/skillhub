@@ -105,6 +105,8 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   const [state, action, isPending] = useActionState(signUpAction.bind(null, locale), initialState);
   const showChallenge = Boolean(state.challenge && !state.subject);
   const showPreviewCode = process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
+  const feedbackId = "password-access-feedback";
+  const showFeedback = state.status !== "idle" && !state.subject;
 
   useEffect(() => {
     if (state.status === "success" && state.subject) {
@@ -121,13 +123,19 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
       <p>{labels.helper}</p>
 
       {!showChallenge && !state.subject ? (
-        <form action={action} className="auth-form auth-form--stack">
+        <form
+          action={action}
+          aria-busy={isPending}
+          aria-describedby={showFeedback ? feedbackId : undefined}
+          className="auth-form auth-form--stack"
+        >
           <input name="intent" type="hidden" value="password" />
           <input name="mode" type="hidden" value={mode} />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
               className={mode === "login" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
               onClick={() => setMode("login")}
+              aria-pressed={mode === "login"}
               type="button"
             >
               <MailCheck size={15} aria-hidden="true" />
@@ -136,6 +144,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
             <button
               className={mode === "signup" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
               onClick={() => setMode("signup")}
+              aria-pressed={mode === "signup"}
               type="button"
             >
               <UserPlus size={15} aria-hidden="true" />
@@ -201,6 +210,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
               <span>{labels.publisherHelp}</span>
             </div>
           ) : null}
+          {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
           <button className="primary-button" disabled={isPending} type="submit">
             <Send size={16} aria-hidden="true" />
             <span>{isPending ? labels.submitting : mode === "signup" ? labels.createAccount : labels.signIn}</span>
@@ -209,7 +219,12 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
       ) : null}
 
       {showChallenge ? (
-        <form action={action} className="auth-form auth-form--stack auth-verification-form">
+        <form
+          action={action}
+          aria-busy={isPending}
+          aria-describedby={showFeedback ? feedbackId : undefined}
+          className="auth-form auth-form--stack auth-verification-form"
+        >
           <input name="intent" type="hidden" value="verify" />
           <input name="challengeId" type="hidden" value={state.challenge?.challengeId} />
           <div className="auth-verification-panel">
@@ -233,14 +248,13 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
               required
             />
           </label>
+          {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
           <button className="primary-button" disabled={isPending} type="submit">
             <MailCheck size={16} aria-hidden="true" />
             <span>{isPending ? labels.verifying : labels.verify}</span>
           </button>
         </form>
       ) : null}
-
-      {state.status !== "idle" ? <SignupMessage state={state} /> : null}
 
       {state.subject ? (
         <div className="auth-subject auth-token-result">
@@ -259,9 +273,15 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   );
 }
 
-function SignupMessage({ state }: { state: SignupActionState }) {
+function SignupMessage({ id, state }: { id: string; state: SignupActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
+    <div
+      aria-atomic="true"
+      aria-live={state.status === "success" ? "polite" : "assertive"}
+      className={state.status === "success" ? "action-message action-message--success auth-form__feedback" : "action-message action-message--error auth-form__feedback"}
+      id={id}
+      role={state.status === "success" ? "status" : "alert"}
+    >
       {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
       <span>{state.message}</span>
     </div>

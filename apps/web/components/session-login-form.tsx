@@ -43,6 +43,8 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
   const labels = copy[locale];
   const router = useRouter();
   const [state, action, isPending] = useActionState(signInAction.bind(null, locale), initialState);
+  const feedbackId = "token-fallback-feedback";
+  const showFeedback = state.status !== "idle";
 
   useEffect(() => {
     if (state.status === "success") {
@@ -57,7 +59,12 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
         <span>{labels.title}</span>
       </div>
       <p>{labels.helper}</p>
-      <form action={action} className="auth-form">
+      <form
+        action={action}
+        aria-busy={isPending}
+        aria-describedby={showFeedback ? feedbackId : undefined}
+        className="auth-form"
+      >
         <label>
           <span>{labels.label}</span>
           <input autoComplete="off" name="token" placeholder={labels.placeholder} required type="password" />
@@ -67,7 +74,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
           <span>{isPending ? labels.submitting : labels.submit}</span>
         </button>
       </form>
-      {state.status !== "idle" ? <AuthMessage state={state} /> : null}
+      {showFeedback ? <AuthMessage id={feedbackId} state={state} /> : null}
       {state.subject ? (
         <div className="auth-subject">
           <strong>{state.subject.displayName ?? state.subject.email ?? "SkillHub user"}</strong>
@@ -81,9 +88,15 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
   );
 }
 
-function AuthMessage({ state }: { state: AuthActionState }) {
+function AuthMessage({ id, state }: { id: string; state: AuthActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
+    <div
+      aria-atomic="true"
+      aria-live={state.status === "success" ? "polite" : "assertive"}
+      className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}
+      id={id}
+      role={state.status === "success" ? "status" : "alert"}
+    >
       {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
       <span>{state.message}</span>
     </div>
