@@ -1,7 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ClipboardCheck, Copy, CreditCard, KeyRound, PackageCheck, ShieldCheck, Terminal } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  CheckCircle2,
+  ClipboardCheck,
+  Copy,
+  CreditCard,
+  KeyRound,
+  PackageCheck,
+  ShieldCheck,
+  Terminal
+} from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
 type InstallCommand = {
@@ -30,6 +41,9 @@ const copy = {
     billingTrial: "Start a provider-deferred subscription trial before runtime use.",
     copied: "Copied",
     copy: "Copy",
+    copyFailed: "Copy failed",
+    copyFailure: "Install command could not be copied.",
+    copySuccess: "Install command copied.",
     installReadiness: "Install readiness",
     installLocked: "Verified review required before install commands unlock.",
     lastReviewed: "Last reviewed",
@@ -53,6 +67,9 @@ const copy = {
     billingTrial: "\u8fd0\u884c\u524d\u5148\u5f00\u542f\u4f9b\u5e94\u5546\u5ef6\u540e\u7684\u8ba2\u9605\u8bd5\u7528\u3002",
     copied: "\u5df2\u590d\u5236",
     copy: "\u590d\u5236",
+    copyFailed: "\u590d\u5236\u5931\u8d25",
+    copyFailure: "\u5b89\u88c5\u547d\u4ee4\u590d\u5236\u5931\u8d25\u3002",
+    copySuccess: "\u5b89\u88c5\u547d\u4ee4\u5df2\u590d\u5236\u3002",
     installReadiness: "\u5b89\u88c5\u51c6\u5907",
     installLocked: "\u9700\u8981\u5b8c\u6210 verified \u5ba1\u6838\u540e\u624d\u4f1a\u5f00\u653e\u5b89\u88c5\u547d\u4ee4\u3002",
     lastReviewed: "\u6700\u8fd1\u5ba1\u6838",
@@ -87,15 +104,40 @@ export function SkillInstallCommandPanel({
 }: SkillInstallCommandPanelProps) {
   const labels = copy[locale];
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<{
+    kind: "error" | "success";
+    label: string;
+    message: string;
+  } | null>(null);
   const readiness = useMemo(
     () => buildReadiness({ billingModel, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn }),
     [billingModel, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn]
   );
 
   async function copyCommand(label: string, value: string) {
-    await navigator.clipboard.writeText(value);
-    setCopiedKey(label);
-    window.setTimeout(() => setCopiedKey(null), 1800);
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedKey(label);
+      setCopyStatus({
+        kind: "success",
+        label,
+        message: labels.copySuccess
+      });
+      window.setTimeout(() => {
+        setCopiedKey(null);
+        setCopyStatus((current) => (current?.label === label ? null : current));
+      }, 1800);
+    } catch {
+      setCopiedKey(null);
+      setCopyStatus({
+        kind: "error",
+        label,
+        message: labels.copyFailure
+      });
+      window.setTimeout(() => {
+        setCopyStatus((current) => (current?.label === label ? null : current));
+      }, 2400);
+    }
   }
 
   return (
@@ -107,14 +149,36 @@ export function SkillInstallCommandPanel({
               <span>{command.label}</span>
               <code>{command.value}</code>
               <button
-                aria-label={`${copiedKey === command.label ? labels.copied : labels.copy}: ${command.label}`}
+                aria-label={`${getCommandButtonLabel({ commandLabel: command.label, copiedKey, copyStatus, labels })}: ${command.label}`}
                 className="icon-button"
-                onClick={() => copyCommand(command.label, command.value)}
+                onClick={() => {
+                  void copyCommand(command.label, command.value);
+                }}
                 title={labels.copy}
                 type="button"
               >
-                {copiedKey === command.label ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+                {copyStatus?.label === command.label && copyStatus.kind === "error" ? (
+                  <AlertCircle size={15} aria-hidden="true" />
+                ) : copiedKey === command.label ? (
+                  <Check size={15} aria-hidden="true" />
+                ) : (
+                  <Copy size={15} aria-hidden="true" />
+                )}
               </button>
+              {copyStatus?.label === command.label ? (
+                <div
+                  aria-live={copyStatus.kind === "error" ? "assertive" : "polite"}
+                  className={`install-command-status install-command-status--${copyStatus.kind}`}
+                  role={copyStatus.kind === "error" ? "alert" : "status"}
+                >
+                  {copyStatus.kind === "error" ? (
+                    <AlertCircle size={14} aria-hidden="true" />
+                  ) : (
+                    <CheckCircle2 size={14} aria-hidden="true" />
+                  )}
+                  <span>{copyStatus.message}</span>
+                </div>
+              ) : null}
             </div>
           ))
         ) : (
@@ -146,6 +210,32 @@ export function SkillInstallCommandPanel({
       </div>
     </div>
   );
+}
+
+function getCommandButtonLabel({
+  commandLabel,
+  copiedKey,
+  copyStatus,
+  labels
+}: {
+  commandLabel: string;
+  copiedKey: string | null;
+  copyStatus: {
+    kind: "error" | "success";
+    label: string;
+    message: string;
+  } | null;
+  labels: (typeof copy)["en" | "zh"];
+}) {
+  if (copyStatus?.label === commandLabel && copyStatus.kind === "error") {
+    return labels.copyFailed;
+  }
+
+  if (copiedKey === commandLabel) {
+    return labels.copied;
+  }
+
+  return labels.copy;
 }
 
 function buildReadiness({

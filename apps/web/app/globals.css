@@ -11221,6 +11221,45 @@ a {
   justify-self: end;
 }
 
+.install-command-status {
+  display: inline-flex;
+  grid-column: 2 / -1;
+  align-items: center;
+  gap: 7px;
+  justify-self: start;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.25;
+  margin: -2px 0 8px;
+  padding: 7px 9px;
+}
+
+.install-command-status svg {
+  flex: 0 0 auto;
+}
+
+.install-command-status span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.install-command-status--success {
+  border-color: rgba(155, 226, 141, 0.24);
+  background: rgba(155, 226, 141, 0.08);
+  color: #cce7c2;
+}
+
+.install-command-status--error {
+  border-color: rgba(255, 112, 90, 0.28);
+  background: rgba(255, 112, 90, 0.08);
+  color: #ffc3b8;
+}
+
 .install-command-row--locked {
   grid-template-columns: 70px minmax(0, 1fr);
   border: 1px solid rgba(245, 188, 91, 0.2);
@@ -18545,6 +18584,15 @@ a {
     gap: 7px;
     align-items: start;
     padding: 10px 0;
+  }
+
+  .install-command-row .icon-button {
+    justify-self: start;
+  }
+
+  .install-command-status {
+    grid-column: 1 / -1;
+    margin: 0;
   }
 
   .notification-preference-row {

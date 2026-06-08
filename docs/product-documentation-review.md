@@ -42,6 +42,8 @@ The latest marketplace copy-feedback polish makes discovery cards behave more li
 
 ## Latest Implementation Review
 
+The latest skill-detail command-feedback polish brings `/skills/[slug]` in line with the marketplace card interaction standard. CLI, MCP, and SDK install command rows now catch clipboard failures, switch the icon state, and show localized success or failure feedback in a live region directly under the copied command. This keeps the developer install contract feeling like a reliable tooling surface on desktop and mobile instead of a silent icon-only action.
+
 The latest marketplace filter polish makes shared discovery links easier to understand. `/marketplace` now renders an active-filter summary between search and the full filter panel whenever a query, category, price, risk, runtime, verification, or sort parameter is applied. The summary uses compact chips plus a nearby reset action, so mobile users arriving from homepage search or a copied URL can immediately see why a catalog result set is narrow without scrolling through every filter group.
 
 The latest skill-detail CTA polish makes the public listing first viewport match the real install path. The primary action still jumps to the install contract, but the secondary action now reflects the visitor's access state: developers with the right role go to the developer workspace, signed-in users without that role go to account role review, and signed-out visitors are asked to sign in before installing. The developer Journey rail uses the same access-aware CTA, so skill detail no longer sends unauthenticated users to a generic dashboard before they understand the required project/session state.
