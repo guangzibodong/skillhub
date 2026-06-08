@@ -222,6 +222,19 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasDeveloperAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
   const developerProjects = hasDeveloperAccess ? projects : [];
+  const developerAccessHref = hasDeveloperAccess ? "/developer" : hasWorkspaceSession ? "/account" : "/login";
+  const developerAccessLabel = hasDeveloperAccess
+    ? locale === "zh"
+      ? "开发者工作台"
+      : "Developer workspace"
+    : hasWorkspaceSession
+      ? locale === "zh"
+        ? "检查账号角色"
+        : "Check account roles"
+      : locale === "zh"
+        ? "登录后安装"
+        : "Sign in to install";
+  const DeveloperAccessIcon = hasDeveloperAccess ? WalletCards : KeyRound;
 
   if (!skill) {
     notFound();
@@ -257,9 +270,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               <Terminal size={18} aria-hidden="true" />
               <span>{labels.install}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/dashboard", locale)}>
-              <WalletCards size={18} aria-hidden="true" />
-              <span>{dictionary.nav.dashboard}</span>
+            <a className="secondary-button secondary-button--large" href={localizedHref(developerAccessHref, locale)}>
+              <DeveloperAccessIcon size={18} aria-hidden="true" />
+              <span>{developerAccessLabel}</span>
             </a>
           </div>
         </div>
@@ -293,7 +306,13 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         </aside>
       </section>
 
-      <JourneyRail currentStep="skill" journey="developer" locale={locale} />
+      <JourneyRail
+        actionHrefOverride={developerAccessHref}
+        actionLabelOverride={developerAccessLabel}
+        currentStep="skill"
+        journey="developer"
+        locale={locale}
+      />
 
       <section className="skill-detail-layout">
         <div className="skill-detail-main">
