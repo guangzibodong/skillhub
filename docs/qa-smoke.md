@@ -8,10 +8,13 @@ This smoke path covers the minimum launch surface for local builds and productio
 - `GET /v1/skills/:slug` for the first real public skill returned by search
 - `GET /v1/publishers`
 - `GET /v1/publishers/:slug` for the first real public publisher returned by the directory
+- Unauthenticated protected workspace read boundaries for organization team/webhook/billing, developer projects, publisher skills/payouts/finance ledger/marketplace appeals, and admin operations
 - `GET /v1/admin/launch-readiness`
 - Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/marketplace?lang=zh`, `/publishers`, `/publishers?lang=zh`, `/registry`, `/registry?lang=zh`, `/agents`, `/agents?lang=zh`, `/docs`, `/docs?lang=zh`, `/publish`, `/publish?lang=zh`, `/publisher`, `/publisher?lang=zh`, `/developer`, `/developer?lang=zh`, `/dashboard`, `/dashboard?lang=zh`, `/account`, `/account?lang=zh`, `/login`, `/login?lang=zh`, `/admin`, `/admin?lang=zh`, `/terms`, and `/terms?lang=zh`, plus the first real public skill and publisher detail pages returned by public APIs in both English and Chinese when those rows exist.
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
+
+The same no-token smoke also checks protected organization, developer, publisher, and admin read endpoints. These checks perform no writes; they require JSON `401` or `403` responses and scan the boundary body for authorization-shaped strings, raw keys, email-code previews, webhook secrets, and provider credentials.
 
 When a token is configured, the smoke now validates the launch-readiness contract, not only the summary shape. The response must keep the required sections for identity, email, webhook, marketplace operations, launch credibility, commercial readiness, and production guardrails; each section must keep its customer-demo evidence item keys, item statuses, operator actions, and summary counts. It also scans the authorized readiness body for authorization-shaped strings, user tokens, project API keys, webhook secrets, provider keys, raw API-key fields, and email-code previews. The smoke does not require blockers or warnings to be zero because real staging and production environments may legitimately report configuration gaps.
 

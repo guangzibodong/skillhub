@@ -473,6 +473,7 @@ if (!config.skipApi) {
   await checkStats(config);
   await checkAuthProviders(config);
   await checkAdminProtection(config);
+  await checkWorkspaceProtection(config);
   await checkPublicSkillSearch(config);
   await checkPublicSkillCategorySearch(config);
   await checkPublicSkillDetailApi(config);
@@ -596,11 +597,45 @@ async function checkAdminProtection({ apiUrl, timeoutMs }) {
     "/v1/admin/marketplace-curation",
   ];
 
+  await checkProtectedReadBoundaries({
+    apiUrl,
+    paths,
+    successMessage: "protected by role-aware authorization",
+    timeoutMs,
+  });
+}
+
+async function checkWorkspaceProtection({ apiUrl, timeoutMs }) {
+  const paths = [
+    "/v1/organization/team",
+    "/v1/organization/webhooks",
+    "/v1/organization/billing",
+    "/v1/developer/projects",
+    "/v1/publisher/skills",
+    "/v1/publisher/payouts",
+    "/v1/publisher/finance/ledger",
+    "/v1/publisher/marketplace-appeals",
+  ];
+
+  await checkProtectedReadBoundaries({
+    apiUrl,
+    paths,
+    successMessage: "protected by organization-scoped workspace authorization",
+    timeoutMs,
+  });
+}
+
+async function checkProtectedReadBoundaries({
+  apiUrl,
+  paths,
+  successMessage,
+  timeoutMs,
+}) {
   for (const path of paths) {
     const name = `GET ${path} without token`;
 
     try {
-      const { status } = await requestJson(joinUrl(apiUrl, path), {
+      const { status, json, text } = await requestJson(joinUrl(apiUrl, path), {
         timeoutMs,
       });
 
@@ -609,7 +644,19 @@ async function checkAdminProtection({ apiUrl, timeoutMs }) {
         continue;
       }
 
-      pass(name, "protected by role-aware authorization");
+      if (typeof json?.error !== "string" || json.error.length === 0) {
+        fail(name, "expected a JSON error message");
+        continue;
+      }
+
+      const leaks = findBoundarySensitiveLeaks(text);
+
+      if (leaks.length > 0) {
+        fail(name, `possible sensitive boundary leak: ${leaks[0]}`);
+        continue;
+      }
+
+      pass(name, successMessage);
     } catch (error) {
       fail(name, redactSecrets(error.message));
     }
