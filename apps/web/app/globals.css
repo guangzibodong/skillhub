@@ -18507,6 +18507,10 @@ a {
     min-height: 0;
   }
 
+  .console-access-panel--compact .console-access-rules {
+    display: none;
+  }
+
   .login-route-card {
     grid-template-columns: auto minmax(0, 1fr) auto;
   }

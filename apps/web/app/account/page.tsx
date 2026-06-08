@@ -190,9 +190,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
         ) : null}
       </section>
 
-      <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
-
       <AccountCommandStrip account={account} accountSessions={accountSessions} labels={labels} locale={locale} signedIn={signedIn} />
+
+      <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
       <section className="account-layout">
         <div className="account-main">
