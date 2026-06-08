@@ -28,6 +28,10 @@ type PublisherProfile = {
 
 type PayoutAccount = {
   id: string;
+  manualAccount: string | null;
+  manualAccountHolder: string | null;
+  manualMethod: "paypal" | "alipay" | null;
+  manualNotes: string | null;
   provider: string;
   providerAccountId: string;
   status: "not_configured" | "verification_required" | "verified" | "blocked";
@@ -89,6 +93,10 @@ const fallbackPayoutSummary = {
   payoutAccounts: [
     {
       id: "demo-payout-account",
+      manualAccount: "publisher-paypal@example.com",
+      manualAccountHolder: "SkillHub Publisher",
+      manualMethod: "paypal",
+      manualNotes: "Demo manual payout account for finance review.",
       provider: "manual_deferred",
       providerAccountId: "manual_deferred_demo",
       status: "verified",
@@ -105,6 +113,10 @@ const fallbackPayoutSummary = {
       currency: "usd",
       status: "review",
       balanceCount: 4,
+      manualAccount: "publisher-paypal@example.com",
+      manualAccountHolder: "SkillHub Publisher",
+      manualMethod: "paypal",
+      manualNotes: "Demo manual payout account for finance review.",
       provider: "manual_deferred",
       accountStatus: "verified",
       requestedAt: "demo",
@@ -158,6 +170,10 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
     sql`
       select
         id::text,
+        manual_account as "manualAccount",
+        manual_account_holder as "manualAccountHolder",
+        manual_method as "manualMethod",
+        manual_notes as "manualNotes",
         provider,
         provider_account_id as "providerAccountId",
         status,
@@ -316,7 +332,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
   }
 
   if (action === "mark_paid" && !providerReference) {
-    throw new Error("Paid payout requires a provider reference.");
+    throw new Error("Paid payout requires a transfer reference.");
   }
 
   return sql.begin(async (tx: Sql) => {
@@ -359,7 +375,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
         update payouts
         set
           status = 'processing',
-          review_reason = ${reason ?? "Approved for provider payout."},
+          review_reason = ${reason ?? "Approved for manual transfer."},
           retry_condition = null,
           next_action = 'await_provider_processing',
           reviewed_at = now(),
@@ -390,8 +406,8 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
         update payouts
         set
           status = 'failed',
-          failure_reason = ${reason ?? "Provider payout failed."},
-          retry_condition = ${retryCondition ?? "Resolve the provider failure, then request payout again after balances return to available."},
+          failure_reason = ${reason ?? "Manual transfer failed."},
+          retry_condition = ${retryCondition ?? "Resolve the receiving account or transfer issue, then request payout again after balances return to available."},
           next_action = 'request_again_after_failure',
           updated_at = now()
         where id = ${payoutId}
@@ -459,6 +475,10 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
       p.currency,
       p.status,
       count(pbi.id)::int as "balanceCount",
+      pa.manual_account as "manualAccount",
+      pa.manual_account_holder as "manualAccountHolder",
+      pa.manual_method as "manualMethod",
+      pa.manual_notes as "manualNotes",
       pa.provider,
       pa.status as "accountStatus",
       p.requested_at as "requestedAt",
@@ -475,7 +495,17 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
     left join payout_balance_items pbi on pbi.payout_id = p.id
     where (${publisherProfileId ?? null}::uuid is null or pp.id = ${publisherProfileId ?? null})
       and (${payoutId ?? null}::uuid is null or p.id = ${payoutId ?? null})
-    group by p.id, pp.id, pp.display_name, pa.id, pa.provider, pa.status
+    group by
+      p.id,
+      pp.id,
+      pp.display_name,
+      pa.id,
+      pa.manual_account,
+      pa.manual_account_holder,
+      pa.manual_method,
+      pa.manual_notes,
+      pa.provider,
+      pa.status
     order by p.requested_at desc
     limit ${safeLimit}
   `) as Array<{
@@ -485,6 +515,10 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
     currency: string;
     failureReason: string | null;
     id: string;
+    manualAccount: string | null;
+    manualAccountHolder: string | null;
+    manualMethod: "paypal" | "alipay" | null;
+    manualNotes: string | null;
     nextAction: string | null;
     paidAt: string | null;
     provider: string | null;
@@ -559,6 +593,10 @@ async function getVerifiedPayoutAccount(sql: Sql, publisherProfileId: string): P
   const rows = (await sql`
     select
       id::text,
+      manual_account as "manualAccount",
+      manual_account_holder as "manualAccountHolder",
+      manual_method as "manualMethod",
+      manual_notes as "manualNotes",
       provider,
       provider_account_id as "providerAccountId",
       status,

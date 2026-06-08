@@ -5581,6 +5581,7 @@ a {
 .publisher-profile-form input,
 .publisher-onboarding-form input,
 .publisher-onboarding-form select,
+.publisher-onboarding-form textarea,
 .publisher-readiness-form input,
 .publisher-readiness-form select {
   width: 100%;
@@ -5593,8 +5594,15 @@ a {
   padding: 0 10px;
 }
 
+.publisher-onboarding-form textarea {
+  min-height: 76px;
+  resize: vertical;
+  padding: 9px 10px;
+}
+
 .publisher-profile-form input::placeholder,
 .publisher-onboarding-form input::placeholder,
+.publisher-onboarding-form textarea::placeholder,
 .publisher-readiness-form input::placeholder {
   color: #7d8476;
 }

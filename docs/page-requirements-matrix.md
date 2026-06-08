@@ -366,7 +366,7 @@ Primary action:
 - Edit unlocked draft/new version.
 - Set pricing.
 - Accept terms.
-- Start payout onboarding.
+- Submit PayPal/Alipay payout receiving details.
 - Respond to feedback.
 - Claim buyer requests.
 - Request marketplace distribution review.
@@ -540,7 +540,7 @@ Acceptance:
 - Audit log is separate from notification events.
 - Launch readiness is secret-safe.
 - Launch readiness shows customer-facing credibility thresholds for verified public skills, active publishers, active developer projects, successful invocations, and published feedback so operators know whether the marketplace has enough proof for customer demos or public launch.
-- Payout decisions require finance reason, provider reference when marking paid, and retry condition when blocking; admins can see the publisher-facing next action before deciding.
+- Payout decisions require finance reason, transfer reference when marking paid, and retry condition when blocking; admins can see the publisher-facing next action before deciding.
 - No raw OAuth secrets, email keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords are displayed.
 - Finance actions do not mutate historical splits silently.
 
@@ -642,7 +642,7 @@ The home, marketplace, dashboard, developer, publisher, and admin surfaces now i
 - Marketplace install: searchable public listing, publisher trust, install readiness, pricing, feedback, and alternatives.
 - Runtime governance: project-scoped keys, approval policy, budget, rate limit, subscription state, REST, MCP, invocation logs, and usage.
 - Ledger split: transactions, immutable commission splits, balances, refunds, and disputes.
-- Payout and audit: balance reservation, finance decision, provider-deferred payout, notification delivery, and audit trail.
+- Payout and audit: balance reservation, finance decision, manual PayPal/Alipay transfer, notification delivery, and audit trail.
 
 Acceptance:
 

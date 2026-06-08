@@ -2,8 +2,8 @@ import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "031_public_publisher_profile_backfill.sql";
-const expectedLatestMigrationNumber = 31;
+const expectedLatestMigrationFilename = "032_manual_payout_accounts.sql";
+const expectedLatestMigrationNumber = 32;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -95,6 +95,7 @@ type DatabaseReadiness = {
   missingActiveNotificationTemplates: string[] | null;
   notificationDeliveryColumns: boolean;
   operationsTables: boolean;
+  manualPayoutAccountColumns: boolean;
   payoutExplainabilityColumns: boolean;
   payoutOnboardingSessions: boolean;
   payoutTables: boolean;
@@ -540,16 +541,26 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.activeCommissionRules && database.activeCommissionRules > 0 ? "ready" : "warning"
     },
     {
-      action: database.payoutTables ? "No action needed." : "Run payout, payout onboarding, and payout workflow migrations.",
-      description: "Publishers need payout-account onboarding sessions and payout-request state before paid marketplace launch.",
+      action: database.payoutTables ? "No action needed." : "Run payout, manual payout setup, and payout workflow migrations.",
+      description: "Publishers need payout-account submission sessions and payout-request state before paid marketplace launch.",
       detail: database.payoutTables
-        ? "Payout account, onboarding, and payout request tables are available."
+        ? "Payout account, submission, and payout request tables are available."
         : database.payoutOnboardingSessions
-          ? "Payout onboarding is available, but one or more payout account/request tables are missing."
-          : "Payout onboarding or payout request tables are missing.",
+          ? "Payout setup sessions are available, but one or more payout account/request tables are missing."
+          : "Payout setup sessions or payout request tables are missing.",
       key: "payout_state",
       label: "Payout state",
       status: database.payoutTables ? "ready" : "blocker"
+    },
+    {
+      action: database.manualPayoutAccountColumns ? "No action needed." : "Run migration 032_manual_payout_accounts.sql.",
+      description: "P0 paid marketplace payout setup uses publisher-submitted PayPal or Alipay receiving details for finance to transfer manually.",
+      detail: database.manualPayoutAccountColumns
+        ? "Manual payout method, account, holder, and notes columns are available."
+        : "Manual payout receiving-account columns are missing.",
+      key: "manual_payout_accounts",
+      label: "Manual payout accounts",
+      status: database.manualPayoutAccountColumns ? "ready" : "blocker"
     },
     {
       action: database.payoutExplainabilityColumns ? "No action needed." : "Run migration 030_payout_explainability.sql.",
@@ -573,8 +584,8 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
     },
     {
       action: "Choose and connect the final payment provider after internal billing states are stable.",
-      description: "Provider payment capture, connected payout onboarding, and tax/KYC automation remain intentionally deferred.",
-      detail: "Provider API integration is deferred by product scope.",
+      description: "Payment capture and tax/KYC automation remain intentionally deferred; publisher payouts use manual PayPal/Alipay transfer records for P0.",
+      detail: "Payment-provider API integration is deferred by product scope.",
       key: "payment_provider",
       label: "Payment provider",
       status: "deferred"
@@ -664,6 +675,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutExplainabilityColumns: false,
+      manualPayoutAccountColumns: false,
       payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,
@@ -869,6 +881,35 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
             and table_name = 'payouts'
             and column_name = 'next_action'
         ) as "payoutNextAction"
+        ,
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payout_accounts'
+            and column_name = 'manual_method'
+        ) as "payoutAccountManualMethod",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payout_accounts'
+            and column_name = 'manual_account'
+        ) as "payoutAccountManualAccount",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payout_accounts'
+            and column_name = 'manual_account_holder'
+        ) as "payoutAccountManualAccountHolder",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payout_accounts'
+            and column_name = 'manual_notes'
+        ) as "payoutAccountManualNotes"
     `) as Array<{
       buyerRequestDecidedAt: boolean;
       buyerRequestDecisionNote: boolean;
@@ -878,6 +919,10 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       buyerRequestSubmittedSkillId: boolean;
       buyerRequestSubmittedSkillVersionId: boolean;
       notificationDeliveryColumns: boolean;
+      payoutAccountManualAccount: boolean;
+      payoutAccountManualAccountHolder: boolean;
+      payoutAccountManualMethod: boolean;
+      payoutAccountManualNotes: boolean;
       payoutNextAction: boolean;
       payoutRetryCondition: boolean;
       publisherResponseBody: boolean;
@@ -920,6 +965,11 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       migrationLatestNumber: migrationHistory?.latestNumber ?? null,
       missingActiveNotificationTemplates,
       notificationDeliveryColumns: columns.notificationDeliveryColumns,
+      manualPayoutAccountColumns:
+        columns.payoutAccountManualMethod &&
+        columns.payoutAccountManualAccount &&
+        columns.payoutAccountManualAccountHolder &&
+        columns.payoutAccountManualNotes,
       operationsTables:
         tables.projectSkillInstalls &&
         tables.skillFeedback &&
@@ -966,6 +1016,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       notificationDeliveryColumns: false,
       operationsTables: false,
       payoutExplainabilityColumns: false,
+      manualPayoutAccountColumns: false,
       payoutOnboardingSessions: false,
       payoutTables: false,
       publishedFeedbackCount: null,

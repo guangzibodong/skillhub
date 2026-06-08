@@ -58,6 +58,7 @@ const REQUIRED_READINESS_CONTRACT = new Map([
     [
       "commission_rules",
       "payout_state",
+      "manual_payout_accounts",
       "payout_explainability",
       "publisher_terms_acceptance",
       "payment_provider",

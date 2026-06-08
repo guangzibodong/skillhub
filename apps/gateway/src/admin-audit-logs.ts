@@ -46,7 +46,7 @@ const fallbackAuditLogs: AdminAuditLogRecord[] = [
       currency: "usd",
       status: "processing"
     },
-    reason: "Payout approved for provider processing."
+    reason: "Payout approved for manual transfer."
   },
   {
     id: "demo-audit-team",

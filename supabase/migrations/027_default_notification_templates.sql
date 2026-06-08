@@ -203,7 +203,7 @@ values
     'in_app',
     'en',
     'Payout requested',
-    'A payout request for {{publisherName}} was created. Track finance review, provider reference, and linked balance state from the admin console.',
+    'A payout request for {{publisherName}} was created. Track finance review, manual transfer reference, and linked balance state from the admin console.',
     'active',
     now()
   ),
@@ -212,7 +212,7 @@ values
     'in_app',
     'zh',
     '提现请求已创建',
-    '{{publisherName}} 的提现请求已创建。请在后台跟踪财务审核、服务商引用和关联余额状态。',
+    '{{publisherName}} 的提现请求已创建。请在后台跟踪财务审核、人工转账凭证和关联余额状态。',
     'active',
     now()
   ),
@@ -392,7 +392,7 @@ values
     'in_app',
     'en',
     'Payout entered review',
-    'Payout {{payoutId}} entered finance review because it requires manual approval before provider processing.',
+    'Payout {{payoutId}} entered finance review because it requires manual approval before finance transfers funds.',
     'active',
     now()
   ),
@@ -401,7 +401,7 @@ values
     'in_app',
     'zh',
     '提现进入审核',
-    '提现 {{payoutId}} 已进入财务审核，需要人工批准后才能进入服务商处理。',
+    '提现 {{payoutId}} 已进入财务审核，需要人工批准后才能进入财务转账。',
     'active',
     now()
   ),
@@ -410,7 +410,7 @@ values
     'in_app',
     'en',
     'Payout approved',
-    'Payout {{payoutId}} was approved for provider processing. Track provider reference and linked balance state from finance operations.',
+    'Payout {{payoutId}} was approved for manual transfer. Track transfer reference and linked balance state from finance operations.',
     'active',
     now()
   ),
@@ -419,7 +419,7 @@ values
     'in_app',
     'zh',
     '提现已批准',
-    '提现 {{payoutId}} 已批准进入服务商处理。请在财务后台跟踪服务商引用和关联余额状态。',
+    '提现 {{payoutId}} 已批准进入人工转账。请在财务后台跟踪转账凭证和关联余额状态。',
     'active',
     now()
   ),

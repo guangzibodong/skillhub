@@ -99,7 +99,7 @@ const copy: Record<Locale, DocsCopy> = {
   en: {
     api: {
       body:
-        "These groups are the public and console API surfaces that make the marketplace operational. Final payment and provider movement stay deferred, but the state machines are already modeled.",
+        "These groups are the public and console API surfaces that make the marketplace operational. Final payment capture stays deferred, while P0 payouts use manual PayPal/Alipay transfer records on top of the modeled state machines.",
       groups: [
         {
           body: "Public discovery, skill detail, publisher trust, and marketplace recommendation inputs.",

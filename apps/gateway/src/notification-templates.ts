@@ -95,7 +95,7 @@ const fallbackTemplates: NotificationTemplateRecord[] = [
     channel: "in_app",
     locale: "en",
     subject: "Payout entered review",
-    body: "Payout {{payoutId}} entered finance review because it requires manual approval before provider processing.",
+    body: "Payout {{payoutId}} entered finance review because it requires manual approval before finance transfers funds.",
     status: "active",
     updatedAt: "demo"
   },

@@ -489,6 +489,19 @@ async function checkAdminPayouts({ apiUrl, financeToken, timeoutMs }) {
       return;
     }
 
+    const missingManualPayoutFields = json.payouts.filter(
+      (payout) =>
+        !("manualMethod" in payout) ||
+        !("manualAccount" in payout) ||
+        !("manualAccountHolder" in payout) ||
+        !("manualNotes" in payout),
+    );
+
+    if (missingManualPayoutFields.length > 0) {
+      fail(name, "payout rows must include manual payout method, account, holder, and notes fields");
+      return;
+    }
+
     if (!assertNoSensitiveLeaks(name, text, "payout")) {
       return;
     }

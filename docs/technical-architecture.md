@@ -247,7 +247,7 @@ Billable usage or subscription event
 -> balance becomes available after delay/risk window
 -> payout request or scheduled payout
 -> payout review if needed
--> provider payout
+-> manual PayPal/Alipay transfer for P0
 -> admin audit trail
 ```
 

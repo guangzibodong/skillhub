@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useActionState } from "react";
-import { AlertTriangle, Banknote, CheckCircle2, Clock3, ReceiptText, RotateCcw, Save, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, Banknote, CheckCircle2, Clock3, ReceiptText, RotateCcw, Save, UserRound, WalletCards, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { PayoutRecord } from "@/lib/ops-data";
 import { formatMoney } from "@/lib/ops-format";
@@ -15,7 +15,8 @@ type AdminPayoutManagerProps = {
 
 const copy = {
   en: {
-    account: "Account",
+    account: "Receiving account",
+    accountHolder: "Account holder",
     action: "Action",
     amount: "Amount",
     approve: "Approve",
@@ -24,9 +25,9 @@ const copy = {
     empty: "No payouts require finance review.",
     fail: "Fail",
     markPaid: "Mark paid",
+    manualMethod: "Method",
     nextAction: "Next action",
     paid: "Paid",
-    providerReference: "Provider reference",
     reason: "Finance note",
     requested: "Requested",
     retryCondition: "Retry condition",
@@ -34,7 +35,12 @@ const copy = {
     save: "Record decision",
     saving: "Saving",
     status: "Status",
-    title: "Payout review queue",
+    title: "Manual payout review queue",
+    transferReference: "Transfer reference",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     statuses: {
       blocked: "Blocked",
       failed: "Failed",
@@ -45,49 +51,55 @@ const copy = {
       verified: "Verified"
     },
     nextActions: {
-      await_finance_review: "Review KYC, risk, balance items, and provider readiness.",
-      await_provider_processing: "Provider movement is in progress; mark paid when the reference is available.",
+      await_finance_review: "Review account details, risk, and reserved balance items before manual transfer.",
+      await_provider_processing: "Manual transfer is approved; mark paid when the transfer reference is available.",
       complete: "No further finance action is available.",
-      request_again_after_failure: "Balances were released; publisher can retry after the provider issue is fixed.",
+      request_again_after_failure: "Balances were released; publisher can retry after the account or transfer issue is fixed.",
       resolve_blocker_before_retry: "Publisher must resolve the retry condition before a new payout request."
     }
   },
   zh: {
-    account: "账户",
-    action: "动作",
-    amount: "金额",
-    approve: "批准",
-    balanceCount: "锁定余额",
-    block: "阻断",
-    empty: "当前没有需要财务审核的提现。",
-    fail: "失败",
-    markPaid: "标记已打款",
-    nextAction: "下一步",
-    paid: "已打款",
-    providerReference: "服务商参考",
-    reason: "财务备注",
-    requested: "申请时间",
-    retryCondition: "再次申请条件",
-    retryHint: "阻断时必须填写。要明确告诉发布者满足什么条件才能再次申请。",
-    save: "记录决策",
-    saving: "保存中",
-    status: "状态",
-    title: "提现审核队列",
+    account: "\u6536\u6b3e\u8d26\u53f7",
+    accountHolder: "\u6536\u6b3e\u4eba",
+    action: "\u52a8\u4f5c",
+    amount: "\u91d1\u989d",
+    approve: "\u6279\u51c6",
+    balanceCount: "\u9501\u5b9a\u4f59\u989d",
+    block: "\u963b\u65ad",
+    empty: "\u5f53\u524d\u6ca1\u6709\u9700\u8981\u8d22\u52a1\u5ba1\u6838\u7684\u63d0\u73b0\u3002",
+    fail: "\u5931\u8d25",
+    markPaid: "\u6807\u8bb0\u5df2\u6253\u6b3e",
+    manualMethod: "\u6536\u6b3e\u65b9\u5f0f",
+    nextAction: "\u4e0b\u4e00\u6b65",
+    paid: "\u5df2\u6253\u6b3e",
+    reason: "\u8d22\u52a1\u5907\u6ce8",
+    requested: "\u7533\u8bf7\u65f6\u95f4",
+    retryCondition: "\u518d\u6b21\u7533\u8bf7\u6761\u4ef6",
+    retryHint: "\u963b\u65ad\u65f6\u5fc5\u987b\u586b\u5199\u3002\u8981\u660e\u786e\u544a\u8bc9\u53d1\u5e03\u8005\u6ee1\u8db3\u4ec0\u4e48\u6761\u4ef6\u624d\u80fd\u518d\u6b21\u7533\u8bf7\u3002",
+    save: "\u8bb0\u5f55\u51b3\u7b56",
+    saving: "\u4fdd\u5b58\u4e2d",
+    status: "\u72b6\u6001",
+    title: "\u624b\u5de5\u6253\u6b3e\u5ba1\u6838\u961f\u5217",
+    transferReference: "\u8f6c\u8d26\u51ed\u8bc1/\u6d41\u6c34\u53f7",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     statuses: {
-      blocked: "已阻断",
-      failed: "失败",
-      paid: "已打款",
-      processing: "处理中",
-      requested: "已申请",
-      review: "审核中",
-      verified: "已验证"
+      blocked: "\u5df2\u963b\u65ad",
+      failed: "\u5931\u8d25",
+      paid: "\u5df2\u6253\u6b3e",
+      processing: "\u5904\u7406\u4e2d",
+      requested: "\u5df2\u7533\u8bf7",
+      review: "\u5ba1\u6838\u4e2d",
+      verified: "\u5df2\u9a8c\u8bc1"
     },
     nextActions: {
-      await_finance_review: "审核 KYC、风险、余额明细和服务商准备状态。",
-      await_provider_processing: "服务商打款处理中；拿到参考号后标记已打款。",
-      complete: "无需继续处理。",
-      request_again_after_failure: "余额已释放；服务商问题修复后发布者可以重试。",
-      resolve_blocker_before_retry: "发布者必须满足再次申请条件，才能重新发起提现。"
+      await_finance_review: "\u8f6c\u8d26\u524d\u5ba1\u6838\u6536\u6b3e\u8d44\u6599\u3001\u98ce\u9669\u548c\u9501\u5b9a\u4f59\u989d\u660e\u7ec6\u3002",
+      await_provider_processing: "\u624b\u5de5\u6253\u6b3e\u5df2\u6279\u51c6\uff1b\u62ff\u5230\u8f6c\u8d26\u51ed\u8bc1\u540e\u6807\u8bb0\u5df2\u6253\u6b3e\u3002",
+      complete: "\u65e0\u9700\u7ee7\u7eed\u5904\u7406\u3002",
+      request_again_after_failure: "\u4f59\u989d\u5df2\u91ca\u653e\uff1b\u6536\u6b3e\u8d26\u53f7\u6216\u8f6c\u8d26\u95ee\u9898\u4fee\u590d\u540e\u53d1\u5e03\u8005\u53ef\u4ee5\u91cd\u8bd5\u3002",
+      resolve_blocker_before_retry: "\u53d1\u5e03\u8005\u5fc5\u987b\u6ee1\u8db3\u518d\u6b21\u7533\u8bf7\u6761\u4ef6\uff0c\u624d\u80fd\u91cd\u65b0\u53d1\u8d77\u63d0\u73b0\u3002"
     }
   }
 } as const;
@@ -131,11 +143,9 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                 <div className="admin-payout-metrics">
                   <StatusTile icon={<Banknote size={15} aria-hidden="true" />} label={labels.amount} value={formatMoney(latest.amountCents, latest.currency)} />
                   <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.balanceCount} value={String(latest.balanceCount)} />
-                  <StatusTile
-                    icon={<WalletCards size={15} aria-hidden="true" />}
-                    label={labels.account}
-                    value={`${latest.provider ?? "n/a"} / ${formatStatusLabel(latest.accountStatus ?? "n/a", labels.statuses)}`}
-                  />
+                  <StatusTile icon={<WalletCards size={15} aria-hidden="true" />} label={labels.manualMethod} value={formatManualMethod(latest.manualMethod, labels.manualMethods)} />
+                  <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.account} value={latest.manualAccount ?? "n/a"} />
+                  <StatusTile icon={<UserRound size={15} aria-hidden="true" />} label={labels.accountHolder} value={latest.manualAccountHolder ?? "n/a"} />
                   <StatusTile icon={<Clock3 size={15} aria-hidden="true" />} label={labels.requested} value={formatDate(latest.requestedAt, locale)} />
                 </div>
 
@@ -147,13 +157,11 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                   </div>
                 </div>
 
-                {note || latest.retryCondition || latest.providerReference ? (
+                {note || latest.retryCondition || latest.providerReference || latest.manualNotes ? (
                   <div className="admin-payout-note">
                     <AlertTriangle size={15} aria-hidden="true" />
                     <span>
-                      {note}
-                      {latest.retryCondition ? ` / ${latest.retryCondition}` : ""}
-                      {latest.providerReference ? ` / ${latest.providerReference}` : ""}
+                      {[note, latest.retryCondition, latest.providerReference, latest.manualNotes].filter(Boolean).join(" / ")}
                     </span>
                   </div>
                 ) : null}
@@ -179,7 +187,7 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                     <small id={`retry-${latest.id}`}>{labels.retryHint}</small>
                   </label>
                   <label>
-                    <span>{labels.providerReference}</span>
+                    <span>{labels.transferReference}</span>
                     <input defaultValue={latest.providerReference ?? ""} name="providerReference" />
                   </label>
                   <button className="secondary-button secondary-button--compact" disabled={isPending || isTerminal(latest.status)} type="submit">
@@ -246,10 +254,14 @@ function defaultReason(payout: PayoutRecord, locale: Locale) {
   }
 
   if (payout.status === "processing") {
-    return locale === "zh" ? "服务商打款完成，准备记录付款参考。" : "Provider payout completed; recording payment reference.";
+    return locale === "zh"
+      ? "\u624b\u5de5\u6253\u6b3e\u5b8c\u6210\uff0c\u51c6\u5907\u8bb0\u5f55\u8f6c\u8d26\u51ed\u8bc1\u3002"
+      : "Manual transfer completed; recording transfer reference.";
   }
 
-  return locale === "zh" ? "KYC、余额和风险审核通过。" : "KYC, balance, and risk review passed.";
+  return locale === "zh"
+    ? "\u6536\u6b3e\u8d44\u6599\u3001\u4f59\u989d\u548c\u98ce\u9669\u5ba1\u6838\u901a\u8fc7\u3002"
+    : "Receiving account, balance, and risk review passed.";
 }
 
 function defaultRetryCondition(payout: PayoutRecord, locale: Locale) {
@@ -258,14 +270,20 @@ function defaultRetryCondition(payout: PayoutRecord, locale: Locale) {
   }
 
   if (payout.status === "failed") {
-    return locale === "zh" ? "服务商失败原因修复后，余额释放为可用即可重新申请。" : "Retry after the provider issue is fixed and balances return to available.";
+    return locale === "zh"
+      ? "\u6536\u6b3e\u8d26\u53f7\u6216\u8f6c\u8d26\u95ee\u9898\u4fee\u590d\u540e\uff0c\u4f59\u989d\u91ca\u653e\u4e3a\u53ef\u7528\u5373\u53ef\u91cd\u65b0\u7533\u8bf7\u3002"
+      : "Retry after the receiving-account or transfer issue is fixed and balances return to available.";
   }
 
   if (payout.status === "blocked") {
-    return locale === "zh" ? "补齐财务要求的材料或账户验证后，再重新申请提现。" : "Provide the required finance evidence or account verification before requesting again.";
+    return locale === "zh"
+      ? "\u8865\u9f50\u8d22\u52a1\u8981\u6c42\u7684\u6750\u6599\u6216\u66f4\u65b0\u6536\u6b3e\u8d26\u6237\u540e\uff0c\u518d\u91cd\u65b0\u7533\u8bf7\u63d0\u73b0\u3002"
+      : "Provide the required finance evidence or update the receiving account before requesting again.";
   }
 
-  return locale === "zh" ? "如果选择阻断，请写清楚再次申请需要满足的条件。" : "If blocking, describe the condition required before the publisher can request again.";
+  return locale === "zh"
+    ? "\u5982\u679c\u9009\u62e9\u963b\u65ad\uff0c\u8bf7\u5199\u6e05\u695a\u518d\u6b21\u7533\u8bf7\u9700\u8981\u6ee1\u8db3\u7684\u6761\u4ef6\u3002"
+    : "If blocking, describe the condition required before the publisher can request again.";
 }
 
 function statusClass(status: PayoutRecord["status"]) {
@@ -290,18 +308,24 @@ function isTerminal(status: PayoutRecord["status"]) {
 
 function terminalLabel(status: PayoutRecord["status"], locale: Locale) {
   if (status === "paid") {
-    return locale === "zh" ? "已完成打款，不能再次处理。" : "Paid out; no further action is available.";
+    return locale === "zh"
+      ? "\u5df2\u5b8c\u6210\u6253\u6b3e\uff0c\u4e0d\u80fd\u518d\u6b21\u5904\u7406\u3002"
+      : "Paid out; no further action is available.";
   }
 
   if (status === "failed") {
-    return locale === "zh" ? "已失败，锁定余额已释放回可用状态。" : "Failed; reserved balances were released.";
+    return locale === "zh"
+      ? "\u5df2\u5931\u8d25\uff0c\u9501\u5b9a\u4f59\u989d\u5df2\u91ca\u653e\u56de\u53ef\u7528\u72b6\u6001\u3002"
+      : "Failed; reserved balances were released.";
   }
 
-  return locale === "zh" ? "已阻断，发布者必须满足再次申请条件。" : "Blocked; publisher must satisfy the retry condition before retrying.";
+  return locale === "zh"
+    ? "\u5df2\u963b\u65ad\uff0c\u53d1\u5e03\u8005\u5fc5\u987b\u6ee1\u8db3\u518d\u6b21\u7533\u8bf7\u6761\u4ef6\u3002"
+    : "Blocked; publisher must satisfy the retry condition before retrying.";
 }
 
-function formatStatusLabel(status: string, labels: Record<string, string>) {
-  return labels[status] ?? status.replaceAll("_", " ");
+function formatManualMethod(method: string | null | undefined, labels: Record<string, string>) {
+  return method ? (labels[method] ?? method.replaceAll("_", " ")) : "n/a";
 }
 
 function formatNextAction(action: string | null | undefined, labels: Record<string, string>) {
@@ -314,7 +338,7 @@ function formatNextAction(action: string | null | undefined, labels: Record<stri
 
 function formatDate(value: string | null | undefined, locale: Locale) {
   if (!value || value === "demo") {
-    return locale === "zh" ? "演示时间" : "Demo time";
+    return locale === "zh" ? "\u6f14\u793a\u65f6\u95f4" : "Demo time";
   }
 
   const date = new Date(value);

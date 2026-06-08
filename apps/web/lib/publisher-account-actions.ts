@@ -13,25 +13,27 @@ export type PublisherAccountActionState = {
 const actionCopy = {
   en: {
     missingDisplayName: "Enter a publisher display name.",
-    missingTarget: "Create an onboarding session or payout account before updating readiness.",
+    missingManualAccount: "Enter the PayPal or Alipay receiving account.",
+    missingTarget: "Create a payout account before updating readiness.",
     missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing publisher settings.",
-    onboardingCreated: "Payout onboarding session created.",
+    onboardingCreated: "Manual payout details submitted for finance verification.",
     onboardingUpdated: "Payout readiness state updated.",
     profileSaved: "Publisher profile saved.",
-    unableOnboarding: "Unable to create payout onboarding.",
+    unableOnboarding: "Unable to submit manual payout details.",
     unableProfile: "Unable to save publisher profile.",
     unableReadiness: "Unable to update payout readiness."
   },
   zh: {
-    missingDisplayName: "请输入发布者展示名称。",
-    missingTarget: "请先创建入驻会话或收款账户，再更新收款状态。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理发布者设置。",
-    onboardingCreated: "收款入驻会话已创建。",
-    onboardingUpdated: "收款准备状态已更新。",
-    profileSaved: "发布者资料已保存。",
-    unableOnboarding: "无法创建收款入驻会话。",
-    unableProfile: "无法保存发布者资料。",
-    unableReadiness: "无法更新收款准备状态。"
+    missingDisplayName: "\u8bf7\u8f93\u5165\u53d1\u5e03\u8005\u5c55\u793a\u540d\u79f0\u3002",
+    missingManualAccount: "\u8bf7\u586b\u5199 PayPal \u6216 Alipay \u6536\u6b3e\u8d26\u53f7\u3002",
+    missingTarget: "\u8bf7\u5148\u63d0\u4ea4\u6536\u6b3e\u8d26\u6237\u8d44\u6599\uff0c\u518d\u66f4\u65b0\u6536\u6b3e\u72b6\u6001\u3002",
+    missingToken: "\u8bf7\u5148\u7528 SkillHub \u7528\u6237 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e\u670d\u52a1\u7aef\u515c\u5e95 token\uff0c\u624d\u80fd\u7ba1\u7406\u53d1\u5e03\u8005\u8bbe\u7f6e\u3002",
+    onboardingCreated: "\u624b\u5de5\u6253\u6b3e\u6536\u6b3e\u8d44\u6599\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u8d22\u52a1\u6838\u9a8c\u3002",
+    onboardingUpdated: "\u63d0\u73b0\u51c6\u5907\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
+    profileSaved: "\u53d1\u5e03\u8005\u8d44\u6599\u5df2\u4fdd\u5b58\u3002",
+    unableOnboarding: "\u65e0\u6cd5\u63d0\u4ea4\u624b\u5de5\u6253\u6b3e\u8d44\u6599\u3002",
+    unableProfile: "\u65e0\u6cd5\u4fdd\u5b58\u53d1\u5e03\u8005\u8d44\u6599\u3002",
+    unableReadiness: "\u65e0\u6cd5\u66f4\u65b0\u63d0\u73b0\u51c6\u5907\u72b6\u6001\u3002"
   }
 } as const;
 
@@ -123,6 +125,14 @@ export async function createPayoutOnboardingAction(
 ): Promise<PublisherAccountActionState> {
   const labels = actionCopy[locale];
   const token = await getWorkspaceToken();
+  const manualAccount = String(formData.get("manualAccount") ?? "").trim();
+  const manualAccountHolder = String(formData.get("manualAccountHolder") ?? "").trim();
+  const manualMethod = String(formData.get("manualMethod") ?? "paypal").trim() || "paypal";
+  const manualNotes = String(formData.get("manualNotes") ?? "").trim();
+
+  if (!manualAccount) {
+    return { message: labels.missingManualAccount, status: "error" };
+  }
 
   if (!token) {
     return { message: labels.missingToken, status: "error" };
@@ -131,6 +141,10 @@ export async function createPayoutOnboardingAction(
   try {
     const response = await fetch(`${getApiUrl()}/v1/publisher/payout-account/onboarding`, {
       body: JSON.stringify({
+        manualAccount,
+        manualAccountHolder: manualAccountHolder || undefined,
+        manualMethod,
+        manualNotes: manualNotes || undefined,
         provider: String(formData.get("provider") ?? "manual_deferred").trim() || "manual_deferred",
         refreshUrl: String(formData.get("refreshUrl") ?? "").trim() || undefined,
         returnUrl: String(formData.get("returnUrl") ?? "").trim() || undefined

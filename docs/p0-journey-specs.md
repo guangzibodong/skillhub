@@ -528,7 +528,7 @@ Finance:
 - Usage/subscription processor endpoints.
 - Balance release endpoints.
 - Admin payout queue/decision endpoints.
-- Payout decision endpoints require finance reason, provider reference when marking paid, and retry condition when blocking.
+- Payout decision endpoints require finance reason, transfer reference when marking paid, and retry condition when blocking.
 - Refund/dispute endpoints.
 
 Notifications/webhooks:

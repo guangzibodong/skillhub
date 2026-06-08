@@ -546,6 +546,10 @@ async function preparePublisherCommercialReadiness({
       joinUrl(apiUrl, "/v1/publisher/payout-account/onboarding"),
       {
         body: JSON.stringify({
+          manualAccount: `p0-demo-${runId}@example.com`,
+          manualAccountHolder: "P0 Demo Publisher",
+          manualMethod: "paypal",
+          manualNotes: "P0 demo-chain smoke manual transfer account.",
           provider: "manual_deferred",
         }),
         headers: authorizedHeaders(publisherToken),
@@ -562,7 +566,7 @@ async function preparePublisherCommercialReadiness({
     onboarding = json?.onboarding;
 
     if (!onboarding?.onboardingSession?.id || !onboarding?.payoutAccount?.id) {
-      fail(onboardingName, "unexpected payout onboarding payload shape");
+      fail(onboardingName, "unexpected manual payout setup payload shape");
       return null;
     }
 
@@ -570,30 +574,39 @@ async function preparePublisherCommercialReadiness({
     const account = onboarding.payoutAccount;
 
     if (account.provider !== "manual_deferred" || session.provider !== "manual_deferred") {
-      fail(onboardingName, "payout onboarding used an unexpected provider");
+      fail(onboardingName, "manual payout setup used an unexpected provider");
+      return null;
+    }
+
+    if (
+      account.manualMethod !== "paypal" ||
+      account.manualAccount !== `p0-demo-${runId}@example.com` ||
+      account.manualAccountHolder !== "P0 Demo Publisher"
+    ) {
+      fail(onboardingName, "manual payout account details did not persist");
       return null;
     }
 
     if (!String(session.providerSessionId ?? "").startsWith("po_")) {
-      fail(onboardingName, "payout onboarding provider session id is missing or malformed");
+      fail(onboardingName, "manual payout setup session id is missing or malformed");
       return null;
     }
 
     const handoffUrlError = validateProviderHandoffUrl(session.onboardingUrl);
 
     if (handoffUrlError) {
-      fail(onboardingName, `payout onboarding URL ${handoffUrlError}`);
+      fail(onboardingName, `manual payout setup URL ${handoffUrlError}`);
       return null;
     }
 
     if (session.returnUrl != null || session.refreshUrl != null) {
-      fail(onboardingName, "default payout onboarding unexpectedly persisted return or refresh URLs");
+      fail(onboardingName, "default manual payout setup unexpectedly persisted return or refresh URLs");
       return null;
     }
 
     pass(
       onboardingName,
-      `provider-deferred onboarding created: account=...${account.id.slice(-8)} provider/url verified`,
+      `manual payout details submitted: account=...${account.id.slice(-8)} method=${account.manualMethod}`,
     );
   } catch (error) {
     fail(onboardingName, redactSecrets(error.message));
@@ -608,7 +621,7 @@ async function preparePublisherCommercialReadiness({
       {
         body: JSON.stringify({
           reason:
-            "P0 demo-chain smoke verified provider-deferred payout readiness before active paid pricing.",
+            "P0 demo-chain smoke verified manual PayPal payout readiness before active paid pricing.",
           sessionId: onboarding.onboardingSession.id,
           status: "verified",
         }),
@@ -1145,17 +1158,29 @@ async function checkPublisherPayoutReadiness(
     const readiness = json?.readiness;
     const availableCents = Number(balances?.availableCents ?? 0);
     const minPayoutCents = Number(balances?.minPayoutCents ?? 0);
+    const verifiedAccount = Array.isArray(json?.payoutAccounts)
+      ? json.payoutAccounts.find((account) => account?.status === "verified")
+      : null;
 
     if (
       !json?.publisherProfile ||
       json.publisherProfile.status !== "active" ||
       json.publisherProfile.payoutStatus !== "verified" ||
       !Array.isArray(json?.payoutAccounts) ||
-      !json.payoutAccounts.some((account) => account?.status === "verified") ||
+      !verifiedAccount ||
       !readiness ||
       !Array.isArray(readiness.blockers)
     ) {
       fail(name, "publisher payout profile/readiness payload is not verified");
+      return null;
+    }
+
+    if (
+      verifiedAccount.manualMethod !== "paypal" ||
+      verifiedAccount.manualAccount !== `p0-demo-${runId}@example.com` ||
+      verifiedAccount.manualAccountHolder !== "P0 Demo Publisher"
+    ) {
+      fail(name, "publisher payout summary did not expose verified manual payout details");
       return null;
     }
 
@@ -1243,7 +1268,7 @@ async function approvePublisherPayout({ apiUrl, financeToken, timeoutMs }, payou
     const { status, json } = await requestJson(joinUrl(apiUrl, path), {
       body: JSON.stringify({
         action: "approve",
-        reason: "P0 demo-chain smoke approved provider-deferred payout request.",
+        reason: "P0 demo-chain smoke approved manual payout request.",
       }),
       headers: authorizedHeaders(financeToken),
       method: "POST",
@@ -1278,14 +1303,14 @@ async function approvePublisherPayout({ apiUrl, financeToken, timeoutMs }, payou
 async function markPublisherPayoutPaid({ apiUrl, financeToken, timeoutMs }, payout) {
   const path = `/v1/admin/payouts/${encodeURIComponent(payout.id)}/decision`;
   const name = `POST ${path} mark_paid`;
-  const providerReference = `p0-demo-payout-${runId}-${payout.id.slice(-8)}`;
+  const providerReference = `p0-demo-transfer-${runId}-${payout.id.slice(-8)}`;
 
   try {
     const { status, json } = await requestJson(joinUrl(apiUrl, path), {
       body: JSON.stringify({
         action: "mark_paid",
         providerReference,
-        reason: "P0 demo-chain smoke recorded provider-deferred payout completion.",
+        reason: "P0 demo-chain smoke recorded manual payout completion.",
       }),
       headers: authorizedHeaders(financeToken),
       method: "POST",
@@ -1310,7 +1335,7 @@ async function markPublisherPayoutPaid({ apiUrl, financeToken, timeoutMs }, payo
       return null;
     }
 
-    pass(name, `payout=...${paid.id.slice(-8)} marked paid with provider reference`);
+    pass(name, `payout=...${paid.id.slice(-8)} marked paid with transfer reference`);
     return paid;
   } catch (error) {
     fail(name, redactSecrets(error.message));

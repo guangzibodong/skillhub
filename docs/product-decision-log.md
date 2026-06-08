@@ -49,11 +49,11 @@ Question:
 
 Current assumption:
 
-- Verified skill review, publisher profile, accepted publisher terms, payout readiness, active commission rule, refund/dispute policy, payout threshold, review SLA, finance admin workflow, and provider-deferred payment state visibility are required.
+- Verified skill review, publisher profile, accepted publisher terms, verified manual payout readiness, active commission rule, refund/dispute policy, payout threshold, review SLA, finance admin workflow, and provider-deferred payment state visibility are required.
 
 Design default:
 
-- Paid activation remains invite-only until payment provider, payout provider, KYC/tax, refund/dispute, and legal review are finalized.
+- Paid activation remains invite-only until payment provider, refund/dispute, and legal review are finalized. P0 publisher payouts use manual PayPal/Alipay transfer records instead of payout-provider automation.
 
 Acceptance impact:
 
@@ -239,6 +239,31 @@ Decision:
 Acceptance impact:
 
 - Marketplace cards, skill detail, publisher preflight, admin review queue, and project policy approval must use the same risk matrix.
+
+### D011: P0 Manual Publisher Payouts
+
+Status: decided
+
+Owner: Product Manager + Finance
+
+Target: current P0 build
+
+Question:
+
+- How should publisher payouts work before a payout provider and tax/KYC automation are connected?
+
+Decision:
+
+- Publishers submit only PayPal or Alipay receiving details, including account, optional account holder, and optional finance notes.
+- Finance manually transfers money outside SkillHub after reviewing the payout request and records the transfer reference in the admin payout decision.
+- SkillHub still keeps the ledger, publisher balances, payout reservation, payout state machine, retry/block reasons, audit logs, notifications, and publisher/admin visibility.
+- Full payout-provider onboarding, automated tax/KYC, and provider money movement remain deferred integrations.
+
+Acceptance impact:
+
+- Publisher payout setup must collect PayPal/Alipay receiving details instead of sending authors to a provider handoff.
+- Admin payout decisions require a transfer reference when marking a payout paid.
+- Payout records may keep the existing `providerReference` API field for compatibility, but product copy must label it as a transfer reference.
 
 ## P1 Decisions
 

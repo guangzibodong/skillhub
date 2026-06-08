@@ -450,6 +450,10 @@ export type PayoutRecord = {
   currency: string;
   status: "requested" | "review" | "processing" | "paid" | "failed" | "blocked";
   balanceCount: number;
+  manualAccount: string | null;
+  manualAccountHolder: string | null;
+  manualMethod: "paypal" | "alipay" | string | null;
+  manualNotes: string | null;
   provider: string | null;
   accountStatus: string | null;
   requestedAt: string;
@@ -510,6 +514,10 @@ export type PublisherPayoutSummary = {
   };
   payoutAccounts: Array<{
     id: string;
+    manualAccount: string | null;
+    manualAccountHolder: string | null;
+    manualMethod: "paypal" | "alipay" | string | null;
+    manualNotes: string | null;
     provider: string;
     providerAccountId: string;
     status: string;
@@ -534,6 +542,10 @@ export type PublisherAccountSummary = {
   } | null;
   payoutAccounts: Array<{
     id: string;
+    manualAccount: string | null;
+    manualAccountHolder: string | null;
+    manualMethod: "paypal" | "alipay" | string | null;
+    manualNotes: string | null;
     provider: string;
     providerAccountId: string;
     status: string;
@@ -1532,7 +1544,7 @@ const fallbackAdminAuditLogs: AdminAuditLogRecord[] = [
       currency: "usd",
       status: "processing"
     },
-    reason: "Payout approved for provider processing."
+    reason: "Payout approved for manual transfer."
   },
   {
     id: "demo-audit-team",
@@ -1618,7 +1630,7 @@ const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
     channel: "in_app",
     locale: "en",
     subject: "Payout entered review",
-    body: "Payout {{payoutId}} entered finance review because it requires manual approval before provider processing.",
+    body: "Payout {{payoutId}} entered finance review because it requires manual approval before finance transfers funds.",
     status: "active",
     updatedAt: "demo"
   },
@@ -2193,6 +2205,10 @@ const fallbackPayouts: PayoutRecord[] = [
     currency: "usd",
     status: "review",
     balanceCount: 4,
+    manualAccount: "publisher-paypal@example.com",
+    manualAccountHolder: "SkillHub Publisher",
+    manualMethod: "paypal",
+    manualNotes: "Demo manual payout account for finance review.",
     provider: "manual_deferred",
     accountStatus: "verified",
     requestedAt: "demo",
@@ -2231,6 +2247,10 @@ const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
   payoutAccounts: [
     {
       id: "demo-payout-account",
+      manualAccount: "publisher-paypal@example.com",
+      manualAccountHolder: "SkillHub Publisher",
+      manualMethod: "paypal",
+      manualNotes: "Demo manual payout account for finance review.",
       provider: "manual_deferred",
       providerAccountId: "manual_deferred_demo",
       status: "verified",
@@ -2257,6 +2277,10 @@ const fallbackPublisherAccountSummary: PublisherAccountSummary = {
   payoutAccounts: [
     {
       id: "demo-payout-account",
+      manualAccount: "publisher-paypal@example.com",
+      manualAccountHolder: "SkillHub Publisher",
+      manualMethod: "paypal",
+      manualNotes: "Demo manual payout account for finance review.",
       provider: "manual_deferred",
       providerAccountId: "manual_deferred_demo",
       status: "verification_required",

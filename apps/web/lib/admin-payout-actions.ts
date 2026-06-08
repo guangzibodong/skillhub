@@ -16,22 +16,22 @@ const copy = {
   en: {
     invalidAction: "Payout action must be approve, mark_paid, fail, or block.",
     missingPayout: "Missing payout id.",
-    missingProviderReference: "Provider reference is required when marking a payout paid.",
     missingReason: "A finance review reason is required.",
     missingRetryCondition: "A retry condition is required when blocking a payout.",
     missingToken: "Sign in with a finance/admin token or configure SKILLHUB_ADMIN_TOKEN before deciding payouts.",
+    missingTransferReference: "Transfer reference is required when marking a payout paid.",
     saved: "Payout decision recorded.",
     unableSave: "Unable to update payout."
   },
   zh: {
-    invalidAction: "提现动作必须是 approve、mark_paid、fail 或 block。",
-    missingPayout: "缺少提现 ID。",
-    missingProviderReference: "标记已打款时必须填写服务商付款参考。",
-    missingReason: "必须填写财务审核原因。",
-    missingRetryCondition: "阻断提现时必须填写再次申请条件。",
-    missingToken: "请先使用财务或管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理提现。",
-    saved: "提现决策已记录。",
-    unableSave: "无法更新提现。"
+    invalidAction: "\u63d0\u73b0\u52a8\u4f5c\u5fc5\u987b\u662f approve\u3001mark_paid\u3001fail \u6216 block\u3002",
+    missingPayout: "\u7f3a\u5c11\u63d0\u73b0 ID\u3002",
+    missingReason: "\u5fc5\u987b\u586b\u5199\u8d22\u52a1\u5ba1\u6838\u539f\u56e0\u3002",
+    missingRetryCondition: "\u963b\u65ad\u63d0\u73b0\u65f6\u5fc5\u987b\u586b\u5199\u518d\u6b21\u7533\u8bf7\u6761\u4ef6\u3002",
+    missingToken: "\u8bf7\u5148\u7528\u8d22\u52a1\u6216\u7ba1\u7406\u5458 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u5904\u7406\u63d0\u73b0\u3002",
+    missingTransferReference: "\u6807\u8bb0\u5df2\u6253\u6b3e\u65f6\u5fc5\u987b\u586b\u5199\u8f6c\u8d26\u51ed\u8bc1\u6216\u6d41\u6c34\u53f7\u3002",
+    saved: "\u63d0\u73b0\u51b3\u7b56\u5df2\u8bb0\u5f55\u3002",
+    unableSave: "\u65e0\u6cd5\u66f4\u65b0\u63d0\u73b0\u3002"
   }
 } as const;
 
@@ -63,7 +63,7 @@ export async function decideAdminPayoutAction(
   }
 
   if (action === "mark_paid" && !providerReference) {
-    return { message: labels.missingProviderReference, payoutId, status: "error" };
+    return { message: labels.missingTransferReference, payoutId, status: "error" };
   }
 
   if (action === "block" && !retryCondition) {

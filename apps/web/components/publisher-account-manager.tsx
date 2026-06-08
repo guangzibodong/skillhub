@@ -42,16 +42,21 @@ const copy = {
     completing: "Updating",
     createdAt: "Created",
     displayName: "Public publisher name",
-    latestSession: "Latest onboarding",
+    latestSession: "Latest payout submission",
+    manualAccount: "Receiving account",
+    manualAccountHolder: "Account holder",
+    manualAccountPlaceholder: "PayPal email or Alipay account",
+    manualMethod: "Receiving method",
+    manualNotes: "Finance notes",
+    manualNotesPlaceholder: "Optional transfer instructions for finance",
     noAccount: "No payout account yet",
     noProfile: "Create publisher profile",
-    noSession: "No onboarding session",
+    noSession: "No payout submission",
     notAccepted: "Not accepted",
     notAvailable: "n/a",
-    onboarding: "Create payout onboarding",
+    onboarding: "Submit payout details",
     onboardingProvider: "Provider",
-    onboardingTitle: "Payout onboarding",
-    openOnboarding: "Open handoff link",
+    onboardingTitle: "Manual payout account",
     payoutReadiness: "Payout readiness",
     profile: "Publisher profile",
     readTerms: "Read terms",
@@ -68,8 +73,12 @@ const copy = {
     termsStatus: "Terms status",
     termsTitle: "Operating terms",
     termsVersion: "Version",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     providers: {
-      manual_deferred: "Manual payout handoff"
+      manual_deferred: "Manual finance transfer"
     },
     statuses: {
       blocked: "Blocked",
@@ -96,16 +105,21 @@ const copy = {
     completing: "\u66f4\u65b0\u4e2d",
     createdAt: "\u521b\u5efa\u65f6\u95f4",
     displayName: "\u516c\u5f00\u53d1\u5e03\u8005\u540d\u79f0",
-    latestSession: "\u6700\u8fd1\u5165\u9a7b\u4f1a\u8bdd",
+    latestSession: "\u6700\u8fd1\u6536\u6b3e\u63d0\u4ea4",
+    manualAccount: "\u6536\u6b3e\u8d26\u53f7",
+    manualAccountHolder: "\u6536\u6b3e\u4eba",
+    manualAccountPlaceholder: "PayPal \u90ae\u7bb1\u6216 Alipay \u8d26\u53f7",
+    manualMethod: "\u6536\u6b3e\u65b9\u5f0f",
+    manualNotes: "\u8d22\u52a1\u5907\u6ce8",
+    manualNotesPlaceholder: "\u53ef\u9009\uff1a\u7ed9\u8d22\u52a1\u7684\u8f6c\u8d26\u8bf4\u660e",
     noAccount: "\u8fd8\u6ca1\u6709\u6536\u6b3e\u8d26\u6237",
     noProfile: "\u521b\u5efa\u53d1\u5e03\u8005\u8d44\u6599",
-    noSession: "\u8fd8\u6ca1\u6709\u5165\u9a7b\u4f1a\u8bdd",
+    noSession: "\u8fd8\u6ca1\u6709\u6536\u6b3e\u63d0\u4ea4",
     notAccepted: "\u672a\u63a5\u53d7",
     notAvailable: "\u6682\u65e0",
-    onboarding: "\u521b\u5efa\u6536\u6b3e\u5165\u9a7b",
+    onboarding: "\u63d0\u4ea4\u6536\u6b3e\u8d44\u6599",
     onboardingProvider: "\u670d\u52a1\u5546",
-    onboardingTitle: "\u6536\u6b3e\u5165\u9a7b",
-    openOnboarding: "\u6253\u5f00\u5165\u9a7b\u94fe\u63a5",
+    onboardingTitle: "\u624b\u5de5\u6253\u6b3e\u6536\u6b3e\u8d26\u6237",
     payoutReadiness: "\u63d0\u73b0\u51c6\u5907",
     profile: "\u53d1\u5e03\u8005\u8d44\u6599",
     readTerms: "\u67e5\u770b\u6761\u6b3e",
@@ -122,8 +136,12 @@ const copy = {
     termsStatus: "\u6761\u6b3e\u72b6\u6001",
     termsTitle: "\u8fd0\u8425\u6761\u6b3e",
     termsVersion: "\u6761\u6b3e\u7248\u672c",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     providers: {
-      manual_deferred: "\u4eba\u5de5\u63d0\u73b0\u4ea4\u63a5"
+      manual_deferred: "\u8d22\u52a1\u4eba\u5de5\u8f6c\u8d26"
     },
     statuses: {
       blocked: "\u5df2\u963b\u65ad",
@@ -174,7 +192,6 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
   const completionSessionId = openSession?.id ?? "";
   const completionAccountId = payoutAccount?.id ?? "";
   const canUpdateReadiness = Boolean(completionSessionId || completionAccountId);
-  const handoffUrl = onboardingState.onboardingUrl ?? latestSession?.onboardingUrl;
   const payoutReady = profile?.payoutStatus === "verified" || payoutAccount?.status === "verified";
   const acceptedCurrentTerms =
     Boolean(profile?.termsAcceptedAt) && profile?.termsVersion === CURRENT_TERMS_VERSION;
@@ -213,7 +230,7 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
           label={labels.accountStatus}
           value={
             payoutAccount
-              ? `${formatProviderLabel(payoutAccount.provider, labels.providers)} / ${formatStatusLabel(payoutAccount.status, labels.statuses)}`
+              ? `${formatManualMethodLabel(payoutAccount.manualMethod, labels.manualMethods)} / ${payoutAccount.manualAccount ?? labels.noAccount}`
               : labels.noAccount
           }
         />
@@ -279,6 +296,30 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         <input name="returnUrl" type="hidden" value={returnUrl} />
         <input name="refreshUrl" type="hidden" value={returnUrl} />
         <label>
+          <span>{labels.manualMethod}</span>
+          <select defaultValue={payoutAccount?.manualMethod ?? "paypal"} name="manualMethod">
+            <option value="paypal">{labels.manualMethods.paypal}</option>
+            <option value="alipay">{labels.manualMethods.alipay}</option>
+          </select>
+        </label>
+        <label>
+          <span>{labels.manualAccount}</span>
+          <input
+            defaultValue={payoutAccount?.manualAccount ?? ""}
+            name="manualAccount"
+            placeholder={labels.manualAccountPlaceholder}
+            required
+          />
+        </label>
+        <label>
+          <span>{labels.manualAccountHolder}</span>
+          <input defaultValue={payoutAccount?.manualAccountHolder ?? ""} name="manualAccountHolder" />
+        </label>
+        <label>
+          <span>{labels.manualNotes}</span>
+          <textarea defaultValue={payoutAccount?.manualNotes ?? ""} name="manualNotes" placeholder={labels.manualNotesPlaceholder} rows={3} />
+        </label>
+        <label>
           <span>{labels.onboardingProvider}</span>
           <select defaultValue={payoutAccount?.provider ?? "manual_deferred"} name="provider">
             <option value="manual_deferred">{labels.providers.manual_deferred}</option>
@@ -290,13 +331,6 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
         </button>
       </form>
       {onboardingState.status !== "idle" ? <ActionMessage state={onboardingState} /> : null}
-
-      {handoffUrl ? (
-        <a className="publisher-onboarding-link" href={handoffUrl} rel="noreferrer" target="_blank">
-          <ExternalLink size={15} aria-hidden="true" />
-          <span>{labels.openOnboarding}</span>
-        </a>
-      ) : null}
 
       <form action={readinessAction} className="publisher-readiness-form">
         <strong>{labels.updateTitle}</strong>
@@ -342,6 +376,10 @@ function StatusTile({ icon, label, value }: { icon: ReactNode; label: string; va
 
 function formatProviderLabel(provider: string, labels: Record<string, string>) {
   return labels[provider] ?? provider.replaceAll("_", " ");
+}
+
+function formatManualMethodLabel(method: string | null | undefined, labels: Record<string, string>) {
+  return method ? (labels[method] ?? method.replaceAll("_", " ")) : labels.paypal;
 }
 
 function formatStatusLabel(status: string, labels: Record<string, string>) {

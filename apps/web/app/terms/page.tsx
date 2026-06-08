@@ -124,7 +124,7 @@ const pageCopy = {
         title: "Deferred final integrations",
         body: "Some provider integrations are intentionally last so the internal operating model stays stable first.",
         bullets: [
-          "Payment capture, payment-provider customer sessions, connected payout onboarding, tax/KYC automation, and actual provider payout movement are deferred.",
+          "Payment capture, payment-provider customer sessions, provider-specific payout automation, and tax/KYC automation are deferred; P0 publisher payouts use manual PayPal/Alipay transfer records.",
           "Email provider delivery is connected through queued notification events; production readiness requires provider configuration and debug code previews disabled.",
           "Terms may be updated before paid marketplace launch when provider, region, tax, refund-window, KYC, and minimum-payout decisions are finalized."
         ]

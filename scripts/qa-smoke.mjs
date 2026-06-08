@@ -1343,6 +1343,10 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
     },
     {
       body: {
+        manualAccount: "publisher-paypal@example.com",
+        manualAccountHolder: "SkillHub Smoke Publisher",
+        manualMethod: "paypal",
+        manualNotes: "Routine no-token boundary probe for manual payout setup.",
         provider: "manual_deferred",
         refreshUrl: "https://example.com/refresh",
         returnUrl: "https://example.com/return",

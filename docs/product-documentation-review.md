@@ -40,6 +40,10 @@ SkillHub must become an operating workspace:
 
 ## Latest Implementation Review
 
+The latest payout simplification locks the P0 finance model to manual PayPal/Alipay transfers. Publishers now submit receiving details directly in the publisher account panel; finance verifies those details, reviews payout requests, transfers outside SkillHub, and records a transfer reference when marking the payout paid. The platform still keeps the important marketplace operating controls: immutable ledger rows, balance reservation, payout state, retry/block reasons, notifications, launch-readiness schema checks, and audit logs.
+
+This is intentionally smaller than a payout-provider integration. It removes unnecessary provider/KYC onboarding complexity from the P0 path while preserving the product proof customers care about: money is earned through governed usage, split through the ledger, reserved for payout, reviewed by finance, marked paid with evidence, and visible to publisher/admin surfaces.
+
 The latest Journey C protected-read smoke pass turns notification-template governance into a first-class admin operations assertion. `pnpm smoke:p0:admin` now checks that `/v1/admin/notification-templates` is protected without a token, returns the expected template row contract for authorized operators, and passes the shared sensitive-output scanner. This connects the existing admin template manager, launch-readiness template coverage, and delivery rendering path into the same non-mutating release gate as review, finance, payout, webhook, identity, audit, trust, and curation.
 
 The latest admin-write boundary smoke pass closes the remaining no-token gap in Journey C routine deployment QA. The public smoke now sends unauthenticated write-shaped requests to admin review decisions, commission-rule creation, finance processors, refunds, disputes, payout decisions, notification and webhook delivery operations, notification templates, marketplace curation, curation appeals, incident operations, abuse-report decisions, and feedback moderation. Each route must return a JSON `401` or `403` boundary with no sensitive-output leak, so routine 1Panel updates can catch accidentally public operator mutations without requiring an admin token or creating production rows.
@@ -94,7 +98,7 @@ Admin review is now closer to an operating workflow rather than a status list: e
 
 Publisher monetization is now closer to an operating workflow as well: `/publisher` exposes a paid marketplace readiness command panel before the per-skill workbench, summarizing paid listing readiness, blocker counts, draft paid prices, payout readiness, profile/terms gates, and per-skill next actions. The pricing form now explains when active paid pricing is commercially blocked while still allowing draft pricing, which makes Journey B feel like a marketplace operations console instead of a pile of disconnected forms.
 
-Payout operations now have stronger explainability: publisher payout summaries expose readiness blockers, minimum payout, manual review threshold, balance-state meaning, latest payout reason, retry condition, and next action. Finance admins must record a reason for decisions, a provider reference when marking paid, and a retry condition when blocking a payout. This closes a key money-flow trust gap because publishers can understand why money is pending, available, reserved, failed, blocked, or paid without guessing from ledger rows.
+Payout operations now have stronger explainability: publisher payout summaries expose readiness blockers, minimum payout, manual review threshold, balance-state meaning, latest payout reason, retry condition, and next action. Finance admins must record a reason for decisions, a manual transfer reference when marking paid, and a retry condition when blocking a payout. This closes a key money-flow trust gap because publishers can understand why money is pending, available, reserved, failed, blocked, or paid without guessing from ledger rows.
 
 Launch readiness now has customer-facing credibility thresholds instead of only infrastructure checks. `/v1/admin/launch-readiness` can warn operators when verified supply, publisher diversity, developer project activity, successful invocations, or published feedback are below the decided launch targets. This helps the team answer whether SkillHub has enough marketplace proof for customer demos and public launch, not just whether the server is configured.
 
@@ -118,9 +122,9 @@ The latest launch-readiness QA pass protects that Journey C proof from quieter A
 
 The latest static-QA hardening removes a release-check trap: `@useskillhub/web` now has an explicit Next.js ESLint configuration and matching dev dependencies, so `pnpm lint` runs non-interactively instead of entering Next's setup wizard. This makes the documented QA gate usable by automation while still preserving real web lint coverage.
 
-The latest payout-onboarding hardening keeps the paid-marketplace boundary honest while the final provider remains deferred. Publisher payout-account onboarding now accepts only `manual_deferred`, validates return, refresh, and configured handoff URLs before storing a session, rejects embedded URL credentials, and launch readiness treats the onboarding-session table as part of the payout-state schema. The P0 demo-chain smoke now also asserts the deferred provider, provider session id, and safe handoff URL shape. That means Journey B cannot accidentally persist an unsupported provider shape, and Journey C cannot mark payout state ready unless account, onboarding, and payout-request records are all present.
+The latest payout setup hardening keeps the paid-marketplace boundary honest while final provider automation remains deferred. Publisher payout-account setup now accepts only `manual_deferred`, validates PayPal/Alipay receiving details, rejects URL-shaped account payloads, and launch readiness treats both the setup-session table and manual payout columns as required payout-state schema. The P0 demo-chain smoke now also asserts manual method and account persistence. That means Journey B cannot accidentally persist an unsupported payout shape, and Journey C cannot mark payout state ready unless account, setup, and payout-request records are all present.
 
-The latest end-to-end demo pass connects the three P0 proofs into one customer-walkthrough smoke and now includes the money proof that was still too easy to hand-wave. `pnpm smoke:p0:demo` creates a generated publisher draft, submits the exact version, approves it through admin review, completes provider-deferred commercial readiness, activates a per-call price, verifies public marketplace discovery, creates a developer project, saves and installs the verified skill, creates a reveal-once project key, runs both console and MCP runtime invocations, processes the billable MCP call into a posted usage transaction, immutable split, and publisher balance, releases eligible balances, requests publisher payout, approves the payout, marks provider-deferred completion as paid, then checks project state, publisher/admin finance and payout ledgers, notifications, admin audit, and admin notification queues. This directly reduces the demo risk that SkillHub looks like several good pages rather than one operating marketplace loop.
+The latest end-to-end demo pass connects the three P0 proofs into one customer-walkthrough smoke and now includes the money proof that was still too easy to hand-wave. `pnpm smoke:p0:demo` creates a generated publisher draft, submits the exact version, approves it through admin review, completes manual PayPal payout readiness, activates a per-call price, verifies public marketplace discovery, creates a developer project, saves and installs the verified skill, creates a reveal-once project key, runs both console and MCP runtime invocations, processes the billable MCP call into a posted usage transaction, immutable split, and publisher balance, releases eligible balances, requests publisher payout, approves the payout, records the manual transfer reference, then checks project state, publisher/admin finance and payout ledgers, notifications, admin audit, and admin notification queues. This directly reduces the demo risk that SkillHub looks like several good pages rather than one operating marketplace loop.
 
 Console access is now more product-visible. The home, login, and account surfaces show a role-aware map for `/login`, `/account`, `/developer`, `/publisher`, and `/admin`, including the required user roles, current session state, and the rule that production access uses email code, configured OAuth, or invite/recovery tokens rather than a shared backend password. This directly addresses customer-demo confusion where the platform looked like a public home page but the operating workspaces were not obvious.
 
@@ -154,7 +158,7 @@ The latest review-handoff pass closes a quieter Journey B/C evidence gap. Submit
 
 The latest publish handoff UI pass makes that backend review evidence visible at the exact moment a first-time author submits from `/publish`. The success state now shows whether the review was newly queued or refreshed, exposes the review id tail, risk level, and automated-check counts, and links directly into the publisher review workbench, paid-readiness panel, and account/terms panel. The same pass normalizes `/publish` Chinese copy so the publisher entry no longer displays mojibake in Chinese demos.
 
-The latest payout audit hardening pass closes a production finance control gap. Admin payout decisions now carry the acting finance operator into the audit row, and `mark_paid` is rejected unless a provider reference is supplied. This brings the backend enforcement in line with the documented paid-marketplace rule that completed provider movement must be traceable before balances move to `paid`.
+The latest payout audit hardening pass closes a production finance control gap. Admin payout decisions now carry the acting finance operator into the audit row, and `mark_paid` is rejected unless a transfer reference is supplied. This brings the backend enforcement in line with the documented paid-marketplace rule that completed manual money movement must be traceable before balances move to `paid`.
 
 The latest admin finance-priority pass closes a paid-marketplace readiness blind spot. `/admin` now treats an empty commission-rule list as a missing active commission rule, so the top operations queue points finance operators to commission setup before the first rule exists. This keeps paid activation blockers honest because ledger posting cannot quietly look ready while no split rule has been configured.
 
@@ -351,13 +355,13 @@ Added first tenant-scoped project write enforcement, covering:
 - New project records are created under the user token organization instead of the demo fallback.
 - Service tokens keep the demo fallback for bootstrap and controlled operator flows.
 
-Added provider-deferred payout account onboarding, covering:
+Added manual payout account setup, covering:
 
 - Publisher profile read/update endpoints scoped to the authorized organization.
-- Payout account onboarding session creation with provider handoff URL, return URL, refresh URL, status, expiry, and audit trail.
-- Onboarding completion can mark payout accounts verified, verification-required, blocked, or not configured.
+- Payout account setup session creation with PayPal/Alipay receiving details, status, expiry, and audit trail.
+- Setup completion can mark payout accounts verified, verification-required, blocked, or not configured.
 - Publisher payout readiness now reads payout account and onboarding session state in the dashboard.
-- Dashboard publisher account operations now expose public publisher profile editing, payout handoff creation, handoff link access, and readiness decisions. This gives publishers a concrete setup loop before real payment-provider onboarding is connected.
+- Dashboard publisher account operations now expose public publisher profile editing, manual payout receiving-detail submission, and readiness decisions. This gives publishers a concrete setup loop before provider-specific payout automation is connected.
 
 Added tenant-scoped refund and dispute history, covering:
 
@@ -643,7 +647,7 @@ Added admin review operations, covering:
 Added admin payout operations, covering:
 
 - `/admin` now exposes the live payout queue as an operator decision surface instead of a read-only summary list.
-- Finance operators can approve payouts into processing, mark provider payout completion, record provider references, fail payouts back to available balances, or block payouts for further review.
+- Finance operators can approve payouts into processing, record manual transfer completion, record transfer references, fail payouts back to available balances, or block payouts for further review.
 - Decisions call the payout workflow API, which updates payout state, linked publisher balance state, audit records, and notification events before final payment-provider APIs are connected.
 - This strengthens marketplace trust because publisher withdrawals now have a controlled finance path from request to processing, paid, failed, or blocked state.
 
@@ -919,8 +923,8 @@ Added payout explainability hardening, covering:
 - `030_payout_explainability.sql` adds payout retry-condition and next-action fields.
 - `/v1/publisher/payouts` returns request eligibility, blockers, expected initial payout status, and next action beside balances and payout rows.
 - Failed payouts release balances and explain retry path; blocked payouts keep balances locked and require a finance retry condition.
-- `/publisher` shows balance-state explanations, disabled request reasons, latest payout notes, provider reference, retry condition, and next action in English and Chinese.
-- `/admin` shows payout next action before decisions and requires finance notes, provider reference for paid records, and retry condition for blocked records.
+- `/publisher` shows balance-state explanations, disabled request reasons, latest payout notes, transfer reference, retry condition, and next action in English and Chinese.
+- `/admin` shows payout next action before decisions and requires finance notes, transfer reference for paid records, and retry condition for blocked records.
 - Launch readiness still checks the payout explainability columns from migration `030_payout_explainability.sql`, and its latest-migration gate now expects `031_public_publisher_profile_backfill.sql` so deployments cannot miss the public publisher backfill.
 
 ## Product Standard Going Forward

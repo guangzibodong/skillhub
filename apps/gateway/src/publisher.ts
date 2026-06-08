@@ -12,6 +12,10 @@ type PublisherProfileInput = {
 };
 
 type OnboardingInput = {
+  manualAccount?: string;
+  manualAccountHolder?: string;
+  manualMethod?: string;
+  manualNotes?: string;
   provider?: string;
   returnUrl?: string;
   refreshUrl?: string;
@@ -41,6 +45,8 @@ type PublisherProfile = {
   updatedAt: string;
 };
 
+type ManualPayoutMethod = "paypal" | "alipay";
+
 const supportedPayoutProviders = ["manual_deferred"] as const;
 type SupportedPayoutProvider = (typeof supportedPayoutProviders)[number];
 
@@ -60,6 +66,10 @@ const fallbackPublisherAccountSummary = {
   payoutAccounts: [
     {
       id: "demo-payout-account",
+      manualAccount: "publisher-paypal@example.com",
+      manualAccountHolder: "SkillHub Publisher",
+      manualMethod: "paypal",
+      manualNotes: "Demo manual payout details for finance review.",
       provider: "manual_deferred",
       providerAccountId: "manual_deferred_demo",
       status: "verification_required",
@@ -110,6 +120,10 @@ async function queryPublisherAccountSummary(sql: Sql, organizationId?: string | 
     sql`
       select
         id::text,
+        manual_account as "manualAccount",
+        manual_account_holder as "manualAccountHolder",
+        manual_method as "manualMethod",
+        manual_notes as "manualNotes",
         provider,
         provider_account_id as "providerAccountId",
         status,
@@ -256,6 +270,10 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
   const sql = await requireSql();
   const scopedOrganizationId = requireOrganizationId(organizationId);
   const provider = normalizeProvider(input.provider);
+  const manualMethod = normalizeManualMethod(input.manualMethod);
+  const manualAccount = normalizeManualText(input.manualAccount, "manualAccount", 180, true);
+  const manualAccountHolder = normalizeManualText(input.manualAccountHolder, "manualAccountHolder", 120, false);
+  const manualNotes = normalizeManualText(input.manualNotes, "manualNotes", 500, false);
   const returnUrl = normalizeOptionalProviderHandoffUrl(input.returnUrl, "returnUrl");
   const refreshUrl = normalizeOptionalProviderHandoffUrl(input.refreshUrl, "refreshUrl");
 
@@ -265,6 +283,10 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
     const accountRows = (await tx`
       insert into payout_accounts (
         publisher_profile_id,
+        manual_account,
+        manual_account_holder,
+        manual_method,
+        manual_notes,
         provider,
         provider_account_id,
         status,
@@ -272,19 +294,28 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
       )
       values (
         ${publisher.id},
+        ${manualAccount},
+        ${manualAccountHolder},
+        ${manualMethod},
+        ${manualNotes},
         ${provider},
         ${providerAccountId},
         'verification_required',
         now()
       )
       on conflict (provider, provider_account_id) do update set
-        status = case
-          when payout_accounts.status = 'verified' then payout_accounts.status
-          else 'verification_required'
-        end,
+        status = 'verification_required',
+        manual_account = excluded.manual_account,
+        manual_account_holder = excluded.manual_account_holder,
+        manual_method = excluded.manual_method,
+        manual_notes = excluded.manual_notes,
         updated_at = now()
       returning
         id::text,
+        manual_account as "manualAccount",
+        manual_account_holder as "manualAccountHolder",
+        manual_method as "manualMethod",
+        manual_notes as "manualNotes",
         provider,
         provider_account_id as "providerAccountId",
         status,
@@ -297,6 +328,10 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
       status: PayoutStatus;
       createdAt: string;
       updatedAt: string;
+      manualAccount: string | null;
+      manualAccountHolder: string | null;
+      manualMethod: ManualPayoutMethod | null;
+      manualNotes: string | null;
     }>;
     const account = accountRows[0];
     const providerSessionId = `po_${randomToken(16)}`;
@@ -348,14 +383,14 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
     await tx`
       update publisher_profiles
       set
-        payout_status = case
-          when payout_status = 'verified' then payout_status
-          else 'verification_required'
-        end,
+        payout_status = 'verification_required',
         updated_at = now()
       where id = ${publisher.id}
     `;
     await recordPublisherAudit(tx, "payout_account.onboarding_created", "payout_account", account.id, null, {
+      manualAccountLast4: account.manualAccount ? account.manualAccount.slice(-4) : null,
+      manualAccountHolder: account.manualAccountHolder,
+      manualMethod: account.manualMethod,
       publisherProfileId: publisher.id,
       provider,
       providerSessionId
@@ -364,8 +399,9 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
       tx,
       publisher.organizationId,
       "payout_account.onboarding_created",
-      "Payout account onboarding created",
+      "Manual payout account submitted",
       {
+        manualMethod: account.manualMethod,
         publisherProfileId: publisher.id,
         payoutAccountId: account.id,
         provider,
@@ -649,6 +685,40 @@ function normalizeProvider(provider?: string): SupportedPayoutProvider {
   }
 
   throw new Error("Payout provider must be manual_deferred until final provider integration is enabled.");
+}
+
+function normalizeManualMethod(method?: string): ManualPayoutMethod {
+  const normalized = String(method ?? "paypal").trim().toLowerCase();
+
+  if (normalized === "paypal" || normalized === "alipay") {
+    return normalized;
+  }
+
+  throw new Error("Payout method must be paypal or alipay.");
+}
+
+function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: true): string;
+function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: false): string | null;
+function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: boolean) {
+  const normalized = value?.trim() ?? "";
+
+  if (!normalized) {
+    if (required) {
+      throw new Error(`${label} is required.`);
+    }
+
+    return null;
+  }
+
+  if (normalized.length > maxLength) {
+    throw new Error(`${label} must be ${maxLength} characters or fewer.`);
+  }
+
+  if (/https?:\/\//i.test(normalized)) {
+    throw new Error(`${label} should be the PayPal or Alipay receiving account, not a URL.`);
+  }
+
+  return normalized;
 }
 
 function normalizePublisherStatus(status: PublisherStatus) {

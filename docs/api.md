@@ -1471,7 +1471,7 @@ Balances start as `pending` and become `available` only after their risk/refund 
 
 ## Payout Workflow
 
-Payout provider movement is still deferred, but SkillHub now models the internal payout state machine and reserves exact balance rows before a payout can be marked paid.
+P0 publisher payouts use a manual transfer workflow. Publishers submit PayPal or Alipay receiving details, finance transfers outside SkillHub, and the admin payout decision records the transfer reference. SkillHub still models the internal payout state machine and reserves exact balance rows before a payout can be marked paid.
 
 Read or update the publisher profile and payout account readiness:
 
@@ -1491,7 +1491,7 @@ If `status` is omitted, the existing publisher status is preserved. This lets th
 
 The profile response includes `termsAcceptedAt`, `termsAcceptedByUserId`, and `termsVersion`, so publisher dashboards can block paid-publishing readiness until the current operating terms are accepted.
 
-Create a payout-account onboarding handoff:
+Submit manual payout receiving details:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding" \
@@ -1499,25 +1499,29 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding
   -H "Content-Type: application/json" \
   -d '{
     "provider": "manual_deferred",
+    "manualMethod": "paypal",
+    "manualAccount": "publisher-paypal@example.com",
+    "manualAccountHolder": "SkillHub Publisher",
+    "manualNotes": "Optional finance instructions",
     "returnUrl": "https://app.useskillhub.com/dashboard",
     "refreshUrl": "https://app.useskillhub.com/dashboard"
   }'
 ```
 
-Complete or block the deferred onboarding state:
+Complete or block the manual payout readiness state:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding/complete" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"sessionId":"SESSION_ID","status":"verified","reason":"Provider verification passed."}'
+  -d '{"sessionId":"SESSION_ID","status":"verified","reason":"Finance verified PayPal receiving details."}'
 ```
 
-Current onboarding sessions are provider-deferred records. They model provider handoff URLs, session status, payout account status, publisher payout readiness, audit logs, and notification events before the final payment provider API is connected.
+Current setup sessions are manual-deferred records. They model payout account status, publisher payout readiness, audit logs, and notification events before a final payout provider API is connected.
 
-For the provider-deferred phase, `provider` must be `manual_deferred`. `returnUrl`, `refreshUrl`, and the configured `SKILLHUB_PAYOUT_ONBOARDING_URL` handoff URL are validated before a session is stored: they must be valid URLs, must be 500 characters or fewer, must not include embedded URL credentials, and must use `https` except for local development URLs on `localhost`, `127.0.0.1`, or `[::1]`. This prevents an unconfigured or unexpected payout provider name or unsafe handoff URL from silently becoming durable commercial-readiness state before final provider integration is enabled.
+For the manual-deferred phase, `provider` must be `manual_deferred`. `manualMethod` must be `paypal` or `alipay`; `manualAccount` is required; `manualAccountHolder` and `manualNotes` are optional. Manual account fields reject URL-shaped values and are length-limited before storage. `returnUrl`, `refreshUrl`, and the configured `SKILLHUB_PAYOUT_ONBOARDING_URL` are still validated when supplied, but the product UI no longer sends publishers to a provider handoff.
 
-The dashboard publisher account panel uses these same endpoints. Publishers can edit the public publisher name, create a deferred payout-account handoff, open the handoff URL, and record a readiness decision against the latest onboarding session or payout account. The final Stripe/Connect-style provider integration can replace the manual provider handoff without changing the surrounding dashboard state model.
+The dashboard publisher account panel uses these same endpoints. Publishers can edit the public publisher name, submit PayPal/Alipay receiving details, and record a readiness decision against the latest setup session or payout account. The final provider-specific payout integration can replace this manual workflow later without changing the surrounding ledger, payout, notification, and audit state model.
 
 Read publisher payout readiness:
 
@@ -1551,6 +1555,17 @@ The response explains whether the publisher can request payout and why not:
     "expectedStatus": "review",
     "nextAction": "request_payout"
   },
+  "payoutAccounts": [
+    {
+      "id": "PAYOUT_ACCOUNT_ID",
+      "provider": "manual_deferred",
+      "manualMethod": "paypal",
+      "manualAccount": "publisher-paypal@example.com",
+      "manualAccountHolder": "SkillHub Publisher",
+      "manualNotes": "Optional finance instructions",
+      "status": "verified"
+    }
+  ],
   "payouts": [
     {
       "id": "PAYOUT_ID",
@@ -1558,6 +1573,10 @@ The response explains whether the publisher can request payout and why not:
       "currency": "usd",
       "status": "review",
       "balanceCount": 4,
+      "manualMethod": "paypal",
+      "manualAccount": "publisher-paypal@example.com",
+      "manualAccountHolder": "SkillHub Publisher",
+      "manualNotes": "Optional finance instructions",
       "reviewReason": "Amount exceeds manual review threshold.",
       "failureReason": null,
       "providerReference": null,
@@ -1587,7 +1606,7 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payouts" \
   -d '{"currency":"usd"}'
 ```
 
-The current provider-deferred workflow requests all available balances by currency. This avoids partial balance mutation until the final payment provider is connected.
+The current manual-deferred workflow requests all available balances by currency. This avoids partial balance mutation while finance transfers money outside SkillHub.
 
 The dashboard withdrawal panel calls this endpoint directly when the publisher has a verified payout account and available balance above the configured threshold. The request reserves all eligible available balances and moves them into the finance payout queue.
 
@@ -1604,13 +1623,13 @@ Record a payout decision:
 curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"action":"approve","reason":"KYC and balance review passed."}'
+  -d '{"action":"approve","reason":"Receiving account and balance review passed."}'
 ```
 
 Supported payout actions:
 
 - `approve`: moves `requested` or `review` payouts to `processing`, clears retry condition, and sets `nextAction` to `await_provider_processing`.
-- `mark_paid`: marks the payout paid, requires and stores `providerReference`, moves linked publisher balances to `paid`, and sets `nextAction` to `complete`.
+- `mark_paid`: marks the payout paid, requires and stores `providerReference`, moves linked publisher balances to `paid`, and sets `nextAction` to `complete`. In the P0 manual workflow, `providerReference` means the PayPal/Alipay transfer reference or finance流水号.
 - `fail`: marks the payout failed, releases linked balances back to `available`, stores `failureReason`, stores an optional `retryCondition`, and sets `nextAction` to `request_again_after_failure`.
 - `block`: blocks the payout, keeps linked balances blocked, requires both `reason` and `retryCondition`, and sets `nextAction` to `resolve_blocker_before_retry`.
 
@@ -1622,8 +1641,8 @@ curl -X POST "https://api.useskillhub.com/v1/admin/payouts/$PAYOUT_ID/decision" 
   -H "Content-Type: application/json" \
   -d '{
     "action": "mark_paid",
-    "reason": "Provider payout completed.",
-    "providerReference": "manual-payout-2026-06-07-001"
+    "reason": "Manual PayPal transfer completed.",
+    "providerReference": "manual-transfer-2026-06-07-001"
   }'
 ```
 
@@ -2299,7 +2318,7 @@ The script uses existing public and protected APIs rather than direct database a
 
 Required tokens can be supplied as one org-scoped admin/super-admin token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, `SKILLHUB_P0_DEMO_FINANCE_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
 
-Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed provider-deferred commercial readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, finance released eligible balances, the publisher requested payout, finance approved and marked the provider-deferred payout paid, and notification plus audit records were visible without exposing authorization-shaped secrets.
+Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed manual PayPal payout readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, finance released eligible balances, the publisher requested payout, finance approved it and recorded the manual transfer reference, and notification plus audit records were visible without exposing authorization-shaped secrets.
 
 The demo-chain smoke now reuses the shared sensitive-output validator for protected responses. It scans project detail, publisher/developer notification inboxes, publisher/admin finance and payout reads, admin audit rows, and admin notification queues for authorization-shaped strings, raw user/project/webhook/provider keys, raw API-key fields, and email-code previews. The reveal-once project API-key creation response remains intentionally excluded from that scan because it is the one expected raw key handoff.
 

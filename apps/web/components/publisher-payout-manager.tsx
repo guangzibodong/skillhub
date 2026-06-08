@@ -28,33 +28,39 @@ type Readiness = NonNullable<PublisherPayoutSummary["readiness"]>;
 
 const copy = {
   en: {
-    account: "Payout account",
+    account: "Receiving account",
     accountState: "Account state",
     available: "Available",
     availableHelp: "Matured balance that can be reserved for a payout request.",
     blocked: "Reserved or blocked",
-    blockedHelp: "Balance reserved for payout review, provider processing, or finance block resolution.",
+    blockedHelp: "Balance reserved for payout review, manual transfer, or finance block resolution.",
     blockers: "Blocking items",
     canRequest: "Ready to request",
     cannotRequest: "Payout request is blocked until these items are resolved.",
     expectedReview: "This request will enter manual finance review because it is above the review threshold.",
-    expectedRequested: "This request can be created and then moves through finance/provider processing.",
+    expectedRequested: "This request can be created and then moves through finance review and manual transfer.",
     failureReason: "Failure reason",
     latestPayout: "Latest payout",
+    manualMethod: "Method",
     minimum: "Minimum",
     nextAction: "Next action",
+    noAccount: "No PayPal or Alipay account submitted",
     noLatest: "No payout request yet.",
     paid: "Paid",
     paidHelp: "Balance already marked paid in the ledger.",
     pending: "Pending",
     pendingHelp: "Ledger balance waiting for the risk or maturity window.",
     profileState: "Publisher state",
-    providerReference: "Provider reference",
     request: "Request payout",
     requesting: "Requesting",
     retryCondition: "Retry condition",
     reviewThreshold: "Manual review",
     title: "Payout readiness",
+    transferReference: "Transfer reference",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     statuses: {
       active: "Active",
       blocked: "Blocked",
@@ -73,8 +79,8 @@ const copy = {
     blockerLabels: {
       amount_below_minimum: "Available balance is below the minimum payout amount.",
       no_available_balance: "No available balance has matured yet.",
-      payout_account_missing: "Connect a payout account before requesting money movement.",
-      payout_account_not_verified: "Finish payout-account verification.",
+      payout_account_missing: "Submit PayPal or Alipay receiving details before requesting money movement.",
+      payout_account_not_verified: "Finish finance verification for the payout receiving account.",
       publisher_not_active: "Publisher profile must be active.",
       publisher_payout_not_verified: "Publisher payout readiness must be verified.",
       publisher_profile_missing: "Create the publisher profile first."
@@ -82,46 +88,52 @@ const copy = {
     nextActions: {
       activate_publisher_profile: "Ask an operator to activate the publisher profile.",
       await_finance_review: "Wait for finance review or respond if finance asks for evidence.",
-      await_provider_processing: "Finance approved the request; wait for provider processing.",
+      await_provider_processing: "Finance approved the request; wait for manual transfer.",
       complete: "No action needed. The payout is complete.",
-      complete_payout_verification: "Finish verification in the payout account panel.",
-      connect_verified_payout_account: "Create or complete a verified payout account.",
+      complete_payout_verification: "Finish finance verification in the payout account panel.",
+      connect_verified_payout_account: "Submit PayPal or Alipay receiving details for verification.",
       create_publisher_profile: "Create the publisher profile and accept operating terms.",
       earn_or_wait_minimum: "Wait for more revenue to mature or keep earning until the minimum is reached.",
-      request_again_after_failure: "Balances are available again; retry after the provider issue is fixed.",
+      request_again_after_failure: "Balances are available again; retry after the account or transfer issue is fixed.",
       request_payout: "Request payout for all eligible available balances.",
       resolve_blocker_before_retry: "Resolve the finance blocker, then request payout again.",
       wait_for_balance_maturity: "Wait for pending balances to mature into available balance."
     }
   },
   zh: {
-    account: "提现账户",
+    account: "收款账号",
     accountState: "账户状态",
     available: "可提现",
     availableHelp: "已经成熟、可以被提现申请锁定的余额。",
     blocked: "锁定/阻断",
-    blockedHelp: "已被提现审核、服务商处理中或财务阻断占用的余额。",
+    blockedHelp: "已被提现审核、人工转账或财务阻断占用的余额。",
     blockers: "阻断项",
     canRequest: "可以申请",
-    cannotRequest: "提现申请被阻断，先处理下面这些事项。",
+    cannotRequest: "提现申请被阻断，请先处理下面这些事项。",
     expectedReview: "本次金额超过人工审核阈值，申请后会进入财务审核。",
-    expectedRequested: "本次可以创建提现申请，然后进入财务/服务商处理流程。",
+    expectedRequested: "本次可以创建提现申请，然后进入财务审核和人工转账流程。",
     failureReason: "失败原因",
     latestPayout: "最近提现",
+    manualMethod: "收款方式",
     minimum: "最低提现",
     nextAction: "下一步",
+    noAccount: "未提交 PayPal 或 Alipay 收款账号",
     noLatest: "还没有提现申请。",
     paid: "已打款",
     paidHelp: "已经在账本中标记为打款完成的余额。",
     pending: "待成熟",
     pendingHelp: "账本已产生，但还在风险窗口或成熟期内的余额。",
     profileState: "发布者状态",
-    providerReference: "服务商参考",
     request: "申请提现",
     requesting: "申请中",
     retryCondition: "再次申请条件",
     reviewThreshold: "人工审核",
     title: "提现准备",
+    transferReference: "转账凭证/流水号",
+    manualMethods: {
+      alipay: "Alipay",
+      paypal: "PayPal"
+    },
     statuses: {
       active: "正常",
       blocked: "已阻断",
@@ -140,8 +152,8 @@ const copy = {
     blockerLabels: {
       amount_below_minimum: "可提现余额还没有达到最低提现金额。",
       no_available_balance: "暂时没有已经成熟的可提现余额。",
-      payout_account_missing: "需要先连接提现账户。",
-      payout_account_not_verified: "需要完成提现账户验证。",
+      payout_account_missing: "需要先提交 PayPal 或 Alipay 收款资料。",
+      payout_account_not_verified: "需要先完成收款账户财务验证。",
       publisher_not_active: "发布者资料必须处于正常状态。",
       publisher_payout_not_verified: "发布者提现准备状态必须完成验证。",
       publisher_profile_missing: "需要先创建发布者资料。"
@@ -149,13 +161,13 @@ const copy = {
     nextActions: {
       activate_publisher_profile: "联系运营激活发布者资料。",
       await_finance_review: "等待财务审核；如果财务要求补充材料，按通知处理。",
-      await_provider_processing: "财务已放行，等待服务商打款处理。",
+      await_provider_processing: "财务已批准，等待人工转账。",
       complete: "无需操作，提现已完成。",
-      complete_payout_verification: "在提现账户面板完成验证。",
-      connect_verified_payout_account: "创建或完成一个已验证的提现账户。",
+      complete_payout_verification: "在提现账户面板完成财务验证。",
+      connect_verified_payout_account: "提交 PayPal 或 Alipay 收款资料并等待验证。",
       create_publisher_profile: "创建发布者资料并接受运营条款。",
       earn_or_wait_minimum: "继续等待收入成熟，或让余额达到最低提现金额。",
-      request_again_after_failure: "余额已释放，服务商问题修复后可以重新申请。",
+      request_again_after_failure: "余额已释放，收款账户或转账问题修复后可以重新申请。",
       request_payout: "申请提现，系统会锁定所有符合条件的可用余额。",
       resolve_blocker_before_retry: "先解决财务阻断原因，再重新申请提现。",
       wait_for_balance_maturity: "等待待成熟余额转为可提现余额。"
@@ -219,6 +231,16 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
           icon={<FileCheck2 size={16} aria-hidden="true" />}
           label={labels.profileState}
           value={formatStatusLabel(profile?.status ?? profile?.payoutStatus ?? "not_configured", labels.statuses)}
+        />
+        <StatusRow
+          icon={<WalletCards size={16} aria-hidden="true" />}
+          label={labels.manualMethod}
+          value={formatManualMethodLabel(payoutAccount?.manualMethod, labels.manualMethods)}
+        />
+        <StatusRow
+          icon={<FileCheck2 size={16} aria-hidden="true" />}
+          label={labels.account}
+          value={payoutAccount?.manualAccount ?? labels.noAccount}
         />
         <StatusRow icon={<Banknote size={16} aria-hidden="true" />} label={labels.minimum} value={formatMoney(summary.balances.minPayoutCents, summary.balances.currency)} />
         <StatusRow
@@ -306,7 +328,7 @@ function LatestPayout({
       ) : null}
       {latestPayout.providerReference ? (
         <p>
-          <strong>{labels.providerReference}</strong>
+          <strong>{labels.transferReference}</strong>
           <span>{latestPayout.providerReference}</span>
         </p>
       ) : null}
@@ -400,6 +422,10 @@ function nextReadinessAction(blockers: PublisherPayoutReadinessBlocker[]): Readi
 
 function formatBlocker(blocker: PublisherPayoutReadinessBlocker, labels: Record<string, string>) {
   return labels[blocker] ?? blocker.replaceAll("_", " ");
+}
+
+function formatManualMethodLabel(method: string | null | undefined, labels: Record<string, string>) {
+  return method ? (labels[method] ?? method.replaceAll("_", " ")) : labels.paypal;
 }
 
 function formatNextAction(action: string | null | undefined, labels: Record<string, string>) {

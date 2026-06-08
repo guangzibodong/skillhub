@@ -562,9 +562,11 @@ Rules:
 - No payout while account is suspended.
 - Payout above threshold enters manual review.
 - Blocked payout requires reason and retry condition.
-- Failed payout must explain whether balances were released and what provider/account condition should be fixed before retry.
+- Failed payout must explain whether balances were released and what account or manual-transfer condition should be fixed before retry.
 - Publisher payout UI must show why a request button is disabled, which readiness blocker applies, what next action is expected, and whether a new request will enter manual review.
-- Finance admin payout decisions must require a reason, require provider reference when marking paid, and require a retry condition when blocking.
+- Publisher payout setup collects PayPal or Alipay receiving details for finance verification.
+- Finance manually transfers approved payouts outside SkillHub and records the transfer reference when marking a payout paid.
+- Finance admin payout decisions must require a reason, require transfer reference when marking paid, and require a retry condition when blocking.
 - Every finance admin action writes audit log.
 
 ## Trust And Safety Requirements
@@ -682,8 +684,8 @@ These are product requirements, but the external integrations should be implemen
 
 - Payment provider API integration.
 - Payment capture.
-- Connected payout account onboarding.
-- Actual provider payout movement.
+- Provider-specific payout account onboarding.
+- Actual provider payout movement beyond the P0 manual PayPal/Alipay transfer workflow.
 - Full tax/KYC automation.
 - Email sending protocol and provider integration.
 

@@ -146,7 +146,7 @@ const copy: Record<
         state: "Usage -> balance"
       },
       {
-        detail: "Eligible balances move through reserve, manual review, provider-deferred payout, delivery events, and audit logs.",
+        detail: "Eligible balances move through reserve, finance review, manual PayPal/Alipay transfer, notification delivery, and audit logs.",
         href: "/publisher",
         id: "payout",
         label: "Payout and audit",
@@ -162,7 +162,7 @@ const copy: Record<
       { label: "证据行", value: "真实状态" },
       { label: "治理路径", tone: "good", value: "REST + MCP" },
       { label: "资金状态", value: "先入账本" },
-      { label: "审计姿态", tone: "good", value: "有理由写入" }
+      { label: "审计姿态", tone: "good", value: "带理由写入" }
     ],
     focus: {
       admin: {
@@ -176,7 +176,7 @@ const copy: Record<
         title: "复制安装命令之后，会进入受控项目状态。"
       },
       marketplace: {
-        body: "市场可信，不只靠列表，而是公开技能能连接发布者信任、安装准备、运行治理和账本运营。",
+        body: "市场可信不只靠列表，而是公开技能能连接发布者信任、安装准备、运行治理和账本运营。",
         eyebrow: "市场证据链",
         title: "目录背后要能看见真实运营系统。"
       },
@@ -234,12 +234,12 @@ const copy: Record<
         state: "用量 -> 余额"
       },
       {
-        detail: "合格余额会经过预留、人工复核、服务商待接入提现、投递事件和审计日志。",
+        detail: "合格余额会经过预留、财务审核、PayPal/Alipay 人工转账、通知投递和审计日志。",
         href: "/publisher",
         id: "payout",
         label: "提现与审计",
         owner: "发布者 + 后台",
-        state: "可用 -> 已支付"
+        state: "可用 -> 已打款"
       }
     ],
     view: "打开"

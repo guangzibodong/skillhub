@@ -2603,7 +2603,7 @@ app.post("/v1/publisher/payout-account/onboarding", async (c) => {
       201
     );
   } catch (error) {
-    return c.json({ error: error instanceof Error ? error.message : "Unable to create payout onboarding." }, 400);
+    return c.json({ error: error instanceof Error ? error.message : "Unable to submit manual payout details." }, 400);
   }
 });
 
@@ -2624,7 +2624,7 @@ app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
       )
     });
   } catch (error) {
-    return c.json({ error: error instanceof Error ? error.message : "Unable to complete payout onboarding." }, 400);
+    return c.json({ error: error instanceof Error ? error.message : "Unable to update payout readiness." }, 400);
   }
 });
 
