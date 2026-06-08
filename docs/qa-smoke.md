@@ -11,7 +11,7 @@ This smoke path covers the minimum launch surface for local builds and productio
 - Unauthenticated protected workspace read boundaries for organization team/webhook/billing, developer projects, publisher skills/payouts/finance ledger/marketplace appeals, and admin operations
 - Unauthenticated protected write boundaries for representative skill, organization, developer, project, runtime, publisher, pricing, payout, feedback-response, marketplace-appeal, admin review, finance, payout-decision, delivery, curation, incident, abuse-report, and feedback-moderation actions
 - `GET /v1/admin/launch-readiness`
-- Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/marketplace?lang=zh`, `/publishers`, `/publishers?lang=zh`, `/registry`, `/registry?lang=zh`, `/agents`, `/agents?lang=zh`, `/docs`, `/docs?lang=zh`, `/publish`, `/publish?lang=zh`, `/publisher`, `/publisher?lang=zh`, `/developer`, `/developer?lang=zh`, `/dashboard`, `/dashboard?lang=zh`, `/account`, `/account?lang=zh`, `/login`, `/login?lang=zh`, `/admin`, `/admin?lang=zh`, `/terms`, and `/terms?lang=zh`, plus the first real public skill and publisher detail pages returned by public APIs in both English and Chinese when those rows exist.
+- Built app pages: `/`, `/?lang=zh`, `/marketplace`, `/marketplace?lang=zh`, `/publishers`, `/publishers?lang=zh`, `/registry`, `/registry?lang=zh`, `/agents`, `/agents?lang=zh`, `/docs`, `/docs?lang=zh`, `/publish`, `/publish?lang=zh`, `/publisher`, `/publisher?lang=zh`, `/developer`, `/developer?lang=zh`, `/dashboard`, `/dashboard?lang=zh`, `/account`, `/account?lang=zh`, `/login`, `/login?lang=zh`, `/admin-login`, `/admin-login?lang=zh`, `/admin`, `/admin?lang=zh`, `/terms`, and `/terms?lang=zh`, plus the first real public skill and publisher detail pages returned by public APIs in both English and Chinese when those rows exist.
 
 The admin launch-readiness endpoint requires a user token with `support`, `admin`, or `super_admin`. If no token is configured, the smoke script verifies that the endpoint is protected and skips the readiness body shape check.
 
@@ -26,7 +26,7 @@ The publisher directory check requires `/v1/publishers?limit=5` to return HTTP 2
 The app-page checks now validate more than HTTP 200. For key P0 pages, the script asserts that the rendered HTML still contains the expected operating markers:
 
 - Home must expose the backend command-center handoff plus developer, publisher, and admin console links.
-- Login must show the post-login workspace map and no-shared-password guidance.
+- Login and `/admin-login` must show the post-login workspace map, the admin workspace path, and no-shared-password guidance.
 - Dashboard must expose the workspace command center and P0 demo chain.
 - Publish, publisher, developer, and admin pages must expose their operating queue or evidence-panel markers.
 

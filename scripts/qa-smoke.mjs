@@ -133,6 +133,8 @@ const DEFAULT_APP_PATHS = [
   "/account?lang=zh",
   "/login",
   "/login?lang=zh",
+  "/admin-login",
+  "/admin-login?lang=zh",
   "/admin",
   "/admin?lang=zh",
   "/terms",
@@ -194,6 +196,18 @@ const PAGE_ASSERTIONS = {
     "\u8d26\u53f7\u5165\u53e3",
     "\u6ca1\u6709\u5171\u4eab\u540e\u53f0\u5bc6\u7801",
     "\u767b\u5f55\u540e\u53bb\u54ea\u91cc",
+  ],
+  "/admin-login": [
+    "admin login",
+    "same login page",
+    "/admin?lang=en",
+    "no shared backend password",
+  ],
+  "/admin-login?lang=zh": [
+    "\u7ba1\u7406\u5458\u767b\u5f55",
+    "\u5e73\u53f0\u8fd0\u8425\u5148\u4ece\u672c\u9875\u767b\u5f55",
+    "/admin?lang=zh",
+    "\u6ca1\u6709\u5171\u4eab\u540e\u53f0\u5bc6\u7801",
   ],
   "/dashboard": [
     "workspace-command-center",
