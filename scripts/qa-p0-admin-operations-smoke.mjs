@@ -177,6 +177,7 @@ async function checkAdminPage({ appUrl, timeoutMs }) {
 
 async function checkAdminProtection({ apiUrl, timeoutMs }) {
   const paths = [
+    "/v1/admin/overview",
     "/v1/admin/launch-readiness",
     "/v1/admin/reviews",
     "/v1/admin/finance/ledger",

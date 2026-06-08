@@ -11,6 +11,7 @@ type SiteHeaderProps = {
     | "home"
     | "marketplace"
     | "registry"
+    | "publishers"
     | "agents"
     | "docs"
     | "dashboard"
@@ -41,13 +42,10 @@ export function SiteHeader({
   const navItems = [
     { id: "home", label: labels.nav.home, href: "/" },
     { id: "marketplace", label: labels.nav.marketplace, href: "/marketplace" },
+    { id: "publishers", label: labels.publisherDirectory, href: "/publishers" },
     { id: "registry", label: labels.nav.registry, href: "/registry" },
     { id: "agents", label: labels.nav.agents, href: "/agents" },
     { id: "docs", label: labels.nav.docs, href: "/docs" },
-    { id: "dashboard", label: labels.nav.dashboard, href: "/dashboard" },
-    { id: "developer", label: labels.nav.developer, href: "/developer" },
-    { id: "publisher", label: labels.nav.publisher, href: "/publisher" },
-    { id: "admin", label: labels.nav.admin, href: "/admin" },
   ] as const;
 
   useEffect(() => {
@@ -207,6 +205,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
+      publisherDirectory: "发布者",
       primaryNavigation: "主导航",
       publish: "发布",
       nav: {
@@ -230,6 +229,7 @@ function headerLabels(dictionary: Dictionary, locale: Locale) {
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",
+    publisherDirectory: "Publishers",
     primaryNavigation: "Primary navigation",
     publish: dictionary.common.publish,
     nav: dictionary.nav,

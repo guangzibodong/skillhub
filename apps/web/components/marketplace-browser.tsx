@@ -208,12 +208,12 @@ type SortKey = (typeof sortOptions)[number];
 
 const emptyCatalogCopy = {
   en: {
-    body: "The live registry is not exposing public skills yet. Review launch readiness, approve real skill versions, or enable demo fallback only for a controlled staging demo.",
-    title: "No public skills from the live registry",
+    body: "New public listings are being prepared. Check back soon, or publish a skill to start the review path.",
+    title: "No public skills are listed yet",
   },
   zh: {
-    body: "实时注册表还没有公开技能。请检查 launch readiness、审核真实技能版本，或只在受控 staging 演示中启用 demo fallback。",
-    title: "暂无来自实时注册表的公开技能",
+    body: "新的公开技能正在准备中。你可以稍后再来查看，或先发布一个技能进入审核流程。",
+    title: "暂时还没有公开技能",
   },
 } as const;
 

@@ -2170,7 +2170,13 @@ a {
 }
 
 .agent-runtime-snippet pre {
+  max-width: 100%;
   min-height: 260px;
+}
+
+.agent-runtime-snippet code {
+  display: block;
+  max-width: 100%;
 }
 
 .agent-governance-list {
@@ -16659,7 +16665,8 @@ a {
     grid-template-columns: 1fr;
   }
 
-  .agent-snippet code {
+  .agent-snippet code,
+  .agent-runtime-snippet code {
     overflow-wrap: anywhere;
     white-space: pre-wrap;
     word-break: break-word;

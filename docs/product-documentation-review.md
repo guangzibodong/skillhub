@@ -40,6 +40,12 @@ SkillHub must become an operating workspace:
 
 ## Latest Implementation Review
 
+The latest public-navigation polish separates visitor discovery from protected console work. The global header now keeps the top navigation focused on public routes: home, marketplace, publisher directory, registry, agents, and docs. Developer, publisher, dashboard, account, and admin workspaces remain reachable through the sign-in entry, account center, and role-aware console access panels. This makes the first visit feel like a public marketplace while still keeping the operator paths explicit for logged-in users.
+
+The latest admin overview boundary fix protects `/v1/admin/overview` behind support/admin/super-admin authorization and adds it to both routine public smoke and Journey C admin smoke no-token boundary checks. Public platform metrics remain available through `/v1/platform/overview`, while the admin namespace no longer exposes review, payout, notification, or runtime-risk operating counts without an operator session.
+
+The latest public-page QA polish removes internal deployment language from public empty states, keeps agent runtime snippets from forcing mobile horizontal overflow, and synchronizes the browser `html lang` attribute for `?lang=zh` pages. Marketplace and publisher-directory empty states now read like customer-facing supply states instead of exposing staging/demo fallback instructions.
+
 The latest payout simplification locks the P0 finance model to manual PayPal/Alipay transfers. Publishers now submit receiving details directly in the publisher account panel; finance verifies those details, reviews payout requests, transfers outside SkillHub, and records a transfer reference when marking the payout paid. The platform still keeps the important marketplace operating controls: immutable ledger rows, balance reservation, payout state, retry/block reasons, notifications, launch-readiness schema checks, and audit logs.
 
 This is intentionally smaller than a payout-provider integration. It removes unnecessary provider/KYC onboarding complexity from the P0 path while preserving the product proof customers care about: money is earned through governed usage, split through the ledger, reserved for payout, reviewed by finance, marked paid with evidence, and visible to publisher/admin surfaces.

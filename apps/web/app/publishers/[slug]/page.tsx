@@ -164,7 +164,7 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
 
   return (
     <main className="product-shell">
-      <SiteHeader active="marketplace" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname={`/publishers/${publisher.slug}`} />
+      <SiteHeader active="publishers" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname={`/publishers/${publisher.slug}`} />
 
       <section className="page-hero page-hero--compact publisher-public-hero">
         <div>

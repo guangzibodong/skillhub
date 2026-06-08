@@ -270,14 +270,22 @@ These endpoints expose the first real operating shape for the two-sided marketpl
 
 ```bash
 curl "https://api.useskillhub.com/v1/platform/overview"
-curl "https://api.useskillhub.com/v1/developer/overview"
-curl "https://api.useskillhub.com/v1/admin/overview"
 ```
 
 Publisher overview is organization scoped and requires a publisher, owner, or admin user token:
 
 ```bash
 curl "https://api.useskillhub.com/v1/publisher/overview" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+```
+
+Developer and admin overview reads are also protected. Developer overview requires a developer, owner, admin, or super-admin token; admin overview requires a support, admin, or super-admin operator token:
+
+```bash
+curl "https://api.useskillhub.com/v1/developer/overview" \
+  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
+
+curl "https://api.useskillhub.com/v1/admin/overview" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 

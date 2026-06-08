@@ -139,12 +139,12 @@ const copy = {
 
 const emptyDirectoryCopy = {
   en: {
-    body: "The live registry is not exposing public publisher supply yet. Check launch readiness, seed real verified skills, or enable demo fallback only for a controlled staging demo.",
-    title: "No public publishers from the live registry",
+    body: "Publisher profiles appear here after their public skills enter the marketplace review path.",
+    title: "No public publishers are listed yet",
   },
   zh: {
-    body: "实时注册表还没有公开发布者供给。上线前请检查 launch readiness、补充真实已验证技能，或只在受控 staging 演示中启用 demo fallback。",
-    title: "暂无来自实时注册表的公开发布者",
+    body: "发布者的公开技能进入市场审核路径后，发布者档案会出现在这里。",
+    title: "暂时还没有公开发布者",
   },
 } as const;
 
@@ -194,7 +194,7 @@ export default async function PublisherDirectoryPage({
   return (
     <main className="product-shell">
       <SiteHeader
-        active="marketplace"
+        active="publishers"
         apiUrl={apiUrl}
         dictionary={dictionary}
         locale={locale}

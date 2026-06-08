@@ -944,6 +944,12 @@ app.get("/v1/publisher/overview", async (c) => {
 });
 
 app.get("/v1/admin/overview", async (c) => {
+  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
   const overview = await getPlatformOverview();
   return c.json(overview.admin);
 });

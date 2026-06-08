@@ -699,6 +699,7 @@ async function checkAuthProviders({ apiUrl, timeoutMs }) {
 
 async function checkAdminProtection({ apiUrl, timeoutMs }) {
   const paths = [
+    "/v1/admin/overview",
     "/v1/admin/reviews",
     "/v1/admin/finance/ledger",
     "/v1/admin/payouts",
