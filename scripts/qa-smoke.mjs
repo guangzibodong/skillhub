@@ -479,6 +479,7 @@ if (!config.skipApi) {
   await checkPublicSkillDetailApi(config);
   await checkPublicSkillDetailSupportApis(config);
   await checkPublicSkillActionProtection(config);
+  await checkAdminActionProtection(config);
   await checkPublicMcpDiscovery(config);
   await checkPublicPublishers(config);
   await checkPublicPublisherProfileApi(config);
@@ -659,6 +660,48 @@ async function checkProtectedReadBoundaries({
       pass(name, successMessage);
     } catch (error) {
       fail(name, redactSecrets(error.message));
+    }
+  }
+}
+
+async function checkProtectedWriteBoundaries({
+  apiUrl,
+  endpoints,
+  successMessage,
+  timeoutMs,
+}) {
+  for (const endpoint of endpoints) {
+    try {
+      const { status, json, text } = await requestJson(
+        joinUrl(apiUrl, endpoint.path),
+        {
+          body: JSON.stringify(endpoint.body),
+          headers: { "Content-Type": "application/json" },
+          method: endpoint.method ?? "POST",
+          timeoutMs,
+        },
+      );
+
+      if (![401, 403].includes(status)) {
+        fail(endpoint.name, `expected HTTP 401/403, got ${status}`);
+        continue;
+      }
+
+      if (typeof json?.error !== "string" || json.error.length === 0) {
+        fail(endpoint.name, "expected a JSON error message");
+        continue;
+      }
+
+      const leaks = findBoundarySensitiveLeaks(text);
+
+      if (leaks.length > 0) {
+        fail(endpoint.name, `possible sensitive boundary leak: ${leaks[0]}`);
+        continue;
+      }
+
+      pass(endpoint.name, successMessage);
+    } catch (error) {
+      fail(endpoint.name, redactSecrets(error.message));
     }
   }
 }
@@ -1315,43 +1358,203 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
     },
   ];
 
-  for (const endpoint of endpoints) {
-    try {
-      const { status, json, text } = await requestJson(
-        joinUrl(apiUrl, endpoint.path),
-        {
-          body: JSON.stringify(endpoint.body),
-          headers: { "Content-Type": "application/json" },
-          method: endpoint.method ?? "POST",
-          timeoutMs,
-        },
-      );
+  await checkProtectedWriteBoundaries({
+    apiUrl,
+    endpoints,
+    successMessage: "protected by user/project/workspace authorization",
+    timeoutMs,
+  });
+}
 
-      if (![401, 403].includes(status)) {
-        fail(endpoint.name, `expected HTTP 401/403, got ${status}`);
-        continue;
-      }
+async function checkAdminActionProtection({ apiUrl, timeoutMs }) {
+  const skillSlug = smokeContext.publicSkillSlug ?? "admin-action-boundary";
+  const endpoints = [
+    {
+      body: {
+        notes: "Unauthorized admin review boundary.",
+        status: "rejected",
+      },
+      name: "POST /v1/admin/reviews/:reviewId/decision without token",
+      path: "/v1/admin/reviews/public-review-boundary/decision",
+    },
+    {
+      body: {
+        name: "Unauthorized commission boundary",
+        platformFeeBps: 2000,
+        publisherShareBps: 8000,
+        reason: "Routine public smoke should not be able to create commission rules.",
+      },
+      name: "POST /v1/admin/finance/commission-rules without token",
+      path: "/v1/admin/finance/commission-rules",
+    },
+    {
+      body: {
+        limit: 1,
+      },
+      name: "POST /v1/admin/finance/process-usage without token",
+      path: "/v1/admin/finance/process-usage",
+    },
+    {
+      body: {
+        limit: 1,
+      },
+      name: "POST /v1/admin/finance/process-subscriptions without token",
+      path: "/v1/admin/finance/process-subscriptions",
+    },
+    {
+      body: {
+        limit: 1,
+      },
+      name: "POST /v1/admin/finance/renew-subscriptions without token",
+      path: "/v1/admin/finance/renew-subscriptions",
+    },
+    {
+      body: {
+        limit: 1,
+      },
+      name: "POST /v1/admin/finance/release-balances without token",
+      path: "/v1/admin/finance/release-balances",
+    },
+    {
+      body: {
+        amountCents: 100,
+        reason: "Unauthorized refund boundary.",
+        transactionId: "public-transaction-boundary",
+      },
+      name: "POST /v1/admin/finance/refunds without token",
+      path: "/v1/admin/finance/refunds",
+    },
+    {
+      body: {
+        action: "reject",
+        reason: "Unauthorized refund decision boundary.",
+      },
+      name: "POST /v1/admin/finance/refunds/:refundId/decision without token",
+      path: "/v1/admin/finance/refunds/public-refund-boundary/decision",
+    },
+    {
+      body: {
+        amountCents: 100,
+        reason: "Unauthorized dispute boundary.",
+        status: "open",
+        transactionId: "public-transaction-boundary",
+      },
+      name: "POST /v1/admin/finance/disputes without token",
+      path: "/v1/admin/finance/disputes",
+    },
+    {
+      body: {
+        reason: "Unauthorized dispute decision boundary.",
+        status: "open",
+      },
+      name: "POST /v1/admin/finance/disputes/:disputeId/decision without token",
+      path: "/v1/admin/finance/disputes/public-dispute-boundary/decision",
+    },
+    {
+      body: {
+        action: "block",
+        reason: "Unauthorized payout decision boundary.",
+        retryCondition: "Provide a valid finance operator token.",
+      },
+      name: "POST /v1/admin/payouts/:payoutId/decision without token",
+      path: "/v1/admin/payouts/public-payout-boundary/decision",
+    },
+    {
+      body: {
+        action: "skip",
+        reason: "Unauthorized notification delivery boundary.",
+      },
+      name: "POST /v1/admin/notification-deliveries/:notificationId/decision without token",
+      path: "/v1/admin/notification-deliveries/public-notification-boundary/decision",
+    },
+    {
+      body: {
+        limit: 1,
+        mode: "dry_run",
+      },
+      name: "POST /v1/admin/notification-deliveries/process without token",
+      path: "/v1/admin/notification-deliveries/process",
+    },
+    {
+      body: {
+        limit: 1,
+        mode: "dry_run",
+      },
+      name: "POST /v1/admin/webhook-deliveries/process without token",
+      path: "/v1/admin/webhook-deliveries/process",
+    },
+    {
+      body: {
+        body: "Unauthorized notification template boundary.",
+        channel: "in_app",
+        eventType: "platform.notification_delivery.updated",
+        locale: "en",
+        status: "draft",
+        subject: "Unauthorized notification template boundary",
+      },
+      name: "POST /v1/admin/notification-templates without token",
+      path: "/v1/admin/notification-templates",
+    },
+    {
+      body: {
+        boost: 0,
+        placement: "standard",
+        reason: "Unauthorized marketplace curation boundary.",
+      },
+      method: "PUT",
+      name: "PUT /v1/admin/marketplace-curation/:skillSlug without token",
+      path: `/v1/admin/marketplace-curation/${encodeURIComponent(skillSlug)}`,
+    },
+    {
+      body: {
+        action: "reject",
+        reason: "Unauthorized marketplace curation appeal boundary.",
+      },
+      name: "POST /v1/admin/marketplace-curation/appeals/:appealId/decision without token",
+      path: "/v1/admin/marketplace-curation/appeals/public-appeal-boundary/decision",
+    },
+    {
+      body: {
+        severity: "medium",
+        skillSlug,
+        summary: "Routine public smoke should not be able to open an incident.",
+        title: "Unauthorized incident boundary",
+      },
+      name: "POST /v1/admin/incidents without token",
+      path: "/v1/admin/incidents",
+    },
+    {
+      body: {
+        reason: "Unauthorized incident decision boundary.",
+        status: "monitoring",
+      },
+      name: "POST /v1/admin/incidents/:incidentId/decision without token",
+      path: "/v1/admin/incidents/public-incident-boundary/decision",
+    },
+    {
+      body: {
+        action: "dismiss",
+        reason: "Unauthorized abuse report decision boundary.",
+      },
+      name: "POST /v1/admin/abuse-reports/:reportId/decision without token",
+      path: "/v1/admin/abuse-reports/public-report-boundary/decision",
+    },
+    {
+      body: {
+        action: "reject",
+        reason: "Unauthorized feedback moderation boundary.",
+      },
+      name: "POST /v1/admin/skill-feedback/:feedbackId/decision without token",
+      path: "/v1/admin/skill-feedback/public-feedback-boundary/decision",
+    },
+  ];
 
-      if (typeof json?.error !== "string" || json.error.length === 0) {
-        fail(endpoint.name, "expected a JSON error message");
-        continue;
-      }
-
-      const leaks = findBoundarySensitiveLeaks(text);
-
-      if (leaks.length > 0) {
-        fail(endpoint.name, `possible sensitive boundary leak: ${leaks[0]}`);
-        continue;
-      }
-
-      pass(
-        endpoint.name,
-        "protected by user/project/workspace authorization",
-      );
-    } catch (error) {
-      fail(endpoint.name, redactSecrets(error.message));
-    }
-  }
+  await checkProtectedWriteBoundaries({
+    apiUrl,
+    endpoints,
+    successMessage: "protected by admin/operator authorization",
+    timeoutMs,
+  });
 }
 
 async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
