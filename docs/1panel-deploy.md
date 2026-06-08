@@ -54,6 +54,27 @@ sed -i "s|SKILLHUB_AUTH_COOKIE_DOMAIN=|SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.
 sed -i "s|SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true|SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false|g" .env
 ```
 
+## Google And GitHub Login
+
+The OAuth code path is built into the API. To enable the buttons on `/login`, create provider apps with these callback URLs:
+
+- Google: `https://api.useskillhub.com/v1/auth/oauth/google/callback`
+- GitHub: `https://api.useskillhub.com/v1/auth/oauth/github/callback`
+
+Then set these server-side variables in `/opt/skillhub/.env` without committing or sharing the values. `SKILLHUB_AUTH_CALLBACK_BASE_URL` may be omitted when `NEXT_PUBLIC_API_URL=https://api.useskillhub.com` is already present, but keeping it explicit makes provider setup easier to audit.
+
+```bash
+SKILLHUB_AUTH_CALLBACK_BASE_URL=https://api.useskillhub.com
+SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
+SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-oauth-state-secret
+SKILLHUB_GOOGLE_CLIENT_ID=
+SKILLHUB_GOOGLE_CLIENT_SECRET=
+SKILLHUB_GITHUB_CLIENT_ID=
+SKILLHUB_GITHUB_CLIENT_SECRET=
+```
+
+After changing OAuth variables, rebuild and recreate `api` and `web`; a plain container restart can leave stale login UI or gateway settings.
+
 Start the stack:
 
 ```bash

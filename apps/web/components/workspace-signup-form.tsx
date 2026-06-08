@@ -24,7 +24,7 @@ const copy = {
     emailLoginMode: "Email login",
     emailPlaceholder: "you@company.com",
     helper:
-      "Use email verification for normal workspace access. SkillHub queues the email delivery event now; token fallback stays available for team invites and operators.",
+      "Enter your work email and we will send a 6-digit code. New teams can switch to Create workspace.",
     organizationName: "Organization name",
     organizationNamePlaceholder: "Acme Agent Lab",
     organizationSlug: "Workspace slug",
@@ -38,7 +38,7 @@ const copy = {
     requestCode: "Send code",
     requestingCode: "Sending",
     role: "Primary workspace path",
-    title: "Email access",
+    title: "Sign in with email",
     verify: "Verify and enter",
     verifying: "Verifying",
     workspace: "Open dashboard"
@@ -84,7 +84,7 @@ const initialState: SignupActionState = {
 export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   const labels = copy[locale];
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "signup">("signup");
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [state, action, isPending] = useActionState(signUpAction.bind(null, locale), initialState);
   const showChallenge = Boolean(state.challenge && !state.subject);
   const showPreviewCode = process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
@@ -98,7 +98,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   return (
     <article className="ops-panel auth-card auth-card--signup" id="email-registration">
       <div className="card-kicker">
-        <UserPlus size={16} aria-hidden="true" />
+        <MailCheck size={16} aria-hidden="true" />
         <span>{labels.title}</span>
       </div>
       <p>{labels.helper}</p>
@@ -109,14 +109,6 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
           <input name="mode" type="hidden" value={mode} />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
-              className={mode === "signup" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
-              onClick={() => setMode("signup")}
-              type="button"
-            >
-              <UserPlus size={15} aria-hidden="true" />
-              <span>{labels.createMode}</span>
-            </button>
-            <button
               className={mode === "login" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
               onClick={() => setMode("login")}
               type="button"
@@ -124,18 +116,26 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
               <MailCheck size={15} aria-hidden="true" />
               <span>{labels.emailLoginMode}</span>
             </button>
+            <button
+              className={mode === "signup" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
+              onClick={() => setMode("signup")}
+              type="button"
+            >
+              <UserPlus size={15} aria-hidden="true" />
+              <span>{labels.createMode}</span>
+            </button>
           </div>
-          <div className="auth-form-grid">
+          <div className={mode === "login" ? "auth-form-grid auth-form-grid--single" : "auth-form-grid"}>
             <label>
               <span>{labels.email}</span>
               <input autoComplete="email" name="email" placeholder={labels.emailPlaceholder} required type="email" />
             </label>
-            <label>
-              <span>{labels.displayName}</span>
-              <input autoComplete="name" name="displayName" placeholder={labels.displayNamePlaceholder} />
-            </label>
             {mode === "signup" ? (
               <>
+                <label>
+                  <span>{labels.displayName}</span>
+                  <input autoComplete="name" name="displayName" placeholder={labels.displayNamePlaceholder} />
+                </label>
                 <label>
                   <span>{labels.organizationName}</span>
                   <input name="organizationName" placeholder={labels.organizationNamePlaceholder} required />

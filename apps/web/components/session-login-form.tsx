@@ -51,7 +51,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
   }, [router, state.status]);
 
   return (
-    <article className="ops-panel auth-card" id="token-fallback">
+    <article className="ops-panel auth-card auth-card--token-fallback" id="token-fallback">
       <div className="card-kicker">
         <KeyRound size={16} aria-hidden="true" />
         <span>{labels.title}</span>
@@ -62,7 +62,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
           <span>{labels.label}</span>
           <input autoComplete="off" name="token" placeholder={labels.placeholder} required type="password" />
         </label>
-        <button className="primary-button" disabled={isPending} type="submit">
+        <button className="secondary-button" disabled={isPending} type="submit">
           <LogIn size={16} aria-hidden="true" />
           <span>{isPending ? labels.submitting : labels.submit}</span>
         </button>

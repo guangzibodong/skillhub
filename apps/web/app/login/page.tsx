@@ -1,9 +1,7 @@
 import {
-  ArrowRight,
   CheckCircle2,
-  Chrome,
-  Github,
   KeyRound,
+  LockKeyhole,
   MailCheck,
   Route,
   ShieldCheck,
@@ -11,15 +9,13 @@ import {
   UserCircle,
   XCircle
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { AuthProviderPanel } from "@/components/auth-provider-panel";
-import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { SessionLoginForm } from "@/components/session-login-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { WorkspaceSignupForm } from "@/components/workspace-signup-form";
-import { getAuthProviders, type AuthProviderStatus } from "@/lib/account-data";
-import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
+import { getAuthProviders } from "@/lib/account-data";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +32,7 @@ const copy = {
     adminShortcutBody:
       "Platform operators use this same login page first, then open /admin with reviewer, finance, support, admin, or super_admin access.",
     body:
-      "Enter with email code, Google, GitHub, or a limited token fallback. After access, SkillHub routes each user into role-aware developer, publisher, and admin workspaces.",
+      "Use your work email to sign in or create a workspace. Google and GitHub appear when configured; team tokens are only for invitations or recovery.",
     connected: "Connected",
     configurationRequired: "Configuration required",
     emailCode: "Email code",
@@ -55,7 +51,7 @@ const copy = {
     routesTitle: "After login",
     session: "Current session",
     sessionBody: "Browser sessions are scoped to one user and organization; raw tokens stay hidden after first reveal.",
-    title: "Sign in, register, and enter the operating platform.",
+    title: "Sign in to SkillHub.",
     tokenFallback: "Token fallback",
     tokenFallbackBody: "Reserved for bootstrap, invitations, and recovery. Normal users should use email or configured OAuth.",
     workspaceHint: "No shared backend password",
@@ -95,7 +91,7 @@ const copy = {
     active: "可用",
     adminShortcut: "管理员登录",
     adminShortcutBody: "平台运营先从本页登录，再用审核、财务、客服、管理员或超级管理员角色进入 /admin。",
-    body: "通过邮箱验证码、Google、GitHub 或受限 token 兜底进入。登录后，SkillHub 会按角色把用户带到开发者、发布者和平台运营工作台。",
+    body: "使用工作邮箱登录或创建工作区。Google 和 GitHub 配置完成后可用；团队 token 只用于邀请或恢复。",
     connected: "已连接",
     configurationRequired: "待配置",
     emailCode: "邮箱验证码",
@@ -114,7 +110,7 @@ const copy = {
     routesTitle: "登录后去哪里",
     session: "当前会话",
     sessionBody: "浏览器会话绑定到一个用户和组织；原始 token 只首次展示，之后保持隐藏。",
-    title: "登录、注册，并进入真正的运营平台。",
+    title: "登录 SkillHub。",
     tokenFallback: "Token 兜底",
     tokenFallbackBody: "仅用于初始化、团队邀请和运营恢复。正常用户应使用邮箱或已配置的 OAuth。",
     workspaceHint: "没有共享后台密码",
@@ -164,188 +160,68 @@ export default async function LoginPage({ searchParams }: PageProps) {
     <main className="product-shell">
       <SiteHeader active="dashboard" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/login" />
 
-      <section className="page-hero page-hero--compact">
-        <div>
+      <section className="login-screen">
+        <div className="login-screen__copy">
           <div className="eyebrow">
-            <KeyRound size={16} aria-hidden="true" />
+            <ShieldCheck size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
           </div>
           <h1>{labels.title}</h1>
           <p>{labels.body}</p>
-        </div>
-        <div className="page-hero__actions">
-          <a className="primary-button primary-button--large" href={localizedHref("/admin", locale)}>
-            <ShieldCheck size={17} aria-hidden="true" />
-            <span>{labels.adminShortcut}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/account", locale)}>
-            <UserCircle size={17} aria-hidden="true" />
-            <span>{labels.account}</span>
-          </a>
-        </div>
-      </section>
-
-      {notice ? (
-        <section className={`auth-callback-notice auth-callback-notice--${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}>
-          {notice.kind === "success" ? <CheckCircle2 size={18} aria-hidden="true" /> : <XCircle size={18} aria-hidden="true" />}
-          <div>
-            <strong>{notice.title}</strong>
-            <span>{notice.message}</span>
+          <div className="login-screen__links">
+            <a className="ghost-button ghost-button--inline" href={localizedHref("/admin", locale)}>
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{labels.adminShortcut}</span>
+            </a>
           </div>
-        </section>
-      ) : null}
-
-      <LoginEntryBrief locale={locale} providers={providers} session={session} />
-
-      <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
-
-      <section className="auth-layout auth-layout--signup">
-        <div className="auth-main-stack">
-          <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
-          <WorkspaceSignupForm locale={locale} />
+          <p className="login-screen__admin-note">{labels.adminShortcutBody}</p>
         </div>
-        <div className="auth-side-stack">
-          <SessionLoginForm locale={locale} />
-          <SessionStatusPanel locale={locale} session={session} />
+
+        <div className="login-auth-stack">
+          {notice ? (
+            <section className={`auth-callback-notice auth-callback-notice--${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}>
+              {notice.kind === "success" ? <CheckCircle2 size={18} aria-hidden="true" /> : <XCircle size={18} aria-hidden="true" />}
+              <div>
+                <strong>{notice.title}</strong>
+                <span>{notice.message}</span>
+              </div>
+            </section>
+          ) : null}
+
+          <AuthProviderPanel apiUrl={apiUrl} locale={locale} providers={providers} />
+
+          <div className="login-divider">
+            <MailCheck size={15} aria-hidden="true" />
+            <span>{labels.emailCode}</span>
+          </div>
+
+          <WorkspaceSignupForm locale={locale} />
+
+          {session.subject ? <SessionStatusPanel locale={locale} session={session} /> : null}
+
+          <details className="login-recovery-details">
+            <summary>
+              <KeyRound size={15} aria-hidden="true" />
+              <span>{labels.tokenFallback}</span>
+            </summary>
+            <p>{labels.tokenFallbackBody}</p>
+            <SessionLoginForm locale={locale} />
+          </details>
+
+          <div className="login-secondary-links">
+            <a className="login-account-link" href={localizedHref("/account", locale)}>
+              <UserCircle size={17} aria-hidden="true" />
+              <span>{labels.account}</span>
+            </a>
+            <a className="login-account-link" href={localizedHref("/admin", locale)}>
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{labels.adminShortcut}</span>
+            </a>
+          </div>
         </div>
       </section>
     </main>
   );
-}
-
-function LoginEntryBrief({ locale, providers, session }: { locale: Locale; providers: AuthProviderStatus[]; session: WorkspaceSession }) {
-  const labels = copy[locale];
-  const providerById = new Map(providers.map((provider) => [provider.provider, provider]));
-  const emailProvider = providerById.get("email");
-  const googleProvider = providerById.get("google");
-  const githubProvider = providerById.get("github");
-  const tokenProvider = providerById.get("token");
-  const oauthProviders = [googleProvider, githubProvider].filter(Boolean) as AuthProviderStatus[];
-  const activeOauthCount = oauthProviders.filter((provider) => provider.status === "active" || provider.status === "connected").length;
-  const missingOauthCount = oauthProviders.reduce((count, provider) => count + (provider.missingConfiguration?.length ?? 0), 0);
-
-  const tiles: LoginReadinessTileProps[] = [
-    {
-      body: labels.emailCodeBody,
-      icon: MailCheck,
-      state: emailProvider?.status === "active" || emailProvider?.status === "connected" ? "ready" : "warning",
-      title: labels.emailCode,
-      value: statusText(emailProvider?.status, locale)
-    },
-    {
-      body: labels.oauthBody,
-      icon: Chrome,
-      state: activeOauthCount === oauthProviders.length && oauthProviders.length > 0 ? "ready" : "warning",
-      title: `${labels.google} / ${labels.github}`,
-      value: missingOauthCount ? `${missingOauthCount} ${labels.missing}` : `${activeOauthCount}/2 ${labels.ready}`
-    },
-    {
-      body: labels.tokenFallbackBody,
-      icon: KeyRound,
-      state: tokenProvider?.status === "active" ? "ready" : "neutral",
-      title: labels.tokenFallback,
-      value: statusText(tokenProvider?.status, locale)
-    },
-    {
-      body: labels.sessionBody,
-      icon: ShieldCheck,
-      state: session.subject ? "ready" : "neutral",
-      title: labels.session,
-      value: session.subject ? labels.connected : labels.notConnected
-    }
-  ];
-
-  return (
-    <section className="login-entry-brief" aria-label={labels.workspaceHint}>
-      <div className="login-readiness-grid">
-        {tiles.map((tile) => (
-          <LoginReadinessTile key={tile.title} {...tile} />
-        ))}
-      </div>
-      <article className="login-route-board" id="admin-entry">
-        <div className="login-route-board__head">
-          <div className="card-kicker">
-            <Route size={16} aria-hidden="true" />
-            <span>{labels.routesTitle}</span>
-          </div>
-          <span className="status-chip status-chip--neutral">{labels.workspaceHint}</span>
-        </div>
-        <div className="login-route-list">
-          {labels.routes.map((route) => (
-            <LoginRouteCard key={route.href} locale={locale} route={route} />
-          ))}
-        </div>
-        <p className="login-route-board__note">{labels.adminShortcutBody}</p>
-      </article>
-    </section>
-  );
-}
-
-type LoginReadinessTileProps = {
-  body: string;
-  icon: LucideIcon;
-  state: "neutral" | "ready" | "warning";
-  title: string;
-  value: string;
-};
-
-function LoginReadinessTile({ body, icon: Icon, state, title, value }: LoginReadinessTileProps) {
-  return (
-    <article className={`login-readiness-tile login-readiness-tile--${state}`}>
-      <div className="login-readiness-tile__head">
-        <Icon size={17} aria-hidden="true" />
-        <span>{value}</span>
-      </div>
-      <strong>{title}</strong>
-      <p>{body}</p>
-    </article>
-  );
-}
-
-function LoginRouteCard({
-  locale,
-  route
-}: {
-  locale: Locale;
-  route: {
-    body: string;
-    href: string;
-    icon: LucideIcon;
-    label: string;
-    role: string;
-  };
-}) {
-  const Icon = route.icon;
-
-  return (
-    <a className="login-route-card" href={localizedHref(route.href, locale)}>
-      <Icon size={17} aria-hidden="true" />
-      <span>
-        <strong>{route.label}</strong>
-        <small>{route.role}</small>
-      </span>
-      <p>{route.body}</p>
-      <ArrowRight size={15} aria-hidden="true" />
-    </a>
-  );
-}
-
-function statusText(status: AuthProviderStatus["status"] | undefined, locale: Locale) {
-  if (locale === "zh") {
-    return {
-      active: "可用",
-      configuration_required: "待配置",
-      connected: "已连接",
-      deferred: "待回调"
-    }[status ?? "deferred"];
-  }
-
-  return {
-    active: "Active",
-    configuration_required: "Configuration required",
-    connected: "Connected",
-    deferred: "Callback pending"
-  }[status ?? "deferred"];
 }
 
 function oauthNotice(params: Record<string, string | string[] | undefined>, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {

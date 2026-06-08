@@ -491,6 +491,10 @@ skillhub install browser-research`}</code>
         ))}
       </section>
 
+      <div id="catalog">
+        <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
+      </div>
+
       <OperatingEvidenceChain
         focus="marketplace"
         locale={locale}
@@ -657,10 +661,6 @@ skillhub install browser-research`}</code>
           </div>
         </aside>
       </section>
-
-      <div id="catalog">
-        <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
-      </div>
 
       <section className="market-operations-layout">
         <article className="market-ops-panel">

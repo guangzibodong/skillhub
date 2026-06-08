@@ -491,8 +491,8 @@ The directory returns summary counts for users, organizations, admin users, and 
 
 Web console session:
 
-- `/login` is now a product account entry. It shows email-code access, Google OAuth, GitHub OAuth, and token fallback states. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
-- `/login` also summarizes email-code readiness, OAuth configuration gaps, token fallback boundaries, current session state, and the account/developer/publisher/admin destinations before the user reaches the forms. `/admin-login` redirects to that same page section for operators who expect a dedicated admin-login URL.
+- `/login` is now a customer-facing product account entry. It shows Google/GitHub buttons first, then email-code access, with token fallback kept in a secondary recovery section. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
+- `/login` keeps public OAuth disabled states user-friendly instead of exposing operator setup details. Callback URLs, missing configuration names, and readiness booleans remain available through `/v1/auth/providers`, the deployment runbook, and admin launch-readiness output. `/admin-login` redirects to the same account entry for operators who expect a dedicated admin-login URL.
 - `/login` lets a new user create a workspace or an existing user log in through an email code; token fallback is reserved for invites, bootstrap, or the team console.
 - Email-code preview and OAuth callback debug messages are hidden in the web UI unless `NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW=true` or `NEXT_PUBLIC_SKILLHUB_SHOW_OAUTH_DEBUG_ERROR=true` is explicitly set for a controlled debug build.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.

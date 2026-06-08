@@ -8,6 +8,7 @@ type AccountProviderEnv = {
   GITHUB_CLIENT_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  NEXT_PUBLIC_API_URL?: string;
   SESSION_SECRET?: string;
   SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
   SKILLHUB_AUTH_BASE_URL?: string;
@@ -453,8 +454,10 @@ export function getAuthProviderStatuses(
   const callbackBaseUrl = configuredValue(
     env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ??
       env?.SKILLHUB_AUTH_BASE_URL ??
+      env?.NEXT_PUBLIC_API_URL ??
       getProcessEnv("SKILLHUB_AUTH_CALLBACK_BASE_URL") ??
-      getProcessEnv("SKILLHUB_AUTH_BASE_URL")
+      getProcessEnv("SKILLHUB_AUTH_BASE_URL") ??
+      getProcessEnv("NEXT_PUBLIC_API_URL")
   );
   const callbackConfigured = Boolean(callbackBaseUrl);
   const stateSecretConfigured = hasConfiguredValue(

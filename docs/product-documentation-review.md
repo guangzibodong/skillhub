@@ -40,6 +40,8 @@ SkillHub must become an operating workspace:
 
 ## Latest Implementation Review
 
+The latest login acceptance polish makes `/login` behave like a normal customer-facing sign-in/register page instead of an operator setup console. The first page path now starts with Google/GitHub buttons, then email-code sign-in/register, defaults email access to login rather than workspace creation, and moves admin route explanation plus token fallback into secondary support/recovery sections. Google/GitHub still use the existing production OAuth backend: provider start redirect, callback token exchange, verified email profile, user/workspace creation or reuse, httpOnly session cookie, audit, and notification rows. When provider credentials are not configured, the public button states stay user-friendly while callback URLs and missing configuration names remain in the deployment runbook, `/v1/auth/providers`, and admin launch-readiness output. `/marketplace` also now places live catalog search, filters, result cards, install lock state, and install handoff before the deeper operating proof sections, and `/terms` reads as the current public operating policy while still naming provider-deferred payment and payout automation honestly.
+
 The latest public-navigation polish separates visitor discovery from protected console work. The global header now keeps the top navigation focused on public routes: home, marketplace, publisher directory, registry, agents, and docs. Developer, publisher, dashboard, account, and admin workspaces remain reachable through the sign-in entry, account center, and role-aware console access panels. This makes the first visit feel like a public marketplace while still keeping the operator paths explicit for logged-in users.
 
 The latest admin overview boundary fix protects `/v1/admin/overview` behind support/admin/super-admin authorization and adds it to both routine public smoke and Journey C admin smoke no-token boundary checks. Public platform metrics remain available through `/v1/platform/overview`, while the admin namespace no longer exposes review, payout, notification, or runtime-risk operating counts without an operator session.
@@ -915,8 +917,8 @@ Added paid pricing commercial-readiness enforcement, covering:
 Added OAuth provider readiness rollout, covering:
 
 - `/v1/auth/providers` now returns Google/GitHub callback URLs, missing launch configuration variable names, and secret-safe readiness booleans for client id, client secret, callback base URL, and OAuth state secret.
-- `/login` shows provider setup hints, exact callback URLs when available, missing configuration chips, and callback success/error notices after redirects return.
-- This closes the account-entry UX gap where OAuth buttons could look real without telling operators what still needed to be configured for production login.
+- `/login` keeps the public OAuth buttons user-friendly, shows callback success/error notices after redirects return, and leaves callback URLs plus missing configuration names in `/v1/auth/providers`, the deployment runbook, and admin launch-readiness output.
+- This closes the account-entry UX gap where OAuth buttons could look fake or overly operational before production credentials are configured.
 
 Added public agent integration guide depth, covering:
 

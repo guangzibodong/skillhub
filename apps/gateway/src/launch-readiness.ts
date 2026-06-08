@@ -200,9 +200,10 @@ export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<Laun
     environment: {
       appUrl: configured(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL"),
       callbackBaseUrl: configured(
-        env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL,
+        env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? env?.NEXT_PUBLIC_API_URL,
         "SKILLHUB_AUTH_CALLBACK_BASE_URL",
-        "SKILLHUB_AUTH_BASE_URL"
+        "SKILLHUB_AUTH_BASE_URL",
+        "NEXT_PUBLIC_API_URL"
       ),
       isProductionLike: isProductionLike(env),
       runtime: configured(env?.SKILLHUB_ENV, "SKILLHUB_ENV") ?? configured(env?.NODE_ENV, "NODE_ENV") ?? "development"
@@ -217,9 +218,10 @@ export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<Laun
 
 function buildIdentitySection(env: LaunchReadinessEnv | undefined): LaunchReadinessSection {
   const callbackBaseUrl = configured(
-    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL,
+    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? env?.NEXT_PUBLIC_API_URL,
     "SKILLHUB_AUTH_CALLBACK_BASE_URL",
-    "SKILLHUB_AUTH_BASE_URL"
+    "SKILLHUB_AUTH_BASE_URL",
+    "NEXT_PUBLIC_API_URL"
   );
   const stateSecret = configured(env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET, "SKILLHUB_OAUTH_STATE_SECRET", "SESSION_SECRET");
   const googleReady = hasAll(

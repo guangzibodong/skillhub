@@ -84,6 +84,7 @@ type OAuthRuntimeEnv = {
   GITHUB_CLIENT_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  NEXT_PUBLIC_API_URL?: string;
   NEXT_PUBLIC_APP_URL?: string;
   NODE_ENV?: string;
   SESSION_SECRET?: string;
@@ -1389,9 +1390,10 @@ async function upsertOAuthAuthIdentity(tx: Sql, userId: string, provider: OAuthP
 
 function getOAuthConfig(provider: OAuthProvider, env?: OAuthRuntimeEnv): OAuthProviderConfig {
   const callbackBaseUrl = getConfiguredValue(
-    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL,
+    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? env?.NEXT_PUBLIC_API_URL,
     "SKILLHUB_AUTH_CALLBACK_BASE_URL",
-    "SKILLHUB_AUTH_BASE_URL"
+    "SKILLHUB_AUTH_BASE_URL",
+    "NEXT_PUBLIC_API_URL"
   );
   const googleClientId = getConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID, "SKILLHUB_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID");
   const googleClientSecret = getConfiguredValue(
