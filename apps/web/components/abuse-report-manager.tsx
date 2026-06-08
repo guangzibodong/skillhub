@@ -154,7 +154,7 @@ export function AbuseReportManager({ locale, reports }: AbuseReportManagerProps)
                   </label>
                   <label>
                     <span>{labels.reason}</span>
-                    <input defaultValue={report.decisionReason ?? ""} name="reason" />
+                    <input defaultValue={report.decisionReason ?? ""} name="reason" required />
                   </label>
                   <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
                     <Save size={15} aria-hidden="true" />

@@ -23,6 +23,7 @@ type PolicyInput = {
   monthlyBudgetCents?: number;
   rateLimitPerMinute?: number | null;
   approvalRequired?: boolean;
+  reason?: string;
 };
 
 type ReviewDecisionInput = {
@@ -210,6 +211,11 @@ export async function installSkill(input: ProjectInstallInput) {
   const organizationId = await resolveWriteOrganizationId(sql, input.organizationId);
   const project = await upsertProject(sql, organizationId, input.projectSlug);
   const skill = await getSkillRecord(sql, input.skillSlug, input.version);
+
+  if (skill.verification_status !== "verified") {
+    throw new Error("Only verified skills can be installed into developer projects.");
+  }
+
   const permissionLevel = getPermissionLevel(skill.manifest.permissions);
   const approvalState = permissionLevel === "high" ? "owner_required" : "approved";
 
@@ -437,6 +443,7 @@ export async function upsertProjectPolicy(
   const skill = await getSkillRecord(sql, skillSlug);
   const defaults = policyDefaults(skill.manifest);
   const approvalRequired = input.approvalRequired ?? defaults.approvalRequired;
+  const reason = String(input.reason ?? "").trim() || "Project skill policy saved and runtime approval state synchronized.";
 
   if (!approvalRequired && defaults.approvalRequired && !canApproveOwnerReview) {
     throw new Error("Owner or admin role is required to approve high-risk project policy.");
@@ -521,10 +528,11 @@ export async function upsertProjectPolicy(
         'project_policy.updated',
         'project_skill_policy',
         ${String(policy.id)},
-        'Project skill policy saved and runtime approval state synchronized.',
+        ${reason},
         ${tx.json({
           approvalRequired,
           installApprovalState: install?.approvalState ?? null,
+          reason,
           projectSlug,
           skillSlug: skill.slug
         })}
@@ -541,6 +549,7 @@ export async function upsertProjectPolicy(
         ${tx.json({
           approvalRequired,
           installApprovalState: install?.approvalState ?? null,
+          reason,
           projectSlug,
           skillSlug: skill.slug
         })},

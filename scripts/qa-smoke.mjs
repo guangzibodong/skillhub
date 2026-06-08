@@ -1468,6 +1468,15 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
     },
     {
       body: {
+        reason: "Routine no-token boundary probe for finance payout verification.",
+        sessionId: "public-payout-session-boundary",
+        status: "verified",
+      },
+      name: "POST /v1/publisher/payout-account/onboarding/complete without token",
+      path: "/v1/publisher/payout-account/onboarding/complete",
+    },
+    {
+      body: {
         currency: "USD",
       },
       name: "POST /v1/publisher/payouts without token",

@@ -303,17 +303,17 @@ export default async function Home({ searchParams }: PageProps) {
           <div className="hero-actions">
             <a
               className="primary-button primary-button--large"
+              href={localizedHref("/marketplace", locale)}
+            >
+              <Search size={18} aria-hidden="true" />
+              <span>{dictionary.common.marketplace}</span>
+            </a>
+            <a
+              className="secondary-button secondary-button--large"
               href={localizedHref("/publish", locale)}
             >
               <Plus size={18} aria-hidden="true" />
               <span>{dictionary.home.publishCta}</span>
-            </a>
-            <a
-              className="secondary-button secondary-button--large"
-              href={localizedHref("/docs", locale)}
-            >
-              <Code2 size={18} aria-hidden="true" />
-              <span>{dictionary.common.viewContract}</span>
             </a>
             <a
               className="secondary-button secondary-button--large"
@@ -526,6 +526,7 @@ tools: skillhub.search, skillhub.get`}</code>
           <SkillTable
             apiUrl={apiUrl}
             labels={dictionary.skillTable}
+            locale={locale}
             skills={skills}
           />
         </section>

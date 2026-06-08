@@ -18,7 +18,6 @@ import { localizedHref, type Locale } from "@/lib/i18n";
 import type { PublisherAccountSummary } from "@/lib/ops-data";
 import {
   acceptPublisherTermsAction,
-  completePayoutOnboardingAction,
   createPayoutOnboardingAction,
   updatePublisherProfileAction,
   type PublisherAccountActionState
@@ -57,11 +56,10 @@ const copy = {
     onboarding: "Submit payout details",
     onboardingProvider: "Provider",
     onboardingTitle: "Manual payout account",
+    pendingFinanceReview: "Submitted for finance review",
     payoutReadiness: "Payout readiness",
     profile: "Publisher profile",
     readTerms: "Read terms",
-    reason: "Decision note",
-    reasonPlaceholder: "Provider check passed, documents pending, or block reason",
     ready: "Ready for payouts",
     requiresSetup: "Needs payout setup",
     saveProfile: "Save profile",
@@ -94,7 +92,7 @@ const copy = {
       verified: "Verified"
     },
     title: "Publisher account",
-    updateTitle: "Readiness decision"
+    updateTitle: "Finance verification"
   },
   zh: {
     accountStatus: "\u6536\u6b3e\u8d26\u6237",
@@ -120,11 +118,10 @@ const copy = {
     onboarding: "\u63d0\u4ea4\u6536\u6b3e\u8d44\u6599",
     onboardingProvider: "\u670d\u52a1\u5546",
     onboardingTitle: "\u624b\u5de5\u6253\u6b3e\u6536\u6b3e\u8d26\u6237",
+    pendingFinanceReview: "\u5df2\u63d0\u4ea4\u8d22\u52a1\u6838\u9a8c",
     payoutReadiness: "\u63d0\u73b0\u51c6\u5907",
     profile: "\u53d1\u5e03\u8005\u8d44\u6599",
     readTerms: "\u67e5\u770b\u6761\u6b3e",
-    reason: "\u5904\u7406\u8bf4\u660e",
-    reasonPlaceholder: "\u670d\u52a1\u5546\u9a8c\u8bc1\u901a\u8fc7\u3001\u8d44\u6599\u5f85\u8865\u5145\u6216\u963b\u65ad\u539f\u56e0",
     ready: "\u53ef\u63d0\u73b0",
     requiresSetup: "\u9700\u8981\u5b8c\u6210\u6536\u6b3e\u8bbe\u7f6e",
     saveProfile: "\u4fdd\u5b58\u8d44\u6599",
@@ -157,7 +154,7 @@ const copy = {
       verified: "\u5df2\u9a8c\u8bc1"
     },
     title: "\u53d1\u5e03\u8005\u8d26\u6237",
-    updateTitle: "\u51c6\u5907\u72b6\u6001\u5904\u7406"
+    updateTitle: "\u8d22\u52a1\u6838\u9a8c"
   }
 } as const;
 
@@ -180,19 +177,12 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
     createPayoutOnboardingAction.bind(null, locale),
     initialActionState
   );
-  const [readinessState, readinessAction, isReadinessPending] = useActionState(
-    completePayoutOnboardingAction.bind(null, locale),
-    initialActionState
-  );
   const profile = account.publisherProfile;
   const payoutAccount = account.payoutAccounts[0];
   const openSession =
     account.onboardingSessions.find((session) => session.status === "created" || session.status === "opened") ?? null;
   const latestSession = openSession ?? account.onboardingSessions[0];
-  const completionSessionId = openSession?.id ?? "";
-  const completionAccountId = payoutAccount?.id ?? "";
-  const canUpdateReadiness = Boolean(completionSessionId || completionAccountId);
-  const payoutReady = profile?.payoutStatus === "verified" || payoutAccount?.status === "verified";
+  const payoutReady = profile?.payoutStatus === "verified" && payoutAccount?.status === "verified";
   const acceptedCurrentTerms =
     Boolean(profile?.termsAcceptedAt) && profile?.termsVersion === CURRENT_TERMS_VERSION;
   const termsStatus = acceptedCurrentTerms
@@ -230,7 +220,7 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
           label={labels.accountStatus}
           value={
             payoutAccount
-              ? `${formatManualMethodLabel(payoutAccount.manualMethod, labels.manualMethods)} / ${payoutAccount.manualAccount ?? labels.noAccount}`
+              ? `${formatManualMethodLabel(payoutAccount.manualMethod, labels.manualMethods)} / ${maskManualAccount(payoutAccount.manualAccount, labels.noAccount)}`
               : labels.noAccount
           }
         />
@@ -332,29 +322,19 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
       </form>
       {onboardingState.status !== "idle" ? <ActionMessage state={onboardingState} /> : null}
 
-      <form action={readinessAction} className="publisher-readiness-form">
+      <section className="publisher-readiness-form">
         <strong>{labels.updateTitle}</strong>
-        <input name="sessionId" type="hidden" value={completionSessionId} />
-        <input name="payoutAccountId" type="hidden" value={completionAccountId} />
-        <label>
-          <span>{labels.status}</span>
-          <select defaultValue={profile?.payoutStatus === "verified" ? "verified" : "verification_required"} name="status">
-            <option value="verified">{labels.statuses.verified}</option>
-            <option value="verification_required">{labels.statuses.verification_required}</option>
-            <option value="blocked">{labels.statuses.blocked}</option>
-            <option value="not_configured">{labels.statuses.not_configured}</option>
-          </select>
-        </label>
-        <label>
-          <span>{labels.reason}</span>
-          <input name="reason" placeholder={labels.reasonPlaceholder} />
-        </label>
-        <button className="secondary-button" disabled={isReadinessPending || !canUpdateReadiness} type="submit">
+        <div className="publisher-readiness-form__status">
           <ShieldCheck size={16} aria-hidden="true" />
-          <span>{isReadinessPending ? labels.completing : labels.complete}</span>
-        </button>
-      </form>
-      {readinessState.status !== "idle" ? <ActionMessage state={readinessState} /> : null}
+          <span>
+            {payoutReady
+              ? labels.ready
+              : payoutAccount
+                ? labels.pendingFinanceReview
+                : labels.requiresSetup}
+          </span>
+        </div>
+      </section>
 
       <div className="publisher-account-foot">
         <span>{labels.createdAt}</span>
@@ -380,6 +360,26 @@ function formatProviderLabel(provider: string, labels: Record<string, string>) {
 
 function formatManualMethodLabel(method: string | null | undefined, labels: Record<string, string>) {
   return method ? (labels[method] ?? method.replaceAll("_", " ")) : labels.paypal;
+}
+
+function maskManualAccount(value: string | null | undefined, fallback: string) {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  if (normalized.includes("@")) {
+    const [name, domain] = normalized.split("@");
+    const maskedName = name.length <= 2 ? `${name[0] ?? "*"}*` : `${name.slice(0, 2)}***`;
+    return `${maskedName}@${domain}`;
+  }
+
+  if (normalized.length <= 6) {
+    return `${normalized.slice(0, 2)}***`;
+  }
+
+  return `${normalized.slice(0, 3)}***${normalized.slice(-3)}`;
 }
 
 function formatStatusLabel(status: string, labels: Record<string, string>) {

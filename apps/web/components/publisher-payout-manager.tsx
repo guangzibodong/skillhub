@@ -80,9 +80,9 @@ const copy = {
       amount_below_minimum: "Available balance is below the minimum payout amount.",
       no_available_balance: "No available balance has matured yet.",
       payout_account_missing: "Submit PayPal or Alipay receiving details before requesting money movement.",
-      payout_account_not_verified: "Finish finance verification for the payout receiving account.",
+      payout_account_not_verified: "Finance has not verified the PayPal or Alipay receiving details yet.",
       publisher_not_active: "Publisher profile must be active.",
-      publisher_payout_not_verified: "Publisher payout readiness must be verified.",
+      publisher_payout_not_verified: "Payout readiness is waiting for finance verification.",
       publisher_profile_missing: "Create the publisher profile first."
     },
     nextActions: {
@@ -90,7 +90,7 @@ const copy = {
       await_finance_review: "Wait for finance review or respond if finance asks for evidence.",
       await_provider_processing: "Finance approved the request; wait for manual transfer.",
       complete: "No action needed. The payout is complete.",
-      complete_payout_verification: "Finish finance verification in the payout account panel.",
+      complete_payout_verification: "Wait for finance to verify the submitted receiving details.",
       connect_verified_payout_account: "Submit PayPal or Alipay receiving details for verification.",
       create_publisher_profile: "Create the publisher profile and accept operating terms.",
       earn_or_wait_minimum: "Wait for more revenue to mature or keep earning until the minimum is reached.",
@@ -153,9 +153,9 @@ const copy = {
       amount_below_minimum: "可提现余额还没有达到最低提现金额。",
       no_available_balance: "暂时没有已经成熟的可提现余额。",
       payout_account_missing: "需要先提交 PayPal 或 Alipay 收款资料。",
-      payout_account_not_verified: "需要先完成收款账户财务验证。",
+      payout_account_not_verified: "财务还没有核验 PayPal 或 Alipay 收款资料。",
       publisher_not_active: "发布者资料必须处于正常状态。",
-      publisher_payout_not_verified: "发布者提现准备状态必须完成验证。",
+      publisher_payout_not_verified: "提现准备状态正在等待财务核验。",
       publisher_profile_missing: "需要先创建发布者资料。"
     },
     nextActions: {
@@ -163,7 +163,7 @@ const copy = {
       await_finance_review: "等待财务审核；如果财务要求补充材料，按通知处理。",
       await_provider_processing: "财务已批准，等待人工转账。",
       complete: "无需操作，提现已完成。",
-      complete_payout_verification: "在提现账户面板完成财务验证。",
+      complete_payout_verification: "等待财务核验已提交的收款资料。",
       connect_verified_payout_account: "提交 PayPal 或 Alipay 收款资料并等待验证。",
       create_publisher_profile: "创建发布者资料并接受运营条款。",
       earn_or_wait_minimum: "继续等待收入成熟，或让余额达到最低提现金额。",
@@ -240,7 +240,7 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
         <StatusRow
           icon={<FileCheck2 size={16} aria-hidden="true" />}
           label={labels.account}
-          value={payoutAccount?.manualAccount ?? labels.noAccount}
+          value={maskManualAccount(payoutAccount?.manualAccount, labels.noAccount)}
         />
         <StatusRow icon={<Banknote size={16} aria-hidden="true" />} label={labels.minimum} value={formatMoney(summary.balances.minPayoutCents, summary.balances.currency)} />
         <StatusRow
@@ -426,6 +426,26 @@ function formatBlocker(blocker: PublisherPayoutReadinessBlocker, labels: Record<
 
 function formatManualMethodLabel(method: string | null | undefined, labels: Record<string, string>) {
   return method ? (labels[method] ?? method.replaceAll("_", " ")) : labels.paypal;
+}
+
+function maskManualAccount(value: string | null | undefined, fallback: string) {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  if (normalized.includes("@")) {
+    const [name, domain] = normalized.split("@");
+    const maskedName = name.length <= 2 ? `${name[0] ?? "*"}*` : `${name.slice(0, 2)}***`;
+    return `${maskedName}@${domain}`;
+  }
+
+  if (normalized.length <= 6) {
+    return `${normalized.slice(0, 2)}***`;
+  }
+
+  return `${normalized.slice(0, 3)}***${normalized.slice(-3)}`;
 }
 
 function formatNextAction(action: string | null | undefined, labels: Record<string, string>) {

@@ -27,21 +27,20 @@ export async function getSessionToken() {
 }
 
 export async function getWorkspaceToken() {
-  return (await getSessionToken()) ?? normalizeToken(process.env.SKILLHUB_USER_TOKEN) ?? normalizeToken(process.env.SKILLHUB_ADMIN_TOKEN);
+  return getSessionToken();
 }
 
 export async function getUserToken() {
-  return (await getSessionToken()) ?? normalizeToken(process.env.SKILLHUB_USER_TOKEN);
+  return getSessionToken();
 }
 
 export async function getAdminOperatorToken() {
-  return (await getSessionToken()) ?? normalizeToken(process.env.SKILLHUB_ADMIN_TOKEN);
+  return getSessionToken();
 }
 
 export async function getWorkspaceSession(): Promise<WorkspaceSession> {
   const sessionToken = await getSessionToken();
-  const envToken = normalizeToken(process.env.SKILLHUB_USER_TOKEN) ?? normalizeToken(process.env.SKILLHUB_ADMIN_TOKEN);
-  const token = sessionToken ?? envToken ?? null;
+  const token = sessionToken ?? null;
 
   if (!token) {
     return {
@@ -52,7 +51,7 @@ export async function getWorkspaceSession(): Promise<WorkspaceSession> {
   }
 
   return {
-    source: sessionToken ? "cookie" : "environment",
+    source: "cookie",
     subject: await fetchSessionSubject(token),
     token
   };

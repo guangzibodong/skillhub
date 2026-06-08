@@ -47,6 +47,12 @@ export async function updateProjectSkillPolicyAction(
   const filesystemAccess = String(formData.get("filesystemAccess") ?? "");
   const budgetValue = Number(formData.get("monthlyBudgetDollars") ?? 0);
   const rateLimitValue = String(formData.get("rateLimitPerMinute") ?? "").trim();
+  const confirmation = String(formData.get("confirmation") ?? "").trim().toUpperCase();
+  const reason = String(formData.get("reason") ?? "").trim();
+  const missingConfirmation =
+    locale === "zh" ? "\u8bf7\u8f93\u5165 POLICY \u786e\u8ba4\u8fd9\u6b21\u7b56\u7565\u53d8\u66f4\u3002" : "Type POLICY to confirm this policy change.";
+  const missingReason =
+    locale === "zh" ? "\u8bf7\u8bb0\u5f55\u8fd9\u6b21\u7b56\u7565\u53d8\u66f4\u7684\u539f\u56e0\u3002" : "Record a reason for this policy change.";
 
   if (!skillSlug) {
     return { message: labels.invalidSkill, status: "error" };
@@ -71,6 +77,14 @@ export async function updateProjectSkillPolicyAction(
     return { message: labels.invalidRateLimit, status: "error", updatedSkillSlug: skillSlug };
   }
 
+  if (confirmation !== "POLICY") {
+    return { message: missingConfirmation, status: "error", updatedSkillSlug: skillSlug };
+  }
+
+  if (!reason) {
+    return { message: missingReason, status: "error", updatedSkillSlug: skillSlug };
+  }
+
   if (!token) {
     return { message: labels.missingToken, status: "error", updatedSkillSlug: skillSlug };
   }
@@ -87,6 +101,7 @@ export async function updateProjectSkillPolicyAction(
           filesystemAccess,
           maxPermissionLevel,
           monthlyBudgetCents: Math.round(budgetValue * 100),
+          reason,
           rateLimitPerMinute
         }),
         headers: {

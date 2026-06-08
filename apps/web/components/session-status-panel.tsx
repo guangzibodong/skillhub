@@ -1,6 +1,6 @@
 import { KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { signOutAction } from "@/lib/auth-actions";
-import { publicTokenLabel, type WorkspaceSession } from "@/lib/auth-session";
+import type { WorkspaceSession } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
 
@@ -18,7 +18,7 @@ const copy = {
     role: "Role",
     signOut: "Sign out",
     title: "Workspace session",
-    token: "Token",
+    token: "Session source",
     unknown: "Verified user session required"
   },
   zh: {
@@ -29,7 +29,7 @@ const copy = {
     role: "角色",
     signOut: "退出登录",
     title: "工作区会话",
-    token: "Token",
+    token: "会话来源",
     unknown: "需要已验证的用户会话"
   }
 } as const;
@@ -71,7 +71,7 @@ export function SessionStatusPanel({ locale, session }: SessionStatusPanelProps)
           </div>
           <div>
             <span>{labels.token}</span>
-            <strong>{publicTokenLabel(session.token)}</strong>
+            <strong>{session.source}</strong>
           </div>
         </div>
       ) : (

@@ -47,6 +47,7 @@ const labels = {
     results: "results",
     copy: "Copy install",
     copied: "Copied",
+    copyFailed: "Copy failed",
     details: "Details",
     by: "by",
     allPricing: "All pricing",
@@ -57,6 +58,8 @@ const labels = {
     latency: "latency",
     feedback: "feedback",
     install: "install",
+    installLocked: "Install locked",
+    installLockedBody: "Verified review is required before install commands unlock.",
     catalog: "SkillHub Catalog",
     filters: "Discovery filters",
     category: "Category",
@@ -110,6 +113,7 @@ const labels = {
     results: "个结果",
     copy: "复制安装",
     copied: "已复制",
+    copyFailed: "复制失败",
     details: "详情",
     by: "来自",
     allPricing: "全部价格",
@@ -120,6 +124,8 @@ const labels = {
     latency: "延迟",
     feedback: "反馈",
     install: "安装",
+    installLocked: "安装已锁定",
+    installLockedBody: "需要完成 verified 审核后才会开放安装命令。",
     catalog: "SkillHub 技能目录",
     filters: "发现筛选",
     category: "类别",
@@ -236,6 +242,7 @@ export function MarketplaceBrowser({
   );
   const [sort, setSort] = useState<SortKey>(normalizedInitialFilters.sort);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [copyFailedSlug, setCopyFailedSlug] = useState<string | null>(null);
   const dictionary = labels[locale];
   const emptyCatalog = emptyCatalogCopy[locale];
   const isEmptyCatalog = skills.length === 0;
@@ -342,10 +349,18 @@ export function MarketplaceBrowser({
   ]);
 
   function copyInstall(skill: MarketplaceSkill) {
-    void navigator.clipboard.writeText(skill.installsCommand.cli).then(() => {
-      setCopiedSlug(skill.slug);
-      window.setTimeout(() => setCopiedSlug(null), 1400);
-    });
+    void navigator.clipboard
+      .writeText(skill.installsCommand.cli)
+      .then(() => {
+        setCopyFailedSlug(null);
+        setCopiedSlug(skill.slug);
+        window.setTimeout(() => setCopiedSlug(null), 1400);
+      })
+      .catch(() => {
+        setCopiedSlug(null);
+        setCopyFailedSlug(skill.slug);
+        window.setTimeout(() => setCopyFailedSlug(null), 1800);
+      });
   }
 
   function resetFilters() {
@@ -376,6 +391,7 @@ export function MarketplaceBrowser({
         <label className="market-search">
           <Search size={17} aria-hidden="true" />
           <input
+            aria-label={dictionary.search}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={dictionary.search}
@@ -508,7 +524,10 @@ export function MarketplaceBrowser({
 
       {filteredSkills.length > 0 ? (
         <div className="market-card-grid">
-          {filteredSkills.map((skill) => (
+          {filteredSkills.map((skill) => {
+            const isSkillInstallable = verificationKey(skill) === "verified";
+
+            return (
             <article className="market-skill-card lift-card" key={skill.slug}>
               <div className="market-skill-card__head">
                 <div className="market-skill-card__icon" aria-hidden="true">
@@ -573,22 +592,37 @@ export function MarketplaceBrowser({
                 ))}
               </div>
 
-              <div
-                className="install-strip"
-                aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
-              >
-                <code>{skill.installsCommand.cli}</code>
-                <button
-                  aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
-                  onClick={() => copyInstall(skill)}
-                  type="button"
+              {isSkillInstallable ? (
+                <div
+                  className="install-strip"
+                  aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
                 >
-                  <Copy size={15} aria-hidden="true" />
-                  {copiedSlug === skill.slug
-                    ? dictionary.copied
-                    : dictionary.copy}
-                </button>
-              </div>
+                  <code>{skill.installsCommand.cli}</code>
+                  <button
+                    aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
+                    onClick={() => copyInstall(skill)}
+                    type="button"
+                  >
+                    <Copy size={15} aria-hidden="true" />
+                    {copiedSlug === skill.slug
+                      ? dictionary.copied
+                      : copyFailedSlug === skill.slug
+                        ? dictionary.copyFailed
+                        : dictionary.copy}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="install-strip install-strip--locked"
+                  aria-label={`${dictionary.installLocked}: ${localizeText(skill.name, locale)}`}
+                >
+                  <ShieldCheck size={15} aria-hidden="true" />
+                  <span>
+                    <strong>{dictionary.installLocked}</strong>
+                    {dictionary.installLockedBody}
+                  </span>
+                </div>
+              )}
 
               <div className="market-install-handoff" aria-label={dictionary.handoff.title}>
                 <strong>
@@ -624,7 +658,8 @@ export function MarketplaceBrowser({
                 </a>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="market-empty-state">

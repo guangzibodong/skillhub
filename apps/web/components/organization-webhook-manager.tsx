@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { CheckCircle2, RotateCw, Save, Webhook, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
   createOrganizationWebhookAction,
   rotateOrganizationWebhookSecretAction,
@@ -73,6 +74,29 @@ const eventOptions = [
 
 const statuses = ["active", "paused", "disabled"] as const;
 
+const sensitiveCopy = {
+  en: {
+    cancel: "Cancel",
+    confirm: "Confirmation",
+    reason: "Reason",
+    rotateConfirmPlaceholder: "Type ROTATE",
+    rotateDescription:
+      "Rotating the signing secret invalidates the current webhook secret. Update the receiver before delivering real events.",
+    rotateReasonPlaceholder: "Scheduled rotation, suspected leak, receiver migration, or security cleanup",
+    rotateSubmit: "Rotate secret"
+  },
+  zh: {
+    cancel: "\u53d6\u6d88",
+    confirm: "\u786e\u8ba4\u77ed\u8bed",
+    reason: "\u539f\u56e0",
+    rotateConfirmPlaceholder: "\u8f93\u5165 ROTATE",
+    rotateDescription:
+      "\u8f6e\u6362\u7b7e\u540d\u5bc6\u94a5\u4f1a\u4f7f\u5f53\u524d webhook secret \u5931\u6548\u3002\u6295\u9012\u771f\u5b9e\u4e8b\u4ef6\u524d\uff0c\u8bf7\u5148\u66f4\u65b0\u63a5\u6536\u7aef\u3002",
+    rotateReasonPlaceholder: "\u5b9a\u671f\u8f6e\u6362\u3001\u7591\u4f3c\u6cc4\u9732\u3001\u63a5\u6536\u7aef\u8fc1\u79fb\u6216\u5b89\u5168\u6e05\u7406",
+    rotateSubmit: "\u8f6e\u6362\u5bc6\u94a5"
+  }
+} as const;
+
 const initialState: OrganizationWebhookActionState = {
   message: "",
   status: "idle"
@@ -80,6 +104,7 @@ const initialState: OrganizationWebhookActionState = {
 
 export function OrganizationWebhookManager({ endpoints, locale }: OrganizationWebhookManagerProps) {
   const labels = copy[locale];
+  const sensitiveLabels = sensitiveCopy[locale];
   const [createState, createAction, isCreating] = useActionState(createOrganizationWebhookAction.bind(null, locale), initialState);
   const [updateState, updateAction, isUpdating] = useActionState(updateOrganizationWebhookAction.bind(null, locale), initialState);
   const [rotateState, rotateAction, isRotating] = useActionState(rotateOrganizationWebhookSecretAction.bind(null, locale), initialState);
@@ -192,13 +217,21 @@ export function OrganizationWebhookManager({ endpoints, locale }: OrganizationWe
                   </button>
                 </form>
 
-                <form action={rotateAction} className="organization-webhook-rotate-form">
-                  <input name="endpointId" type="hidden" value={endpoint.id} />
-                  <button className="secondary-button secondary-button--compact" disabled={isRotating} type="submit">
-                    <RotateCw size={15} aria-hidden="true" />
-                    <span>{isRotating && endpointRotateState ? labels.saving : labels.rotate}</span>
-                  </button>
-                </form>
+                <ProjectSensitiveActionForm
+                  action={rotateAction}
+                  cancelLabel={sensitiveLabels.cancel}
+                  confirmLabel={sensitiveLabels.confirm}
+                  confirmPlaceholder={sensitiveLabels.rotateConfirmPlaceholder}
+                  description={sensitiveLabels.rotateDescription}
+                  disabled={isRotating}
+                  hiddenFields={{ endpointId: endpoint.id }}
+                  icon={RotateCw}
+                  label={isRotating && endpointRotateState ? labels.saving : labels.rotate}
+                  reasonLabel={sensitiveLabels.reason}
+                  reasonPlaceholder={sensitiveLabels.rotateReasonPlaceholder}
+                  submitLabel={sensitiveLabels.rotateSubmit}
+                  tone="warning"
+                />
 
                 {endpointUpdateState && endpointUpdateState.status !== "idle" ? <ActionMessage labels={labels} state={endpointUpdateState} /> : null}
                 {endpointRotateState && endpointRotateState.status !== "idle" ? <ActionMessage labels={labels} state={endpointRotateState} /> : null}

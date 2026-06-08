@@ -94,7 +94,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
       <form action={createAction} className="notification-template-form">
         <label>
           <span>{labels.templateKey}</span>
-          <input name="templateKey" placeholder={labels.templateKeyPlaceholder} />
+          <input name="templateKey" placeholder={labels.templateKeyPlaceholder} required />
         </label>
         <label>
           <span>{labels.channel}</span>
@@ -108,7 +108,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
         </label>
         <label>
           <span>{labels.locale}</span>
-          <input defaultValue={locale === "zh" ? "zh" : "en"} name="locale" />
+          <input defaultValue={locale === "zh" ? "zh" : "en"} name="locale" required />
         </label>
         <label>
           <span>{labels.status}</span>
@@ -122,11 +122,11 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
         </label>
         <label className="notification-template-form__wide">
           <span>{labels.subject}</span>
-          <input name="subject" placeholder={labels.subjectPlaceholder} />
+          <input name="subject" placeholder={labels.subjectPlaceholder} required />
         </label>
         <label className="notification-template-form__wide">
           <span>{labels.body}</span>
-          <textarea name="body" placeholder={labels.bodyPlaceholder} rows={4} />
+          <textarea name="body" placeholder={labels.bodyPlaceholder} required rows={4} />
         </label>
         <button className="secondary-button secondary-button--compact" disabled={isCreating} type="submit">
           <FilePenLine size={15} aria-hidden="true" />
@@ -156,7 +156,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                 <form action={saveAction} className="notification-template-update-form">
                   <label>
                     <span>{labels.templateKey}</span>
-                    <input defaultValue={template.templateKey} name="templateKey" />
+                    <input defaultValue={template.templateKey} name="templateKey" required />
                   </label>
                   <label>
                     <span>{labels.channel}</span>
@@ -170,7 +170,7 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                   </label>
                   <label>
                     <span>{labels.locale}</span>
-                    <input defaultValue={template.locale} name="locale" />
+                    <input defaultValue={template.locale} name="locale" required />
                   </label>
                   <label>
                     <span>{labels.status}</span>
@@ -184,11 +184,11 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                   </label>
                   <label className="notification-template-form__wide">
                     <span>{labels.subject}</span>
-                    <input defaultValue={template.subject} name="subject" />
+                    <input defaultValue={template.subject} name="subject" required />
                   </label>
                   <label className="notification-template-form__wide">
                     <span>{labels.body}</span>
-                    <textarea defaultValue={template.body} name="body" rows={5} />
+                    <textarea defaultValue={template.body} name="body" required rows={5} />
                   </label>
                   <button className="secondary-button secondary-button--compact" disabled={isSaving} type="submit">
                     <Save size={15} aria-hidden="true" />

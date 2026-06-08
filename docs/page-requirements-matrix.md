@@ -349,7 +349,7 @@ Acceptance:
 - Shows a secret-safe reviewer evidence packet before version submission.
 - Explains draft -> version submit -> automated checks -> review -> verified -> commercial readiness.
 - Does not ask users to paste raw admin/service tokens.
-- Success state links to publisher workspace and skill detail.
+- Draft-save success links to publisher workspace, review repair, paid-readiness, and account/terms panels; public skill detail is positioned as a post-review verified/public listing path.
 - Immediate review-submission success shows the real review handoff: queued/refreshed state, review id, risk, automated-check counts, and links into publisher review, paid-readiness, and account/terms workspace sections.
 - Does not claim a skill is verified just because draft save succeeded.
 

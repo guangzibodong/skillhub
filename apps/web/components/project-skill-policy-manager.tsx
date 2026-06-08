@@ -90,6 +90,10 @@ const sensitiveCopy = {
   en: {
     cancel: "Cancel",
     confirm: "Confirmation",
+    policyConfirmPlaceholder: "Type POLICY",
+    policyDescription:
+      "Policy changes can expand runtime permissions, budget, and owner-approval behavior for this project. Record why the change is safe before saving.",
+    policyReasonPlaceholder: "Owner approval, budget review, runtime incident response, or security exception",
     reason: "Reason",
     removeConfirmPlaceholder: "Type REMOVE",
     removeDescription: "Removing an installed skill blocks runtime calls and keeps the install only for audit and possible restoration.",
@@ -101,6 +105,10 @@ const sensitiveCopy = {
   zh: {
     cancel: "\u53d6\u6d88",
     confirm: "\u786e\u8ba4\u77ed\u8bed",
+    policyConfirmPlaceholder: "\u8f93\u5165 POLICY",
+    policyDescription:
+      "\u9879\u76ee\u7b56\u7565\u53d8\u66f4\u53ef\u80fd\u6269\u5927\u8fd0\u884c\u6743\u9650\u3001\u9884\u7b97\u548c\u8d1f\u8d23\u4eba\u5ba1\u6279\u884c\u4e3a\u3002\u4fdd\u5b58\u524d\u8bf7\u8bb0\u5f55\u4e3a\u4ec0\u4e48\u8fd9\u6b21\u53d8\u66f4\u662f\u5b89\u5168\u7684\u3002",
+    policyReasonPlaceholder: "\u8d1f\u8d23\u4eba\u5ba1\u6279\u3001\u9884\u7b97\u590d\u6838\u3001\u8fd0\u884c\u4e8b\u6545\u5904\u7406\u6216\u5b89\u5168\u4f8b\u5916",
     reason: "\u539f\u56e0",
     removeConfirmPlaceholder: "\u8f93\u5165 REMOVE",
     removeDescription: "\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u4f1a\u963b\u65ad\u8fd0\u884c\u8c03\u7528\uff0c\u4ec5\u4fdd\u7559\u5ba1\u8ba1\u548c\u6062\u590d\u72b6\u6001\u3002",
@@ -298,6 +306,17 @@ export function ProjectSkillPolicyManager({
                       <input defaultChecked={skill.policy.approvalRequired} name="approvalRequired" type="checkbox" />
                       <span>{labels.approvalRequired}</span>
                     </label>
+                    <div className="policy-sensitive-review">
+                      <p>{sensitiveLabels.policyDescription}</p>
+                      <label>
+                        <span>{sensitiveLabels.confirm}</span>
+                        <input autoComplete="off" name="confirmation" placeholder={sensitiveLabels.policyConfirmPlaceholder} required />
+                      </label>
+                      <label>
+                        <span>{sensitiveLabels.reason}</span>
+                        <textarea name="reason" placeholder={sensitiveLabels.policyReasonPlaceholder} required rows={2} />
+                      </label>
+                    </div>
                     <button className="primary-button policy-editor__save" disabled={isPolicyPending} type="submit">
                       <Save size={16} aria-hidden="true" />
                       <span>{isPolicyPending ? labels.saving : labels.save}</span>

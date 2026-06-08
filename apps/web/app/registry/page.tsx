@@ -328,7 +328,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
             ))}
           </div>
 
-          <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} skills={skills} />
+          <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} locale={locale} skills={skills} />
         </section>
       </section>
     </main>

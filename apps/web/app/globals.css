@@ -1530,7 +1530,7 @@ a {
   grid-template-columns: minmax(280px, 1.35fr) minmax(
       190px,
       0.8fr
-    ) 128px minmax(140px, 0.48fr) 44px;
+    ) 128px minmax(140px, 0.48fr) minmax(168px, auto);
   gap: 16px;
   align-items: center;
 }
@@ -1630,6 +1630,13 @@ a {
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.skill-row__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
 }
 
 .tag-list {
@@ -3589,6 +3596,41 @@ a {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   min-width: 0;
+}
+
+.workspace-locked-panel {
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto 0;
+}
+
+.workspace-locked-panel .ops-panel {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  border-color: rgba(215, 168, 76, 0.2);
+  background: rgba(215, 168, 76, 0.055);
+}
+
+.workspace-locked-panel h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.workspace-locked-panel p {
+  max-width: 780px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.workspace-locked-panel__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 780px;
 }
 
 .workspace-access-meta,
@@ -10084,6 +10126,31 @@ a {
   padding: 0 10px;
 }
 
+.install-strip--locked {
+  grid-template-columns: auto minmax(0, 1fr);
+  background: rgba(245, 188, 91, 0.08);
+  border-color: rgba(245, 188, 91, 0.2);
+  color: #f4d8aa;
+}
+
+.install-strip--locked > svg {
+  color: #f5bc5b;
+}
+
+.install-strip--locked span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  color: #f7ead2;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.install-strip--locked strong {
+  color: #fff4d7;
+  font-size: 12px;
+}
+
 .market-skill-card__foot {
   display: flex;
   align-items: flex-end;
@@ -10378,6 +10445,20 @@ a {
 
 .install-command-row .icon-button {
   justify-self: end;
+}
+
+.install-command-row--locked {
+  grid-template-columns: 70px minmax(0, 1fr);
+  border: 1px solid rgba(245, 188, 91, 0.2);
+  border-radius: var(--radius);
+  background: rgba(245, 188, 91, 0.07);
+  padding: 0 12px;
+}
+
+.install-command-row--locked strong {
+  color: #f4d8aa;
+  font-size: 13px;
+  font-weight: 760;
 }
 
 .skill-install-readiness {
@@ -11198,6 +11279,28 @@ a {
 
 .skill-report-form .secondary-button {
   justify-self: start;
+}
+
+.skill-action-locked {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  margin-top: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 16px;
+}
+
+.skill-action-locked p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.skill-action-locked strong {
+  color: var(--ink);
 }
 
 .price-block {
@@ -12357,7 +12460,8 @@ a {
 }
 
 .policy-editor input,
-.policy-editor select {
+.policy-editor select,
+.policy-editor textarea {
   width: 100%;
   min-height: 38px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -12366,6 +12470,12 @@ a {
   color: var(--ink);
   outline: 0;
   padding: 0 10px;
+}
+
+.policy-editor textarea {
+  min-height: 72px;
+  padding: 10px;
+  resize: vertical;
 }
 
 .policy-editor select option {
@@ -12392,6 +12502,25 @@ a {
 
 .policy-editor__save {
   align-self: end;
+}
+
+.policy-sensitive-review {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 0.45fr) minmax(0, 0.32fr) minmax(0, 0.68fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.055);
+  padding: 11px;
+}
+
+.policy-sensitive-review p {
+  margin: 0;
+  color: #bec7b7;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .skill-status-actions {
@@ -14918,6 +15047,11 @@ a {
   box-shadow: inset 0 0 0 1px rgba(255, 133, 111, 0.6);
 }
 
+.manifest-editor textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .publish-actions {
   display: flex;
   align-items: center;
@@ -16991,6 +17125,11 @@ a {
     justify-items: start;
   }
 
+  .skill-row__actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
   .icon-button--quiet {
     justify-self: start;
   }
@@ -17057,6 +17196,10 @@ a {
   .publisher-skill-review-repair__meta,
   .publisher-skill-version-layout,
   .policy-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .policy-sensitive-review {
     grid-template-columns: 1fr;
   }
 

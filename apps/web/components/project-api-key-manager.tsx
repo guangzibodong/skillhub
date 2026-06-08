@@ -91,7 +91,7 @@ export function ProjectApiKeyManager({
 }: ProjectApiKeyManagerProps) {
   const labels = copy[locale];
   const sensitiveLabels = sensitiveCopy[locale];
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState(keys.length === 0);
   const [copied, setCopied] = useState(false);
   const [createState, createAction, isCreatePending] = useActionState(
     createProjectApiKeyAction.bind(null, projectSlug, locale),
@@ -116,8 +116,8 @@ export function ProjectApiKeyManager({
           <span>{titleLabel}</span>
         </div>
         <button className="secondary-button" onClick={() => setIsCreating((current) => !current)} type="button">
-          {isCreating ? <XCircle size={16} aria-hidden="true" /> : <RotateCcw size={16} aria-hidden="true" />}
-          <span>{isCreating ? labels.cancelRotation : labels.rotate}</span>
+          {isCreating ? <XCircle size={16} aria-hidden="true" /> : keys.length === 0 ? <Plus size={16} aria-hidden="true" /> : <RotateCcw size={16} aria-hidden="true" />}
+          <span>{isCreating ? labels.cancelRotation : keys.length === 0 ? labels.create : labels.rotate}</span>
         </button>
       </div>
 

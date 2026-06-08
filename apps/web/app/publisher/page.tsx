@@ -80,6 +80,7 @@ type CommercialSkillRow = {
 };
 
 const CURRENT_TERMS_VERSION = "2026-06-05-prelaunch-operating-terms";
+const publisherAccessRoles = ["publisher", "owner", "admin", "super_admin"];
 
 const publisherCommandCopy = {
   en: {
@@ -380,6 +381,44 @@ const copy = {
     title: "运营你的 SkillHub 技能发布业务。"
   }
 } as const;
+
+function WorkspaceLockedPanel({
+  actionHref,
+  actionLabel,
+  body,
+  signals,
+  title
+}: {
+  actionHref: string;
+  actionLabel: string;
+  body: string;
+  signals: string[];
+  title: string;
+}) {
+  return (
+    <section className="workspace-locked-panel">
+      <article className="ops-panel">
+        <div className="card-kicker">
+          <ShieldAlert size={16} aria-hidden="true" />
+          <span>{title}</span>
+        </div>
+        <h2>{title}</h2>
+        <p>{body}</p>
+        <div className="workspace-locked-panel__signals" aria-label={title}>
+          {signals.map((signal) => (
+            <span className="status-chip status-chip--neutral" key={signal}>
+              {signal}
+            </span>
+          ))}
+        </div>
+        <a className="primary-button" href={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      </article>
+    </section>
+  );
+}
 
 function buildReadinessTasks(
   taskCopy: Record<ReadinessTask["id"], readonly [string, string]>,
@@ -797,6 +836,49 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const labels = getPublisherPageCopy(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://useskillhub.com";
+  const session = await getWorkspaceSession();
+  const hasWorkspaceSession = Boolean(session.subject);
+  const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
+  const hasPublisherAccess = hasWorkspaceSession && publisherAccessRoles.some((role) => roleSet.has(role));
+
+  if (!hasPublisherAccess) {
+    return (
+      <main className="product-shell">
+        <SiteHeader active="publisher" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/publisher" />
+
+        <section className="page-hero page-hero--compact">
+          <div>
+            <div className="eyebrow">
+              <BriefcaseBusiness size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1>{labels.title}</h1>
+            <p>{labels.description}</p>
+          </div>
+        </section>
+
+        <JourneyRail currentStep="publisher" journey="publisher" locale={locale} />
+
+        <section className="console-board publisher-console-board">
+          <SessionStatusPanel locale={locale} session={session} />
+          <WorkspaceAccessPanel locale={locale} requiredRoles={publisherAccessRoles} session={session} workspace="publisher" />
+        </section>
+
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "发布者运营区包含草稿、审核、定价、收款、提现和反馈写操作。当前会话缺少发布权限，因此表单和工作区数据保持隐藏。"
+              : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
+          }
+          signals={locale === "zh" ? ["发布者运营队列", "优先级队列", "付费阻断", "提现准备"] : ["publisher operations queue", "paid marketplace readiness", "payout readiness"]}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      </main>
+    );
+  }
+
   const publisherReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/publisher", locale)}`;
   const [
     financeLedger,
@@ -807,8 +889,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     publisherRefunds,
     publisherDisputes,
     userNotificationInbox,
-    notificationPreferences,
-    session
+    notificationPreferences
   ] = await Promise.all([
     getPublisherFinanceLedger(),
     getPublisherPayoutSummary(),
@@ -818,8 +899,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     getPublisherRefunds(),
     getPublisherDisputes(),
     getUserNotificationInbox(),
-    getNotificationPreferences(),
-    getWorkspaceSession()
+    getNotificationPreferences()
   ]);
   const verifiedSkillCount = publisherSkills.filter((skill) => skill.verificationStatus === "verified").length;
   const activeDemandCount = countActivePublisherRequests(publisherBuyerRequests);
@@ -829,7 +909,6 @@ export default async function PublisherPage({ searchParams }: PageProps) {
     [labels.metrics.available, formatMoney(financeLedger.summary.availableBalanceCents)],
     [labels.metrics.demand, formatCompactNumber(activeDemandCount)]
   ];
-  const hasWorkspaceSession = session.source !== "none" && Boolean(session.subject);
   const hasPublisherProfile = Boolean(publisherAccount.publisherProfile);
   const hasAcceptedCurrentTerms =
     Boolean(publisherAccount.publisherProfile?.termsAcceptedAt) &&
@@ -838,11 +917,13 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const hasActiveVerifiedListing = publisherSkills.some(
     (skill) => skill.verificationStatus === "verified" && skill.pricing.status === "active"
   );
-  const hasPayoutReady =
+  const hasVerifiedPayoutProfile =
     publisherAccount.publisherProfile?.payoutStatus === "verified" ||
-    payoutSummary.publisherProfile?.payoutStatus === "verified" ||
-    publisherAccount.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready") ||
-    payoutSummary.payoutAccounts.some((account) => account.status === "verified" || account.status === "ready");
+    payoutSummary.publisherProfile?.payoutStatus === "verified";
+  const hasVerifiedPayoutAccount =
+    publisherAccount.payoutAccounts.some((account) => account.status === "verified") ||
+    payoutSummary.payoutAccounts.some((account) => account.status === "verified");
+  const hasPayoutReady = hasVerifiedPayoutProfile && hasVerifiedPayoutAccount;
   const commercialSkillRows = buildCommercialSkillRows(publisherSkills);
   const readyPaidListings = publisherSkills.filter(
     (skill) =>
@@ -1003,7 +1084,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         <SessionStatusPanel locale={locale} session={session} />
         <WorkspaceAccessPanel
           locale={locale}
-          requiredRoles={["publisher", "owner", "admin", "super_admin"]}
+          requiredRoles={publisherAccessRoles}
           session={session}
           workspace="publisher"
         />
@@ -1023,6 +1104,8 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      {hasPublisherAccess ? (
+        <>
       <section className="publisher-priority-board" aria-labelledby="publisher-priority-heading">
         <article className="publisher-priority-card">
           <div className="publisher-priority-card__main">
@@ -1306,6 +1389,24 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
         </aside>
       </section>
+        </>
+      ) : (
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "发布者运营区包含草稿、审核、定价、收款、提现和反馈写操作。当前会话缺少发布权限，因此表单已隐藏，但你仍然可以看到发布者运营队列和商业化入口。"
+              : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, but the locked state still shows the publisher operating path."
+          }
+          signals={
+            locale === "zh"
+              ? ["发布者运营队列", "优先级队列", "付费阻断", "提现准备"]
+              : ["publisher operations queue", "paid marketplace readiness", "payout readiness"]
+          }
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      )}
     </main>
   );
 }

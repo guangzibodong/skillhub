@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2, Flag, Send, XCircle } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { CheckCircle2, Flag, LogIn, Send, XCircle } from "lucide-react";
+import { localizedHref, type Locale } from "@/lib/i18n";
 import { createSkillAbuseReportAction, type SkillAbuseReportActionState } from "@/lib/skill-abuse-report-actions";
 
 type SkillAbuseReportFormProps = {
+  canSubmit?: boolean;
   locale: Locale;
   skillName: string;
   skillSlug: string;
@@ -19,6 +20,8 @@ const copy = {
     evidenceUrl: "Evidence URL",
     projectSlug: "Project slug",
     severity: "Severity",
+    signInAction: "Sign in to report",
+    signInBody: "Trust reports create operator queue items and must be tied to a signed-in SkillHub account.",
     submit: "Submit report",
     submitting: "Submitting",
     title: "Report a trust or runtime issue",
@@ -80,8 +83,13 @@ const initialState: SkillAbuseReportActionState = {
   status: "idle"
 };
 
-export function SkillAbuseReportForm({ locale, skillName, skillSlug }: SkillAbuseReportFormProps) {
+export function SkillAbuseReportForm({ canSubmit = true, locale, skillName, skillSlug }: SkillAbuseReportFormProps) {
   const labels = copy[locale];
+  const signInAction = locale === "zh" ? "\u767b\u5f55\u540e\u4e3e\u62a5" : copy.en.signInAction;
+  const signInBody =
+    locale === "zh"
+      ? "\u4fe1\u4efb\u4e3e\u62a5\u4f1a\u521b\u5efa\u8fd0\u8425\u961f\u5217\u4e8b\u9879\uff0c\u5fc5\u987b\u7ed1\u5b9a\u5df2\u767b\u5f55\u7684 SkillHub \u8d26\u53f7\u3002"
+      : copy.en.signInBody;
   const [state, action, isPending] = useActionState(
     createSkillAbuseReportAction.bind(null, skillSlug, locale),
     initialState
@@ -94,6 +102,15 @@ export function SkillAbuseReportForm({ locale, skillName, skillSlug }: SkillAbus
         <span>{labels.title}</span>
       </div>
 
+      {!canSubmit ? (
+        <div className="skill-action-locked">
+          <p>{signInBody}</p>
+          <a className="secondary-button" href={localizedHref("/login", locale)}>
+            <LogIn size={15} aria-hidden="true" />
+            <span>{signInAction}</span>
+          </a>
+        </div>
+      ) : (
       <form action={action} className="skill-report-form">
         <label className="skill-report-form__wide">
           <span>{labels.titleField}</span>
@@ -141,6 +158,7 @@ export function SkillAbuseReportForm({ locale, skillName, skillSlug }: SkillAbus
           <span>{isPending ? labels.submitting : labels.submit}</span>
         </button>
       </form>
+      )}
 
       {state.status !== "idle" ? <ActionMessage state={state} /> : null}
     </article>

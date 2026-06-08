@@ -72,6 +72,8 @@ type DeveloperOperationsSummary = {
   runtimeActions: number;
 };
 
+const developerAccessRoles = ["developer", "owner", "admin", "super_admin"];
+
 const developerCommandCopy = {
   en: {
     body:
@@ -298,6 +300,49 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const session = await getWorkspaceSession();
+  const hasWorkspaceSession = Boolean(session.subject);
+  const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
+  const hasDeveloperAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
+
+  if (!hasDeveloperAccess) {
+    return (
+      <main className="product-shell">
+        <SiteHeader active="developer" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/developer" />
+
+        <section className="page-hero page-hero--compact">
+          <div>
+            <div className="eyebrow">
+              <BriefcaseBusiness size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1>{labels.title}</h1>
+            <p>{labels.description}</p>
+          </div>
+        </section>
+
+        <JourneyRail currentStep="developer" journey="developer" locale={locale} />
+
+        <section className="console-board developer-console-board">
+          <SessionStatusPanel locale={locale} session={session} />
+          <WorkspaceAccessPanel locale={locale} requiredRoles={developerAccessRoles} session={session} workspace="developer" />
+        </section>
+
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作和工作区数据保持隐藏。"
+              : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, so workspace data and write controls stay hidden."
+          }
+          signals={locale === "zh" ? ["开发者运营队列", "优先级队列", "团队权限", "webhook"] : ["developer operations queue", "team access", "webhook", "runtime governance"]}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      </main>
+    );
+  }
+
   const [
     developerProjects,
     developerBuyerRequests,
@@ -305,8 +350,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
     organizationTeamMembers,
     organizationWebhookEndpoints,
     userNotificationInbox,
-    notificationPreferences,
-    session
+    notificationPreferences
   ] =
     await Promise.all([
       getDeveloperProjects(),
@@ -315,8 +359,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
       getOrganizationTeamMembers(),
       getOrganizationWebhookEndpoints(),
       getUserNotificationInbox(),
-      getNotificationPreferences(),
-      getWorkspaceSession()
+      getNotificationPreferences()
     ]);
   const currency = developerProjects[0]?.usage.currency ?? "usd";
   const totalInstalled = developerProjects.reduce((sum, project) => sum + project.installs.installedSkillCount, 0);
@@ -385,7 +428,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         <SessionStatusPanel locale={locale} session={session} />
         <WorkspaceAccessPanel
           locale={locale}
-          requiredRoles={["developer", "owner", "admin", "super_admin"]}
+          requiredRoles={developerAccessRoles}
           session={session}
           workspace="developer"
         />
@@ -405,6 +448,8 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      {hasDeveloperAccess ? (
+        <>
       <section className="publisher-priority-board developer-priority-board" aria-labelledby="developer-priority-heading">
         <article className="publisher-priority-card developer-priority-card">
           <div className="publisher-priority-card__main">
@@ -564,7 +609,63 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
           </article>
         </aside>
       </section>
+        </>
+      ) : (
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作已隐藏，但你仍然可以看到这里会承载的运营队列。"
+              : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, but the locked state still shows what the workspace governs."
+          }
+          signals={
+            locale === "zh"
+              ? ["开发者运营队列", "优先级队列", "团队权限", "webhook"]
+              : ["developer operations queue", "team access", "webhook"]
+          }
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      )}
     </main>
+  );
+}
+
+function WorkspaceLockedPanel({
+  actionHref,
+  actionLabel,
+  body,
+  signals,
+  title
+}: {
+  actionHref: string;
+  actionLabel: string;
+  body: string;
+  signals: string[];
+  title: string;
+}) {
+  return (
+    <section className="workspace-locked-panel">
+      <article className="ops-panel">
+        <div className="card-kicker">
+          <LockKeyhole size={16} aria-hidden="true" />
+          <span>{title}</span>
+        </div>
+        <h2>{title}</h2>
+        <p>{body}</p>
+        <div className="workspace-locked-panel__signals" aria-label={title}>
+          {signals.map((signal) => (
+            <span className="status-chip status-chip--neutral" key={signal}>
+              {signal}
+            </span>
+          ))}
+        </div>
+        <a className="primary-button" href={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      </article>
+    </section>
   );
 }
 

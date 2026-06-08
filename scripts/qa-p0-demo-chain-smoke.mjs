@@ -468,6 +468,7 @@ async function checkPublicDiscovery({ apiUrl, skipLedger, slug, timeoutMs, versi
 
 async function preparePublisherCommercialReadiness({
   apiUrl,
+  financeToken,
   publisherToken,
   slug,
   timeoutMs,
@@ -615,17 +616,47 @@ async function preparePublisherCommercialReadiness({
 
   const completeName = "POST /v1/publisher/payout-account/onboarding/complete";
 
+  if (publisherToken !== financeToken) {
+    const publisherCompleteName = `${completeName} rejects publisher token`;
+
+    try {
+      const { status, json } = await requestJson(
+        joinUrl(apiUrl, "/v1/publisher/payout-account/onboarding/complete"),
+        {
+          body: JSON.stringify({
+            reason: "P0 demo-chain smoke verifies publishers cannot self-verify payout readiness.",
+            sessionId: onboarding.onboardingSession.id,
+            status: "verified",
+          }),
+          headers: authorizedHeaders(publisherToken),
+          method: "POST",
+          timeoutMs,
+        },
+      );
+
+      if (![401, 403].includes(status)) {
+        fail(publisherCompleteName, `expected HTTP 401/403, got ${status}: ${safeError(json)}`);
+        return null;
+      }
+
+      pass(publisherCompleteName, "publisher token cannot complete payout readiness");
+    } catch (error) {
+      fail(publisherCompleteName, redactSecrets(error.message));
+      return null;
+    }
+  }
+
   try {
     const { status, json } = await requestJson(
       joinUrl(apiUrl, "/v1/publisher/payout-account/onboarding/complete"),
       {
         body: JSON.stringify({
           reason:
-            "P0 demo-chain smoke verified manual PayPal payout readiness before active paid pricing.",
+            "P0 demo-chain smoke finance verified manual PayPal payout readiness before active paid pricing.",
           sessionId: onboarding.onboardingSession.id,
           status: "verified",
         }),
-        headers: authorizedHeaders(publisherToken),
+        headers: authorizedHeaders(financeToken),
         method: "POST",
         timeoutMs,
       },
@@ -641,7 +672,7 @@ async function preparePublisherCommercialReadiness({
       return null;
     }
 
-    pass(completeName, "publisher payout readiness verified");
+    pass(completeName, "finance verified publisher payout readiness");
     return json.publisher;
   } catch (error) {
     fail(completeName, redactSecrets(error.message));

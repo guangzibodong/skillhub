@@ -1,15 +1,16 @@
 import { Box, ExternalLink, PackageCheck, ShieldCheck } from "lucide-react";
 import type { SkillSummary } from "@useskillhub/schema";
-import type { Dictionary } from "@/lib/i18n";
+import { localizedHref, type Dictionary, type Locale } from "@/lib/i18n";
 import { StatusPill } from "./status-pill";
 
 type SkillTableProps = {
   skills: SkillSummary[];
   apiUrl?: string;
   labels: Dictionary["skillTable"];
+  locale?: Locale;
 };
 
-export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, skills }: SkillTableProps) {
+export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, locale = "en", skills }: SkillTableProps) {
   if (skills.length === 0) {
     return (
       <div className="empty-state">
@@ -57,13 +58,23 @@ export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, ski
             <ShieldCheck size={16} aria-hidden="true" />
             <span>{labels.riskLabels[skill.permissionLevel]}</span>
           </div>
-          <a
-            className="icon-button icon-button--quiet"
-            href={`${apiUrl}/v1/skills/${skill.slug}`}
-            aria-label={`${labels.openManifest}: ${skill.displayName}`}
-          >
-            <ExternalLink size={16} />
-          </a>
+          <div className="skill-row__actions">
+            <a
+              className="secondary-button secondary-button--compact"
+              href={localizedHref(`/skills/${skill.slug}`, locale)}
+              aria-label={`${labels.details}: ${skill.displayName}`}
+            >
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{labels.details}</span>
+            </a>
+            <a
+              className="icon-button icon-button--quiet"
+              href={`${apiUrl}/v1/skills/${skill.slug}`}
+              aria-label={`${labels.openManifest}: ${skill.displayName}`}
+            >
+              <ExternalLink size={16} />
+            </a>
+          </div>
         </article>
       ))}
     </div>

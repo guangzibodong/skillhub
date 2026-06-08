@@ -26,7 +26,10 @@ import { ProjectSavedSkillManager } from "@/components/project-saved-skill-manag
 import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-manager";
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
 import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
+import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
+import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
   formatCompactNumber,
@@ -59,6 +62,8 @@ type ProjectPriorityItem = {
   title: string;
   tone: ProjectPriorityTone;
 };
+
+const developerAccessRoles = ["developer", "owner", "admin", "super_admin"];
 
 const copy = {
   en: {
@@ -402,6 +407,69 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const labels = copy[locale];
+  const session = await getWorkspaceSession();
+  const hasWorkspaceSession = Boolean(session.subject);
+  const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
+  const hasProjectAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
+
+  if (!hasProjectAccess) {
+    return (
+      <main className="product-shell">
+        <SiteHeader
+          active="dashboard"
+          apiUrl={apiUrl}
+          dictionary={dictionary}
+          locale={locale}
+          pathname={`/dashboard/projects/${slug}`}
+        />
+
+        <section className="project-detail-hero project-detail-hero--locked">
+          <div>
+            <a className="breadcrumb-link" href={localizedHref("/dashboard", locale)}>
+              <ArrowLeft size={15} aria-hidden="true" />
+              <span>{labels.back}</span>
+            </a>
+            <div className="eyebrow">
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1>{slug}</h1>
+            <p>{labels.description}</p>
+          </div>
+        </section>
+
+        <JourneyRail currentStep="project" journey="developer" locale={locale} />
+
+        <section className="console-board">
+          <SessionStatusPanel locale={locale} session={session} />
+          <WorkspaceAccessPanel
+            locale={locale}
+            requiredRoles={developerAccessRoles}
+            session={session}
+            workspace="developer"
+          />
+        </section>
+
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话无法读取这个项目，所以操作面板保持隐藏；请先登录或确认开发者角色。"
+              : "Project detail includes policy approval, API keys, runtime tests, subscriptions, and invoice operations. This session cannot read this project yet, so action panels stay hidden until access is confirmed."
+          }
+          signals={
+            locale === "zh"
+              ? ["项目运营队列", "策略审批", "API Key", "运行测试"]
+              : ["project operations queue", "policy approval", "API keys", "runtime tests"]
+          }
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      </main>
+    );
+  }
+
   const [detail, projectRefunds, projectDisputes] = await Promise.all([
     getDeveloperProjectDetail(slug),
     getProjectRefunds(slug),
@@ -412,7 +480,6 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
     notFound();
   }
 
-  const labels = copy[locale];
   const { project } = detail;
   const metrics = [
     [labels.installed, `${project.installs.installedSkillCount}`, PackageCheck],
@@ -497,6 +564,13 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
       <JourneyRail currentStep="project" journey="developer" locale={locale} />
 
       <section className="console-board">
+        <SessionStatusPanel locale={locale} session={session} />
+        <WorkspaceAccessPanel
+          locale={locale}
+          requiredRoles={developerAccessRoles}
+          session={session}
+          workspace="developer"
+        />
         <div className="metric-strip project-metric-strip metric-strip--standalone">
           {metrics.map(([label, value, Icon]) => (
             <div className="metric project-metric" key={label}>
@@ -508,6 +582,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         </div>
       </section>
 
+      {hasProjectAccess ? (
+        <>
       <section className="publisher-priority-board project-priority-board" aria-labelledby="project-priority-heading">
         <article className="publisher-priority-card developer-priority-card project-priority-card">
           <div className="publisher-priority-card__main">
@@ -678,7 +754,63 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           </div>
         </aside>
       </section>
+        </>
+      ) : (
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话缺少开发者权限，因此操作面板已隐藏，但项目运营队列的治理边界仍然可见。"
+              : "Project detail includes policy approval, API keys, runtime tests, subscriptions, and invoice operations. This session cannot operate them, but the locked state still shows the project governance boundary."
+          }
+          signals={
+            locale === "zh"
+              ? ["项目运营队列", "策略审批", "API Key", "运行测试"]
+              : ["project operations queue", "policy approval", "API keys", "runtime tests"]
+          }
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      )}
     </main>
+  );
+}
+
+function WorkspaceLockedPanel({
+  actionHref,
+  actionLabel,
+  body,
+  signals,
+  title
+}: {
+  actionHref: string;
+  actionLabel: string;
+  body: string;
+  signals: string[];
+  title: string;
+}) {
+  return (
+    <section className="workspace-locked-panel">
+      <article className="ops-panel">
+        <div className="card-kicker">
+          <LockKeyhole size={16} aria-hidden="true" />
+          <span>{title}</span>
+        </div>
+        <h2>{title}</h2>
+        <p>{body}</p>
+        <div className="workspace-locked-panel__signals" aria-label={title}>
+          {signals.map((signal) => (
+            <span className="status-chip status-chip--neutral" key={signal}>
+              {signal}
+            </span>
+          ))}
+        </div>
+        <a className="primary-button" href={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      </article>
+    </section>
   );
 }
 

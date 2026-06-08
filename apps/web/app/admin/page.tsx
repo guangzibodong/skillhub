@@ -61,6 +61,7 @@ type PageProps = {
 };
 
 const financeIcons = [Scale, Banknote, AlertTriangle] as const;
+const adminAccessRoles = ["reviewer", "finance", "support", "admin", "super_admin"];
 
 type AdminPriorityTone = "danger" | "ready" | "warning";
 
@@ -393,6 +394,49 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
   const ops = adminOpsCopy[locale];
+  const session = await getWorkspaceSession();
+  const hasWorkspaceSession = Boolean(session.subject);
+  const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
+  const hasAdminAccess = hasWorkspaceSession && adminAccessRoles.some((role) => roleSet.has(role));
+
+  if (!hasAdminAccess) {
+    return (
+      <main className="product-shell">
+        <SiteHeader active="admin" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/admin" />
+
+        <section className="page-hero page-hero--compact">
+          <div>
+            <div className="eyebrow">
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1>{labels.title}</h1>
+            <p>{labels.description}</p>
+          </div>
+        </section>
+
+        <JourneyRail currentStep="admin" journey="admin" locale={locale} />
+
+        <section className="console-board">
+          <SessionStatusPanel locale={locale} session={session} />
+          <WorkspaceAccessPanel locale={locale} requiredRoles={adminAccessRoles} session={session} workspace="admin" />
+        </section>
+
+        <WorkspaceLockedPanel
+          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          body={
+            locale === "zh"
+              ? "管理员控制台会处理审核、财务、通知、webhook、身份和审计写操作。当前会话没有运营角色，因此隐藏后台数据和操作模块，只展示访问要求。"
+              : "The admin console handles review, finance, delivery, webhook, identity, and audit operations. This session has no operator role, so admin data and action modules stay hidden while the access requirement remains visible."
+          }
+          signals={locale === "zh" ? ["管理员运营队列", "上线就绪", "审核队列", "审计"] : ["admin operations queue", "launch-readiness", "review queue", "audit"]}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要管理员角色" : "Admin role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+        />
+      </main>
+    );
+  }
+
   const [
     financeLedger,
     launchReadiness,
@@ -409,8 +453,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     abuseReports,
     incidents,
     skillFeedback,
-    reviews,
-    session
+    reviews
   ] = await Promise.all([
     getFinanceLedger(),
     getAdminLaunchReadiness(),
@@ -427,8 +470,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminAbuseReports(),
     getAdminIncidents(),
     getAdminSkillFeedback(),
-    getAdminReviews(),
-    getWorkspaceSession()
+    getAdminReviews()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -542,7 +584,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         <SessionStatusPanel locale={locale} session={session} />
         <WorkspaceAccessPanel
           locale={locale}
-          requiredRoles={["reviewer", "finance", "support", "admin", "super_admin"]}
+          requiredRoles={adminAccessRoles}
           session={session}
           workspace="admin"
         />
@@ -756,6 +798,44 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+function WorkspaceLockedPanel({
+  actionHref,
+  actionLabel,
+  body,
+  signals,
+  title
+}: {
+  actionHref: string;
+  actionLabel: string;
+  body: string;
+  signals: string[];
+  title: string;
+}) {
+  return (
+    <section className="workspace-locked-panel">
+      <article className="ops-panel">
+        <div className="card-kicker">
+          <LockKeyhole size={16} aria-hidden="true" />
+          <span>{title}</span>
+        </div>
+        <h2>{title}</h2>
+        <p>{body}</p>
+        <div className="workspace-locked-panel__signals" aria-label={title}>
+          {signals.map((signal) => (
+            <span className="status-chip status-chip--neutral" key={signal}>
+              {signal}
+            </span>
+          ))}
+        </div>
+        <a className="primary-button" href={actionHref}>
+          <span>{actionLabel}</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      </article>
+    </section>
   );
 }
 

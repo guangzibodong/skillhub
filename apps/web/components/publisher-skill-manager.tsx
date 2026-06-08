@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useEffect, useState, type ReactNode } from "react";
 import {
   BarChart3,
   CheckCircle2,
@@ -428,6 +428,8 @@ function PublisherSkillCard({
   const feedbackLabels = getPublisherFeedbackResponseCopy(locale);
   const versions = skill.versions ?? [];
   const latestVersion = versions[0];
+  const [selectedBillingModel, setSelectedBillingModel] = useState(skill.pricing.billingModel);
+  const [selectedPriceStatus, setSelectedPriceStatus] = useState(skill.pricing.status);
   const isInReview = skill.review.status === "queued" || skill.review.status === "in_review";
   const activeAppeal =
     skill.marketplace?.appeal && ["open", "under_review"].includes(skill.marketplace.appeal.status)
@@ -441,13 +443,18 @@ function PublisherSkillCard({
     feedbackResponseState.skillSlug === skill.slug && feedbackResponseState.status !== "idle";
   const nextOperatingStep = getNextOperatingStep(skill, labels);
   const reviewRepairPlan = buildReviewRepairPlan(skill);
-  const paidPricingBlocked = Boolean(
-    skill.commercial && !skill.commercial.paidActivationReady && skill.pricing.billingModel !== "free"
-  );
+  const commercialActivationBlocked = Boolean(skill.commercial && !skill.commercial.paidActivationReady);
+  const paidPricingBlocked = commercialActivationBlocked && selectedBillingModel !== "free";
   const pricePreview =
-    skill.pricing.billingModel === "free"
+    selectedBillingModel === "free"
       ? labels.pricingGate.freePreview
-      : `${formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} / ${labels.billingModels[skill.pricing.billingModel]}`;
+      : `${formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} / ${labels.billingModels[selectedBillingModel]}`;
+
+  useEffect(() => {
+    if (paidPricingBlocked && selectedPriceStatus === "active") {
+      setSelectedPriceStatus("draft");
+    }
+  }, [paidPricingBlocked, selectedPriceStatus]);
 
   return (
     <div className="publisher-skill-card">
@@ -676,7 +683,11 @@ function PublisherSkillCard({
         <input name="skillSlug" type="hidden" value={skill.slug} />
         <label>
           <span>{labels.billingModel}</span>
-          <select defaultValue={skill.pricing.billingModel} name="billingModel">
+          <select
+            name="billingModel"
+            onChange={(event) => setSelectedBillingModel(event.target.value as PublisherSkillRecord["pricing"]["billingModel"])}
+            value={selectedBillingModel}
+          >
             <option value="free">{labels.billingModels.free}</option>
             <option value="per_call">{labels.billingModels.per_call}</option>
             <option value="subscription">{labels.billingModels.subscription}</option>
@@ -692,7 +703,11 @@ function PublisherSkillCard({
         </label>
         <label>
           <span>{labels.priceStatus}</span>
-          <select defaultValue={skill.pricing.status} name="status">
+          <select
+            name="status"
+            onChange={(event) => setSelectedPriceStatus(event.target.value as PublisherSkillRecord["pricing"]["status"])}
+            value={selectedPriceStatus}
+          >
             <option value="draft">{labels.priceStatuses.draft}</option>
             <option disabled={paidPricingBlocked} value="active">{labels.priceStatuses.active}</option>
             <option value="archived">{labels.priceStatuses.archived}</option>

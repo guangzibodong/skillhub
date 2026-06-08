@@ -837,6 +837,12 @@ function matchesFilter(review: AdminReviewRecord, filter: ReviewFilter) {
 }
 
 function suggestedDecision(review: AdminReviewRecord) {
+  if (!isDecisionReady(review)) {
+    return hasBlockingChecks(review) || review.status === "blocked" || review.riskLevel === "high"
+      ? "blocked"
+      : "rejected";
+  }
+
   if (hasBlockingChecks(review)) {
     return "rejected";
   }

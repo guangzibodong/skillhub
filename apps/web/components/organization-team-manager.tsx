@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { CheckCircle2, KeyRound, Save, Trash2, UserPlus, UsersRound, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
   createOrganizationTeamMemberTokenAction,
   removeOrganizationTeamMemberAction,
@@ -73,6 +74,29 @@ const copy = {
 
 const roles: OrganizationRole[] = ["owner", "admin", "developer", "publisher", "reviewer", "finance"];
 
+const sensitiveCopy = {
+  en: {
+    cancel: "Cancel",
+    confirm: "Confirmation",
+    reason: "Reason",
+    removeConfirmPlaceholder: "Type REMOVE",
+    removeDescription:
+      "Removing a member blocks their organization workspace access. Existing audit rows remain, and active sessions or tokens should be reviewed after removal.",
+    removeReasonPlaceholder: "Member left, access cleanup, or role moved to another account",
+    removeSubmit: "Remove member"
+  },
+  zh: {
+    cancel: "\u53d6\u6d88",
+    confirm: "\u786e\u8ba4\u77ed\u8bed",
+    reason: "\u539f\u56e0",
+    removeConfirmPlaceholder: "\u8f93\u5165 REMOVE",
+    removeDescription:
+      "\u79fb\u9664\u6210\u5458\u4f1a\u963b\u65ad\u5176\u7ec4\u7ec7\u5de5\u4f5c\u533a\u8bbf\u95ee\u3002\u5ba1\u8ba1\u8bb0\u5f55\u4f1a\u4fdd\u7559\uff0c\u79fb\u9664\u540e\u5e94\u68c0\u67e5\u6d3b\u8dc3\u4f1a\u8bdd\u548c token\u3002",
+    removeReasonPlaceholder: "\u6210\u5458\u79bb\u804c\u3001\u6e05\u7406\u8bbf\u95ee\u6743\uff0c\u6216\u89d2\u8272\u5df2\u8f6c\u79fb\u5230\u5176\u4ed6\u8d26\u53f7",
+    removeSubmit: "\u79fb\u9664\u6210\u5458"
+  }
+} as const;
+
 const initialState: OrganizationTeamActionState = {
   message: "",
   status: "idle"
@@ -80,6 +104,7 @@ const initialState: OrganizationTeamActionState = {
 
 export function OrganizationTeamManager({ locale, members }: OrganizationTeamManagerProps) {
   const labels = copy[locale];
+  const sensitiveLabels = sensitiveCopy[locale];
   const [addState, addAction, isAdding] = useActionState(saveOrganizationTeamMemberAction.bind(null, locale), initialState);
   const [saveState, saveAction, isSaving] = useActionState(saveOrganizationTeamMemberAction.bind(null, locale), initialState);
   const [tokenState, tokenAction, isCreatingToken] = useActionState(createOrganizationTeamMemberTokenAction.bind(null, locale), initialState);
@@ -187,13 +212,20 @@ export function OrganizationTeamManager({ locale, members }: OrganizationTeamMan
                     </button>
                   </form>
 
-                  <form action={removeAction} className="organization-team-remove-form">
-                    <input name="userId" type="hidden" value={member.userId} />
-                    <button className="secondary-button secondary-button--compact secondary-button--danger" disabled={isRemoving} type="submit">
-                      <Trash2 size={15} aria-hidden="true" />
-                      <span>{isRemoving && memberRemoveState ? labels.saving : labels.remove}</span>
-                    </button>
-                  </form>
+                  <ProjectSensitiveActionForm
+                    action={removeAction}
+                    cancelLabel={sensitiveLabels.cancel}
+                    confirmLabel={sensitiveLabels.confirm}
+                    confirmPlaceholder={sensitiveLabels.removeConfirmPlaceholder}
+                    description={sensitiveLabels.removeDescription}
+                    disabled={isRemoving}
+                    hiddenFields={{ userId: member.userId }}
+                    icon={Trash2}
+                    label={isRemoving && memberRemoveState ? labels.saving : labels.remove}
+                    reasonLabel={sensitiveLabels.reason}
+                    reasonPlaceholder={sensitiveLabels.removeReasonPlaceholder}
+                    submitLabel={sensitiveLabels.removeSubmit}
+                  />
                 </div>
 
                 {memberSaveState && memberSaveState.status !== "idle" ? <ActionMessage state={memberSaveState} /> : null}

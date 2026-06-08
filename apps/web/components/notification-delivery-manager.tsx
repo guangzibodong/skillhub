@@ -137,9 +137,9 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
       <form action={processAction} className="notification-delivery-process-form">
         <label>
           <span>{labels.processMode}</span>
-          <select defaultValue="deliver" name="mode">
-            <option value="deliver">{labels.processModes.deliver}</option>
+          <select defaultValue="dry_run" name="mode">
             <option value="dry_run">{labels.processModes.dry_run}</option>
+            <option value="deliver">{labels.processModes.deliver}</option>
           </select>
         </label>
         <label>

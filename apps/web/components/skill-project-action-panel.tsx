@@ -20,10 +20,15 @@ import { submitSkillProjectAction, type SkillProjectActionState } from "@/lib/sk
 
 type SkillProjectActionPanelProps = {
   billingModel: "free" | "per_call" | "subscription";
+  canOperate: boolean;
   dashboardHref: string;
   inputExample?: string;
   latestVersion?: string;
   locale: Locale;
+  lockedBody: string;
+  lockedCtaHref: string;
+  lockedCtaLabel: string;
+  lockedTitle: string;
   projects: DeveloperProjectRecord[];
   skillName: string;
   skillSlug: string;
@@ -107,10 +112,15 @@ const initialState: SkillProjectActionState = {
 
 export function SkillProjectActionPanel({
   billingModel,
+  canOperate,
   dashboardHref,
   inputExample,
   latestVersion,
   locale,
+  lockedBody,
+  lockedCtaHref,
+  lockedCtaLabel,
+  lockedTitle,
   projects,
   skillName,
   skillSlug
@@ -140,7 +150,17 @@ export function SkillProjectActionPanel({
         </div>
       </div>
 
-      {hasProjects ? (
+      {!canOperate ? (
+        <div className="skill-action-locked">
+          <ShieldCheck size={18} aria-hidden="true" />
+          <strong>{lockedTitle}</strong>
+          <p>{lockedBody}</p>
+          <a className="ghost-button ghost-button--inline" href={lockedCtaHref}>
+            <span>{lockedCtaLabel}</span>
+            <ArrowRight size={15} aria-hidden="true" />
+          </a>
+        </div>
+      ) : hasProjects ? (
         <form action={action} className="skill-project-action-form">
           <label>
             <span>{labels.project}</span>

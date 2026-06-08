@@ -682,7 +682,10 @@ function guardProductionWrite({ allowProduction, apiUrl }) {
   const parsed = new URL(apiUrl);
   const host = parsed.hostname.toLowerCase();
   const isSkillHubProduction =
-    host === "api.useskillhub.com" || host === "useskillhub.com";
+    host === "api.useskillhub.com" ||
+    host === "app.useskillhub.com" ||
+    host === "useskillhub.com" ||
+    host === "www.useskillhub.com";
 
   if (!isSkillHubProduction || allowProduction) {
     return;

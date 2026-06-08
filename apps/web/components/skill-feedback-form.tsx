@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2, MessageSquareText, Send, Star, XCircle } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { CheckCircle2, LogIn, MessageSquareText, Send, Star, XCircle } from "lucide-react";
+import { localizedHref, type Locale } from "@/lib/i18n";
 import { createSkillFeedbackAction, type SkillFeedbackActionState } from "@/lib/skill-feedback-actions";
 
 type SkillFeedbackFormProps = {
+  canSubmit?: boolean;
   locale: Locale;
   skillName: string;
   skillSlug: string;
@@ -17,6 +18,8 @@ const copy = {
     bodyPlaceholder: "What worked, what failed, and what should the publisher improve?",
     projectSlug: "Project slug",
     rating: "Rating",
+    signInAction: "Sign in to submit",
+    signInBody: "Feedback enters moderation and must be tied to a signed-in SkillHub account before it can become public trust evidence.",
     submit: "Submit feedback",
     submitting: "Submitting",
     title: "Share usage feedback",
@@ -47,8 +50,13 @@ const initialState: SkillFeedbackActionState = {
   status: "idle"
 };
 
-export function SkillFeedbackForm({ locale, skillName, skillSlug }: SkillFeedbackFormProps) {
+export function SkillFeedbackForm({ canSubmit = true, locale, skillName, skillSlug }: SkillFeedbackFormProps) {
   const labels = copy[locale];
+  const signInAction = locale === "zh" ? "\u767b\u5f55\u540e\u63d0\u4ea4" : copy.en.signInAction;
+  const signInBody =
+    locale === "zh"
+      ? "\u53cd\u9988\u4f1a\u8fdb\u5165\u5ba1\u6838\u961f\u5217\uff0c\u5fc5\u987b\u7ed1\u5b9a\u5df2\u767b\u5f55\u7684 SkillHub \u8d26\u53f7\u540e\u624d\u80fd\u6210\u4e3a\u516c\u5f00\u4fe1\u4efb\u8bc1\u636e\u3002"
+      : copy.en.signInBody;
   const [state, action, isPending] = useActionState(
     createSkillFeedbackAction.bind(null, skillSlug, locale),
     initialState
@@ -61,6 +69,15 @@ export function SkillFeedbackForm({ locale, skillName, skillSlug }: SkillFeedbac
         <span>{labels.title}</span>
       </div>
 
+      {!canSubmit ? (
+        <div className="skill-action-locked">
+          <p>{signInBody}</p>
+          <a className="secondary-button" href={localizedHref("/login", locale)}>
+            <LogIn size={15} aria-hidden="true" />
+            <span>{signInAction}</span>
+          </a>
+        </div>
+      ) : (
       <form action={action} className="skill-report-form skill-feedback-form">
         <label>
           <span>{labels.rating}</span>
@@ -98,6 +115,7 @@ export function SkillFeedbackForm({ locale, skillName, skillSlug }: SkillFeedbac
           <span>{isPending ? labels.submitting : labels.submit}</span>
         </button>
       </form>
+      )}
 
       {state.status !== "idle" ? <ActionMessage state={state} /> : null}
     </article>

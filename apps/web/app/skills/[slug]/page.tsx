@@ -25,6 +25,7 @@ import { SkillInstallCommandPanel } from "@/components/skill-install-command-pan
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
@@ -33,6 +34,8 @@ import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/pu
 import { getSkillFeedback } from "@/lib/skill-feedback";
 
 export const dynamic = "force-dynamic";
+
+const developerAccessRoles = ["developer", "owner", "admin", "super_admin"];
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -207,13 +210,18 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const locale = getLocaleFromSearchParams(search);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [skill, projects, relatedSkills, feedbackData] = await Promise.all([
+  const [skill, projects, relatedSkills, feedbackData, session] = await Promise.all([
     getPublicMarketplaceSkill(slug),
     getDeveloperProjects(),
     getRelatedMarketplaceSkills(slug),
-    getSkillFeedback(slug)
+    getSkillFeedback(slug),
+    getWorkspaceSession()
   ]);
   const labels = copy[locale];
+  const hasWorkspaceSession = Boolean(session.subject);
+  const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
+  const hasDeveloperAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
+  const developerProjects = hasDeveloperAccess ? projects : [];
 
   if (!skill) {
     notFound();
@@ -221,6 +229,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
   const publisherProfile = await getPublicPublisherProfile(publisherSlugFromName(skill.author));
   const latestVersion = skill.changelog[0]?.version;
+  const isSkillInstallable = skill.verification.en.toLowerCase() === "verified";
 
   const installRows = [
     [labels.cli, skill.installsCommand.cli],
@@ -296,10 +305,11 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             <SkillInstallCommandPanel
               billingModel={skill.billing}
               commands={installRows.map(([label, value]) => ({ label, value }))}
+              installable={isSkillInstallable}
               lastReviewed={skill.lastReviewed}
               latestVersion={latestVersion}
               locale={locale}
-              projectCount={projects.length}
+              projectCount={developerProjects.length}
               risk={skill.risk}
               runtime={skill.runtime}
               verificationLabel={localizeText(skill.verification, locale)}
@@ -309,17 +319,54 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               billingModel={skill.billing}
               latestVersion={latestVersion}
               locale={locale}
-              projectCount={projects.length}
+              projectCount={developerProjects.length}
               risk={skill.risk}
               runtime={skill.runtime}
             />
             <SkillProjectActionPanel
               billingModel={skill.billing}
+              canOperate={hasDeveloperAccess && isSkillInstallable}
               dashboardHref={localizedHref("/developer", locale)}
               inputExample={skill.inputExample}
               latestVersion={latestVersion}
               locale={locale}
-              projects={projects}
+              lockedBody={
+                !isSkillInstallable
+                  ? locale === "zh"
+                    ? "该技能尚未完成 verified 审核，暂时只能查看和评估。安装、订阅和测试会写入项目状态，必须等审核通过后开放。"
+                    : "This skill has not completed verified review yet, so it is available for inspection only. Install, subscription, and test actions unlock after review approval."
+                  : locale === "zh"
+                    ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制安装命令并检查权限、运行时、价格和审核信号。"
+                    : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy commands and inspect permissions, runtime, pricing, and review signals."
+              }
+              lockedCtaHref={localizedHref(!isSkillInstallable ? "/marketplace" : hasWorkspaceSession ? "/account" : "/login", locale)}
+              lockedCtaLabel={
+                !isSkillInstallable
+                  ? locale === "zh"
+                    ? "返回市场"
+                    : "Back to marketplace"
+                  : hasWorkspaceSession
+                    ? locale === "zh"
+                      ? "查看账号角色"
+                      : "Check account roles"
+                    : locale === "zh"
+                      ? "先登录"
+                      : "Sign in"
+              }
+              lockedTitle={
+                !isSkillInstallable
+                  ? locale === "zh"
+                    ? "等待 verified 审核"
+                    : "Verified review required"
+                  : hasWorkspaceSession
+                    ? locale === "zh"
+                      ? "需要开发者角色"
+                      : "Developer role required"
+                    : locale === "zh"
+                      ? "需要先登录"
+                      : "Sign-in required"
+              }
+              projects={developerProjects}
               skillName={localizeText(skill.name, locale)}
               skillSlug={skill.slug}
             />
@@ -449,6 +496,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           </article>
 
           <SkillFeedbackForm
+            canSubmit={Boolean(session.subject)}
             locale={locale}
             skillName={localizeText(skill.name, locale)}
             skillSlug={skill.slug}
@@ -502,6 +550,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           ) : null}
 
           <SkillAbuseReportForm
+            canSubmit={Boolean(session.subject)}
             locale={locale}
             skillName={localizeText(skill.name, locale)}
             skillSlug={skill.slug}

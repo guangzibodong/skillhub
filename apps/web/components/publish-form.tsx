@@ -30,9 +30,18 @@ import {
 } from "@/lib/publisher-skill-actions";
 
 type PublishFormProps = {
+  access: PublishFormAccess;
   apiUrl: string;
   labels: PublishFormCopy;
   locale: Locale;
+};
+
+type PublishFormAccess = {
+  actionHref: string;
+  actionLabel: string;
+  body: string;
+  canSubmit: boolean;
+  title: string;
 };
 
 const exampleManifest = {
@@ -160,7 +169,7 @@ const reviewCopy = {
   }
 } as const;
 
-export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
+export function PublishForm({ access, apiUrl, labels, locale }: PublishFormProps) {
   const reviewLabels = reviewCopy[locale];
   const [state, formAction, isPending] = useActionState(publishSkillAction.bind(null, locale), initialActionState);
   const [reviewState, reviewAction, isReviewPending] = useActionState(
@@ -169,7 +178,7 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
   );
   const [manifestText, setManifestText] = useState(JSON.stringify(exampleManifest, null, 2));
   const preflight = useMemo(() => analyzeManifestPreflight(manifestText, labels), [labels, manifestText]);
-  const canSubmit = preflight.canSaveDraft && !isPending;
+  const canSubmit = access.canSubmit && preflight.canSaveDraft && !isPending;
   const readinessTone = preflight.blockerCount > 0 ? "danger" : preflight.warningCount > 0 ? "warning" : "success";
   const attentionChecks = preflight.checks.filter((check) => check.state !== "passed");
   const evidenceRows = [
@@ -183,10 +192,14 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
     [labels.evidencePacket.reviewGate, `${preflight.blockerCount} ${labels.readiness.blockers} / ${preflight.warningCount} ${labels.readiness.warnings}`],
     [labels.evidencePacket.commercial, preflight.checks.find((check) => check.id === "commercial")?.detail ?? labels.unknown]
   ];
+  const PublishMainContainer: "form" | "div" = access.canSubmit ? "form" : "div";
+  const publishMainProps = access.canSubmit
+    ? { action: formAction, className: "publish-main" }
+    : { className: "publish-main" };
 
   return (
     <section className="publish-grid" aria-label="Publish skill">
-      <form action={formAction} className="publish-main">
+      <PublishMainContainer {...publishMainProps}>
         <div className="publish-card publish-access-card">
           <div className="publish-card__head">
             <div>
@@ -215,6 +228,22 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
           </div>
         </div>
 
+        {!access.canSubmit ? (
+          <ActionResult
+            actions={
+              <a className="secondary-button" href={access.actionHref}>
+                <KeyRound size={16} aria-hidden="true" />
+                <span>{access.actionLabel}</span>
+              </a>
+            }
+            body={access.body}
+            title={access.title}
+            tone="warning"
+          />
+        ) : null}
+
+        {access.canSubmit ? (
+          <>
         <label className="manifest-editor">
           <span className="manifest-editor__label">
             <span>
@@ -227,6 +256,7 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
           </span>
           <textarea
             aria-invalid={preflight.checks[0]?.state !== "passed"}
+            disabled={!access.canSubmit}
             name="manifest"
             onChange={(event) => setManifestText(event.target.value)}
             spellCheck={false}
@@ -240,7 +270,7 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
             <span>{isPending ? labels.action.saving : labels.action.draftButton}</span>
           </button>
           <StatusChip tone={canSubmit ? "success" : "danger"}>
-            {canSubmit ? labels.action.ready : labels.action.blocked}
+            {canSubmit ? labels.action.ready : access.canSubmit ? labels.action.blocked : access.title}
           </StatusChip>
         </div>
 
@@ -261,9 +291,9 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
                     <Gauge size={16} aria-hidden="true" />
                     <span>{reviewLabels.openReview}</span>
                   </a>
-                  <a className="ghost-button" href={localizedHref(`/skills/${state.skillSlug}`, locale)}>
-                    <FileJson size={16} aria-hidden="true" />
-                    <span>{labels.result.detail}</span>
+                  <a className="ghost-button" href={localizedHref("/publisher#publisher-paid-readiness", locale)}>
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <span>{reviewLabels.openPaid}</span>
                   </a>
                 </>
               }
@@ -317,7 +347,9 @@ export function PublishForm({ apiUrl, labels, locale }: PublishFormProps) {
         {reviewState.status === "error" ? (
           <ActionResult body={reviewState.message} title={reviewLabels.reviewErrorTitle} tone="danger" />
         ) : null}
-      </form>
+          </>
+        ) : null}
+      </PublishMainContainer>
 
       <aside className="review-panel" aria-label="Manifest review">
         <div className="review-panel__head">

@@ -1,5 +1,5 @@
 import { KeyRound, LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react";
-import { publicTokenLabel, type WorkspaceSession } from "@/lib/auth-session";
+import type { WorkspaceSession } from "@/lib/auth-session";
 import { localizedHref, type Locale } from "@/lib/i18n";
 
 type WorkspaceAccessPanelProps = {
@@ -25,7 +25,7 @@ const copy = {
     org: "Organization",
     requiredRoles: "Required roles",
     signInAction: "Sign in",
-    token: "Session token",
+    token: "Session source",
     workspaceReady: "Workspace ready",
     workspaces: {
       admin: {
@@ -60,7 +60,7 @@ const copy = {
     org: "\u7ec4\u7ec7",
     requiredRoles: "\u6240\u9700\u89d2\u8272",
     signInAction: "\u53bb\u767b\u5f55",
-    token: "\u4f1a\u8bdd token",
+    token: "\u4f1a\u8bdd\u6765\u6e90",
     workspaceReady: "\u5de5\u4f5c\u533a\u53ef\u7528",
     workspaces: {
       admin: {
@@ -130,7 +130,7 @@ export function WorkspaceAccessPanel({ locale, requiredRoles, session, workspace
         <div className="workspace-access-meta">
           <KeyRound size={16} aria-hidden="true" />
           <span>{labels.token}</span>
-          <strong>{publicTokenLabel(session.token)}</strong>
+          <strong>{session.source}</strong>
         </div>
         <div className="workspace-access-note">
           <strong>{labels.actionRules}</strong>

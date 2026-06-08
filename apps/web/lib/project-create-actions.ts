@@ -65,6 +65,7 @@ export async function createDeveloperProjectAction(
     const payload = (await response.json()) as { project: DeveloperProjectRecord };
 
     revalidatePath("/dashboard");
+    revalidatePath("/developer");
     revalidatePath(`/dashboard/projects/${payload.project.slug}`);
 
     return {

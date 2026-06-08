@@ -275,7 +275,7 @@ The P0 demo-chain smoke is mutating and should be used before customer walkthrou
 - Publisher submits the exact semantic version through `POST /v1/publisher/skills/:skillSlug/versions/:version/submit`.
 - Reviewer/admin approves the review through `POST /v1/admin/reviews/:reviewId/decision`.
 - Public discovery shows the verified skill through `GET /v1/skills/search` and `GET /v1/skills/:slug`.
-- Publisher commercial readiness is completed through publisher profile, terms acceptance, manual PayPal/Alipay payout setup, and active per-call pricing. The setup step asserts the `manual_deferred` provider, PayPal manual method, receiving account persistence, and secret-safe setup session shape.
+- Publisher commercial readiness is completed through publisher profile, terms acceptance, publisher-submitted PayPal/Alipay receiving details, finance/admin payout readiness verification, and active per-call pricing. The setup step asserts the `manual_deferred` provider, PayPal manual method, receiving account persistence, and secret-safe setup session shape.
 - Developer creates a project, saves the skill, installs the approved version, creates a reveal-once project key, and runs a governed console test.
 - MCP `tools/list` and `tools/call` use the reveal-once project key and the same installed-skill runtime governance path; the agent runtime call is billable when the smoke's ledger proof is enabled.
 - Finance processing posts the billable usage into `transactions`, `transaction_splits`, and `publisher_balances`, then admin and publisher ledger reads must expose the same posted usage transaction.
@@ -319,18 +319,24 @@ The script creates generated `p0-demo-chain-*` and `p0-demo-project-*` records b
 pnpm smoke:prod
 ```
 
-To include the launch-readiness body check, set a token in the shell before running the command:
+This is the routine no-write 1Panel gate. It is equivalent to:
+
+```bash
+pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
+```
+
+To include the protected launch-readiness body check, set a token in the shell and run the full protected Journey C gate explicitly:
 
 ```bash
 export SKILLHUB_SMOKE_TOKEN="<support-or-admin-user-token>"
-pnpm smoke:prod
+pnpm smoke:p0 -- --prod --timeout-ms 30000
 ```
 
 Windows PowerShell:
 
 ```powershell
 $env:SKILLHUB_SMOKE_TOKEN = "<support-or-admin-user-token>"
-pnpm smoke:prod
+pnpm smoke:p0 -- --prod --timeout-ms 30000
 ```
 
 Do not commit tokens or paste token values into reports. The script redacts the authorization header from error output and fails if the authorized launch-readiness body exposes credential-shaped values.

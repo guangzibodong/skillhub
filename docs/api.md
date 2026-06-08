@@ -1508,20 +1508,22 @@ curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding
   }'
 ```
 
-Complete or block the manual payout readiness state:
+Complete or block the manual payout readiness state as a finance operator:
 
 ```bash
 curl -X POST "https://api.useskillhub.com/v1/publisher/payout-account/onboarding/complete" \
-  -H "Authorization: Bearer $SKILLHUB_USER_TOKEN" \
+  -H "Authorization: Bearer $SKILLHUB_FINANCE_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"sessionId":"SESSION_ID","status":"verified","reason":"Finance verified PayPal receiving details."}'
 ```
+
+`POST /v1/publisher/payout-account/onboarding/complete` requires a `finance`, `admin`, or `super_admin` operator token. Publishers submit PayPal or Alipay receiving details, but they cannot self-verify payout readiness.
 
 Current setup sessions are manual-deferred records. They model payout account status, publisher payout readiness, audit logs, and notification events before a final payout provider API is connected.
 
 For the manual-deferred phase, `provider` must be `manual_deferred`. `manualMethod` must be `paypal` or `alipay`; `manualAccount` is required; `manualAccountHolder` and `manualNotes` are optional. Manual account fields reject URL-shaped values and are length-limited before storage. `returnUrl`, `refreshUrl`, and the configured `SKILLHUB_PAYOUT_ONBOARDING_URL` are still validated when supplied, but the product UI no longer sends publishers to a provider handoff.
 
-The dashboard publisher account panel uses these same endpoints. Publishers can edit the public publisher name, submit PayPal/Alipay receiving details, and record a readiness decision against the latest setup session or payout account. The final provider-specific payout integration can replace this manual workflow later without changing the surrounding ledger, payout, notification, and audit state model.
+The dashboard publisher account panel uses the publisher-safe endpoints. Publishers can edit the public publisher name, accept terms, submit PayPal/Alipay receiving details, and see pending or verified finance-review state. Finance operators complete or block readiness against the latest setup session or payout account. The final provider-specific payout integration can replace this manual workflow later without changing the surrounding ledger, payout, notification, and audit state model.
 
 Read publisher payout readiness:
 
@@ -2324,7 +2326,7 @@ The script uses existing public and protected APIs rather than direct database a
 
 Required tokens can be supplied as one org-scoped admin/super-admin token with `SKILLHUB_P0_DEMO_TOKEN`, or as separated role tokens: `SKILLHUB_P0_DEMO_PUBLISHER_TOKEN`, `SKILLHUB_P0_DEMO_REVIEWER_TOKEN`, `SKILLHUB_P0_DEMO_DEVELOPER_TOKEN`, `SKILLHUB_P0_DEMO_FINANCE_TOKEN`, and `SKILLHUB_P0_DEMO_ADMIN_TOKEN`.
 
-Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher completed manual PayPal payout readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, finance released eligible balances, the publisher requested payout, finance approved it and recorded the manual transfer reference, and notification plus audit records were visible without exposing authorization-shaped secrets.
+Passing assertions mean a generated publisher draft became an exact-version review, the review was approved into a verified public listing, the publisher submitted manual PayPal payout details, finance verified payout readiness, an active per-call price became public discovery state, a developer project saved and installed that approved version, a reveal-once project key could list and call the skill through MCP, console and agent runtime invocations appeared in project state, the billable agent call posted a usage transaction with immutable split and publisher balance rows, finance released eligible balances, the publisher requested payout, finance approved it and recorded the manual transfer reference, and notification plus audit records were visible without exposing authorization-shaped secrets.
 
 The demo-chain smoke now reuses the shared sensitive-output validator for protected responses. It scans project detail, publisher/developer notification inboxes, publisher/admin finance and payout reads, admin audit rows, and admin notification queues for authorization-shaped strings, raw user/project/webhook/provider keys, raw API-key fields, and email-code previews. The reveal-once project API-key creation response remains intentionally excluded from that scan because it is the one expected raw key handoff.
 

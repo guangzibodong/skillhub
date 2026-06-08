@@ -144,7 +144,7 @@ export function SkillFeedbackManager({ feedback, locale }: SkillFeedbackManagerP
                   </label>
                   <label>
                     <span>{labels.reason}</span>
-                    <input defaultValue={item.moderationReason ?? ""} name="reason" />
+                    <input defaultValue={item.moderationReason ?? ""} name="reason" required />
                   </label>
                   <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
                     <Save size={15} aria-hidden="true" />

@@ -14,6 +14,7 @@ type SkillInstallCommandPanelProps = {
   commands: InstallCommand[];
   lastReviewed: string;
   latestVersion?: string;
+  installable: boolean;
   locale: Locale;
   projectCount: number;
   risk: "high" | "low" | "medium";
@@ -30,6 +31,7 @@ const copy = {
     copied: "Copied",
     copy: "Copy",
     installReadiness: "Install readiness",
+    installLocked: "Verified review required before install commands unlock.",
     lastReviewed: "Last reviewed",
     localRuntime: "Local runtime requires stronger project approval.",
     project: "Project state",
@@ -52,6 +54,7 @@ const copy = {
     copied: "\u5df2\u590d\u5236",
     copy: "\u590d\u5236",
     installReadiness: "\u5b89\u88c5\u51c6\u5907",
+    installLocked: "\u9700\u8981\u5b8c\u6210 verified \u5ba1\u6838\u540e\u624d\u4f1a\u5f00\u653e\u5b89\u88c5\u547d\u4ee4\u3002",
     lastReviewed: "\u6700\u8fd1\u5ba1\u6838",
     localRuntime: "\u672c\u5730\u8fd0\u884c\u65f6\u9700\u8981\u66f4\u5f3a\u7684\u9879\u76ee\u5ba1\u6279\u3002",
     project: "\u9879\u76ee\u72b6\u6001",
@@ -72,6 +75,7 @@ const copy = {
 export function SkillInstallCommandPanel({
   billingModel,
   commands,
+  installable,
   lastReviewed,
   latestVersion,
   locale,
@@ -97,15 +101,22 @@ export function SkillInstallCommandPanel({
   return (
     <div className="skill-install-command-panel">
       <div className="install-command-list">
-        {commands.map((command) => (
-          <div className="install-command-row" key={command.label}>
-            <span>{command.label}</span>
-            <code>{command.value}</code>
-            <button className="icon-button" onClick={() => copyCommand(command.label, command.value)} title={labels.copy} type="button">
-              {copiedKey === command.label ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
-            </button>
+        {installable ? (
+          commands.map((command) => (
+            <div className="install-command-row" key={command.label}>
+              <span>{command.label}</span>
+              <code>{command.value}</code>
+              <button className="icon-button" onClick={() => copyCommand(command.label, command.value)} title={labels.copy} type="button">
+                {copiedKey === command.label ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+              </button>
+            </div>
+          ))
+        ) : (
+          <div className="install-command-row install-command-row--locked">
+            <span>{labels.trust}</span>
+            <strong>{labels.installLocked}</strong>
           </div>
-        ))}
+        )}
       </div>
 
       <div className="skill-install-readiness" aria-label={labels.installReadiness}>

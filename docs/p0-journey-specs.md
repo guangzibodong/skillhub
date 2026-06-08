@@ -264,7 +264,7 @@ Publisher / Skill Author
 3. Publisher pastes `skillhub.json`.
 4. Client preflight checks JSON, identity, runtime, schemas, permissions, and commercial readiness.
 5. Publisher saves the manifest as an organization-scoped draft using `/v1/skills`.
-6. Success state links to `/publisher` and the public skill detail.
+6. Draft-save success links to `/publisher`, the review workbench, paid-readiness/account panels, and only treats the public skill detail as a post-review verified/public listing path.
 7. Publisher opens `/publisher`.
 8. Publisher sees owned skills, review status, latest automated checks, version history, installs, calls, runtime health, pricing blockers, feedback, buyer requests, revenue, refunds/disputes, payout readiness, marketplace placement, and appeal status.
 9. Publisher edits unlocked draft or creates a new semantic version.
@@ -272,7 +272,7 @@ Publisher / Skill Author
 11. System creates automated checks: manifest, runtime, example, security.
 12. Reviewer approves, rejects, or blocks with notes.
 13. Verified skill becomes eligible for public trusted discovery.
-14. Publisher completes profile, terms, payout readiness, and pricing setup.
+14. Publisher completes profile, terms, PayPal/Alipay receiving-detail submission, and pricing setup; finance verifies payout readiness before paid activation can clear.
 15. Paid activation remains blocked until verified review, active publisher profile, accepted terms, payout readiness, active commission rule, and invite/paid eligibility where applicable.
 15a. Publisher can see a paid marketplace readiness command panel that summarizes ready paid listings, blocked paid listings, draft paid prices, payout readiness, profile/terms gates, and the next monetization action for each relevant skill.
 16. Publisher responds to published feedback, claims buyer requests, views placement reason, and files appeal when quality gaps are fixed.

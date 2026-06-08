@@ -2613,7 +2613,7 @@ app.post("/v1/publisher/payout-account/onboarding", async (c) => {
 });
 
 app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), publisherOperatorRoles, {
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles, {
     requireOrganization: true
   });
 
