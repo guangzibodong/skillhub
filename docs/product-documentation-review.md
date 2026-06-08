@@ -949,6 +949,12 @@ Added payout explainability hardening, covering:
 - `/admin` shows payout next action before decisions and requires finance notes, transfer reference for paid records, and retry condition for blocked records.
 - Launch readiness still checks the payout explainability columns from migration `030_payout_explainability.sql`, and its latest-migration gate now expects `031_public_publisher_profile_backfill.sql` so deployments cannot miss the public publisher backfill.
 
+Added public admin-entry hardening, covering:
+
+- Public operating evidence chains still explain review and ledger governance, but non-admin surfaces render operator-only review/ledger stages as non-clickable evidence cards instead of linking visitors to `/admin`.
+- The public marketplace operating overview still shows platform-operator metrics as launch trust evidence, but it no longer advertises a direct admin-console CTA from the marketplace page.
+- Dedicated admin routes remain available for operators with direct links and role-enforced sessions; public login and marketplace flows keep the user/developer/publisher path first.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

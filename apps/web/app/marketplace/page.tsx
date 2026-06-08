@@ -414,7 +414,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     },
     {
       empty: labels.overview.roles.admin.empty,
-      href: localizedHref("/admin", locale),
       metrics: [
         [labels.overview.metrics.reviewQueue, getOverviewMetric(overview.admin.metrics, "Review queue", "0")],
         [labels.overview.metrics.payoutReview, getOverviewMetric(overview.admin.metrics, "Payout review", "0")],
@@ -557,10 +556,17 @@ skillhub install browser-research`}</code>
                   )}
                 </div>
 
-                <a className="ghost-button ghost-button--inline" href={card.href}>
-                  <span>{card.title}</span>
-                  <ArrowRight size={14} aria-hidden="true" />
-                </a>
+                {card.href ? (
+                  <a className="ghost-button ghost-button--inline" href={card.href}>
+                    <span>{card.title}</span>
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </a>
+                ) : (
+                  <span className="market-overview-card__operator-only">
+                    <ShieldCheck size={14} aria-hidden="true" />
+                    <span>{locale === "zh" ? "\u8fd0\u8425\u4e13\u7528" : "Operator only"}</span>
+                  </span>
+                )}
               </article>
             );
           })}

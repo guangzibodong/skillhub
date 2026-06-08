@@ -10032,6 +10032,26 @@ a {
   margin-top: auto;
 }
 
+.market-overview-card__operator-only {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  min-height: 34px;
+  margin-top: auto;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.07);
+  color: #f4d8aa;
+  font-size: 12px;
+  font-weight: 780;
+  padding: 0 10px;
+}
+
+.market-overview-card__operator-only svg {
+  color: var(--amber);
+}
+
 .market-retention-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -16857,6 +16877,21 @@ a {
   border-color: rgba(155, 226, 141, 0.28);
   background: rgba(255, 255, 255, 0.04);
   transform: translateY(-2px);
+}
+
+.evidence-stage--operator-only {
+  cursor: default;
+}
+
+.evidence-stage--operator-only:hover {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(9, 11, 9, 0.42);
+  transform: none;
+}
+
+.evidence-stage--operator-only .evidence-stage__state {
+  border-color: rgba(215, 168, 76, 0.24);
+  background: rgba(215, 168, 76, 0.1);
 }
 
 .evidence-stage--active {

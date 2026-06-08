@@ -269,13 +269,17 @@ export function OperatingEvidenceChain({ focus, locale, stats }: OperatingEviden
         {labels.stages.map((stage, index) => {
           const Icon = stageIcons[stage.id];
           const isActive = stage.id === activeStage;
-
-          return (
-            <a
-              className={isActive ? "evidence-stage evidence-stage--active" : "evidence-stage"}
-              href={localizedHref(stage.href, locale)}
-              key={stage.id}
-            >
+          const isOperatorStage = stage.id === "review" || stage.id === "ledger";
+          const shouldHideOperatorHref = focus !== "admin" && isOperatorStage;
+          const stageClassName = [
+            "evidence-stage",
+            isActive ? "evidence-stage--active" : "",
+            shouldHideOperatorHref ? "evidence-stage--operator-only" : ""
+          ]
+            .filter(Boolean)
+            .join(" ");
+          const stageContent = (
+            <>
               <span className="evidence-stage__index">{String(index + 1).padStart(2, "0")}</span>
               <span className="evidence-stage__icon" aria-hidden="true">
                 <Icon size={17} />
@@ -286,6 +290,20 @@ export function OperatingEvidenceChain({ focus, locale, stats }: OperatingEviden
               </span>
               <span className="evidence-stage__state">{stage.state}</span>
               <span className="evidence-stage__detail">{stage.detail}</span>
+            </>
+          );
+
+          if (shouldHideOperatorHref) {
+            return (
+              <span aria-label={`${stage.label}: ${stage.owner}`} className={stageClassName} key={stage.id}>
+                {stageContent}
+              </span>
+            );
+          }
+
+          return (
+            <a className={stageClassName} href={localizedHref(stage.href, locale)} key={stage.id}>
+              {stageContent}
             </a>
           );
         })}
