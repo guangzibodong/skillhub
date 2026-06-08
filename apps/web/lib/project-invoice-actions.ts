@@ -13,12 +13,12 @@ export type ProjectInvoiceActionState = {
 const actionCopy = {
   en: {
     generated: "Invoice generated from posted transactions.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before generating invoices.",
+    missingToken: "Sign in with a SkillHub workspace account before generating invoices.",
     unableGenerate: "Unable to generate invoice."
   },
   zh: {
     generated: "已根据入账交易生成发票。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能生成发票。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能生成发票。",
     unableGenerate: "无法生成发票。"
   }
 } as const;

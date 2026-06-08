@@ -18,7 +18,7 @@ export type AdminLedgerActionState = {
 const copy = {
   en: {
     invalidLimit: "Limit must be an integer between 1 and 500.",
-    missingToken: "Sign in with a finance/admin token or configure SKILLHUB_ADMIN_TOKEN before processing ledger jobs.",
+    missingToken: "Sign in with a finance or admin account before processing ledger jobs.",
     processedSubscriptions: "Subscription periods posted to the ledger.",
     processedUsage: "Billable usage posted to the ledger.",
     releasedBalances: "Matured publisher balances released.",
@@ -28,7 +28,7 @@ const copy = {
   },
   zh: {
     invalidLimit: "\u5904\u7406\u6570\u91cf\u5fc5\u987b\u662f 1 \u5230 500 \u4e4b\u95f4\u7684\u6574\u6570\u3002",
-    missingToken: "\u8bf7\u5148\u7528\u8d22\u52a1\u6216\u7ba1\u7406\u5458 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u5904\u7406\u8d26\u672c\u4efb\u52a1\u3002",
+    missingToken: "请先使用具备财务或管理员权限的账号登录，才能处理账本任务。",
     processedSubscriptions: "\u8ba2\u9605\u5468\u671f\u5df2\u5199\u5165\u8d26\u672c\u3002",
     processedUsage: "\u6309\u6b21\u8c03\u7528\u5df2\u5199\u5165\u8d26\u672c\u3002",
     releasedBalances: "\u6210\u719f\u7684\u53d1\u5e03\u8005\u4f59\u989d\u5df2\u91ca\u653e\u3002",

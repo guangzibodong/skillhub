@@ -14,7 +14,7 @@ const copy = {
   en: {
     missingSavedSkill: "Missing saved skill id.",
     missingSkill: "Enter a skill slug before saving.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing saved skills.",
+    missingToken: "Sign in with a SkillHub workspace account before managing saved skills.",
     removed: "Saved skill removed.",
     saved: "Skill saved to this project.",
     unableRemove: "Unable to remove saved skill.",
@@ -23,7 +23,7 @@ const copy = {
   zh: {
     missingSavedSkill: "缺少收藏记录 ID。",
     missingSkill: "请输入技能 slug 后再保存。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理收藏技能。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能管理收藏技能。",
     removed: "收藏技能已移除。",
     saved: "技能已保存到这个项目。",
     unableRemove: "无法移除收藏技能。",

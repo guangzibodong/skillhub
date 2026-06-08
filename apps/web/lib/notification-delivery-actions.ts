@@ -22,7 +22,7 @@ const copy = {
   en: {
     missingAction: "Choose a delivery action.",
     missingReason: "A delivery reason is required.",
-    missingToken: "Sign in with an admin/support token or configure SKILLHUB_ADMIN_TOKEN before managing delivery events.",
+    missingToken: "Sign in with an admin or support account before managing delivery events.",
     processSaved: "Delivery processor finished.",
     saved: "Delivery event updated.",
     unableProcess: "Unable to process delivery queue.",
@@ -31,7 +31,7 @@ const copy = {
   zh: {
     missingAction: "\u8bf7\u9009\u62e9\u6295\u9012\u64cd\u4f5c\u3002",
     missingReason: "\u9700\u8981\u586b\u5199\u6295\u9012\u5904\u7406\u539f\u56e0\u3002",
-    missingToken: "\u8bf7\u5148\u4f7f\u7528 admin/support token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u7ba1\u7406\u6295\u9012\u4e8b\u4ef6\u3002",
+    missingToken: "请先使用具备 admin/support 角色的账号登录，才能管理投递事件。",
     processSaved: "\u6295\u9012\u5904\u7406\u5668\u5df2\u5b8c\u6210\u3002",
     saved: "\u6295\u9012\u4e8b\u4ef6\u5df2\u66f4\u65b0\u3002",
     unableProcess: "\u65e0\u6cd5\u5904\u7406\u6295\u9012\u961f\u5217\u3002",

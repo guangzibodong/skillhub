@@ -13,12 +13,12 @@ export type WebhookDeliveryProcessActionState = {
 
 const copy = {
   en: {
-    missingToken: "Sign in with an admin/support token or configure SKILLHUB_ADMIN_TOKEN before processing webhook deliveries.",
+    missingToken: "Sign in with an admin or support account before processing webhook deliveries.",
     processSaved: "Webhook processor finished.",
     unableProcess: "Unable to process webhook outbox."
   },
   zh: {
-    missingToken: "\u8bf7\u5148\u4f7f\u7528 admin/support token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u5904\u7406 Webhook \u6295\u9012\u3002",
+    missingToken: "请先使用具备 admin/support 角色的账号登录，才能处理 Webhook 投递。",
     processSaved: "Webhook \u6295\u9012\u5904\u7406\u5668\u5df2\u5b8c\u6210\u3002",
     unableProcess: "\u65e0\u6cd5\u5904\u7406 Webhook outbox\u3002"
   }

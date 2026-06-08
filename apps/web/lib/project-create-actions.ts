@@ -15,13 +15,13 @@ const copy = {
   en: {
     created: "Project created. You can open it now to create runtime keys and install skills.",
     missingName: "Enter a project name.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before creating projects.",
+    missingToken: "Sign in with a SkillHub workspace account before creating projects.",
     unableCreate: "Unable to create project."
   },
   zh: {
     created: "项目已创建。现在可以进入项目页创建运行 Key 和安装技能。",
     missingName: "请输入项目名称。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能创建项目。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能创建项目。",
     unableCreate: "无法创建项目。"
   }
 } as const;

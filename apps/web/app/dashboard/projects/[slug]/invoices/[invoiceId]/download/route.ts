@@ -12,7 +12,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const token = await getWorkspaceToken();
 
   if (!token) {
-    return new Response("Sign in with a SkillHub user token or configure a server fallback before downloading invoices.", {
+    return new Response("Sign in with a SkillHub workspace account before downloading invoices.", {
       status: 401
     });
   }

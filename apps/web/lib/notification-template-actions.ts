@@ -18,7 +18,7 @@ const copy = {
     missingBody: "Template body is required.",
     missingSubject: "Template subject is required.",
     missingTemplateKey: "Template key is required.",
-    missingToken: "Sign in with an admin/support token or configure SKILLHUB_ADMIN_TOKEN before managing notification templates.",
+    missingToken: "Sign in with an admin or support account before managing notification templates.",
     saved: "Notification template saved.",
     unableSave: "Unable to save notification template."
   },
@@ -26,7 +26,7 @@ const copy = {
     missingBody: "必须填写模板正文。",
     missingSubject: "必须填写模板标题。",
     missingTemplateKey: "必须填写模板 key。",
-    missingToken: "请先用 admin/support token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能管理通知模板。",
+    missingToken: "请先使用具备 admin/support 角色的账号登录，才能管理通知模板。",
     saved: "通知模板已保存。",
     unableSave: "无法保存通知模板。"
   }

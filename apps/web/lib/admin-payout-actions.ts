@@ -18,7 +18,7 @@ const copy = {
     missingPayout: "Missing payout id.",
     missingReason: "A finance review reason is required.",
     missingRetryCondition: "A retry condition is required when blocking a payout.",
-    missingToken: "Sign in with a finance/admin token or configure SKILLHUB_ADMIN_TOKEN before deciding payouts.",
+    missingToken: "Sign in with a finance or admin account before deciding payouts.",
     missingTransferReference: "Transfer reference is required when marking a payout paid.",
     saved: "Payout decision recorded.",
     unableSave: "Unable to update payout."
@@ -28,7 +28,7 @@ const copy = {
     missingPayout: "\u7f3a\u5c11\u63d0\u73b0 ID\u3002",
     missingReason: "\u5fc5\u987b\u586b\u5199\u8d22\u52a1\u5ba1\u6838\u539f\u56e0\u3002",
     missingRetryCondition: "\u963b\u65ad\u63d0\u73b0\u65f6\u5fc5\u987b\u586b\u5199\u518d\u6b21\u7533\u8bf7\u6761\u4ef6\u3002",
-    missingToken: "\u8bf7\u5148\u7528\u8d22\u52a1\u6216\u7ba1\u7406\u5458 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u5904\u7406\u63d0\u73b0\u3002",
+    missingToken: "请先使用具备财务或管理员权限的账号登录，才能处理提现。",
     missingTransferReference: "\u6807\u8bb0\u5df2\u6253\u6b3e\u65f6\u5fc5\u987b\u586b\u5199\u8f6c\u8d26\u51ed\u8bc1\u6216\u6d41\u6c34\u53f7\u3002",
     saved: "\u63d0\u73b0\u51b3\u7b56\u5df2\u8bb0\u5f55\u3002",
     unableSave: "\u65e0\u6cd5\u66f4\u65b0\u63d0\u73b0\u3002"

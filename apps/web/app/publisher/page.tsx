@@ -298,7 +298,7 @@ const copy = {
       progress: "readiness",
       title: "Publisher launch checklist",
       tasks: {
-        session: ["Connect workspace session", "Sign in with an organization token so publishing, pricing, payouts, and notifications are scoped."],
+        session: ["Connect workspace session", "Sign in through the account entry so publishing, pricing, payouts, and notifications stay scoped to the current organization."],
         profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
         terms: ["Accept operating terms", "Record the current refund, dispute, takedown, data, notification, and payout policy before paid publishing."],
         publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],

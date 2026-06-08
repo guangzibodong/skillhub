@@ -11,14 +11,14 @@ export type OrganizationBillingActionState = {
 
 const actionCopy = {
   en: {
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing organization billing.",
+    missingToken: "Sign in with an organization account before managing organization billing.",
     paymentSaved: "Payment method state saved.",
     profileSaved: "Billing profile saved.",
     unablePayment: "Unable to save payment method.",
     unableProfile: "Unable to save billing profile."
   },
   zh: {
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理组织账单。",
+    missingToken: "请先登录具备组织权限的账号，才能管理组织账单。",
     paymentSaved: "付款方式状态已保存。",
     profileSaved: "账单资料已保存。",
     unablePayment: "无法保存付款方式。",

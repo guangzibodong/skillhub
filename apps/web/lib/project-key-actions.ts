@@ -21,7 +21,7 @@ const actionCopy = {
     created: "Runtime key created. Copy it now; SkillHub will not show the raw secret again.",
     missingKey: "Missing API key id.",
     missingName: "Key name is required.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing project keys.",
+    missingToken: "Sign in with a SkillHub workspace account before managing project keys.",
     revoked: "Runtime key revoked.",
     unableCreate: "Unable to create runtime key.",
     unableRevoke: "Unable to revoke runtime key."
@@ -30,7 +30,7 @@ const actionCopy = {
     created: "运行 Key 已创建。现在复制保存，SkillHub 不会再次显示原始密钥。",
     missingKey: "缺少 API Key ID。",
     missingName: "请输入 Key 名称。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理项目 Key。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能管理项目 Key。",
     revoked: "运行 Key 已撤销。",
     unableCreate: "无法创建运行 Key。",
     unableRevoke: "无法撤销运行 Key。"

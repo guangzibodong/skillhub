@@ -14,14 +14,14 @@ const actionCopy = {
   en: {
     invalidStatus: "Subscription status must be active, paused, or canceled.",
     missingSubscription: "Missing subscription id.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before managing subscriptions.",
+    missingToken: "Sign in with a SkillHub workspace account before managing subscriptions.",
     saved: "Subscription status updated.",
     unableSave: "Unable to update subscription status."
   },
   zh: {
     invalidStatus: "订阅状态必须是 active、paused 或 canceled。",
     missingSubscription: "缺少订阅 ID。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能管理订阅。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能管理订阅。",
     saved: "订阅状态已更新。",
     unableSave: "无法更新订阅状态。"
   }

@@ -13,14 +13,14 @@ export type ProjectUpdateActionState = {
 const actionCopy = {
   en: {
     invalidStatus: "Update action must be acknowledged, scheduled, adopted, or ignored.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before handling project updates.",
+    missingToken: "Sign in with a SkillHub workspace account before handling project updates.",
     missingUpdate: "Missing update id.",
     saved: "Update action saved.",
     unableSave: "Unable to save update action."
   },
   zh: {
     invalidStatus: "更新处理状态必须是 acknowledged、scheduled、adopted 或 ignored。",
-    missingToken: "请先使用 SkillHub 用户 token 登录，或配置服务端备用 token，才能处理项目更新。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能处理项目更新。",
     missingUpdate: "缺少更新 ID。",
     saved: "更新处理状态已保存。",
     unableSave: "无法保存更新处理状态。"

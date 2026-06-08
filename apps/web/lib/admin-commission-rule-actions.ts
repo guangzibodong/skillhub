@@ -17,7 +17,7 @@ const copy = {
     invalidTime: "Schedule dates must be valid.",
     missingName: "Rule name is required.",
     missingReason: "A finance reason is required.",
-    missingToken: "Sign in with a finance/admin token or configure SKILLHUB_ADMIN_TOKEN before changing commission rules.",
+    missingToken: "Sign in with a finance or admin account before changing commission rules.",
     saved: "Commission rule scheduled.",
     unableSave: "Unable to create commission rule."
   },
@@ -26,7 +26,7 @@ const copy = {
     invalidTime: "\u6392\u671f\u65f6\u95f4\u5fc5\u987b\u6709\u6548\u3002",
     missingName: "\u8bf7\u586b\u5199\u89c4\u5219\u540d\u79f0\u3002",
     missingReason: "\u8bf7\u586b\u5199\u8d22\u52a1\u8c03\u6574\u539f\u56e0\u3002",
-    missingToken: "\u8bf7\u5148\u7528\u8d22\u52a1\u6216\u7ba1\u7406\u5458 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e SKILLHUB_ADMIN_TOKEN\uff0c\u624d\u80fd\u8c03\u6574\u4f63\u91d1\u89c4\u5219\u3002",
+    missingToken: "请先使用具备财务或管理员权限的账号登录，才能调整佣金规则。",
     saved: "\u4f63\u91d1\u89c4\u5219\u5df2\u6392\u671f\u3002",
     unableSave: "\u65e0\u6cd5\u521b\u5efa\u4f63\u91d1\u89c4\u5219\u3002"
   }

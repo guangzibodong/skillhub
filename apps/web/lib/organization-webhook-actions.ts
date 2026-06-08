@@ -17,7 +17,7 @@ const copy = {
   en: {
     created: "Webhook endpoint created. Copy the signing secret now; it will not be shown again.",
     missingEndpoint: "Missing webhook endpoint id.",
-    missingToken: "Sign in with an owner/admin/developer token or configure a workspace fallback before managing webhooks.",
+    missingToken: "Sign in with an owner, admin, or developer account before managing webhooks.",
     missingUrl: "Webhook URL is required.",
     rotated: "Webhook signing secret rotated. Copy it now; it will not be shown again.",
     updated: "Webhook endpoint updated.",
@@ -28,7 +28,7 @@ const copy = {
   zh: {
     created: "Webhook endpoint 已创建。请现在复制签名密钥，它不会再次显示。",
     missingEndpoint: "缺少 Webhook endpoint ID。",
-    missingToken: "请先用 owner/admin/developer token 登录，或配置工作区兜底 token，才能管理 Webhook。",
+    missingToken: "请先使用具备 owner/admin/developer 角色的账号登录，才能管理 Webhook。",
     missingUrl: "必须填写 Webhook URL。",
     rotated: "Webhook 签名密钥已轮换。请现在复制，它不会再次显示。",
     updated: "Webhook endpoint 已更新。",

@@ -3623,7 +3623,7 @@ export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCur
     return {
       appeals: [],
       curation: [],
-      message: "Sign in with an admin/support token to inspect marketplace ranking controls.",
+      message: "Sign in with an admin or support account to inspect marketplace ranking controls.",
       mode: "missing_token"
     };
   }

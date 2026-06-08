@@ -23,7 +23,7 @@ const copy = {
     appealSaved: "Marketplace distribution appeal updated.",
     missingReason: "Curation reason is required.",
     missingSkill: "Skill slug is required.",
-    missingToken: "Sign in with an admin or reviewer token before managing ranking controls.",
+    missingToken: "Sign in with an admin or reviewer account before managing ranking controls.",
     saved: "Marketplace ranking control saved.",
     unableAppeal: "Unable to update marketplace distribution appeal.",
     unableSave: "Unable to save marketplace ranking control."
@@ -32,7 +32,7 @@ const copy = {
     appealSaved: "\u5e02\u573a\u5206\u53d1\u7533\u8bc9\u5df2\u5904\u7406\u3002",
     missingReason: "\u5fc5\u987b\u586b\u5199\u7b56\u7565\u539f\u56e0\u3002",
     missingSkill: "\u5fc5\u987b\u63d0\u4f9b\u6280\u80fd slug\u3002",
-    missingToken: "\u8bf7\u5148\u7528 admin \u6216 reviewer token \u767b\u5f55\uff0c\u624d\u80fd\u7ba1\u7406\u6392\u540d\u63a7\u5236\u3002",
+    missingToken: "请先使用具备 admin 或 reviewer 角色的账号登录，才能管理排名控制。",
     saved: "\u5e02\u573a\u6392\u540d\u63a7\u5236\u5df2\u4fdd\u5b58\u3002",
     unableAppeal: "\u65e0\u6cd5\u5904\u7406\u5e02\u573a\u5206\u53d1\u7533\u8bc9\u3002",
     unableSave: "\u65e0\u6cd5\u4fdd\u5b58\u5e02\u573a\u6392\u540d\u63a7\u5236\u3002"

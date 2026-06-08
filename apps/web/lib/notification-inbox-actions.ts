@@ -15,7 +15,7 @@ const copy = {
     markedAllRead: "Unread notifications marked read.",
     markedRead: "Notification marked read.",
     missingNotification: "Missing notification id.",
-    missingToken: "Sign in with a SkillHub user token before managing your notification inbox.",
+    missingToken: "Sign in with a SkillHub user account before managing your notification inbox.",
     unableMarkAllRead: "Unable to mark notifications read.",
     unableMarkRead: "Unable to mark notification read."
   },
@@ -23,7 +23,7 @@ const copy = {
     markedAllRead: "未读通知已标记为已读。",
     markedRead: "通知已标记为已读。",
     missingNotification: "缺少通知 ID。",
-    missingToken: "请先用 SkillHub 用户 token 登录，才能管理通知收件箱。",
+    missingToken: "请先登录 SkillHub 用户账号，才能管理通知收件箱。",
     unableMarkAllRead: "无法标记通知。",
     unableMarkRead: "无法标记通知。"
   }

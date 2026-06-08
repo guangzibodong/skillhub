@@ -15,7 +15,7 @@ const copy = {
     invalidAction: "Action must be publish, hide, reject, or reopen.",
     missingFeedback: "Missing feedback id.",
     missingReason: "Decision reason is required.",
-    missingToken: "Sign in with a platform admin token or configure SKILLHUB_ADMIN_TOKEN before handling feedback.",
+    missingToken: "Sign in with a platform admin account before handling feedback.",
     saved: "Feedback decision recorded.",
     unableSave: "Unable to update feedback."
   },
@@ -23,7 +23,7 @@ const copy = {
     invalidAction: "处理动作必须是 publish、hide、reject 或 reopen。",
     missingFeedback: "缺少反馈 ID。",
     missingReason: "必须填写处理原因。",
-    missingToken: "请先使用平台管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN 后再处理反馈。",
+    missingToken: "请先使用具备平台管理员权限的账号登录，才能处理反馈。",
     saved: "反馈处理已记录。",
     unableSave: "无法更新反馈。"
   }

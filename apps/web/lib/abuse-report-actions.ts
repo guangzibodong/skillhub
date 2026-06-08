@@ -15,7 +15,7 @@ const copy = {
     invalidAction: "Action must be triage, dismiss, warn, restrict, suspend, or resolve.",
     missingReason: "Decision reason is required.",
     missingReport: "Missing abuse report id.",
-    missingToken: "Sign in with a platform admin token or configure SKILLHUB_ADMIN_TOKEN before handling abuse reports.",
+    missingToken: "Sign in with a platform admin account before handling abuse reports.",
     saved: "Trust action recorded.",
     unableSave: "Unable to update abuse report."
   },
@@ -23,7 +23,7 @@ const copy = {
     invalidAction: "处理动作必须是 triage、dismiss、warn、restrict、suspend 或 resolve。",
     missingReason: "必须填写处理原因。",
     missingReport: "缺少举报 ID。",
-    missingToken: "请先用平台管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理举报。",
+    missingToken: "请先使用具备平台管理员权限的账号登录，才能处理举报。",
     saved: "信任安全处理已记录。",
     unableSave: "无法更新举报。"
   }

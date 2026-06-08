@@ -14,13 +14,13 @@ const copy = {
   en: {
     missingEventType: "Missing notification topic.",
     missingToken:
-      "Sign in with a SkillHub user token before managing notification preferences.",
+      "Sign in with a SkillHub user account before managing notification preferences.",
     saved: "Notification preference saved.",
     unableSave: "Unable to save notification preference.",
   },
   zh: {
     missingEventType: "缺少通知主题。",
-    missingToken: "请先用 SkillHub 用户 token 登录，才能管理通知偏好。",
+    missingToken: "请先登录 SkillHub 用户账号，才能管理通知偏好。",
     saved: "通知偏好已保存。",
     unableSave: "无法保存通知偏好。",
   },

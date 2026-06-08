@@ -13,12 +13,12 @@ export type PublisherPayoutActionState = {
 
 const actionCopy = {
   en: {
-    missingToken: "Sign in with a SkillHub user token before requesting payouts.",
+    missingToken: "Sign in with a publisher or owner account before requesting payouts.",
     requested: "Payout request created. Available balances are now reserved for finance review.",
     unableRequest: "Unable to request payout."
   },
   zh: {
-    missingToken: "请先使用 SkillHub 用户 token 登录，才能申请提现。",
+    missingToken: "请先使用具备发布者或 owner 角色的账号登录，才能申请提现。",
     requested: "提现申请已创建，可用余额已锁定并进入财务流程。",
     unableRequest: "无法申请提现。"
   }

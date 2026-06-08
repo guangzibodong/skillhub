@@ -14,14 +14,14 @@ const actionCopy = {
   en: {
     invalidSkill: "Missing skill slug.",
     invalidStatus: "Install status must be installed, suspended, or removed.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before updating installed skills.",
+    missingToken: "Sign in with a SkillHub workspace account before updating installed skills.",
     saved: "Installed skill status updated.",
     unableSave: "Unable to update installed skill."
   },
   zh: {
     invalidSkill: "缺少技能 slug。",
     invalidStatus: "安装状态必须是 installed、suspended 或 removed。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能更新已安装技能。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能更新已安装技能。",
     saved: "已安装技能状态已更新。",
     unableSave: "无法更新已安装技能。"
   }

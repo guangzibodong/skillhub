@@ -16,7 +16,7 @@ const copy = {
     invalidDecision: "Decision must be approved, rejected, or blocked.",
     missingNotes: "Reviewer notes are required.",
     missingReview: "Missing review id.",
-    missingToken: "Sign in with a reviewer/admin token or configure SKILLHUB_ADMIN_TOKEN before deciding skill reviews.",
+    missingToken: "Sign in with a reviewer or admin account before deciding skill reviews.",
     saved: "Review decision recorded.",
     unableSave: "Unable to record review decision."
   },
@@ -24,7 +24,7 @@ const copy = {
     invalidDecision: "审核决定必须是 approved、rejected 或 blocked。",
     missingNotes: "必须填写审核备注。",
     missingReview: "缺少审核 ID。",
-    missingToken: "请先用审核员或管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能处理技能审核。",
+    missingToken: "请先使用具备审核员或管理员权限的账号登录，才能处理技能审核。",
     saved: "审核决定已记录。",
     unableSave: "无法记录审核决定。"
   }

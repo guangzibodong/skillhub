@@ -16,7 +16,7 @@ const actionCopy = {
     invalidPermission: "Invalid permission level.",
     invalidRateLimit: "Rate limit must be empty or greater than zero.",
     invalidSkill: "Missing skill slug.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before updating project policies.",
+    missingToken: "Sign in with a SkillHub workspace account before updating project policies.",
     saved: "Project skill policy saved.",
     unableSave: "Unable to save project policy."
   },
@@ -25,7 +25,7 @@ const actionCopy = {
     invalidPermission: "权限等级无效。",
     invalidRateLimit: "速率限制必须为空或大于 0。",
     invalidSkill: "缺少技能 slug。",
-    missingToken: "请先用 SkillHub 用户 token 登录，或配置服务端兜底 token，才能更新项目策略。",
+    missingToken: "请先登录 SkillHub 工作区账号，才能更新项目策略。",
     saved: "项目技能策略已保存。",
     unableSave: "无法保存项目策略。"
   }

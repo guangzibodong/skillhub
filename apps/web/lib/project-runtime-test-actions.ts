@@ -27,7 +27,7 @@ const copy = {
   en: {
     invalidJson: "Test input must be valid JSON.",
     missingSkill: "Choose an installed skill before running a test.",
-    missingToken: "Sign in with a SkillHub user token or configure a server fallback before running project tests.",
+    missingToken: "Sign in with a SkillHub workspace account before running project tests.",
     testBlocked: "Test invocation did not pass the project runtime gate.",
     testPassed: "Test invocation completed and was written to the project runtime log.",
     unableTest: "Unable to run project test invocation."
@@ -35,7 +35,7 @@ const copy = {
   zh: {
     invalidJson: "\u6d4b\u8bd5\u8f93\u5165\u5fc5\u987b\u662f\u6709\u6548 JSON\u3002",
     missingSkill: "\u8bf7\u5148\u9009\u62e9\u4e00\u4e2a\u5df2\u5b89\u88c5\u6280\u80fd\u518d\u8fd0\u884c\u6d4b\u8bd5\u3002",
-    missingToken: "\u8bf7\u5148\u7528 SkillHub \u7528\u6237 token \u767b\u5f55\uff0c\u6216\u914d\u7f6e\u670d\u52a1\u7aef\u5907\u7528 token\uff0c\u624d\u80fd\u8fd0\u884c\u9879\u76ee\u6d4b\u8bd5\u3002",
+    missingToken: "请先登录 SkillHub 工作区账号，才能运行项目测试。",
     testBlocked: "\u6d4b\u8bd5\u8c03\u7528\u672a\u901a\u8fc7\u9879\u76ee\u8fd0\u884c\u7f51\u5173\u3002",
     testPassed: "\u6d4b\u8bd5\u8c03\u7528\u5df2\u5b8c\u6210\uff0c\u5e76\u5199\u5165\u9879\u76ee\u8fd0\u884c\u65e5\u5fd7\u3002",
     unableTest: "\u65e0\u6cd5\u8fd0\u884c\u9879\u76ee\u6d4b\u8bd5\u8c03\u7528\u3002"

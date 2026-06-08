@@ -15,7 +15,7 @@ const copy = {
     missingBody: "Describe what happened when your agent used this skill.",
     missingSkill: "Missing skill slug.",
     missingTitle: "Enter a short feedback title.",
-    missingToken: "Sign in with a SkillHub user token before submitting feedback.",
+    missingToken: "Sign in with a SkillHub user account before submitting feedback.",
     saved: "Feedback submitted for moderation.",
     unableSave: "Unable to submit feedback."
   },
@@ -24,7 +24,7 @@ const copy = {
     missingBody: "请描述你的智能体使用这个技能后的真实情况。",
     missingSkill: "缺少技能 slug。",
     missingTitle: "请输入一句简短的反馈标题。",
-    missingToken: "请先使用 SkillHub 用户 token 登录，然后再提交反馈。",
+    missingToken: "请先登录 SkillHub 用户账号，然后再提交反馈。",
     saved: "反馈已提交，等待运营审核后公开展示。",
     unableSave: "无法提交反馈。"
   }

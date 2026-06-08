@@ -19,7 +19,7 @@ const copy = {
     missingReason: "Incident decision reason is required.",
     missingSkill: "Skill slug is required.",
     missingTitle: "Incident title is required.",
-    missingToken: "Sign in with a trust/admin token or configure SKILLHUB_ADMIN_TOKEN before managing incidents.",
+    missingToken: "Sign in with a trust or admin account before managing incidents.",
     updated: "Runtime incident updated.",
     unableCreate: "Unable to create incident.",
     unableUpdate: "Unable to update incident."
@@ -30,7 +30,7 @@ const copy = {
     missingReason: "必须填写事故处理原因。",
     missingSkill: "必须填写技能 slug。",
     missingTitle: "必须填写事故标题。",
-    missingToken: "请先用信任安全或管理员 token 登录，或配置 SKILLHUB_ADMIN_TOKEN，才能管理运行事故。",
+    missingToken: "请先使用具备信任安全或管理员权限的账号登录，才能管理运行事故。",
     updated: "运行事故已更新。",
     unableCreate: "无法创建事故。",
     unableUpdate: "无法更新事故。"
