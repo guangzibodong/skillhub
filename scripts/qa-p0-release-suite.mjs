@@ -308,6 +308,7 @@ Production modes:
   Routine 1Panel public gate:
     pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
     Performs no writes and does not require an operator token.
+    The public smoke includes the production web alias gate for www/app.
 
   Full protected Journey C gate:
     pnpm smoke:p0 -- --prod --timeout-ms 30000

@@ -362,6 +362,12 @@ const PUBLIC_P0_PROD_GATE =
 const PROTECTED_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --timeout-ms 30000";
 const PRIMARY_PROD_APP_URL = "https://useskillhub.com";
+const DEFAULT_PROD_APP_ALIAS_URLS = [
+  "https://www.useskillhub.com",
+  "https://app.useskillhub.com",
+];
+const PROD_APP_ALIAS_GATE = "production web alias gate";
+const PROD_APP_ALIAS_PATHS = ["/", "/login?lang=zh"];
 const ONE_PANEL_IMAGE_REBUILD =
   "docker compose -f docker-compose.1panel.yml build --no-cache api web";
 const ONE_PANEL_CONTAINER_RECREATE =
@@ -379,6 +385,7 @@ const RELEASE_COMMAND_GUARDS = [
       ONE_PANEL_IMAGE_REBUILD,
       ONE_PANEL_CONTAINER_RECREATE,
       `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
+      PROD_APP_ALIAS_GATE,
       "SKILLHUB_P0_ADMIN_TOKEN",
       "docker restart skillhub-api skillhub-web",
       "Do not run mutating P0 smokes against production during a routine update.",
@@ -395,6 +402,7 @@ const RELEASE_COMMAND_GUARDS = [
       "`useskillhub.com` -> `http://127.0.0.1:3100`",
       "`www.useskillhub.com` -> `http://127.0.0.1:3100`",
       `NEXT_PUBLIC_APP_URL=${PRIMARY_PROD_APP_URL}`,
+      PROD_APP_ALIAS_GATE,
       "do not rely on `docker restart`",
       "routine post-deploy public gate",
       "Mutating P0 smokes",
@@ -410,6 +418,7 @@ const RELEASE_COMMAND_GUARDS = [
       ONE_PANEL_CONTAINER_RECREATE,
       "stale-image failure mode",
       "routine 1Panel updates",
+      PROD_APP_ALIAS_GATE,
       "performs no\nwrites and does not require an operator token",
     ],
   },
@@ -431,6 +440,7 @@ const RELEASE_COMMAND_GUARDS = [
       PRIMARY_PROD_APP_URL,
       "routine 1Panel updates",
       "protected Journey C",
+      PROD_APP_ALIAS_GATE,
       "Mutating journey checks are opt-in",
     ],
   },
@@ -441,6 +451,7 @@ const RELEASE_COMMAND_GUARDS = [
       PUBLIC_P0_PROD_GATE,
       PROTECTED_P0_PROD_GATE,
       PRIMARY_PROD_APP_URL,
+      PROD_APP_ALIAS_GATE,
       "Routine 1Panel public gate",
       "Performs no writes and does not require an operator token.",
       "Full protected Journey C gate",
@@ -470,6 +481,11 @@ if (args.help) {
   process.exit(0);
 }
 
+const appUrl =
+  args.appUrl ??
+  process.env.SKILLHUB_SMOKE_APP_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  DEFAULT_APP_URL;
 const config = {
   apiUrl:
     args.apiUrl ??
@@ -477,11 +493,11 @@ const config = {
     process.env.NEXT_PUBLIC_API_URL ??
     process.env.SKILLHUB_API_URL ??
     DEFAULT_API_URL,
-  appUrl:
-    args.appUrl ??
-    process.env.SKILLHUB_SMOKE_APP_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    DEFAULT_APP_URL,
+  appAliasUrls: parseAppAliasUrls(
+    args.appAliasUrls ?? process.env.SKILLHUB_SMOKE_APP_ALIAS_URLS,
+    appUrl,
+  ),
+  appUrl,
   appPaths: parseAppPaths(
     args.appPaths ?? process.env.SKILLHUB_SMOKE_APP_PATHS,
   ),
@@ -505,6 +521,9 @@ if (!config.skipApi) {
 }
 if (!config.skipApp) {
   console.log(`App: ${config.appUrl}`);
+  if (config.appAliasUrls.length > 0) {
+    console.log(`App aliases: ${config.appAliasUrls.join(", ")}`);
+  }
   console.log(`App paths: ${config.appPaths.join(", ")}`);
 }
 console.log("");
@@ -531,6 +550,7 @@ if (!config.skipApi) {
 
 if (!config.skipApp) {
   await checkAppPages(config);
+  await checkProductionAppAliases(config);
 }
 
 printSummary(results);
@@ -2176,6 +2196,89 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
   await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
 }
 
+async function checkProductionAppAliases({
+  appAliasUrls,
+  appUrl,
+  timeoutMs,
+}) {
+  if (!appAliasUrls || appAliasUrls.length === 0) {
+    return;
+  }
+
+  const allowedHosts = new Set([
+    hostnameForUrl(appUrl),
+    ...appAliasUrls.map(hostnameForUrl),
+  ]);
+
+  for (const aliasUrl of appAliasUrls) {
+    for (const path of PROD_APP_ALIAS_PATHS) {
+      const name = `GET ${PROD_APP_ALIAS_GATE} ${aliasUrl}${path}`;
+
+      try {
+        const response = await requestText(joinUrl(aliasUrl, path), {
+          timeoutMs,
+        });
+
+        if (response.status !== 200) {
+          fail(name, `expected HTTP 200, got ${response.status}`);
+          continue;
+        }
+
+        const finalHost = hostnameForUrl(response.url);
+
+        if (!allowedHosts.has(finalHost)) {
+          fail(
+            name,
+            `alias resolved outside expected SkillHub hosts: ${finalHost}`,
+          );
+          continue;
+        }
+
+        const html = response.text.toLowerCase();
+        const mojibakeMarkers = MOJIBAKE_MARKERS.filter((marker) =>
+          response.text.includes(marker),
+        );
+
+        if (mojibakeMarkers.length > 0) {
+          fail(
+            name,
+            `possible mojibake markers in alias HTML: ${mojibakeMarkers.map(formatMarkerCodepoints).join(", ")}`,
+          );
+          continue;
+        }
+
+        if (!html.includes("<html") && !html.includes("<!doctype html")) {
+          fail(name, "expected an HTML document");
+          continue;
+        }
+
+        const expectedContent =
+          PAGE_ASSERTIONS[path] ??
+          (isZhAppPath(path) ? [] : PAGE_ASSERTIONS[basePathFromAppPath(path)]) ??
+          [];
+        const missingContent = expectedContent.filter(
+          (token) => !html.includes(token.toLowerCase()),
+        );
+
+        if (missingContent.length > 0) {
+          fail(
+            name,
+            `alias page missing P0 markers: ${missingContent.join(", ")}`,
+          );
+          continue;
+        }
+
+        pass(
+          name,
+          `finalHost=${finalHost}, html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+        );
+      } catch (error) {
+        fail(name, error.message);
+      }
+    }
+  }
+}
+
 async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
   const slug = smokeContext.publicSkillSlug;
   const name = "GET app public skill detail";
@@ -2424,6 +2527,7 @@ async function requestText(url, { body, headers, method, timeoutMs }) {
   return {
     status: response.status,
     text: await response.text(),
+    url: response.url,
   };
 }
 
@@ -2486,12 +2590,21 @@ function isZhAppPath(path) {
   return path.includes("lang=zh");
 }
 
+function hostnameForUrl(value) {
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
 function toDisplayPath(filePath) {
   return path.relative(process.cwd(), filePath).replaceAll(path.sep, "/");
 }
 
 function parseArgs(argv) {
   const parsed = {
+    appAliasUrls: undefined,
     appPaths: undefined,
     appUrl: undefined,
     apiUrl: undefined,
@@ -2549,6 +2662,11 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (arg === "--app-alias-urls") {
+      parsed.appAliasUrls = nextValue();
+      continue;
+    }
+
     if (arg === "--timeout-ms") {
       parsed.timeoutMs = nextValue();
       continue;
@@ -2572,6 +2690,35 @@ function parseAppPaths(value) {
     .map((path) => (path.startsWith("/") ? path : `/${path}`));
 
   return paths.length > 0 ? paths : DEFAULT_APP_PATHS;
+}
+
+function parseAppAliasUrls(value, appUrl) {
+  if (value) {
+    const normalized = value.trim().toLowerCase();
+
+    if (["0", "false", "none", "off", "skip"].includes(normalized)) {
+      return [];
+    }
+
+    return value
+      .split(",")
+      .map((url) => url.trim())
+      .filter(Boolean);
+  }
+
+  return isPrimaryProductionAppUrl(appUrl) ? DEFAULT_PROD_APP_ALIAS_URLS : [];
+}
+
+function isPrimaryProductionAppUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname.toLowerCase() === new URL(PRIMARY_PROD_APP_URL).hostname
+    );
+  } catch {
+    return false;
+  }
 }
 
 function parsePositiveInteger(value, fallback) {
@@ -3111,6 +3258,10 @@ Usage: node scripts/qa-smoke.mjs [options]
 Options:
   --api-url <url>      API base URL. Default: env or ${DEFAULT_API_URL}
   --app-url <url>      App base URL. Default: env or ${DEFAULT_APP_URL}
+  --app-alias-urls <urls>
+                       Comma-separated production web aliases to verify when
+                       using the main app URL. Use "none" to disable.
+                       Default for ${PRIMARY_PROD_APP_URL}: ${DEFAULT_PROD_APP_ALIAS_URLS.join(",")}
   --app-paths <paths>  Comma-separated app paths. Default: ${DEFAULT_APP_PATHS.join(",")}
   --timeout-ms <ms>    Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}
   --skip-api           Skip API checks.

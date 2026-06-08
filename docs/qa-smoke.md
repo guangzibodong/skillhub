@@ -87,6 +87,12 @@ pnpm smoke:p0 -- --prod
 In production mode, the suite targets `https://api.useskillhub.com` for the API
 and `https://useskillhub.com` as the primary public web entry. `www` and `app`
 remain valid web aliases, but the release gate should prove the brand domain.
+The public smoke also runs a `production web alias gate` whenever the app target is
+`https://useskillhub.com`: it checks `https://www.useskillhub.com` and
+`https://app.useskillhub.com` for the home page and Chinese login entry, accepts
+same-site redirects, and fails if an alias serves a non-SkillHub host, stale
+HTML, missing P0 markers, or mojibake. Use `--app-alias-urls none` only for a
+local/debug run where those public aliases are intentionally unavailable.
 
 The default suite expects the same admin/super-admin token variables as `pnpm smoke:p0:admin` so it can verify protected Journey C operations. If an operator intentionally wants only public checks, use:
 

@@ -2225,6 +2225,12 @@ pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 
 This path performs no writes and does not require an operator token. It checks production public APIs, app pages, marketplace/detail contracts, bilingual P0 markers, source mojibake, and release-runbook guardrails. When public skill supply exists, it also checks both English and Chinese skill detail pages for the Journey A developer handoff packet, feedback submission entry, and trust report entry so a successful HTTP 200 cannot hide missing install, feedback, or governance controls. The same public gate checks the detail support APIs for published feedback summary shape and active public price-row shape, rejects reviewer/project/moderation/provider/ledger/commission fields on those public payloads, then sends unauthenticated sample requests to representative skill, organization, developer, project, runtime, publisher, billing, payout, version, pricing, feedback-response, marketplace-appeal, admin review, finance, payout-decision, delivery, curation, incident, abuse-report, and feedback-moderation write endpoints and requires JSON `401` or `403` errors. It also verifies that unauthenticated organization, developer, publisher, and admin workspace read endpoints return JSON `401` or `403` boundaries without sensitive-output leaks. It exercises public MCP discovery with `tools/list`, `resources/list`, and `resources/read`, and verifies that unauthenticated `tools/call` returns an MCP `isError` boundary instead of runtime, billable, or invocation state. Routine 1Panel updates can therefore catch broken detail data contracts, public MCP contract drift, and accidental exposure of Journey A/B/C workspace operations without creating production rows.
 
+When the app target is the main production domain, the same public gate also runs
+the `production web alias gate` against `https://www.useskillhub.com` and
+`https://app.useskillhub.com`. It accepts same-site redirects back to the main
+domain but fails if an alias serves a non-SkillHub host, stale HTML, missing P0
+markers, or mojibake.
+
 For release signoff or customer walkthroughs where an admin/super-admin user token is already configured in the shell, run the full protected Journey C gate:
 
 ```bash

@@ -122,7 +122,9 @@ The API should return:
 `pnpm smoke:p0 -- --prod --skip-admin` is the routine post-deploy public gate:
 it checks production public APIs, app pages, marketplace/detail contracts,
 account entry, workspaces, docs, terms, and bilingual copy without writing data
-or requiring an operator token.
+or requiring an operator token. Because production mode targets
+`https://useskillhub.com`, the same run also performs the `production web alias gate`
+for `https://www.useskillhub.com` and `https://app.useskillhub.com`.
 
 For customer walkthroughs or release signoff, run the protected Journey C gate
 only from a shell where an admin/super-admin user token is already configured:
