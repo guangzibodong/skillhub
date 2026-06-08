@@ -961,6 +961,12 @@ Added marketplace and skill-detail mobile polish, covering:
 - Compact marketplace CTAs keep the same hierarchy while meeting the same minimum tap area as the primary and secondary action system.
 - Skill detail command-copy buttons now expose explicit accessible labels for CLI, MCP, and SDK commands, and the back-to-marketplace breadcrumb has a reliable mobile tap area.
 
+Added publisher-directory and detail-hero mobile QA polish, covering:
+
+- Breadcrumb links now render as their own line before page eyebrows, so mobile skill-detail and publisher-directory first viewports keep navigation and page context visually separate.
+- Public publisher skill chips now use larger touch targets, making the directory easier to browse on mobile without changing the marketplace trust model or publisher ranking rules.
+- This keeps the launch UI closer to the frozen mobile acceptance criteria: no overflow, clear CTA hierarchy, and usable touch targets across discovery and supplier-trust pages.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:
