@@ -106,7 +106,13 @@ export function SkillInstallCommandPanel({
             <div className="install-command-row" key={command.label}>
               <span>{command.label}</span>
               <code>{command.value}</code>
-              <button className="icon-button" onClick={() => copyCommand(command.label, command.value)} title={labels.copy} type="button">
+              <button
+                aria-label={`${copiedKey === command.label ? labels.copied : labels.copy}: ${command.label}`}
+                className="icon-button"
+                onClick={() => copyCommand(command.label, command.value)}
+                title={labels.copy}
+                type="button"
+              >
                 {copiedKey === command.label ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
               </button>
             </div>

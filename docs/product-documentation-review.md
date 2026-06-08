@@ -955,6 +955,12 @@ Added public admin-entry hardening, covering:
 - The public marketplace operating overview still shows platform-operator metrics as launch trust evidence, but it no longer advertises a direct admin-console CTA from the marketplace page.
 - Dedicated admin routes remain available for operators with direct links and role-enforced sessions; public login and marketplace flows keep the user/developer/publisher path first.
 
+Added marketplace and skill-detail mobile polish, covering:
+
+- Marketplace discovery filter chips, reset controls, and install-copy actions now use larger touch targets so mobile users can search and refine skills without precision tapping.
+- Compact marketplace CTAs keep the same hierarchy while meeting the same minimum tap area as the primary and secondary action system.
+- Skill detail command-copy buttons now expose explicit accessible labels for CLI, MCP, and SDK commands, and the back-to-marketplace breadcrumb has a reliable mobile tap area.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

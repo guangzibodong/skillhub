@@ -10524,7 +10524,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 32px;
+  min-height: 40px;
   border: 1px solid rgba(124, 199, 216, 0.18);
   border-radius: var(--radius);
   background: rgba(124, 199, 216, 0.08);
@@ -10535,14 +10535,14 @@ a {
 }
 
 .filter-button {
-  min-height: 34px;
+  min-height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--muted);
   font-size: 12px;
   font-weight: 760;
-  padding: 0 12px;
+  padding: 0 13px;
 }
 
 .filter-button--active {
@@ -10765,7 +10765,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 32px;
+  min-height: 40px;
   border: 1px solid rgba(155, 226, 141, 0.2);
   border-radius: var(--radius);
   background: rgba(155, 226, 141, 0.1);
@@ -10962,6 +10962,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
   margin-bottom: 18px;
   color: var(--muted);
   font-size: 13px;
@@ -12998,7 +12999,7 @@ a {
 }
 
 .secondary-button--compact {
-  min-height: 34px;
+  min-height: 40px;
   padding: 0 10px;
 }
 
