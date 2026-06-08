@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  AlertCircle,
   BadgeCheck,
+  CheckCircle2,
   Copy,
   ExternalLink,
   PackageCheck,
@@ -48,6 +50,8 @@ const labels = {
     copy: "Copy install",
     copied: "Copied",
     copyFailed: "Copy failed",
+    copyFailure: "Install command could not be copied",
+    copySuccess: "Install command copied",
     details: "Details",
     by: "by",
     allPricing: "All pricing",
@@ -116,6 +120,8 @@ const labels = {
     copy: "复制安装",
     copied: "已复制",
     copyFailed: "复制失败",
+    copyFailure: "安装命令复制失败",
+    copySuccess: "安装命令已复制",
     details: "详情",
     by: "来自",
     allPricing: "全部价格",
@@ -247,6 +253,11 @@ export function MarketplaceBrowser({
   const [sort, setSort] = useState<SortKey>(normalizedInitialFilters.sort);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copyFailedSlug, setCopyFailedSlug] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<{
+    kind: "error" | "success";
+    message: string;
+    slug: string;
+  } | null>(null);
   const dictionary = labels[locale];
   const emptyCatalog = emptyCatalogCopy[locale];
   const isEmptyCatalog = skills.length === 0;
@@ -394,12 +405,32 @@ export function MarketplaceBrowser({
       .then(() => {
         setCopyFailedSlug(null);
         setCopiedSlug(skill.slug);
-        window.setTimeout(() => setCopiedSlug(null), 1400);
+        setCopyStatus({
+          kind: "success",
+          message: dictionary.copySuccess,
+          slug: skill.slug,
+        });
+        window.setTimeout(() => {
+          setCopiedSlug(null);
+          setCopyStatus((current) =>
+            current?.slug === skill.slug ? null : current,
+          );
+        }, 1800);
       })
       .catch(() => {
         setCopiedSlug(null);
         setCopyFailedSlug(skill.slug);
-        window.setTimeout(() => setCopyFailedSlug(null), 1800);
+        setCopyStatus({
+          kind: "error",
+          message: dictionary.copyFailure,
+          slug: skill.slug,
+        });
+        window.setTimeout(() => {
+          setCopyFailedSlug(null);
+          setCopyStatus((current) =>
+            current?.slug === skill.slug ? null : current,
+          );
+        }, 2200);
       });
   }
 
@@ -642,23 +673,41 @@ export function MarketplaceBrowser({
               </div>
 
               {isSkillInstallable ? (
-                <div
-                  className="install-strip"
-                  aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
-                >
-                  <code>{skill.installsCommand.cli}</code>
-                  <button
-                    aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
-                    onClick={() => copyInstall(skill)}
-                    type="button"
+                <div className="market-install-action">
+                  <div
+                    className="install-strip"
+                    aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
                   >
-                    <Copy size={15} aria-hidden="true" />
-                    {copiedSlug === skill.slug
-                      ? dictionary.copied
-                      : copyFailedSlug === skill.slug
-                        ? dictionary.copyFailed
-                        : dictionary.copy}
-                  </button>
+                    <code>{skill.installsCommand.cli}</code>
+                    <button
+                      aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
+                      onClick={() => copyInstall(skill)}
+                      type="button"
+                    >
+                      <Copy size={15} aria-hidden="true" />
+                      {copiedSlug === skill.slug
+                        ? dictionary.copied
+                        : copyFailedSlug === skill.slug
+                          ? dictionary.copyFailed
+                          : dictionary.copy}
+                    </button>
+                  </div>
+                  {copyStatus?.slug === skill.slug ? (
+                    <div
+                      aria-live={
+                        copyStatus.kind === "error" ? "assertive" : "polite"
+                      }
+                      className={`market-copy-status market-copy-status--${copyStatus.kind}`}
+                      role={copyStatus.kind === "error" ? "alert" : "status"}
+                    >
+                      {copyStatus.kind === "error" ? (
+                        <AlertCircle size={14} aria-hidden="true" />
+                      ) : (
+                        <CheckCircle2 size={14} aria-hidden="true" />
+                      )}
+                      <span>{copyStatus.message}</span>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div

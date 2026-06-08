@@ -10818,6 +10818,11 @@ a {
   color: var(--signal);
 }
 
+.market-install-action {
+  display: grid;
+  gap: 8px;
+}
+
 .install-strip {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -10877,6 +10882,43 @@ a {
 .install-strip--locked strong {
   color: #fff4d7;
   font-size: 12px;
+}
+
+.market-copy-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.25;
+  padding: 7px 9px;
+}
+
+.market-copy-status svg {
+  flex: 0 0 auto;
+}
+
+.market-copy-status span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.market-copy-status--success {
+  border-color: rgba(155, 226, 141, 0.24);
+  background: rgba(155, 226, 141, 0.08);
+  color: #cce7c2;
+}
+
+.market-copy-status--error {
+  border-color: rgba(255, 112, 90, 0.28);
+  background: rgba(255, 112, 90, 0.08);
+  color: #ffc3b8;
 }
 
 .market-skill-card__foot {

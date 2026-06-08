@@ -38,6 +38,8 @@ SkillHub must become an operating workspace:
 - Publishers return to manage reviews, runtime checks, installs, usage, quality, buyer requests, and revenue state.
 - Admins return to manage review queues, risk, trust, ranking, incidents, ledger, payouts, disputes, and notifications.
 
+The latest marketplace copy-feedback polish makes discovery cards behave more like production tooling. When a developer copies an install command from `/marketplace`, the card now shows a localized success or failure status message below the command in addition to the button state. The message uses live-region semantics for assistive technology, keeps the compact install strip stable on mobile, and avoids horizontal overflow while preserving the same verified-review install lock model.
+
 ## Latest Implementation Review
 
 The latest marketplace filter polish makes shared discovery links easier to understand. `/marketplace` now renders an active-filter summary between search and the full filter panel whenever a query, category, price, risk, runtime, verification, or sort parameter is applied. The summary uses compact chips plus a nearby reset action, so mobile users arriving from homepage search or a copied URL can immediately see why a catalog result set is narrow without scrolling through every filter group.
