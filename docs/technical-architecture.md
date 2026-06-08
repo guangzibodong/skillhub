@@ -110,13 +110,13 @@ Owns:
 Owns:
 
 - Publisher payout account state.
-- KYC/provider verification status.
+- Manual PayPal/Alipay receiving-detail verification status.
 - Available balance.
 - Payout requests.
 - Manual payout review.
-- Payout provider status updates.
+- Manual transfer reference and retry/block status updates.
 
-Use a marketplace payment provider such as Stripe Connect for connected accounts and payout movement. SkillHub should record the ledger and state; the provider should handle regulated money movement where possible.
+P0 payout movement uses finance-reviewed manual PayPal/Alipay transfer records. A marketplace payment provider such as Stripe Connect can replace provider-specific payout automation later; SkillHub should still record the ledger and state.
 
 Payment provider API integration should be implemented in the final integration phase. The product and database must still model payment, balance, payout, refund, and dispute states before the provider is connected.
 
@@ -414,10 +414,10 @@ This is not a reduced release plan. It is the order for building the complete pr
 ### Phase 6: Final External Integrations
 
 - Payment provider integration.
-- Connected payout accounts.
-- KYC status.
+- Provider-specific payout automation.
+- Tax/KYC automation status.
 - Real payment capture.
-- Real payout movement.
+- Automated payout movement beyond the P0 manual PayPal/Alipay workflow.
 - Email sending protocol/provider integration.
 - Provider webhook handling.
 - Risk holds from provider signals.

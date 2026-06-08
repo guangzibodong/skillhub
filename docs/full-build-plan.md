@@ -115,14 +115,14 @@ Let a real publisher submit, operate, and monetize skills; let a real developer 
 ### Payout Operations
 
 - Payout account state.
-- KYC/provider verification state.
+- Manual PayPal/Alipay receiving-detail verification state.
 - Pending and available balances.
 - Payout requests.
 - Manual payout review.
 - Payout blocks and retry conditions.
 - Payout audit logs.
 
-The actual payment provider and payout movement integration is last.
+The actual payment provider and provider-specific payout automation are last; P0 payout movement uses finance-reviewed manual PayPal/Alipay transfer records.
 
 ### Notification Operations
 
@@ -211,9 +211,9 @@ The actual email protocol/provider integration is last.
 ### Phase 8: Final External Integrations
 
 - Payment provider API.
-- Connected payout account onboarding.
+- Provider-specific payout automation.
 - Payment capture.
-- Real payout movement.
+- Automated payout movement beyond the P0 manual PayPal/Alipay workflow.
 - Provider webhooks.
 - Email sending protocol/provider.
 - Final public terms for refunds, disputes, takedowns, data retention, and payouts.

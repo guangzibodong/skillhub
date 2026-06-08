@@ -32,7 +32,7 @@ These pages are intentionally separated even before authentication is connected.
 - Skill analytics: calls, latency, errors, conversion, top consumers.
 - Pricing: free, paid per call, subscription, bundle.
 - Earnings: pending balance, available balance, paid out, refunds, disputes, platform fee.
-- Payouts: connect payout account, request payout, payout history, tax/KYC status.
+- Payouts: submit PayPal/Alipay receiving details, request payout, payout history, manual verification status.
 - Settings: organization, team members, API keys, webhook endpoints.
 
 ### Buyer / Developer Dashboard
@@ -50,7 +50,7 @@ These pages are intentionally separated even before authentication is connected.
 - Skill review: submitted skills, manifest diff, permission risk, runtime test, approve/reject.
 - Users and orgs: account status, publisher status, risk flags.
 - Finance: transactions, platform fees, publisher shares, refunds, disputes, payout batches.
-- Payout review: high-value payouts, blocked payouts, KYC missing, fraud flags.
+- Payout review: high-value payouts, blocked payouts, missing receiving details, fraud flags.
 - Moderation: reports, takedowns, abuse, malicious runtime entries.
 - System: gateway health, queue health, API usage, audit logs.
 
@@ -77,7 +77,7 @@ These pages are intentionally separated even before authentication is connected.
 
 ## Money Flow
 
-SkillHub should not implement marketplace money movement by manually storing card data or directly holding user funds in the app database. Use a marketplace payment provider such as Stripe Connect for global rollout, because it supports connected accounts, onboarding, balances, platform fees, and payouts.
+SkillHub should not implement marketplace money movement by manually storing card data or directly holding user funds in the app database. P0 payout movement uses finance-reviewed PayPal/Alipay transfer records; a marketplace payment provider such as Stripe Connect can replace provider-specific onboarding and automated payouts later.
 
 Initial model:
 
@@ -127,12 +127,12 @@ Core records:
 
 Publisher payout states:
 
-- Not configured: publisher has not connected a payout account.
-- Verification required: payout provider needs more identity or business information.
+- Not configured: publisher has not submitted PayPal or Alipay receiving details.
+- Verification required: finance needs PayPal/Alipay receiving details or supporting notes.
 - Pending balance: money exists but is not withdrawable yet.
 - Available balance: eligible for payout.
-- Payout requested: publisher requested payout or automatic payout scheduled.
-- Processing: payout provider is moving funds.
+- Payout requested: publisher requested payout and eligible balances are reserved.
+- Processing: finance approved the request and is completing the manual transfer.
 - Paid: payout succeeded.
 - Failed: payout failed and needs action.
 - Blocked: admin or risk system blocked payout.
@@ -142,7 +142,7 @@ Withdrawal rules:
 - Minimum payout threshold.
 - Payout delay window for refunds and fraud review.
 - Manual review above a configured amount.
-- No payout while account is suspended or KYC is incomplete.
+- No payout while account is suspended or manual receiving details are unverified.
 - Full ledger audit trail for every balance change.
 
 ## Data Model Draft
@@ -214,18 +214,18 @@ Payment provider API integration and email sending protocol integration are inte
 ### Phase 4: Production Finance And Notifications
 
 - Refunds and disputes.
-- Tax/KYC status.
+- Manual PayPal/Alipay receiving-detail verification.
 - Payout risk review.
-- Automated payout schedule.
+- Manual transfer review.
 - Notification events and templates.
 - Review, publish, runtime incident, billing, refund, dispute, and payout notification triggers.
 
 ### Phase 5: Final External Integrations
 
 - Payment provider API.
-- Connected payout account onboarding.
+- Provider-specific payout automation.
 - Real payment capture.
-- Real payout movement.
+- Automated payout movement beyond the P0 manual PayPal/Alipay workflow.
 - Payment provider webhooks.
 - Email sending protocol/provider.
 - Public marketplace terms.
@@ -234,6 +234,6 @@ Payment provider API integration and email sending protocol integration are inte
 
 - Never pay out from raw usage logs. Usage must be converted into immutable transactions.
 - Never edit historical commission results. Add adjustment transactions instead.
-- Do not let publishers publish paid skills before payout/KYC status is valid.
+- Do not let publishers publish paid skills before manual payout readiness is valid.
 - Every admin action on skills, payouts, refunds, and disputes must be audited.
 - Keep free publishing and paid publishing as separate states.

@@ -170,7 +170,7 @@ const fallbackOverview: PlatformOverview = {
       {
         signal: "Unusual payout request",
         scope: "$4,800 request",
-        action: "Hold for KYC review",
+        action: "Hold for finance transfer review",
       },
       {
         signal: "Runtime error spike",

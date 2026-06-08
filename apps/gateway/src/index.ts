@@ -2805,10 +2805,10 @@ app.post("/mcp", async (c) => {
       }
     }
 
-    const manifests = await listSkillManifests();
+    const publicSkills = (await listSkillManifests()).map(publicMcpSkillContract);
 
     return rpc(request.id, {
-      tools: manifests.map((skill) => ({
+      tools: publicSkills.map((skill) => ({
         name: skill.name,
         title: skill.displayName,
         description: skill.description,
@@ -2818,7 +2818,7 @@ app.post("/mcp", async (c) => {
           tags: skill.tags,
           version: skill.version,
           runtimeType: skill.runtime.type,
-          permissionLevel: getPermissionLevel(skill.permissions)
+          permissionLevel: skill.permissionLevel
         }
       }))
     });
@@ -2863,10 +2863,10 @@ app.post("/mcp", async (c) => {
   }
 
   if (request.method === "resources/list") {
-    const manifests = await listSkillManifests();
+    const publicSkills = (await listSkillManifests()).map(publicMcpSkillContract);
 
     return rpc(request.id, {
-      resources: manifests.map((skill) => ({
+      resources: publicSkills.map((skill) => ({
         uri: `skillhub://skills/${skill.name}`,
         name: skill.displayName,
         description: skill.description,
@@ -2876,10 +2876,10 @@ app.post("/mcp", async (c) => {
   }
 
   if (request.method === "resources/read") {
-    const manifests = await listSkillManifests();
+    const publicSkills = (await listSkillManifests()).map(publicMcpSkillContract);
     const uri = String(request.params?.uri ?? "");
     const slug = uri.replace("skillhub://skills/", "");
-    const skill = manifests.find((item) => item.name === slug);
+    const skill = publicSkills.find((item) => item.name === slug);
 
     if (!skill) {
       return rpcError(request.id, -32004, "Resource not found.");
@@ -2918,7 +2918,55 @@ function mcpToolCallText(body: Record<string, unknown>, isError: boolean) {
   return typeof output === "string" ? output : JSON.stringify(output ?? body, null, 2);
 }
 
-function publicMcpSkillResource(skill: SkillManifest) {
+type PublicMcpSkillContract = {
+  schemaVersion: "0.1";
+  name: string;
+  displayName: string;
+  version: string;
+  description: string;
+  author?: {
+    name: string;
+    url?: string;
+  };
+  tags: string[];
+  runtime: SkillRuntime;
+  permissionLevel: SkillSummary["permissionLevel"];
+  permissions: {
+    browser: boolean;
+    filesystem: "none" | "read" | "write";
+    network: boolean;
+    secretCount: number;
+  };
+  inputSchema: Record<string, unknown>;
+  outputSchema: Record<string, unknown>;
+};
+
+function publicMcpSkillContract(skill: SkillManifest): PublicMcpSkillContract {
+  const name = nonEmptyString(skill.name, "unnamed-skill");
+  const permissions = normalizedSkillPermissions(skill.permissions);
+
+  return {
+    schemaVersion: "0.1",
+    name,
+    displayName: nonEmptyString(skill.displayName, name),
+    version: nonEmptyString(skill.version, "0.1.0"),
+    description: nonEmptyString(skill.description, "Public SkillHub skill contract."),
+    author: publicMcpAuthor(skill.author),
+    tags: normalizedStringArray(skill.tags, ["uncategorized"]),
+    runtime: publicMcpRuntime(skill.runtime, name),
+    permissionLevel: getPermissionLevel(permissions),
+    permissions: {
+      network: permissions.network,
+      browser: permissions.browser,
+      filesystem: permissions.filesystem,
+      secretCount: permissions.secrets.length
+    },
+    inputSchema: normalizedJsonSchema(skill.inputSchema),
+    outputSchema: normalizedJsonSchema(skill.outputSchema)
+  };
+}
+
+function publicMcpSkillResource(skill: PublicMcpSkillContract) {
   return {
     schemaVersion: skill.schemaVersion,
     name: skill.name,
@@ -2927,14 +2975,9 @@ function publicMcpSkillResource(skill: SkillManifest) {
     description: skill.description,
     author: skill.author,
     tags: skill.tags,
-    runtime: publicMcpRuntime(skill.runtime),
-    permissionLevel: getPermissionLevel(skill.permissions),
-    permissions: {
-      network: skill.permissions.network,
-      browser: skill.permissions.browser,
-      filesystem: skill.permissions.filesystem,
-      secretCount: skill.permissions.secrets.length
-    },
+    runtime: skill.runtime,
+    permissionLevel: skill.permissionLevel,
+    permissions: skill.permissions,
     inputSchema: skill.inputSchema,
     outputSchema: skill.outputSchema
   };
@@ -2972,26 +3015,74 @@ function publicSecretHandles(secrets: string[]) {
   return [`[${secrets.length} ${label} required]`];
 }
 
-function publicMcpRuntime(runtime: SkillRuntime): SkillRuntime {
-  if (runtime.type === "http") {
+function publicMcpRuntime(runtime: SkillRuntime | unknown, skillName = "skill"): SkillRuntime {
+  if (isRecord(runtime) && runtime.type === "http") {
     return {
       type: runtime.type,
-      entrypoint: redactPublicRuntimeUrl(runtime.entrypoint)
+      entrypoint: redactPublicRuntimeUrl(
+        nonEmptyString(runtime.entrypoint, `https://api.useskillhub.com/v1/runtime/invoke/${skillName}`)
+      )
     };
   }
 
-  if (runtime.type === "mcp") {
+  if (isRecord(runtime) && runtime.type === "mcp") {
     return {
       type: runtime.type,
-      serverUrl: redactPublicRuntimeUrl(runtime.serverUrl)
+      serverUrl: redactPublicRuntimeUrl(
+        nonEmptyString(runtime.serverUrl, "https://api.useskillhub.com/mcp")
+      )
     };
   }
 
   return {
-    type: runtime.type,
+    type: "local",
     command: "[restricted local runtime]",
-    args: runtime.args?.length ? [`[${runtime.args.length} redacted args]`] : undefined
+    args:
+      isRecord(runtime) && Array.isArray(runtime.args) && runtime.args.length > 0
+        ? [`[${runtime.args.length} redacted args]`]
+        : undefined
   };
+}
+
+function normalizedSkillPermissions(value: unknown): SkillManifest["permissions"] {
+  const permissions = isRecord(value) ? value : {};
+  const filesystem = permissions.filesystem;
+  const normalizedFilesystem: SkillManifest["permissions"]["filesystem"] =
+    filesystem === "read" || filesystem === "write" || filesystem === "none"
+      ? filesystem
+      : "none";
+  const secrets = Array.isArray(permissions.secrets)
+    ? permissions.secrets.filter((secret): secret is string => typeof secret === "string")
+    : [];
+
+  return {
+    network: permissions.network === true,
+    browser: permissions.browser === true,
+    filesystem: normalizedFilesystem,
+    secrets
+  };
+}
+
+function normalizedJsonSchema(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : { type: "object", properties: {} };
+}
+
+function normalizedStringArray(value: unknown, fallback: string[]) {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const strings = value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+
+  return strings.length > 0 ? strings : fallback;
+}
+
+function nonEmptyString(value: unknown, fallback: string) {
+  return typeof value === "string" && value.trim().length > 0 ? value : fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function redactPublicRuntimeUrl(value: string) {

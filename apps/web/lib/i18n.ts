@@ -243,8 +243,8 @@ export const dictionaries = {
       ],
       payoutTitle: "Withdrawal readiness",
       payoutItems: [
-        ["Payout account", "Connected"],
-        ["KYC status", "Verified"],
+        ["Receiving account", "Submitted"],
+        ["Manual payout", "PayPal/Alipay verified"],
         ["Minimum threshold", "$100"],
         ["Next payout", "Scheduled review"]
       ]
@@ -642,8 +642,8 @@ export const dictionaries = {
       ],
       payoutTitle: "提现准备",
       payoutItems: [
-        ["提现账户", "已连接"],
-        ["KYC 状态", "已验证"],
+        ["\u6536\u6b3e\u8d26\u53f7", "\u5df2\u63d0\u4ea4"],
+        ["人工提现", "PayPal/Alipay 已验证"],
         ["最低提现金额", "$100"],
         ["下一笔提现", "等待计划审核"]
       ]

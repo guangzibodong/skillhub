@@ -226,7 +226,7 @@ https://app.useskillhub.com/terms
 https://app.useskillhub.com/terms?lang=zh
 ```
 
-The terms page is not an API endpoint. It documents the current operating policy for buyer/developer use, publisher responsibilities, review and takedown, commission and payout states, refunds and disputes, data retention, notifications and webhooks, and provider-deferred payment/email integrations. It is intended to make pre-launch marketplace rules visible while final payment provider, payout provider, tax/KYC, refund-window, and minimum-payout decisions remain open.
+The terms page is not an API endpoint. It documents the current operating policy for buyer/developer use, publisher responsibilities, review and takedown, commission and payout states, refunds and disputes, data retention, notifications and webhooks, and provider-deferred payment/email integrations. It is intended to make pre-launch marketplace rules visible while final payment-provider, tax/KYC automation, refund-window, and minimum-payout decisions remain open; P0 publisher payout movement is the decided manual PayPal/Alipay transfer workflow.
 
 Final legal terms can replace or extend this page before paid marketplace launch without changing the API state machines for reviews, installs, runtime invocations, ledger posting, payout requests, adjustment records, notification events, or audit logs.
 

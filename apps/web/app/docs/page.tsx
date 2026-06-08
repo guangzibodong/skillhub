@@ -185,7 +185,7 @@ const copy: Record<Locale, DocsCopy> = {
         "Never expose OAuth secrets, email provider keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords."
       ],
       notice:
-        "Payment provider capture, connected payout movement, tax/KYC automation, final legal terms, and final email provider operations are intentionally last integrations.",
+        "Payment capture, provider-specific payout automation, tax/KYC automation, final legal terms, and final email provider operations are intentionally last integrations. P0 publisher payouts use manual PayPal/Alipay transfer records.",
       title: "Launch and operator guardrails"
     },
     references: {
@@ -347,7 +347,7 @@ const copy: Record<Locale, DocsCopy> = {
         "永远不要暴露 OAuth secret、邮件 provider key、service token、API salt、webhook secret、验证码、用户 token 或密码。"
       ],
       notice:
-        "支付扣款、真实提现划转、税务/KYC 自动化、最终法律条款和最终邮件投递提供商都属于最后接入项。",
+        "支付扣款、提现提供商自动化、税务/KYC 自动化、最终法律条款和最终邮件投递提供商都属于最后接入项；P0 发布者提现使用 PayPal/Alipay 人工转账记录。",
       title: "上线和运营护栏"
     },
     references: {

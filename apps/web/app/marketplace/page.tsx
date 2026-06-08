@@ -314,7 +314,7 @@ function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
     "Data policy": "数据政策",
     "Fix runtime checks": "修复运行检查",
     "High-risk filesystem skill": "高风险文件系统技能",
-    "Hold for KYC review": "暂停并做 KYC 审核",
+    "Hold for finance transfer review": "暂停并做财务打款复核",
     "Improve listing quality": "提升上架质量",
     "Medium risk approved": "中风险已批准",
     "Owner approval required": "需要负责人批准",

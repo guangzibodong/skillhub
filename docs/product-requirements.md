@@ -558,7 +558,7 @@ blocked
 
 Rules:
 
-- No paid publishing before payout/KYC state is acceptable.
+- No paid publishing before publisher profile, accepted terms, verified manual payout receiving details, and commission readiness are acceptable.
 - No payout while account is suspended.
 - Payout above threshold enters manual review.
 - Blocked payout requires reason and retry condition.
@@ -684,8 +684,8 @@ These are product requirements, but the external integrations should be implemen
 
 - Payment provider API integration.
 - Payment capture.
-- Provider-specific payout account onboarding.
-- Actual provider payout movement beyond the P0 manual PayPal/Alipay transfer workflow.
+- Provider-specific payout automation and onboarding.
+- Provider-specific payout automation beyond the P0 manual PayPal/Alipay transfer workflow.
 - Full tax/KYC automation.
 - Email sending protocol and provider integration.
 
@@ -743,7 +743,7 @@ These need final decisions before implementation:
 - Whether paid publishing launches invite-only.
 - Minimum payout threshold.
 - Review SLA for paid skills.
-- Final legal review of public terms for refunds, disputes, data retention, takedowns, KYC, tax, and provider-specific payout windows.
+- Final legal review of public terms for refunds, disputes, data retention, takedowns, tax/KYC automation boundaries, and provider-specific payout windows.
 
 ## Phase Plan
 
@@ -786,8 +786,8 @@ These need final decisions before implementation:
 
 ### Phase 5: Payouts
 
-- Provider integration.
-- Connected accounts.
+- Provider-specific payout automation.
+- Manual PayPal/Alipay receiving-account verification.
 - Payout requests.
 - Payout review.
 - Refunds and disputes.

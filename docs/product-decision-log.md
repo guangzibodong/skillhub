@@ -29,7 +29,7 @@ Decision:
 
 - Public launch blockers include account entry, core public pages, marketplace discovery, skill detail, publish path, publisher workspace, developer project path, admin review/risk visibility, migration readiness, notification-template coverage, secret-safe launch readiness, and production demo fallback disabled.
 - OAuth providers can be configuration-required for public launch if email-code access is working and the UI/readiness panel explains missing callback/client configuration.
-- Payment, payout provider movement, and final legal terms are paid-marketplace blockers, not public-launch blockers.
+- Payment capture, provider-specific payout automation, and final legal terms are paid-marketplace blockers, not public-launch blockers.
 
 Acceptance impact:
 
@@ -96,7 +96,7 @@ Question:
 
 Current assumption:
 
-- Paid publishing should start invite-only until payout/KYC/provider, review SLA, support, refund/dispute, and finance operations are proven.
+- Paid publishing should start invite-only until manual payout verification, payment-provider capture, review SLA, support, refund/dispute, and finance operations are proven.
 
 Design default:
 
