@@ -974,6 +974,12 @@ Added public home admin-entry tightening, covering:
 - This aligns the public entry model with the login/register requirement: normal users see marketplace, publishing, account, and workspace paths first; privileged admin routes are not advertised as shared public login destinations.
 - The public smoke gate now enforces this rule by checking that home, login, marketplace, and publisher-directory pages do not advertise direct admin links.
 
+Added login touch-target polish, covering:
+
+- The login/register segmented control now uses a larger mobile tap target, so switching between password login and registration no longer requires precision tapping.
+- Secondary token recovery disclosure headers now expose a full tap area while remaining visually subordinate to Google/GitHub and password access.
+- This keeps `/login` aligned with the P0 entry requirement: normal account access stays first, recovery stays secondary, and mobile controls remain usable without changing auth scope.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

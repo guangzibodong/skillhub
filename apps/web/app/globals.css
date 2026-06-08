@@ -3903,24 +3903,28 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
   color: var(--ink);
   cursor: pointer;
   font-size: 13px;
   font-weight: 760;
   line-height: 1.35;
   list-style: none;
+  padding: 0 2px;
 }
 
 .login-switch-account-details summary {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
   color: var(--ink);
   cursor: pointer;
   font-size: 13px;
   font-weight: 760;
   line-height: 1.35;
   list-style: none;
+  padding: 0 2px;
 }
 
 .login-recovery-details summary::-webkit-details-marker {
@@ -4219,7 +4223,7 @@ a {
 .auth-mode-switch__item {
   display: inline-flex;
   min-width: 0;
-  min-height: 38px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 7px;
