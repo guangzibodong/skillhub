@@ -47,8 +47,8 @@ const copy = {
     handoffAction: "Open signed-in developer workspace",
     handoffActionLocked: "Sign in to open developer workspace",
     handoffBody:
-      "After sign-in, a saved or installed skill becomes project state. Finish policy approval, version pinning, runtime key setup, test invocation, updates, and billing readiness from the project command center.",
-    handoffSteps: ["Policy", "Version pin", "Runtime key", "Login-gated runtime test", "Updates and paid readiness where applicable"],
+      "After sign-in and project policy approval, an eligible verified skill can become project state. Finish version pinning, runtime key setup, gated test invocation, updates, and paid-readiness checks where applicable from the project command center.",
+    handoffSteps: ["Policy", "Version pin", "Runtime key", "Login-gated runtime test", "Updates and paid-readiness checks where applicable"],
     handoffTitle: "Project handoff steps",
     handoffTitleLocked: "After sign-in: project handoff steps",
     install: "Install to project",
@@ -84,8 +84,8 @@ const copy = {
     handoffAction: "\u6253\u5f00\u5df2\u767b\u5f55\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
     handoffActionLocked: "\u767b\u5f55\u540e\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
     handoffBody:
-      "\u767b\u5f55\u540e\uff0c\u4fdd\u5b58\u6216\u5b89\u88c5\u7684\u6280\u80fd\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7b56\u7565\u5ba1\u6279\u3001\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u767b\u5f55\u540e\u7684\u8fd0\u884c\u6d4b\u8bd5\u3001\u66f4\u65b0\u548c\u8d26\u5355\u51c6\u5907\u68c0\u67e5\u3002",
-    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907"],
+      "\u767b\u5f55\u5e76\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u540e\uff0c\u7b26\u5408\u6761\u4ef6\u7684\u5df2\u9a8c\u8bc1\u6280\u80fd\u624d\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5\u3001\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907\u68c0\u67e5\u3002",
+    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907\u68c0\u67e5"],
     handoffTitle: "\u4e0b\u4e00\u6b65\uff1a\u5b8c\u6210\u9879\u76ee\u4ea4\u63a5",
     handoffTitleLocked: "\u767b\u5f55\u540e\uff1a\u9879\u76ee\u4ea4\u63a5\u6b65\u9aa4",
     install: "\u5b89\u88c5\u5230\u9879\u76ee",

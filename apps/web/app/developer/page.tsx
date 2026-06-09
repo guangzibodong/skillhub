@@ -132,7 +132,7 @@ const developerCommandCopy = {
       billing: "Billing readiness",
       createProject: "Project setup",
       demand: "Buyer requests",
-      installs: "Skill installation",
+      installs: "Verified skill adoption",
       keys: "Runtime keys",
       notifications: "Notification inbox",
       runtime: "Runtime quality",
@@ -222,7 +222,7 @@ const copy = {
   en: {
     description:
       "A focused workspace for teams that adopt verified skills inside agent projects after sign-in: create projects, inspect keys and budgets, and prepare runtime policy checks.",
-    emptyProjects: "No developer projects yet. Create a project to start installing and approving skills.",
+    emptyProjects: "No developer projects yet. Create a project to start adopting and approving verified skills.",
     eyebrow: "Developer workspace",
     metrics: {
       budget: "Monthly budget",
@@ -240,7 +240,7 @@ const copy = {
       runtime: ["Inspect runtime quality", "Errors, blocked calls, or low success rate need review before scaling agent traffic."],
       update: ["Review version update", "A publisher update or incident is waiting for an explicit project decision."]
     },
-    nextActionsDescription: "These are the project states that make developers come back after the first install.",
+    nextActionsDescription: "These are the project states that make developers come back after the first verified-skill adoption.",
     nextActionsTitle: "Operating queue",
     openMarketplace: "Browse marketplace",
     openProject: "Open project",
@@ -253,14 +253,14 @@ const copy = {
       revoked: "revoked",
       suspended: "suspended"
     },
-    projectHeaders: ["Project", "Installed", "Keys", "Budget", "Runtime / next step"],
+    projectHeaders: ["Project", "Adopted", "Keys", "Budget", "Runtime / next step"],
     projectTitle: "Agent project operations",
     title: "Manage the skills your agents use."
   },
   zh: {
     description:
-      "给安装和运行技能的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、账单和运行治理。",
-    emptyProjects: "还没有开发者项目。先创建一个项目，再开始安装、审批和测试技能。",
+      "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
+    emptyProjects: "还没有开发者项目。先创建一个项目，再开始采用、审批和测试已验证技能。",
     eyebrow: "开发者工作台",
     metrics: {
       budget: "月度预算",
@@ -272,13 +272,13 @@ const copy = {
       billing: ["检查账单准备", "在付费运行扩大前，确认发票资料和支付方式状态清楚。"],
       createKey: ["创建运行 Key", "当前项目还没有活跃 Key。先创建一次性展示的 Key，再交给智能体运行。"],
       createProject: ["创建第一个项目", "先建立一个智能体项目，让市场里的选择变成真实项目状态。"],
-      installSkill: ["安装第一个技能", "去市场选择一个已验证技能，安装后再进入运行测试。"],
+      installSkill: ["采用第一个已验证技能", "登录后去市场选择一个已验证技能，加入项目后再进入门控运行测试。"],
       monitor: ["持续监控运营", "运行、更新、成本、Key 和通知都已进入可复查状态。"],
       ownerReview: ["审批高风险策略", "有技能需要负责人审批后，智能体才可以通过项目策略调用。"],
       runtime: ["检查运行质量", "错误、阻断调用或成功率偏低，需要在扩大调用前处理。"],
       update: ["处理版本更新", "发布者更新或事故通知正在等待项目侧明确决策。"]
     },
-    nextActionsDescription: "这些项目状态，就是开发者第一次安装之后还会回来的原因。",
+    nextActionsDescription: "这些项目状态，就是开发者第一次采用已验证技能之后还会回来的原因。",
     nextActionsTitle: "运营队列",
     openMarketplace: "浏览市场",
     openProject: "打开项目",
@@ -291,7 +291,7 @@ const copy = {
       revoked: "已撤销",
       suspended: "已暂停"
     },
-    projectHeaders: ["项目", "已安装", "Key", "预算", "运行 / 下一步"],
+    projectHeaders: ["项目", "已采用", "Key", "预算", "运行 / 下一步"],
     projectTitle: "智能体项目运营",
     title: "管理你的智能体正在使用的技能。"
   }
@@ -705,10 +705,10 @@ function getDeveloperLockedGuide(locale: DeveloperLocale) {
           title: "确认开发权限"
         },
         {
-          body: "从市场选择可信技能，安装到项目后用同一条治理链路跑测试。",
+          body: "登录后从市场选择已验证技能，加入项目后用同一条治理链路跑测试。",
           href: "/marketplace",
           label: "03",
-          title: "安装并测试技能"
+          title: "登录后采用并测试已验证技能"
         }
       ]
     };
@@ -732,7 +732,7 @@ function getDeveloperLockedGuide(locale: DeveloperLocale) {
         title: "Confirm developer role"
       },
       {
-        body: "Pick a trusted marketplace skill, install it to a project, then run the governed test path.",
+        body: "After sign-in, pick a verified marketplace skill, add it to a project, then run the governed test path through project policy checks.",
         href: "/marketplace",
         label: "03",
         title: "After sign-in, add and test a verified skill"

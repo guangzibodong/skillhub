@@ -46,8 +46,9 @@ const copy = {
     metricPublishers: "Publishers",
     metricVerifiedPublishers: "Verified publishers",
     notAvailable: "n/a",
-    payout: "Paid marketplace readiness",
+    payout: "Paid marketplace preview",
     profile: "View profile",
+    publisherWorkspace: "Sign in for publisher workspace",
     publicSkills: "Public skills",
     sideBody:
       "The directory makes supplier quality visible before payment integration is connected. Publisher trust is based on profile state, verified skills, public listings, review status, runtime evidence, install evidence, support path, and issue history.",
@@ -78,7 +79,7 @@ const copy = {
     },
     checks: [
       "Verified skills carry more ranking weight.",
-      "Paid marketplace and payout readiness remain prelaunch.",
+      "Paid marketplace readiness remains prelaunch.",
       "Runtime evidence shows real adoption.",
       "Skill-level pages expose API inspect commands, availability, and permissions.",
     ],
@@ -99,8 +100,9 @@ const copy = {
     metricPublishers: "发布者",
     metricVerifiedPublishers: "已验证发布者",
     notAvailable: "暂无",
-    payout: "\u4ed8\u8d39\u5e02\u573a\u51c6\u5907\u72b6\u6001",
+    payout: "\u4ed8\u8d39\u5e02\u573a\u9884\u89c8",
     profile: "查看档案",
+    publisherWorkspace: "\u767b\u5f55\u540e\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
     publicSkills: "公开技能",
     sideBody:
       "\u76ee\u5f55\u4f1a\u5728\u6700\u7ec8\u652f\u4ed8\u63a5\u53e3\u63a5\u5165\u524d\u5148\u628a\u4f9b\u5e94\u65b9\u8d28\u91cf\u663e\u6027\u5316\u3002\u53d1\u5e03\u8005\u4fe1\u4efb\u4e3b\u8981\u57fa\u4e8e\u8d44\u6599\u72b6\u6001\u3001\u5df2\u9a8c\u8bc1\u6280\u80fd\u6570\u3001\u516c\u5f00\u4e0a\u67b6\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8fd0\u884c\u8bc1\u636e\u3001\u5b89\u88c5\u8bc1\u636e\u3001\u652f\u6301\u8def\u5f84\u548c\u95ee\u9898\u8bb0\u5f55\u3002",
@@ -131,7 +133,7 @@ const copy = {
     },
     checks: [
       "已验证技能会获得更高排序权重。",
-      "\u4ed8\u8d39\u5e02\u573a\u548c\u63d0\u73b0\u51c6\u5907\u4ecd\u5c5e\u4e8e\u9884\u53d1\u5e03\u80fd\u529b\u3002",
+      "\u4ed8\u8d39\u5e02\u573a\u51c6\u5907\u4ecd\u5c5e\u4e8e\u9884\u53d1\u5e03\u80fd\u529b\u3002",
       "运行证据体现真实采用情况。",
       "技能详情页展示 API 查看命令、可用状态和权限。",
     ],
@@ -217,10 +219,10 @@ export default async function PublisherDirectoryPage({
             </a>
             <a
               className="secondary-button secondary-button--large"
-              href={localizedHref("/publisher", locale)}
+              href={localizedHref("/login", locale)}
             >
               <WalletCards size={18} aria-hidden="true" />
-              <span>{dictionary.nav.publisher}</span>
+              <span>{labels.publisherWorkspace}</span>
             </a>
           </div>
         </div>

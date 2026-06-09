@@ -131,7 +131,7 @@ const publishCopy = {
       editorHintValid: "Valid JSON",
       evidencePacket: {
         body: "This is the secret-safe packet a publisher can reason about before submitting the exact version for platform review.",
-        commercial: "Commercial gate",
+        commercial: "Paid-readiness gate",
         identity: "Identity",
         permissions: "Permissions",
         risk: "Risk",
@@ -162,7 +162,7 @@ const publishCopy = {
       repairQueue: {
         blocker: "Blocker",
         body: "Resolve blockers before saving. Warnings can be saved as draft, but they become reviewer evidence and may require notes.",
-        emptyBody: "Only paid-readiness metadata remains after draft save; continue in the publisher workspace for terms, pricing intent, payout-readiness review, and version review.",
+        emptyBody: "Only paid-readiness metadata remains after draft save; continue in the publisher workspace for terms, pricing intent, future finance-review metadata, and version review.",
         emptyTitle: "No manifest blockers",
         target: "Target",
         title: "Preflight repair queue",
@@ -208,10 +208,10 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "发布控制台",
       description:
-        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价和提现准备。",
+        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和付费准备元数据。",
       eyebrow: "发布者工作流",
       pipelineBody:
-        "一个市场上架项只有进入草稿状态、版本状态、审核状态、运行检查状态和商业准备状态后，才算可信供应。",
+        "一个市场上架项只有进入草稿状态、版本状态、审核状态、运行检查状态和付费准备元数据状态后，才算可信供应。",
       pipelineEyebrow: "运营流水线",
       pipelineTitle: "上传只是第一个控制点，不是结束。",
       publisherWorkspace: "发布者工作台",
@@ -220,7 +220,7 @@ const publishCopy = {
         ["草稿", "组织隔离"],
         ["审核", "自动闸口"],
         ["运行", "策略证据"],
-        ["付费", "条款和提现"]
+        ["付费", "准备元数据"]
       ],
       title: "注册一个技能包。",
       pipelineSteps: [
@@ -249,8 +249,8 @@ const publishCopy = {
           title: "审核决策"
         },
         {
-          body: "付费激活需要审核、条款、定价、分佣规则和提现状态全部就绪。",
-          title: "商业准备"
+          body: "付费激活仍处于预发布；当前只收集审核、条款、定价意图、分佣规则和财务复核需要的准备元数据。",
+          title: "付费准备元数据"
         }
       ]
     },
@@ -270,9 +270,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "草稿保存后继续完成条款、提现准备、定价和分佣规则闸口。",
-          detail: "后续付费激活需要审核通过、接受条款、启用价格、分佣规则和提现状态就绪。",
-          label: "商业准备"
+          action: "草稿保存后继续完成条款、定价意图、付费准备元数据和分佣规则闸口。",
+          detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
+          label: "付费准备元数据"
         },
         identity: {
           action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -315,7 +315,7 @@ const publishCopy = {
       editorHintValid: "JSON 有效",
       evidencePacket: {
         body: "这是发布者在提交准确版本给平台审核前，可以先检查的安全证据包。",
-        commercial: "商业闸口",
+        commercial: "付费准备闸口",
         identity: "身份",
         permissions: "权限",
         risk: "风险",
@@ -331,7 +331,7 @@ const publishCopy = {
         ["草稿", "把协议保存成组织拥有的注册表状态。"],
         ["版本", "在 /publisher 创建或提交指定语义版本。"],
         ["审核", "审批前处理自动检查警告。"],
-        ["定价", "审核、条款和提现就绪后再激活付费价格。"]
+        ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
       ],
       readiness: {
         blocked: "已阻塞",
@@ -346,7 +346,7 @@ const publishCopy = {
       repairQueue: {
         blocker: "阻塞",
         body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
-        emptyBody: "草稿保存后只剩商业准备；继续到发布者工作台处理条款、定价、提现和审核。",
+        emptyBody: "草稿保存后只剩付费准备元数据；继续到发布者工作台处理条款、定价意图、财务复核资料和审核。",
         emptyTitle: "没有 manifest 阻塞项",
         target: "目标字段",
         title: "预检修复队列",
@@ -356,7 +356,7 @@ const publishCopy = {
         detail: "查看公开详情",
         errorTitle: "草稿未保存",
         publisher: "打开发布者工作台",
-        successBody: "继续进入发布者工作台，提交审核版本、设置定价并完成商业准备。",
+        successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备元数据。",
         successTitle: "草稿已保存到注册表"
       },
       reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
@@ -500,7 +500,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     editorHintValid: "JSON 有效",
     evidencePacket: {
       body: "这是发布者在把准确版本提交给平台审核前，可以先检查的安全证据包。",
-      commercial: "商业闸口",
+      commercial: "付费准备闸口",
       identity: "身份",
       permissions: "权限",
       risk: "风险",
@@ -531,7 +531,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     repairQueue: {
       blocker: "阻塞",
       body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
-      emptyBody: "草稿保存后只剩商业准备；继续到发布者工作台处理条款、定价、提现和审核。",
+      emptyBody: "草稿保存后只剩付费准备元数据；继续到发布者工作台处理条款、定价意图、财务复核资料和审核。",
       emptyTitle: "没有 manifest 阻塞项",
       target: "目标字段",
       title: "预检修复队列",
@@ -541,7 +541,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       detail: "查看公开详情",
       errorTitle: "草稿未保存",
       publisher: "打开发布者工作台",
-      successBody: "继续进入发布者工作台，提交审核版本、设置定价并完成商业准备。",
+      successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备元数据。",
       successTitle: "草稿已保存到注册表"
     },
     reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",

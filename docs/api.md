@@ -193,7 +193,7 @@ curl "https://api.useskillhub.com/v1/publishers/skillhub"
 
 The response includes:
 
-- Publisher display name, public slug, profile status, payout readiness state, and derived trust level.
+- Publisher display name, public slug, profile status, paid-marketplace preview state, and derived trust level.
 - Public skill count, verified skill count, install count, runtime call count, active paid skill count, and average success rate.
 - Public skill rows with verification status, permission risk, pricing model, install count, call count, success rate, and version.
 
@@ -295,9 +295,9 @@ The overview includes:
 - Publisher review, runtime-check, buyer-request, and balance signals scoped to the token organization.
 - Admin review, payout, notification, incident, and runtime-risk signals.
 
-The `/publisher` web console derives its top-level priority queue from the publisher overview plus the existing publisher skills, buyer-request, payout, ledger, refund, dispute, profile, and notification endpoints. The queue is a UI aggregation layer: it ranks review repair, runtime checks, review SLA pressure, paid activation blockers, unanswered published feedback, buyer demand, marketplace placement or appeal work, payout readiness, and refund/dispute attention without exposing private admin curation math or requiring a separate fake task API.
+The `/publisher` web console derives its top-level priority queue from the publisher overview plus the existing publisher skills, buyer-request, paid-readiness, ledger, refund, dispute, profile, and notification endpoints. The queue is a UI aggregation layer: it ranks review repair, runtime checks, review SLA pressure, paid-preview blockers, unanswered published feedback, buyer demand, marketplace placement or appeal work, finance-gated paid readiness, and refund/dispute attention without exposing private admin curation math or requiring a separate fake task API.
 
-The `/developer` web console derives its top-level operations priority queue from existing developer project, buyer-request, organization billing, team, webhook, and notification endpoints. The queue is a UI aggregation layer: it ranks no-project setup, missing active keys, missing installs, owner approval, suspended runtime state, update inbox work, runtime-quality issues, billing readiness, unread notifications, team setup, webhook setup, and buyer requests without adding fake task rows or requiring a separate task API.
+The `/developer` web console derives its top-level operations priority queue from existing developer project, buyer-request, organization billing, team, webhook, and notification endpoints. The queue is a UI aggregation layer: it ranks no-project setup, missing active keys, missing verified-skill adoption, owner approval, suspended runtime state, update inbox work, runtime-quality issues, paid-readiness where applicable, unread notifications, team setup, webhook setup, and buyer requests without adding fake task rows or requiring a separate task API.
 
 The `/dashboard/projects/[slug]` web console derives a project-level operations priority queue from the existing project detail response and related project action surfaces. The queue ranks missing active keys, missing installed skills, owner approval, suspended installs or policy, update inbox work, runtime quality issues, missing runtime proof, subscription/ledger/invoice gaps, unresolved refund/dispute impact, and saved-skill follow-up. It is also a UI aggregation layer: links point back into the exact project panels and no separate task endpoint or fake queue rows are introduced.
 
@@ -401,7 +401,7 @@ The public app exposes a console access map on `/` and `/account`. The convenien
 
 - `/login` and `/account` for password access, email-code fallback, OAuth readiness, connected identities, session fingerprints, and workspace readiness.
 - `/developer` for project, runtime key, install, policy, buyer-request, billing, team, notification, and webhook operations.
-- `/publisher` for skill publishing, review repair, pricing blockers, buyer demand, feedback, revenue, payout readiness, and notification operations.
+- `/publisher` for skill publishing, review repair, pricing-intent blockers, buyer demand, feedback, paid-preview ledger state, finance-gated paid readiness, and notification operations.
 - `/admin` for review, trust, incidents, identity, launch readiness, ledger, payout, external delivery, webhook outbox, and audit operations.
 
 The console map uses the active `/v1/auth/me` subject when present to show sign-in-required, available, or role-required states. It does not display raw tokens, passwords, OAuth secrets, email provider keys, or service tokens.
@@ -456,7 +456,7 @@ curl "https://api.useskillhub.com/v1/account" \
   -H "Authorization: Bearer $SKILLHUB_USER_TOKEN"
 ```
 
-`GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and payout status. Login methods include provider connection metadata where available: `providerEmail`, `emailVerified`, `connectedAt`, and `lastLoginAt`. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, billing shortcuts, and payout readiness.
+`GET /v1/account` requires a user-scoped token. It returns the user's profile, current organization, memberships, active token-session metadata, login-method states, and workspace readiness signals: team members, active tokens, project count, skill count, unread notifications, notification preference count, billing profile readiness, invoice readiness, publisher profile status, and paid-marketplace preview status when permissions apply. Login methods include provider connection metadata where available: `providerEmail`, `emailVerified`, `connectedAt`, and `lastLoginAt`. This powers `/account`, the personal center for profile, connected login methods, organization roles, notification preferences, session/token security, and role-gated paid-readiness context.
 
 Read user-owned account sessions:
 
@@ -507,7 +507,7 @@ Web console session:
 
 - `/login` is now a customer-facing product account entry. It shows Google/GitHub buttons first, then username/email password sign-in and registration, with token fallback kept in a secondary recovery section. OAuth provider redirects become live when provider credentials, callback base URL, and state secret are configured.
 - `/login` keeps public OAuth disabled states user-friendly instead of exposing operator setup details. Callback URLs, missing configuration names, and readiness booleans remain available through `/v1/auth/providers`, the deployment runbook, and admin launch-readiness output. `/admin-login` redirects to the same account entry for operators who expect a dedicated admin-login URL.
-- `/login` lets a new user create a workspace with username, email, and password, or an existing user log in with username/email plus password. Email-code access remains available through API flows, and token fallback is reserved for invites, bootstrap, or the team console.
+- `/login` lets a new user create a workspace with username, email, and password, or an existing user log in with username/email plus password. Email-code access remains available through API flows, and invite/recovery token fallback is reserved for administrator-provided invitations, bootstrap, or recovery situations.
 - Email-code preview and OAuth callback debug messages are hidden in the web UI unless `NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW=true` or `NEXT_PUBLIC_SKILLHUB_SHOW_OAUTH_DEBUG_ERROR=true` is explicitly set for a controlled debug build.
 - `/account` centralizes profile, organization role, modeled connected accounts with Google/GitHub disconnect guardrails, token security with old-session revocation, workspace readiness, and notification preferences for the active user.
 - `/account` summarizes identity, session security, workspace readiness, and operations readiness above the detailed panels, then marks developer, publisher, dashboard, and admin shortcuts as available, sign-in-required, or role-required using the active `/v1/auth/me` subject.
@@ -1246,7 +1246,7 @@ curl -X POST "https://api.useskillhub.com/v1/skills/browser-research/prices" \
 
 Setting a price requires publisher, owner, admin, or super-admin authorization and is scoped to the token organization. Publishers can save free pricing, paid draft pricing, and archived pricing while commercial setup is incomplete.
 
-Active paid pricing is a commercial-readiness gate. A `per_call` or `subscription` price with `status=active` requires:
+Active paid pricing remains a paid-marketplace preview gate. A `per_call` or `subscription` price with `status=active` requires:
 
 - An existing publisher profile.
 - Publisher profile status `active`.

@@ -9,11 +9,11 @@ const publisherPageCopy = {
     description:
       "A focused workspace for skill publishers to move packages through review, record pricing intent for future paid-marketplace review, respond to buyer demand, and prepare paid-marketplace metadata.",
     eyebrow: "Publisher workspace",
-    ledgerEmpty: "No posted publisher revenue yet",
+    ledgerEmpty: "No posted paid-preview ledger rows yet",
     ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
     ledgerTitle: "Publisher paid-marketplace ledger preview",
     refundReview: "Refund review",
-    sourceMixTitle: "Revenue source mix",
+    sourceMixTitle: "Paid-preview source mix",
     sourceShareLabel: "publisher share",
     sourceTransactionLabel: "transactions",
     unknownProject: "unknown-project",
@@ -24,22 +24,22 @@ const publisherPageCopy = {
     commercial: {
       actionLabels: {
         current_terms: "Accept the latest terms version",
-        payout: "Finish payout verification",
+        payout: "Complete paid-readiness review",
         publisher_profile: "Create the publisher profile",
         publisher_status: "Reactivate the publisher profile",
         review: "Pass review for this skill",
         terms: "Accept publisher operating terms"
       },
       blocked: "Blocked",
-      blockedSkillsTitle: "Paid activation blockers",
+      blockedSkillsTitle: "Paid-preview blockers",
       description:
-        "A single operating view for the review, terms, payout, and pricing gates that decide whether a listing can become paid supply.",
-      empty: "No paid activation blockers are visible for the current publisher scope.",
+        "A single operating view for the review, terms, paid-readiness metadata, and pricing-intent gates that prepare a listing for future paid-marketplace review.",
+      empty: "No paid-preview blockers are visible for the current publisher scope.",
       metrics: {
-        blockedPaid: "Blocked paid listings",
+        blockedPaid: "Blocked paid-preview listings",
         draftPaid: "Draft paid prices",
-        payout: "Paid readiness",
-        readyPaid: "Ready paid listings"
+        payout: "Paid-readiness review",
+        readyPaid: "Ready paid-preview listings"
       },
       profile: "Publisher profile",
       ready: "Ready",
@@ -114,7 +114,7 @@ const publisherPageCopy = {
       title: "Publisher launch checklist",
       tasks: {
         session: [
-          "Connect workspace session",
+          "Sign in with workspace session",
           "Sign in with an organization session so publishing, pricing intent, paid-readiness metadata, and notifications are scoped."
         ],
         profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
@@ -137,11 +137,11 @@ const publisherPageCopy = {
     description:
       "给技能发布者使用的运营工作台：推进技能审核、记录未来付费市场复核所需的定价意图、响应买方需求，并准备付费市场元数据。",
     eyebrow: "发布者工作台",
-    ledgerEmpty: "暂无已入账的发布者收入",
-    ledgerHeaders: ["技能", "来源", "总收入", "平台费", "净收入", "状态"],
+    ledgerEmpty: "暂无已入账的付费预览账本记录",
+    ledgerHeaders: ["技能", "来源", "预览总额", "平台费", "发布者份额", "状态"],
     ledgerTitle: "发布者付费市场账本预览",
     refundReview: "退款复核",
-    sourceMixTitle: "收入来源结构",
+    sourceMixTitle: "付费预览来源结构",
     sourceShareLabel: "发布者分成",
     sourceTransactionLabel: "笔交易",
     unknownProject: "未知项目",
@@ -152,21 +152,21 @@ const publisherPageCopy = {
     commercial: {
       actionLabels: {
         current_terms: "接受最新条款版本",
-        payout: "完成提现验证",
+        payout: "完成付费准备复核",
         publisher_profile: "创建发布者资料",
         publisher_status: "恢复发布者资料",
         review: "让该技能通过审核",
         terms: "接受发布者运营条款"
       },
       blocked: "受阻",
-      blockedSkillsTitle: "付费激活阻塞项",
-      description: "集中查看审核、条款、提现和定价门禁，判断哪些技能可以成为付费供给。",
-      empty: "当前发布者范围内没有可见的付费激活阻塞项。",
+      blockedSkillsTitle: "付费预览阻塞项",
+      description: "集中查看审核、条款、付费准备元数据和定价意图门禁，为未来付费市场复核做准备。",
+      empty: "当前发布者范围内没有可见的付费预览阻塞项。",
       metrics: {
-        blockedPaid: "受阻付费技能",
+        blockedPaid: "受阻付费预览技能",
         draftPaid: "草稿付费价格",
-        payout: "付费准备",
-        readyPaid: "可启用付费技能"
+        payout: "付费准备复核",
+        readyPaid: "可复核付费预览技能"
       },
       profile: "发布者资料",
       ready: "已就绪",
@@ -228,7 +228,7 @@ const publisherPageCopy = {
       requested: "已申请"
     },
     metrics: {
-      available: "可提现余额",
+      available: "付费预览余额",
       demand: "开放需求",
       skills: "我的技能",
       verified: "已验证技能"
@@ -240,7 +240,7 @@ const publisherPageCopy = {
       progress: "准备度",
       title: "发布者上线清单",
       tasks: {
-        session: ["连接工作区会话", "使用组织会话登录，让发布、定价意图、付费准备元数据和通知都归属到当前组织。"],
+        session: ["登录工作区会话", "使用组织会话登录，让发布、定价意图、付费准备元数据和通知都归属到当前组织。"],
         profile: ["创建发布者资料", "设置买家安装技能前会看到的公开发布者名称。"],
         terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和付费市场准备政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],

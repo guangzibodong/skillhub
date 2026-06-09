@@ -63,7 +63,7 @@ const pageCopy = {
         bullets: [
           "Every listing must include display name, description, version, runtime, input/output schemas, permissions, examples, changelog, and support path.",
           "Verified or installed versions are immutable; publishers must create a new semantic version for behavior, schema, permission, pricing, or runtime changes.",
-          "Paid publishing requires an active publisher profile, acceptable payout-account state, approved pricing, and accepted refund/dispute terms."
+          "Paid publishing remains prelaunch and requires an active publisher profile, finance-reviewed paid-readiness state, approved pricing, and accepted refund/dispute terms before public activation."
         ]
       },
       {
@@ -76,12 +76,12 @@ const pageCopy = {
         ]
       },
       {
-        title: "Pricing, commission, and payout",
-        body: "Commercial records are modeled before final payment capture and payout-provider automation are connected.",
+        title: "Pricing, commission, and paid-marketplace preview",
+        body: "Commercial records are modeled as prelaunch operating state before final payment capture and payout-provider automation are connected.",
         bullets: [
-          "Usage logs do not pay publishers directly; billable usage posts transactions, transaction splits, and publisher balance rows first.",
-          "The launch default split is 20% platform fee and 80% publisher share unless a newer active commission rule applies to future posting.",
-          "Balances mature after the risk window, then eligible balances can enter payout review. P0 finance completes manual PayPal/Alipay transfers and records the transfer reference; provider payout automation remains deferred."
+          "Usage logs do not pay publishers directly; after paid-marketplace gates, billable usage posts transactions, transaction splits, and publisher balance rows first.",
+          "The preview split model is 20% platform fee and 80% publisher share unless a newer active commission rule applies to future posting.",
+          "Balance maturity, manual finance review, and PayPal/Alipay transfer references are modeled for paid-marketplace preview. General payment capture and automated payouts remain unavailable."
         ]
       },
       {
@@ -124,7 +124,7 @@ const pageCopy = {
         title: "Deferred final integrations",
         body: "Some provider integrations are intentionally last so the internal operating model stays stable first.",
         bullets: [
-          "Payment capture, payment-provider customer sessions, provider-specific payout automation, and tax/KYC automation are deferred; P0 publisher payouts use manual PayPal/Alipay transfer records.",
+          "Payment capture, payment-provider customer sessions, provider-specific payout automation, and tax/KYC automation are deferred; paid-marketplace preview models manual PayPal/Alipay transfer records for future finance review.",
           "Email provider delivery is connected through queued notification events; production readiness requires provider configuration and debug code previews disabled.",
           "Terms may be updated before paid marketplace launch when provider, region, tax, refund-window, KYC, and minimum-payout decisions are finalized."
         ]
@@ -174,7 +174,7 @@ const pageCopy = {
         bullets: [
           "\u6bcf\u4e2a listing \u5fc5\u987b\u5305\u542b\u540d\u79f0\u3001\u63cf\u8ff0\u3001\u7248\u672c\u3001\u8fd0\u884c\u65f6\u3001\u8f93\u5165\u8f93\u51fa schema\u3001\u6743\u9650\u3001\u793a\u4f8b\u3001\u53d8\u66f4\u8bb0\u5f55\u548c\u652f\u6301\u8def\u5f84\u3002",
           "\u5df2\u9a8c\u8bc1\u6216\u5df2\u5b89\u88c5\u7248\u672c\u4e0d\u53ef\u5c31\u5730\u4fee\u6539\uff1b\u884c\u4e3a\u3001schema\u3001\u6743\u9650\u3001\u4ef7\u683c\u6216\u8fd0\u884c\u65f6\u53d8\u5316\u90fd\u8981\u521b\u5efa\u65b0\u8bed\u4e49\u7248\u672c\u3002",
-          "\u4ed8\u8d39\u53d1\u5e03\u8981\u6c42\u53d1\u5e03\u8005\u8d44\u6599\u6709\u6548\u3001\u63d0\u73b0\u8d26\u6237\u72b6\u6001\u53ef\u63a5\u53d7\u3001\u4ef7\u683c\u5df2\u6279\u51c6\uff0c\u5e76\u63a5\u53d7\u9000\u6b3e\u548c\u4e89\u8bae\u6761\u6b3e\u3002"
+          "\u4ed8\u8d39\u53d1\u5e03\u4ecd\u5c5e\u4e8e\u9884\u53d1\u5e03\u72b6\u6001\uff1b\u516c\u5f00\u542f\u7528\u524d\u9700\u8981\u53d1\u5e03\u8005\u8d44\u6599\u6709\u6548\u3001\u8d22\u52a1\u590d\u6838\u4ed8\u8d39\u51c6\u5907\u72b6\u6001\u3001\u4ef7\u683c\u5df2\u6279\u51c6\uff0c\u5e76\u63a5\u53d7\u9000\u6b3e\u548c\u4e89\u8bae\u6761\u6b3e\u3002"
         ]
       },
       {
@@ -187,12 +187,12 @@ const pageCopy = {
         ]
       },
       {
-        title: "\u4ef7\u683c\u3001\u5206\u4f63\u548c\u63d0\u73b0",
-        body: "\u5728\u6700\u7ec8\u652f\u4ed8\u63d0\u4f9b\u5546\u5212\u8f6c\u63a5\u5165\u524d\uff0c\u5546\u4e1a\u8bb0\u5f55\u5148\u5b8c\u6574\u5efa\u6a21\u3002",
+        title: "\u4ef7\u683c\u3001\u5206\u4f63\u548c\u4ed8\u8d39\u5e02\u573a\u9884\u89c8",
+        body: "\u5728\u6700\u7ec8\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u6253\u6b3e\u63a5\u5165\u524d\uff0c\u5546\u4e1a\u8bb0\u5f55\u4f5c\u4e3a\u9884\u53d1\u5e03\u8fd0\u8425\u72b6\u6001\u5148\u5efa\u6a21\u3002",
         bullets: [
-          "\u7528\u91cf\u65e5\u5fd7\u4e0d\u76f4\u63a5\u652f\u4ed8\u7ed9\u53d1\u5e03\u8005\uff1b\u53ef\u8ba1\u8d39\u7528\u91cf\u5148\u751f\u6210 transaction\u3001split \u548c publisher balance\u3002",
-          "\u4e0a\u7ebf\u9ed8\u8ba4\u5206\u6210\u662f\u5e73\u53f0 20%\u3001\u53d1\u5e03\u8005 80%\uff0c\u9664\u975e\u540e\u7eed\u751f\u6548\u7684 commission rule \u5bf9\u672a\u6765\u8bb0\u8d26\u751f\u6548\u3002",
-          "\u4f59\u989d\u7ecf\u8fc7\u98ce\u9669\u7a97\u53e3\u540e\u6210\u719f\uff0c\u518d\u8fdb\u5165\u63d0\u73b0\u5ba1\u6838\u3002P0 \u7531\u8d22\u52a1\u901a\u8fc7 PayPal/Alipay \u4eba\u5de5\u8f6c\u8d26\u5e76\u8bb0\u5f55\u6d41\u6c34\u53f7\uff1b\u63d0\u73b0\u63d0\u4f9b\u5546\u81ea\u52a8\u6253\u6b3e\u4fdd\u6301\u5ef6\u540e\u63a5\u5165\u3002"
+          "\u7528\u91cf\u65e5\u5fd7\u4e0d\u76f4\u63a5\u652f\u4ed8\u7ed9\u53d1\u5e03\u8005\uff1b\u4ed8\u8d39\u5e02\u573a\u95e8\u69db\u901a\u8fc7\u540e\uff0c\u53ef\u8ba1\u8d39\u7528\u91cf\u624d\u4f1a\u5148\u751f\u6210 transaction\u3001split \u548c publisher balance\u3002",
+          "\u9884\u89c8\u5206\u6210\u6a21\u578b\u662f\u5e73\u53f0 20%\u3001\u53d1\u5e03\u8005 80%\uff0c\u9664\u975e\u540e\u7eed\u751f\u6548\u7684 commission rule \u5bf9\u672a\u6765\u8bb0\u8d26\u751f\u6548\u3002",
+          "\u4f59\u989d\u6210\u719f\u3001\u4eba\u5de5\u8d22\u52a1\u590d\u6838\u548c PayPal/Alipay \u8f6c\u8d26\u51ed\u8bc1\u76ee\u524d\u53ea\u4f5c\u4e3a\u4ed8\u8d39\u5e02\u573a\u9884\u89c8\u5efa\u6a21\u3002\u901a\u7528\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u6253\u6b3e\u4ecd\u672a\u5f00\u653e\u3002"
         ]
       },
       {
@@ -235,7 +235,7 @@ const pageCopy = {
         title: "\u5ef6\u540e\u7684\u6700\u7ec8\u63a5\u5165",
         body: "\u90e8\u5206\u63d0\u4f9b\u5546\u63a5\u5165\u523b\u610f\u653e\u5230\u6700\u540e\uff0c\u786e\u4fdd\u5185\u90e8\u8fd0\u8425\u6a21\u578b\u5148\u7a33\u5b9a\u3002",
         bullets: [
-          "\u652f\u4ed8\u6263\u6b3e\u3001\u652f\u4ed8\u63d0\u4f9b\u5546\u5ba2\u6237 session\u3001\u63d0\u73b0\u63d0\u4f9b\u5546\u81ea\u52a8\u5316\u548c\u7a0e\u52a1/KYC \u81ea\u52a8\u5316\u90fd\u662f\u5ef6\u540e\u9879\uff1bP0 \u6253\u6b3e\u901a\u8fc7 PayPal/Alipay \u4eba\u5de5\u8f6c\u8d26\u5e76\u8bb0\u5f55\u6d41\u6c34\u53f7\u5b8c\u6210\u3002",
+          "\u652f\u4ed8\u6263\u6b3e\u3001\u652f\u4ed8\u63d0\u4f9b\u5546\u5ba2\u6237 session\u3001\u63d0\u73b0\u63d0\u4f9b\u5546\u81ea\u52a8\u5316\u548c\u7a0e\u52a1/KYC \u81ea\u52a8\u5316\u90fd\u662f\u5ef6\u540e\u9879\uff1b\u4ed8\u8d39\u5e02\u573a\u9884\u89c8\u4ec5\u5efa\u6a21 PayPal/Alipay \u4eba\u5de5\u8f6c\u8d26\u8bb0\u5f55\uff0c\u7528\u4e8e\u672a\u6765\u8d22\u52a1\u590d\u6838\u3002",
           "\u90ae\u4ef6\u63d0\u4f9b\u5546\u6295\u9012\u901a\u8fc7\u5df2\u6392\u961f\u7684 notification event \u63a5\u5165\uff1b\u751f\u4ea7\u5c31\u7eea\u8981\u6c42\u63d0\u4f9b\u5546\u914d\u7f6e\u5b8c\u6210\u4e14\u5173\u95ed debug code preview\u3002",
           "\u4ed8\u8d39\u5e02\u573a\u4e0a\u7ebf\u524d\uff0c\u53ef\u6839\u636e provider\u3001\u533a\u57df\u3001\u7a0e\u52a1\u3001\u9000\u6b3e\u7a97\u53e3\u3001KYC \u548c\u6700\u4f4e\u63d0\u73b0\u95e8\u69db\u51b3\u7b56\u66f4\u65b0\u6761\u6b3e\u3002"
         ]

@@ -229,6 +229,62 @@ async function checkSkillCards() {
 }
 
 function validatePageState(path, plain, html) {
+  if (path === "/" || path.startsWith("/?")) {
+    const forbidden = [
+      "view workspace proof",
+      "new skill",
+      "commercial ledger",
+      "\u67e5\u770b\u5de5\u4f5c\u53f0\u8bc1\u636e",
+      "\u65b0\u5efa\u6280\u80fd",
+      "\u5546\u4e1a\u8d26\u672c",
+    ].filter((token) => plain.includes(token));
+
+    if (forbidden.length > 0) {
+      return `home page exposes stale anonymous CTA wording: ${forbidden.join(", ")}`;
+    }
+  }
+
+  if (path.startsWith("/docs")) {
+    const forbidden = [
+      "mcp status",
+      "discover, install, and test",
+      "upload, submit, monetize",
+      "process money",
+      "ledger and payouts",
+      "open operations",
+      "api map for the operating platform",
+      "commercial readiness and money movement state",
+      "\u8fdb\u5165\u8fd0\u8425",
+      "\u5904\u7406\u8d44\u91d1",
+      "\u8d26\u672c\u548c\u63d0\u73b0",
+      "\u5546\u4e1a\u5316\u5c31\u7eea\u548c\u8d44\u91d1\u6d41\u8f6c\u72b6\u6001",
+      "mcp \u72b6\u6001",
+    ].filter((token) => plain.includes(token));
+
+    if (forbidden.length > 0) {
+      return `docs page exposes stale public launch wording: ${forbidden.join(", ")}`;
+    }
+  }
+
+  if (path.startsWith("/registry")) {
+    const forbidden = [
+      "new skill",
+      "open api docs",
+      "default public install target",
+      "can install and call",
+      "project install pins",
+      "commercial",
+      "\u65b0\u5efa\u6280\u80fd",
+      "\u6253\u5f00 api \u6587\u6863",
+      "\u9ed8\u8ba4\u516c\u5f00\u5b89\u88c5\u76ee\u6807",
+      "\u5546\u4e1a\u5316",
+    ].filter((token) => plain.includes(token));
+
+    if (forbidden.length > 0) {
+      return `registry page exposes stale public launch wording: ${forbidden.join(", ")}`;
+    }
+  }
+
   if (plain.includes("user access token") || plain.includes("token fallback")) {
     return "public page exposes internal token fallback wording";
   }
@@ -260,6 +316,20 @@ function validatePageState(path, plain, html) {
     ) {
       return "marketplace exposes curl /mcp without metadata-only framing";
     }
+
+    const forbidden = [
+      "paypal/alipay payout details",
+      "manual payout",
+      "payout governance",
+      "artificial payout",
+      "paypal/alipay \u63d0\u73b0\u8d44\u6599",
+      "\u4eba\u5de5\u6253\u6b3e",
+      "\u63d0\u73b0\u6cbb\u7406",
+    ].filter((token) => plain.includes(token));
+
+    if (forbidden.length > 0) {
+      return `marketplace exposes paid-readiness details too early: ${forbidden.join(", ")}`;
+    }
   }
 
   if (path.includes("/skills/browser-research")) {
@@ -270,11 +340,13 @@ function validatePageState(path, plain, html) {
 
   if (path.includes("/skills/dataset-summarizer")) {
     const forbidden = [
+      "publisher payout",
       "install to project",
       "test invocation",
       "open developer workspace",
       "usage ledger",
       "runtime can be tested",
+      "\u53d1\u5e03\u8005\u63d0\u73b0",
     ].filter((token) => plain.includes(token));
 
     if (!plain.includes("inspection only") && !plain.includes("\u4ec5\u53ef\u67e5\u770b")) {

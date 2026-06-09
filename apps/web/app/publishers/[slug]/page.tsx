@@ -37,14 +37,14 @@ const copy = {
     metricInstalls: "Adoption evidence",
     metricPublic: "Public skills",
     metricVerified: "Verified skills",
-    payout: "Paid marketplace readiness",
+    payout: "Paid marketplace preview",
     profile: "Publisher profile",
     publicSkills: "Public skills",
     skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
     status: "Profile status",
     success: "Avg success",
     trust: "Trust signals",
-    trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, runtime evidence, and install evidence. Payout readiness is shown only for paid marketplace preview operations.",
+    trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, runtime evidence, and install evidence. Paid-marketplace preview state is shown as prelaunch context only.",
     trustLevels: {
       active: "Public profile",
       blocked: "Blocked publisher",
@@ -93,14 +93,14 @@ const copy = {
     metricInstalls: "采用证据",
     metricPublic: "公开技能",
     metricVerified: "已验证技能",
-    payout: "付费市场准备状态",
+    payout: "付费市场预览",
     profile: "发布者档案",
     publicSkills: "公开技能",
     skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
     status: "资料状态",
     success: "平均成功率",
     trust: "信任信号",
-    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。提现准备只作为付费市场预览状态展示。",
+    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。付费市场预览状态只作为预发布上下文展示。",
     trustLevels: {
       active: "公开资料",
       blocked: "已阻断发布者",
@@ -183,8 +183,8 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
               <BadgeCheck size={14} aria-hidden="true" />
               {labels.trustLevels[publisher.trustLevel]}
             </span>
-            <span className={publisher.status === "active" ? "status-chip" : "status-chip status-chip--warning"}>{labels.publisherStatuses[publisher.status]}</span>
-            <span className={publisher.payoutStatus === "verified" ? "status-chip" : "status-chip status-chip--neutral"}>{labels.payoutStatuses[publisher.payoutStatus]}</span>
+            <span className={publisher.status === "active" ? "status-chip" : "status-chip status-chip--warning"}>{labels.status}: {labels.publisherStatuses[publisher.status]}</span>
+            <span className={publisher.payoutStatus === "verified" ? "status-chip" : "status-chip status-chip--neutral"}>{labels.payout}: {labels.payoutStatuses[publisher.payoutStatus]}</span>
           </div>
         </div>
       </section>

@@ -60,7 +60,7 @@ const pageCopy = {
     directory: "Publisher directory",
     console: "Sign in for publisher workspace",
     consoleTitle: "Public inspect path",
-    consoleSubtitle: "Agents should start from a contract they can inspect before project-gated install or runtime use.",
+    consoleSubtitle: "Agents should start from a contract they can inspect before project-gated adoption or runtime use.",
     proof: ["Searchable catalog", "Permission review", "API inspect", "Project-gated runtime"],
     mcpMetadataNote: "MCP metadata only; runtime invocation uses POST /mcp after project auth.",
     requests: "Example skill requests - not live data",
@@ -77,7 +77,7 @@ const pageCopy = {
     moneyTitle: "Future paid marketplace model",
     moneyRows: [
       ["Current stage", "Developer Preview catalog; payment capture is prelaunch"],
-      ["Paid readiness", "Signed-in publishers can prepare PayPal/Alipay payout details for finance review"],
+      ["Paid readiness", "Signed-in publishers can prepare paid-readiness metadata for future finance review"],
       ["Future ledger rule", "Billable usage will post transactions only after paid marketplace launch gates"],
       ["Operator control", "Finance evidence remains admin-gated and prelaunch on public pages"]
     ],
@@ -90,9 +90,9 @@ const pageCopy = {
         activeSubscriptions: "Active subscriptions",
         paidPreview: "Paid preview",
         failedChecks: "Failed checks",
-        installedSkills: "Installed skills",
+        installedSkills: "Adopted skills",
         openBuyerRequests: "Buyer requests",
-        payoutGovernance: "Payout governance",
+        payoutGovernance: "Finance review governance",
         projects: "Projects",
         notificationGovernance: "Notification governance",
         reviewQueue: "Review queue",
@@ -128,14 +128,14 @@ const pageCopy = {
       retentionTitle: "Why teams come back",
       retention: {
         developer: [
-          "Approve and update installed skills per project.",
+          "Approve and update adopted skills per project.",
           "Watch cost, failures, latency, incidents, and budget state.",
           "Compare better verified alternatives as the catalog grows."
         ],
         publisher: [
           "Repair review and runtime issues before losing distribution.",
           "Turn buyer requests and feedback into improved versions.",
-          "Prepare paid-readiness and manual payout details before real paid usage launches."
+          "Prepare paid-readiness metadata and finance-review details before real paid usage launches."
         ]
       }
     },
@@ -183,7 +183,7 @@ const pageCopy = {
     directory: "发布者目录",
     console: "登录后进入发布者工作台",
     consoleTitle: "公开查看路径",
-    consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的安装或运行。",
+    consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的采用或运行。",
     proof: ["可搜索目录", "权限审核", "API 查看", "项目门控运行"],
     mcpMetadataNote: "仅 MCP 元数据；运行调用需项目认证后使用 POST /mcp。",
     requests: "示例技能需求 - 非实时数据",
@@ -200,7 +200,7 @@ const pageCopy = {
     moneyTitle: "未来付费市场模型",
     moneyRows: [
       ["当前阶段", "开发者预览目录；支付扣款仍处于预发布"],
-      ["付费准备", "登录后的发布者可准备 PayPal/Alipay 提现资料供财务复核"],
+      ["付费准备", "登录后的发布者可准备付费就绪元数据，供未来财务复核"],
       ["未来账本规则", "可计费使用只会在付费市场上线门槛通过后记账"],
       ["运营控制", "财务凭证保持后台门控，公开页面仅展示预发布状态"]
     ],
@@ -213,9 +213,9 @@ const pageCopy = {
         activeSubscriptions: "活跃订阅",
         paidPreview: "\u4ed8\u8d39\u9884\u89c8",
         failedChecks: "失败检查",
-        installedSkills: "已安装技能",
+        installedSkills: "已采用技能",
         openBuyerRequests: "买方需求",
-        payoutGovernance: "\u63d0\u73b0\u6cbb\u7406",
+        payoutGovernance: "\u8d22\u52a1\u590d\u6838\u6cbb\u7406",
         projects: "项目",
         notificationGovernance: "\u901a\u77e5\u6cbb\u7406",
         reviewQueue: "审核队列",
@@ -226,11 +226,11 @@ const pageCopy = {
       roles: {
         admin: {
           empty: "暂无活跃风险信号。",
-          subtitle: "审核、人工打款、通知和事故队列用于保护上线准备。",
+          subtitle: "审核、财务复核、通知和事故队列用于保护上线准备。",
           title: "平台运营"
         },
         developer: {
-          empty: "暂无已安装技能更新。",
+          empty: "暂无已采用技能更新。",
           subtitle: "项目会为了策略、版本变化、预算、Key 和运行证据回到平台。",
           title: "开发者"
         },
@@ -251,14 +251,14 @@ const pageCopy = {
       retentionTitle: "团队为什么会再次回来",
       retention: {
         developer: [
-          "按项目批准和更新已安装技能。",
+          "按项目批准和更新已采用技能。",
           "观察成本、失败率、延迟、事故和预算状态。",
           "随着目录增长，比较更好的已验证替代方案。"
         ],
         publisher: [
           "在失去分发前修复审核和运行问题。",
           "把买方需求和反馈转成改进版本。",
-          "在真实付费使用上线前准备付费门槛和人工打款信息。"
+          "在真实付费使用上线前准备付费门槛和财务复核资料。"
         ]
       }
     },
@@ -276,7 +276,7 @@ const pageCopy = {
     loopEyebrow: "已验证技能采用路径",
     loopTitle: "市场在登录后保留一条受控路径。",
     loopBody:
-      "有用的技能库不止于复制一条命令。已验证技能可以进入项目策略和运行证据；已提交但未验证的技能只能公开查看，不能安装或测试运行。",
+      "有用的技能库不止于复制一条命令。已验证技能可以在登录后进入项目策略和运行证据；已提交但未验证的技能只能公开查看，不能项目采用或测试运行。",
     loopSteps: [
       ["检查", "采用前可以看到 manifest、权限、运行时、定价意图和发布者档案。", "公共合约"],
       ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
@@ -318,7 +318,7 @@ function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
     "Data policy": "数据政策",
     "Fix runtime checks": "修复运行检查",
     "High-risk filesystem skill": "高风险文件系统技能",
-    "Hold for finance transfer review": "暂停并做财务打款复核",
+    "Hold for finance transfer review": "暂停并做财务转账复核",
     "Improve listing quality": "提升上架质量",
     "Medium risk approved": "中风险已批准",
     "Owner approval required": "需要负责人批准",
@@ -329,7 +329,7 @@ function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
     "Runtime error spike": "运行错误激增",
     "Submit for review": "提交审核",
     "Throttle and notify publisher": "限流并通知发布者",
-    "Unusual payout request": "异常提现请求",
+    "Unusual payout request": "付费预览财务复核",
     high: "高",
     info: "信息",
     medium: "中",
@@ -464,7 +464,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
             <span>{labels.consoleTitle}</span>
           </div>
           <p>{labels.consoleSubtitle}</p>
-          <pre>
+          <pre className="install-console__public-command">
             <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 # ${labels.mcpMetadataNote}

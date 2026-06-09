@@ -100,7 +100,7 @@ const copy: Record<Locale, DocsCopy> = {
   en: {
     api: {
       body:
-        "These groups are the public and console API surfaces that make the marketplace operational. Final payment capture stays deferred, while P0 payouts use manual PayPal/Alipay transfer records on top of the modeled state machines.",
+        "These groups are the public and sign-in gated API surfaces that make the Developer Preview operational. Final payment capture and automated payouts stay deferred; paid-marketplace money movement remains an operating reference, not an anonymous public action.",
       groups: [
         {
           body: "Public discovery, skill detail, publisher trust, and marketplace recommendation inputs.",
@@ -123,7 +123,7 @@ const copy: Record<Locale, DocsCopy> = {
           title: "Admin"
         }
       ],
-      title: "API map for the operating platform"
+      title: "API map for Developer Preview surfaces"
     },
     hero: {
       description:
@@ -131,39 +131,39 @@ const copy: Record<Locale, DocsCopy> = {
       eyebrow: "Developer quickstart",
       primary: "Browse marketplace",
       secondary: "Publish a skill",
-      tertiary: "MCP status",
+      tertiary: "MCP setup",
       title: "SkillHub Developer Quickstart"
     },
     journeys: {
       body:
-        "The P0 product is judged by whether these paths connect. A listing must become project state, review state, runtime state, ledger state, notification state, and operator state.",
+        "The P0 product is judged by whether these paths connect, but anonymous visitors should start with public discovery, inspection, MCP setup, and clear sign-in gates.",
       items: [
         {
           action: "Start in marketplace",
-          evidence: "Listing -> project install -> governed runtime test -> logs and cost follow-up",
+          evidence: "Listing -> public inspection -> sign-in -> project install -> governed runtime test -> logs and cost follow-up",
           href: "/marketplace",
-          steps: ["Search/filter", "Inspect trust", "Install to project", "Run test", "Monitor updates"],
-          title: "Discover, install, and test",
+          steps: ["Search/filter", "Inspect trust", "Sign in", "Add to project", "Run gated test"],
+          title: "Discover, inspect, then sign in to test",
           user: "Developer / Agent Builder"
         },
         {
           action: "Start publishing",
-          evidence: "Draft -> exact version review -> checks -> pricing blockers -> feedback and payout readiness",
+          evidence: "Draft -> exact version review -> checks -> paid-readiness metadata -> feedback and future paid-marketplace readiness",
           href: "/publish",
-          steps: ["Paste manifest", "Save draft", "Submit version", "Repair checks", "Monetize and improve"],
-          title: "Upload, submit, monetize, and improve",
+          steps: ["Paste manifest", "Save draft", "Submit version", "Repair checks", "Prepare paid metadata"],
+          title: "Upload, submit, prepare paid-readiness metadata, and improve",
           user: "Publisher / Skill Author"
         },
         {
-          action: "Open operations",
-          evidence: "Review queue -> trust action -> incident -> finance/payout -> launch readiness and audit",
-          href: "/admin",
-          steps: ["Prioritize reviews", "Govern risk", "Process money", "Deliver notifications", "Audit launch"],
-          title: "Review, govern, and launch",
+          action: "Read operating reference",
+          evidence: "Review queue -> trust action -> incident -> prelaunch paid-marketplace state -> launch readiness and audit",
+          href: "/docs#operating-reference",
+          steps: ["Prioritize reviews", "Govern risk", "Review prelaunch paid state", "Deliver notifications", "Audit launch"],
+          title: "Review, govern, and launch operations",
           user: "Reviewer / Finance / Super Admin"
         }
       ],
-      title: "Three P0 journeys that define the product"
+      title: "Operating reference for the three P0 journeys"
     },
     manifest: {
       badge: "Required before review",
@@ -172,7 +172,7 @@ const copy: Record<Locale, DocsCopy> = {
         ["Runtime", "http, mcp, or restricted local execution with entrypoint and transport posture"],
         ["Schemas", "inputSchema, outputSchema, examples, required fields, and typed result shape"],
         ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive or payment workflows"],
-        ["Commercial", "pricing model, paid blockers, publisher profile, terms acceptance, payout readiness"],
+        ["Paid preview", "pricing intent, paid-readiness blockers, publisher profile, terms acceptance, finance-review metadata"],
         ["Trust", "review status, automated checks, incidents, feedback, deprecation, replacement guidance"]
       ],
       title: "Manifest quality bar"
@@ -186,12 +186,12 @@ const copy: Record<Locale, DocsCopy> = {
         "Never expose OAuth secrets, email provider keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords."
       ],
       notice:
-        "Payment capture, provider-specific payout automation, tax/KYC automation, final legal terms, and final email provider operations are intentionally last integrations. P0 publisher payouts use manual PayPal/Alipay transfer records.",
+        "Payment capture, provider-specific payout automation, tax/KYC automation, final legal terms, and final email provider operations are intentionally last integrations. Paid-marketplace money movement remains prelaunch operating reference material.",
       title: "Launch and operator guardrails"
     },
     references: {
       body:
-        "Each domain exists because it creates a reason for users to return after the first visit: safer runtime use for developers, review and revenue loops for publishers, and governable operations for admins.",
+        "Each domain exists because it creates a reason for users to return after the first visit: safer runtime use for developers, review repair and buyer-demand loops for publishers, and governable operations for admins.",
       items: [
         {
           body: "SkillHub packages are versioned contracts. Public discovery should prefer approved versions and never silently replace installed behavior.",
@@ -209,9 +209,9 @@ const copy: Record<Locale, DocsCopy> = {
           title: "Review and trust"
         },
         {
-          body: "Usage does not pay publishers directly. Billable usage and subscription periods first create immutable commercial records.",
-          bullets: ["Transactions -> splits -> balances", "Refunds and disputes create adjustments", "Payout review reserves eligible balances"],
-          title: "Ledger and payouts"
+          body: "Usage does not pay publishers directly in Developer Preview. Billable usage and subscription periods first create immutable paid-preview records after paid-marketplace launch gates.",
+          bullets: ["Transactions -> splits -> balances", "Refunds and disputes create adjustments", "Future payout review reserves eligible balances"],
+          title: "Future paid-marketplace ledger model"
         },
         {
           body: "In-app notifications, email rows, and webhook outbox rows are separate so user preferences do not suppress organization webhook delivery.",
@@ -221,7 +221,7 @@ const copy: Record<Locale, DocsCopy> = {
         {
           body: "Admin operators need secret-safe readiness, identity, review, risk, finance, payout, delivery, webhook, and audit surfaces from one console.",
           bullets: ["Launch credibility thresholds", "Migration and schema visibility", "Reason-required privileged decisions"],
-          title: "Admin operations"
+          title: "Operating reference"
         }
       ],
       title: "Reference domains"
@@ -246,8 +246,8 @@ const copy: Record<Locale, DocsCopy> = {
           values: ["queued", "running", "passed", "warning", "failed"]
         },
         {
-          body: "Commercial readiness and money movement state.",
-          title: "Balances and payouts",
+          body: "Prelaunch paid-marketplace readiness and money-state model.",
+          title: "Paid-preview balances",
           values: ["pending", "available", "locked", "paid", "failed", "blocked", "reversed"]
         },
         {
@@ -262,7 +262,7 @@ const copy: Record<Locale, DocsCopy> = {
   zh: {
     api: {
       body:
-        "这些分组是公开页面和控制台真正依赖的 API 面。支付和提现提供商的实际划转可以后置，但内部状态机必须先完整建模。",
+        "这些分组是公开页面和登录后控制台依赖的开发者预览版 API 面。支付扣款和自动提现保持后置；付费市场资金流转仅作为运营参考，不是匿名公开动作。",
       groups: [
         {
           body: "公开发现、技能详情、发布者信任和推荐排序输入。",
@@ -270,7 +270,7 @@ const copy: Record<Locale, DocsCopy> = {
           title: "市场"
         },
         {
-          body: "组织范围内的发布、版本创建、精确版本提交和商业化就绪。",
+          body: "组织范围内的发布、版本创建、精确版本提交和付费准备元数据。",
           endpoints: ["POST /v1/skills", "POST /v1/publisher/skills/:slug/versions", "POST /v1/publisher/skills/:slug/versions/:version/submit", "POST /v1/prices"],
           title: "发布者"
         },
@@ -285,7 +285,7 @@ const copy: Record<Locale, DocsCopy> = {
           title: "后台"
         }
       ],
-      title: "运营平台 API 地图"
+      title: "开发者预览版 API 地图"
     },
     hero: {
       description:
@@ -293,39 +293,39 @@ const copy: Record<Locale, DocsCopy> = {
       eyebrow: "开发者快速开始",
       primary: "浏览市场",
       secondary: "发布技能",
-      tertiary: "MCP 状态",
+      tertiary: "MCP 设置",
       title: "SkillHub 开发者快速开始"
     },
     journeys: {
       body:
-        "P0 产品是否成立，就看这三条路径能不能接起来：一个 listing 必须能变成项目状态、审核状态、运行状态、账本状态、通知状态和运营状态。",
+        "P0 产品是否成立，要看这些路径能不能接起来，但匿名访客应先从公开发现、查看、MCP 设置和清晰登录门控开始。",
       items: [
         {
           action: "从市场开始",
-          evidence: "Listing -> 项目安装 -> 受治理测试调用 -> 日志和成本回访",
+          evidence: "Listing -> 公开查看 -> 登录 -> 项目采用 -> 受治理测试调用 -> 日志和成本回访",
           href: "/marketplace",
-          steps: ["搜索筛选", "检查信任", "安装到项目", "运行测试", "监控更新"],
-          title: "发现、安装并测试",
+          steps: ["搜索筛选", "检查信任", "登录", "加入项目", "门控测试"],
+          title: "发现、查看，然后登录测试",
           user: "开发者 / Agent Builder"
         },
         {
           action: "开始发布",
-          evidence: "草稿 -> 精确版本审核 -> 检查证据 -> 定价阻断 -> 反馈和提现就绪",
+          evidence: "草稿 -> 精确版本审核 -> 检查证据 -> 付费就绪元数据 -> 反馈和未来付费市场准备",
           href: "/publish",
-          steps: ["粘贴 manifest", "保存草稿", "提交版本", "修复检查", "商业化和改进"],
-          title: "上传、提交、变现并改进",
+          steps: ["粘贴 manifest", "保存草稿", "提交版本", "修复检查", "准备付费元数据"],
+          title: "上传、提交、准备付费就绪元数据并改进",
           user: "发布者 / 技能作者"
         },
         {
-          action: "进入运营",
-          evidence: "审核队列 -> 信任动作 -> 事故 -> 财务/提现 -> 上线就绪和审计",
-          href: "/admin",
-          steps: ["处理审核优先级", "治理风险", "处理资金", "投递通知", "审计上线"],
+          action: "阅读运营参考",
+          evidence: "审核队列 -> 信任动作 -> 事故 -> 预发布付费市场状态 -> 上线就绪和审计",
+          href: "/docs#operating-reference",
+          steps: ["处理审核优先级", "治理风险", "复核预发布付费状态", "投递通知", "审计上线"],
           title: "审核、治理并上线运营",
           user: "审核 / 财务 / 超级管理员"
         }
       ],
-      title: "定义产品的三条 P0 路径"
+      title: "三条 P0 路径的运营参考"
     },
     manifest: {
       badge: "审核前必须具备",
@@ -334,7 +334,7 @@ const copy: Record<Locale, DocsCopy> = {
         ["运行时", "HTTP、MCP 或受限本地执行，并包含入口和传输姿态"],
         ["Schema", "inputSchema、outputSchema、examples、required fields 和类型化结果"],
         ["权限", "network、browser、filesystem、secrets、敏感数据、破坏性或支付流程"],
-        ["商业化", "定价模型、付费阻断、发布者资料、条款接受、提现就绪"],
+        ["付费预览", "定价意图、付费阻断、发布者资料、条款接受、财务复核元数据"],
         ["信任", "审核状态、自动检查、事故、反馈、废弃、替代建议"]
       ],
       title: "Manifest 质量门槛"
@@ -348,12 +348,12 @@ const copy: Record<Locale, DocsCopy> = {
         "永远不要暴露 OAuth secret、邮件 provider key、service token、API salt、webhook secret、验证码、用户 token 或密码。"
       ],
       notice:
-        "支付扣款、提现提供商自动化、税务/KYC 自动化、最终法律条款和最终邮件投递提供商都属于最后接入项；P0 发布者提现使用 PayPal/Alipay 人工转账记录。",
+        "支付扣款、提现提供商自动化、税务/KYC 自动化、最终法律条款和最终邮件投递提供商都属于最后接入项；付费市场资金流转目前仅作为预发布运营参考。",
       title: "上线和运营护栏"
     },
     references: {
       body:
-        "每个域都必须给用户一个第二次回来的理由：开发者回来管理更安全的运行，发布者回来修复审核和收入，管理员回来治理真实运营。",
+        "每个域都必须给用户一个第二次回来的理由：开发者回来管理更安全的运行，发布者回来修复审核、处理买方需求并准备付费元数据，管理员回来治理真实运营。",
       items: [
         {
           body: "SkillHub 技能包是版本化合约。公开发现应优先批准版本，不能悄悄替换已安装行为。",
@@ -371,9 +371,9 @@ const copy: Record<Locale, DocsCopy> = {
           title: "审核和信任"
         },
         {
-          body: "用量不会直接支付给发布者。可计费用量和订阅周期必须先生成不可变商业记录。",
-          bullets: ["交易 -> 分成 -> 余额", "退款和争议生成调整记录", "提现审核会预留合格余额"],
-          title: "账本和提现"
+          body: "开发者预览版里，用量不会直接支付给发布者。可计费用量和订阅周期只会在付费市场上线门槛通过后生成不可变商业记录。",
+          bullets: ["交易 -> 分成 -> 余额", "退款和争议生成调整记录", "未来提现审核会预留合格余额"],
+          title: "未来付费市场账本模型"
         },
         {
           body: "站内通知、邮件行和 webhook outbox 要分开，个人偏好不能压制组织级 webhook 投递。",
@@ -383,7 +383,7 @@ const copy: Record<Locale, DocsCopy> = {
         {
           body: "管理员需要在一个控制台看到不泄密的上线就绪、身份、审核、风险、财务、提现、投递、webhook 和审计。",
           bullets: ["上线可信度阈值", "迁移和 schema 可见", "特权决策必须填写原因"],
-          title: "后台运营"
+          title: "运营参考"
         }
       ],
       title: "参考域"
@@ -408,8 +408,8 @@ const copy: Record<Locale, DocsCopy> = {
           values: ["queued", "running", "passed", "warning", "failed"]
         },
         {
-          body: "商业化就绪和资金流转状态。",
-          title: "余额和提现",
+          body: "预发布付费市场准备度和资金状态模型。",
+          title: "付费预览余额",
           values: ["pending", "available", "locked", "paid", "failed", "blocked", "reversed"]
         },
         {
@@ -642,7 +642,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="docs-reference-section" aria-labelledby="docs-reference-heading">
+      <section className="docs-reference-section" id="operating-reference" aria-labelledby="docs-reference-heading">
         <div className="docs-section-head">
           <div>
             <div className="card-kicker">

@@ -35,7 +35,7 @@ const copy = {
       },
       developer: {
         body:
-          "Developer operations cover projects, installs, runtime keys, project policy, governed tests, billing readiness, team access, notifications, and webhooks.",
+          "Developer operations cover projects, verified-skill adoption, runtime keys, project policy, login-gated tests, paid-readiness where applicable, team access, notifications, and webhooks.",
         title: "Developer workspace access"
       },
       publisher: {

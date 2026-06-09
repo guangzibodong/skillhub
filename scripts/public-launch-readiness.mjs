@@ -29,6 +29,8 @@ const checks = [
       "inspection_only",
       "authenticated_install",
       "Availability",
+      "Project adoption readiness",
+      "Project adoption, runtime test",
     ],
   },
   {

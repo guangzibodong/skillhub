@@ -61,10 +61,10 @@ const operatingIcons = [Code2, PackageCheck, ShieldCheck] as const;
 
 const proofCopy = {
   en: {
-    action: "View workspace proof",
-    commandAction: "Open workspace entry",
-    body: "These are not brochure claims. They are the operating surfaces a buyer, publisher, or platform operator can revisit after the first install.",
-    eyebrow: "Operating proof",
+    action: "Read operating reference",
+    commandAction: "Sign in for workspace entry",
+    body: "These are not brochure claims. They are Developer Preview operating references for the signed-in workspace path.",
+    eyebrow: "Architecture reference",
     items: [
       [
         "Account entry",
@@ -79,8 +79,8 @@ const proofCopy = {
         "REST and MCP calls pass through project install, policy, budget, subscription, logging, and metering controls.",
       ],
       [
-        "Commercial ledger",
-        "Future paid marketplace usage is modeled through transactions, splits, balances, invoice records, refunds, disputes, and manual payout review.",
+        "Paid-preview ledger",
+        "Future paid marketplace usage is modeled through transactions, splits, balances, invoice records, refunds, disputes, and finance-review readiness.",
       ],
       [
         "Notification loop",
@@ -94,10 +94,10 @@ const proofCopy = {
     title: "A customer can inspect the platform, not just the pitch.",
   },
   zh: {
-    action: "\u67e5\u770b\u5de5\u4f5c\u53f0\u8bc1\u636e",
-    commandAction: "\u5de5\u4f5c\u53f0\u5165\u53e3",
-    body: "\u8fd9\u4e0d\u662f\u5ba3\u4f20\u6587\u6848\u3002\u8fd9\u4e9b\u662f\u4e70\u5bb6\u3001\u53d1\u5e03\u8005\u548c\u5e73\u53f0\u8fd0\u8425\u5728\u9996\u6b21\u5b89\u88c5\u540e\u4ecd\u7136\u4f1a\u56de\u6765\u5904\u7406\u7684\u771f\u5b9e\u754c\u9762\u548c\u72b6\u6001\u3002",
-    eyebrow: "\u8fd0\u8425\u8bc1\u636e",
+    action: "阅读运营参考",
+    commandAction: "登录后进入工作台",
+    body: "这不是宣传文案。这些是开发者预览版里登录后工作区路径的运营参考。",
+    eyebrow: "架构参考",
     items: [
       [
         "\u8d26\u53f7\u5165\u53e3",
@@ -112,8 +112,8 @@ const proofCopy = {
         "REST \u548c MCP \u8c03\u7528\u90fd\u7ecf\u8fc7\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u3001\u9884\u7b97\u3001\u8ba2\u9605\u3001\u65e5\u5fd7\u548c\u8ba1\u91cf\u63a7\u5236\u3002",
       ],
       [
-        "\u5546\u4e1a\u8d26\u672c",
-        "\u7528\u91cf\u548c\u8ba2\u9605\u4f1a\u8fdb\u5165\u4ea4\u6613\u3001\u5206\u6210\u3001\u4f59\u989d\u3001\u53d1\u7968\u3001\u9000\u6b3e\u3001\u4e89\u8bae\u548c\u63d0\u73b0\u72b6\u6001\u3002",
+        "\u4ed8\u8d39\u9884\u89c8\u8d26\u672c",
+        "\u672a\u6765\u4ed8\u8d39\u7528\u91cf\u548c\u8ba2\u9605\u4f1a\u5728\u4e0a\u7ebf\u95e8\u69db\u901a\u8fc7\u540e\u8fdb\u5165\u4ea4\u6613\u3001\u5206\u6210\u3001\u4f59\u989d\u3001\u53d1\u7968\u3001\u9000\u6b3e\u3001\u4e89\u8bae\u548c\u8d22\u52a1\u590d\u6838\u72b6\u6001\u3002",
       ],
       [
         "\u901a\u77e5\u56de\u8def",
@@ -133,20 +133,20 @@ const operatingCopy = {
   en: {
     eyebrow: "Registry preview loops",
     title: "One platform for developers, publishers, and operators.",
-    body: "The product only feels real when a listing becomes install state, runtime state, review state, and future paid-marketplace state. SkillHub keeps those Developer Preview architecture loops visible from day one.",
-    flow: ["Publish", "Review", "Install", "Invoke", "Ledger", "Payout"],
+    body: "The product only feels real when a listing becomes authenticated project adoption state, runtime state, review state, and future paid-marketplace state. SkillHub keeps those Developer Preview architecture loops visible from day one.",
+    flow: ["Publish", "Review", "Adopt", "Invoke", "Ledger", "Paid preview"],
     loops: [
       {
-        action: "Open developer console",
-        body: "Find a verified skill, install it into a project, create a reveal-once runtime key, run a governed test call, and monitor cost or incidents later.",
+        action: "Sign in for developer workspace",
+        body: "Find a verified skill, sign in to add it to a project, create a reveal-once runtime key, run a governed test call, and monitor cost or incidents later.",
         href: "/developer",
         label: "Developer / Agent Builder",
         metric: "Project runtime",
-        status: "Install -> test -> monitor",
+        status: "Sign in -> test -> monitor",
       },
       {
-        action: "Open publisher workspace",
-        body: "Upload a manifest, submit an exact version, repair review blockers, activate pricing gates, respond to feedback, and track payout readiness.",
+        action: "Sign in for publisher workspace",
+        body: "Upload a manifest, submit an exact version, repair review blockers, record pricing intent, respond to feedback, and track paid-readiness metadata for future review.",
         href: "/publisher",
         label: "Publisher / Skill Author",
         metric: "Supply operations",
@@ -166,27 +166,27 @@ const operatingCopy = {
     eyebrow: "\u6ce8\u518c\u8868\u9884\u89c8\u95ed\u73af",
     title:
       "\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u3001\u8fd0\u8425\u5458\u5171\u7528\u4e00\u4e2a\u5e73\u53f0\u3002",
-    body: "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u53d8\u6210\u5b89\u88c5\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8d26\u672c\u72b6\u6001\u548c\u9884\u53d1\u5e03\u63d0\u73b0\u6a21\u578b\u72b6\u6001\u3002",
+    body: "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u5728\u767b\u5f55\u540e\u53d8\u6210\u9879\u76ee\u91c7\u7528\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u9884\u53d1\u5e03\u8d26\u672c\u548c\u8d22\u52a1\u590d\u6838\u6a21\u578b\u72b6\u6001\u3002",
     flow: [
       "\u53d1\u5e03",
       "\u5ba1\u6838",
-      "\u5b89\u88c5",
+      "\u91c7\u7528",
       "\u8c03\u7528",
       "\u8d26\u672c",
-      "\u63d0\u73b0",
+      "\u4ed8\u8d39\u9884\u89c8",
     ],
     loops: [
       {
-        action: "\u6253\u5f00\u5f00\u53d1\u8005\u63a7\u5236\u53f0",
-        body: "\u627e\u5230\u5df2\u9a8c\u8bc1\u6280\u80fd\uff0c\u5b89\u88c5\u5230\u9879\u76ee\uff0c\u521b\u5efa\u4e00\u6b21\u53ef\u89c1\u7684\u8fd0\u884c Key\uff0c\u8dd1\u4e00\u6b21\u53d7\u6cbb\u7406\u7684\u6d4b\u8bd5\u8c03\u7528\uff0c\u4e4b\u540e\u56de\u6765\u770b\u6210\u672c\u548c\u4e8b\u6545\u3002",
+        action: "\u767b\u5f55\u540e\u8fdb\u5165\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+        body: "\u627e\u5230\u5df2\u9a8c\u8bc1\u6280\u80fd\uff0c\u767b\u5f55\u540e\u91c7\u7528\u5230\u9879\u76ee\uff0c\u521b\u5efa\u4e00\u6b21\u53ef\u89c1\u7684\u8fd0\u884c Key\uff0c\u8dd1\u4e00\u6b21\u53d7\u6cbb\u7406\u7684\u6d4b\u8bd5\u8c03\u7528\uff0c\u4e4b\u540e\u56de\u6765\u770b\u6210\u672c\u548c\u4e8b\u6545\u3002",
         href: "/developer",
         label: "\u5f00\u53d1\u8005 / Agent Builder",
         metric: "\u9879\u76ee\u8fd0\u884c",
-        status: "\u5b89\u88c5 -> \u6d4b\u8bd5 -> \u76d1\u63a7",
+        status: "\u767b\u5f55 -> \u6d4b\u8bd5 -> \u76d1\u63a7",
       },
       {
-        action: "\u6253\u5f00\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
-        body: "\u4e0a\u4f20 manifest\uff0c\u63d0\u4ea4\u7cbe\u786e\u7248\u672c\uff0c\u4fee\u590d\u5ba1\u6838\u963b\u65ad\uff0c\u5b8c\u6210\u4ef7\u683c\u95e8\u69db\uff0c\u56de\u590d\u53cd\u9988\uff0c\u8ddf\u8e2a\u63d0\u73b0\u5c31\u7eea\u5ea6\u3002",
+        action: "\u767b\u5f55\u540e\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
+        body: "\u4e0a\u4f20 manifest\uff0c\u63d0\u4ea4\u7cbe\u786e\u7248\u672c\uff0c\u4fee\u590d\u5ba1\u6838\u963b\u65ad\uff0c\u8bb0\u5f55\u5b9a\u4ef7\u610f\u56fe\uff0c\u56de\u590d\u53cd\u9988\uff0c\u8ddf\u8e2a\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e\u3002",
         href: "/publisher",
         label: "\u53d1\u5e03\u8005 / \u6280\u80fd\u4f5c\u8005",
         metric: "\u4f9b\u7ed9\u4fa7\u8fd0\u8425",
@@ -399,7 +399,7 @@ tools: skillhub.search, skillhub.get`}</code>
                 href={localizedHref("/publish", locale)}
               >
                 <Plus size={17} aria-hidden="true" />
-                <span>{dictionary.home.newSkill}</span>
+                <span>{locale === "zh" ? "提交技能" : "Submit a skill"}</span>
               </a>
             </div>
           </div>
@@ -534,14 +534,14 @@ tools: skillhub.search, skillhub.get`}</code>
           <div className="hero-actions">
             <a
               className="secondary-button secondary-button--large"
-              href={localizedHref("/dashboard#dashboard-proof-chain", locale)}
+              href={localizedHref("/docs#operating-reference", locale)}
             >
               <Gauge size={18} aria-hidden="true" />
               <span>{proof.action}</span>
             </a>
             <a
               className="ghost-button"
-              href={localizedHref("/dashboard#workspace-command-center", locale)}
+              href={localizedHref("/login", locale)}
             >
               <KeyRound size={18} aria-hidden="true" />
               <span>{proof.commandAction}</span>

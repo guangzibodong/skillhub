@@ -108,8 +108,8 @@ pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 
 ## Known Prelaunch Limits
 
-- Manual PayPal/Alipay transfer details are the P0 payout approach; provider payout automation is not public.
-- Ledger and payout UI are modeled for future paid usage and admin/finance readiness, not general customer self-serve payment capture.
+- Manual PayPal/Alipay transfer records are the paid-marketplace preview model for finance review; provider payout automation is not public.
+- Ledger and payout UI are modeled for future paid usage and admin/finance readiness, not general customer self-serve payment capture or automated payouts.
 - CLI and SDK packages remain preview packages until public install methods are released.
 - Support, trust report, runtime report, and admin operations must stay behind appropriate sign-in or operator gates when they write state.
 - Public support/report/security/status pages are guidance paths until signed-in write flows are available.

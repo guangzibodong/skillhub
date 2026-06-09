@@ -97,8 +97,8 @@ const copy = {
     mcpEndpoint: "MCP endpoint",
     output: "Output example",
     overview: "Overview",
-    payout: "Publisher payout",
-    payoutBody: "Paid usage is converted into immutable transaction splits before a publisher balance can be paid out.",
+    payout: "Paid marketplace preview",
+    payoutBody: "Paid usage is only modeled as prelaunch ledger state until payment capture and payout automation are enabled.",
     permissions: "Permissions",
     pricing: "Pricing",
     publishedFeedback: "Published feedback",
@@ -106,7 +106,7 @@ const copy = {
     publisherResponse: "Publisher response",
     publisherTrust: "Publisher trust",
     related: "Alternatives and replacements",
-    relatedBody: "Compare similar skills before installing, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
+    relatedBody: "Compare similar skills before adopting them into a signed-in project, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
     relatedDetails: "Open details",
     relatedReasons: "Why it matches",
     reviews: "Operator notes",
@@ -179,8 +179,8 @@ const copy = {
     mcpEndpoint: "MCP 端点",
     output: "输出示例",
     overview: "概览",
-    payout: "发布者提现",
-    payoutBody: "付费用量必须先转换成不可变分账交易，然后才会进入发布者可提现余额。",
+    payout: "付费市场预览",
+    payoutBody: "付费用量目前仅建模为预发布账本状态；支付扣款和自动打款启用前不会形成公开打款动作。",
     permissions: "权限",
     pricing: "价格",
     publishedFeedback: "公开反馈",
@@ -188,7 +188,7 @@ const copy = {
     publisherResponse: "发布者回复",
     publisherTrust: "发布者信任",
     related: "替代和相似技能",
-    relatedBody: "安装前先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
+    relatedBody: "采用到登录后的项目之前，先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
     relatedDetails: "打开详情",
     relatedReasons: "推荐原因",
     reviews: "运营备注",
@@ -799,8 +799,8 @@ function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
       <strong>{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
       <p>
         {locale === "zh"
-          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；安装、项目交接、运行测试、订阅、计费和账本动作只会在 verified 审核通过后开放。"
-          : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Install, project handoff, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
+          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目采用、运行测试、订阅、计费和账本动作只会在 verified 审核通过后开放。"
+          : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Project adoption, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
       </p>
     </div>
   );
@@ -813,8 +813,8 @@ function pricingPreviewBody(
 ) {
   if (availabilityKind === "inspection_only") {
     return locale === "zh"
-      ? "仅可查看。价格、安装、运行、计费和账本动作只会在 verified 审核通过后开放。"
-      : "Inspection only. Pricing, install, runtime, billing, and ledger actions unlock only after verified approval.";
+      ? "仅可查看。价格、项目采用、运行、计费和账本动作只会在 verified 审核通过后开放。"
+      : "Inspection only. Pricing, project adoption, runtime, billing, and ledger actions unlock only after verified approval.";
   }
 
   if (billingModel === "free") {
@@ -824,8 +824,8 @@ function pricingPreviewBody(
   }
 
   return locale === "zh"
-    ? "付费市场计费仍处于预发布阶段。当前价格用于展示商业意图；真实运行仍需要登录后的项目 Key 和策略检查。"
-    : "Paid marketplace billing is prelaunch. The current price describes commercial intent; real runtime use still requires a signed-in project key and policy checks.";
+      ? "付费市场计费仍处于预发布阶段。当前价格用于展示付费市场意图；真实运行仍需要登录后的项目 Key 和策略检查。"
+    : "Paid marketplace billing is prelaunch. The current price describes paid-marketplace intent; real runtime use still requires a signed-in project key and policy checks.";
 }
 
 function formatDate(value: string, locale: "en" | "zh") {

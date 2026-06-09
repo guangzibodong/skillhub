@@ -10065,6 +10065,11 @@ a {
   padding: 16px;
 }
 
+.install-console__public-command {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .proof-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

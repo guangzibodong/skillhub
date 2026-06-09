@@ -28,8 +28,9 @@ type PageProps = {
 const registryProtocolCopy = {
   en: {
     actions: {
-      api: "Open API docs",
-      marketplace: "Compare in marketplace"
+      api: "Read API docs",
+      marketplace: "Compare in marketplace",
+      submit: "Submit a skill"
     },
     contractTitle: "What the registry records",
     evidence: {
@@ -41,15 +42,15 @@ const registryProtocolCopy = {
     heroProof: [
       ["Contract first", "Every skill starts as a versioned manifest before it becomes a marketplace listing."],
       ["Gateway governed", "REST, MCP, SDK, and console tests all resolve the same version and policy state."],
-      ["Audit ready", "Review, install, runtime, ledger, payout, delivery, and audit records stay connected."]
+      ["Audit ready", "Review, signed-in adoption, runtime, prelaunch ledger, delivery, and audit records stay connected."]
     ],
     lifecycleTitle: "Contract lifecycle",
     lifecycle: [
       ["Draft", "Publisher saves identity, runtime, permissions, schemas, examples, and pricing intent."],
       ["Review", "Automated manifest/runtime/example/security checks feed a human decision with SLA."],
-      ["Approved", "Verified versions become the default public install target and are immutable."],
-      ["Runtime", "Projects pin versions, approve policy, create keys, and invoke through the governed gateway."],
-      ["Commercial", "Billable usage posts transactions, commission splits, balances, refunds, disputes, and payout state."]
+      ["Approved", "Verified versions become eligible for sign-in gated project adoption and are immutable."],
+      ["Runtime", "Signed-in projects pin versions, approve policy, create keys, and invoke through the governed gateway."],
+      ["Paid preview", "Paid-marketplace ledger, refund, dispute, and payout state remains prelaunch operating reference material."]
     ],
     manifestTitle: "Manifest quality bar",
     manifestFields: [
@@ -57,7 +58,7 @@ const registryProtocolCopy = {
       ["Runtime", "http, mcp, or restricted local runtime with target, transport, and health posture"],
       ["Schemas", "inputSchema, outputSchema, examples, required fields, typed result shape"],
       ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive/payment workflows"],
-      ["Commercial", "billing model, paid activation blockers, publisher terms, payout readiness"],
+      ["Paid preview", "billing model, paid-preview blockers, publisher terms, finance-reviewed paid readiness"],
       ["Trust", "review status, checks, incidents, feedback, deprecation and replacement path"]
     ],
     notes: [
@@ -68,11 +69,11 @@ const registryProtocolCopy = {
     protocolEyebrow: "Registry protocol",
     protocolTitle: "The registry is the contract layer behind the marketplace.",
     protocolBody:
-      "SkillHub records the exact skill contract an AI agent can install and call: manifest, version, runtime, permissions, schemas, review state, pricing intent, and governance links.",
+      "SkillHub records the exact skill contract an AI agent can inspect publicly and adopt after sign-in: manifest, version, runtime, permissions, schemas, review state, pricing intent, and governance links.",
     runtimeTitle: "Runtime resolution",
     runtimeSteps: [
       "Agent or developer selects a public skill slug.",
-      "Project install pins an approved version and policy.",
+      "Signed-in project adoption pins an approved version and policy.",
       "REST or MCP call authenticates a project key.",
       "Gateway checks approval, budget, rate limit, subscription, and risk.",
       "Invocation, usage, notification, ledger, and audit records preserve the outcome."
@@ -82,8 +83,9 @@ const registryProtocolCopy = {
   },
   zh: {
     actions: {
-      api: "打开 API 文档",
-      marketplace: "去市场对比"
+      api: "阅读 API 文档",
+      marketplace: "去市场对比",
+      submit: "提交技能"
     },
     contractTitle: "注册表记录什么",
     evidence: {
@@ -95,15 +97,15 @@ const registryProtocolCopy = {
     heroProof: [
       ["合约优先", "每个技能先成为带版本的 manifest，再进入市场展示。"],
       ["网关治理", "REST、MCP、SDK 和控制台测试都会解析同一套版本和策略状态。"],
-      ["可审计", "审核、安装、运行、账本、提现、投递和审计记录保持连贯。"]
+      ["可审计", "审核、登录后采用、运行、预发布账本、投递和审计记录保持连贯。"]
     ],
     lifecycleTitle: "合约生命周期",
     lifecycle: [
       ["草稿", "发布者保存身份、运行时、权限、schema、示例和定价意图。"],
       ["审核", "manifest/runtime/example/security 自动检查进入带 SLA 的人工决策。"],
-      ["批准", "已验证版本成为默认公开安装目标，并且不可原地修改。"],
-      ["运行", "项目固定版本、审批策略、创建 Key，并通过治理网关调用。"],
-      ["商业化", "可计费用量写入交易、分成、余额、退款、争议和提现状态。"]
+      ["批准", "已验证版本会进入登录后项目采用路径，并且不可原地修改。"],
+      ["运行", "登录后的项目固定版本、审批策略、创建 Key，并通过治理网关调用。"],
+      ["付费预览", "付费市场账本、退款、争议和提现状态仍是预发布运营参考。"]
     ],
     manifestTitle: "Manifest 质量门槛",
     manifestFields: [
@@ -111,7 +113,7 @@ const registryProtocolCopy = {
       ["运行时", "HTTP、MCP 或受限本地运行时，包含目标、传输和健康状态"],
       ["Schema", "inputSchema、outputSchema、示例、必填字段和类型化结果"],
       ["权限", "网络、浏览器、文件系统、密钥、敏感数据、破坏性/支付流程"],
-      ["商业化", "计费模型、付费激活阻断、发布者条款、提现准备度"],
+      ["付费预览", "计费模型、付费预览阻断、发布者条款、财务复核元数据"],
       ["信任", "审核状态、检查、事故、反馈、废弃和替代路径"]
     ],
     notes: [
@@ -185,7 +187,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         <div className="page-hero__actions">
           <a className="primary-button primary-button--large" href={localizedHref("/publish", locale)}>
             <Plus size={18} aria-hidden="true" />
-            <span>{dictionary.home.newSkill}</span>
+            <span>{labels.actions.submit}</span>
           </a>
           <a className="secondary-button secondary-button--large" href={localizedHref("/marketplace", locale)}>
             <ArrowRight size={18} aria-hidden="true" />

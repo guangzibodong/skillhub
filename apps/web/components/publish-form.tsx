@@ -131,7 +131,7 @@ const reviewCopy = {
       "The version is queued for platform review with fresh automated evidence.",
     newReviewLabel: "New review queued",
     openAccount: "Account and terms",
-    openPaid: "Paid readiness",
+    openPaid: "Paid-readiness metadata",
     openReview: "Review workbench",
     passed: "Passed",
     reviewId: "Review id",
@@ -144,7 +144,7 @@ const reviewCopy = {
     submitReview: "Submit this version",
     submittingReview: "Submitting review",
     successBodyWithVersion:
-      "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing and commercial readiness.",
+      "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing intent and prelaunch paid-readiness metadata.",
     total: "Total checks",
     updatedVersion: "Draft version updated",
     versionLabel: "Version",

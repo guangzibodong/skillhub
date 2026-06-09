@@ -58,7 +58,7 @@ const copy = {
     title: "Sign in to SkillHub.",
     tokenFallback: "Invite or recovery token only",
     tokenFallbackBody:
-      "Use this only when a SkillHub administrator or invite flow gave you a one-time token. Normal users should use Google, GitHub, or email/password.",
+      "Use this only when a SkillHub administrator or invite flow gave you a one-time recovery or invitation token. Normal users should use Google, GitHub, or email/password.",
   },
   zh: {
     account: "个人中心",

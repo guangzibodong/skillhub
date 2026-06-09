@@ -47,7 +47,7 @@ export const dictionaries = {
       gatewayTitle: "Developer Preview gateway",
       registryEyebrow: "Registry",
       registryTitle: "Agent Skill Registry",
-      newSkill: "New skill",
+      newSkill: "Submit a skill",
       searchPlaceholder: "Search skills, tags, runtimes",
       protocolEyebrow: "Protocol",
       protocolTitle: "A skill contract agents can read before they act.",
@@ -97,7 +97,7 @@ export const dictionaries = {
         },
         {
           title: "Operator control",
-          description: "Paid publishing, review, refunds, and payouts stay behind audited platform controls."
+          description: "Paid publishing preview, review, refunds, and finance review stay behind audited platform controls."
         }
       ]
     },
@@ -199,11 +199,11 @@ export const dictionaries = {
       eyebrow: "Workspace dashboard",
       title: "Run the publisher and developer sides from one console.",
       description:
-        "The dashboard is split into publisher operations, buyer projects, earnings, and payout readiness so the platform can grow into real marketplace workflows.",
+        "The dashboard is split into publisher operations, buyer projects, paid-preview ledger state, and finance-gated readiness so the platform can grow into real marketplace workflows.",
       publisher: "Publisher backend",
       buyer: "Developer backend",
-      earnings: "Earnings",
-      payouts: "Payouts",
+      earnings: "Paid preview",
+      payouts: "Finance review",
       metrics: [
         ["Available balance", "$4,820"],
         ["Pending balance", "$1,260"],
@@ -220,19 +220,19 @@ export const dictionaries = {
         ["Subscriptions", "Approved paid skills, renewals, cancellations"],
         ["Usage", "Cost, calls, latency, and skill-level breakdowns"]
       ],
-      ledgerTitle: "Revenue ledger",
+      ledgerTitle: "Paid-preview ledger",
       ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
       ledgerRows: [
         ["browser-research", "$1,240", "$248", "$992", "available"],
         ["support-triage", "$760", "$152", "$608", "pending"],
         ["schema-auditor", "$420", "$84", "$336", "available"]
       ],
-      payoutTitle: "Withdrawal readiness",
+      payoutTitle: "Finance review readiness",
       payoutItems: [
         ["Receiving account", "Submitted"],
-        ["Manual payout", "PayPal/Alipay verified"],
+        ["Manual transfer model", "PayPal/Alipay finance review"],
         ["Minimum threshold", "$100"],
-        ["Next payout", "Scheduled review"]
+        ["Next review", "Scheduled finance review"]
       ]
     },
     adminPage: {
@@ -328,7 +328,7 @@ export const dictionaries = {
       checklistTitle: "Before production agent use",
       checklist: [
         "Create a developer project and runtime key.",
-        "Install or save candidate skills from the marketplace.",
+        "Save or adopt candidate skills from the marketplace after sign-in.",
         "Review permissions, budget, and subscription state.",
         "Run a non-billable project test call.",
         "Paste the REST or MCP snippet into the agent runtime."
@@ -450,7 +450,7 @@ export const dictionaries = {
       gatewayTitle: "开发者预览版网关",
       registryEyebrow: "技能库",
       registryTitle: "智能体技能注册表",
-      newSkill: "新建技能",
+      newSkill: "提交技能",
       searchPlaceholder: "搜索技能、标签、运行时",
       protocolEyebrow: "协议",
       protocolTitle: "智能体执行之前，可以先读懂技能协议。",
@@ -500,7 +500,7 @@ export const dictionaries = {
         },
         {
           title: "运营可控",
-          description: "付费发布、审核、退款和提现都放在带审计的后台控制里。"
+          description: "付费发布预览、审核、退款和财务复核都放在带审计的后台控制里。"
         }
       ]
     },
@@ -601,11 +601,11 @@ export const dictionaries = {
       eyebrow: "工作台",
       title: "发布者后台和开发者后台放在同一个控制台。",
       description:
-        "工作台拆成发布运营、购买方项目、收益和提现准备四块，这样平台以后可以自然接入真实市场流程。",
+        "工作台拆成发布运营、购买方项目、付费预览账本和财务门控准备四块，这样平台以后可以自然接入真实市场流程。",
       publisher: "发布者后台",
       buyer: "开发者后台",
-      earnings: "收益",
-      payouts: "提现",
+      earnings: "付费预览",
+      payouts: "财务复核",
       metrics: [
         ["可提现余额", "$4,820"],
         ["待结算余额", "$1,260"],
@@ -622,19 +622,19 @@ export const dictionaries = {
         ["订阅", "已批准付费技能、续费和取消记录"],
         ["用量", "成本、调用、延迟和技能级别拆分"]
       ],
-      ledgerTitle: "收益账本",
-      ledgerHeaders: ["技能", "总收入", "佣金", "净收入", "状态"],
+      ledgerTitle: "付费预览账本",
+      ledgerHeaders: ["技能", "预览总额", "佣金", "发布者份额", "状态"],
       ledgerRows: [
         ["browser-research", "$1,240", "$248", "$992", "可提现"],
         ["support-triage", "$760", "$152", "$608", "待结算"],
         ["schema-auditor", "$420", "$84", "$336", "可提现"]
       ],
-      payoutTitle: "提现准备",
+      payoutTitle: "财务复核准备",
       payoutItems: [
         ["\u6536\u6b3e\u8d26\u53f7", "\u5df2\u63d0\u4ea4"],
-        ["人工提现", "PayPal/Alipay 已验证"],
-        ["最低提现金额", "$100"],
-        ["下一笔提现", "等待计划审核"]
+        ["人工转账模型", "PayPal/Alipay 财务复核"],
+        ["最低复核金额", "$100"],
+        ["下一次复核", "等待计划审核"]
       ]
     },
     adminPage: {
@@ -730,7 +730,7 @@ export const dictionaries = {
       checklistTitle: "生产智能体使用前",
       checklist: [
         "创建开发者项目和运行 Key。",
-        "从市场安装或收藏候选技能。",
+        "登录后从市场保存或采用候选技能。",
         "检查权限、预算和订阅状态。",
         "运行一次不计费的项目测试调用。",
         "把 REST 或 MCP 片段接入智能体运行时。"

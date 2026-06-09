@@ -16,7 +16,7 @@ const copy = {
       "Use this only when a SkillHub administrator or invite flow gave you a one-time recovery or invitation token. Most users should use OAuth or email/password.",
     label: "Invite/recovery token",
     placeholder: "Paste invite/recovery token",
-    submit: "Connect workspace",
+    submit: "Use recovery token",
     submitting: "Verifying",
     title: "Invite or recovery token only",
     workspace: "Open dashboard"
@@ -26,7 +26,7 @@ const copy = {
       "仅当 SkillHub 管理员或邀请流程提供一次性邀请/恢复 Token 时使用。大多数用户应使用 OAuth 或邮箱密码。",
     label: "邀请/恢复 Token",
     placeholder: "粘贴邀请/恢复 Token",
-    submit: "连接工作区",
+    submit: "使用恢复 Token",
     submitting: "验证中",
     title: "仅限邀请或恢复 Token",
     workspace: "打开工作台"
