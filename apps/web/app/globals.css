@@ -4971,12 +4971,28 @@ a {
   margin: 0 auto 22px;
 }
 
+.account-command-strip--signed-out {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .account-command-tile {
   display: grid;
   align-content: start;
   gap: 8px;
   min-height: 154px;
   padding: 14px;
+}
+
+.account-command-tile--signin {
+  min-height: 0;
+  border-color: rgba(155, 226, 141, 0.2);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(155, 226, 141, 0.08),
+      rgba(124, 199, 216, 0.035)
+    ),
+    rgba(20, 24, 18, 0.94);
 }
 
 .account-command-tile__head {
@@ -4992,6 +5008,11 @@ a {
 
 .account-command-tile strong {
   font-size: 16px;
+}
+
+.account-command-tile__cta {
+  justify-self: start;
+  margin-top: 4px;
 }
 
 .account-shortcut-grid--cards {

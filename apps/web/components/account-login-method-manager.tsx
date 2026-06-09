@@ -182,7 +182,7 @@ function providerLabel(provider: AuthProviderStatus, locale: Locale) {
   }
 
   if (provider.provider === "email") {
-    return "邮箱验证码";
+    return "邮箱 / 密码";
   }
 
   if (provider.provider === "token") {

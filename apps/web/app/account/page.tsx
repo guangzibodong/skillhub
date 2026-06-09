@@ -51,6 +51,9 @@ const copy = {
     commandOperationsBody: "Unread notifications, billing readiness, invoice readiness, and payout status.",
     commandSecurity: "Security",
     commandSecurityBody: "Session fingerprints and revocation controls without exposing raw tokens.",
+    commandSignInBody:
+      "Use Google, GitHub, or username/email password to unlock identity, sessions, roles, notifications, billing, and payout readiness.",
+    commandSignInTitle: "Sign in to unlock the account center.",
     commandWorkspace: "Workspace",
     commandWorkspaceBody: "Team, project, owned-skill, and active-token readiness for real operations.",
     connectedAccounts: "Connected login methods",
@@ -103,6 +106,9 @@ const copy = {
     commandOperationsBody: "未读通知、账单准备、发票准备和提现状态。",
     commandSecurity: "安全",
     commandSecurityBody: "会话指纹和撤销控制，不暴露原始 token。",
+    commandSignInBody:
+      "使用 Google、GitHub，或用户名/邮箱加密码进入后，再查看身份、会话、角色、通知、账单和提现准备度。",
+    commandSignInTitle: "登录后解锁账号中心。",
     commandWorkspace: "工作区",
     commandWorkspaceBody: "团队、项目、已拥有技能和有效 token 的运营准备度。",
     connectedAccounts: "已连接登录方式",
@@ -343,6 +349,26 @@ function AccountCommandStrip({
   const configuredMethods = account.loginMethods.filter((method) => method.status === "active" || method.status === "connected").length;
   const activeSessions = accountSessions.filter((session) => session.status === "active").length;
   const workspaceTotal = account.workspace.teamMemberCount + account.workspace.projectCount + account.workspace.skillCount;
+
+  if (!signedIn) {
+    return (
+      <section className="account-command-strip account-command-strip--signed-out" aria-label={labels.workspace}>
+        <article className="account-command-tile account-command-tile--signin">
+          <div className="account-command-tile__head">
+            <KeyRound size={17} aria-hidden="true" />
+            <span>{labels.signInRequired}</span>
+          </div>
+          <strong>{labels.commandSignInTitle}</strong>
+          <small>{labels.accountEmpty}</small>
+          <p>{labels.commandSignInBody}</p>
+          <a className="primary-button account-command-tile__cta" href={localizedHref("/login", locale)}>
+            <KeyRound size={16} aria-hidden="true" />
+            <span>{labels.signIn}</span>
+          </a>
+        </article>
+      </section>
+    );
+  }
 
   const tiles = [
     {

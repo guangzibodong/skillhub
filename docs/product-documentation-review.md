@@ -42,6 +42,8 @@ The latest marketplace copy-feedback polish makes discovery cards behave more li
 
 ## Latest Implementation Review
 
+The latest account-center signed-out polish makes `/account` clearer for first-time and mobile users. Signed-out visitors now see a single account-entry command tile that explains Google/GitHub and username/email password access before detailed profile, workspace, login-method, session, notification, and role-gated panels. This avoids presenting four empty `0/not connected` operating tiles before the user has created or connected a session, while signed-in accounts still keep the full identity/security/workspace/operations command strip.
+
 The latest login-password polish makes `/login` feel closer to a normal customer account entry on mobile. Username/email password sign-in and registration now include a localized show/hide password icon control with a stable touch target, so new users can verify what they typed without leaving the primary Google/GitHub and password-first access path. Token fallback remains visually secondary and unchanged.
 
 The latest skill-detail command-feedback polish brings `/skills/[slug]` in line with the marketplace card interaction standard. CLI, MCP, and SDK install command rows now catch clipboard failures, switch the icon state, and show localized success or failure feedback in a live region directly under the copied command. This keeps the developer install contract feeling like a reliable tooling surface on desktop and mobile instead of a silent icon-only action.
