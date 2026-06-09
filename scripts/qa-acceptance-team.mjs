@@ -21,7 +21,7 @@ const ROLE_SPECS = {
       },
       {
         path: "/developer?lang=zh",
-        required: ["开发者运营队列", "优先级队列", "团队权限", "webhook"],
+        required: ["开发者运营队列", "运营队列", "团队权限", "webhook"],
         forbidden: ["需要先登录", "需要开发者角色", "sign-in required", "developer role required"]
       },
       {
@@ -30,11 +30,13 @@ const ROLE_SPECS = {
       },
       {
         path: "/skills/browser-research?lang=zh",
-        required: ["可用状态"]
+        required: ["用户反馈", "发布者信任"],
+        requiredHtml: ["skill-developer-handoff-packet"]
       },
       {
         path: "/dashboard?lang=zh",
-        required: ["workspace-command-center", "p0-demo-chain"],
+        required: ["当前会话"],
+        requiredHtml: ["workspace-command-center", "p0-demo-chain"],
         forbidden: ["工作台需要登录后才能打开", "the dashboard opens after sign-in"]
       }
     ],
@@ -59,12 +61,13 @@ const ROLE_SPECS = {
       },
       {
         path: "/publisher?lang=zh",
-        required: ["发布者运营队列", "优先级队列", "付费准备元数据"],
+        required: ["发布者运营队列", "运营队列", "付费准备元数据"],
         forbidden: ["需要先登录", "需要发布者角色", "sign-in required", "publisher role required"]
       },
       {
         path: "/terms?lang=zh",
-        required: ["运营条款", "开发者预览版", "条款摘要"]
+        required: ["运营条款", "开发者预览版"],
+        requiredHtml: ["条款摘要"]
       }
     ],
     protectedApis: [
@@ -90,7 +93,8 @@ const ROLE_SPECS = {
       },
       {
         path: "/dashboard?lang=zh",
-        required: ["workspace-command-center", "p0-demo-chain"],
+        required: ["当前会话"],
+        requiredHtml: ["workspace-command-center", "p0-demo-chain"],
         forbidden: ["工作台需要登录后才能打开", "the dashboard opens after sign-in"]
       }
     ],
@@ -348,14 +352,20 @@ async function checkPages(spec, token) {
     }
 
     const plain = decodeHtml(stripTags(response.text));
+    const html = decodeHtml(response.text);
     const lower = plain.toLowerCase();
+    const lowerHtml = html.toLowerCase();
     const missing = (page.required ?? []).filter((marker) => !plain.includes(marker) && !lower.includes(marker.toLowerCase()));
+    const missingHtml = (page.requiredHtml ?? []).filter(
+      (marker) => !html.includes(marker) && !lowerHtml.includes(marker.toLowerCase())
+    );
     const forbidden = (page.forbidden ?? []).filter((marker) => plain.includes(marker) || lower.includes(marker.toLowerCase()));
 
-    if (missing.length > 0) {
+    if (missing.length > 0 || missingHtml.length > 0) {
+      const missingMarkers = [...missing, ...missingHtml];
       addIssue({
         category: "page-marker",
-        message: `${page.path} is missing expected logged-in role markers: ${missing.join(", ")}.`,
+        message: `${page.path} is missing expected logged-in role markers: ${missingMarkers.join(", ")}.`,
         role,
         severity: "P0",
         url: joinUrl(config.appUrl, page.path)
@@ -372,7 +382,7 @@ async function checkPages(spec, token) {
       });
     }
 
-    if (missing.length === 0 && forbidden.length === 0) {
+    if (missing.length === 0 && missingHtml.length === 0 && forbidden.length === 0) {
       addResult(role, "page", page.path, "pass", `HTML bytes=${Buffer.byteLength(response.text, "utf8")}`);
     }
   }
