@@ -21,6 +21,7 @@
     "qa:anonymous": "node scripts/qa-public-anonymous.mjs",
     "qa:acceptance-team": "node scripts/qa-acceptance-team.mjs",
     "acceptance:team": "node scripts/create-acceptance-team.mjs",
+    "test:acceptance-team-report": "node --test scripts/qa-acceptance-team-report.test.mjs",
     "test:skill-availability": "node --test scripts/skill-availability.test.mjs"
   },
   "devDependencies": {

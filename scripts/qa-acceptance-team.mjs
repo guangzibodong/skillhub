@@ -389,7 +389,8 @@ async function checkPages(spec, token) {
 }
 
 function inspectLaunchReadiness(json) {
-  const summary = json?.readiness?.summary ?? json?.summary;
+  const readiness = json?.readiness ?? json;
+  const summary = readiness?.summary;
 
   if (!summary) {
     return;
@@ -398,10 +399,13 @@ function inspectLaunchReadiness(json) {
   const blocker = Number(summary.blocker ?? 0);
   const warning = Number(summary.warning ?? 0);
   const deferred = Number(summary.deferred ?? 0);
+  const blockerDetails = collectReadinessDetails(readiness, ["blocker"]);
+  const attentionDetails = collectReadinessDetails(readiness, ["warning", "deferred"]);
 
   if (blocker > 0) {
     addIssue({
       category: "launch-readiness",
+      details: blockerDetails,
       message: `Admin launch readiness still reports ${blocker} blocker(s). Public or paid launch should not be treated as fully ready until operators resolve or explicitly gate them.`,
       role: "admin",
       severity: "P1",
@@ -412,12 +416,38 @@ function inspectLaunchReadiness(json) {
   if (warning + deferred > 0) {
     addIssue({
       category: "launch-readiness",
+      details: attentionDetails,
       message: `Admin launch readiness reports ${warning} warning(s) and ${deferred} deferred item(s). Keep them visible in the launch checklist.`,
       role: "admin",
       severity: "P2",
       url: joinUrl(config.appUrl, "/admin#launch-readiness")
     });
   }
+}
+
+function collectReadinessDetails(readiness, statuses) {
+  if (!Array.isArray(readiness?.sections)) {
+    return [];
+  }
+
+  const wanted = new Set(statuses);
+  return readiness.sections.flatMap((section) => {
+    if (!Array.isArray(section?.items)) {
+      return [];
+    }
+
+    return section.items
+      .filter((item) => wanted.has(item?.status))
+      .map((item) => ({
+        action: redactSecrets(String(item.action ?? "")),
+        detail: redactSecrets(String(item.detail ?? "")),
+        itemKey: String(item.key ?? ""),
+        label: redactSecrets(String(item.label ?? "")),
+        sectionKey: String(section.key ?? ""),
+        sectionTitle: redactSecrets(String(section.title ?? "")),
+        status: String(item.status ?? "")
+      }));
+  });
 }
 
 async function requestJson(url, options) {
@@ -515,14 +545,24 @@ function addResult(role, type, target, status, detail) {
 }
 
 function addIssue(issue) {
+  const details = Array.isArray(issue.details) ? issue.details.map(sanitizeIssueDetail) : undefined;
   issues.push({
     category: issue.category,
+    ...(details && details.length > 0 ? { details } : {}),
     message: redactSecrets(issue.message),
     role: issue.role,
     severity: issue.severity,
     url: issue.url
   });
   addResult(issue.role, issue.category, issue.url ?? "n/a", "fail", issue.message);
+}
+
+function sanitizeIssueDetail(detail) {
+  return Object.fromEntries(
+    Object.entries(detail)
+      .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
+      .map(([key, value]) => [key, redactSecrets(String(value))])
+  );
 }
 
 function summarizeIssues(rows) {
@@ -556,6 +596,11 @@ function printSummary(report) {
   if (report.issues.length > 0) {
     for (const issue of report.issues) {
       console.log(`${issue.severity} ${issue.role} ${issue.category}: ${issue.message}${issue.url ? ` (${issue.url})` : ""}`);
+      for (const detail of issue.details ?? []) {
+        console.log(
+          `  - ${detail.status} ${detail.sectionKey}/${detail.itemKey}: ${detail.label}${detail.action ? ` | action: ${detail.action}` : ""}${detail.detail ? ` | detail: ${detail.detail}` : ""}`
+        );
+      }
     }
   }
 

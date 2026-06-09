@@ -105,6 +105,7 @@ const copy = {
     publisher: "Publisher",
     publisherResponse: "Publisher response",
     publisherTrust: "Publisher trust",
+    previewMetric: "Preview",
     related: "Alternatives and replacements",
     relatedBody: "Compare similar skills before adopting them into a signed-in project, or keep a safer replacement path ready for deprecated, suspended, or high-risk capabilities.",
     relatedDetails: "Open details",
@@ -187,6 +188,7 @@ const copy = {
     publisher: "发布者",
     publisherResponse: "发布者回复",
     publisherTrust: "发布者信任",
+    previewMetric: "预览中",
     related: "替代和相似技能",
     relatedBody: "采用到登录后的项目之前，先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
     relatedDetails: "打开详情",
@@ -326,11 +328,11 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <div className="skill-status-grid">
             <div>
               <span>{labels.success}</span>
-              <strong>{skill.successRate}</strong>
+              <strong>{formatMetricValue(skill.successRate, locale)}</strong>
             </div>
             <div>
               <span>{labels.latency}</span>
-              <strong>{skill.latency}</strong>
+              <strong>{formatMetricValue(skill.latency, locale)}</strong>
             </div>
             <div>
               <span>{labels.installs}</span>
@@ -826,6 +828,16 @@ function pricingPreviewBody(
   return locale === "zh"
       ? "付费市场计费仍处于预发布阶段。当前价格用于展示付费市场意图；真实运行仍需要登录后的项目 Key 和策略检查。"
     : "Paid marketplace billing is prelaunch. The current price describes paid-marketplace intent; real runtime use still requires a signed-in project key and policy checks.";
+}
+
+function formatMetricValue(value: string | null | undefined, locale: Locale) {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized || normalized === "n/a" || normalized === "--") {
+    return copy[locale].previewMetric;
+  }
+
+  return value;
 }
 
 function formatDate(value: string, locale: "en" | "zh") {
