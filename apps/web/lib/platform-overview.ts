@@ -61,12 +61,12 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 const fallbackOverview: PlatformOverview = {
   platform: {
     metrics: [
-      { label: "Published skills", value: 6 },
-      { label: "Verified skills", value: 4 },
-      { label: "Installed skills", value: 128 },
-      { label: "API calls", value: "38.4k" },
-      { label: "Avg latency", value: "1.4s" },
-      { label: "Open incidents", value: 1 },
+      { label: "Public skills", value: 0 },
+      { label: "Verified skills", value: 0 },
+      { label: "Installed skills", value: 0 },
+      { label: "API calls", value: 0 },
+      { label: "Avg latency", value: "n/a" },
+      { label: "Open incidents", value: 0 },
     ],
     signals: [],
   },
@@ -111,7 +111,7 @@ const fallbackOverview: PlatformOverview = {
 const emptyOverview: PlatformOverview = {
   platform: {
     metrics: [
-      { label: "Published skills", value: 0 },
+      { label: "Public skills", value: 0 },
       { label: "Verified skills", value: 0 },
       { label: "Installed skills", value: 0 },
       { label: "API calls", value: 0 },

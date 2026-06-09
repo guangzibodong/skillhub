@@ -60,12 +60,12 @@ export type PlatformOverview = {
 const fallbackOverview: PlatformOverview = {
   platform: {
     metrics: [
-      { label: "Published skills", value: 6 },
-      { label: "Verified skills", value: 4 },
-      { label: "Installed skills", value: 128 },
-      { label: "API calls", value: 38400 },
-      { label: "Avg latency", value: "1.4s" },
-      { label: "Open incidents", value: 1 },
+      { label: "Public skills", value: 0 },
+      { label: "Verified skills", value: 0 },
+      { label: "Installed skills", value: 0 },
+      { label: "API calls", value: 0 },
+      { label: "Avg latency", value: "n/a" },
+      { label: "Open incidents", value: 0 },
     ],
     signals: [
       "Skill detail pages expose manifest, permissions, examples, pricing, and changelog.",
@@ -204,7 +204,7 @@ function emptyOverview(
   return {
     platform: {
       metrics: [
-        { label: "Published skills", value: registryStats.publishedSkills },
+        { label: "Public skills", value: registryStats.publicSkills },
         { label: "Verified skills", value: registryStats.verifiedSkills },
         { label: "API calls", value: registryStats.apiCalls },
         {
@@ -266,7 +266,7 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
         platform: {
           ...fallbackOverview.platform,
           metrics: [
-            { label: "Published skills", value: registryStats.publishedSkills },
+            { label: "Public skills", value: registryStats.publicSkills },
             { label: "Verified skills", value: registryStats.verifiedSkills },
             { label: "API calls", value: registryStats.apiCalls },
             {
@@ -351,7 +351,7 @@ async function queryOverviewFromDatabase(
     platform: {
       ...fallbackOverview.platform,
       metrics: [
-        { label: "Published skills", value: registryStats.publishedSkills },
+        { label: "Public skills", value: registryStats.publicSkills },
         { label: "Verified skills", value: registryStats.verifiedSkills },
         { label: "Installed skills", value: installs },
         { label: "API calls", value: registryStats.apiCalls },

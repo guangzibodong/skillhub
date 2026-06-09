@@ -1019,6 +1019,12 @@ Added account and admin access-state polish, covering:
 - Admin smoke markers remain present as hidden text, but the visible page no longer makes unauthenticated users feel like the privileged console is half exposed.
 - The root language sync now runs after hydration, keeping `/login?lang=zh` free of React mismatch warnings while still updating the document language for Chinese pages.
 
+Added public stats credibility alignment, covering:
+
+- `/v1/stats` now separates public catalog skills from total skill records, submitted skills, verified skills, API calls, and latency; the legacy `publishedSkills` field remains as a backward-compatible alias for public catalog skills.
+- Home, marketplace, registry, and publisher directory metrics now read from one shared public stats loader so public pages no longer disagree about whether the catalog has two public skills or four total records.
+- Public smoke now fails when `/v1/stats.publicSkills` does not match `/v1/skills/search`, preserving the rule that internal draft/private/prelaunch records cannot be marketed as public published supply.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

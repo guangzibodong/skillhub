@@ -24,6 +24,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
+import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import {
   getPublicMarketplaceSkills,
   type PublicMarketplaceSearchOptions
@@ -362,22 +363,19 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     getPublicPublishers(),
     getPlatformOverview()
   ]);
-  const verifiedPublisherCount = publishers.filter((publisher) => publisher.trustLevel === "verified").length;
-  const payoutReadyPublisherCount = publishers.filter((publisher) => publisher.payoutStatus === "verified").length;
-  const totalCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
-  const feedbackCount = skills.reduce((sum, skill) => sum + (skill.feedbackCount ?? 0), 0);
+  const publicStats = await getPublicPlatformStats({ publishers });
   const metrics = [
-    [labels.catalogMetric, String(skills.length)],
-    [labels.publisherMetric, String(publishers.length)],
-    [labels.verifiedPublisherMetric, String(verifiedPublisherCount)],
+    [labels.catalogMetric, String(publicStats.publicSkills)],
+    [labels.publisherMetric, String(publicStats.publicPublishers)],
+    [labels.verifiedPublisherMetric, String(publicStats.verifiedPublishers)],
     [labels.reviewMetric, labels.reviewMetricValue],
     [labels.moneyMetric, labels.moneyMetricValue]
   ];
   const loopMetrics = [
-    [labels.loopMetrics.callable, String(skills.length)],
-    [labels.loopMetrics.calls, formatCompactMetric(totalCallCount, locale)],
-    [labels.loopMetrics.feedback, formatCompactMetric(feedbackCount, locale)],
-    [labels.loopMetrics.payout, `${payoutReadyPublisherCount}/${publishers.length}`]
+    [labels.loopMetrics.callable, String(publicStats.verifiedSkills)],
+    [labels.loopMetrics.calls, formatCompactMetric(publicStats.recordedCalls, locale)],
+    [labels.loopMetrics.feedback, formatCompactMetric(publicStats.feedbackSignals, locale)],
+    [labels.loopMetrics.payout, `${publicStats.payoutReadyPublishers}/${publicStats.publicPublishers}`]
   ];
   const overviewCards = [
     {
@@ -498,10 +496,10 @@ skillhub install browser-research`}</code>
         focus="marketplace"
         locale={locale}
         stats={[
-          { label: labels.catalogMetric, value: String(skills.length) },
-          { label: labels.publisherMetric, value: String(publishers.length) },
-          { label: labels.loopMetrics.calls, value: formatCompactMetric(totalCallCount, locale) },
-          { label: labels.loopMetrics.payout, tone: payoutReadyPublisherCount > 0 ? "good" : "attention", value: `${payoutReadyPublisherCount}/${publishers.length}` }
+          { label: labels.catalogMetric, value: String(publicStats.publicSkills) },
+          { label: labels.publisherMetric, value: String(publicStats.publicPublishers) },
+          { label: labels.loopMetrics.calls, value: formatCompactMetric(publicStats.recordedCalls, locale) },
+          { label: labels.loopMetrics.payout, tone: publicStats.payoutReadyPublishers > 0 ? "good" : "attention", value: `${publicStats.payoutReadyPublishers}/${publicStats.publicPublishers}` }
         ]}
       />
 

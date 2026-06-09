@@ -21,6 +21,7 @@ import {
   getPublicPublishers,
   type PublicPublisherProfile,
 } from "@/lib/public-publishers";
+import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 
 export const dynamic = "force-dynamic";
 
@@ -159,35 +160,23 @@ export default async function PublisherDirectoryPage({
   const labels = copy[locale];
   const emptyLabels = emptyDirectoryCopy[locale];
   const publishers = await getPublicPublishers();
+  const publicStats = await getPublicPlatformStats({ publishers });
   const rankedPublishers = [...publishers].sort(
     (a, b) => publisherScore(b) - publisherScore(a),
   );
   const metrics = [
-    [labels.metricPublishers, formatCompactNumber(publishers.length)],
+    [labels.metricPublishers, formatCompactNumber(publicStats.publicPublishers)],
     [
       labels.metricVerifiedPublishers,
-      formatCompactNumber(
-        publishers.filter((publisher) => publisher.trustLevel === "verified")
-          .length,
-      ),
+      formatCompactNumber(publicStats.verifiedPublishers),
     ],
     [
       labels.metricPublic,
-      formatCompactNumber(
-        publishers.reduce(
-          (sum, publisher) => sum + publisher.metrics.publicSkillCount,
-          0,
-        ),
-      ),
+      formatCompactNumber(publicStats.publicSkills),
     ],
     [
       labels.metricInstalls,
-      formatCompactNumber(
-        publishers.reduce(
-          (sum, publisher) => sum + publisher.metrics.installCount,
-          0,
-        ),
-      ),
+      formatCompactNumber(publicStats.installEvidence),
     ],
   ];
 

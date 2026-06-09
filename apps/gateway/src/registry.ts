@@ -64,7 +64,10 @@ type RankedSkillSummary = SkillSummary & {
 };
 
 type RegistryStats = {
+  publicSkills: number;
   publishedSkills: number;
+  submittedSkills: number;
+  totalSkillRecords: number;
   verifiedSkills: number;
   apiCalls: number;
   avgLatencyMs: number | null;
@@ -795,16 +798,31 @@ export async function getRegistryStats(): Promise<RegistryStats> {
   if (!sql) {
     if (!allowDemoFallback()) {
       return {
+        publicSkills: 0,
         publishedSkills: 0,
+        submittedSkills: 0,
+        totalSkillRecords: 0,
         verifiedSkills: 0,
         apiCalls: 0,
         avgLatencyMs: null,
       };
     }
 
+    const demoSummaries = demoSkills.map(toSummary);
+    const publicDemoSkills = demoSummaries.filter((skill) =>
+      ["verified", "submitted", "deprecated"].includes(skill.verificationStatus),
+    );
+
     return {
-      publishedSkills: demoSkills.length,
-      verifiedSkills: 1,
+      publicSkills: publicDemoSkills.length,
+      publishedSkills: publicDemoSkills.length,
+      submittedSkills: publicDemoSkills.filter(
+        (skill) => skill.verificationStatus === "submitted",
+      ).length,
+      totalSkillRecords: demoSkills.length,
+      verifiedSkills: publicDemoSkills.filter(
+        (skill) => skill.verificationStatus === "verified",
+      ).length,
       apiCalls: 0,
       avgLatencyMs: null,
     };
@@ -814,11 +832,41 @@ export async function getRegistryStats(): Promise<RegistryStats> {
 
   const skillRows = (await sql`
     select
-      count(*)::int as published_skills,
-      count(*) filter (where verification_status = 'verified')::int as verified_skills
+      count(*) filter (
+        where visibility = 'public'
+          and verification_status in ('verified', 'submitted', 'deprecated')
+          and exists (
+            select 1
+            from skill_versions sv
+            where sv.skill_id = skills.id
+          )
+      )::int as public_skills,
+      count(*) filter (
+        where visibility = 'public'
+          and verification_status = 'submitted'
+          and exists (
+            select 1
+            from skill_versions sv
+            where sv.skill_id = skills.id
+          )
+      )::int as submitted_skills,
+      count(*) filter (
+        where visibility = 'public'
+          and verification_status = 'verified'
+          and exists (
+            select 1
+            from skill_versions sv
+            where sv.skill_id = skills.id
+          )
+      )::int as verified_skills,
+      count(*)::int as total_skill_records
     from skills
-    where visibility = 'public'
-  `) as Array<{ published_skills: number; verified_skills: number }>;
+  `) as Array<{
+    public_skills: number;
+    submitted_skills: number;
+    total_skill_records: number;
+    verified_skills: number;
+  }>;
 
   const invocationRows = (await sql`
     select
@@ -827,8 +875,13 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     from skill_invocations
   `) as Array<{ api_calls: number; avg_latency_ms: number | null }>;
 
+  const publicSkills = skillRows[0]?.public_skills ?? 0;
+
   return {
-    publishedSkills: skillRows[0]?.published_skills ?? 0,
+    publicSkills,
+    publishedSkills: publicSkills,
+    submittedSkills: skillRows[0]?.submitted_skills ?? 0,
+    totalSkillRecords: skillRows[0]?.total_skill_records ?? publicSkills,
     verifiedSkills: skillRows[0]?.verified_skills ?? 0,
     apiCalls: invocationRows[0]?.api_calls ?? 0,
     avgLatencyMs: invocationRows[0]?.avg_latency_ms ?? null,

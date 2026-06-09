@@ -640,7 +640,14 @@ async function checkStats({ apiUrl, timeoutMs }) {
       return;
     }
 
-    const requiredNumbers = ["publishedSkills", "verifiedSkills", "apiCalls"];
+    const requiredNumbers = [
+      "apiCalls",
+      "publicSkills",
+      "publishedSkills",
+      "submittedSkills",
+      "totalSkillRecords",
+      "verifiedSkills",
+    ];
     const missing = requiredNumbers.filter(
       (key) => !isFiniteNumber(json?.[key]),
     );
@@ -659,7 +666,7 @@ async function checkStats({ apiUrl, timeoutMs }) {
 
     pass(
       name,
-      `published=${json.publishedSkills}, verified=${json.verifiedSkills}`,
+      `public=${json.publicSkills}, total=${json.totalSkillRecords}, verified=${json.verifiedSkills}`,
     );
   } catch (error) {
     fail(name, error.message);
@@ -844,7 +851,7 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
 
   try {
     const { status, json } = await requestJson(
-      joinUrl(apiUrl, "/v1/skills/search?limit=5"),
+      joinUrl(apiUrl, "/v1/skills/search?limit=100"),
       { timeoutMs },
     );
 
@@ -859,12 +866,25 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
     }
 
     if (
-      (smokeContext.stats?.publishedSkills ?? 0) > 0 &&
+      (smokeContext.stats?.publicSkills ?? 0) > 0 &&
       json.skills.length === 0
     ) {
       fail(
         name,
-        "stats reports published skills but public search returned none; run registry migrations or inspect public listing filters",
+        "stats reports public skills but public search returned none; run registry migrations or inspect public listing filters",
+      );
+      return;
+    }
+
+    const publicSkillCount = smokeContext.stats?.publicSkills;
+
+    if (
+      isFiniteNumber(publicSkillCount) &&
+      publicSkillCount !== json.skills.length
+    ) {
+      fail(
+        name,
+        `public stats report ${publicSkillCount} public skill(s), but search returned ${json.skills.length}`,
       );
       return;
     }
@@ -1005,7 +1025,7 @@ async function checkPublicPublishers({ apiUrl, timeoutMs }) {
     }
 
     if (
-      ((smokeContext.stats?.publishedSkills ?? 0) > 0 ||
+      ((smokeContext.stats?.publicSkills ?? 0) > 0 ||
         smokeContext.publicSkillSlug) &&
       json.publishers.length === 0
     ) {

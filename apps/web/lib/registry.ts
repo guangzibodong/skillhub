@@ -1,7 +1,10 @@
 import type { SkillSummary } from "@useskillhub/schema";
 
-type RegistryStats = {
+export type RegistryStats = {
+  publicSkills?: number;
   publishedSkills: number;
+  submittedSkills?: number;
+  totalSkillRecords?: number;
   verifiedSkills: number;
   apiCalls: number;
   avgLatencyMs: number | null;
@@ -32,6 +35,10 @@ export async function getSkills(): Promise<SkillSummary[]> {
 }
 
 export async function getGatewayStats(): Promise<GatewayMetric[]> {
+  return formatStats(await getRegistryStats());
+}
+
+export async function getRegistryStats(): Promise<RegistryStats> {
   try {
     const response = await fetch(`${apiUrl}/v1/stats`, {
       cache: "no-store"
@@ -41,21 +48,22 @@ export async function getGatewayStats(): Promise<GatewayMetric[]> {
       throw new Error(`Registry stats failed: ${response.status}`);
     }
 
-    const stats = (await response.json()) as RegistryStats;
-    return formatStats(stats);
+    return (await response.json()) as RegistryStats;
   } catch {
-    return formatStats({
+    return {
       publishedSkills: 0,
       verifiedSkills: 0,
       apiCalls: 0,
       avgLatencyMs: null
-    });
+    };
   }
 }
 
 function formatStats(stats: RegistryStats): GatewayMetric[] {
+  const publicSkills = stats.publicSkills ?? stats.publishedSkills;
+
   return [
-    { label: "Published skills", value: String(stats.publishedSkills) },
+    { label: "Public skills", value: String(publicSkills) },
     { label: "Verified", value: String(stats.verifiedSkills) },
     { label: "API calls", value: String(stats.apiCalls) },
     { label: "Avg latency", value: stats.avgLatencyMs === null ? "--" : `${stats.avgLatencyMs}ms` }

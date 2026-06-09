@@ -34,7 +34,12 @@ import {
   getLocaleFromSearchParams,
   localizedHref,
 } from "@/lib/i18n";
-import { getGatewayStats, getSkills } from "@/lib/registry";
+import {
+  formatPublicPlatformLatency,
+  formatPublicPlatformShare,
+  getPublicPlatformStats,
+} from "@/lib/public-platform-stats";
+import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -212,60 +217,33 @@ const manifestSnippet = `{
   }
 }`;
 
-function getMetricValue(
-  metrics: Awaited<ReturnType<typeof getGatewayStats>>,
-  label: string,
-  fallback: string,
-) {
-  return metrics.find((metric) => metric.label === label)?.value ?? fallback;
-}
-
-function toNumber(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl =
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const [skills, gatewayStats, session] = await Promise.all([
-    getSkills(),
-    getGatewayStats(),
+  const skills = await getSkills();
+  const [publicStats, session] = await Promise.all([
+    getPublicPlatformStats({ skills }),
     getWorkspaceSession(),
   ]);
-  const verifiedSkills = skills.filter(
-    (skill) => skill.verificationStatus === "verified",
-  ).length;
-  const publishedFromGateway = toNumber(
-    getMetricValue(gatewayStats, "Published skills", "0"),
-  );
-  const verifiedFromGateway = toNumber(
-    getMetricValue(gatewayStats, "Verified", "0"),
-  );
-  const publishedSkills = Math.max(publishedFromGateway, skills.length);
-  const verifiedCount = Math.max(verifiedFromGateway, verifiedSkills);
   const visibleMetrics = [
     {
       label: dictionary.metrics.publishedSkills,
-      value: String(publishedSkills),
+      value: String(publicStats.publicSkills),
     },
-    { label: dictionary.metrics.verified, value: String(verifiedCount) },
+    {
+      label: dictionary.metrics.totalSkillRecords,
+      value: String(publicStats.totalSkillRecords),
+    },
+    { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
     {
       label: dictionary.metrics.apiCalls,
-      value: getMetricValue(gatewayStats, "API calls", "0"),
-    },
-    {
-      label: dictionary.metrics.avgLatency,
-      value: getMetricValue(gatewayStats, "Avg latency", "--"),
+      value: String(publicStats.recordedCalls),
     },
   ];
-  const verifiedShare =
-    publishedSkills === 0
-      ? "0%"
-      : `${Math.round((verifiedCount / Math.max(publishedSkills, 1)) * 100)}%`;
+  const verifiedShare = formatPublicPlatformShare(publicStats.verifiedSkills, publicStats.publicSkills);
   const statusSignals = [
     {
       label: dictionary.home.status.api,
@@ -367,7 +345,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
             <pre>
               <code>{`GET /v1/skills/search?tag=research
-200 OK  ${skills.length} skills
+200 OK  ${publicStats.publicSkills} public skills
 
 POST /mcp
 tools: skillhub.search, skillhub.get`}</code>
@@ -381,21 +359,21 @@ tools: skillhub.search, skillhub.get`}</code>
           stats={[
             {
               label: dictionary.metrics.publishedSkills,
-              value: String(publishedSkills),
+              value: String(publicStats.publicSkills),
             },
             {
               label: dictionary.metrics.verified,
               tone: "good",
-              value: String(verifiedCount),
+              value: String(publicStats.verifiedSkills),
             },
             {
               label: dictionary.metrics.apiCalls,
-              value: getMetricValue(gatewayStats, "API calls", "0"),
+              value: String(publicStats.recordedCalls),
             },
             {
               label: dictionary.metrics.avgLatency,
               tone: "neutral",
-              value: getMetricValue(gatewayStats, "Avg latency", "--"),
+              value: formatPublicPlatformLatency(publicStats.avgLatencyMs),
             },
           ]}
         />

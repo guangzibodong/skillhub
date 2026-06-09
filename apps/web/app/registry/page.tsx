@@ -16,17 +16,17 @@ import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { getGatewayStats, getSkills } from "@/lib/registry";
+import {
+  formatPublicPlatformLatency,
+  getPublicPlatformStats
+} from "@/lib/public-platform-stats";
+import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-function getMetricValue(metrics: Awaited<ReturnType<typeof getGatewayStats>>, label: string, fallback: string) {
-  return metrics.find((metric) => metric.label === label)?.value ?? fallback;
-}
 
 const registryProtocolCopy = {
   en: {
@@ -161,15 +161,15 @@ export default async function RegistryPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = registryProtocolCopy[locale];
-  const [skills, gatewayStats] = await Promise.all([getSkills(), getGatewayStats()]);
-  const verifiedSkills = skills.filter((skill) => skill.verificationStatus === "verified").length;
+  const skills = await getSkills();
+  const publicStats = await getPublicPlatformStats({ skills });
   const highRiskSkills = skills.filter((skill) => skill.permissionLevel === "high").length;
   const mcpSkills = skills.filter((skill) => skill.runtimeType === "mcp").length;
   const visibleMetrics = [
-    { label: dictionary.metrics.publishedSkills, value: String(skills.length) },
-    { label: dictionary.metrics.verified, value: String(verifiedSkills) },
-    { label: dictionary.metrics.apiCalls, value: getMetricValue(gatewayStats, "API calls", "0") },
-    { label: dictionary.metrics.avgLatency, value: getMetricValue(gatewayStats, "Avg latency", "--") }
+    { label: dictionary.metrics.publishedSkills, value: String(publicStats.publicSkills) },
+    { label: dictionary.metrics.totalSkillRecords, value: String(publicStats.totalSkillRecords) },
+    { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
+    { label: dictionary.metrics.avgLatency, value: formatPublicPlatformLatency(publicStats.avgLatencyMs) }
   ];
 
   return (
@@ -225,10 +225,10 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         focus="platform"
         locale={locale}
         stats={[
-          { label: labels.evidence.verified, tone: verifiedSkills > 0 ? "good" : "attention", value: String(verifiedSkills) },
+          { label: labels.evidence.verified, tone: publicStats.verifiedSkills > 0 ? "good" : "attention", value: String(publicStats.verifiedSkills) },
           { label: labels.evidence.highRisk, tone: highRiskSkills > 0 ? "attention" : "neutral", value: String(highRiskSkills) },
           { label: labels.evidence.mcp, value: String(mcpSkills) },
-          { label: labels.evidence.calls, value: getMetricValue(gatewayStats, "API calls", "0") }
+          { label: labels.evidence.calls, value: String(publicStats.recordedCalls) }
         ]}
       />
 

@@ -119,7 +119,8 @@ export const dictionaries = {
       ]
     },
     metrics: {
-      publishedSkills: "Published skills",
+      publishedSkills: "Public skills",
+      totalSkillRecords: "Total records",
       verified: "Verified",
       apiCalls: "API calls",
       avgLatency: "Avg latency",
@@ -520,7 +521,8 @@ export const dictionaries = {
       ]
     },
     metrics: {
-      publishedSkills: "已发布技能",
+      publishedSkills: "公开技能",
+      totalSkillRecords: "总技能记录",
       verified: "已验证",
       apiCalls: "API 调用",
       avgLatency: "平均延迟",
