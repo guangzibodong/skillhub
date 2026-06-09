@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import type { Locale } from "@/lib/i18n";
+import type { Locale } from "@/lib/locale-routing";
 
 type LanguageSwitcherProps = {
   locale: Locale;

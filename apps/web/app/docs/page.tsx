@@ -126,12 +126,12 @@ const copy: Record<Locale, DocsCopy> = {
     },
     hero: {
       description:
-        "Use this page as the product-grade reference for SkillHub's registry, marketplace, runtime gateway, review governance, ledger, payout, notification, and admin operations.",
-      eyebrow: "Operating reference",
+        "Discover and inspect public agent skills in five minutes. Runtime invocation requires a signed-in project key.",
+      eyebrow: "Developer quickstart",
       primary: "Browse marketplace",
       secondary: "Publish a skill",
-      tertiary: "Open admin readiness",
-      title: "Docs for the full SkillHub marketplace, not just a manifest format."
+      tertiary: "MCP status",
+      title: "SkillHub Developer Quickstart"
     },
     journeys: {
       body:
@@ -227,7 +227,7 @@ const copy: Record<Locale, DocsCopy> = {
     },
     runtime: {
       body:
-        "MCP tools/call and REST runtime invocation must reuse the same governance path. Console tests are useful because they prove this path before agents run autonomously.",
+      "Runtime invocation requires a signed-in project key. MCP tools/call and REST runtime invocation must reuse the same governance path.",
       steps: ["Authenticate project key", "Resolve installed skill and pinned version", "Check policy, approval, budget, rate limit, and subscription", "Invoke runtime and record invocation", "Post usage or subscription ledger state when billable"],
       title: "Runtime governance path"
     },
@@ -288,12 +288,12 @@ const copy: Record<Locale, DocsCopy> = {
     },
     hero: {
       description:
-        "这里是 SkillHub 的产品级参考入口，覆盖注册库、市场、运行网关、审核治理、账本、提现、通知和后台运营。",
-      eyebrow: "运营参考",
+        "五分钟内发现并查看公开 agent 技能。运行调用需要已登录的项目 Key。",
+      eyebrow: "开发者快速开始",
       primary: "浏览市场",
       secondary: "发布技能",
-      tertiary: "打开上线就绪",
-      title: "这不是只有 manifest 的文档，而是完整 SkillHub 市场的操作手册。"
+      tertiary: "MCP 状态",
+      title: "SkillHub 开发者快速开始"
     },
     journeys: {
       body:
@@ -529,7 +529,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
             <FileJson size={18} aria-hidden="true" />
             <span>{labels.hero.secondary}</span>
           </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/admin#launch-readiness", locale)}>
+          <a className="secondary-button secondary-button--large" href={localizedHref("/docs#mcp", locale)}>
             <Gauge size={18} aria-hidden="true" />
             <span>{labels.hero.tertiary}</span>
           </a>

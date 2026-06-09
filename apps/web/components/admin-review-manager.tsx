@@ -17,8 +17,7 @@ import {
   UserRound,
   XCircle
 } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import type { AdminReviewRecord } from "@/lib/ops-data";
 import { decideAdminReviewAction, type AdminReviewActionState } from "@/lib/admin-review-actions";
 

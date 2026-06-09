@@ -1,9 +1,11 @@
 import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
 import { getRegistryStats, getSkills, type RegistryStats } from "@/lib/registry";
+import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 import type { SkillSummary } from "@useskillhub/schema";
 
 export type PublicPlatformStats = {
   avgLatencyMs: number | null;
+  callableSkills: number;
   feedbackSignals: number;
   hiddenOrPrelaunchSkillRecords: number;
   installEvidence: number;
@@ -23,6 +25,24 @@ type PublicPlatformStatsInput = {
   skills?: SkillSummary[];
 };
 
+export function derivePublicPlatformStats(skills: SkillSummary[]): Pick<
+  PublicPlatformStats,
+  "callableSkills" | "feedbackSignals" | "publicSkills" | "recordedCalls" | "submittedSkills" | "verifiedSkills"
+> {
+  const publicSkills = skills.filter(isPublicSkillSummary);
+  const verifiedSkills = publicSkills.filter((skill) => isVerifiedSkillStatus(skill.verificationStatus));
+  const submittedSkills = publicSkills.filter((skill) => skill.verificationStatus === "submitted");
+
+  return {
+    callableSkills: verifiedSkills.filter(isCallableSkillSummary).length,
+    feedbackSignals: publicSkills.reduce((sum, skill) => sum + (skill.feedbackCount ?? 0), 0),
+    publicSkills: publicSkills.length,
+    recordedCalls: publicSkills.reduce((sum, skill) => sum + (skill.invocationCount ?? 0), 0),
+    submittedSkills: submittedSkills.length,
+    verifiedSkills: verifiedSkills.length,
+  };
+}
+
 export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {}): Promise<PublicPlatformStats> {
   const [skills, publishers, registryStats] = await Promise.all([
     input.skills ? Promise.resolve(input.skills) : getSkills(),
@@ -30,22 +50,25 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
     input.registryStats ? Promise.resolve(input.registryStats) : getRegistryStats()
   ]);
 
+  const derived = derivePublicPlatformStats(skills);
   const statsAvailable = registryStats.publicSkills !== undefined;
-  const publicSkills = statsAvailable ? registryStats.publicSkills ?? 0 : skills.length;
+  const publicSkills = statsAvailable ? registryStats.publicSkills ?? 0 : derived.publicSkills;
   const verifiedSkills = statsAvailable
     ? registryStats.verifiedSkills
-    : skills.filter((skill) => skill.verificationStatus === "verified").length;
+    : derived.verifiedSkills;
   const submittedSkills = statsAvailable
     ? registryStats.submittedSkills ?? 0
-    : skills.filter((skill) => skill.verificationStatus === "submitted").length;
-  const skillCallCount = skills.reduce((sum, skill) => sum + (skill.invocationCount ?? 0), 0);
+    : derived.submittedSkills;
+  const callableSkills = registryStats.callableSkills ?? (statsAvailable ? verifiedSkills : derived.callableSkills);
+  const skillCallCount = derived.recordedCalls;
   const publisherCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
   const registryCallCount = registryStats.apiCalls ?? 0;
   const totalSkillRecords = Math.max(registryStats.totalSkillRecords ?? publicSkills, publicSkills);
 
   return {
     avgLatencyMs: registryStats.avgLatencyMs,
-    feedbackSignals: skills.reduce((sum, skill) => sum + (skill.feedbackCount ?? 0), 0),
+    callableSkills,
+    feedbackSignals: derived.feedbackSignals,
     hiddenOrPrelaunchSkillRecords: Math.max(totalSkillRecords - publicSkills, 0),
     installEvidence: publishers.reduce((sum, publisher) => sum + publisher.metrics.installCount, 0),
     publicPublishers: publishers.length,
@@ -57,6 +80,14 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
     verifiedSkills,
     payoutReadyPublishers: publishers.filter((publisher) => publisher.payoutStatus === "verified").length
   };
+}
+
+export function isPublicSkillSummary(skill: SkillSummary) {
+  return ["verified", "submitted", "deprecated"].includes(skill.verificationStatus);
+}
+
+export function isCallableSkillSummary(skill: SkillSummary) {
+  return isPublicSkillSummary(skill) && isVerifiedSkillStatus(skill.verificationStatus);
 }
 
 export function formatPublicPlatformLatency(value: number | null) {

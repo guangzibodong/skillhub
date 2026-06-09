@@ -183,9 +183,9 @@ const PAGE_ASSERTIONS = {
     "\u751f\u4ea7\u667a\u80fd\u4f53\u4f7f\u7528\u524d",
   ],
   "/docs?lang=zh": [
-    "\u8fd0\u8425\u53c2\u8003",
-    "\u64cd\u4f5c\u624b\u518c",
-    "\u8fd0\u8425\u5e73\u53f0 api \u5730\u56fe",
+    "\u5f00\u53d1\u8005\u5feb\u901f\u5f00\u59cb",
+    "\u516c\u5f00 API \u5df2\u53ef\u7528",
+    "MCP \u4f7f\u7528 POST",
   ],
   "/login": [
     "Sign in to SkillHub",
@@ -210,18 +210,14 @@ const PAGE_ASSERTIONS = {
     "\u6ce8\u518c",
   ],
   "/dashboard": [
-    "workspace-command-center",
-    "p0-demo-chain",
-    "developer workspace",
-    "publisher workspace",
-    "platform operations",
+    "sign-in required",
+    "the dashboard opens after sign-in",
+    "browse registry",
   ],
   "/dashboard?lang=zh": [
-    "workspace-command-center",
-    "p0-demo-chain",
-    "\u5de5\u4f5c\u53f0\u603b\u63a7",
-    "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
-    "\u5e73\u53f0\u8fd0\u8425\u540e\u53f0",
+    "\u9700\u8981\u5148\u767b\u5f55",
+    "\u5de5\u4f5c\u53f0\u9700\u8981\u767b\u5f55\u540e\u624d\u80fd\u6253\u5f00",
+    "\u6d4f\u89c8\u6280\u80fd\u5e93",
   ],
   "/publish": [
     "self-service publisher access",
@@ -373,6 +369,28 @@ const SOURCE_MOJIBAKE_MARKERS = [
   "\u9422\u3126\u57DB",
   "\u6D93\u20AC",
   ...COMMON_UTF8_AS_GBK_MARKERS,
+];
+const PUBLIC_PREVIEW_SOURCE_SCAN_PATHS = [
+  "apps/web/app",
+  "apps/web/components",
+  "apps/web/lib",
+];
+const PUBLIC_PREVIEW_FORBIDDEN_PATTERNS = [
+  { label: "skillhub install", pattern: /\bskillhub\s+install\b/i },
+  { label: "await skillhub.run", pattern: /\bawait\s+skillhub\.run\b/i },
+  { label: "@useskillhub/sdk", pattern: /@useskillhub\/sdk/i },
+];
+const ANONYMOUS_DASHBOARD_PATHS = new Set(["/dashboard", "/dashboard?lang=zh"]);
+const ANONYMOUS_DASHBOARD_FORBIDDEN_MARKERS = [
+  "buyer request",
+  "revenue ledger",
+  "billing profile",
+  "provider customer",
+  "tax id",
+  "payout request",
+  "manual payout",
+  "payout account",
+  "runtime api keys",
 ];
 const PUBLIC_P0_PROD_GATE =
   "pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000";
@@ -554,6 +572,7 @@ if (!config.skipApp) {
 console.log("");
 
 await checkSourceMojibake();
+await checkPublicPreviewSourceContract();
 await checkReleaseCommandGate();
 
 if (!config.skipApi) {
@@ -1763,12 +1782,19 @@ async function checkPublicMcpDescription({ apiUrl, timeoutMs }) {
     if (
       json?.ok !== true ||
       json?.service !== "skillhub-mcp" ||
+      json?.stage !== "developer_preview" ||
+      json?.transport !== "streamable-http" ||
+      !Array.isArray(json?.supportedMethods) ||
+      !json.supportedMethods.includes("POST") ||
       !Array.isArray(json?.methods) ||
       !json.methods.includes("POST") ||
+      json?.auth?.discovery !== "public" ||
+      json?.auth?.runtimeInvocation !== "project_key_required" ||
+      json?.docsPath !== "/docs#mcp" ||
       typeof json?.docs !== "string" ||
       !json.docs.includes("/docs#mcp")
     ) {
-      fail(name, "expected public MCP service description with POST method and docs link");
+      fail(name, "expected public Developer Preview MCP metadata with POST method, project-key runtime auth, and docs link");
       return;
     }
 
@@ -1779,7 +1805,7 @@ async function checkPublicMcpDescription({ apiUrl, timeoutMs }) {
       return;
     }
 
-    pass(name, `service=${json.service}, methods=${json.methods.join(",")}`);
+    pass(name, `service=${json.service}, stage=${json.stage}, methods=${json.supportedMethods.join(",")}`);
   } catch (error) {
     fail(name, error.message);
   }
@@ -2360,6 +2386,20 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
         }
       }
 
+      if (ANONYMOUS_DASHBOARD_PATHS.has(path)) {
+        const forbiddenMarkers = ANONYMOUS_DASHBOARD_FORBIDDEN_MARKERS.filter(
+          (token) => html.includes(token),
+        );
+
+        if (forbiddenMarkers.length > 0) {
+          fail(
+            name,
+            `anonymous dashboard should not render protected workspace controls: ${forbiddenMarkers.join(", ")}`,
+          );
+          continue;
+        }
+      }
+
       pass(name, `html bytes=${Buffer.byteLength(response.text, "utf8")}`);
     } catch (error) {
       fail(name, error.message);
@@ -2664,6 +2704,76 @@ async function checkSourceMojibake() {
     }
 
     pass(name, `files=${files.length}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
+}
+
+async function checkPublicPreviewSourceContract() {
+  const name = "public preview source contract";
+
+  try {
+    const files = [];
+
+    for (const scanPath of PUBLIC_PREVIEW_SOURCE_SCAN_PATHS) {
+      await collectSourceTextFiles(scanPath, files);
+    }
+
+    const hits = [];
+
+    for (const file of files) {
+      const text = await readFile(file, "utf8");
+
+      for (const { label, pattern } of PUBLIC_PREVIEW_FORBIDDEN_PATTERNS) {
+        if (pattern.test(text)) {
+          hits.push(`${toDisplayPath(file)} (${label})`);
+        }
+      }
+    }
+
+    if (hits.length > 0) {
+      fail(
+        name,
+        `public pages must not expose unpublished CLI/SDK copy-ready commands: ${hits.slice(0, 5).join("; ")}`,
+      );
+      return;
+    }
+
+    const packageStatus = await readFile(
+      "apps/web/lib/public-package-status.ts",
+      "utf8",
+    );
+    const publicStats = await readFile(
+      "apps/web/lib/public-platform-stats.ts",
+      "utf8",
+    );
+    const installState = await readFile(
+      "apps/web/lib/skill-install-state.ts",
+      "utf8",
+    );
+    const siteHeaderClient = await readFile(
+      "apps/web/components/site-header-client.tsx",
+      "utf8",
+    );
+
+    const requiredSourceMarkers = [
+      ["PUBLIC_PACKAGE_STATUS.cliPublished=false", /cliPublished:\s*false/.test(packageStatus)],
+      ["PUBLIC_PACKAGE_STATUS.sdkPublished=false", /sdkPublished:\s*false/.test(packageStatus)],
+      ["callableSkills stat", /callableSkills/.test(publicStats)],
+      ["isCallableSkillSummary helper", /function\s+isCallableSkillSummary/.test(publicStats)],
+      ["inspection-only install state", /Inspection only/.test(installState)],
+      ["anonymous publish entry", /href=\{localizedHref\("\/publish"/.test(siteHeaderClient)],
+    ];
+    const missing = requiredSourceMarkers
+      .filter(([, present]) => !present)
+      .map(([label]) => label);
+
+    if (missing.length > 0) {
+      fail(name, `missing public preview source markers: ${missing.join(", ")}`);
+      return;
+    }
+
+    pass(name, `files=${files.length}, packageStatus=preview`);
   } catch (error) {
     fail(name, error.message);
   }

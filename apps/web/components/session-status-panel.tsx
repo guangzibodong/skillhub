@@ -1,8 +1,7 @@
 import { LayoutDashboard, LogIn, LogOut, ShieldCheck, UserCircle } from "lucide-react";
 import { signOutAction } from "@/lib/auth-actions";
 import type { WorkspaceSession } from "@/lib/auth-session";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type SessionStatusPanelProps = {
   locale: Locale;

@@ -790,7 +790,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
 
         <div className="finance-rule-grid">
-          {labels.financeRows.map(([title, detail], index) => {
+          {labels.financeRows.map((row: readonly [string, string], index: number) => {
+            const [title, detail] = row;
             const Icon = financeIcons[index];
             return (
               <article className="finance-rule lift-card" key={title}>

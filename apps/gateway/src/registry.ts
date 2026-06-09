@@ -64,6 +64,7 @@ type RankedSkillSummary = SkillSummary & {
 };
 
 type RegistryStats = {
+  callableSkills: number;
   publicSkills: number;
   publishedSkills: number;
   submittedSkills: number;
@@ -798,6 +799,7 @@ export async function getRegistryStats(): Promise<RegistryStats> {
   if (!sql) {
     if (!allowDemoFallback()) {
       return {
+        callableSkills: 0,
         publicSkills: 0,
         publishedSkills: 0,
         submittedSkills: 0,
@@ -814,6 +816,9 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     );
 
     return {
+      callableSkills: publicDemoSkills.filter(
+        (skill) => skill.verificationStatus === "verified",
+      ).length,
       publicSkills: publicDemoSkills.length,
       publishedSkills: publicDemoSkills.length,
       submittedSkills: publicDemoSkills.filter(
@@ -829,6 +834,39 @@ export async function getRegistryStats(): Promise<RegistryStats> {
   }
 
   await seedDemoData(sql);
+
+  const schema = await getPublicRegistrySchema(sql);
+
+  if (!schema.skills) {
+    return {
+      callableSkills: 0,
+      publicSkills: 0,
+      publishedSkills: 0,
+      submittedSkills: 0,
+      totalSkillRecords: 0,
+      verifiedSkills: 0,
+      apiCalls: 0,
+      avgLatencyMs: null,
+    };
+  }
+
+  if (!schema.skillVersions) {
+    const recordRows = (await sql`
+      select count(*)::int as total_skill_records
+      from skills
+    `) as Array<{ total_skill_records: number }>;
+
+    return {
+      callableSkills: 0,
+      publicSkills: 0,
+      publishedSkills: 0,
+      submittedSkills: 0,
+      totalSkillRecords: recordRows[0]?.total_skill_records ?? 0,
+      verifiedSkills: 0,
+      apiCalls: 0,
+      avgLatencyMs: null,
+    };
+  }
 
   const skillRows = (await sql`
     select
@@ -859,26 +897,39 @@ export async function getRegistryStats(): Promise<RegistryStats> {
             where sv.skill_id = skills.id
           )
       )::int as verified_skills,
+      count(*) filter (
+        where visibility = 'public'
+          and verification_status = 'verified'
+          and exists (
+            select 1
+            from skill_versions sv
+            where sv.skill_id = skills.id
+          )
+      )::int as callable_skills,
       count(*)::int as total_skill_records
     from skills
   `) as Array<{
     public_skills: number;
+    callable_skills: number;
     submitted_skills: number;
     total_skill_records: number;
     verified_skills: number;
   }>;
 
-  const invocationRows = (await sql`
-    select
-      count(*)::int as api_calls,
-      round(avg(latency_ms))::int as avg_latency_ms
-    from skill_invocations
-  `) as Array<{ api_calls: number; avg_latency_ms: number | null }>;
+  const invocationRows = schema.skillInvocations
+    ? ((await sql`
+        select
+          count(*)::int as api_calls,
+          round(avg(latency_ms))::int as avg_latency_ms
+        from skill_invocations
+      `) as Array<{ api_calls: number; avg_latency_ms: number | null }>)
+    : [{ api_calls: 0, avg_latency_ms: null }];
 
   const publicSkills = skillRows[0]?.public_skills ?? 0;
 
   return {
     publicSkills,
+    callableSkills: skillRows[0]?.callable_skills ?? 0,
     publishedSkills: publicSkills,
     submittedSkills: skillRows[0]?.submitted_skills ?? 0,
     totalSkillRecords: skillRows[0]?.total_skill_records ?? publicSkills,

@@ -18,8 +18,7 @@ import {
   Timer,
   Zap,
 } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import {
   localizeText,
   marketplaceCategories,

@@ -2,8 +2,7 @@
 
 import { useActionState } from "react";
 import { BellRing, CheckCircle2, Circle, ExternalLink, MailCheck, XCircle } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import {
   markAllNotificationsReadAction,
   markNotificationReadAction,

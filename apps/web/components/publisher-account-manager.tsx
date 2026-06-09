@@ -14,7 +14,7 @@ import {
   WalletCards,
   XCircle
 } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import type { PublisherAccountSummary } from "@/lib/ops-data";
 import {
   acceptPublisherTermsAction,

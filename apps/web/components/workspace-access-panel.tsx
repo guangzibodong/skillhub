@@ -1,6 +1,6 @@
 import { KeyRound, LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react";
 import type { WorkspaceSession } from "@/lib/auth-session";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type WorkspaceAccessPanelProps = {
   locale: Locale;

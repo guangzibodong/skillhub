@@ -122,7 +122,7 @@ const copy = {
       limited: "limited",
       verified: "verified"
     },
-    useCases: "Production use cases",
+    useCases: "Use cases",
     verifiedSkills: "verified skills",
     viewPublisher: "Open publisher profile"
   },
@@ -204,7 +204,7 @@ const copy = {
       limited: "受限",
       verified: "已验证"
     },
-    useCases: "生产使用场景",
+    useCases: "使用场景",
     verifiedSkills: "已验证技能",
     viewPublisher: "打开发布者档案"
   }

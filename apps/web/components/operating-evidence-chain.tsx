@@ -8,7 +8,7 @@ import {
   PlugZap,
   ShieldCheck
 } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type EvidenceFocus = "admin" | "developer" | "marketplace" | "platform" | "publisher";
 

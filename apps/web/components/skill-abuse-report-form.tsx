@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, Flag, LogIn, Send, XCircle } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { createSkillAbuseReportAction, type SkillAbuseReportActionState } from "@/lib/skill-abuse-report-actions";
 
 type SkillAbuseReportFormProps = {

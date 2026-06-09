@@ -4,7 +4,7 @@ import { useActionState, useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, CheckCircle2, Eye, EyeOff, KeyRound, MailCheck, Send, UserPlus, XCircle } from "lucide-react";
 import { signUpAction, type SignupActionState } from "@/lib/auth-actions";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type WorkspaceSignupFormProps = {
   locale: Locale;

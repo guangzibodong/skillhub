@@ -9,7 +9,6 @@ import {
   FileJson,
   Gauge,
   KeyRound,
-  LayoutDashboard,
   Network,
   PackageCheck,
   Plus,
@@ -129,9 +128,9 @@ const proofCopy = {
 
 const operatingCopy = {
   en: {
-    eyebrow: "Live marketplace loops",
+    eyebrow: "Registry preview loops",
     title: "One platform for developers, publishers, and operators.",
-    body: "The product only feels real when a listing becomes install state, runtime state, review state, ledger state, and payout state. SkillHub keeps those loops visible from day one.",
+    body: "The product only feels real when a listing becomes install state, runtime state, review state, ledger state, and prelaunch payout state. SkillHub keeps those loops visible from day one.",
     flow: ["Publish", "Review", "Install", "Invoke", "Ledger", "Payout"],
     loops: [
       {
@@ -161,10 +160,10 @@ const operatingCopy = {
     ],
   },
   zh: {
-    eyebrow: "\u5b9e\u65f6\u5e02\u573a\u95ed\u73af",
+    eyebrow: "\u6ce8\u518c\u8868\u9884\u89c8\u95ed\u73af",
     title:
       "\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u3001\u8fd0\u8425\u5458\u5171\u7528\u4e00\u4e2a\u5e73\u53f0\u3002",
-    body: "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u53d8\u6210\u5b89\u88c5\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8d26\u672c\u72b6\u6001\u548c\u63d0\u73b0\u72b6\u6001\u3002",
+    body: "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u53d8\u6210\u5b89\u88c5\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8d26\u672c\u72b6\u6001\u548c\u9884\u53d1\u5e03\u63d0\u73b0\u6a21\u578b\u72b6\u6001\u3002",
     flow: [
       "\u53d1\u5e03",
       "\u5ba1\u6838",
@@ -239,8 +238,8 @@ export default async function Home({ searchParams }: PageProps) {
     },
     { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
     {
-      label: dictionary.metrics.apiCalls,
-      value: String(publicStats.recordedCalls),
+      label: dictionary.metrics.callableSkills,
+      value: String(publicStats.callableSkills),
     },
   ];
   const verifiedShare = formatPublicPlatformShare(publicStats.verifiedSkills, publicStats.publicSkills);
@@ -295,14 +294,11 @@ export default async function Home({ searchParams }: PageProps) {
             </a>
             <a
               className="secondary-button secondary-button--large"
-              href={localizedHref(
-                "/dashboard#workspace-command-center",
-                locale,
-              )}
+              href={localizedHref("/docs#mcp", locale)}
             >
-              <LayoutDashboard size={18} aria-hidden="true" />
+              <FileJson size={18} aria-hidden="true" />
               <span>
-                {locale === "zh" ? "\u5de5\u4f5c\u53f0\u5165\u53e3" : "Open workspace"}
+                {locale === "zh" ? "\u5f00\u53d1\u8005\u5feb\u901f\u5f00\u59cb" : "Developer quickstart"}
               </span>
             </a>
           </div>
@@ -367,8 +363,8 @@ tools: skillhub.search, skillhub.get`}</code>
               value: String(publicStats.verifiedSkills),
             },
             {
-              label: dictionary.metrics.apiCalls,
-              value: String(publicStats.recordedCalls),
+              label: dictionary.metrics.callableSkills,
+              value: String(publicStats.callableSkills),
             },
             {
               label: dictionary.metrics.avgLatency,

@@ -288,12 +288,19 @@ app.get("/health", (c) =>
 
 app.get("/mcp", (c) =>
   c.json({
+    auth: {
+      discovery: "public",
+      runtimeInvocation: "project_key_required"
+    },
+    docs: "https://useskillhub.com/docs#mcp",
+    docsPath: "/docs#mcp",
+    methods: ["POST"],
     ok: true,
     service: "skillhub-mcp",
+    stage: "developer_preview",
+    supportedMethods: ["POST"],
     transport: "streamable-http",
-    methods: ["POST"],
-    tools: ["skillhub.search", "skillhub.get"],
-    docs: "https://useskillhub.com/docs#mcp"
+    tools: ["skillhub.search", "skillhub.get"]
   })
 );
 

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, LogIn, MessageSquareText, Send, Star, XCircle } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { createSkillFeedbackAction, type SkillFeedbackActionState } from "@/lib/skill-feedback-actions";
 
 type SkillFeedbackFormProps = {

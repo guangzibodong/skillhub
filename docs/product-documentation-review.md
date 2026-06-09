@@ -8,6 +8,8 @@ The previous documents were directionally correct but incomplete.
 
 Update on 2026-06-09: the public website credibility pass now treats SkillHub as a Developer Preview product instead of a fully mature paid marketplace. Public surfaces show a global preview banner, `/mcp` has a GET description plus POST MCP behavior, docs start with a no-login REST/MCP quickstart, static/demo operational metrics fall back to empty production state, auth copy consistently names Google/GitHub plus username/email password with token fallback reserved for invite/recovery, and CLI/SDK commands are marked preview while public pages expose copyable REST inspect commands only.
 
+Round 2 acceptance update on 2026-06-09: public copy, README, API docs, and smoke checks now use the same state model. Public registry discovery and skill inspection are live; runtime invocation requires an authenticated project key; CLI and SDK packages remain unpublished public previews; submitted skills are inspection-only; anonymous dashboard HTML renders only a sign-in gate; and anonymous navigation focuses on Home, Registry, Marketplace, Docs, Publish, and Sign in.
+
 They described:
 
 - Registry.
@@ -68,7 +70,7 @@ The latest account-center hierarchy pass makes `/account` read more like a perso
 
 The latest login-feedback polish makes the public account entry behave more like a production form. Password login/register now localizes known backend auth failures instead of echoing English API text on Chinese pages, keeps unknown public auth errors behind safe product copy, and places password-form feedback inside the form before the submit action so mobile users see what failed without hunting below the fold. Login/register, token fallback, and OAuth callback notices now expose `alert`/`status` live regions and form feedback associations, improving keyboard and screen-reader feedback without changing the P0 access model or exposing any credentials.
 
-The latest mobile-navigation polish makes the compact header more useful for account entry without exposing admin login. The mobile menu button now has hidden text in addition to its icon and ARIA label, and the opened mobile menu includes the account center beside sign-in and API health. This keeps public discovery focused on home, marketplace, publishers, registry, agents, and docs while giving mobile users a direct route to normal account/workspace readiness after login.
+The latest mobile-navigation polish keeps the compact header focused on public discovery without exposing admin login. The mobile menu button now has hidden text in addition to its icon and ARIA label, and the opened mobile menu includes Home, Registry, Marketplace, Docs, Publish, and Sign in. Account and operator paths stay behind the normal sign-in/account flow instead of appearing as anonymous navigation shortcuts.
 
 The latest login-route polish fills the desktop `/login` dead space with a concise post-sign-in path: choose configured OAuth or username/email password, review the account center, then continue into developer, publisher, or role-gated operator workspaces. The guidance stays off the narrow mobile layout so first-screen account entry remains focused on Google/GitHub and password access, and the public smoke now asserts the English and Chinese route markers.
 

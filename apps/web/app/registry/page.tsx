@@ -16,10 +16,7 @@ import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import {
-  formatPublicPlatformLatency,
-  getPublicPlatformStats
-} from "@/lib/public-platform-stats";
+import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
@@ -169,7 +166,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
     { label: dictionary.metrics.publishedSkills, value: String(publicStats.publicSkills) },
     { label: dictionary.metrics.totalSkillRecords, value: String(publicStats.totalSkillRecords) },
     { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
-    { label: dictionary.metrics.avgLatency, value: formatPublicPlatformLatency(publicStats.avgLatencyMs) }
+    { label: dictionary.metrics.callableSkills, value: String(publicStats.callableSkills) }
   ];
 
   return (

@@ -972,6 +972,24 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 curl "https://api.useskillhub.com/mcp"
 ```
 
+`GET /mcp` returns public metadata only. It does not invoke a skill and does not create runtime, billing, or project state. The expected public shape is:
+
+```json
+{
+  "ok": true,
+  "service": "skillhub-mcp",
+  "stage": "developer_preview",
+  "transport": "streamable-http",
+  "supportedMethods": ["POST"],
+  "tools": ["skillhub.search", "skillhub.get"],
+  "auth": {
+    "discovery": "public",
+    "runtimeInvocation": "project_key_required"
+  },
+  "docsPath": "/docs#mcp"
+}
+```
+
 ## Publisher Skill Operations
 
 Publisher skill writes are organization scoped. A publisher token can publish, submit for review, and price only skills owned by its organization. The deployment service token can still perform controlled bootstrap operations, but product writes should use `SKILLHUB_USER_TOKEN`.

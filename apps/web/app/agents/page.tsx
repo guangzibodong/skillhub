@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { PUBLIC_PACKAGE_STATUS, publicRestSearchCommand } from "@/lib/public-package-status";
 
 export const dynamic = "force-dynamic";
 
@@ -53,16 +54,14 @@ function snippets(apiUrl: string, labels: ReturnType<typeof getDictionary>["agen
       title: labels.restTitle
     },
     {
-      body: `import { SkillHub } from "@useskillhub/sdk";
+      body: PUBLIC_PACKAGE_STATUS.sdkPublished
+        ? `# SDK package: ${PUBLIC_PACKAGE_STATUS.sdkPackageName}`
+        : `SDK preview
 
-const skillhub = new SkillHub({
-  baseUrl: "${normalizedApiUrl}"
-});
+The TypeScript SDK exists in the monorepo but is not published as a public package yet.
+Use the public REST API for discovery and inspection:
 
-const skills = await skillhub.search({
-  query: "research with citations",
-  permissionLevel: "medium"
-});`,
+${publicRestSearchCommand(normalizedApiUrl)}`,
       file: "agent.ts",
       title: labels.sdkTitle
     }

@@ -1,29 +1,12 @@
-export const locales = ["en", "zh"] as const;
+import type { Locale } from "@/lib/locale-routing";
 
-export type Locale = (typeof locales)[number];
-
-type SearchParams = Record<string, string | string[] | undefined> | undefined;
-
-export function resolveLocale(value: unknown): Locale {
-  const candidate = Array.isArray(value) ? value[0] : value;
-
-  if (typeof candidate !== "string") {
-    return "en";
-  }
-
-  const normalized = candidate.toLowerCase();
-  return normalized === "zh" || normalized === "zh-cn" || normalized === "cn" ? "zh" : "en";
-}
-
-export function getLocaleFromSearchParams(searchParams: SearchParams): Locale {
-  return resolveLocale(searchParams?.lang);
-}
-
-export function localizedHref(path: string, locale: Locale) {
-  const [base, hash] = path.split("#");
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}lang=${locale}${hash ? `#${hash}` : ""}`;
-}
+export {
+  getLocaleFromSearchParams,
+  localizedHref,
+  locales,
+  resolveLocale,
+} from "@/lib/locale-routing";
+export type { Locale } from "@/lib/locale-routing";
 
 export const dictionaries = {
   en: {
@@ -59,9 +42,9 @@ export const dictionaries = {
       eyebrow: "Agent skill infrastructure",
       title: "Universal skills agents can discover, trust, and run.",
       description:
-        "SkillHub is the registry, marketplace, and gateway layer for reusable AI-agent capabilities: one manifest format, searchable packages, permission profiles, billing-ready usage, and agent-ready APIs.",
+        "SkillHub is the registry, marketplace, and Developer Preview gateway layer for reusable AI-agent capabilities: one manifest format, searchable packages, permission profiles, ledger-ready usage models, and agent-ready APIs.",
       publishCta: "Publish a skill",
-      gatewayTitle: "Production edge",
+      gatewayTitle: "Developer Preview gateway",
       registryEyebrow: "Registry",
       registryTitle: "Agent Skill Registry",
       newSkill: "New skill",
@@ -122,6 +105,7 @@ export const dictionaries = {
       publishedSkills: "Public skills",
       totalSkillRecords: "Total records",
       verified: "Verified",
+      callableSkills: "Callable skills",
       apiCalls: "API calls",
       avgLatency: "Avg latency",
       verifiedShare: "Verified share"
@@ -133,7 +117,7 @@ export const dictionaries = {
       trust: "Trust",
       risk: "Risk",
       actions: "Actions",
-      details: "Details / Install",
+      details: "Inspect skill",
       manifestChecked: "Manifest checked",
       openManifest: "Open manifest",
       emptyTitle: "No skills published",
@@ -168,7 +152,7 @@ export const dictionaries = {
       eyebrow: "Marketplace model",
       title: "A skill marketplace built for publishers, developers, and agents.",
       description:
-        "SkillHub separates discovery, execution, billing, and payout operations so third-party skill authors can publish while buyers keep control of cost and risk.",
+        "SkillHub separates discovery, governed execution, ledger modeling, and prelaunch payout operations so third-party skill authors can publish while buyers keep control of cost and risk.",
       ctaPrimary: "Open dashboard",
       ctaSecondary: "Read docs",
       rails: [
@@ -322,7 +306,7 @@ export const dictionaries = {
         {
           title: "SDK and CLI",
           description: "Keep discovery, install, and invocation automation in the same source-controlled workflow.",
-          tag: "@useskillhub/sdk"
+          tag: "SDK preview"
         }
       ],
       snippetsTitle: "Copy-ready runtime shapes",
@@ -350,7 +334,7 @@ export const dictionaries = {
         "Paste the REST or MCP snippet into the agent runtime."
       ],
       sdkTitle: "Three agent-ready integration shapes",
-      sdkBody: "MCP clients, direct REST calls, and SDK or CLI workflows all resolve back to the same governed SkillHub registry."
+      sdkBody: "MCP clients and direct REST calls resolve back to the same governed SkillHub registry. CLI and SDK packages are preview until public package releases exist."
     },
     docsPage: {
       eyebrow: "Developer docs",
@@ -461,9 +445,9 @@ export const dictionaries = {
       eyebrow: "智能体技能基础设施",
       title: "让智能体发现、信任并运行通用技能。",
       description:
-        "SkillHub 是给 AI 智能体使用的技能注册表、市场和运行网关：统一 manifest 格式、可搜索技能包、权限画像、可计费用量，以及面向智能体的 API。",
+        "SkillHub 是给 AI 智能体使用的技能注册表、市场和运行网关：统一 manifest 格式、可搜索技能包、权限画像、账本就绪的用量模型，以及面向智能体的 API。",
       publishCta: "发布一个技能",
-      gatewayTitle: "生产网关",
+      gatewayTitle: "开发者预览版网关",
       registryEyebrow: "技能库",
       registryTitle: "智能体技能注册表",
       newSkill: "新建技能",
@@ -524,6 +508,7 @@ export const dictionaries = {
       publishedSkills: "公开技能",
       totalSkillRecords: "总技能记录",
       verified: "已验证",
+      callableSkills: "可调用技能",
       apiCalls: "API 调用",
       avgLatency: "平均延迟",
       verifiedShare: "验证占比"
@@ -535,7 +520,7 @@ export const dictionaries = {
       trust: "信任",
       risk: "风险",
       actions: "操作",
-      details: "详情 / 安装",
+      details: "查看技能",
       manifestChecked: "Manifest 已检查",
       openManifest: "打开 manifest",
       emptyTitle: "还没有发布技能",
@@ -723,7 +708,7 @@ export const dictionaries = {
         {
           title: "SDK 和 CLI",
           description: "把发现、安装和调用自动化放进同一套可版本化的工程流程。",
-          tag: "@useskillhub/sdk"
+          tag: "SDK \u9884\u89c8"
         }
       ],
       snippetsTitle: "可复制的运行时形态",
@@ -751,7 +736,7 @@ export const dictionaries = {
         "把 REST 或 MCP 片段接入智能体运行时。"
       ],
       sdkTitle: "智能体的三种接入形态",
-      sdkBody: "MCP 客户端、直接 REST 调用、SDK 或 CLI 工作流，最终都回到同一个受治理的 SkillHub 注册表。"
+      sdkBody: "MCP \u5ba2\u6237\u7aef\u548c\u76f4\u63a5 REST \u8c03\u7528\u90fd\u4f1a\u56de\u5230\u540c\u4e00\u4e2a\u53d7\u6cbb\u7406\u7684 SkillHub \u6ce8\u518c\u8868\u3002CLI \u548c SDK \u5305\u5728\u516c\u5f00 package release \u524d\u4fdd\u6301\u9884\u89c8\u72b6\u6001\u3002"
     },
     docsPage: {
       eyebrow: "开发者文档",
@@ -830,8 +815,22 @@ export const dictionaries = {
   }
 } as const;
 
-export type Dictionary = (typeof dictionaries)[Locale];
+type WidenDictionaryValue<T> = T extends string
+  ? string
+  : T extends number
+    ? number
+    : T extends boolean
+      ? boolean
+      : T extends readonly unknown[]
+        ? number extends T["length"]
+          ? WidenDictionaryValue<T[number]>[]
+          : { readonly [K in keyof T]: WidenDictionaryValue<T[K]> }
+        : T extends object
+          ? { readonly [K in keyof T]: WidenDictionaryValue<T[K]> }
+          : T;
+
+export type Dictionary = WidenDictionaryValue<(typeof dictionaries)["en"]>;
 
 export function getDictionary(locale: Locale): Dictionary {
-  return dictionaries[locale];
+  return dictionaries[locale] as unknown as Dictionary;
 }

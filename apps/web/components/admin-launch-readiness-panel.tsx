@@ -1,5 +1,5 @@
 import { AlertTriangle, ArrowRight, CheckCircle2, Clock3, Rocket, ShieldAlert } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import type { LaunchReadinessItem, LaunchReadinessReport, LaunchReadinessStatus } from "@/lib/ops-data";
 
 type AdminLaunchReadinessPanelProps = {

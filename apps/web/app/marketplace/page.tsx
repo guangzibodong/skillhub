@@ -372,7 +372,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     [labels.moneyMetric, labels.moneyMetricValue]
   ];
   const loopMetrics = [
-    [labels.loopMetrics.callable, String(publicStats.verifiedSkills)],
+    [labels.loopMetrics.callable, String(publicStats.callableSkills)],
     [labels.loopMetrics.calls, formatCompactMetric(publicStats.recordedCalls, locale)],
     [labels.loopMetrics.feedback, formatCompactMetric(publicStats.feedbackSignals, locale)],
     [labels.loopMetrics.payout, `${publicStats.payoutReadyPublishers}/${publicStats.publicPublishers}`]

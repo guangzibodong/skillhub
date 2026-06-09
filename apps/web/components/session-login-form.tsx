@@ -4,8 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, KeyRound, LogIn, XCircle } from "lucide-react";
 import { signInAction, type AuthActionState } from "@/lib/auth-actions";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type SessionLoginFormProps = {
   locale: Locale;

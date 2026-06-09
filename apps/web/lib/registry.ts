@@ -1,6 +1,7 @@
 import type { SkillSummary } from "@useskillhub/schema";
 
 export type RegistryStats = {
+  callableSkills?: number;
   publicSkills?: number;
   publishedSkills: number;
   submittedSkills?: number;

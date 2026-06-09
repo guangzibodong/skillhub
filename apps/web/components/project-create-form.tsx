@@ -2,8 +2,7 @@
 
 import { useActionState } from "react";
 import { ArrowUpRight, CheckCircle2, FolderPlus, XCircle } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { createDeveloperProjectAction, type ProjectCreateActionState } from "@/lib/project-create-actions";
 
 type ProjectCreateFormProps = {

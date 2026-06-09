@@ -1,6 +1,7 @@
 import { Box, ExternalLink, PackageCheck, ShieldCheck } from "lucide-react";
 import type { SkillSummary } from "@useskillhub/schema";
-import { localizedHref, type Dictionary, type Locale } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { StatusPill } from "./status-pill";
 
 type SkillTableProps = {

@@ -23,8 +23,7 @@ import {
   RiskBadge,
   StatusChip,
 } from "@/components/operational-status";
-import type { Locale } from "@/lib/i18n";
-import { localizedHref } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { analyzeManifestPreflight } from "@/lib/manifest-preflight";
 import {
   publishSkillAction,

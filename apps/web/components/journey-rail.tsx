@@ -12,7 +12,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
-import { localizedHref, type Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type JourneyId = "admin" | "developer" | "publisher";
 type DeveloperStep = "marketplace" | "skill" | "developer" | "project" | "runtime";
@@ -153,7 +153,7 @@ const copy: Record<
           label: "Publish entry"
         },
         {
-          action: "Open workspace",
+          action: "Open publisher",
           detail: "Operate owned skills, versions, buyer demand, notifications, and revenue.",
           href: "/publisher",
           id: "publisher",

@@ -458,6 +458,41 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const commandLabels = dashboardCommandCopy[locale];
   const demoChainLabels = dashboardDemoChainCopy[locale];
   const ops = opsCopy[locale];
+  const session = await getWorkspaceSession();
+
+  if (!session.subject) {
+    return (
+      <main className="product-shell">
+        <SiteHeader active="dashboard" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/dashboard" />
+
+        <section className="page-hero page-hero--compact">
+          <div>
+            <div className="eyebrow">
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u9700\u8981\u5148\u767b\u5f55" : "Sign-in required"}</span>
+            </div>
+            <h1>{locale === "zh" ? "\u5de5\u4f5c\u53f0\u9700\u8981\u767b\u5f55\u540e\u624d\u80fd\u6253\u5f00\u3002" : "The dashboard opens after sign-in."}</h1>
+            <p>
+              {locale === "zh"
+                ? "\u8bf7\u5148\u4f7f\u7528 Google\u3001GitHub\u3001\u7528\u6237\u540d/\u90ae\u7bb1\u5bc6\u7801\uff0c\u6216\u9080\u8bf7/\u6062\u590d token \u767b\u5f55\u3002\u767b\u5f55\u524d\u53ea\u663e\u793a\u5b89\u5168\u5165\u53e3\uff0c\u4e0d\u52a0\u8f7d\u4efb\u4f55\u5de5\u4f5c\u533a\u64cd\u4f5c\u9762\u677f\u3002"
+                : "Sign in with Google, GitHub, username/email password, or an invite/recovery token. Until then, SkillHub shows only this safe entry state and does not load workspace operation panels."}
+            </p>
+          </div>
+          <div className="page-hero__actions">
+            <a className="primary-button primary-button--large" href={localizedHref("/login", locale)}>
+              <UserCircle size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u53bb\u767b\u5f55" : "Sign in"}</span>
+            </a>
+            <a className="secondary-button secondary-button--large" href={localizedHref("/registry", locale)}>
+              <PackageCheck size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u6d4f\u89c8\u6280\u80fd\u5e93" : "Browse registry"}</span>
+            </a>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   const [
     financeLedger,
     payoutSummary,
@@ -471,8 +506,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     organizationBilling,
     userNotificationInbox,
     notificationPreferences,
-    launchReadiness,
-    session
+    launchReadiness
   ] = await Promise.all([
     getPublisherFinanceLedger(),
     getPublisherPayoutSummary(),
@@ -486,8 +520,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     getOrganizationBillingSummary(),
     getUserNotificationInbox(),
     getNotificationPreferences(),
-    getAdminLaunchReadiness(),
-    getWorkspaceSession()
+    getAdminLaunchReadiness()
   ]);
   const ledgerRows =
     financeLedger.recentTransactions.length > 0
