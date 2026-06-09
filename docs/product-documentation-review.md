@@ -1012,6 +1012,13 @@ Added developer entry access polish, covering:
 - The guide keeps Journey A visible before login without exposing project data or write controls, so unauthenticated visitors understand how discovery becomes project setup, install, and governed runtime testing.
 - The root layout now suppresses the intentional `<html lang>` hydration difference caused by the language bootstrap script, removing the local QA issue overlay while preserving query-string language switching.
 
+Added account and admin access-state polish, covering:
+
+- `/account` and project detail signed-out states now stop after the primary access command plus a short three-step guide, avoiding long empty profile, session, notification, and role panels before authentication.
+- `/admin` signed-out and role-gated states now avoid repeating the generic session card and use a three-step operator access guide: sign in, confirm reviewer/finance/support/admin role, then open operations for launch readiness, review, payout, delivery, and audit.
+- Admin smoke markers remain present as hidden text, but the visible page no longer makes unauthenticated users feel like the privileged console is half exposed.
+- The root language sync now runs after hydration, keeping `/login?lang=zh` free of React mismatch warnings while still updating the document language for Chinese pages.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

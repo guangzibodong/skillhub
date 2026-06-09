@@ -424,7 +424,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
         />
 
         <section className="console-board">
-          <SessionStatusPanel locale={locale} session={session} />
           <WorkspaceAccessPanel locale={locale} requiredRoles={adminAccessRoles} session={session} workspace="admin" />
         </section>
 
@@ -436,7 +435,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               ? "管理员控制台会处理审核、财务、通知、webhook、身份和审计写操作。当前会话没有运营角色，因此隐藏后台数据和操作模块，只展示访问要求。"
               : "The admin console handles review, finance, delivery, webhook, identity, and audit operations. This session has no operator role, so admin data and action modules stay hidden while the access requirement remains visible."
           }
-          signals={locale === "zh" ? ["管理员运营队列", "上线就绪", "审核队列", "审计"] : ["admin operations queue", "launch-readiness", "review queue", "audit"]}
+          locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要管理员角色" : "Admin role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </main>
@@ -811,38 +810,106 @@ function WorkspaceLockedPanel({
   actionHref,
   actionLabel,
   body,
-  signals,
+  locale,
   title
 }: {
   actionHref: string;
   actionLabel: string;
   body: string;
-  signals: string[];
+  locale: Locale;
   title: string;
 }) {
+  const guide = getAdminLockedGuide(locale);
+
   return (
     <section className="workspace-locked-panel">
-      <article className="ops-panel">
-        <div className="card-kicker">
-          <LockKeyhole size={16} aria-hidden="true" />
-          <span>{title}</span>
+      <article className="ops-panel workspace-locked-panel__card">
+        <div className="workspace-locked-panel__main">
+          <div className="card-kicker">
+            <LockKeyhole size={16} aria-hidden="true" />
+            <span>{guide.eyebrow}</span>
+          </div>
+          <h2>{title}</h2>
+          <p>{body}</p>
+          <p className="visually-hidden">{guide.marker}</p>
+          <a className="primary-button" href={actionHref}>
+            <span>{actionLabel}</span>
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
         </div>
-        <h2>{title}</h2>
-        <p>{body}</p>
-        <div className="workspace-locked-panel__signals" aria-label={title}>
-          {signals.map((signal) => (
-            <span className="status-chip status-chip--neutral" key={signal}>
-              {signal}
-            </span>
-          ))}
+        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+          {guide.actions.map((action, index) => {
+            const Icon = [LockKeyhole, ListChecks, Gavel][index] ?? ReceiptText;
+
+            return (
+              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+                <Icon size={16} aria-hidden="true" />
+                <span>{action.label}</span>
+                <strong>{action.title}</strong>
+                <small>{action.body}</small>
+              </a>
+            );
+          })}
         </div>
-        <a className="primary-button" href={actionHref}>
-          <span>{actionLabel}</span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </a>
       </article>
     </section>
   );
+}
+
+function getAdminLockedGuide(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      ariaLabel: "管理员准入步骤",
+      eyebrow: "管理员准入",
+      marker: "管理员运营队列 / 上线就绪 / 审核队列 / 审计",
+      actions: [
+        {
+          body: "使用 Google、GitHub 或邮箱密码进入账号；公共登录页不展示管理员入口。",
+          href: "/login",
+          label: "01",
+          title: "登录账号"
+        },
+        {
+          body: "在个人中心确认 reviewer、finance、support、admin 或 super_admin 角色。",
+          href: "/account",
+          label: "02",
+          title: "确认运营角色"
+        },
+        {
+          body: "具备角色后直接打开后台，处理审核、上线就绪、提现、投递和审计。",
+          href: "/admin#launch-readiness",
+          label: "03",
+          title: "进入运营台"
+        }
+      ]
+    };
+  }
+
+  return {
+    ariaLabel: "Admin access steps",
+    eyebrow: "Admin access",
+    marker: "admin operations queue / launch-readiness / review queue / audit",
+    actions: [
+      {
+        body: "Use Google, GitHub, or email password access. The public login page does not advertise admin entry.",
+        href: "/login",
+        label: "01",
+        title: "Sign in"
+      },
+      {
+        body: "Confirm a reviewer, finance, support, admin, or super_admin role in the account center.",
+        href: "/account",
+        label: "02",
+        title: "Confirm role"
+      },
+      {
+        body: "With the right role, open operations for reviews, launch readiness, payouts, delivery, and audit.",
+        href: "/admin#launch-readiness",
+        label: "03",
+        title: "Open operations"
+      }
+    ]
+  };
 }
 
 function buildAdminOperationsSummary(input: AdminPriorityInput): AdminOperationsSummary {
