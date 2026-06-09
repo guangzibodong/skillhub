@@ -42,6 +42,8 @@ The latest marketplace copy-feedback polish makes discovery cards behave more li
 
 ## Latest Implementation Review
 
+The latest publisher signed-out polish makes `/publisher` less like a locked internal dashboard for first-time authors. Signed-out and role-gated visitors now see one workspace access panel plus a publisher access guide with sign-in, account-role confirmation, and first-skill upload actions. The redundant signed-out session card and operational-signal chips were removed from the locked state, while full publisher operations still remain visible only after publisher, owner, admin, or super-admin access is ready.
+
 The latest publish signed-out polish makes `/publish` behave more like a normal publisher entry instead of a technical form preview. Signed-out or role-gated visitors now see access guidance, role confirmation steps, and a primary sign-in/account action in the right rail instead of the manifest preflight score, repair queue, and evidence packet. The full manifest preflight remains available only after publisher access is ready, and the publisher Journey rail CTA now routes signed-out users to sign-in and signed-in users without publisher authority to account role review.
 
 The latest account-center signed-out polish makes `/account` clearer for first-time and mobile users. Signed-out visitors now see a single account-entry command tile that explains Google/GitHub and username/email password access before detailed profile, workspace, login-method, session, notification, and role-gated panels. This avoids presenting four empty `0/not connected` operating tiles before the user has created or connected a session, while signed-in accounts still keep the full identity/security/workspace/operations command strip.

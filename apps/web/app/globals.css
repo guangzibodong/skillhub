@@ -4096,6 +4096,89 @@ a {
   background: rgba(215, 168, 76, 0.055);
 }
 
+.workspace-locked-panel .workspace-locked-panel__card {
+  grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.workspace-locked-panel__main,
+.workspace-locked-panel__actions,
+.workspace-locked-panel__action {
+  display: grid;
+  min-width: 0;
+}
+
+.workspace-locked-panel__main {
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+}
+
+.workspace-locked-panel__actions {
+  gap: 10px;
+  width: 100%;
+}
+
+.workspace-locked-panel__action {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 5px 10px;
+  align-content: center;
+  min-height: 86px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.16);
+  color: inherit;
+  padding: 12px;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.workspace-locked-panel__action:hover {
+  border-color: rgba(124, 199, 216, 0.3);
+  background: rgba(124, 199, 216, 0.075);
+  transform: translateY(-1px);
+}
+
+.workspace-locked-panel__action svg {
+  grid-row: span 3;
+  color: var(--cyan);
+  margin-top: 2px;
+}
+
+.workspace-locked-panel__action span {
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 999px;
+  background: rgba(155, 226, 141, 0.1);
+  color: var(--signal);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1;
+  padding: 5px 8px;
+}
+
+.workspace-locked-panel__action strong,
+.workspace-locked-panel__action small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.workspace-locked-panel__action strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.workspace-locked-panel__action small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .workspace-locked-panel h2 {
   margin: 0;
   color: var(--ink);
@@ -18105,6 +18188,22 @@ a {
 
   .publisher-priority-board {
     width: min(100% - 28px, 1220px);
+  }
+
+  .workspace-locked-panel .workspace-locked-panel__card {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-locked-panel__actions {
+    gap: 8px;
+  }
+
+  .workspace-locked-panel__action {
+    min-height: auto;
+  }
+
+  .workspace-locked-panel__action:hover {
+    transform: none;
   }
 
   .publisher-priority-metrics {

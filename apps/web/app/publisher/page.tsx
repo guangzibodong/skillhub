@@ -386,38 +386,106 @@ function WorkspaceLockedPanel({
   actionHref,
   actionLabel,
   body,
-  signals,
+  locale,
   title
 }: {
   actionHref: string;
   actionLabel: string;
   body: string;
-  signals: string[];
+  locale: Locale;
   title: string;
 }) {
+  const guide = getPublisherLockedGuide(locale);
+
   return (
     <section className="workspace-locked-panel">
-      <article className="ops-panel">
-        <div className="card-kicker">
-          <ShieldAlert size={16} aria-hidden="true" />
-          <span>{title}</span>
+      <article className="ops-panel workspace-locked-panel__card">
+        <div className="workspace-locked-panel__main">
+          <div className="card-kicker">
+            <ShieldAlert size={16} aria-hidden="true" />
+            <span>{guide.eyebrow}</span>
+          </div>
+          <h2>{title}</h2>
+          <p>{body}</p>
+          <p className="visually-hidden">{guide.marker}</p>
+          <a className="primary-button" href={actionHref}>
+            <span>{actionLabel}</span>
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
         </div>
-        <h2>{title}</h2>
-        <p>{body}</p>
-        <div className="workspace-locked-panel__signals" aria-label={title}>
-          {signals.map((signal) => (
-            <span className="status-chip status-chip--neutral" key={signal}>
-              {signal}
-            </span>
-          ))}
+        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+          {guide.actions.map((action, index) => {
+            const Icon = [BadgeCheck, ClipboardList, PackageCheck][index] ?? CircleDot;
+
+            return (
+              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+                <Icon size={16} aria-hidden="true" />
+                <span>{action.label}</span>
+                <strong>{action.title}</strong>
+                <small>{action.body}</small>
+              </a>
+            );
+          })}
         </div>
-        <a className="primary-button" href={actionHref}>
-          <span>{actionLabel}</span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </a>
       </article>
     </section>
   );
+}
+
+function getPublisherLockedGuide(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      ariaLabel: "发布者准入步骤",
+      eyebrow: "发布者准入",
+      marker: "发布者运营队列 / 优先级队列 / 付费阻断 / 提现准备",
+      actions: [
+        {
+          body: "用 Google、GitHub 或邮箱密码进入账号，建立当前组织会话。",
+          href: "/login",
+          label: "01",
+          title: "登录账号"
+        },
+        {
+          body: "在个人中心确认 publisher、owner 或 admin 角色后再进入工作台。",
+          href: "/account",
+          label: "02",
+          title: "确认发布权限"
+        },
+        {
+          body: "从发布入口上传 skillhub.json，保存草稿并提交版本审核。",
+          href: "/publish",
+          label: "03",
+          title: "上传第一个技能"
+        }
+      ]
+    };
+  }
+
+  return {
+    ariaLabel: "Publisher access steps",
+    eyebrow: "Publisher access",
+    marker: "publisher operations queue / paid marketplace readiness / payout readiness",
+    actions: [
+      {
+        body: "Use Google, GitHub, or email/password to create the current organization session.",
+        href: "/login",
+        label: "01",
+        title: "Sign in"
+      },
+      {
+        body: "Confirm publisher, owner, or admin access from the account center before entering the workspace.",
+        href: "/account",
+        label: "02",
+        title: "Confirm publisher role"
+      },
+      {
+        body: "Upload skillhub.json from the publish entry, save a draft, and submit the version for review.",
+        href: "/publish",
+        label: "03",
+        title: "Upload the first skill"
+      }
+    ]
+  };
 }
 
 function buildReadinessTasks(
@@ -866,7 +934,6 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         />
 
         <section className="console-board publisher-console-board">
-          <SessionStatusPanel locale={locale} session={session} />
           <WorkspaceAccessPanel locale={locale} requiredRoles={publisherAccessRoles} session={session} workspace="publisher" />
         </section>
 
@@ -875,10 +942,10 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者运营区包含草稿、审核、定价、收款、提现和反馈写操作。当前会话缺少发布权限，因此表单和工作区数据保持隐藏。"
+              ? "发布者工作台包含草稿、审核、定价、收款、提现和反馈写操作。当前会话还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
               : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
-          signals={locale === "zh" ? ["发布者运营队列", "优先级队列", "付费阻断", "提现准备"] : ["publisher operations queue", "paid marketplace readiness", "payout readiness"]}
+          locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </main>
@@ -1402,14 +1469,10 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者运营区包含草稿、审核、定价、收款、提现和反馈写操作。当前会话缺少发布权限，因此表单已隐藏，但你仍然可以看到发布者运营队列和商业化入口。"
-              : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, but the locked state still shows the publisher operating path."
+              ? "发布者工作台包含草稿、审核、定价、收款、提现和反馈写操作。当前会话还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
+              : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
-          signals={
-            locale === "zh"
-              ? ["发布者运营队列", "优先级队列", "付费阻断", "提现准备"]
-              : ["publisher operations queue", "paid marketplace readiness", "payout readiness"]
-          }
+          locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
