@@ -224,6 +224,9 @@ const copy = {
       "A focused workspace for teams that adopt verified skills inside agent projects after sign-in: create projects, inspect keys and budgets, and prepare runtime policy checks.",
     emptyProjects: "No developer projects yet. Create a project to start adopting and approving verified skills.",
     eyebrow: "Developer workspace",
+    lockedDescription:
+      "Sign in with a developer, owner, or admin role before creating projects, keys, budgets, buyer requests, webhooks, notifications, and governed runtime tests.",
+    lockedTitle: "Enter the developer workspace after sign-in.",
     metrics: {
       budget: "Monthly budget",
       calls: "Runtime calls",
@@ -262,6 +265,9 @@ const copy = {
       "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
     emptyProjects: "还没有开发者项目。先创建一个项目，再开始采用、审批和测试已验证技能。",
     eyebrow: "开发者工作台",
+    lockedDescription:
+      "先使用开发者、owner 或 admin 角色登录，再创建项目、Key、预算、买家需求、webhook、通知和受治理的运行测试。",
+    lockedTitle: "登录后进入开发者工作台。",
     metrics: {
       budget: "月度预算",
       calls: "运行调用",
@@ -319,8 +325,8 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
               <BriefcaseBusiness size={16} aria-hidden="true" />
               <span>{labels.eyebrow}</span>
             </div>
-            <h1>{labels.title}</h1>
-            <p>{labels.description}</p>
+            <h1>{labels.lockedTitle}</h1>
+            <p>{labels.lockedDescription}</p>
           </div>
         </section>
 

@@ -26,3 +26,19 @@ test("skill detail hero metrics use localized preview fallback", async () => {
   assert.doesNotMatch(source, /<strong>\{skill\.successRate\}<\/strong>/);
   assert.doesNotMatch(source, /<strong>\{skill\.latency\}<\/strong>/);
 });
+
+test("developer and publisher locked heroes use access-first copy", async () => {
+  const developerPage = await readFile("apps/web/app/developer/page.tsx", "utf8");
+  const publisherPage = await readFile("apps/web/app/publisher/page.tsx", "utf8");
+  const publisherCopy = await readFile("apps/web/lib/publisher-page-copy.ts", "utf8");
+
+  assert.match(developerPage, /lockedTitle:\s*"Enter the developer workspace after sign-in\."/);
+  assert.match(developerPage, /lockedTitle:\s*"登录后进入开发者工作台。"/);
+  assert.match(developerPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
+  assert.match(developerPage, /<p>\{labels\.lockedDescription\}<\/p>/);
+
+  assert.match(publisherCopy, /lockedTitle:\s*"Enter the publisher workspace after sign-in\."/);
+  assert.match(publisherCopy, /lockedTitle:\s*"登录后进入发布者工作台。"/);
+  assert.match(publisherPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
+  assert.match(publisherPage, /<p>\{labels\.lockedDescription\}<\/p>/);
+});

@@ -9,6 +9,9 @@ const publisherPageCopy = {
     description:
       "A focused workspace for skill publishers to move packages through review, record pricing intent for future paid-marketplace review, respond to buyer demand, and prepare paid-marketplace metadata.",
     eyebrow: "Publisher workspace",
+    lockedDescription:
+      "Sign in with a publisher, owner, or admin role before saving drafts, submitting reviews, recording paid-readiness metadata, and managing buyer or feedback work.",
+    lockedTitle: "Enter the publisher workspace after sign-in.",
     ledgerEmpty: "No posted paid-preview ledger rows yet",
     ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
     ledgerTitle: "Publisher paid-marketplace ledger preview",
@@ -233,6 +236,9 @@ const publisherPageCopy = {
       skills: "我的技能",
       verified: "已验证技能"
     },
+    lockedDescription:
+      "先使用发布者、owner 或 admin 角色登录，再保存草稿、提交审核、记录付费准备元数据，并处理买家需求或反馈。",
+    lockedTitle: "登录后进入发布者工作台。",
     readiness: {
       blocked: "等待",
       current: "下一步",
