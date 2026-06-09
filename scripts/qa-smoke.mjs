@@ -240,39 +240,39 @@ const PAGE_ASSERTIONS = {
   ],
   "/publisher": [
     "publisher workspace",
-    "publisher operations queue",
-    "paid-readiness",
-    "paid-marketplace metadata",
+    "enter the publisher workspace after sign-in",
+    "paid-readiness metadata",
+    "sign-in required",
   ],
   "/publisher?lang=zh": [
-    "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
-    "\u4f18\u5148\u7ea7\u961f\u5217",
+    "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
+    "\u767b\u5f55\u540e\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
     "\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e",
-    "\u8d22\u52a1\u95e8\u63a7\u6536\u6b3e\u8d44\u6599",
+    "\u9700\u8981\u5148\u767b\u5f55",
   ],
   "/developer": [
     "developer workspace",
-    "developer operations queue",
-    "team access",
-    "webhook",
+    "enter the developer workspace after sign-in",
+    "authenticated project path",
+    "sign-in required",
   ],
   "/developer?lang=zh": [
-    "\u5f00\u53d1\u8005\u8fd0\u8425\u961f\u5217",
-    "\u4f18\u5148\u7ea7\u961f\u5217",
-    "\u56e2\u961f\u6743\u9650",
-    "webhook",
+    "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    "\u767b\u5f55\u540e\u8fdb\u5165\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    "\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84",
+    "\u9700\u8981\u5148\u767b\u5f55",
   ],
   "/admin": [
-    "admin operations queue",
-    "launch-readiness",
-    "review queue",
-    "audit",
+    "platform admin",
+    "enter the platform admin after sign-in",
+    "admin access",
+    "sign-in required",
   ],
   "/admin?lang=zh": [
-    "\u7ba1\u7406\u5458\u8fd0\u8425\u961f\u5217",
-    "\u4e0a\u7ebf\u5c31\u7eea",
-    "\u5ba1\u6838\u961f\u5217",
-    "\u5ba1\u8ba1",
+    "\u5e73\u53f0\u7ba1\u7406\u540e\u53f0",
+    "\u767b\u5f55\u540e\u8fdb\u5165\u5e73\u53f0\u7ba1\u7406\u540e\u53f0",
+    "\u540e\u53f0\u6cbb\u7406\u8def\u5f84",
+    "\u9700\u8981\u5148\u767b\u5f55",
   ],
   "/account?lang=zh": [
     "\u4e2a\u4eba\u4e2d\u5fc3",
@@ -2436,6 +2436,8 @@ async function checkLaunchReadiness({ apiUrl, timeoutMs, token }) {
 }
 
 async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
+  const stylesheetCache = new Map();
+
   for (const path of appPaths) {
     const name = `GET app ${path}`;
 
@@ -2462,6 +2464,18 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
 
       if (!html.includes("<html") && !html.includes("<!doctype html")) {
         fail(name, "expected an HTML document");
+        continue;
+      }
+
+      const stylesheetResult = await validateAppStylesheets({
+        html: response.text,
+        pageUrl: response.url,
+        stylesheetCache,
+        timeoutMs,
+      });
+
+      if (stylesheetResult.failure) {
+        fail(name, stylesheetResult.failure);
         continue;
       }
 
@@ -2523,7 +2537,10 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
         }
       }
 
-      pass(name, `html bytes=${Buffer.byteLength(response.text, "utf8")}`);
+      pass(
+        name,
+        `html bytes=${Buffer.byteLength(response.text, "utf8")}, stylesheets=${stylesheetResult.count}`,
+      );
     } catch (error) {
       fail(name, error.message);
     }
@@ -2534,6 +2551,110 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
   await checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs });
   await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
   await checkPublicPublisherLegacySlugPage({ appUrl, timeoutMs });
+}
+
+async function validateAppStylesheets({
+  html,
+  pageUrl,
+  stylesheetCache,
+  timeoutMs,
+}) {
+  const stylesheetHrefs = extractStylesheetHrefs(html);
+
+  if (stylesheetHrefs.length === 0) {
+    return {
+      count: 0,
+      failure:
+        "expected at least one stylesheet link so public pages cannot pass as unstyled HTML",
+    };
+  }
+
+  let checkedCount = 0;
+
+  for (const href of new Set(stylesheetHrefs)) {
+    let assetUrl;
+
+    try {
+      assetUrl = new URL(href, pageUrl);
+    } catch {
+      return {
+        count: checkedCount,
+        failure: `invalid stylesheet URL: ${href}`,
+      };
+    }
+
+    if (assetUrl.protocol !== "http:" && assetUrl.protocol !== "https:") {
+      continue;
+    }
+
+    const cacheKey = assetUrl.toString();
+    let result = stylesheetCache.get(cacheKey);
+
+    if (!result) {
+      const response = await requestText(cacheKey, { timeoutMs });
+      const body = response.text.trimStart().toLowerCase();
+
+      result = {
+        bytes: Buffer.byteLength(response.text, "utf8"),
+        looksLikeHtml:
+          body.startsWith("<!doctype html") || body.startsWith("<html"),
+        status: response.status,
+      };
+      stylesheetCache.set(cacheKey, result);
+    }
+
+    if (result.status !== 200) {
+      return {
+        count: checkedCount,
+        failure: `stylesheet ${cacheKey} expected HTTP 200, got ${result.status}`,
+      };
+    }
+
+    if (result.bytes < 20 || result.looksLikeHtml) {
+      return {
+        count: checkedCount,
+        failure: `stylesheet ${cacheKey} did not return usable CSS bytes=${result.bytes}`,
+      };
+    }
+
+    checkedCount += 1;
+  }
+
+  if (checkedCount === 0) {
+    return {
+      count: 0,
+      failure: "stylesheet links were present but none used a fetchable HTTP(S) URL",
+    };
+  }
+
+  return {
+    count: checkedCount,
+    failure: "",
+  };
+}
+
+function extractStylesheetHrefs(html) {
+  const hrefs = [];
+  const linkPattern = /<link\b[^>]*>/gi;
+  const relPattern = /\brel\s*=\s*["']stylesheet["']/i;
+  const hrefPattern = /\bhref\s*=\s*["']([^"']+)["']/i;
+  let match;
+
+  while ((match = linkPattern.exec(html))) {
+    const tag = match[0];
+
+    if (!relPattern.test(tag)) {
+      continue;
+    }
+
+    const hrefMatch = hrefPattern.exec(tag);
+
+    if (hrefMatch?.[1]) {
+      hrefs.push(hrefMatch[1]);
+    }
+  }
+
+  return hrefs;
 }
 
 function validatePublicLaunchPageState(path, html) {
