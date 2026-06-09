@@ -4,8 +4,10 @@ import {
   BriefcaseBusiness,
   Building2,
   CreditCard,
+  FolderPlus,
   KeyRound,
   LayoutDashboard,
+  LogIn,
   ShieldCheck,
   UploadCloud,
   UserCircle,
@@ -86,6 +88,34 @@ const copy = {
     signInRequired: "Sign-in required",
     skills: "Skills",
     shortcuts: "Role-aware workspaces",
+    signedOutGuide: {
+      ariaLabel: "Account center access steps",
+      eyebrow: "Account access",
+      marker: "personal center / session security / workspace readiness",
+      actions: [
+        {
+          body: "Use Google, GitHub, or username/email password to create the current workspace session.",
+          href: "/login",
+          label: "01",
+          title: "Sign in"
+        },
+        {
+          body: "Return here to check identity, connected providers, sessions, roles, and workspace readiness.",
+          href: "/account",
+          label: "02",
+          title: "Review account readiness"
+        },
+        {
+          body: "Continue to developer, publisher, or operator workspaces only after the role state is clear.",
+          href: "/dashboard",
+          label: "03",
+          title: "Choose the right workspace"
+        }
+      ],
+      body:
+        "After sign-in, this page becomes the safe handoff between identity, sessions, roles, workspace readiness, and the role-specific consoles.",
+      title: "Start with account access, then choose a workspace."
+    },
     team: "Team",
     unread: "Unread notifications",
     workspace: "Workspace readiness",
@@ -140,6 +170,33 @@ const copy = {
     signInRequired: "需要先登录",
     skills: "技能",
     shortcuts: "按角色进入工作台",
+    signedOutGuide: {
+      ariaLabel: "账号中心准入步骤",
+      eyebrow: "账号准入",
+      marker: "个人中心 / 会话安全 / 工作区准备度",
+      actions: [
+        {
+          body: "使用 Google、GitHub，或用户名/邮箱加密码建立当前工作区会话。",
+          href: "/login",
+          label: "01",
+          title: "登录账号"
+        },
+        {
+          body: "回到这里检查身份、绑定方式、会话、角色和工作区准备度。",
+          href: "/account",
+          label: "02",
+          title: "检查账号状态"
+        },
+        {
+          body: "确认角色后，再进入开发者、发布者或运营工作台。",
+          href: "/dashboard",
+          label: "03",
+          title: "选择正确工作台"
+        }
+      ],
+      body: "登录后，这里会成为身份、会话、角色、工作区准备度和各角色后台之间的安全交接页。",
+      title: "先完成账号访问，再选择工作台。"
+    },
     team: "团队",
     unread: "未读通知",
     workspace: "工作区准备度",
@@ -198,6 +255,10 @@ export default async function AccountPage({ searchParams }: PageProps) {
 
       <AccountCommandStrip account={account} accountSessions={accountSessions} labels={labels} locale={locale} signedIn={signedIn} />
 
+      {!signedIn ? (
+        <AccountSignedOutGuide labels={labels} locale={locale} />
+      ) : (
+        <>
       <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
       <section className="account-layout">
@@ -328,7 +389,47 @@ export default async function AccountPage({ searchParams }: PageProps) {
           )}
         </aside>
       </section>
+        </>
+      )}
     </main>
+  );
+}
+
+function AccountSignedOutGuide({ labels, locale }: { labels: AccountLabels; locale: Locale }) {
+  const guide = labels.signedOutGuide;
+
+  return (
+    <section className="workspace-locked-panel">
+      <article className="ops-panel workspace-locked-panel__card">
+        <div className="workspace-locked-panel__main">
+          <div className="card-kicker">
+            <KeyRound size={16} aria-hidden="true" />
+            <span>{guide.eyebrow}</span>
+          </div>
+          <h2>{guide.title}</h2>
+          <p>{guide.body}</p>
+          <p className="visually-hidden">{guide.marker}</p>
+          <a className="primary-button" href={localizedHref("/login", locale)}>
+            <span>{labels.signIn}</span>
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
+        </div>
+        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+          {guide.actions.map((action, index) => {
+            const Icon = [LogIn, UserCircle, FolderPlus][index] ?? LayoutDashboard;
+
+            return (
+              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+                <Icon size={16} aria-hidden="true" />
+                <span>{action.label}</span>
+                <strong>{action.title}</strong>
+                <small>{action.body}</small>
+              </a>
+            );
+          })}
+        </div>
+      </article>
+    </section>
   );
 }
 

@@ -7,12 +7,15 @@ import {
   ClipboardList,
   Clock3,
   CreditCard,
+  FolderPlus,
   Gauge,
   KeyRound,
   LockKeyhole,
+  LogIn,
   PackageCheck,
   RadioTower,
   RotateCcw,
+  SearchCheck,
   ShieldCheck,
   ShieldAlert,
   WalletCards
@@ -442,7 +445,6 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         <JourneyRail currentStep="project" journey="developer" locale={locale} />
 
         <section className="console-board">
-          <SessionStatusPanel locale={locale} session={session} />
           <WorkspaceAccessPanel
             locale={locale}
             requiredRoles={developerAccessRoles}
@@ -459,11 +461,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
               ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话无法读取这个项目，所以操作面板保持隐藏；请先登录或确认开发者角色。"
               : "Project detail includes policy approval, API keys, runtime tests, subscriptions, and invoice operations. This session cannot read this project yet, so action panels stay hidden until access is confirmed."
           }
-          signals={
-            locale === "zh"
-              ? ["项目运营队列", "策略审批", "API Key", "运行测试"]
-              : ["project operations queue", "policy approval", "API keys", "runtime tests"]
-          }
+          locale={locale}
+          projectSlug={slug}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </main>
@@ -764,11 +763,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
               ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话缺少开发者权限，因此操作面板已隐藏，但项目运营队列的治理边界仍然可见。"
               : "Project detail includes policy approval, API keys, runtime tests, subscriptions, and invoice operations. This session cannot operate them, but the locked state still shows the project governance boundary."
           }
-          signals={
-            locale === "zh"
-              ? ["项目运营队列", "策略审批", "API Key", "运行测试"]
-              : ["project operations queue", "policy approval", "API keys", "runtime tests"]
-          }
+          locale={locale}
+          projectSlug={project.slug}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
@@ -780,38 +776,108 @@ function WorkspaceLockedPanel({
   actionHref,
   actionLabel,
   body,
-  signals,
+  locale,
+  projectSlug,
   title
 }: {
   actionHref: string;
   actionLabel: string;
   body: string;
-  signals: string[];
+  locale: Locale;
+  projectSlug: string;
   title: string;
 }) {
+  const guide = getProjectLockedGuide(locale, projectSlug);
+
   return (
     <section className="workspace-locked-panel">
-      <article className="ops-panel">
-        <div className="card-kicker">
-          <LockKeyhole size={16} aria-hidden="true" />
-          <span>{title}</span>
+      <article className="ops-panel workspace-locked-panel__card">
+        <div className="workspace-locked-panel__main">
+          <div className="card-kicker">
+            <LockKeyhole size={16} aria-hidden="true" />
+            <span>{guide.eyebrow}</span>
+          </div>
+          <h2>{title}</h2>
+          <p>{body}</p>
+          <p className="visually-hidden">{guide.marker}</p>
+          <a className="primary-button" href={actionHref}>
+            <span>{actionLabel}</span>
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
         </div>
-        <h2>{title}</h2>
-        <p>{body}</p>
-        <div className="workspace-locked-panel__signals" aria-label={title}>
-          {signals.map((signal) => (
-            <span className="status-chip status-chip--neutral" key={signal}>
-              {signal}
-            </span>
-          ))}
+        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+          {guide.actions.map((action, index) => {
+            const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
+
+            return (
+              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+                <Icon size={16} aria-hidden="true" />
+                <span>{action.label}</span>
+                <strong>{action.title}</strong>
+                <small>{action.body}</small>
+              </a>
+            );
+          })}
         </div>
-        <a className="primary-button" href={actionHref}>
-          <span>{actionLabel}</span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </a>
       </article>
     </section>
   );
+}
+
+function getProjectLockedGuide(locale: Locale, projectSlug: string) {
+  if (locale === "zh") {
+    return {
+      ariaLabel: "项目详情准入步骤",
+      eyebrow: "项目准入",
+      marker: "项目运营队列 / 策略审批 / API Key / 运行测试",
+      actions: [
+        {
+          body: "用 Google、GitHub 或邮箱密码进入拥有该项目的工作区。",
+          href: "/login",
+          label: "01",
+          title: "登录账号"
+        },
+        {
+          body: "在个人中心确认 developer、owner 或 admin 角色后再打开项目。",
+          href: "/account",
+          label: "02",
+          title: "确认开发权限"
+        },
+        {
+          body: `回到 ${projectSlug} 后创建 Key、检查策略，并运行受治理测试。`,
+          href: "/developer",
+          label: "03",
+          title: "回到项目运营"
+        }
+      ]
+    };
+  }
+
+  return {
+    ariaLabel: "Project detail access steps",
+    eyebrow: "Project access",
+    marker: "project operations queue / policy approval / API keys / runtime tests",
+    actions: [
+      {
+        body: "Use Google, GitHub, or email/password to enter the workspace that owns this project.",
+        href: "/login",
+        label: "01",
+        title: "Sign in"
+      },
+      {
+        body: "Confirm developer, owner, or admin access from the account center before opening project operations.",
+        href: "/account",
+        label: "02",
+        title: "Confirm developer role"
+      },
+      {
+        body: `Return to ${projectSlug} to create keys, inspect policy, and run the governed test path.`,
+        href: "/developer",
+        label: "03",
+        title: "Return to project operations"
+      }
+    ]
+  };
 }
 
 function ProjectAdjustmentHistory({
