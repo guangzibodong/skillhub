@@ -862,7 +862,7 @@ function getAdminLockedGuide(locale: Locale) {
     return {
       ariaLabel: "管理员准入步骤",
       eyebrow: "管理员准入",
-      marker: "管理员运营队列 / 上线就绪 / 审核队列 / 审计",
+      marker: "admin operations queue / launch-readiness / review queue / audit / identity / notification / webhook",
       actions: [
         {
           body: "使用 Google、GitHub 或邮箱密码进入账号；公共登录页不展示管理员入口。",
@@ -889,7 +889,7 @@ function getAdminLockedGuide(locale: Locale) {
   return {
     ariaLabel: "Admin access steps",
     eyebrow: "Admin access",
-    marker: "admin operations queue / launch-readiness / review queue / audit",
+    marker: "admin operations queue / launch-readiness / review queue / audit / identity / notification / webhook",
     actions: [
       {
         body: "Use Google, GitHub, or email password access. The public login page does not advertise admin entry.",
