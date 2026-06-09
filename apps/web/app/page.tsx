@@ -61,6 +61,7 @@ const operatingIcons = [Code2, PackageCheck, ShieldCheck] as const;
 const proofCopy = {
   en: {
     action: "View workspace proof",
+    commandAction: "Open workspace entry",
     body: "These are not brochure claims. They are the operating surfaces a buyer, publisher, or platform operator can revisit after the first install.",
     eyebrow: "Operating proof",
     items: [
@@ -93,6 +94,7 @@ const proofCopy = {
   },
   zh: {
     action: "\u67e5\u770b\u5de5\u4f5c\u53f0\u8bc1\u636e",
+    commandAction: "\u5de5\u4f5c\u53f0\u5165\u53e3",
     body: "\u8fd9\u4e0d\u662f\u5ba3\u4f20\u6587\u6848\u3002\u8fd9\u4e9b\u662f\u4e70\u5bb6\u3001\u53d1\u5e03\u8005\u548c\u5e73\u53f0\u8fd0\u8425\u5728\u9996\u6b21\u5b89\u88c5\u540e\u4ecd\u7136\u4f1a\u56de\u6765\u5904\u7406\u7684\u771f\u5b9e\u754c\u9762\u548c\u72b6\u6001\u3002",
     eyebrow: "\u8fd0\u8425\u8bc1\u636e",
     items: [
@@ -526,13 +528,22 @@ tools: skillhub.search, skillhub.get`}</code>
           </div>
           <h2 id="proof-heading">{proof.title}</h2>
           <p>{proof.body}</p>
-          <a
-            className="secondary-button secondary-button--large"
-            href={localizedHref("/dashboard#dashboard-proof-chain", locale)}
-          >
-            <Gauge size={18} aria-hidden="true" />
-            <span>{proof.action}</span>
-          </a>
+          <div className="hero-actions">
+            <a
+              className="secondary-button secondary-button--large"
+              href={localizedHref("/dashboard#dashboard-proof-chain", locale)}
+            >
+              <Gauge size={18} aria-hidden="true" />
+              <span>{proof.action}</span>
+            </a>
+            <a
+              className="ghost-button"
+              href={localizedHref("/dashboard#workspace-command-center", locale)}
+            >
+              <KeyRound size={18} aria-hidden="true" />
+              <span>{proof.commandAction}</span>
+            </a>
+          </div>
         </div>
 
         <div className="proof-board">
