@@ -78,6 +78,16 @@ pnpm lint
 
 The web app has an explicit Next.js ESLint configuration, so `pnpm lint` must run non-interactively in CI and local release checks instead of opening Next's first-run ESLint setup prompt.
 
+## Acceptance team QA
+
+Use [Acceptance Team QA](./acceptance-team-qa.md) when the release question is no longer "does the public site render?" but "can real roles walk the product?" The acceptance-team initializer creates a normal developer account, a normal publisher partner account, and a server-promoted admin/operator account, then writes the generated credentials only to a private server-local file.
+
+```bash
+pnpm acceptance:team -- --api-url http://127.0.0.1:18787 --app-url https://useskillhub.com --output /root/skillhub-acceptance-team.json --allow-production-write
+```
+
+Do not paste or commit the generated credentials. Report findings by role, URL, language, viewport, expected behavior, actual behavior, and P0/P1/P2 severity.
+
 ## P0 release suite
 
 Use the P0 release suite when preparing a deployment or customer walkthrough. It runs the public production-safe smoke and the non-mutating Journey C admin operations smoke in a fixed order:

@@ -12,4 +12,5 @@ coverage
 .vercel
 .playwright-cli
 output
+.skillhub-acceptance-team*.json
 *.tsbuildinfo
