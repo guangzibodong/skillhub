@@ -1004,6 +1004,12 @@ Added login touch-target polish, covering:
 - Secondary token recovery disclosure headers now expose a full tap area while remaining visually subordinate to Google/GitHub and password access.
 - This keeps `/login` aligned with the P0 entry requirement: normal account access stays first, recovery stays secondary, and mobile controls remain usable without changing auth scope.
 
+Added developer entry access polish, covering:
+
+- `/developer` signed-out and role-gated states now avoid repeating the generic session card and instead show one role-aware workspace access panel plus a three-step developer access guide: sign in, confirm developer role, then install and test a marketplace skill.
+- The guide keeps Journey A visible before login without exposing project data or write controls, so unauthenticated visitors understand how discovery becomes project setup, install, and governed runtime testing.
+- The root layout now suppresses the intentional `<html lang>` hydration difference caused by the language bootstrap script, removing the local QA issue overlay while preserving query-string language switching.
+
 ## Product Standard Going Forward
 
 Every new feature spec should answer:

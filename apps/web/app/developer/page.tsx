@@ -5,9 +5,12 @@ import {
   BriefcaseBusiness,
   ClipboardList,
   CreditCard,
+  FolderPlus,
   KeyRound,
   LockKeyhole,
+  LogIn,
   PackageCheck,
+  SearchCheck,
   ReceiptText
 } from "lucide-react";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
@@ -330,7 +333,6 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         />
 
         <section className="console-board developer-console-board">
-          <SessionStatusPanel locale={locale} session={session} />
           <WorkspaceAccessPanel locale={locale} requiredRoles={developerAccessRoles} session={session} workspace="developer" />
         </section>
 
@@ -342,7 +344,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
               ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作和工作区数据保持隐藏。"
               : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, so workspace data and write controls stay hidden."
           }
-          signals={locale === "zh" ? ["开发者运营队列", "优先级队列", "团队权限", "webhook"] : ["developer operations queue", "team access", "webhook", "runtime governance"]}
+          locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </main>
@@ -625,11 +627,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
               ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作已隐藏，但你仍然可以看到这里会承载的运营队列。"
               : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, but the locked state still shows what the workspace governs."
           }
-          signals={
-            locale === "zh"
-              ? ["开发者运营队列", "优先级队列", "团队权限", "webhook"]
-              : ["developer operations queue", "team access", "webhook"]
-          }
+          locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
@@ -641,38 +639,106 @@ function WorkspaceLockedPanel({
   actionHref,
   actionLabel,
   body,
-  signals,
+  locale,
   title
 }: {
   actionHref: string;
   actionLabel: string;
   body: string;
-  signals: string[];
+  locale: DeveloperLocale;
   title: string;
 }) {
+  const guide = getDeveloperLockedGuide(locale);
+
   return (
     <section className="workspace-locked-panel">
-      <article className="ops-panel">
-        <div className="card-kicker">
-          <LockKeyhole size={16} aria-hidden="true" />
-          <span>{title}</span>
+      <article className="ops-panel workspace-locked-panel__card">
+        <div className="workspace-locked-panel__main">
+          <div className="card-kicker">
+            <LockKeyhole size={16} aria-hidden="true" />
+            <span>{guide.eyebrow}</span>
+          </div>
+          <h2>{title}</h2>
+          <p>{body}</p>
+          <p className="visually-hidden">{guide.marker}</p>
+          <a className="primary-button" href={actionHref}>
+            <span>{actionLabel}</span>
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
         </div>
-        <h2>{title}</h2>
-        <p>{body}</p>
-        <div className="workspace-locked-panel__signals" aria-label={title}>
-          {signals.map((signal) => (
-            <span className="status-chip status-chip--neutral" key={signal}>
-              {signal}
-            </span>
-          ))}
+        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+          {guide.actions.map((action, index) => {
+            const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
+
+            return (
+              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+                <Icon size={16} aria-hidden="true" />
+                <span>{action.label}</span>
+                <strong>{action.title}</strong>
+                <small>{action.body}</small>
+              </a>
+            );
+          })}
         </div>
-        <a className="primary-button" href={actionHref}>
-          <span>{actionLabel}</span>
-          <ArrowRight size={16} aria-hidden="true" />
-        </a>
       </article>
     </section>
   );
+}
+
+function getDeveloperLockedGuide(locale: DeveloperLocale) {
+  if (locale === "zh") {
+    return {
+      ariaLabel: "开发者准入步骤",
+      eyebrow: "开发者准入",
+      marker: "开发者运营队列 / 优先级队列 / 团队权限 / webhook / 项目创建 / 技能安装 / 运行测试",
+      actions: [
+        {
+          body: "用 Google、GitHub 或邮箱密码进入账号，建立当前组织会话。",
+          href: "/login",
+          label: "01",
+          title: "登录账号"
+        },
+        {
+          body: "在个人中心确认 developer、owner 或 admin 角色，再进入项目工作台。",
+          href: "/account",
+          label: "02",
+          title: "确认开发权限"
+        },
+        {
+          body: "从市场选择可信技能，安装到项目后用同一条治理链路跑测试。",
+          href: "/marketplace",
+          label: "03",
+          title: "安装并测试技能"
+        }
+      ]
+    };
+  }
+
+  return {
+    ariaLabel: "Developer access steps",
+    eyebrow: "Developer access",
+    marker: "developer operations queue / project setup / skill install / runtime test",
+    actions: [
+      {
+        body: "Use Google, GitHub, or email/password to create the current organization session.",
+        href: "/login",
+        label: "01",
+        title: "Sign in"
+      },
+      {
+        body: "Confirm developer, owner, or admin access from the account center before entering project operations.",
+        href: "/account",
+        label: "02",
+        title: "Confirm developer role"
+      },
+      {
+        body: "Pick a trusted marketplace skill, install it to a project, then run the governed test path.",
+        href: "/marketplace",
+        label: "03",
+        title: "Install and test a skill"
+      }
+    ]
+  };
 }
 
 function buildDeveloperOperationsSummary(input: {
