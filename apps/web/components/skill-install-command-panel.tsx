@@ -23,6 +23,7 @@ type InstallCommand = {
 };
 
 type SkillInstallCommandPanelProps = {
+  availabilityMessage?: string;
   billingModel: "free" | "per_call" | "subscription";
   commands: InstallCommand[];
   lastReviewed: string;
@@ -31,15 +32,17 @@ type SkillInstallCommandPanelProps = {
   installLockedReason?: string;
   locale: Locale;
   projectCount: number;
+  readinessTitle?: string;
   risk: "high" | "low" | "medium";
   runtime: "HTTP" | "Local" | "MCP";
+  showCommands?: boolean;
   verificationLabel: string;
   verificationLabelEn: string;
 };
 
 const copy = {
   en: {
-    billing: "Billing gate",
+    billing: "Pricing status",
     billingReady: "Free or metered use can move into project policy.",
     billingTrial: "Start a provider-deferred subscription trial before runtime use.",
     copied: "Copied",
@@ -47,7 +50,7 @@ const copy = {
     copyFailed: "Copy failed",
     copyFailure: "Command could not be copied.",
     copySuccess: "Command copied.",
-    installReadiness: "Install readiness",
+    installReadiness: "Availability details",
     installLocked: "Inspection only. Verified review is required before install and runtime actions unlock.",
     lastReviewed: "Last reviewed",
     localRuntime: "Local runtime requires stronger project approval.",
@@ -75,7 +78,7 @@ const copy = {
     }
   },
   zh: {
-    billing: "\u8ba1\u8d39\u95e8\u69db",
+    billing: "\u5b9a\u4ef7\u72b6\u6001",
     billingReady: "\u514d\u8d39\u6216\u6309\u91cf\u8ba1\u8d39\u53ef\u8fdb\u5165\u9879\u76ee\u7b56\u7565\u3002",
     billingTrial: "\u8fd0\u884c\u524d\u5148\u5f00\u542f\u4f9b\u5e94\u5546\u5ef6\u540e\u7684\u8ba2\u9605\u8bd5\u7528\u3002",
     copied: "\u5df2\u590d\u5236",
@@ -83,7 +86,7 @@ const copy = {
     copyFailed: "\u590d\u5236\u5931\u8d25",
     copyFailure: "\u547d\u4ee4\u590d\u5236\u5931\u8d25\u3002",
     copySuccess: "\u547d\u4ee4\u5df2\u590d\u5236\u3002",
-    installReadiness: "\u5b89\u88c5\u51c6\u5907",
+    installReadiness: "\u53ef\u7528\u72b6\u6001\u8bf4\u660e",
     installLocked: "\u4ec5\u53ef\u67e5\u770b\u3002\u9700\u8981\u5b8c\u6210 verified \u5ba1\u6838\u540e\u624d\u4f1a\u5f00\u653e\u5b89\u88c5\u548c\u8fd0\u884c\u64cd\u4f5c\u3002",
     lastReviewed: "\u6700\u8fd1\u5ba1\u6838",
     localRuntime: "\u672c\u5730\u8fd0\u884c\u65f6\u9700\u8981\u66f4\u5f3a\u7684\u9879\u76ee\u5ba1\u6279\u3002",
@@ -113,6 +116,7 @@ const copy = {
 } as const;
 
 export function SkillInstallCommandPanel({
+  availabilityMessage,
   billingModel,
   commands,
   installable,
@@ -121,8 +125,10 @@ export function SkillInstallCommandPanel({
   latestVersion,
   locale,
   projectCount,
+  readinessTitle,
   risk,
   runtime,
+  showCommands,
   verificationLabel,
   verificationLabelEn
 }: SkillInstallCommandPanelProps) {
@@ -166,8 +172,14 @@ export function SkillInstallCommandPanel({
 
   return (
     <div className="skill-install-command-panel">
+      {availabilityMessage ? (
+        <div className="skill-install-availability-note">
+          <ShieldCheck size={15} aria-hidden="true" />
+          <span>{availabilityMessage}</span>
+        </div>
+      ) : null}
       <div className="install-command-list">
-        {installable ? (
+        {showCommands ?? installable ? (
           commands.map((command) => (
             <div className="install-command-row" key={command.label}>
               <span>{command.label}</span>
@@ -226,10 +238,10 @@ export function SkillInstallCommandPanel({
         )}
       </div>
 
-      <div className="skill-install-readiness" aria-label={labels.installReadiness}>
+      <div className="skill-install-readiness" aria-label={readinessTitle ?? labels.installReadiness}>
         <div className="skill-install-readiness__head">
           <ClipboardCheck size={15} aria-hidden="true" />
-          <strong>{labels.installReadiness}</strong>
+          <strong>{readinessTitle ?? labels.installReadiness}</strong>
           <span>
             {labels.version}: {latestVersion ?? "latest"} / {labels.lastReviewed}: {lastReviewed}
           </span>

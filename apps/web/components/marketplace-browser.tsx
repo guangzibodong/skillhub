@@ -82,8 +82,8 @@ const labels = {
     emptyBody:
       "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
     handoff: {
-      items: ["Project install", "Policy gate", "Runtime log", "Usage ledger"],
-      title: "After approval"
+      items: ["Project install", "Policy gate", "Runtime log", "Runtime evidence"],
+      title: "After verified approval"
     },
     recommendation: {
       adoption: "Install evidence",
@@ -152,8 +152,8 @@ const labels = {
     emptyBody:
       "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
     handoff: {
-      items: ["项目安装", "策略网关", "运行日志", "用量账本"],
-      title: "审核通过后进入"
+      items: ["\u9879\u76ee\u5b89\u88c5", "\u7b56\u7565\u7f51\u5173", "\u8fd0\u884c\u65e5\u5fd7", "\u8fd0\u884c\u8bc1\u636e"],
+      title: "\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e"
     },
     recommendation: {
       adoption: "已有安装证据",

@@ -92,7 +92,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     developer: {
       body:
-        "The developer path proves SkillHub is more than a directory: discovery becomes project install state, runtime governance, logs, cost, and updates.",
+        "The developer path proves SkillHub is more than a directory: public discovery can become authenticated project state, runtime governance, logs, cost, and updates after sign-in and policy checks.",
       current: "Current",
       next: "Next",
       steps: [
@@ -132,7 +132,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
           label: "Runtime test"
         }
       ],
-      title: "Developer install journey"
+      title: "Authenticated project path"
     },
     publisher: {
       body:
@@ -226,7 +226,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     developer: {
       body:
-        "\u5f00\u53d1\u8005\u8def\u5f84\u8bc1\u660e SkillHub \u4e0d\u662f\u9759\u6001\u76ee\u5f55\uff1a\u53d1\u73b0\u4f1a\u53d8\u6210\u9879\u76ee\u5b89\u88c5\u72b6\u6001\u3001\u8fd0\u884c\u6cbb\u7406\u3001\u65e5\u5fd7\u3001\u6210\u672c\u548c\u66f4\u65b0\u3002",
+        "\u5f00\u53d1\u8005\u8def\u5f84\u8bc1\u660e SkillHub \u4e0d\u662f\u9759\u6001\u76ee\u5f55\uff1a\u516c\u5f00\u53d1\u73b0\u53ef\u4ee5\u5728\u767b\u5f55\u548c\u7b56\u7565\u68c0\u67e5\u540e\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3001\u8fd0\u884c\u6cbb\u7406\u3001\u65e5\u5fd7\u3001\u6210\u672c\u548c\u66f4\u65b0\u3002",
       current: "\u5f53\u524d",
       next: "\u4e0b\u4e00\u6b65",
       steps: [
@@ -266,7 +266,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
           label: "\u8fd0\u884c\u6d4b\u8bd5"
         }
       ],
-      title: "\u5f00\u53d1\u8005\u5b89\u88c5\u8def\u5f84"
+      title: "\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84"
     },
     publisher: {
       body:

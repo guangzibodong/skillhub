@@ -21,6 +21,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import { PublicAccessScope } from "@/components/public-access-scope";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 
@@ -486,7 +487,19 @@ const quickstartCopy = {
   },
 } as const;
 
-const quickstartSnippet = `# 1. Search public skills
+function quickstartSnippet(locale: Locale) {
+  if (locale === "zh") {
+    return `# 1. \u641c\u7d22\u516c\u5f00\u6280\u80fd
+curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+
+# 2. \u67e5\u770b\u516c\u5f00 manifest
+curl "https://api.useskillhub.com/v1/skills/browser-research"
+
+# 3. \u8bfb\u53d6 MCP \u670d\u52a1\u5143\u6570\u636e
+curl "https://api.useskillhub.com/mcp"`;
+  }
+
+  return `# 1. Search public skills
 curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 
 # 2. Inspect a public manifest
@@ -494,6 +507,11 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 
 # 3. Read MCP service metadata
 curl "https://api.useskillhub.com/mcp"`;
+}
+
+function quickstartCodeLabel(locale: Locale) {
+  return locale === "zh" ? "\u65e0\u9700\u767b\u5f55\u67e5\u770b" : "no login inspect";
+}
 
 const journeyIcons = [Code2, PackageCheck, ShieldCheck] as const;
 const referenceIcons = [SearchCode, Route, ClipboardCheck, WalletCards, BellRing, Gauge] as const;
@@ -536,6 +554,8 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <PublicAccessScope locale={locale} />
+
       <section className="docs-quickstart-section" id="mcp" aria-labelledby="docs-quickstart-heading">
         <div className="docs-section-head">
           <div>
@@ -551,10 +571,10 @@ export default async function DocsPage({ searchParams }: PageProps) {
           <div className="code-panel">
             <div className="code-panel__bar">
               <span>quickstart.sh</span>
-              <span>no login inspect</span>
+              <span>{quickstartCodeLabel(locale)}</span>
             </div>
             <pre>
-              <code>{quickstartSnippet}</code>
+              <code>{quickstartSnippet(locale)}</code>
             </pre>
           </div>
           <div className="docs-quickstart-status">

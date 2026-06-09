@@ -31,12 +31,12 @@ type PageProps = {
 
 const copy = {
   en: {
-    activePaid: "Active paid",
+    activePaid: "Paid preview",
     back: "Back to marketplace",
     calls: "Runtime calls",
     directory: "Public publishers",
     directoryBody:
-      "Browse marketplace suppliers by trust level, verified listings, install evidence, runtime calls, payout readiness, and public skill inventory.",
+      "Browse marketplace suppliers by trust level, verified listings, public review status, install evidence, runtime calls, support posture, and public skill inventory.",
     docs: "Review docs",
     eyebrow: "Publisher trust directory",
     installs: "Installs",
@@ -46,11 +46,11 @@ const copy = {
     metricPublishers: "Publishers",
     metricVerifiedPublishers: "Verified publishers",
     notAvailable: "n/a",
-    payout: "Payout",
+    payout: "Paid preview",
     profile: "View profile",
     publicSkills: "Public skills",
     sideBody:
-      "The directory makes supplier quality visible before payment integration is connected. Publishers improve distribution by keeping skills verified, installable, supported, and payout-ready.",
+      "The directory makes supplier quality visible before payment integration is connected. Publisher trust is based on profile state, verified skills, public listings, review status, runtime evidence, install evidence, support path, and issue history.",
     sideTitle: "How to read the directory",
     status: "Status",
     success: "Avg success",
@@ -78,18 +78,18 @@ const copy = {
     },
     checks: [
       "Verified skills carry more ranking weight.",
-      "Payout readiness matters for paid listings.",
+      "Paid marketplace and payout readiness remain prelaunch.",
       "Runtime evidence shows real adoption.",
       "Skill-level pages expose API inspect commands, install eligibility, and permissions.",
     ],
   },
   zh: {
-    activePaid: "活跃付费",
+    activePaid: "\u4ed8\u8d39\u9884\u89c8",
     back: "返回市场",
     calls: "运行调用",
     directory: "公开发布者",
     directoryBody:
-      "按信任等级、已验证上架、安装证据、运行调用、提现准备和公开技能库存浏览市场供应方。",
+      "\u6309\u4fe1\u4efb\u7b49\u7ea7\u3001\u5df2\u9a8c\u8bc1\u4e0a\u67b6\u3001\u516c\u5f00\u5ba1\u6838\u72b6\u6001\u3001\u5b89\u88c5\u8bc1\u636e\u3001\u8fd0\u884c\u8c03\u7528\u3001\u652f\u6301\u72b6\u6001\u548c\u516c\u5f00\u6280\u80fd\u5e93\u5b58\u6d4f\u89c8\u5e02\u573a\u4f9b\u5e94\u65b9\u3002",
     docs: "审核文档",
     eyebrow: "发布者信任目录",
     installs: "安装",
@@ -99,11 +99,11 @@ const copy = {
     metricPublishers: "发布者",
     metricVerifiedPublishers: "已验证发布者",
     notAvailable: "暂无",
-    payout: "提现",
+    payout: "\u4ed8\u8d39\u9884\u89c8",
     profile: "查看档案",
     publicSkills: "公开技能",
     sideBody:
-      "目录会在最终支付接口接入前先把供应方质量显性化。发布者想获得更多分发，就要保持技能可验证、可安装、有支持记录，并完成提现准备。",
+      "\u76ee\u5f55\u4f1a\u5728\u6700\u7ec8\u652f\u4ed8\u63a5\u53e3\u63a5\u5165\u524d\u5148\u628a\u4f9b\u5e94\u65b9\u8d28\u91cf\u663e\u6027\u5316\u3002\u53d1\u5e03\u8005\u4fe1\u4efb\u4e3b\u8981\u57fa\u4e8e\u8d44\u6599\u72b6\u6001\u3001\u5df2\u9a8c\u8bc1\u6280\u80fd\u6570\u3001\u516c\u5f00\u4e0a\u67b6\u3001\u5ba1\u6838\u72b6\u6001\u3001\u8fd0\u884c\u8bc1\u636e\u3001\u5b89\u88c5\u8bc1\u636e\u3001\u652f\u6301\u8def\u5f84\u548c\u95ee\u9898\u8bb0\u5f55\u3002",
     sideTitle: "如何阅读目录",
     status: "状态",
     success: "平均成功率",
@@ -131,7 +131,7 @@ const copy = {
     },
     checks: [
       "已验证技能会获得更高排序权重。",
-      "提现准备决定付费技能能否顺畅运营。",
+      "\u4ed8\u8d39\u5e02\u573a\u548c\u63d0\u73b0\u51c6\u5907\u4ecd\u5c5e\u4e8e\u9884\u53d1\u5e03\u80fd\u529b\u3002",
       "运行证据体现真实采用情况。",
       "技能详情页展示 API 查看命令、安装资格和权限。",
     ],

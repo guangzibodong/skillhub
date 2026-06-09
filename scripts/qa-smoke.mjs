@@ -279,19 +279,64 @@ const PAGE_ASSERTIONS = {
 const PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS = new Set([
   "/",
   "/?lang=zh",
+  "/docs",
+  "/docs?lang=zh",
   "/login",
   "/login?lang=zh",
   "/marketplace",
   "/marketplace?q=browser&category=research&runtime=http&sort=lowRisk",
   "/marketplace?lang=zh",
+  "/publish",
+  "/publish?lang=zh",
   "/publishers",
   "/publishers?lang=zh",
+  "/registry",
+  "/registry?lang=zh",
+]);
+const PUBLIC_APP_PATHS_WITH_ANONYMOUS_NAV = new Set([
+  "/",
+  "/?lang=zh",
+  "/docs",
+  "/docs?lang=zh",
+  "/marketplace",
+  "/marketplace?lang=zh",
+  "/publish",
+  "/publish?lang=zh",
+  "/publishers",
+  "/publishers?lang=zh",
+  "/registry",
+  "/registry?lang=zh",
 ]);
 const PUBLIC_ADMIN_LINK_MARKERS = [
   'href="/admin',
   "href='/admin",
   "/admin?lang=en",
   "/admin?lang=zh",
+];
+const ANONYMOUS_NAV_REQUIRED_HREFS = [
+  'href="/registry',
+  'href="/marketplace',
+  'href="/docs',
+  'href="/publish',
+  'href="/login',
+];
+const ANONYMOUS_NAV_FORBIDDEN_MARKERS = [
+  'href="/agents',
+  'href="/api',
+  'href="/account',
+  'href="/dashboard',
+  'href="/developer',
+  'href="/publisher"',
+  'href="/publisher?',
+  'href="/admin',
+  "API health",
+  "Account center",
+  "Agents",
+  "Dashboard",
+  "Developer",
+  "Open workspace",
+  "Publisher workspace",
+  "Publishers",
 ];
 const COMMON_UTF8_AS_GBK_MARKERS = [
   "\u9359\u5D89\uE6ED",
@@ -327,11 +372,13 @@ const MOJIBAKE_MARKERS = [
 ];
 const SKILL_DETAIL_ASSERTIONS = {
   en: [
+    "availability",
     "developer handoff packet",
     "share usage feedback",
     "report a trust or runtime issue",
   ],
   zh: [
+    "\u53ef\u7528\u72b6\u6001",
     "\u5f00\u53d1\u8005\u4ea4\u63a5\u5305",
     "\u5206\u4eab\u4f7f\u7528\u53cd\u9988",
     "\u62a5\u544a\u4fe1\u4efb\u6216\u8fd0\u884c\u95ee\u9898",
@@ -2383,8 +2430,9 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
       }
 
       if (PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS.has(path)) {
+        const headerHtml = extractSiteHeader(response.text).toLowerCase();
         const adminLinkMarkers = PUBLIC_ADMIN_LINK_MARKERS.filter((token) =>
-          html.includes(token),
+          headerHtml.includes(token),
         );
 
         if (adminLinkMarkers.length > 0) {
@@ -2392,6 +2440,15 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
             name,
             `public page should not advertise admin links: ${adminLinkMarkers.join(", ")}`,
           );
+          continue;
+        }
+      }
+
+      if (PUBLIC_APP_PATHS_WITH_ANONYMOUS_NAV.has(path)) {
+        const navFailure = validateAnonymousTopNav(response.text);
+
+        if (navFailure) {
+          fail(name, navFailure);
           continue;
         }
       }
@@ -2642,8 +2699,8 @@ async function checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs }) {
   ];
 
   const requiredByLocale = {
-    en: ["inspection only", "not verified yet"],
-    zh: ["\u4ec5\u53ef\u67e5\u770b", "\u5c1a\u672a\u901a\u8fc7"],
+    en: ["availability", "inspection only", "not verified yet"],
+    zh: ["\u53ef\u7528\u72b6\u6001", "\u4ec5\u53ef\u67e5\u770b", "\u5c1a\u672a\u901a\u8fc7"],
   };
   const forbiddenByLocale = {
     en: [
@@ -2657,6 +2714,7 @@ async function checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs }) {
       "project command",
       "run governed test",
       "billing gate",
+      "install readiness",
       "usage ledger",
       "open developer workspace",
     ],
@@ -2671,6 +2729,7 @@ async function checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs }) {
       "\u9879\u76ee\u6307\u6325\u53f0",
       "\u8fd0\u884c\u6cbb\u7406\u6d4b\u8bd5",
       "\u8ba1\u8d39\u95e8\u69db",
+      "\u5b89\u88c5\u51c6\u5907",
       "\u7528\u91cf\u8d26\u672c",
       "\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
     ],
@@ -3111,6 +3170,48 @@ function basePathFromAppPath(path) {
 
 function isZhAppPath(path) {
   return path.includes("lang=zh");
+}
+
+function validateAnonymousTopNav(text) {
+  const header = extractSiteHeader(text);
+
+  if (!header) {
+    return "anonymous public page is missing the shared site header";
+  }
+
+  const missingHrefs = ANONYMOUS_NAV_REQUIRED_HREFS.filter(
+    (token) => !header.includes(token),
+  );
+
+  if (missingHrefs.length > 0) {
+    return `anonymous top nav is missing required public links: ${missingHrefs.join(", ")}`;
+  }
+
+  const forbiddenMarkers = ANONYMOUS_NAV_FORBIDDEN_MARKERS.filter((token) =>
+    header.includes(token),
+  );
+
+  if (forbiddenMarkers.length > 0) {
+    return `anonymous top nav exposes old or protected links: ${forbiddenMarkers.join(", ")}`;
+  }
+
+  return "";
+}
+
+function extractSiteHeader(text) {
+  const start = text.indexOf("<header");
+
+  if (start === -1) {
+    return "";
+  }
+
+  const end = text.indexOf("</header>", start);
+
+  if (end === -1) {
+    return "";
+  }
+
+  return text.slice(start, end + "</header>".length);
 }
 
 function hostnameForUrl(value) {

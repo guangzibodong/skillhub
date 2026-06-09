@@ -12,6 +12,8 @@ Round 2 acceptance update on 2026-06-09: public copy, README, API docs, and smok
 
 Round 3 acceptance update on 2026-06-09: public acceptance now enforces the source of truth instead of only editing page copy. Submitted skills use a shared availability helper and stay inspection-only on public detail pages, verified skills keep the developer handoff path, public publisher routing canonicalizes legacy `skillhub-publisher` links to `skillhub`, public skill names/descriptions/tags are localized at the marketplace data layer, and the smoke suite checks the verified/submitted split plus the publisher slug alias. Marketplace public copy now labels paid, ledger, and payout material as Developer Preview architecture or future/manual paid-marketplace workflow. The manual QA checklist is recorded in `docs/public-acceptance-qa.md`.
 
+Round 4 launch-readiness update on 2026-06-09: public pages now separate real no-login inspection from login-gated project operations. Skill detail pages use a shared `getPublicSkillActionState` helper so anonymous verified listings show Availability instead of a top-level Install section, submitted listings remain strictly inspection-only, and authenticated developer access is the only path that can show install readiness. Home, Marketplace, Docs, and skill detail pages include a shared no-login versus login-required block. Marketplace operator queue metrics are no longer presented as public traction, publisher directory trust no longer treats payout readiness as a headline signal, and `docs/public-launch-readiness.md` plus `pnpm qa:public` capture the Developer Preview launch boundary.
+
 They described:
 
 - Registry.

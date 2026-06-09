@@ -25,6 +25,7 @@ import {
 import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { JourneyRailDeck } from "@/components/journey-rail";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
+import { PublicAccessScope } from "@/components/public-access-scope";
 import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -350,6 +351,8 @@ tools: skillhub.search, skillhub.get`}</code>
             </pre>
           </div>
         </aside>
+
+        <PublicAccessScope locale={locale} />
 
         <OperatingEvidenceChain
           focus="platform"

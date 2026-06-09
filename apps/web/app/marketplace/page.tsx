@@ -20,6 +20,7 @@ import {
 import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
+import { PublicAccessScope } from "@/components/public-access-scope";
 import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
@@ -64,7 +65,7 @@ const pageCopy = {
     requests: "Example skill requests - not live data",
     requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
     publishTitle: "Publisher operating flow",
-    publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Pricing blockers", "Public listing", "Future ledger model", "Manual payout review"],
+    publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Pricing blockers", "Public listing", "Future ledger model", "Paid-marketplace review"],
     trustTitle: "Launch requirements",
     trustItems: [
       ["Manifest", "Typed input/output, runtime, permissions, version, author."],
@@ -86,13 +87,13 @@ const pageCopy = {
         "These preview signals come from the platform overview API. They explain the discovery-to-runtime architecture while paid marketplace operations remain prelaunch.",
       metrics: {
         activeSubscriptions: "Active subscriptions",
-        availableBalance: "Available balance",
+        paidPreview: "Paid preview",
         failedChecks: "Failed checks",
         installedSkills: "Installed skills",
         openBuyerRequests: "Buyer requests",
-        payoutReview: "Manual payout review",
+        payoutGovernance: "Payout governance",
         projects: "Projects",
-        queuedNotifications: "Queued notifications",
+        notificationGovernance: "Notification governance",
         reviewQueue: "Review queue",
         savedSkills: "Saved skills",
         submittedVersions: "Submitted versions",
@@ -101,8 +102,8 @@ const pageCopy = {
       roles: {
         admin: {
           empty: "No active risk signals.",
-          subtitle: "Review, manual payout, notification, and incident queues protect launch readiness.",
-          title: "Platform operators"
+          subtitle: "Review, payout, notification, and incident queues are protected inside the admin console.",
+          title: "Operator controls"
         },
         developer: {
           empty: "No installed-skill updates.",
@@ -162,14 +163,14 @@ const pageCopy = {
       callable: "Callable skills",
       calls: "Recorded calls",
       feedback: "Feedback signals",
-      payout: "Paid-readiness publishers"
+      submitted: "Submitted skills"
     },
     loopLedgerTitle: "What teams can revisit",
     loopLedgerRows: [
       ["Buyer view", "Install trail", "Command, permission profile, pricing model, and project policy stay inspectable."],
       ["Agent view", "Runtime proof", "The agent can validate schema, latency, and success history before repeated calls."],
       ["Publisher view", "Action queue", "Reviews, incidents, usage, and changelog pressure feed the next version."],
-      ["Finance view", "Manual payout audit", "Future paid usage reaches ledger review before finance records manual transfer evidence."]
+      ["Finance view", "Future paid marketplace review", "Future paid usage reaches ledger review before finance records manual transfer evidence."]
     ]
   },
   zh: {
@@ -208,13 +209,13 @@ const pageCopy = {
         "这些预览信号来自 platform overview API，用来解释从发现到运行的架构；付费市场运营仍处于预发布阶段。",
       metrics: {
         activeSubscriptions: "活跃订阅",
-        availableBalance: "可用余额",
+        paidPreview: "\u4ed8\u8d39\u9884\u89c8",
         failedChecks: "失败检查",
         installedSkills: "已安装技能",
         openBuyerRequests: "买方需求",
-        payoutReview: "人工提现审核",
+        payoutGovernance: "\u63d0\u73b0\u6cbb\u7406",
         projects: "项目",
-        queuedNotifications: "排队通知",
+        notificationGovernance: "\u901a\u77e5\u6cbb\u7406",
         reviewQueue: "审核队列",
         savedSkills: "收藏技能",
         submittedVersions: "提交版本",
@@ -284,7 +285,7 @@ const pageCopy = {
       callable: "可调用技能",
       calls: "已记录调用",
       feedback: "反馈信号",
-      payout: "付费准备发布者"
+      submitted: "\u5df2\u63d0\u4ea4\u6280\u80fd"
     },
     loopLedgerTitle: "团队可回访的信息",
     loopLedgerRows: [
@@ -375,7 +376,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     [labels.loopMetrics.callable, String(publicStats.callableSkills)],
     [labels.loopMetrics.calls, formatCompactMetric(publicStats.recordedCalls, locale)],
     [labels.loopMetrics.feedback, formatCompactMetric(publicStats.feedbackSignals, locale)],
-    [labels.loopMetrics.payout, `${publicStats.payoutReadyPublishers}/${publicStats.publicPublishers}`]
+    [labels.loopMetrics.submitted, String(publicStats.submittedSkills)]
   ];
   const overviewCards = [
     {
@@ -400,7 +401,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       metrics: [
         [labels.overview.metrics.submittedVersions, getOverviewMetric(overview.publisher.metrics, "Submitted versions", "0")],
         [labels.overview.metrics.failedChecks, getOverviewMetric(overview.publisher.metrics, "Runtime checks failed", "0")],
-        [labels.overview.metrics.availableBalance, getOverviewMetric(overview.publisher.metrics, "Available balance", "$0")]
+        [labels.overview.metrics.paidPreview, locale === "zh" ? "\u9884\u53d1\u5e03" : "Prelaunch"]
       ],
       rows: overview.publisher.reviewPipeline.slice(0, 3).map((row) => ({
         detail: `${labels.overview.queueLabels.stage}: ${formatQueueValue(row.stage, locale)}`,
@@ -413,9 +414,9 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     {
       empty: labels.overview.roles.admin.empty,
       metrics: [
-        [labels.overview.metrics.reviewQueue, getOverviewMetric(overview.admin.metrics, "Review queue", "0")],
-        [labels.overview.metrics.payoutReview, getOverviewMetric(overview.admin.metrics, "Payout review", "0")],
-        [labels.overview.metrics.queuedNotifications, getOverviewMetric(overview.admin.metrics, "Queued notifications", "0")]
+        [labels.overview.metrics.reviewQueue, locale === "zh" ? "\u540e\u53f0\u95e8\u63a7" : "Admin gated"],
+        [labels.overview.metrics.payoutGovernance, locale === "zh" ? "\u9884\u53d1\u5e03" : "Prelaunch"],
+        [labels.overview.metrics.notificationGovernance, locale === "zh" ? "\u540e\u53f0\u95e8\u63a7" : "Admin gated"]
       ],
       rows: overview.admin.riskQueue.slice(0, 3).map((row) => ({
         detail: `${labels.overview.queueLabels.scope}: ${formatQueueValue(row.scope, locale)}`,
@@ -477,6 +478,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         </aside>
       </section>
 
+      <PublicAccessScope locale={locale} />
+
       <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
 
       <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
@@ -499,7 +502,7 @@ curl "https://api.useskillhub.com/mcp"`}</code>
           { label: labels.catalogMetric, value: String(publicStats.publicSkills) },
           { label: labels.publisherMetric, value: String(publicStats.publicPublishers) },
           { label: labels.loopMetrics.calls, value: formatCompactMetric(publicStats.recordedCalls, locale) },
-          { label: labels.loopMetrics.payout, tone: publicStats.payoutReadyPublishers > 0 ? "good" : "attention", value: `${publicStats.payoutReadyPublishers}/${publicStats.publicPublishers}` }
+          { label: labels.loopMetrics.submitted, tone: publicStats.submittedSkills > 0 ? "attention" : "neutral", value: String(publicStats.submittedSkills) }
         ]}
       />
 

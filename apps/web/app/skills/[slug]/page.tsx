@@ -20,6 +20,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { JourneyRail } from "@/components/journey-rail";
+import { PublicAccessScope } from "@/components/public-access-scope";
 import { SiteHeader } from "@/components/site-header";
 import { SkillInstallCommandPanel } from "@/components/skill-install-command-panel";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
@@ -31,7 +32,7 @@ import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
-import { getSkillAvailability, getSkillInstallState } from "@/lib/skill-install-state";
+import { getPublicSkillActionState, getSkillAvailability, getSkillInstallState } from "@/lib/skill-install-state";
 import { getSkillFeedback } from "@/lib/skill-feedback";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +56,7 @@ const copy = {
     cliPreviewStatus: "Not published as a public copy-and-run install yet.",
     contract: "Runtime contract",
     feedback: "User feedback",
-    feedbackBody: "Published feedback from teams that installed or evaluated this skill.",
+    feedbackBody: "Published feedback appears after moderated signed-in submissions.",
     feedbackEmpty: "No published feedback yet.",
     feedbackProject: "Project",
     feedbackUseCase: "Use case",
@@ -81,7 +82,7 @@ const copy = {
       rows: {
         contract: ["Contract pin", "Schema, permissions, and runtime stay inspectable."],
         key: ["Runtime key", "Managed from the project command center."],
-        ledger: ["Usage ledger", "Runtime evidence can feed invoice, audit, and payout readiness."],
+        ledger: ["Runtime evidence model", "Runtime evidence can feed future invoice, audit, and paid-marketplace review."],
         project: ["Project state", "Saved or installed under one organization."],
         test: ["Governed test", "Console test uses the same gateway path as agent calls."]
       },
@@ -137,7 +138,7 @@ const copy = {
     cliPreviewStatus: "暂未作为公开的一键运行安装命令发布。",
     contract: "运行协议",
     feedback: "用户反馈",
-    feedbackBody: "来自已安装或评估该技能团队的公开反馈。",
+    feedbackBody: "\u5df2\u767b\u5f55\u7528\u6237\u63d0\u4ea4\u7684\u53cd\u9988\u901a\u8fc7\u5ba1\u6838\u540e\u4f1a\u5728\u8fd9\u91cc\u516c\u5f00\u5c55\u793a\u3002",
     feedbackEmpty: "暂时还没有公开反馈。",
     feedbackProject: "项目",
     feedbackUseCase: "使用场景",
@@ -163,7 +164,7 @@ const copy = {
       rows: {
         contract: ["合约固定", "Schema、权限和运行时保持可检查。"],
         key: ["运行 Key", "由项目命令中心管理。"],
-        ledger: ["用量账本", "运行证据可进入发票、审计和提现准备。"],
+        ledger: ["\u8fd0\u884c\u8bc1\u636e\u6a21\u578b", "\u8fd0\u884c\u8bc1\u636e\u53ef\u4ee5\u8fdb\u5165\u672a\u6765\u53d1\u7968\u3001\u5ba1\u8ba1\u548c\u4ed8\u8d39\u5e02\u573a\u590d\u6838\u3002"],
         project: ["项目状态", "保存或安装都归属到一个组织。"],
         test: ["治理测试", "控制台测试走与 agent 调用相同的网关路径。"]
       },
@@ -239,16 +240,17 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const publisherProfile = await getPublicPublisherProfile(publisherSlugFromName(skill.author));
   const latestVersion = skill.changelog[0]?.version;
   const skillAvailability = getSkillAvailability(skill.verification.en);
+  const skillActionState = getPublicSkillActionState(skill.verification.en, hasDeveloperAccess);
   const installState = getSkillInstallState(skill.verification.en);
-  const isSkillInstallable = skillAvailability.canInstall;
-  const developerAccessHref = skillAvailability.canShowProjectHandoff
+  const isSkillInstallable = skillActionState.canInstallNow;
+  const developerAccessHref = skillActionState.canShowProjectHandoff
     ? hasDeveloperAccess
       ? "/developer"
       : hasWorkspaceSession
         ? "/account"
         : "/login"
     : "/marketplace";
-  const developerAccessLabel = skillAvailability.canShowProjectHandoff
+  const developerAccessLabel = skillActionState.canShowProjectHandoff
     ? hasDeveloperAccess
       ? locale === "zh"
         ? "开发者工作台"
@@ -263,13 +265,16 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     : locale === "zh"
       ? "返回市场"
       : "Compare in marketplace";
-  const DeveloperAccessIcon = skillAvailability.canShowProjectHandoff && hasDeveloperAccess ? WalletCards : KeyRound;
+  const DeveloperAccessIcon = skillActionState.canShowProjectHandoff && hasDeveloperAccess ? WalletCards : KeyRound;
 
-  const installRows = [
+  const publicInspectRows = [
     {
       label: labels.apiInspect,
       value: skill.installsCommand.cli
-    },
+    }
+  ];
+  const installRows = [
+    ...publicInspectRows,
     {
       label: labels.mcpEndpoint,
       value: skill.installsCommand.mcp
@@ -281,6 +286,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
       value: skill.installsCommand.sdk
     }
   ];
+  const availableCommandRows = skillActionState.canShowProjectHandoff ? installRows : publicInspectRows;
 
   return (
     <main className="product-shell">
@@ -300,7 +306,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <div className="hero-actions">
             <a className="primary-button primary-button--large" href="#install">
               <Terminal size={18} aria-hidden="true" />
-              <span>{isSkillInstallable ? labels.install : installState.label[locale]}</span>
+              <span>{skillActionState.sectionTitle[locale]}</span>
             </a>
             <a className="secondary-button secondary-button--large" href={localizedHref(developerAccessHref, locale)}>
               <DeveloperAccessIcon size={18} aria-hidden="true" />
@@ -338,11 +344,13 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         </aside>
       </section>
 
+      <PublicAccessScope locale={locale} />
+
       <JourneyRail
         actionHrefOverride={developerAccessHref}
         actionLabelOverride={developerAccessLabel}
         currentStep="skill"
-        developerMode={skillAvailability.canShowProjectHandoff ? "install" : "inspection"}
+        developerMode={skillActionState.canShowProjectHandoff ? "install" : "inspection"}
         journey="developer"
         locale={locale}
       />
@@ -352,23 +360,26 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <article className="skill-detail-panel" id="install">
             <div className="card-kicker">
               <Terminal size={16} aria-hidden="true" />
-              <span>{labels.install}</span>
+              <span>{skillActionState.sectionTitle[locale]}</span>
             </div>
             <SkillInstallCommandPanel
+              availabilityMessage={skillActionState.summary[locale]}
               billingModel={skill.billing}
-              commands={installRows}
+              commands={availableCommandRows}
               installable={isSkillInstallable}
               installLockedReason={skillAvailability.reason[locale]}
               lastReviewed={skill.lastReviewed}
               latestVersion={latestVersion}
               locale={locale}
               projectCount={developerProjects.length}
+              readinessTitle={skillActionState.readinessTitle[locale]}
               risk={skill.risk}
               runtime={skill.runtime}
+              showCommands={skillActionState.canInspectPublicly}
               verificationLabel={localizeText(skill.verification, locale)}
               verificationLabelEn={skill.verification.en}
             />
-            {skillAvailability.canShowProjectHandoff ? (
+            {skillActionState.canShowProjectHandoff ? (
               <>
                 <DeveloperHandoffPacket
                   billingModel={skill.billing}
@@ -410,7 +421,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                         : "Sign-in required"
                   }
                   projects={developerProjects}
-                  showHandoff={skillAvailability.canShowProjectHandoff}
+                  showHandoff={skillActionState.canShowProjectHandoff}
                   skillName={localizeText(skill.name, locale)}
                   skillSlug={skill.slug}
                 />
