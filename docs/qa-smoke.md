@@ -86,7 +86,13 @@ Use [Acceptance Team QA](./acceptance-team-qa.md) when the release question is n
 pnpm acceptance:team -- --api-url http://127.0.0.1:18787 --app-url https://useskillhub.com --output /root/skillhub-acceptance-team.json --allow-production-write
 ```
 
-Do not paste or commit the generated credentials. Report findings by role, URL, language, viewport, expected behavior, actual behavior, and P0/P1/P2 severity.
+After the accounts exist, run the role-based acceptance collector:
+
+```bash
+pnpm qa:acceptance-team -- --credentials /root/skillhub-acceptance-team.json --output /root/skillhub-acceptance-qa-report.json --fail-on p0
+```
+
+Do not paste or commit the generated credentials. The QA report is secret-safe, but still review it before sharing. Report manual findings by role, URL, language, viewport, expected behavior, actual behavior, and P0/P1/P2 severity.
 
 ## P0 release suite
 

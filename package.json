@@ -19,6 +19,7 @@
     "smoke:prod": "node scripts/qa-p0-release-suite.mjs --prod --skip-admin --timeout-ms 30000",
     "qa:public": "node scripts/public-launch-readiness.mjs",
     "qa:anonymous": "node scripts/qa-public-anonymous.mjs",
+    "qa:acceptance-team": "node scripts/qa-acceptance-team.mjs",
     "acceptance:team": "node scripts/create-acceptance-team.mjs",
     "test:skill-availability": "node --test scripts/skill-availability.test.mjs"
   },

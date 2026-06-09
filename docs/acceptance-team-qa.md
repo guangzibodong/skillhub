@@ -33,6 +33,15 @@ If the command is re-run with the same output file, it reuses the stored generat
 
 Use the credential file only on the server or in a secure password manager. Do not copy credentials into issue text. When reporting bugs, use role names instead of usernames.
 
+Before manual clicking, run the role-based QA collector. It logs in as all three acceptance accounts, opens role workspaces with the real session cookie, checks protected APIs, and writes a secret-safe issue report:
+
+```bash
+cd /opt/skillhub
+pnpm qa:acceptance-team -- --credentials /root/skillhub-acceptance-team.json --output /root/skillhub-acceptance-qa-report.json --fail-on p0
+```
+
+The command may report P1/P2 launch-readiness issues even when the smoke suite passes. That is intentional: smoke proves the platform works; acceptance QA collects what still needs operator attention before launch or paid-marketplace activation.
+
 ### 1. Developer / Normal User
 
 Start:
