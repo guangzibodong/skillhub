@@ -237,6 +237,9 @@ export const dictionaries = {
     },
     adminPage: {
       eyebrow: "Platform admin",
+      lockedDescription:
+        "Sign in with a reviewer, finance, support, admin, or super_admin role before opening review, finance, payout, delivery, identity, launch-readiness, and audit operations.",
+      lockedTitle: "Enter the platform admin after sign-in.",
       title: "Control review, risk, finance, payouts, and audit trails.",
       description:
         "Admin operations must protect the registry and the money flow. Every approval, rejection, refund, dispute, and payout decision needs a durable record.",
@@ -639,6 +642,9 @@ export const dictionaries = {
     },
     adminPage: {
       eyebrow: "平台管理后台",
+      lockedDescription:
+        "先使用 reviewer、finance、support、admin 或 super_admin 角色登录，再进入审核、财务、提现、投递、身份、上线就绪和审计操作。",
+      lockedTitle: "登录后进入平台管理后台。",
       title: "控制审核、风险、财务、提现和审计链路。",
       description:
         "后台运营必须同时保护技能库和资金流。每一次批准、拒绝、退款、争议和提现决策都要留下持久记录。",

@@ -27,8 +27,10 @@ test("skill detail hero metrics use localized preview fallback", async () => {
   assert.doesNotMatch(source, /<strong>\{skill\.latency\}<\/strong>/);
 });
 
-test("developer and publisher locked heroes use access-first copy", async () => {
+test("workspace locked heroes use access-first copy", async () => {
+  const adminPage = await readFile("apps/web/app/admin/page.tsx", "utf8");
   const developerPage = await readFile("apps/web/app/developer/page.tsx", "utf8");
+  const i18n = await readFile("apps/web/lib/i18n.ts", "utf8");
   const publisherPage = await readFile("apps/web/app/publisher/page.tsx", "utf8");
   const publisherCopy = await readFile("apps/web/lib/publisher-page-copy.ts", "utf8");
 
@@ -41,4 +43,9 @@ test("developer and publisher locked heroes use access-first copy", async () => 
   assert.match(publisherCopy, /lockedTitle:\s*"登录后进入发布者工作台。"/);
   assert.match(publisherPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
   assert.match(publisherPage, /<p>\{labels\.lockedDescription\}<\/p>/);
+
+  assert.match(i18n, /lockedTitle:\s*"Enter the platform admin after sign-in\."/);
+  assert.match(i18n, /lockedTitle:\s*"登录后进入平台管理后台。"/);
+  assert.match(adminPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
+  assert.match(adminPage, /<p>\{labels\.lockedDescription\}<\/p>/);
 });

@@ -410,8 +410,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <LockKeyhole size={16} aria-hidden="true" />
               <span>{labels.eyebrow}</span>
             </div>
-            <h1>{labels.title}</h1>
-            <p>{labels.description}</p>
+            <h1>{labels.lockedTitle}</h1>
+            <p>{labels.lockedDescription}</p>
           </div>
         </section>
 
