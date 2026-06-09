@@ -151,21 +151,22 @@ const DEFAULT_APP_PATHS = [
 const DEFAULT_TIMEOUT_MS = 10000;
 const PAGE_ASSERTIONS = {
   "/": [
-    "/dashboard?lang=en#workspace-command-center",
-    "/dashboard?lang=en#dashboard-proof-chain",
-    "/developer?lang=en",
-    "/publisher?lang=en",
+    "/marketplace?lang=en",
+    "/publish?lang=en",
+    "/docs?lang=en#operating-reference",
+    "what works without login",
+    "what requires login",
     "operator direct link only",
-    "where the backend lives",
+    "developer preview",
   ],
   "/?lang=zh": [
-    "/dashboard?lang=zh#workspace-command-center",
-    "/dashboard?lang=zh#dashboard-proof-chain",
-    "/developer?lang=zh",
-    "/publisher?lang=zh",
+    "/marketplace?lang=zh",
+    "/publish?lang=zh",
+    "/docs?lang=zh#operating-reference",
+    "\u9605\u8bfb\u8fd0\u8425\u53c2\u8003",
+    "\u9700\u8981\u767b\u5f55",
     "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5",
     "\u667a\u80fd\u4f53\u6280\u80fd\u57fa\u7840\u8bbe\u65bd",
-    "\u5de5\u4f5c\u53f0\u5165\u53e3",
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
   "/marketplace?lang=zh": [
@@ -246,8 +247,8 @@ const PAGE_ASSERTIONS = {
   "/publisher?lang=zh": [
     "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
     "\u4f18\u5148\u7ea7\u961f\u5217",
-    "\u4ed8\u8d39\u963b\u65ad",
-    "\u63d0\u73b0\u51c6\u5907",
+    "\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e",
+    "\u8d22\u52a1\u95e8\u63a7\u6536\u6b3e\u8d44\u6599",
   ],
   "/developer": [
     "developer workspace",
