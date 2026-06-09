@@ -286,6 +286,17 @@ app.get("/health", (c) =>
   })
 );
 
+app.get("/mcp", (c) =>
+  c.json({
+    ok: true,
+    service: "skillhub-mcp",
+    transport: "streamable-http",
+    methods: ["POST"],
+    tools: ["skillhub.search", "skillhub.get"],
+    docs: "https://useskillhub.com/docs#mcp"
+  })
+);
+
 app.get("/v1/auth/me", async (c) => {
   const authorization = await authorize(c.req.header("Authorization"), anyAuthenticatedRole);
 

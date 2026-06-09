@@ -178,7 +178,7 @@ function statusText(status: AuthProviderStatus["status"], locale: Locale) {
 
 function providerLabel(provider: AuthProviderStatus, locale: Locale) {
   if (locale !== "zh") {
-    return provider.provider === "email" ? "Email code" : provider.label;
+    return provider.provider === "email" ? "Email / password" : provider.label;
   }
 
   if (provider.provider === "email") {

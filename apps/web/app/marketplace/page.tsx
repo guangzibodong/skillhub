@@ -52,17 +52,17 @@ type MarketplaceInitialFilterState = {
 const pageCopy = {
   en: {
     eyebrow: "Agent skill marketplace",
-    title: "Find, install, review, and monetize agent skills.",
+    title: "Find, inspect, and prepare governed agent skills.",
     description:
-      "SkillHub is becoming the operating layer for agent capabilities: searchable skills, explicit permissions, install commands, usage metering, review queues, pricing, and payout operations.",
+      "Developer Preview: search public skills, inspect permissions, and use registry/gateway discovery now. Paid marketplace, payment capture, and payout automation remain prelaunch.",
     primary: "Browse catalog",
     directory: "Publisher directory",
     console: "Publisher workspace",
-    consoleTitle: "Live install path",
-    consoleSubtitle: "Agents should install from a contract they can inspect.",
-    proof: ["Searchable catalog", "Permission review", "Install command", "Billing-ready usage"],
-    requests: "Requested skills",
-    requestsBody: "Buyers can request missing skills. Publishers can claim specs, submit builds, and earn bounties or recurring revenue.",
+    consoleTitle: "Public inspect path",
+    consoleSubtitle: "Agents should start from a contract they can inspect before project-gated install or runtime use.",
+    proof: ["Searchable catalog", "Permission review", "API inspect", "Project-gated runtime"],
+    requests: "Example skill requests - not live data",
+    requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
     publishTitle: "Publisher operating flow",
     publishSteps: ["Draft manifest", "Runtime test", "Human review", "Pricing approval", "Public listing", "Usage ledger", "Payout review"],
     trustTitle: "Launch requirements",
@@ -174,17 +174,17 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体技能市场",
-    title: "搜索、安装、审核并变现智能体技能。",
+    title: "搜索、查看，并准备受治理的智能体技能。",
     description:
-      "SkillHub 要成为智能体能力的运营层：可搜索技能、明确权限、安装命令、用量计量、审核队列、价格体系和提现运营。",
+      "开发者预览版：现在可以搜索公开技能、查看权限，并使用注册表/网关发现能力。付费市场、支付扣款和自动提现仍处于预发布阶段。",
     primary: "浏览目录",
     directory: "发布者目录",
     console: "发布者工作台",
-    consoleTitle: "实时安装路径",
-    consoleSubtitle: "智能体应该从可检查的协议里安装技能。",
-    proof: ["可搜索目录", "权限审核", "安装命令", "可计费用量"],
-    requests: "技能需求池",
-    requestsBody: "购买方可以发布缺失技能需求；发布者可以认领规格、提交构建，并获得赏金或持续收入。",
+    consoleTitle: "公开查看路径",
+    consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的安装或运行。",
+    proof: ["可搜索目录", "权限审核", "API 查看", "项目门控运行"],
+    requests: "示例技能需求 - 非实时数据",
+    requestsBody: "这些是未来付费市场的示例需求场景。真实买方需求会在用户提交后才出现，生产数据为空时保持为空。",
     publishTitle: "发布者运营流程",
     publishSteps: ["草稿 manifest", "运行测试", "人工审核", "价格批准", "公开上架", "用量账本", "提现审核"],
     trustTitle: "上线要求",
@@ -462,9 +462,9 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           </div>
           <p>{labels.consoleSubtitle}</p>
           <pre>
-            <code>{`skillhub search "browser research"
-skillhub inspect browser-research
-skillhub install browser-research`}</code>
+            <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+curl "https://api.useskillhub.com/v1/skills/browser-research"
+curl "https://api.useskillhub.com/mcp"`}</code>
           </pre>
           <div className="proof-grid">
             {labels.proof.map((item) => (

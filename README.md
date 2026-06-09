@@ -4,6 +4,8 @@ Universal skills for AI agents.
 
 SkillHub is a registry and runtime layer for agent skills. It gives AI agents a way to discover, evaluate, and call reusable skills through a common package format, HTTP API, and MCP-compatible gateway.
 
+SkillHub is currently in Developer Preview. Public registry and gateway discovery surfaces are live; paid marketplace activation, payment capture, automated payouts, tax/KYC automation, and final email delivery remain prelaunch integrations.
+
 ## Product Shape
 
 - `apps/web`: public site and SaaS console.
@@ -25,8 +27,10 @@ SkillHub is a registry and runtime layer for agent skills. It gives AI agents a 
 - Project API keys and runtime policy gates for installed skills.
 - Billing-ready ledger posting from billable usage to transaction splits and publisher balances.
 - Usage, transactions, commission splits, balances, payout states, refunds, and disputes.
+- Preview manual payout workflow: publishers submit PayPal/Alipay receiving details and finance records manual transfers; provider-specific payout automation can replace this later.
 - Notification events and templates, with actual email protocol integration handled at the final integration stage.
 - Payment provider and email provider integrations are final-stage external integrations, not early product blockers.
+- CLI and SDK packages are present in the monorepo but are not yet published for public copy-and-run installation.
 
 ## Product Documents
 

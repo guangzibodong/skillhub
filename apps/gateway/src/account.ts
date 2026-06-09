@@ -475,7 +475,7 @@ export function getAuthProviderStatuses(
       connectedAt: emailIdentity?.connectedAt ?? null,
       description: emailIdentity
         ? `Email workspace identity is connected for ${emailIdentity.email}.`
-        : "Username/email password access is live; email-code access remains available as a verification fallback.",
+        : "Username/email password access is live; email-code access remains an API fallback when email delivery is configured.",
       emailVerified: emailIdentity?.emailVerified ?? false,
       label: "Email / password",
       lastLoginAt: emailIdentity?.lastLoginAt ?? null,

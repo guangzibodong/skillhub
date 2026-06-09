@@ -163,7 +163,7 @@ const PAGE_ASSERTIONS = {
   "/marketplace?lang=zh": [
     "\u667a\u80fd\u4f53\u6280\u80fd\u5e02\u573a",
     "\u53d1\u5e03\u8005\u76ee\u5f55",
-    "\u5b89\u88c5\u547d\u4ee4",
+    "API \u67e5\u770b",
   ],
   "/publishers": ["public publishers", "publisher trust", "marketplace"],
   "/publishers?lang=zh": [
@@ -1731,6 +1731,7 @@ async function checkAdminActionProtection({ apiUrl, timeoutMs }) {
 }
 
 async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
+  await checkPublicMcpDescription({ apiUrl, timeoutMs });
   await checkPublicMcpToolList({ apiUrl, timeoutMs });
   const publicResource = await checkPublicMcpResourceList({
     apiUrl,
@@ -1744,6 +1745,44 @@ async function checkPublicMcpDiscovery({ apiUrl, timeoutMs }) {
     });
   }
   await checkPublicMcpToolCallBoundary({ apiUrl, timeoutMs });
+}
+
+async function checkPublicMcpDescription({ apiUrl, timeoutMs }) {
+  const name = "GET /mcp public description";
+
+  try {
+    const { status, json, text } = await requestJson(joinUrl(apiUrl, "/mcp"), {
+      timeoutMs,
+    });
+
+    if (status !== 200) {
+      fail(name, `expected HTTP 200, got ${status}`);
+      return;
+    }
+
+    if (
+      json?.ok !== true ||
+      json?.service !== "skillhub-mcp" ||
+      !Array.isArray(json?.methods) ||
+      !json.methods.includes("POST") ||
+      typeof json?.docs !== "string" ||
+      !json.docs.includes("/docs#mcp")
+    ) {
+      fail(name, "expected public MCP service description with POST method and docs link");
+      return;
+    }
+
+    const leaks = findBoundarySensitiveLeaks(text);
+
+    if (leaks.length > 0) {
+      fail(name, `possible sensitive MCP description leak: ${leaks[0]}`);
+      return;
+    }
+
+    pass(name, `service=${json.service}, methods=${json.methods.join(",")}`);
+  } catch (error) {
+    fail(name, error.message);
+  }
 }
 
 async function checkPublicMcpToolList({ apiUrl, timeoutMs }) {

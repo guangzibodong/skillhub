@@ -5,6 +5,10 @@ import {
   type MarketplaceSkill,
 } from "@/lib/marketplace-data";
 import { demoFallback } from "@/lib/demo-fallback";
+import {
+  isVerifiedSkillStatus,
+  publicApiInspectCommand,
+} from "@/lib/skill-install-state";
 
 type SkillPriceRecord = {
   id: string;
@@ -250,9 +254,9 @@ function manifestToMarketplaceSkill(
       schemaExample(manifest?.inputSchema, "input"),
     installs: staticSkill?.installs ?? formatCompactCount(summary.installCount),
     installsCommand: {
-      cli: `skillhub install ${summary.slug}`,
-      mcp: `${apiUrl}/mcp/${summary.slug}`,
-      sdk: `await skillhub.run("${summary.slug}", input)`,
+      cli: publicApiInspectCommand(apiUrl, summary.slug),
+      mcp: `${apiUrl.replace(/\/+$/, "")}/mcp`,
+      sdk: `CLI/SDK preview: ${summary.slug}`,
     },
     latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),
     name: {
@@ -668,7 +672,7 @@ function scoreRelatedSkill(
     reasons.zh.push("可作为免费备选");
   }
 
-  if (skill.verification.en.toLowerCase().includes("verified")) {
+  if (isVerifiedSkillStatus(skill.verification.en)) {
     score += 2;
     reasons.en.push("Verified listing");
     reasons.zh.push("已验证上架");

@@ -16,6 +16,7 @@ import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
+import { getSkillInstallState } from "@/lib/skill-install-state";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ const copy = {
     payout: "Payout readiness",
     profile: "Publisher profile",
     publicSkills: "Public skills",
-    skillBody: "Skills are listed with verification, permission risk, pricing state, and install commands so agent builders can compare before adopting.",
+    skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
     status: "Publisher status",
     success: "Avg success",
     trust: "Trust signals",
@@ -95,7 +96,7 @@ const copy = {
     payout: "提现准备",
     profile: "发布者档案",
     publicSkills: "公开技能",
-    skillBody: "这里展示每个技能的验证状态、权限风险、价格状态和安装命令，方便智能体开发者在采用前比较。",
+    skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
     status: "发布者状态",
     success: "平均成功率",
     trust: "信任信号",
@@ -209,7 +210,10 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
             <p>{labels.skillBody}</p>
 
             <div className="publisher-public-skill-list">
-              {publisher.skills.map((skill) => (
+              {publisher.skills.map((skill) => {
+                const installState = getSkillInstallState(skill.verificationStatus);
+
+                return (
                 <section className="publisher-public-skill" key={skill.slug}>
                   <header className="publisher-public-skill__head">
                     <div>
@@ -242,7 +246,7 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                   </div>
 
                   <div className="publisher-public-command">
-                    <code>{skill.installCommand}</code>
+                    <code>{installState.installable ? skill.installCommand : installState.reason[locale]}</code>
                     <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${skill.slug}`, locale)}>
                       <ShieldCheck size={15} aria-hidden="true" />
                       <span>{labels.details}</span>
@@ -250,7 +254,8 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                     </a>
                   </div>
                 </section>
-              ))}
+                );
+              })}
             </div>
           </article>
         </div>

@@ -75,114 +75,35 @@ const fallbackOverview: PlatformOverview = {
   },
   developer: {
     metrics: [
-      { label: "Projects", value: 3 },
-      { label: "Installed skills", value: 18 },
-      { label: "Saved skills", value: 11 },
-      { label: "Update inbox", value: 5 },
-      { label: "Active subscriptions", value: 126 },
+      { label: "Projects", value: 0 },
+      { label: "Installed skills", value: 0 },
+      { label: "Saved skills", value: 0 },
+      { label: "Update inbox", value: 0 },
+      { label: "Active subscriptions", value: 0 },
     ],
-    projectControls: [
-      {
-        project: "Research Agent",
-        budget: "$480 / mo",
-        keys: "2 active",
-        policy: "Medium risk approved",
-      },
-      {
-        project: "Support Agent",
-        budget: "$120 / mo",
-        keys: "1 rotating",
-        policy: "Free skills only",
-      },
-      {
-        project: "Finance Ops",
-        budget: "$900 / mo",
-        keys: "3 active",
-        policy: "Manual approval above $50",
-      },
-    ],
-    updateInbox: [
-      { skill: "browser-research-pro", event: "new_version", severity: "info" },
-      {
-        skill: "codebase-risk-scanner",
-        event: "owner_approval_required",
-        severity: "high",
-      },
-      {
-        skill: "crm-enrichment",
-        event: "data_policy_update",
-        severity: "medium",
-      },
-    ],
+    projectControls: [],
+    updateInbox: [],
   },
   publisher: {
     metrics: [
-      { label: "Submitted versions", value: 3 },
-      { label: "Runtime checks failed", value: 1 },
-      { label: "Open buyer requests", value: 2 },
-      { label: "Available balance", value: "$4,820" },
-      { label: "Pending balance", value: "$1,260" },
+      { label: "Submitted versions", value: 0 },
+      { label: "Runtime checks failed", value: 0 },
+      { label: "Open buyer requests", value: 0 },
+      { label: "Available balance", value: "$0" },
+      { label: "Pending balance", value: "$0" },
     ],
-    reviewPipeline: [
-      {
-        skill: "browser-research-pro",
-        stage: "Pricing approval",
-        nextStep: "Confirm per-call cap",
-      },
-      {
-        skill: "crm-enrichment",
-        stage: "Data policy",
-        nextStep: "Review CRM token scope",
-      },
-      {
-        skill: "codebase-risk-scanner",
-        stage: "Restricted launch",
-        nextStep: "Owner approval required",
-      },
-    ],
-    buyerRequests: [
-      {
-        title: "Figma change request to Linear issue",
-        bounty: "$600",
-        status: "open",
-      },
-      {
-        title: "Shopify product operations skill",
-        bounty: "$900",
-        status: "spec_review",
-      },
-      { title: "Slack incident summarizer", bounty: "$450", status: "matched" },
-    ],
+    reviewPipeline: [],
+    buyerRequests: [],
   },
   admin: {
     metrics: [
-      { label: "Review queue", value: 9 },
-      { label: "Payout review", value: 3 },
-      { label: "Queued notifications", value: 14 },
-      { label: "Failed runtime checks", value: 2 },
+      { label: "Review queue", value: 0 },
+      { label: "Payout review", value: 0 },
+      { label: "Queued notifications", value: 0 },
+      { label: "Failed runtime checks", value: 0 },
     ],
-    riskQueue: [
-      {
-        signal: "High-risk filesystem skill",
-        scope: "codebase-risk-scanner",
-        action: "Require owner approval",
-      },
-      {
-        signal: "Unusual payout request",
-        scope: "$4,800 request",
-        action: "Hold for finance transfer review",
-      },
-      {
-        signal: "Runtime error spike",
-        scope: "browser-research-pro",
-        action: "Throttle and notify publisher",
-      },
-    ],
-    moneyQueue: [
-      { batch: "usage-2026-06-04", state: "maturing", amount: "$2,272" },
-      { batch: "sub-2026-06", state: "available", amount: "$5,040" },
-      { batch: "refund-1820", state: "adjusted", amount: "-$77" },
-    ],
+    riskQueue: [],
+    moneyQueue: [],
   },
   retention: {
     developerReasons: [

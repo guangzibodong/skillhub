@@ -653,7 +653,9 @@ tools: skillhub.search, skillhub.get`}</code>
         </div>
         <div className="footer-links">
           <a href={`${apiUrl}/health`}>{dictionary.common.health}</a>
-          <a href={`${apiUrl}/mcp`}>{dictionary.common.mcp}</a>
+          <a href={localizedHref("/docs#mcp", locale)}>
+            {dictionary.common.mcp}
+          </a>
           <a href={localizedHref("/publish", locale)}>
             {dictionary.common.publish}
           </a>

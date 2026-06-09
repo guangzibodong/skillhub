@@ -94,9 +94,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-06-04",
     installsCommand: {
-      cli: "skillhub install browser-research-pro",
-      mcp: "https://api.useskillhub.com/mcp/browser-research-pro",
-      sdk: 'await skillhub.run("browser-research-pro", { query })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/browser-research-pro"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: browser-research-pro"
     },
     permissions: [
       {
@@ -203,9 +203,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-06-02",
     installsCommand: {
-      cli: "skillhub install crm-enrichment",
-      mcp: "https://api.useskillhub.com/mcp/crm-enrichment",
-      sdk: 'await skillhub.run("crm-enrichment", { domain, region })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/crm-enrichment"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: crm-enrichment"
     },
     permissions: [
       {
@@ -300,9 +300,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "low",
     lastReviewed: "2026-06-01",
     installsCommand: {
-      cli: "skillhub install support-triage",
-      mcp: "https://api.useskillhub.com/mcp/support-triage",
-      sdk: 'await skillhub.run("support-triage", { message })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/support-triage"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: support-triage"
     },
     permissions: [
       {
@@ -397,9 +397,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-05-30",
     installsCommand: {
-      cli: "skillhub install dataset-insight",
-      mcp: "https://api.useskillhub.com/mcp/dataset-insight",
-      sdk: 'await skillhub.run("dataset-insight", { rows })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/dataset-insight"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: dataset-insight"
     },
     permissions: [
       {
@@ -489,9 +489,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "high",
     lastReviewed: "2026-05-28",
     installsCommand: {
-      cli: "skillhub install codebase-risk-scanner --scope repo",
-      mcp: "local://skillhub/codebase-risk-scanner",
-      sdk: 'await skillhub.run("codebase-risk-scanner", { path: "." })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/codebase-risk-scanner"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: codebase-risk-scanner"
     },
     permissions: [
       {
@@ -581,9 +581,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-05-26",
     installsCommand: {
-      cli: "skillhub install invoice-extraction",
-      mcp: "https://api.useskillhub.com/mcp/invoice-extraction",
-      sdk: 'await skillhub.run("invoice-extraction", { fileUrl })'
+      cli: 'curl "https://api.useskillhub.com/v1/skills/invoice-extraction"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: invoice-extraction"
     },
     permissions: [
       {

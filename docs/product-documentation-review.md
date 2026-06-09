@@ -6,6 +6,8 @@ This review checks whether the SkillHub product documents are detailed enough to
 
 The previous documents were directionally correct but incomplete.
 
+Update on 2026-06-09: the public website credibility pass now treats SkillHub as a Developer Preview product instead of a fully mature paid marketplace. Public surfaces show a global preview banner, `/mcp` has a GET description plus POST MCP behavior, docs start with a no-login REST/MCP quickstart, static/demo operational metrics fall back to empty production state, auth copy consistently names Google/GitHub plus username/email password with token fallback reserved for invite/recovery, and CLI/SDK commands are marked preview while public pages expose copyable REST inspect commands only.
+
 They described:
 
 - Registry.

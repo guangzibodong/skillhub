@@ -4,6 +4,10 @@ import {
   marketplaceSkills,
   type MarketplaceSkill,
 } from "@/lib/marketplace-data";
+import {
+  isVerifiedSkillStatus,
+  publicApiInspectCommand,
+} from "@/lib/skill-install-state";
 
 type PublicPublisherApiSkill = {
   billingModel: MarketplaceSkill["billing"];
@@ -155,7 +159,7 @@ function apiProfileToPublicProfile(
       en: skill.displayName,
       zh: skill.displayName,
     },
-    installCommand: `skillhub install ${skill.slug}`,
+    installCommand: publicApiInspectCommand(apiUrl, skill.slug),
     installCount: skill.installCount,
     permissionLevel: skill.permissionLevel,
     price: formatApiPrice(skill),
@@ -280,7 +284,7 @@ function verificationStatusFromLabel(
 ): PublicPublisherSkill["verificationStatus"] {
   const normalized = label.toLowerCase();
 
-  if (normalized.includes("verified")) {
+  if (isVerifiedSkillStatus(normalized)) {
     return "verified";
   }
 

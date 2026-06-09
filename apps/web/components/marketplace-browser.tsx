@@ -26,6 +26,10 @@ import {
   type MarketplaceSkill,
 } from "@/lib/marketplace-data";
 import { publisherSlugFromName } from "@/lib/public-publishers";
+import {
+  getSkillInstallState,
+  isVerifiedSkillStatus,
+} from "@/lib/skill-install-state";
 
 type MarketplaceBrowserProps = {
   initialFilters?: MarketplaceInitialFilters;
@@ -47,11 +51,11 @@ const labels = {
   en: {
     search: "Search skills, integrations, permissions",
     results: "results",
-    copy: "Copy install",
+    copy: "Copy inspect",
     copied: "Copied",
     copyFailed: "Copy failed",
-    copyFailure: "Install command could not be copied",
-    copySuccess: "Install command copied",
+    copyFailure: "API inspect command could not be copied",
+    copySuccess: "API inspect command copied",
     details: "Details",
     by: "by",
     allPricing: "All pricing",
@@ -61,9 +65,9 @@ const labels = {
     success: "success",
     latency: "latency",
     feedback: "feedback",
-    install: "install",
-    installLocked: "Install locked",
-    installLockedBody: "Verified review is required before install commands unlock.",
+    install: "API inspect",
+    installLocked: "Inspection only",
+    installLockedBody: "Verified review is required before install and runtime actions unlock.",
     catalog: "SkillHub Catalog",
     filters: "Discovery filters",
     category: "Category",
@@ -80,7 +84,7 @@ const labels = {
       "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
     handoff: {
       items: ["Project install", "Policy gate", "Runtime log", "Usage ledger"],
-      title: "After install"
+      title: "After approval"
     },
     recommendation: {
       adoption: "Install evidence",
@@ -117,11 +121,11 @@ const labels = {
   zh: {
     search: "搜索技能、集成、权限",
     results: "个结果",
-    copy: "复制安装",
+    copy: "复制查看命令",
     copied: "已复制",
     copyFailed: "复制失败",
-    copyFailure: "安装命令复制失败",
-    copySuccess: "安装命令已复制",
+    copyFailure: "API 查看命令复制失败",
+    copySuccess: "API 查看命令已复制",
     details: "详情",
     by: "来自",
     allPricing: "全部价格",
@@ -131,9 +135,9 @@ const labels = {
     success: "成功率",
     latency: "延迟",
     feedback: "反馈",
-    install: "安装",
-    installLocked: "安装已锁定",
-    installLockedBody: "需要完成 verified 审核后才会开放安装命令。",
+    install: "API 查看",
+    installLocked: "仅可查看",
+    installLockedBody: "需要完成 verified 审核后才会开放安装和运行操作。",
     catalog: "SkillHub 技能目录",
     filters: "发现筛选",
     category: "类别",
@@ -150,7 +154,7 @@ const labels = {
       "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
     handoff: {
       items: ["项目安装", "策略网关", "运行日志", "用量账本"],
-      title: "安装后进入"
+      title: "审核通过后进入"
     },
     recommendation: {
       adoption: "已有安装证据",
@@ -605,7 +609,8 @@ export function MarketplaceBrowser({
       {filteredSkills.length > 0 ? (
         <div className="market-card-grid">
           {filteredSkills.map((skill) => {
-            const isSkillInstallable = verificationKey(skill) === "verified";
+            const installState = getSkillInstallState(skill.verification.en);
+            const isSkillInstallable = installState.installable;
 
             return (
             <article className="market-skill-card lift-card" key={skill.slug}>
@@ -717,7 +722,7 @@ export function MarketplaceBrowser({
                   <ShieldCheck size={15} aria-hidden="true" />
                   <span>
                     <strong>{dictionary.installLocked}</strong>
-                    {dictionary.installLockedBody}
+                    {installState.reason[locale]}
                   </span>
                 </div>
               )}
@@ -868,7 +873,7 @@ function verificationKey(
 ): "verified" | "review" | "restricted" {
   const normalized = skill.verification.en.toLowerCase();
 
-  if (normalized.includes("verified")) {
+  if (isVerifiedSkillStatus(normalized)) {
     return "verified";
   }
 

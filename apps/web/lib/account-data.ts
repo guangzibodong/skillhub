@@ -99,7 +99,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
 const fallbackProviders: AuthProviderStatus[] = [
   {
-    description: "Username/email password access is live; email-code access remains available as a verification fallback.",
+    description: "Username/email password access is live; email-code access remains an API fallback when email delivery is configured.",
     label: "Email / password",
     provider: "email",
     startUrl: "/v1/auth/email/request-code",

@@ -964,24 +964,12 @@ curl -X POST "https://api.useskillhub.com/v1/projects/research-agent/runtime/tes
 
 The test endpoint requires an organization-scoped developer/owner/admin token and the target project must belong to that organization. It reuses the same install, version, verification, approval, policy, subscription, rate-limit, budget, invocation-log, and runtime execution path as `/v1/runtime/invoke`, but marks successful usage events as non-billable so console tests do not create payable ledger activity. The project command center at `/dashboard/projects/[slug]` exposes this as a runtime test panel beside installed-skill policy controls and recent invocation logs.
 
-SDK:
-
-```ts
-import { SkillHubClient } from "@useskillhub/sdk";
-
-const skillhub = new SkillHubClient({
-  apiKey: process.env.SKILLHUB_PROJECT_API_KEY,
-});
-const result = await skillhub.run("browser-research", {
-  query: "MCP server registry trends",
-});
-```
-
-CLI:
+CLI and SDK packages are present in the monorepo as preview packages, but they are not documented as public copy-and-run installs until a public release and install method are published. Public no-login discovery should use REST inspect commands such as:
 
 ```bash
-SKILLHUB_API_KEY="$SKILLHUB_PROJECT_API_KEY" \
-  skillhub run browser-research '{"query":"MCP server registry trends"}'
+curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+curl "https://api.useskillhub.com/v1/skills/browser-research"
+curl "https://api.useskillhub.com/mcp"
 ```
 
 ## Publisher Skill Operations

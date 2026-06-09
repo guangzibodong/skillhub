@@ -180,7 +180,7 @@ const copy: Record<Locale, DocsCopy> = {
       items: [
         "Run launch readiness before customer demos and public launch.",
         "Keep production demo fallback disabled unless a controlled demo explicitly enables it.",
-        "Use email-code access first; Google and GitHub become live only after OAuth credentials and callback URLs are configured.",
+        "Use username/email password access first; Google and GitHub become live only after OAuth credentials and callback URLs are configured.",
         "Resolve active notification-template, migration, runtime-key-salt, commission, and payout-state blockers before paid launch.",
         "Never expose OAuth secrets, email provider keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords."
       ],
@@ -342,7 +342,7 @@ const copy: Record<Locale, DocsCopy> = {
       items: [
         "客户演示和公开上线前必须运行 launch readiness。",
         "生产环境默认关闭 demo fallback，除非明确启用受控演示。",
-        "优先使用邮箱验证码入口；Google 和 GitHub 在 OAuth 凭据与回调 URL 配好后再变成真实登录。",
+        "优先使用用户名/邮箱密码入口；Google 和 GitHub 在 OAuth 凭据与回调 URL 配好后再变成真实登录。",
         "付费上线前先解决通知模板、迁移、runtime key salt、佣金规则和提现状态阻断。",
         "永远不要暴露 OAuth secret、邮件 provider key、service token、API salt、webhook secret、验证码、用户 token 或密码。"
       ],
@@ -449,6 +449,52 @@ const runtimeSnippet = `curl -X POST "$SKILLHUB_API_URL/v1/runtime/invoke" \\
     "input": { "ticket": "Customer cannot connect OAuth" }
   }'`;
 
+const quickstartCopy = {
+  en: {
+    apiBadge: "Live public API",
+    body:
+      "Discovery and inspection work without login. Runtime invocation requires a signed-in project key and policy checks.",
+    cliBadge: "CLI / SDK preview",
+    cliBody:
+      "CLI and SDK packages are present in the monorepo but are not presented as public copy-and-run installs yet.",
+    mcpBadge: "MCP over POST",
+    mcpBody:
+      "Use POST /mcp for MCP clients. Browser GET /mcp returns a public service description.",
+    steps: [
+      "Search public skills",
+      "Inspect one public manifest",
+      "Confirm whether install/runtime is unlocked",
+    ],
+    title: "5-minute developer quickstart",
+  },
+  zh: {
+    apiBadge: "公开 API 已可用",
+    body:
+      "发现和查看不需要登录。运行调用需要已登录项目 Key，并通过策略检查。",
+    cliBadge: "CLI / SDK 预览",
+    cliBody:
+      "CLI 和 SDK 包已在 monorepo 中，但目前不作为公开的一键运行安装命令展示。",
+    mcpBadge: "MCP 使用 POST",
+    mcpBody:
+      "MCP 客户端使用 POST /mcp。浏览器访问 GET /mcp 会返回公开服务说明。",
+    steps: [
+      "搜索公开技能",
+      "查看一个公开 manifest",
+      "确认安装/运行是否已解锁",
+    ],
+    title: "5 分钟开发者快速开始",
+  },
+} as const;
+
+const quickstartSnippet = `# 1. Search public skills
+curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+
+# 2. Inspect a public manifest
+curl "https://api.useskillhub.com/v1/skills/browser-research"
+
+# 3. Read MCP service metadata
+curl "https://api.useskillhub.com/mcp"`;
+
 const journeyIcons = [Code2, PackageCheck, ShieldCheck] as const;
 const referenceIcons = [SearchCode, Route, ClipboardCheck, WalletCards, BellRing, Gauge] as const;
 const stateIcons = [GitBranch, CheckCircle2, WalletCards, BellRing] as const;
@@ -459,6 +505,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = copy[locale];
+  const quickstart = quickstartCopy[locale];
 
   return (
     <main className="product-shell docs-shell">
@@ -486,6 +533,46 @@ export default async function DocsPage({ searchParams }: PageProps) {
             <Gauge size={18} aria-hidden="true" />
             <span>{labels.hero.tertiary}</span>
           </a>
+        </div>
+      </section>
+
+      <section className="docs-quickstart-section" id="mcp" aria-labelledby="docs-quickstart-heading">
+        <div className="docs-section-head">
+          <div>
+            <div className="card-kicker">
+              <Terminal size={16} aria-hidden="true" />
+              <span>{quickstart.apiBadge}</span>
+            </div>
+            <h2 id="docs-quickstart-heading">{quickstart.title}</h2>
+          </div>
+          <p>{quickstart.body}</p>
+        </div>
+        <div className="docs-quickstart-grid">
+          <div className="code-panel">
+            <div className="code-panel__bar">
+              <span>quickstart.sh</span>
+              <span>no login inspect</span>
+            </div>
+            <pre>
+              <code>{quickstartSnippet}</code>
+            </pre>
+          </div>
+          <div className="docs-quickstart-status">
+            {quickstart.steps.map((step, index) => (
+              <div className="docs-runtime-step" key={step}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{step}</strong>
+              </div>
+            ))}
+            <div className="docs-quickstart-note">
+              <strong>{quickstart.mcpBadge}</strong>
+              <span>{quickstart.mcpBody}</span>
+            </div>
+            <div className="docs-quickstart-note">
+              <strong>{quickstart.cliBadge}</strong>
+              <span>{quickstart.cliBody}</span>
+            </div>
+          </div>
         </div>
       </section>
 

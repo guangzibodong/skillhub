@@ -82,7 +82,7 @@ const copy: Record<
         body:
           "A developer should see how discovery turns into project policy, project keys, governed invocation, cost, updates, and runtime evidence.",
         eyebrow: "Developer evidence chain",
-        title: "A copied install command becomes controlled project state."
+        title: "Public inspection leads into controlled project install state."
       },
       marketplace: {
         body:
@@ -173,7 +173,7 @@ const copy: Record<
       developer: {
         body: "开发者需要看到，市场发现如何变成项目策略、项目 Key、受治理调用、成本、更新和运行证据。",
         eyebrow: "开发者证据链",
-        title: "复制安装命令之后，会进入受控项目状态。"
+        title: "公开查看之后，项目安装会进入受控项目状态。"
       },
       marketplace: {
         body: "市场可信不只靠列表，而是公开技能能连接发布者信任、安装准备、运行治理和账本运营。",

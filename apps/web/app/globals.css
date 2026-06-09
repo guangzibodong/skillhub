@@ -108,6 +108,38 @@ a {
   grid-template-columns: minmax(190px, 1fr) minmax(190px, auto);
 }
 
+.product-stage-banner {
+  position: sticky;
+  top: 76px;
+  z-index: 19;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-bottom: 1px solid rgba(215, 168, 76, 0.22);
+  background: rgba(31, 26, 15, 0.94);
+  color: #e7dcc7;
+  padding: 8px 24px;
+  text-align: center;
+  backdrop-filter: blur(16px);
+}
+
+.product-stage-banner strong {
+  color: var(--amber);
+  font-size: 12px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.product-stage-banner span {
+  max-width: 980px;
+  color: #d5cab7;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -2510,6 +2542,7 @@ a {
 }
 
 .docs-journey-board,
+.docs-quickstart-section,
 .docs-reference-section,
 .docs-api-section,
 .docs-state-section,
@@ -2550,6 +2583,7 @@ a {
 }
 
 .docs-journey-grid,
+.docs-quickstart-grid,
 .docs-reference-grid,
 .docs-api-grid,
 .docs-state-grid {
@@ -2560,6 +2594,38 @@ a {
 
 .docs-journey-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.docs-quickstart-grid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.8fr);
+}
+
+.docs-quickstart-status {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.docs-quickstart-note {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.docs-quickstart-note strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.docs-quickstart-note span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .docs-reference-grid {
@@ -11399,6 +11465,15 @@ a {
   color: #ffc3b8;
 }
 
+.install-command-status--info {
+  grid-column: 3;
+  justify-self: end;
+  margin: 0;
+  border-color: rgba(124, 199, 216, 0.22);
+  background: rgba(124, 199, 216, 0.075);
+  color: #c6e7ee;
+}
+
 .install-command-row--locked {
   grid-template-columns: 70px minmax(0, 1fr);
   border: 1px solid rgba(245, 188, 91, 0.2);
@@ -17627,6 +17702,7 @@ a {
   .console-access-panel,
   .workspace-access-panel,
   .docs-section-head,
+  .docs-quickstart-grid,
   .docs-operator-panel,
   .schema-grid,
   .security-grid,

@@ -203,8 +203,8 @@ function getPublishAccessNotice({
       actionLabel: locale === "zh" ? "先登录" : "Sign in",
       body:
         locale === "zh"
-          ? "请先通过邮箱验证码、已配置的 OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
-          : "Enter through email code, configured OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
+          ? "请先通过用户名/邮箱密码、已配置的 Google/GitHub OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
+          : "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
       canSubmit: false,
       title: locale === "zh" ? "需要先登录" : "Sign-in required",
     };

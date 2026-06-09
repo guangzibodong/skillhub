@@ -21,7 +21,7 @@ const copy = {
     missingRole: "Role required",
     noSession: "Sign-in required",
     noSessionBody:
-      "Enter through email code, configured OAuth, or an invite/recovery token before operating this workspace.",
+      "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token before operating this workspace.",
     org: "Organization",
     requiredRoles: "Required roles",
     signInAction: "Sign in",
@@ -56,7 +56,7 @@ const copy = {
     missingRole: "\u9700\u8981\u5bf9\u5e94\u89d2\u8272",
     noSession: "\u9700\u8981\u5148\u767b\u5f55",
     noSessionBody:
-      "\u8bf7\u5148\u901a\u8fc7\u90ae\u7bb1\u9a8c\u8bc1\u7801\u3001\u5df2\u914d\u7f6e\u7684 OAuth\uff0c\u6216\u9080\u8bf7/\u6062\u590d token \u8fdb\u5165\u5de5\u4f5c\u533a\u3002",
+      "\u8bf7\u5148\u901a\u8fc7\u7528\u6237\u540d/\u90ae\u7bb1\u5bc6\u7801\u3001\u5df2\u914d\u7f6e\u7684 Google/GitHub OAuth\uff0c\u6216\u9080\u8bf7/\u6062\u590d token \u8fdb\u5165\u5de5\u4f5c\u533a\u3002",
     org: "\u7ec4\u7ec7",
     requiredRoles: "\u6240\u9700\u89d2\u8272",
     signInAction: "\u53bb\u767b\u5f55",

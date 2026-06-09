@@ -80,7 +80,7 @@ const copy = {
       "Verified skills carry more ranking weight.",
       "Payout readiness matters for paid listings.",
       "Runtime evidence shows real adoption.",
-      "Skill-level pages still expose install commands and permissions.",
+      "Skill-level pages expose API inspect commands, install eligibility, and permissions.",
     ],
   },
   zh: {
@@ -133,7 +133,7 @@ const copy = {
       "已验证技能会获得更高排序权重。",
       "提现准备决定付费技能能否顺畅运营。",
       "运行证据体现真实采用情况。",
-      "技能详情页仍然展示安装命令和权限。",
+      "技能详情页展示 API 查看命令、安装资格和权限。",
     ],
   },
 } as const;

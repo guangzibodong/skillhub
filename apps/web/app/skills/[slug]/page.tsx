@@ -31,6 +31,7 @@ import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
+import { getSkillInstallState } from "@/lib/skill-install-state";
 import { getSkillFeedback } from "@/lib/skill-feedback";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +51,8 @@ const copy = {
     back: "Back to marketplace",
     changelog: "Changelog",
     cli: "CLI",
+    cliPreview: "CLI / SDK preview",
+    cliPreviewStatus: "Not published as a public copy-and-run install yet.",
     contract: "Runtime contract",
     feedback: "User feedback",
     feedbackBody: "Published feedback from teams that installed or evaluated this skill.",
@@ -90,6 +93,7 @@ const copy = {
     lastReviewed: "Last reviewed",
     latency: "Median latency",
     mcp: "MCP",
+    mcpEndpoint: "MCP endpoint",
     output: "Output example",
     overview: "Overview",
     payout: "Publisher payout",
@@ -107,6 +111,7 @@ const copy = {
     reviews: "Operator notes",
     runtime: "Runtime",
     sdk: "SDK",
+    apiInspect: "API inspect",
     security: "Security review",
     success: "Success rate",
     support: "Support and operations",
@@ -128,6 +133,8 @@ const copy = {
     back: "返回市场",
     changelog: "更新记录",
     cli: "CLI",
+    cliPreview: "CLI / SDK 预览",
+    cliPreviewStatus: "暂未作为公开的一键运行安装命令发布。",
     contract: "运行协议",
     feedback: "用户反馈",
     feedbackBody: "来自已安装或评估该技能团队的公开反馈。",
@@ -168,6 +175,7 @@ const copy = {
     lastReviewed: "最近审核",
     latency: "中位延迟",
     mcp: "MCP",
+    mcpEndpoint: "MCP 端点",
     output: "输出示例",
     overview: "概览",
     payout: "发布者提现",
@@ -185,6 +193,7 @@ const copy = {
     reviews: "运营备注",
     runtime: "运行时",
     sdk: "SDK",
+    apiInspect: "API 查看",
     security: "安全审核",
     success: "成功率",
     support: "支持和运营",
@@ -232,8 +241,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         ? "检查账号角色"
         : "Check account roles"
       : locale === "zh"
-        ? "登录后安装"
-        : "Sign in to install";
+        ? "登录后查看"
+        : "Sign in to inspect";
   const DeveloperAccessIcon = hasDeveloperAccess ? WalletCards : KeyRound;
 
   if (!skill) {
@@ -242,12 +251,24 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
   const publisherProfile = await getPublicPublisherProfile(publisherSlugFromName(skill.author));
   const latestVersion = skill.changelog[0]?.version;
-  const isSkillInstallable = skill.verification.en.toLowerCase() === "verified";
+  const installState = getSkillInstallState(skill.verification.en);
+  const isSkillInstallable = installState.installable;
 
   const installRows = [
-    [labels.cli, skill.installsCommand.cli],
-    [labels.mcp, skill.installsCommand.mcp],
-    [labels.sdk, skill.installsCommand.sdk]
+    {
+      label: labels.apiInspect,
+      value: skill.installsCommand.cli
+    },
+    {
+      label: labels.mcpEndpoint,
+      value: skill.installsCommand.mcp
+    },
+    {
+      copyable: false,
+      label: labels.cliPreview,
+      status: labels.cliPreviewStatus,
+      value: skill.installsCommand.sdk
+    }
   ];
 
   return (
@@ -268,7 +289,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <div className="hero-actions">
             <a className="primary-button primary-button--large" href="#install">
               <Terminal size={18} aria-hidden="true" />
-              <span>{labels.install}</span>
+              <span>{isSkillInstallable ? labels.install : installState.label[locale]}</span>
             </a>
             <a className="secondary-button secondary-button--large" href={localizedHref(developerAccessHref, locale)}>
               <DeveloperAccessIcon size={18} aria-hidden="true" />
@@ -323,7 +344,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
             <SkillInstallCommandPanel
               billingModel={skill.billing}
-              commands={installRows.map(([label, value]) => ({ label, value }))}
+              commands={installRows}
               installable={isSkillInstallable}
               lastReviewed={skill.lastReviewed}
               latestVersion={latestVersion}
@@ -355,8 +376,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                     ? "该技能尚未完成 verified 审核，暂时只能查看和评估。安装、订阅和测试会写入项目状态，必须等审核通过后开放。"
                     : "This skill has not completed verified review yet, so it is available for inspection only. Install, subscription, and test actions unlock after review approval."
                   : locale === "zh"
-                    ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制安装命令并检查权限、运行时、价格和审核信号。"
-                    : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy commands and inspect permissions, runtime, pricing, and review signals."
+                    ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
+                    : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
               }
               lockedCtaHref={localizedHref(!isSkillInstallable ? "/marketplace" : hasWorkspaceSession ? "/account" : "/login", locale)}
               lockedCtaLabel={
@@ -529,41 +550,45 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               </div>
               <p className="related-skill-intro">{labels.relatedBody}</p>
               <div className="related-skill-list">
-                {relatedSkills.map((suggestion) => (
-                  <section className="related-skill-row" key={suggestion.skill.slug}>
-                    <header className="related-skill-row__head">
-                      <div>
-                        <strong>{localizeText(suggestion.skill.name, locale)}</strong>
-                        <span>{localizeText(suggestion.skill.summary, locale)}</span>
+                {relatedSkills.map((suggestion) => {
+                  const relatedInstallState = getSkillInstallState(suggestion.skill.verification.en);
+
+                  return (
+                    <section className="related-skill-row" key={suggestion.skill.slug}>
+                      <header className="related-skill-row__head">
+                        <div>
+                          <strong>{localizeText(suggestion.skill.name, locale)}</strong>
+                          <span>{localizeText(suggestion.skill.summary, locale)}</span>
+                        </div>
+                        <span className={`risk-badge risk-badge--${suggestion.skill.risk}`}>{suggestion.skill.risk}</span>
+                      </header>
+
+                      <div className="related-skill-meta">
+                        <span>{localizeText(suggestion.skill.category, locale)}</span>
+                        <span>{suggestion.skill.runtime}</span>
+                        <span>{suggestion.skill.price[locale]}</span>
+                        <span>{localizeText(suggestion.skill.verification, locale)}</span>
                       </div>
-                      <span className={`risk-badge risk-badge--${suggestion.skill.risk}`}>{suggestion.skill.risk}</span>
-                    </header>
 
-                    <div className="related-skill-meta">
-                      <span>{localizeText(suggestion.skill.category, locale)}</span>
-                      <span>{suggestion.skill.runtime}</span>
-                      <span>{suggestion.skill.price[locale]}</span>
-                      <span>{localizeText(suggestion.skill.verification, locale)}</span>
-                    </div>
+                      <div className="related-skill-reasons" aria-label={labels.relatedReasons}>
+                        {suggestion.reasons[locale].map((reason) => (
+                          <span key={reason}>
+                            <BadgeCheck size={13} aria-hidden="true" />
+                            {reason}
+                          </span>
+                        ))}
+                      </div>
 
-                    <div className="related-skill-reasons" aria-label={labels.relatedReasons}>
-                      {suggestion.reasons[locale].map((reason) => (
-                        <span key={reason}>
-                          <BadgeCheck size={13} aria-hidden="true" />
-                          {reason}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="related-skill-command">
-                      <code>{suggestion.skill.installsCommand.cli}</code>
-                      <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${suggestion.skill.slug}`, locale)}>
-                        <ShieldCheck size={15} aria-hidden="true" />
-                        <span>{labels.relatedDetails}</span>
-                      </a>
-                    </div>
-                  </section>
-                ))}
+                      <div className="related-skill-command">
+                        <code>{relatedInstallState.installable ? suggestion.skill.installsCommand.cli : relatedInstallState.reason[locale]}</code>
+                        <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${suggestion.skill.slug}`, locale)}>
+                          <ShieldCheck size={15} aria-hidden="true" />
+                          <span>{labels.relatedDetails}</span>
+                        </a>
+                      </div>
+                    </section>
+                  );
+                })}
               </div>
             </article>
           ) : null}

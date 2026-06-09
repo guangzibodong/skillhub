@@ -44,7 +44,7 @@ const copy = {
     forbidden: "Role required",
     noSharedPassword: "No shared password",
     noSharedPasswordBody:
-      "Production access uses email code, configured Google/GitHub OAuth, or a reveal-once team token. Raw tokens and passwords are never published as page copy.",
+      "Production access uses username/email password, configured Google/GitHub OAuth, or invite/recovery tokens. Raw tokens and passwords are never published as page copy.",
     oauthRule: "OAuth readiness is visible",
     oauthRuleBody:
       "If Google or GitHub is not configured, the login page shows callback URLs and missing environment names instead of fake buttons.",
@@ -96,7 +96,7 @@ const copy = {
     forbidden: "\u9700\u8981\u5bf9\u5e94\u89d2\u8272",
     noSharedPassword: "\u6ca1\u6709\u516c\u5171\u5bc6\u7801",
     noSharedPasswordBody:
-      "\u6b63\u5f0f\u8bbf\u95ee\u4f7f\u7528\u90ae\u7bb1\u9a8c\u8bc1\u7801\u3001\u5df2\u914d\u7f6e\u7684 Google/GitHub OAuth\uff0c\u6216\u4e00\u6b21\u6027\u56e2\u961f token\u3002\u539f\u59cb token \u548c\u5bc6\u7801\u4e0d\u4f1a\u5199\u5728\u9875\u9762\u91cc\u3002",
+      "\u6b63\u5f0f\u8bbf\u95ee\u4f7f\u7528\u7528\u6237\u540d/\u90ae\u7bb1\u5bc6\u7801\u3001\u5df2\u914d\u7f6e\u7684 Google/GitHub OAuth\uff0c\u6216\u9080\u8bf7/\u6062\u590d token\u3002\u539f\u59cb token \u548c\u5bc6\u7801\u4e0d\u4f1a\u5199\u5728\u9875\u9762\u91cc\u3002",
     oauthRule: "OAuth \u72b6\u6001\u53ef\u89c1",
     oauthRuleBody:
       "Google \u6216 GitHub \u672a\u914d\u7f6e\u65f6\uff0c\u767b\u5f55\u9875\u4f1a\u663e\u793a\u56de\u8c03\u5730\u5740\u548c\u7f3a\u5931\u73af\u5883\u53d8\u91cf\uff0c\u4e0d\u4f1a\u505a\u6210\u5047\u6309\u94ae\u3002",

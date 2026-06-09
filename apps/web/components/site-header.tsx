@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Gauge, LogIn, Menu, UploadCloud, UserCircle, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { localizedHref } from "@/lib/i18n";
+import { getProductStageCopy } from "@/lib/product-stage";
 import { LanguageSwitcher } from "./language-switcher";
 
 type SiteHeaderProps = {
@@ -39,6 +40,7 @@ export function SiteHeader({
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const labels = headerLabels(dictionary, locale);
+  const productStage = getProductStageCopy(locale);
   const navItems = [
     { id: "home", label: labels.nav.home, href: "/" },
     { id: "marketplace", label: labels.nav.marketplace, href: "/marketplace" },
@@ -79,7 +81,8 @@ export function SiteHeader({
   }, [isMenuOpen]);
 
   return (
-    <header className="site-header" ref={headerRef}>
+    <>
+      <header className="site-header" ref={headerRef}>
       <a
         className="brand brand--link"
         href={localizedHref("/", locale)}
@@ -196,7 +199,12 @@ export function SiteHeader({
           </a>
         </div>
       </div>
-    </header>
+      </header>
+      <div className="product-stage-banner" role="status">
+        <strong>{productStage.label}</strong>
+        <span>{productStage.body}</span>
+      </div>
+    </>
   );
 }
 

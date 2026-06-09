@@ -16,7 +16,9 @@ import {
 import type { Locale } from "@/lib/i18n";
 
 type InstallCommand = {
+  copyable?: boolean;
   label: string;
+  status?: string;
   value: string;
 };
 
@@ -42,10 +44,10 @@ const copy = {
     copied: "Copied",
     copy: "Copy",
     copyFailed: "Copy failed",
-    copyFailure: "Install command could not be copied.",
-    copySuccess: "Install command copied.",
+    copyFailure: "Command could not be copied.",
+    copySuccess: "Command copied.",
     installReadiness: "Install readiness",
-    installLocked: "Verified review required before install commands unlock.",
+    installLocked: "Inspection only. Verified review is required before install and runtime actions unlock.",
     lastReviewed: "Last reviewed",
     localRuntime: "Local runtime requires stronger project approval.",
     project: "Project state",
@@ -58,7 +60,7 @@ const copy = {
     runtimeReady: "Runtime can be tested through SkillHub gateway.",
     trust: "Review trust",
     trustReady: "Verified review is available for this listing.",
-    trustWarning: "Review is not verified; install with extra caution.",
+    trustWarning: "Inspection only. This listing is not verified yet.",
     version: "Version pin"
   },
   zh: {
@@ -68,10 +70,10 @@ const copy = {
     copied: "\u5df2\u590d\u5236",
     copy: "\u590d\u5236",
     copyFailed: "\u590d\u5236\u5931\u8d25",
-    copyFailure: "\u5b89\u88c5\u547d\u4ee4\u590d\u5236\u5931\u8d25\u3002",
-    copySuccess: "\u5b89\u88c5\u547d\u4ee4\u5df2\u590d\u5236\u3002",
+    copyFailure: "\u547d\u4ee4\u590d\u5236\u5931\u8d25\u3002",
+    copySuccess: "\u547d\u4ee4\u5df2\u590d\u5236\u3002",
     installReadiness: "\u5b89\u88c5\u51c6\u5907",
-    installLocked: "\u9700\u8981\u5b8c\u6210 verified \u5ba1\u6838\u540e\u624d\u4f1a\u5f00\u653e\u5b89\u88c5\u547d\u4ee4\u3002",
+    installLocked: "\u4ec5\u53ef\u67e5\u770b\u3002\u9700\u8981\u5b8c\u6210 verified \u5ba1\u6838\u540e\u624d\u4f1a\u5f00\u653e\u5b89\u88c5\u548c\u8fd0\u884c\u64cd\u4f5c\u3002",
     lastReviewed: "\u6700\u8fd1\u5ba1\u6838",
     localRuntime: "\u672c\u5730\u8fd0\u884c\u65f6\u9700\u8981\u66f4\u5f3a\u7684\u9879\u76ee\u5ba1\u6279\u3002",
     project: "\u9879\u76ee\u72b6\u6001",
@@ -84,7 +86,7 @@ const copy = {
     runtimeReady: "\u53ef\u901a\u8fc7 SkillHub \u7f51\u5173\u6d4b\u8bd5\u8fd0\u884c\u3002",
     trust: "\u5ba1\u6838\u4fe1\u4efb",
     trustReady: "\u8be5\u5217\u8868\u5df2\u6709 verified \u5ba1\u6838\u3002",
-    trustWarning: "\u8be5\u5217\u8868\u5c1a\u672a verified\uff0c\u5b89\u88c5\u524d\u9700\u66f4\u8c28\u614e\u3002",
+    trustWarning: "\u4ec5\u53ef\u67e5\u770b\u3002\u8be5\u5217\u8868\u5c1a\u672a verified\u3002",
     version: "\u7248\u672c\u56fa\u5b9a"
   }
 } as const;
@@ -148,24 +150,31 @@ export function SkillInstallCommandPanel({
             <div className="install-command-row" key={command.label}>
               <span>{command.label}</span>
               <code>{command.value}</code>
-              <button
-                aria-label={`${getCommandButtonLabel({ commandLabel: command.label, copiedKey, copyStatus, labels })}: ${command.label}`}
-                className="icon-button"
-                onClick={() => {
-                  void copyCommand(command.label, command.value);
-                }}
-                title={labels.copy}
-                type="button"
-              >
-                {copyStatus?.label === command.label && copyStatus.kind === "error" ? (
-                  <AlertCircle size={15} aria-hidden="true" />
-                ) : copiedKey === command.label ? (
-                  <Check size={15} aria-hidden="true" />
-                ) : (
-                  <Copy size={15} aria-hidden="true" />
-                )}
-              </button>
-              {copyStatus?.label === command.label ? (
+              {command.copyable === false ? (
+                <div className="install-command-status install-command-status--info">
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  <span>{command.status}</span>
+                </div>
+              ) : (
+                <button
+                  aria-label={`${getCommandButtonLabel({ commandLabel: command.label, copiedKey, copyStatus, labels })}: ${command.label}`}
+                  className="icon-button"
+                  onClick={() => {
+                    void copyCommand(command.label, command.value);
+                  }}
+                  title={labels.copy}
+                  type="button"
+                >
+                  {copyStatus?.label === command.label && copyStatus.kind === "error" ? (
+                    <AlertCircle size={15} aria-hidden="true" />
+                  ) : copiedKey === command.label ? (
+                    <Check size={15} aria-hidden="true" />
+                  ) : (
+                    <Copy size={15} aria-hidden="true" />
+                  )}
+                </button>
+              )}
+              {command.copyable === false ? null : copyStatus?.label === command.label ? (
                 <div
                   aria-live={copyStatus.kind === "error" ? "assertive" : "polite"}
                   className={`install-command-status install-command-status--${copyStatus.kind}`}
