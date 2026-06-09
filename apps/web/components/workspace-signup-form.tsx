@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, CheckCircle2, KeyRound, MailCheck, Send, UserPlus, XCircle } from "lucide-react";
+import { Building2, CheckCircle2, Eye, EyeOff, KeyRound, MailCheck, Send, UserPlus, XCircle } from "lucide-react";
 import { signUpAction, type SignupActionState } from "@/lib/auth-actions";
 import { localizedHref, type Locale } from "@/lib/i18n";
 
@@ -24,6 +24,7 @@ const copy = {
     email: "Work email",
     emailLoginMode: "Sign in",
     emailPlaceholder: "you@company.com",
+    hidePassword: "Hide password",
     helper: "Use your email or username with a password. New teams can create a workspace in the register tab.",
     identifier: "Email or username",
     identifierPlaceholder: "you@company.com or asha",
@@ -43,6 +44,7 @@ const copy = {
     requestingCode: "Sending",
     role: "Primary workspace path",
     signIn: "Sign in",
+    showPassword: "Show password",
     submitting: "Please wait",
     title: "Sign in or register",
     username: "Username",
@@ -64,6 +66,7 @@ const copy = {
     email: "工作邮箱",
     emailLoginMode: "登录",
     emailPlaceholder: "you@company.com",
+    hidePassword: "隐藏密码",
     helper: "使用邮箱或用户名加密码登录。新团队可切换到注册并创建工作区。",
     identifier: "邮箱或用户名",
     identifierPlaceholder: "you@company.com 或 asha",
@@ -83,6 +86,7 @@ const copy = {
     requestingCode: "发送中",
     role: "主要使用路径",
     signIn: "登录",
+    showPassword: "显示密码",
     submitting: "处理中",
     title: "登录或注册",
     username: "用户名",
@@ -101,7 +105,9 @@ const initialState: SignupActionState = {
 export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
   const labels = copy[locale];
   const router = useRouter();
+  const passwordId = useId();
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [showPassword, setShowPassword] = useState(false);
   const [state, action, isPending] = useActionState(signUpAction.bind(null, locale), initialState);
   const showChallenge = Boolean(state.challenge && !state.subject);
   const showPreviewCode = process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
@@ -162,10 +168,14 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
                   <span>{labels.email}</span>
                   <input autoComplete="email" name="email" placeholder={labels.emailPlaceholder} required type="email" />
                 </label>
-                <label className="auth-form-grid__wide">
-                  <span>{labels.password}</span>
-                  <input autoComplete="new-password" name="password" placeholder={labels.passwordPlaceholder} required type="password" />
-                </label>
+                <PasswordField
+                  autoComplete="new-password"
+                  className="auth-form-grid__wide"
+                  id={`${passwordId}-signup`}
+                  labels={labels}
+                  showPassword={showPassword}
+                  togglePassword={() => setShowPassword((current) => !current)}
+                />
                 <label>
                   <span>{labels.displayName}</span>
                   <input autoComplete="name" name="displayName" placeholder={labels.displayNamePlaceholder} />
@@ -193,10 +203,13 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
                   <span>{labels.identifier}</span>
                   <input autoComplete="username" name="identifier" placeholder={labels.identifierPlaceholder} required />
                 </label>
-                <label>
-                  <span>{labels.password}</span>
-                  <input autoComplete="current-password" name="password" placeholder={labels.passwordPlaceholder} required type="password" />
-                </label>
+                <PasswordField
+                  autoComplete="current-password"
+                  id={`${passwordId}-login`}
+                  labels={labels}
+                  showPassword={showPassword}
+                  togglePassword={() => setShowPassword((current) => !current)}
+                />
               </>
             )}
           </div>
@@ -270,6 +283,51 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
         </div>
       ) : null}
     </article>
+  );
+}
+
+function PasswordField({
+  autoComplete,
+  className,
+  id,
+  labels,
+  showPassword,
+  togglePassword
+}: {
+  autoComplete: "current-password" | "new-password";
+  className?: string;
+  id: string;
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  showPassword: boolean;
+  togglePassword: () => void;
+}) {
+  const actionLabel = showPassword ? labels.hidePassword : labels.showPassword;
+
+  return (
+    <div className={className ? `auth-password-field ${className}` : "auth-password-field"}>
+      <label htmlFor={id}>
+        <span>{labels.password}</span>
+      </label>
+      <div className="auth-password-control">
+        <input
+          autoComplete={autoComplete}
+          id={id}
+          name="password"
+          placeholder={labels.passwordPlaceholder}
+          required
+          type={showPassword ? "text" : "password"}
+        />
+        <button
+          aria-label={actionLabel}
+          className="auth-password-toggle"
+          onClick={togglePassword}
+          title={actionLabel}
+          type="button"
+        >
+          {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+        </button>
+      </div>
+    </div>
   );
 }
 

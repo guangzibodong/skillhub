@@ -42,6 +42,8 @@ The latest marketplace copy-feedback polish makes discovery cards behave more li
 
 ## Latest Implementation Review
 
+The latest login-password polish makes `/login` feel closer to a normal customer account entry on mobile. Username/email password sign-in and registration now include a localized show/hide password icon control with a stable touch target, so new users can verify what they typed without leaving the primary Google/GitHub and password-first access path. Token fallback remains visually secondary and unchanged.
+
 The latest skill-detail command-feedback polish brings `/skills/[slug]` in line with the marketplace card interaction standard. CLI, MCP, and SDK install command rows now catch clipboard failures, switch the icon state, and show localized success or failure feedback in a live region directly under the copied command. This keeps the developer install contract feeling like a reliable tooling surface on desktop and mobile instead of a silent icon-only action.
 
 The latest marketplace filter polish makes shared discovery links easier to understand. `/marketplace` now renders an active-filter summary between search and the full filter panel whenever a query, category, price, risk, runtime, verification, or sort parameter is applied. The summary uses compact chips plus a nearby reset action, so mobile users arriving from homepage search or a copied URL can immediately see why a catalog result set is narrow without scrolling through every filter group.

@@ -4249,13 +4249,15 @@ a {
   color: var(--ink);
 }
 
-.auth-form label {
+.auth-form label,
+.auth-password-field {
   display: grid;
   gap: 7px;
   min-width: 0;
 }
 
 .auth-form label span,
+.auth-password-field label span,
 .auth-subject span,
 .auth-status-grid span,
 .auth-empty-state span {
@@ -4275,6 +4277,39 @@ a {
   color: var(--ink);
   outline: 0;
   padding: 0 12px;
+}
+
+.auth-password-control {
+  position: relative;
+  min-width: 0;
+}
+
+.auth-password-control input {
+  padding-right: 46px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.auth-password-toggle:hover,
+.auth-password-toggle:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  outline: 0;
 }
 
 .auth-form select {
