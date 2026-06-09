@@ -221,7 +221,7 @@ const developerCommandCopy = {
 const copy = {
   en: {
     description:
-      "A focused workspace for teams that install and run skills inside agent projects: create projects, watch keys and budgets, open buyer requests, and keep billing ready.",
+      "A focused workspace for teams that adopt verified skills inside agent projects after sign-in: create projects, inspect keys and budgets, and prepare runtime policy checks.",
     emptyProjects: "No developer projects yet. Create a project to start installing and approving skills.",
     eyebrow: "Developer workspace",
     metrics: {
@@ -231,10 +231,10 @@ const copy = {
       projects: "Projects"
     },
     nextActions: {
-      billing: ["Review billing", "Keep invoice profile and payment method readiness clear before paid runtime grows."],
+      billing: ["Review billing preview", "Keep invoice profile readiness clear for future paid runtime growth."],
       createKey: ["Create runtime key", "No active project key exists yet. Create a reveal-once key before handing SkillHub to an agent."],
       createProject: ["Create first project", "Start with one agent project so marketplace decisions become project state."],
-      installSkill: ["Install first skill", "Browse the marketplace and install a verified skill before runtime testing."],
+      installSkill: ["Adopt first verified skill", "After sign-in, browse the marketplace and add a verified skill before login-gated runtime testing."],
       monitor: ["Monitor operations", "Runtime, updates, costs, keys, and notifications are ready for weekly review."],
       ownerReview: ["Approve high-risk policy", "A skill needs owner approval before agents can invoke it under project policy."],
       runtime: ["Inspect runtime quality", "Errors, blocked calls, or low success rate need review before scaling agent traffic."],
@@ -717,7 +717,7 @@ function getDeveloperLockedGuide(locale: DeveloperLocale) {
   return {
     ariaLabel: "Developer access steps",
     eyebrow: "Developer access",
-    marker: "developer operations queue / project setup / skill install / runtime test",
+    marker: "developer operations queue / project setup / verified skill adoption / login-gated runtime test",
     actions: [
       {
         body: "Use Google, GitHub, or email/password to create the current organization session.",
@@ -735,7 +735,7 @@ function getDeveloperLockedGuide(locale: DeveloperLocale) {
         body: "Pick a trusted marketplace skill, install it to a project, then run the governed test path.",
         href: "/marketplace",
         label: "03",
-        title: "Install and test a skill"
+        title: "After sign-in, add and test a verified skill"
       }
     ]
   };

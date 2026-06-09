@@ -40,7 +40,7 @@ const copy = {
       },
       publisher: {
         body:
-          "Publisher operations cover manifest drafts, version review, repair loops, pricing blockers, buyer demand, feedback, revenue, payout readiness, and notifications.",
+          "Publisher operations cover manifest drafts, version review, repair loops, pricing intent, buyer demand, feedback, paid-readiness metadata, and notifications.",
         title: "Publisher workspace access"
       }
     }

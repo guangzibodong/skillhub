@@ -56,9 +56,9 @@ const copy = {
     switchAccountBody:
       "Open this only when you need to connect a different Google, GitHub, password, or recovery-token session.",
     title: "Sign in to SkillHub.",
-    tokenFallback: "Token fallback",
+    tokenFallback: "Invite or recovery token only",
     tokenFallbackBody:
-      "Reserved for bootstrap, invitations, and recovery. Normal users should use account password or configured OAuth.",
+      "Use this only when a SkillHub administrator or invite flow gave you a one-time token. Normal users should use Google, GitHub, or email/password.",
   },
   zh: {
     account: "个人中心",
@@ -85,9 +85,9 @@ const copy = {
     switchAccountBody:
       "只有需要换 Google、GitHub、账号密码或恢复 token 时才打开这里。",
     title: "登录 SkillHub。",
-    tokenFallback: "Token 兜底",
+    tokenFallback: "仅限邀请或恢复 Token",
     tokenFallbackBody:
-      "仅用于初始化、团队邀请和运营恢复。正常用户应使用账号密码或已配置的 OAuth。",
+      "仅当 SkillHub 管理员或邀请流程提供一次性 Token 时使用。正常用户应使用 Google、GitHub 或邮箱密码。",
   },
 } as const;
 

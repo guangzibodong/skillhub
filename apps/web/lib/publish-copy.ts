@@ -24,10 +24,10 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "publish console",
       description:
-        "Package a capability into a governed SkillHub contract. Save the draft first, then continue through version review, runtime evidence, pricing, and payout readiness.",
+        "Submit a skillhub.json contract, run preflight checks, and send an exact version into verified review. Paid marketplace fields are collected only as prelaunch readiness metadata.",
       eyebrow: "Publisher workflow",
       pipelineBody:
-        "A marketplace listing is only trusted after the contract becomes draft state, version state, review state, runtime-check state, and commercial-readiness state.",
+        "A marketplace listing is only trusted after the contract becomes draft state, exact-version review state, automated-check evidence, and public catalog readiness.",
       pipelineEyebrow: "Operating pipeline",
       pipelineTitle: "Upload is the first control point, not the finish line.",
       publisherWorkspace: "Publisher workspace",
@@ -36,9 +36,9 @@ const publishCopy = {
         ["Draft", "Org-scoped"],
         ["Review", "Automated gates"],
         ["Runtime", "Policy evidence"],
-        ["Paid", "Terms and payout"]
+        ["Paid", "Readiness metadata"]
       ],
-      title: "Register a skill package.",
+      title: "Register a skill package for review.",
       pipelineSteps: [
         {
           body: "Start from a skillhub.json contract with identity, runtime, permissions, schemas, examples, and support paths.",
@@ -65,8 +65,8 @@ const publishCopy = {
           title: "Reviewer decision"
         },
         {
-          body: "Paid activation waits for verified review, active terms, pricing, commission, and payout readiness.",
-          title: "Commercial readiness"
+          body: "Paid marketplace fields remain prelaunch metadata until review, terms, commission, and finance decisions are finalized.",
+          title: "Paid readiness metadata"
         }
       ]
     },
@@ -86,9 +86,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "Continue through terms, payout readiness, pricing, and commission gates after the draft is saved.",
-          detail: "Paid activation later requires verified review, accepted terms, active pricing, commission rule, and payout readiness.",
-          label: "Commercial readiness"
+          action: "Continue through terms, pricing intent, paid-readiness metadata, and commission gates after the draft is saved.",
+          detail: "Paid activation later requires verified review, accepted terms, active pricing, an active commission rule, and finance-approved paid-marketplace readiness.",
+          label: "Paid readiness metadata"
         },
         identity: {
           action: "Add every package identity field reviewers need before a version can be trusted.",
@@ -147,7 +147,7 @@ const publishCopy = {
         ["Draft", "Save the contract as organization-owned registry state."],
         ["Version", "Create or submit an exact semantic version from /publisher."],
         ["Review", "Resolve automated check warnings before approval."],
-        ["Pricing", "Activate paid pricing only after review, terms, and payout readiness."]
+        ["Pricing", "Record pricing intent; paid activation waits for review, terms, and prelaunch paid-readiness approval."]
       ],
       readiness: {
         blocked: "Blocked",
@@ -162,7 +162,7 @@ const publishCopy = {
       repairQueue: {
         blocker: "Blocker",
         body: "Resolve blockers before saving. Warnings can be saved as draft, but they become reviewer evidence and may require notes.",
-        emptyBody: "Only commercial readiness remains after draft save; continue in the publisher workspace for terms, pricing, payout, and review.",
+        emptyBody: "Only paid-readiness metadata remains after draft save; continue in the publisher workspace for terms, pricing intent, payout-readiness review, and version review.",
         emptyTitle: "No manifest blockers",
         target: "Target",
         title: "Preflight repair queue",
@@ -173,7 +173,7 @@ const publishCopy = {
         errorTitle: "Draft was not saved",
         publisher: "Open publisher workspace",
         successBody:
-          "Continue in the publisher workspace to submit a reviewed version, set pricing, and complete commercial readiness.",
+          "Continue in the publisher workspace to submit a reviewed version, record pricing intent, and complete prelaunch paid-readiness metadata.",
         successTitle: "Draft saved to the registry"
       },
       reviewBody: "Client preflight is advisory evidence for the publisher. It is not a verified review decision.",
@@ -393,10 +393,10 @@ const normalizedZhPublishCopy: PublishCopy = {
     badge: "skillhub.json",
     consoleSubtitle: "发布控制台",
     description:
-      "把一个 AI 能力打包成可治理的 SkillHub 合约。先保存草稿，再进入版本审核、运行证据、定价和提现准备。",
+      "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。付费市场字段仅作为预发布准备元数据收集。",
     eyebrow: "发布者工作流",
     pipelineBody:
-      "一个市场上架项只有进入草稿状态、版本状态、审核状态、运行检查状态和商业准备状态后，才算可被信任的供应。",
+      "一个市场上架项只有进入草稿状态、精确版本审核状态、自动检查证据和公开目录准备状态后，才算可被信任的供应。",
     pipelineEyebrow: "运营流水线",
     pipelineTitle: "上传只是第一个控制点，不是终点。",
     publisherWorkspace: "发布者工作台",
@@ -405,9 +405,9 @@ const normalizedZhPublishCopy: PublishCopy = {
       ["草稿", "组织隔离"],
       ["审核", "自动闸口"],
       ["运行", "策略证据"],
-      ["付费", "条款和提现"]
+      ["付费", "准备元数据"]
     ],
-    title: "注册一个技能包。",
+    title: "注册技能包并提交审核。",
     pipelineSteps: [
       {
         body: "从包含身份、运行时、权限、schema、示例和支持路径的 skillhub.json 开始。",
@@ -434,8 +434,8 @@ const normalizedZhPublishCopy: PublishCopy = {
         title: "审核决策"
       },
       {
-        body: "付费激活需要审核、条款、定价、分佣规则和提现状态全部就绪。",
-        title: "商业准备"
+        body: "付费市场字段在审核、条款、分佣和财务决策最终确认前，仅作为预发布元数据。",
+        title: "付费准备元数据"
       }
     ]
   },
@@ -455,9 +455,9 @@ const normalizedZhPublishCopy: PublishCopy = {
     },
     checks: {
       commercial: {
-        action: "草稿保存后继续完成条款、提现准备、定价和分佣规则闸口。",
-        detail: "后续付费激活需要审核通过、接受条款、启用价格、分佣规则和提现状态就绪。",
-        label: "商业准备"
+        action: "草稿保存后继续完成条款、定价意图、付费准备元数据和分佣规则闸口。",
+        detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
+        label: "付费准备元数据"
       },
       identity: {
         action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -516,7 +516,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       ["草稿", "把合约保存成组织拥有的注册表状态。"],
       ["版本", "在 /publisher 创建或提交指定语义版本。"],
       ["审核", "审批前处理自动检查警告。"],
-      ["定价", "审核、条款和提现就绪后再激活付费价格。"]
+      ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
     ],
     readiness: {
       blocked: "已阻塞",

@@ -18,6 +18,7 @@
     "smoke:p0:publish": "node scripts/qa-p0-publish-handoff-smoke.mjs",
     "smoke:prod": "node scripts/qa-p0-release-suite.mjs --prod --skip-admin --timeout-ms 30000",
     "qa:public": "node scripts/public-launch-readiness.mjs",
+    "qa:anonymous": "node scripts/qa-public-anonymous.mjs",
     "test:skill-availability": "node --test scripts/skill-availability.test.mjs"
   },
   "devDependencies": {

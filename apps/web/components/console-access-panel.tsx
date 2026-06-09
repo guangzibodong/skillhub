@@ -50,9 +50,9 @@ const copy = {
       "If Google or GitHub is not configured, the login page shows callback URLs and missing environment names instead of fake buttons.",
     sessionLabel: "Current session",
     title: "Where the backend lives.",
-    tokenRule: "Token fallback is limited",
+    tokenRule: "Invite/recovery token is limited",
     tokenRuleBody:
-      "User tokens remain for bootstrap, invitations, and recovery. Product users should enter through login and account center.",
+      "Invite and recovery tokens remain for bootstrap, invitations, and operator recovery. Product users should enter through OAuth or email/password login.",
     cards: {
       account: {
         description: "Sign in, verify email access, inspect connected identities, session fingerprints, roles, and workspace readiness.",
@@ -73,7 +73,7 @@ const copy = {
         title: "Developer workspace"
       },
       publisher: {
-        description: "Upload skills, manage review repair, pricing blockers, buyer demand, feedback, revenue, payout readiness, and notifications.",
+        description: "Upload skills, manage review repair, pricing intent, buyer demand, feedback, paid-readiness metadata, and notifications.",
         path: "/publisher",
         role: "Publisher / owner",
         title: "Publisher workspace"
@@ -102,9 +102,9 @@ const copy = {
       "Google \u6216 GitHub \u672a\u914d\u7f6e\u65f6\uff0c\u767b\u5f55\u9875\u4f1a\u663e\u793a\u56de\u8c03\u5730\u5740\u548c\u7f3a\u5931\u73af\u5883\u53d8\u91cf\uff0c\u4e0d\u4f1a\u505a\u6210\u5047\u6309\u94ae\u3002",
     sessionLabel: "\u5f53\u524d\u4f1a\u8bdd",
     title: "\u540e\u53f0\u5165\u53e3\u5728\u8fd9\u91cc\u3002",
-    tokenRule: "Token \u53ea\u662f\u515c\u5e95",
+    tokenRule: "\u9080\u8bf7/\u6062\u590d Token \u4ec5\u9650\u7279\u6b8a\u573a\u666f",
     tokenRuleBody:
-      "\u7528\u6237 token \u53ea\u7528\u4e8e\u521d\u59cb\u542f\u52a8\u3001\u56e2\u961f\u9080\u8bf7\u548c\u8fd0\u8425\u6062\u590d\u3002\u6b63\u5e38\u4ea7\u54c1\u7528\u6237\u5e94\u4ece\u767b\u5f55\u548c\u8d26\u53f7\u4e2d\u5fc3\u8fdb\u5165\u3002",
+      "\u9080\u8bf7\u548c\u6062\u590d Token \u4ec5\u7528\u4e8e\u521d\u59cb\u542f\u52a8\u3001\u56e2\u961f\u9080\u8bf7\u548c\u8fd0\u8425\u6062\u590d\u3002\u6b63\u5e38\u4ea7\u54c1\u7528\u6237\u5e94\u4ece OAuth \u6216\u90ae\u7bb1\u5bc6\u7801\u767b\u5f55\u8fdb\u5165\u3002",
     cards: {
       account: {
         description:

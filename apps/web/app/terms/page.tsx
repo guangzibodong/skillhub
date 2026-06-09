@@ -35,15 +35,15 @@ const sectionIcons = [
 const pageCopy = {
   en: {
     eyebrow: "Operating terms",
-    title: "Marketplace rules for buyers, publishers, and platform operators.",
+    title: "Developer Preview operating terms.",
     description:
-      "SkillHub needs public operating terms before payment, payout, and email providers are connected. These rules define what can be published, what developers can rely on, how money states behave, and how trust decisions are reviewed.",
+      "These terms cover public discovery, inspection, review, runtime governance, and prelaunch paid-marketplace modeling. Payment capture and automated payouts are not generally available.",
     effective: "Current operating policy for public launch",
     primary: "Publish a skill",
     secondary: "Read API docs",
     summary: [
       ["Scope", "Registry, marketplace, runtime gateway"],
-      ["Money", "Ledger first, manual PayPal/Alipay transfer in P0"],
+      ["Money", "Prelaunch ledger model; no general payment capture"],
       ["Trust", "Review, incidents, reports, takedowns"],
       ["Data", "Manifest, runtime, billing, notification records"]
     ],
@@ -146,15 +146,15 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "\u8fd0\u8425\u6761\u6b3e",
-    title: "\u7ed9\u4e70\u5bb6\u3001\u53d1\u5e03\u8005\u548c\u5e73\u53f0\u8fd0\u8425\u65b9\u7684\u5e02\u573a\u89c4\u5219\u3002",
+    title: "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u8fd0\u8425\u6761\u6b3e\u3002",
     description:
-      "\u5728\u652f\u4ed8\u3001\u63d0\u73b0\u548c\u90ae\u4ef6\u63d0\u4f9b\u5546\u6700\u7ec8\u63a5\u5165\u524d\uff0cSkillHub \u5fc5\u987b\u5148\u6709\u516c\u5f00\u8fd0\u8425\u6761\u6b3e\u3002\u8fd9\u4e9b\u89c4\u5219\u660e\u786e\u4ec0\u4e48\u80fd\u53d1\u5e03\u3001\u5f00\u53d1\u8005\u80fd\u4fe1\u4ec0\u4e48\u3001\u8d44\u91d1\u72b6\u6001\u600e\u4e48\u8d70\uff0c\u4ee5\u53ca\u4fe1\u4efb\u51b3\u7b56\u5982\u4f55\u590d\u6838\u3002",
+      "\u8fd9\u4e9b\u6761\u6b3e\u8986\u76d6\u516c\u5f00\u53d1\u73b0\u3001\u67e5\u770b\u3001\u5ba1\u6838\u3001\u8fd0\u884c\u6cbb\u7406\u548c\u9884\u53d1\u5e03\u4ed8\u8d39\u5e02\u573a\u5efa\u6a21\u3002\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u63d0\u73b0\u5c1a\u672a\u9762\u5411\u516c\u4f17\u901a\u7528\u5f00\u653e\u3002",
     effective: "\u5f53\u524d\u4e0a\u7ebf\u8fd0\u8425\u653f\u7b56",
     primary: "\u53d1\u5e03\u6280\u80fd",
     secondary: "\u67e5\u770b API \u6587\u6863",
     summary: [
       ["\u8303\u56f4", "\u6ce8\u518c\u5e93\u3001\u5e02\u573a\u3001\u8fd0\u884c\u7f51\u5173"],
-      ["\u8d44\u91d1", "\u5148\u8bb0\u8d26\uff0cP0 \u4f7f\u7528 PayPal/Alipay \u4eba\u5de5\u8f6c\u8d26"],
+      ["\u8d44\u91d1", "\u9884\u53d1\u5e03\u8d26\u672c\u6a21\u578b\uff1b\u6682\u4e0d\u63d0\u4f9b\u901a\u7528\u652f\u4ed8\u6263\u6b3e"],
       ["\u4fe1\u4efb", "\u5ba1\u6838\u3001\u4e8b\u6545\u3001\u4e3e\u62a5\u3001\u4e0b\u67b6"],
       ["\u6570\u636e", "\u534f\u8bae\u3001\u8fd0\u884c\u3001\u8d26\u52a1\u3001\u901a\u77e5\u8bb0\u5f55"]
     ],

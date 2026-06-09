@@ -191,7 +191,7 @@ function getPublishAccessNotice({
       body:
         locale === "zh"
           ? "当前会话拥有发布权限，可以保存组织范围内的草稿。正式上架仍需要版本审核、运行检查、条款、定价和收款准备。"
-          : "Your current session can save organization-scoped drafts. Public listing still requires version review, runtime checks, terms, pricing, and payout readiness.",
+          : "Your current session can save organization-scoped drafts. Public listing still requires version review and runtime checks; pricing and paid-readiness fields remain prelaunch metadata.",
       canSubmit: true,
       title: locale === "zh" ? "发布权限已就绪" : "Publisher access ready",
     };

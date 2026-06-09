@@ -139,6 +139,14 @@ const DEFAULT_APP_PATHS = [
   "/admin?lang=zh",
   "/terms",
   "/terms?lang=zh",
+  "/support",
+  "/support?lang=zh",
+  "/report",
+  "/report?lang=zh",
+  "/security",
+  "/security?lang=zh",
+  "/status",
+  "/status?lang=zh",
 ];
 const DEFAULT_TIMEOUT_MS = 10000;
 const PAGE_ASSERTIONS = {
@@ -232,8 +240,8 @@ const PAGE_ASSERTIONS = {
   "/publisher": [
     "publisher workspace",
     "publisher operations queue",
-    "paid marketplace readiness",
-    "payout readiness",
+    "paid-readiness",
+    "paid-marketplace metadata",
   ],
   "/publisher?lang=zh": [
     "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
@@ -272,8 +280,32 @@ const PAGE_ASSERTIONS = {
   ],
   "/terms?lang=zh": [
     "\u8fd0\u8425\u6761\u6b3e",
-    "\u5e02\u573a\u89c4\u5219",
+    "\u5f00\u53d1\u8005\u9884\u89c8\u7248",
     "\u6761\u6b3e\u6458\u8981",
+  ],
+  "/support": ["Developer Preview support", "No secrets", "Report an issue"],
+  "/support?lang=zh": [
+    "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u652f\u6301",
+    "\u4e0d\u8981\u63d0\u4ea4\u5bc6\u94a5",
+    "\u62a5\u544a\u95ee\u9898",
+  ],
+  "/report": ["Public issue reporting", "Sign in to report", "Security issue"],
+  "/report?lang=zh": [
+    "\u516c\u5f00\u95ee\u9898\u62a5\u544a",
+    "\u767b\u5f55\u540e\u62a5\u544a",
+    "\u5b89\u5168\u95ee\u9898",
+  ],
+  "/security": ["Report security issues", "What not to include", "Do not put OAuth secrets"],
+  "/security?lang=zh": [
+    "\u62a5\u544a\u5b89\u5168\u95ee\u9898",
+    "\u4e0d\u8981\u5305\u542b",
+    "OAuth secret",
+  ],
+  "/status": ["Developer Preview status", "API health", "Gated operations"],
+  "/status?lang=zh": [
+    "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u72b6\u6001",
+    "API \u5065\u5eb7",
+    "\u95e8\u63a7\u8fd0\u8425",
   ],
 };
 const PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS = new Set([
@@ -292,6 +324,14 @@ const PUBLIC_APP_PATHS_WITHOUT_ADMIN_LINKS = new Set([
   "/publishers?lang=zh",
   "/registry",
   "/registry?lang=zh",
+  "/support",
+  "/support?lang=zh",
+  "/report",
+  "/report?lang=zh",
+  "/security",
+  "/security?lang=zh",
+  "/status",
+  "/status?lang=zh",
 ]);
 const PUBLIC_APP_PATHS_WITH_ANONYMOUS_NAV = new Set([
   "/",
@@ -306,6 +346,14 @@ const PUBLIC_APP_PATHS_WITH_ANONYMOUS_NAV = new Set([
   "/publishers?lang=zh",
   "/registry",
   "/registry?lang=zh",
+  "/support",
+  "/support?lang=zh",
+  "/report",
+  "/report?lang=zh",
+  "/security",
+  "/security?lang=zh",
+  "/status",
+  "/status?lang=zh",
 ]);
 const PUBLIC_ADMIN_LINK_MARKERS = [
   'href="/admin',
@@ -373,13 +421,13 @@ const MOJIBAKE_MARKERS = [
 const SKILL_DETAIL_ASSERTIONS = {
   en: [
     "availability",
-    "developer handoff packet",
+    "authenticated project path preview",
     "share usage feedback",
     "report a trust or runtime issue",
   ],
   zh: [
     "\u53ef\u7528\u72b6\u6001",
-    "\u5f00\u53d1\u8005\u4ea4\u63a5\u5305",
+    "\u5df2\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84\u9884\u89c8",
     "\u5206\u4eab\u4f7f\u7528\u53cd\u9988",
     "\u62a5\u544a\u4fe1\u4efb\u6216\u8fd0\u884c\u95ee\u9898",
   ],
@@ -2453,6 +2501,13 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
         }
       }
 
+      const launchStateFailure = validatePublicLaunchPageState(path, html);
+
+      if (launchStateFailure) {
+        fail(name, launchStateFailure);
+        continue;
+      }
+
       if (ANONYMOUS_DASHBOARD_PATHS.has(path)) {
         const forbiddenMarkers = ANONYMOUS_DASHBOARD_FORBIDDEN_MARKERS.filter(
           (token) => html.includes(token),
@@ -2478,6 +2533,55 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
   await checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs });
   await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
   await checkPublicPublisherLegacySlugPage({ appUrl, timeoutMs });
+}
+
+function validatePublicLaunchPageState(path, html) {
+  if (basePathFromAppPath(path) === "/login") {
+    const forbidden = [
+      "user access token",
+      "token fallback",
+      "team console",
+      "paste token",
+    ].filter((token) => html.includes(token));
+
+    if (forbidden.length > 0) {
+      return `login page exposes internal token fallback wording: ${forbidden.join(", ")}`;
+    }
+
+    if (!html.includes("invite") && !html.includes("\u9080\u8bf7")) {
+      return "login page is missing invite/recovery token framing";
+    }
+  }
+
+  if (basePathFromAppPath(path) === "/marketplace") {
+    if (html.includes("publisher workspace") && !html.includes("sign in for publisher workspace")) {
+      return "marketplace exposes publisher workspace CTA without sign-in framing";
+    }
+
+    if (
+      html.includes('curl "https://api.useskillhub.com/mcp"') &&
+      !html.includes("mcp metadata only") &&
+      !html.includes("\u4ec5 mcp \u5143\u6570\u636e")
+    ) {
+      return "marketplace documents curl /mcp without metadata-only framing";
+    }
+  }
+
+  if (basePathFromAppPath(path) === "/publishers") {
+    const forbidden = [
+      "browse publishers before installing",
+      "active publisher pending",
+      "free free",
+      "payout:",
+      "active paid",
+    ].filter((token) => html.includes(token));
+
+    if (forbidden.length > 0) {
+      return `publisher directory exposes stale launch wording: ${forbidden.join(", ")}`;
+    }
+  }
+
+  return "";
 }
 
 async function checkAppNotFoundPage({ appUrl, timeoutMs }) {

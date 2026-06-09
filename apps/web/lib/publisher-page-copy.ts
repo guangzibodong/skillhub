@@ -7,11 +7,11 @@ const publisherPageCopy = {
     adjustmentTitle: "Refund and dispute watch",
     disputeReview: "Dispute review",
     description:
-      "A focused workspace for skill publishers to move packages through review, price verified listings, respond to buyer demand, and prepare revenue for payout.",
+      "A focused workspace for skill publishers to move packages through review, record pricing intent for future paid-marketplace review, respond to buyer demand, and prepare paid-marketplace metadata.",
     eyebrow: "Publisher workspace",
     ledgerEmpty: "No posted publisher revenue yet",
     ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
-    ledgerTitle: "Publisher revenue ledger",
+    ledgerTitle: "Publisher paid-marketplace ledger preview",
     refundReview: "Refund review",
     sourceMixTitle: "Revenue source mix",
     sourceShareLabel: "publisher share",
@@ -38,7 +38,7 @@ const publisherPageCopy = {
       metrics: {
         blockedPaid: "Blocked paid listings",
         draftPaid: "Draft paid prices",
-        payout: "Payout readiness",
+        payout: "Paid readiness",
         readyPaid: "Ready paid listings"
       },
       profile: "Publisher profile",
@@ -101,7 +101,7 @@ const publisherPageCopy = {
       requested: "Requested"
     },
     metrics: {
-      available: "Available balance",
+      available: "Paid preview balance",
       demand: "Open demand",
       skills: "Owned skills",
       verified: "Verified skills"
@@ -115,19 +115,19 @@ const publisherPageCopy = {
       tasks: {
         session: [
           "Connect workspace session",
-          "Sign in with an organization session so publishing, pricing, payouts, and notifications are scoped."
+          "Sign in with an organization session so publishing, pricing intent, paid-readiness metadata, and notifications are scoped."
         ],
         profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
         terms: [
           "Accept operating terms",
-          "Record the current refund, dispute, takedown, data, notification, and payout policy before paid publishing."
+          "Record the current refund, dispute, takedown, data, notification, and paid-marketplace readiness policy before paid publishing."
         ],
         publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],
-        verified: ["Reach verified listing status", "Complete review and activate pricing so buyers can trust and install the skill."],
-        payout: ["Prepare payout readiness", "Connect payout details before revenue matures into a withdrawal request."]
+        verified: ["Reach verified listing status", "Complete review before buyers can trust and adopt the skill."],
+        payout: ["Prepare paid-marketplace metadata", "Record receiving details for future finance review before any public paid rollout."]
       }
     },
-    title: "Operate your SkillHub publishing business."
+    title: "Manage skill submissions and review readiness."
   },
   zh: {
     adjustmentEmpty: "暂无近期退款或争议记录",
@@ -135,11 +135,11 @@ const publisherPageCopy = {
     adjustmentTitle: "退款与争议跟进",
     disputeReview: "争议复核",
     description:
-      "给技能发布者使用的运营工作台：推进技能审核、配置已验证技能价格、响应买方需求，并把收入推进到可提现状态。",
+      "给技能发布者使用的运营工作台：推进技能审核、记录未来付费市场复核所需的定价意图、响应买方需求，并准备付费市场元数据。",
     eyebrow: "发布者工作台",
     ledgerEmpty: "暂无已入账的发布者收入",
     ledgerHeaders: ["技能", "来源", "总收入", "平台费", "净收入", "状态"],
-    ledgerTitle: "发布者收入账本",
+    ledgerTitle: "发布者付费市场账本预览",
     refundReview: "退款复核",
     sourceMixTitle: "收入来源结构",
     sourceShareLabel: "发布者分成",
@@ -165,7 +165,7 @@ const publisherPageCopy = {
       metrics: {
         blockedPaid: "受阻付费技能",
         draftPaid: "草稿付费价格",
-        payout: "提现准备",
+        payout: "付费准备",
         readyPaid: "可启用付费技能"
       },
       profile: "发布者资料",
@@ -206,7 +206,7 @@ const publisherPageCopy = {
       won: "已胜诉"
     },
     ledgerStatuses: {
-      available: "可提现",
+      available: "付费预览可用",
       blocked: "已锁定",
       pending: "待结算",
       posted: "已入账",
@@ -240,15 +240,15 @@ const publisherPageCopy = {
       progress: "准备度",
       title: "发布者上线清单",
       tasks: {
-        session: ["连接工作区会话", "使用组织会话登录，让发布、定价、提现和通知都归属到当前组织。"],
+        session: ["连接工作区会话", "使用组织会话登录，让发布、定价意图、付费准备元数据和通知都归属到当前组织。"],
         profile: ["创建发布者资料", "设置买家安装技能前会看到的公开发布者名称。"],
-        terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和提现政策。"],
+        terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和付费市场准备政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],
-        verified: ["获得已验证上架状态", "完成审核并启用价格，让买家可以信任并安装技能。"],
-        payout: ["准备提现资料", "在收入成熟并发起提现前，先完成提现账户和资料状态。"]
+        verified: ["获得已验证上架状态", "完成审核后，买家才可以信任并采用技能。"],
+        payout: ["准备付费市场元数据", "在公开付费市场上线前，记录后续财务复核需要的收款资料。"]
       }
     },
-    title: "运营你的 SkillHub 技能发布业务。"
+    title: "管理技能提交和审核准备。"
   }
 } as const;
 

@@ -13,22 +13,22 @@ type SessionLoginFormProps = {
 const copy = {
   en: {
     helper:
-      "Use a token created by an invite or the team console. SkillHub stores it in an httpOnly browser cookie for this app.",
-    label: "User access token",
-    placeholder: "shub_user_...",
+      "Use this only when a SkillHub administrator or invite flow gave you a one-time recovery or invitation token. Most users should use OAuth or email/password.",
+    label: "Invite/recovery token",
+    placeholder: "Paste invite/recovery token",
     submit: "Connect workspace",
     submitting: "Verifying",
-    title: "Token fallback",
+    title: "Invite or recovery token only",
     workspace: "Open dashboard"
   },
   zh: {
     helper:
-      "使用邀请或团队控制台生成的用户 token。SkillHub 会把它写入本站 httpOnly 浏览器 cookie，原始 token 不会在页面里展示。",
-    label: "用户访问 token",
-    placeholder: "shub_user_...",
+      "仅当 SkillHub 管理员或邀请流程提供一次性邀请/恢复 Token 时使用。大多数用户应使用 OAuth 或邮箱密码。",
+    label: "邀请/恢复 Token",
+    placeholder: "粘贴邀请/恢复 Token",
     submit: "连接工作区",
     submitting: "验证中",
-    title: "Token 兜底登录",
+    title: "仅限邀请或恢复 Token",
     workspace: "打开工作台"
   }
 } as const;

@@ -82,8 +82,12 @@ const labels = {
     emptyBody:
       "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
     handoff: {
-      items: ["Project install", "Policy gate", "Runtime log", "Runtime evidence"],
-      title: "After verified approval"
+      submittedBody: "Project install, runtime test, billing, and ledger actions may unlock only after review approval.",
+      submittedItems: ["Project install", "Runtime test", "Billing", "Ledger actions"],
+      submittedTitle: "After verified approval",
+      verifiedBody: "Project install, policy gate, runtime log, and runtime evidence require sign-in and project policy checks.",
+      verifiedItems: ["Project install", "Policy gate", "Runtime log", "Runtime evidence"],
+      verifiedTitle: "After sign-in"
     },
     recommendation: {
       adoption: "Install evidence",
@@ -152,8 +156,12 @@ const labels = {
     emptyBody:
       "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
     handoff: {
-      items: ["\u9879\u76ee\u5b89\u88c5", "\u7b56\u7565\u7f51\u5173", "\u8fd0\u884c\u65e5\u5fd7", "\u8fd0\u884c\u8bc1\u636e"],
-      title: "\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e"
+      submittedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
+      submittedItems: ["\u9879\u76ee\u5b89\u88c5", "\u8fd0\u884c\u6d4b\u8bd5", "\u8ba1\u8d39", "\u8d26\u672c\u64cd\u4f5c"],
+      submittedTitle: "\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e",
+      verifiedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u7f51\u5173\u3001\u8fd0\u884c\u65e5\u5fd7\u548c\u8fd0\u884c\u8bc1\u636e\u90fd\u9700\u8981\u767b\u5f55\u5e76\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u68c0\u67e5\u3002",
+      verifiedItems: ["\u9879\u76ee\u5b89\u88c5", "\u7b56\u7565\u7f51\u5173", "\u8fd0\u884c\u65e5\u5fd7", "\u8fd0\u884c\u8bc1\u636e"],
+      verifiedTitle: "\u767b\u5f55\u540e"
     },
     recommendation: {
       adoption: "已有安装证据",
@@ -610,6 +618,10 @@ export function MarketplaceBrowser({
           {filteredSkills.map((skill) => {
             const installState = getSkillInstallState(skill.verification.en);
             const isSkillInstallable = installState.installable;
+            const isVerified = verificationKey(skill) === "verified";
+            const handoffTitle = isVerified ? dictionary.handoff.verifiedTitle : dictionary.handoff.submittedTitle;
+            const handoffBody = isVerified ? dictionary.handoff.verifiedBody : dictionary.handoff.submittedBody;
+            const handoffItems = isVerified ? dictionary.handoff.verifiedItems : dictionary.handoff.submittedItems;
 
             return (
             <article className="market-skill-card lift-card" key={skill.slug}>
@@ -726,13 +738,14 @@ export function MarketplaceBrowser({
                 </div>
               )}
 
-              <div className="market-install-handoff" aria-label={dictionary.handoff.title}>
+              <div className="market-install-handoff" aria-label={handoffTitle}>
                 <strong>
                   <Route size={14} aria-hidden="true" />
-                  {dictionary.handoff.title}
+                  {handoffTitle}
                 </strong>
+                <small>{handoffBody}</small>
                 <div>
-                  {dictionary.handoff.items.map((item, index) => (
+                  {handoffItems.map((item, index) => (
                     <span key={item}>
                       {index === 0 ? (
                         <PackageCheck size={13} aria-hidden="true" />

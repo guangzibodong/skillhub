@@ -51,6 +51,23 @@ Verify these routes before deployment:
 - `/publishers/skillhub?lang=zh`
 - `/login?lang=en`
 - `/login?lang=zh`
+- `/account?lang=en`
+- `/account?lang=zh`
+- `/developer?lang=en`
+- `/developer?lang=zh`
+- `/publisher?lang=en`
+- `/publisher?lang=zh`
+- `/dashboard?lang=en`
+- `/terms?lang=en`
+- `/terms?lang=zh`
+- `/support?lang=en`
+- `/support?lang=zh`
+- `/report?lang=en`
+- `/report?lang=zh`
+- `/security?lang=en`
+- `/security?lang=zh`
+- `/status?lang=en`
+- `/status?lang=zh`
 
 ## Acceptance Checks
 
@@ -65,6 +82,9 @@ Verify these routes before deployment:
 - Public pages do not imply paid marketplace, payment capture, or automated payout operations are live.
 - Marketplace does not show operator queue counts as public traction.
 - Publisher pages do not make payout readiness a headline trust factor.
+- Login token fallback is secondary, collapsed, and labeled as invite/recovery only.
+- Public support, report, security, and status paths exist.
+- Security and support paths warn not to include secrets, API keys, passwords, or private user data in public reports.
 - Chinese public pages do not show basic English user-facing descriptions, labels, status text, or quickstart comments except stable technical identifiers.
 - Terms, docs, README, and public page copy agree on Developer Preview state.
 
@@ -76,11 +96,13 @@ pnpm --filter @useskillhub/web typecheck
 pnpm --filter @useskillhub/gateway typecheck
 pnpm --filter @useskillhub/web build
 pnpm smoke -- --skip-api --skip-app
+pnpm qa:anonymous -- --app-url http://127.0.0.1:3101 --timeout-ms 30000
 ```
 
 Routine production no-write gate:
 
 ```bash
+pnpm qa:anonymous -- --app-url https://useskillhub.com --timeout-ms 30000
 pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 ```
 
@@ -90,3 +112,4 @@ pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
 - Ledger and payout UI are modeled for future paid usage and admin/finance readiness, not general customer self-serve payment capture.
 - CLI and SDK packages remain preview packages until public install methods are released.
 - Support, trust report, runtime report, and admin operations must stay behind appropriate sign-in or operator gates when they write state.
+- Public support/report/security/status pages are guidance paths until signed-in write flows are available.

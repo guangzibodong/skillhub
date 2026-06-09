@@ -136,7 +136,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     publisher: {
       body:
-        "The publisher path proves authors have repeat work: draft packaging, exact-version review, repair, pricing blockers, feedback, revenue, and payout readiness.",
+        "The publisher path proves authors have repeat work: draft packaging, exact-version review, repair, pricing intent, feedback, buyer demand, and paid-readiness metadata.",
       current: "Current",
       next: "Next",
       steps: [
@@ -163,7 +163,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "Clear paid gates",
-          detail: "Complete profile, terms, payout readiness, verified review, and pricing state.",
+          detail: "Complete profile, terms, paid-readiness metadata, verified review, and pricing intent.",
           href: "/publisher#publisher-paid-readiness",
           id: "commercial",
           label: "Pricing and payout"
@@ -176,7 +176,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
           label: "Improve and retain"
         }
       ],
-      title: "Publisher monetization journey"
+      title: "Publisher review and readiness journey"
     }
   },
   zh: {

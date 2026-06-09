@@ -68,7 +68,7 @@ const copy: Record<
     fallbackStats: [
       { label: "Evidence rows", value: "Live" },
       { label: "Governance path", tone: "good", value: "REST + MCP" },
-      { label: "Money state", value: "Ledger first" },
+      { label: "Money state", value: "Prelaunch model" },
       { label: "Audit posture", tone: "good", value: "Reasoned writes" }
     ],
     focus: {
@@ -86,19 +86,19 @@ const copy: Record<
       },
       marketplace: {
         body:
-          "Discovery is credible only when a public listing connects to publisher trust, install readiness, runtime governance, and ledger-backed operations.",
-        eyebrow: "Marketplace evidence chain",
-        title: "The catalog points to the operating system behind it."
+          "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated runtime governance, and prelaunch paid-marketplace modeling.",
+        eyebrow: "Operating reference - Developer Preview model",
+        title: "The catalog points to the governed path behind it."
       },
       platform: {
         body:
-          "SkillHub is not a directory: one skill can move from contract, to review, to install, to governed runtime, to ledger, payout, and audit.",
-        eyebrow: "Operating evidence chain",
+          "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to governed runtime, and later to paid-marketplace ledger and audit states.",
+        eyebrow: "Architecture reference - Developer Preview model",
         title: "One visible path from publisher supply to agent use."
       },
       publisher: {
         body:
-          "Publishers need a repeatable path from draft package to review repair, paid readiness, buyer demand, revenue state, and payout readiness.",
+          "Publishers need a repeatable path from draft package to review repair, paid-readiness metadata, buyer demand, future paid-marketplace evidence, and finance review readiness.",
         eyebrow: "Publisher evidence chain",
         title: "A skill package can become a maintained marketplace product."
       }
@@ -122,12 +122,12 @@ const copy: Record<
         state: "Queued -> decided"
       },
       {
-        detail: "Approved supply becomes searchable listing data with install readiness, publisher trust, pricing, feedback, and alternatives.",
+        detail: "Approved supply becomes searchable listing data with availability, publisher trust, pricing intent, feedback, and alternatives.",
         href: "/marketplace",
         id: "install",
-        label: "Marketplace install",
+        label: "Project adoption",
         owner: "Developer",
-        state: "Inspect -> install"
+        state: "Inspect -> sign in"
       },
       {
         detail: "Project keys, policy approval, budget, rate limit, subscription state, REST, and MCP calls share the same gateway path.",
@@ -138,20 +138,20 @@ const copy: Record<
         state: "Invoke -> log"
       },
       {
-        detail: "Billable usage and subscription periods post immutable transactions, commission splits, balance rows, refunds, and disputes.",
+        detail: "Future paid usage and subscription periods will post immutable transactions, commission splits, balance rows, refunds, and disputes after launch gates.",
         href: "/admin",
         id: "ledger",
-        label: "Ledger split",
+        label: "Prelaunch ledger",
         owner: "Finance admin",
-        state: "Usage -> balance"
+        state: "Modeled -> gated"
       },
       {
-        detail: "Eligible balances move through reserve, finance review, manual PayPal/Alipay transfer, notification delivery, and audit logs.",
+        detail: "Paid marketplace payout movement remains prelaunch and finance-gated; public pages show only readiness state.",
         href: "/publisher",
         id: "payout",
-        label: "Payout and audit",
+        label: "Paid readiness",
         owner: "Publisher + admin",
-        state: "Available -> paid"
+        state: "Prelaunch"
       }
     ],
     view: "Open"

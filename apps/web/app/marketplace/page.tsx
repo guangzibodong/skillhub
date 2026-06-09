@@ -58,27 +58,28 @@ const pageCopy = {
       "Developer Preview: search public skills, inspect permissions, and use registry/gateway discovery now. Paid marketplace, payment capture, and payout automation remain prelaunch.",
     primary: "Browse catalog",
     directory: "Publisher directory",
-    console: "Publisher workspace",
+    console: "Sign in for publisher workspace",
     consoleTitle: "Public inspect path",
     consoleSubtitle: "Agents should start from a contract they can inspect before project-gated install or runtime use.",
     proof: ["Searchable catalog", "Permission review", "API inspect", "Project-gated runtime"],
+    mcpMetadataNote: "MCP metadata only; runtime invocation uses POST /mcp after project auth.",
     requests: "Example skill requests - not live data",
     requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
-    publishTitle: "Publisher operating flow",
-    publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Pricing blockers", "Public listing", "Future ledger model", "Paid-marketplace review"],
+    publishTitle: "Publisher review path",
+    publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Paid-readiness metadata", "Public listing", "Prelaunch ledger model", "Future paid review"],
     trustTitle: "Launch requirements",
     trustItems: [
       ["Manifest", "Typed input/output, runtime, permissions, version, author."],
       ["Security", "Permission classification, runtime checks, secret handling, data retention."],
-      ["Money", "Versioned commission rule, immutable transaction split, payout audit trail."],
+      ["Money", "Prelaunch commission and ledger model; no general payment capture."],
       ["Support", "Changelog, deprecation policy, issue channel, response expectations."]
     ],
     moneyTitle: "Future paid marketplace model",
     moneyRows: [
       ["Current stage", "Developer Preview catalog; payment capture is prelaunch"],
-      ["Manual payout path", "Publishers leave PayPal/Alipay details for finance review"],
-      ["Future ledger rule", "Billable usage will post transactions before balance review"],
-      ["Operator control", "Finance records manual transfer evidence before marking paid"]
+      ["Paid readiness", "Signed-in publishers can prepare PayPal/Alipay payout details for finance review"],
+      ["Future ledger rule", "Billable usage will post transactions only after paid marketplace launch gates"],
+      ["Operator control", "Finance evidence remains admin-gated and prelaunch on public pages"]
     ],
     overview: {
       eyebrow: "Architecture preview",
@@ -147,15 +148,15 @@ const pageCopy = {
     moneyMetricValue: "Prelaunch model",
     publisherDirectoryTitle: "Supplier trust is part of discovery",
     publisherDirectoryBody:
-      "Every marketplace card links to the supplier behind the skill. The public directory lets teams compare profile state, verified listings, public review status, install evidence, and runtime evidence before installing.",
+      "Every marketplace card links to the supplier behind the skill. The public directory lets teams compare profile state, verified listings, public review status, adoption evidence, and runtime evidence before adopting.",
     publisherDirectoryCta: "Browse publishers",
-    loopEyebrow: "Installed skill operations",
-    loopTitle: "The marketplace keeps a live path after install.",
+    loopEyebrow: "Verified skill adoption path",
+    loopTitle: "The marketplace keeps a gated path after sign-in.",
     loopBody:
       "A useful skill registry is not finished when an agent copies a command. Verified skills can move into project policy and runtime evidence; submitted skills stay inspection-only until review passes.",
     loopSteps: [
-      ["Inspect", "Manifest, permissions, runtime, price, and publisher profile are visible before install.", "Public contract"],
-      ["Install", "Teams attach the skill to a project key or MCP server with explicit policy context.", "Project gate"],
+      ["Inspect", "Manifest, permissions, runtime, pricing intent, and publisher profile are visible before adoption.", "Public contract"],
+      ["Adopt", "Signed-in teams attach a verified skill to a project key or MCP server with explicit policy context.", "Project gate"],
       ["Invoke", "Verified runtime calls carry typed input, project policy checks, success signals, and reviewable output.", "Runtime evidence"],
       ["Return", "Feedback, incidents, changelog updates, and paid-readiness blockers create the next publisher action.", "Retention loop"]
     ],
@@ -167,10 +168,10 @@ const pageCopy = {
     },
     loopLedgerTitle: "What teams can revisit",
     loopLedgerRows: [
-      ["Buyer view", "Install trail", "Command, permission profile, pricing model, and project policy stay inspectable."],
+      ["Buyer view", "Adoption trail", "Permission profile, pricing intent, and project policy stay inspectable after sign-in."],
       ["Agent view", "Runtime proof", "The agent can validate schema, latency, and success history before repeated calls."],
       ["Publisher view", "Action queue", "Reviews, incidents, usage, and changelog pressure feed the next version."],
-      ["Finance view", "Future paid marketplace review", "Future paid usage reaches ledger review before finance records manual transfer evidence."]
+      ["Paid preview view", "Prelaunch ledger model", "Future paid usage reaches ledger review only after paid marketplace launch gates."]
     ]
   },
   zh: {
@@ -180,27 +181,28 @@ const pageCopy = {
       "开发者预览版：现在可以搜索公开技能、查看权限，并使用注册表/网关发现能力。付费市场、支付扣款和自动提现仍处于预发布阶段。",
     primary: "浏览目录",
     directory: "发布者目录",
-    console: "发布者工作台",
+    console: "登录后进入发布者工作台",
     consoleTitle: "公开查看路径",
     consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的安装或运行。",
     proof: ["可搜索目录", "权限审核", "API 查看", "项目门控运行"],
+    mcpMetadataNote: "仅 MCP 元数据；运行调用需项目认证后使用 POST /mcp。",
     requests: "示例技能需求 - 非实时数据",
     requestsBody: "这些是未来付费市场的示例需求场景。真实买方需求会在用户提交后才出现，生产数据为空时保持为空。",
-    publishTitle: "发布者运营流程",
-    publishSteps: ["草稿 manifest", "运行测试", "人工审核", "价格批准", "公开上架", "用量账本", "提现审核"],
+    publishTitle: "发布者审核路径",
+    publishSteps: ["草稿 manifest", "运行测试", "人工审核", "付费准备元数据", "公开上架", "预发布账本模型", "未来付费审核"],
     trustTitle: "上线要求",
     trustItems: [
       ["Manifest", "类型化输入输出、运行时、权限、版本、作者。"],
       ["安全", "权限分类、运行检查、密钥处理、数据保留。"],
-      ["资金", "版本化佣金规则、不可变分账交易、提现审计链路。"],
+      ["资金", "预发布佣金与账本模型；暂不提供通用支付扣款。"],
       ["支持", "更新记录、弃用政策、问题通道、响应预期。"]
     ],
     moneyTitle: "未来付费市场模型",
     moneyRows: [
       ["当前阶段", "开发者预览目录；支付扣款仍处于预发布"],
-      ["人工打款路径", "发布者留下 PayPal/Alipay 信息，财务人工复核"],
-      ["未来账本规则", "可计费使用会先形成交易，再进入余额复核"],
-      ["运营控制", "财务记录人工转账凭证后才标记已支付"]
+      ["付费准备", "登录后的发布者可准备 PayPal/Alipay 提现资料供财务复核"],
+      ["未来账本规则", "可计费使用只会在付费市场上线门槛通过后记账"],
+      ["运营控制", "财务凭证保持后台门控，公开页面仅展示预发布状态"]
     ],
     overview: {
       eyebrow: "架构预览",
@@ -269,15 +271,15 @@ const pageCopy = {
     moneyMetricValue: "预发布模型",
     publisherDirectoryTitle: "供应方信任也是发现的一部分",
     publisherDirectoryBody:
-      "每张市场技能卡都会连接到背后的发布者。公开目录让团队在安装前比较资料状态、已验证上架、公开审核状态、安装证据和运行证据。",
+      "每张市场技能卡都会连接到背后的发布者。公开目录让团队在采用前比较资料状态、已验证上架、公开审核状态、采用证据和运行证据。",
     publisherDirectoryCta: "浏览发布者",
-    loopEyebrow: "已安装技能运营",
-    loopTitle: "市场在安装后仍然保留一条实时路径。",
+    loopEyebrow: "已验证技能采用路径",
+    loopTitle: "市场在登录后保留一条受控路径。",
     loopBody:
       "有用的技能库不止于复制一条命令。已验证技能可以进入项目策略和运行证据；已提交但未验证的技能只能公开查看，不能安装或测试运行。",
     loopSteps: [
-      ["检查", "安装前可以看到 manifest、权限、运行时、价格和发布者档案。", "公共合约"],
-      ["安装", "团队把技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
+      ["检查", "采用前可以看到 manifest、权限、运行时、定价意图和发布者档案。", "公共合约"],
+      ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
       ["调用", "已验证运行调用携带类型化输入、项目策略检查、成功信号和可复核输出。", "运行证据"],
       ["回访", "反馈、事故、更新记录和付费准备阻断项会形成下一次发布者行动。", "留存闭环"]
     ],
@@ -289,10 +291,10 @@ const pageCopy = {
     },
     loopLedgerTitle: "团队可回访的信息",
     loopLedgerRows: [
-      ["买家视角", "安装轨迹", "命令、权限画像、价格模型和项目策略都保持可检查。"],
+      ["买家视角", "采用轨迹", "权限画像、定价意图和项目策略在登录后保持可检查。"],
       ["Agent 视角", "运行证据", "Agent 可在重复调用前校验 schema、延迟和成功历史。"],
       ["发布者视角", "行动队列", "评价、事故、用量和更新压力会进入下一版本。"],
-      ["财务视角", "人工提现审计", "未来付费用量先进入账本审核，再由财务记录人工转账凭证。"]
+      ["付费预览视角", "预发布账本模型", "未来付费用量只会在付费市场上线门槛通过后进入账本审核。"]
     ]
   }
 } as const;
@@ -449,7 +451,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
               <Building2 size={18} aria-hidden="true" />
               <span>{labels.directory}</span>
             </a>
-            <a className="ghost-button" href={localizedHref("/publisher", locale)}>
+            <a className="ghost-button" href={localizedHref("/login", locale)}>
               <WalletCards size={17} aria-hidden="true" />
               <span>{labels.console}</span>
             </a>
@@ -465,6 +467,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           <pre>
             <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 curl "https://api.useskillhub.com/v1/skills/browser-research"
+# ${labels.mcpMetadataNote}
 curl "https://api.useskillhub.com/mcp"`}</code>
           </pre>
           <div className="proof-grid">
@@ -480,8 +483,6 @@ curl "https://api.useskillhub.com/mcp"`}</code>
 
       <PublicAccessScope locale={locale} />
 
-      <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
-
       <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
         {metrics.map(([label, value]) => (
           <div key={label}>
@@ -494,6 +495,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
       <div id="catalog">
         <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
       </div>
+
+      <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
 
       <OperatingEvidenceChain
         focus="marketplace"

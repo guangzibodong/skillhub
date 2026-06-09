@@ -354,6 +354,77 @@ tools: skillhub.search, skillhub.get`}</code>
 
         <PublicAccessScope locale={locale} />
 
+        <section
+          className="registry-workbench reveal-item reveal-item--late"
+          id="registry"
+          aria-labelledby="registry-heading"
+        >
+          <div className="workbench-top">
+            <div>
+              <div className="card-kicker">
+                <Boxes size={16} aria-hidden="true" />
+                <span>{dictionary.home.registryEyebrow}</span>
+              </div>
+              <h2 id="registry-heading">{dictionary.home.registryTitle}</h2>
+            </div>
+            <div className="workbench-actions">
+              <form
+                action="/marketplace"
+                className="search-box"
+                method="get"
+                role="search"
+              >
+                {locale === "zh" ? (
+                  <input name="lang" type="hidden" value="zh" />
+                ) : null}
+                <Search size={17} aria-hidden="true" />
+                <input
+                  aria-label={dictionary.home.searchPlaceholder}
+                  name="q"
+                  placeholder={dictionary.home.searchPlaceholder}
+                />
+                <button
+                  aria-label={
+                    locale === "zh" ? "搜索市场" : "Search marketplace"
+                  }
+                  className="search-box__submit"
+                  title={locale === "zh" ? "搜索市场" : "Search marketplace"}
+                  type="submit"
+                >
+                  <ArrowRight size={15} aria-hidden="true" />
+                </button>
+              </form>
+              <a
+                className="secondary-button"
+                href={localizedHref("/publish", locale)}
+              >
+                <Plus size={17} aria-hidden="true" />
+                <span>{dictionary.home.newSkill}</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="metric-strip">
+            {visibleMetrics.map((item) => (
+              <div className="metric" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+            <div className="metric metric--accent">
+              <span>{dictionary.metrics.verifiedShare}</span>
+              <strong>{verifiedShare}</strong>
+            </div>
+          </div>
+
+          <SkillTable
+            apiUrl={apiUrl}
+            labels={dictionary.skillTable}
+            locale={locale}
+            skills={skills}
+          />
+        </section>
+
         <OperatingEvidenceChain
           focus="platform"
           locale={locale}
@@ -446,77 +517,6 @@ tools: skillhub.search, skillhub.get`}</code>
               );
             })}
           </div>
-        </section>
-
-        <section
-          className="registry-workbench reveal-item reveal-item--late"
-          id="registry"
-          aria-labelledby="registry-heading"
-        >
-          <div className="workbench-top">
-            <div>
-              <div className="card-kicker">
-                <Boxes size={16} aria-hidden="true" />
-                <span>{dictionary.home.registryEyebrow}</span>
-              </div>
-              <h2 id="registry-heading">{dictionary.home.registryTitle}</h2>
-            </div>
-            <div className="workbench-actions">
-              <form
-                action="/marketplace"
-                className="search-box"
-                method="get"
-                role="search"
-              >
-                {locale === "zh" ? (
-                  <input name="lang" type="hidden" value="zh" />
-                ) : null}
-                <Search size={17} aria-hidden="true" />
-                <input
-                  aria-label={dictionary.home.searchPlaceholder}
-                  name="q"
-                  placeholder={dictionary.home.searchPlaceholder}
-                />
-                <button
-                  aria-label={
-                    locale === "zh" ? "搜索市场" : "Search marketplace"
-                  }
-                  className="search-box__submit"
-                  title={locale === "zh" ? "搜索市场" : "Search marketplace"}
-                  type="submit"
-                >
-                  <ArrowRight size={15} aria-hidden="true" />
-                </button>
-              </form>
-              <a
-                className="secondary-button"
-                href={localizedHref("/publish", locale)}
-              >
-                <Plus size={17} aria-hidden="true" />
-                <span>{dictionary.home.newSkill}</span>
-              </a>
-            </div>
-          </div>
-
-          <div className="metric-strip">
-            {visibleMetrics.map((item) => (
-              <div className="metric" key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-            <div className="metric metric--accent">
-              <span>{dictionary.metrics.verifiedShare}</span>
-              <strong>{verifiedShare}</strong>
-            </div>
-          </div>
-
-          <SkillTable
-            apiUrl={apiUrl}
-            labels={dictionary.skillTable}
-            locale={locale}
-            skills={skills}
-          />
         </section>
       </section>
 
@@ -671,6 +671,18 @@ tools: skillhub.search, skillhub.get`}</code>
           </a>
           <a href={localizedHref("/terms", locale)}>
             {locale === "zh" ? "\u6761\u6b3e" : "Terms"}
+          </a>
+          <a href={localizedHref("/support", locale)}>
+            {locale === "zh" ? "\u652f\u6301" : "Support"}
+          </a>
+          <a href={localizedHref("/report", locale)}>
+            {locale === "zh" ? "\u62a5\u544a\u95ee\u9898" : "Report issue"}
+          </a>
+          <a href={localizedHref("/security", locale)}>
+            {locale === "zh" ? "\u5b89\u5168" : "Security"}
+          </a>
+          <a href={localizedHref("/status", locale)}>
+            {locale === "zh" ? "\u72b6\u6001" : "Status"}
           </a>
           <a href="https://github.com/guangzibodong/skillhub">
             {dictionary.common.github}

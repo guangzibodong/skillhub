@@ -42,12 +42,15 @@ const copy = {
     collectionPlaceholder: "evaluation",
     emptyBody: "Create or connect a developer project before saving, subscribing, or installing skills.",
     emptyCta: "Create project",
-    heading: "Add this skill to a project",
-    handoffAction: "Open developer workspace",
+    heading: "Add verified skill to a signed-in project",
+    headingLocked: "Sign in to add this skill to a project",
+    handoffAction: "Open signed-in developer workspace",
+    handoffActionLocked: "Sign in to open developer workspace",
     handoffBody:
-      "A saved or installed skill becomes project state. Finish policy approval, version pinning, runtime key setup, test invocation, updates, and billing from the project command center.",
-    handoffSteps: ["Policy", "Version pin", "Runtime key", "Test call", "Updates and billing"],
-    handoffTitle: "Next: finish the project handoff",
+      "After sign-in, a saved or installed skill becomes project state. Finish policy approval, version pinning, runtime key setup, test invocation, updates, and billing readiness from the project command center.",
+    handoffSteps: ["Policy", "Version pin", "Runtime key", "Login-gated runtime test", "Updates and paid readiness where applicable"],
+    handoffTitle: "Project handoff steps",
+    handoffTitleLocked: "After sign-in: project handoff steps",
     install: "Install to project",
     installing: "Working",
     latestVersion: "Latest registry version",
@@ -76,12 +79,15 @@ const copy = {
     collectionPlaceholder: "evaluation",
     emptyBody: "\u8bf7\u5148\u521b\u5efa\u6216\u8fde\u63a5\u4e00\u4e2a\u5f00\u53d1\u8005\u9879\u76ee\uff0c\u518d\u4fdd\u5b58\u3001\u8ba2\u9605\u6216\u5b89\u88c5\u6280\u80fd\u3002",
     emptyCta: "\u521b\u5efa\u9879\u76ee",
-    heading: "\u628a\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
-    handoffAction: "\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    heading: "\u5c06\u5df2\u9a8c\u8bc1\u6280\u80fd\u52a0\u5165\u5df2\u767b\u5f55\u9879\u76ee",
+    headingLocked: "\u767b\u5f55\u540e\u5c06\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
+    handoffAction: "\u6253\u5f00\u5df2\u767b\u5f55\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    handoffActionLocked: "\u767b\u5f55\u540e\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
     handoffBody:
-      "\u4fdd\u5b58\u6216\u5b89\u88c5\u540e\uff0c\u6280\u80fd\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7b56\u7565\u5ba1\u6279\u3001\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u6d4b\u8bd5\u8c03\u7528\u3001\u66f4\u65b0\u548c\u8d26\u5355\u68c0\u67e5\u3002",
-    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u6d4b\u8bd5\u8c03\u7528", "\u66f4\u65b0\u548c\u8d26\u5355"],
+      "\u767b\u5f55\u540e\uff0c\u4fdd\u5b58\u6216\u5b89\u88c5\u7684\u6280\u80fd\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7b56\u7565\u5ba1\u6279\u3001\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u767b\u5f55\u540e\u7684\u8fd0\u884c\u6d4b\u8bd5\u3001\u66f4\u65b0\u548c\u8d26\u5355\u51c6\u5907\u68c0\u67e5\u3002",
+    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907"],
     handoffTitle: "\u4e0b\u4e00\u6b65\uff1a\u5b8c\u6210\u9879\u76ee\u4ea4\u63a5",
+    handoffTitleLocked: "\u767b\u5f55\u540e\uff1a\u9879\u76ee\u4ea4\u63a5\u6b65\u9aa4",
     install: "\u5b89\u88c5\u5230\u9879\u76ee",
     installing: "\u5904\u7406\u4e2d",
     latestVersion: "\u5f53\u524d\u6ce8\u518c\u8868\u7248\u672c",
@@ -134,13 +140,16 @@ export function SkillProjectActionPanel({
   );
   const hasProjects = projects.length > 0;
   const isSubscriptionSkill = billingModel === "subscription";
-  const handoffHref = state.projectSlug ? projectHref(state.projectSlug, locale) : dashboardHref;
+  const handoffHref = state.projectSlug ? projectHref(state.projectSlug, locale) : canOperate ? dashboardHref : lockedCtaHref;
+  const panelHeading = canOperate ? labels.heading : labels.headingLocked;
+  const handoffTitle = canOperate ? labels.handoffTitle : labels.handoffTitleLocked;
+  const handoffAction = state.projectSlug ? labels.openProject : canOperate ? labels.handoffAction : labels.handoffActionLocked;
 
   return (
     <div className="skill-project-action-panel">
       <div className="skill-project-action-panel__head">
         <div className="skill-project-action-panel__title">
-          <strong>{labels.heading}</strong>
+          <strong>{panelHeading}</strong>
           <span>{labels.subheading}</span>
         </div>
         <div className="skill-project-action-panel__badges" aria-label={skillName}>
@@ -231,10 +240,10 @@ export function SkillProjectActionPanel({
         <div className="skill-project-handoff__copy">
           <div className="skill-project-handoff__title">
             <Route size={16} aria-hidden="true" />
-            <strong>{labels.handoffTitle}</strong>
+            <strong>{handoffTitle}</strong>
           </div>
           <p>{labels.handoffBody}</p>
-          <div className="skill-project-handoff__steps" aria-label={labels.handoffTitle}>
+          <div className="skill-project-handoff__steps" aria-label={handoffTitle}>
             {labels.handoffSteps.map((step, index) => (
               <span key={step}>
                 {index === 0 ? <ShieldCheck size={13} aria-hidden="true" /> : index === 2 ? <KeyRound size={13} aria-hidden="true" /> : null}
@@ -244,7 +253,7 @@ export function SkillProjectActionPanel({
           </div>
         </div>
         <a className="ghost-button ghost-button--inline" href={handoffHref}>
-          <span>{state.projectSlug ? labels.openProject : labels.handoffAction}</span>
+          <span>{handoffAction}</span>
           <ArrowRight size={15} aria-hidden="true" />
         </a>
       </div>

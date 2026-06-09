@@ -27,26 +27,26 @@ type PageProps = {
 
 const copy = {
   en: {
-    activePaid: "Paid preview skills",
+    activePaid: "Paid preview inventory",
     back: "Back to marketplace",
     calls: "Calls",
     details: "Skill details",
-    installs: "Installs",
+    installs: "Adoptions",
     latest: "Latest",
     metricCalls: "Runtime calls",
-    metricInstalls: "Installs",
+    metricInstalls: "Adoption evidence",
     metricPublic: "Public skills",
     metricVerified: "Verified skills",
-    payout: "Paid marketplace payout preview",
+    payout: "Paid marketplace readiness",
     profile: "Publisher profile",
     publicSkills: "Public skills",
     skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
-    status: "Publisher status",
+    status: "Profile status",
     success: "Avg success",
     trust: "Trust signals",
     trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, runtime evidence, and install evidence. Payout readiness is shown only for paid marketplace preview operations.",
     trustLevels: {
-      active: "Active publisher",
+      active: "Public profile",
       blocked: "Blocked publisher",
       limited: "Limited publisher",
       verified: "Verified publisher"
@@ -83,26 +83,26 @@ const copy = {
     }
   },
   zh: {
-    activePaid: "付费预览技能",
+    activePaid: "付费预览库存",
     back: "返回市场",
     calls: "调用",
     details: "技能详情",
-    installs: "安装",
+    installs: "采用",
     latest: "最新",
     metricCalls: "运行调用",
-    metricInstalls: "安装量",
+    metricInstalls: "采用证据",
     metricPublic: "公开技能",
     metricVerified: "已验证技能",
-    payout: "付费市场提现预览",
+    payout: "付费市场准备状态",
     profile: "发布者档案",
     publicSkills: "公开技能",
     skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
-    status: "发布者状态",
+    status: "资料状态",
     success: "平均成功率",
     trust: "信任信号",
     trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。提现准备只作为付费市场预览状态展示。",
     trustLevels: {
-      active: "活跃发布者",
+      active: "公开资料",
       blocked: "已阻断发布者",
       limited: "受限发布者",
       verified: "已验证发布者"
@@ -225,9 +225,8 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
 
                   <div className="publisher-public-skill__meta">
                     <span className={`risk-badge risk-badge--${skill.permissionLevel}`}>{labels.permissionLevels[skill.permissionLevel]}</span>
-                    <span>{skill.price[locale]}</span>
-                    <span>{labels.billingModels[skill.billing]}</span>
-                    <span>{skill.version ?? labels.latest}</span>
+                    <span>{formatPublicSkillPrice(skill, labels, locale)}</span>
+                    <span>{formatVersion(skill.version, labels.latest)}</span>
                   </div>
 
                   <div className="publisher-public-skill__signals">
@@ -246,7 +245,7 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                   </div>
 
                   <div className="publisher-public-command">
-                    <code>{installState.installable ? skill.installCommand : installState.reason[locale]}</code>
+                    <code>{publisherSkillAvailability(installState, locale)}</code>
                     <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${skill.slug}`, locale)}>
                       <ShieldCheck size={15} aria-hidden="true" />
                       <span>{labels.details}</span>
@@ -288,6 +287,35 @@ function TrustRow({ icon, label, value }: { icon: ReactNode; label: string; valu
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatPublicSkillPrice(
+  skill: { billing: keyof (typeof copy)["en"]["billingModels"]; price: Record<string, string> },
+  labels: (typeof copy)["en"] | (typeof copy)["zh"],
+  locale: keyof typeof copy
+) {
+  const price = skill.price[locale];
+  const model = labels.billingModels[skill.billing];
+
+  return price.toLowerCase() === model.toLowerCase() ? price : `${price} / ${model}`;
+}
+
+function formatVersion(version: string | null | undefined, fallback: string) {
+  if (!version) {
+    return fallback;
+  }
+
+  return version.startsWith("v") ? version : `v${version}`;
+}
+
+function publisherSkillAvailability(installState: ReturnType<typeof getSkillInstallState>, locale: keyof typeof copy) {
+  if (!installState.installable) {
+    return installState.reason[locale];
+  }
+
+  return locale === "zh"
+    ? "\u53ef\u516c\u5f00\u67e5\u770b\uff1b\u767b\u5f55\u540e\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u68c0\u67e5\u518d\u91c7\u7528\u548c\u8fd0\u884c\u3002"
+    : "Public inspection is available; sign in and pass project policy checks before adoption or runtime use.";
 }
 
 function trustClass(trustLevel: "verified" | "active" | "limited" | "blocked") {

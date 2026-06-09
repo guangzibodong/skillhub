@@ -56,7 +56,7 @@ const copy = {
     cliPreviewStatus: "Not published as a public copy-and-run install yet.",
     contract: "Runtime contract",
     feedback: "User feedback",
-    feedbackBody: "Published feedback appears after moderated signed-in submissions.",
+    feedbackBody: "Published feedback appears after moderated signed-in evaluations. Submitted skills are not installable until verified.",
     feedbackEmpty: "No published feedback yet.",
     feedbackProject: "Project",
     feedbackUseCase: "Use case",
@@ -67,7 +67,7 @@ const copy = {
         subscription: "Trial or subscription gate"
       },
       body:
-        "The listing can become project state with a version pin, policy gate, reveal-once runtime key, governed test, and ledger-ready invocation record.",
+        "This verified listing can become project state only after sign-in, with a version pin, policy gate, reveal-once runtime key, login-gated runtime test, and prelaunch billing or ledger evidence where applicable.",
       keyValue: "Reveal-once key",
       latest: "latest",
       policy: {
@@ -84,9 +84,9 @@ const copy = {
         key: ["Runtime key", "Managed from the project command center."],
         ledger: ["Runtime evidence model", "Runtime evidence can feed future invoice, audit, and paid-marketplace review."],
         project: ["Project state", "Saved or installed under one organization."],
-        test: ["Governed test", "Console test uses the same gateway path as agent calls."]
+        test: ["Login-gated runtime test", "Console tests require sign-in and use the same gateway path as agent calls."]
       },
-      title: "Developer handoff packet"
+      title: "Authenticated project path preview"
     },
     input: "Input example",
     install: "Install",
@@ -116,7 +116,7 @@ const copy = {
     security: "Security review",
     success: "Success rate",
     support: "Support and operations",
-    supportItems: ["Version pinning supported", "Deprecation notice required", "Runtime incidents enter review queue"],
+    supportItems: ["Version pinning supported", "Deprecation notice required", "Runtime incident reporting requires signed-in verified runtime use"],
     trustLevels: {
       active: "active",
       blocked: "blocked",
@@ -138,7 +138,7 @@ const copy = {
     cliPreviewStatus: "暂未作为公开的一键运行安装命令发布。",
     contract: "运行协议",
     feedback: "用户反馈",
-    feedbackBody: "\u5df2\u767b\u5f55\u7528\u6237\u63d0\u4ea4\u7684\u53cd\u9988\u901a\u8fc7\u5ba1\u6838\u540e\u4f1a\u5728\u8fd9\u91cc\u516c\u5f00\u5c55\u793a\u3002",
+    feedbackBody: "\u5df2\u767b\u5f55\u7528\u6237\u7684\u8bc4\u4f30\u901a\u8fc7\u5ba1\u6838\u540e\u4f1a\u5728\u8fd9\u91cc\u516c\u5f00\u5c55\u793a\u3002\u5df2\u63d0\u4ea4\u4f46\u672a\u9a8c\u8bc1\u7684\u6280\u80fd\u4e0d\u53ef\u5b89\u88c5\u3002",
     feedbackEmpty: "暂时还没有公开反馈。",
     feedbackProject: "项目",
     feedbackUseCase: "使用场景",
@@ -149,7 +149,7 @@ const copy = {
         subscription: "试用或订阅门槛"
       },
       body:
-        "该上架项可以变成项目状态：版本固定、策略网关、一次性展示运行 Key、治理测试和可入账的调用记录。",
+        "\u8fd9\u4e2a\u5df2\u9a8c\u8bc1 listing \u53ea\u4f1a\u5728\u767b\u5f55\u540e\u8fdb\u5165\u9879\u76ee\u72b6\u6001\uff1a\u7248\u672c\u56fa\u5b9a\u3001\u7b56\u7565\u7f51\u5173\u3001\u4e00\u6b21\u53ef\u89c1\u8fd0\u884c Key\u3001\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5\uff0c\u4ee5\u53ca\u9884\u53d1\u5e03\u7684\u8ba1\u8d39\u6216\u8d26\u672c\u8bc1\u636e\u3002",
       keyValue: "一次性展示 Key",
       latest: "最新版本",
       policy: {
@@ -166,9 +166,9 @@ const copy = {
         key: ["运行 Key", "由项目命令中心管理。"],
         ledger: ["\u8fd0\u884c\u8bc1\u636e\u6a21\u578b", "\u8fd0\u884c\u8bc1\u636e\u53ef\u4ee5\u8fdb\u5165\u672a\u6765\u53d1\u7968\u3001\u5ba1\u8ba1\u548c\u4ed8\u8d39\u5e02\u573a\u590d\u6838\u3002"],
         project: ["项目状态", "保存或安装都归属到一个组织。"],
-        test: ["治理测试", "控制台测试走与 agent 调用相同的网关路径。"]
+        test: ["\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u63a7\u5236\u53f0\u6d4b\u8bd5\u9700\u8981\u767b\u5f55\uff0c\u5e76\u4f7f\u7528\u4e0e agent \u8c03\u7528\u76f8\u540c\u7684\u7f51\u5173\u8def\u5f84\u3002"]
       },
-      title: "开发者交接包"
+      title: "\u5df2\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84\u9884\u89c8"
     },
     input: "输入示例",
     install: "安装",
@@ -198,7 +198,7 @@ const copy = {
     security: "安全审核",
     success: "成功率",
     support: "支持和运营",
-    supportItems: ["支持版本固定", "弃用必须提前通知", "运行事故进入审核队列"],
+    supportItems: ["\u652f\u6301\u7248\u672c\u56fa\u5b9a", "\u5e9f\u5f03\u5fc5\u987b\u63d0\u524d\u901a\u77e5", "\u8fd0\u884c\u4e8b\u6545\u4e3e\u62a5\u9700\u8981\u767b\u5f55\u4e14\u4f7f\u7528\u5df2\u9a8c\u8bc1\u8fd0\u884c\u8def\u5f84"],
     trustLevels: {
       active: "活跃",
       blocked: "已阻断",

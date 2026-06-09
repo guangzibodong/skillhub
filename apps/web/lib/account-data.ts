@@ -135,8 +135,8 @@ const fallbackProviders: AuthProviderStatus[] = [
     type: "oauth"
   },
   {
-    description: "User access tokens remain available for team invites and operator fallback.",
-    label: "User token",
+    description: "Invite and recovery tokens remain available for team invites and operator recovery.",
+    label: "Invite/recovery token",
     provider: "token",
     startUrl: null,
     status: "active",

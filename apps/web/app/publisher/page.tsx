@@ -94,7 +94,7 @@ const publisherCommandCopy = {
     ready: "Ready",
     title: "What should the publisher do next?",
     actions: {
-      payout: "Open payout readiness",
+      payout: "Open paid-readiness metadata",
       profile: "Complete publisher account",
       publish: "Publish a skill",
       session: "Sign in",
@@ -124,7 +124,7 @@ const publisherCommandCopy = {
       feedback: "Open feedback responses",
       ledger: "Review adjustments",
       monitor: "Review publisher operations",
-      payout: "Open payout readiness",
+      payout: "Open paid-readiness metadata",
       pricing: "Open paid readiness",
       review: "Open skill workbench",
       runtime: "Open review evidence"
@@ -244,11 +244,11 @@ const copy = {
     adjustmentTitle: "Refund and dispute watch",
     disputeReview: "Dispute review",
     description:
-      "A focused workspace for skill publishers to move packages through review, price verified listings, respond to buyer demand, and prepare revenue for payout.",
+      "A focused workspace for skill publishers to move packages through review, record pricing intent for future paid-marketplace review, respond to buyer demand, and prepare paid-marketplace metadata.",
     eyebrow: "Publisher workspace",
     ledgerEmpty: "No posted publisher revenue yet",
     ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
-    ledgerTitle: "Publisher revenue ledger",
+    ledgerTitle: "Publisher paid-marketplace ledger preview",
     refundReview: "Refund review",
     sourceMixTitle: "Revenue source mix",
     sourceShareLabel: "publisher share",
@@ -287,7 +287,7 @@ const copy = {
       requested: "Requested"
     },
     metrics: {
-      available: "Available balance",
+      available: "Paid preview balance",
       demand: "Open demand",
       skills: "Owned skills",
       verified: "Verified skills"
@@ -304,10 +304,10 @@ const copy = {
         terms: ["Accept operating terms", "Record the current refund, dispute, takedown, data, notification, and payout policy before paid publishing."],
         publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],
         verified: ["Reach verified listing status", "Complete review and activate pricing so buyers can trust and install the skill."],
-        payout: ["Prepare payout readiness", "Connect payout details before revenue matures into a withdrawal request."]
+        payout: ["Prepare paid-marketplace metadata", "Record receiving details for future finance review before any public paid rollout."]
       }
     },
-    title: "Operate your SkillHub publishing business."
+    title: "Manage skill submissions and review readiness."
   },
   zh: {
     adjustmentEmpty: "暂无退款或争议记录",
@@ -464,7 +464,7 @@ function getPublisherLockedGuide(locale: Locale) {
   return {
     ariaLabel: "Publisher access steps",
     eyebrow: "Publisher access",
-    marker: "publisher operations queue / paid marketplace readiness / payout readiness",
+    marker: "publisher operations queue / review readiness / paid marketplace preview",
     actions: [
       {
         body: "Use Google, GitHub, or email/password to create the current organization session.",
