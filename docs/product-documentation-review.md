@@ -10,6 +10,8 @@ Update on 2026-06-09: the public website credibility pass now treats SkillHub as
 
 Round 2 acceptance update on 2026-06-09: public copy, README, API docs, and smoke checks now use the same state model. Public registry discovery and skill inspection are live; runtime invocation requires an authenticated project key; CLI and SDK packages remain unpublished public previews; submitted skills are inspection-only; anonymous dashboard HTML renders only a sign-in gate; and anonymous navigation focuses on Home, Registry, Marketplace, Docs, Publish, and Sign in.
 
+Round 3 acceptance update on 2026-06-09: public acceptance now enforces the source of truth instead of only editing page copy. Submitted skills use a shared availability helper and stay inspection-only on public detail pages, verified skills keep the developer handoff path, public publisher routing canonicalizes legacy `skillhub-publisher` links to `skillhub`, public skill names/descriptions/tags are localized at the marketplace data layer, and the smoke suite checks the verified/submitted split plus the publisher slug alias. Marketplace public copy now labels paid, ledger, and payout material as Developer Preview architecture or future/manual paid-marketplace workflow. The manual QA checklist is recorded in `docs/public-acceptance-qa.md`.
+
 They described:
 
 - Registry.

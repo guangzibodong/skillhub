@@ -51,7 +51,7 @@ type MarketplaceInitialFilterState = {
 
 const pageCopy = {
   en: {
-    eyebrow: "Agent skill marketplace",
+    eyebrow: "Agent skill registry preview",
     title: "Find, inspect, and prepare governed agent skills.",
     description:
       "Developer Preview: search public skills, inspect permissions, and use registry/gateway discovery now. Paid marketplace, payment capture, and payout automation remain prelaunch.",
@@ -64,7 +64,7 @@ const pageCopy = {
     requests: "Example skill requests - not live data",
     requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
     publishTitle: "Publisher operating flow",
-    publishSteps: ["Draft manifest", "Runtime test", "Human review", "Pricing approval", "Public listing", "Usage ledger", "Payout review"],
+    publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Pricing blockers", "Public listing", "Future ledger model", "Manual payout review"],
     trustTitle: "Launch requirements",
     trustItems: [
       ["Manifest", "Typed input/output, runtime, permissions, version, author."],
@@ -72,25 +72,25 @@ const pageCopy = {
       ["Money", "Versioned commission rule, immutable transaction split, payout audit trail."],
       ["Support", "Changelog, deprecation policy, issue channel, response expectations."]
     ],
-    moneyTitle: "Commission and payout model",
+    moneyTitle: "Future paid marketplace model",
     moneyRows: [
-      ["Default split", "20% platform / 80% publisher"],
-      ["Payout delay", "Funds mature after refund and fraud window"],
-      ["Review threshold", "Manual review above configured amount"],
-      ["Ledger rule", "Usage logs never pay out directly"]
+      ["Current stage", "Developer Preview catalog; payment capture is prelaunch"],
+      ["Manual payout path", "Publishers leave PayPal/Alipay details for finance review"],
+      ["Future ledger rule", "Billable usage will post transactions before balance review"],
+      ["Operator control", "Finance records manual transfer evidence before marking paid"]
     ],
     overview: {
-      eyebrow: "Operating overview",
-      title: "The marketplace already has separate loops for buyers, publishers, and operators.",
+      eyebrow: "Architecture preview",
+      title: "The catalog is tied to buyer, publisher, and operator state without claiming paid launch.",
       body:
-        "These signals come from the platform overview API, so the public marketplace can show the working surfaces behind discovery instead of only presenting a catalog.",
+        "These preview signals come from the platform overview API. They explain the discovery-to-runtime architecture while paid marketplace operations remain prelaunch.",
       metrics: {
         activeSubscriptions: "Active subscriptions",
         availableBalance: "Available balance",
         failedChecks: "Failed checks",
         installedSkills: "Installed skills",
         openBuyerRequests: "Buyer requests",
-        payoutReview: "Payout review",
+        payoutReview: "Manual payout review",
         projects: "Projects",
         queuedNotifications: "Queued notifications",
         reviewQueue: "Review queue",
@@ -101,7 +101,7 @@ const pageCopy = {
       roles: {
         admin: {
           empty: "No active risk signals.",
-          subtitle: "Review, money, notification, and incident queues protect the marketplace.",
+          subtitle: "Review, manual payout, notification, and incident queues protect launch readiness.",
           title: "Platform operators"
         },
         developer: {
@@ -111,7 +111,7 @@ const pageCopy = {
         },
         publisher: {
           empty: "No publisher actions.",
-          subtitle: "Authors return for review feedback, runtime checks, demand, revenue, and payout readiness.",
+          subtitle: "Authors return for review feedback, runtime checks, demand signals, and paid-readiness blockers.",
           title: "Publishers"
         }
       },
@@ -132,44 +132,44 @@ const pageCopy = {
         ],
         publisher: [
           "Repair review and runtime issues before losing distribution.",
-          "Turn buyer requests and feedback into new paid versions.",
-          "Track ledger state and payout readiness after usage lands."
+          "Turn buyer requests and feedback into improved versions.",
+          "Prepare paid-readiness and manual payout details before real paid usage launches."
         ]
       }
     },
-    catalogMetric: "Live catalog",
+    catalogMetric: "Public catalog preview",
     publisherMetric: "Public publishers",
     verifiedPublisherMetric: "Verified publishers",
     reviewMetric: "Review gates",
     reviewMetricValue: "Schema + Runtime + Human",
-    moneyMetric: "Money flow",
-    moneyMetricValue: "Ledger before payout",
+    moneyMetric: "Paid workflow",
+    moneyMetricValue: "Prelaunch model",
     publisherDirectoryTitle: "Supplier trust is part of discovery",
     publisherDirectoryBody:
-      "Every marketplace card now links to the supplier behind the skill. The public directory lets teams compare verified listings, payout readiness, runtime evidence, and active paid inventory before installing.",
+      "Every marketplace card links to the supplier behind the skill. The public directory lets teams compare profile state, verified listings, public review status, install evidence, and runtime evidence before installing.",
     publisherDirectoryCta: "Browse publishers",
     loopEyebrow: "Installed skill operations",
     loopTitle: "The marketplace keeps a live path after install.",
     loopBody:
-      "A useful skill store is not finished when an agent copies a command. Buyers need runtime evidence and spend controls; publishers need feedback, changelog pressure, and payout-ready usage records.",
+      "A useful skill registry is not finished when an agent copies a command. Verified skills can move into project policy and runtime evidence; submitted skills stay inspection-only until review passes.",
     loopSteps: [
       ["Inspect", "Manifest, permissions, runtime, price, and publisher profile are visible before install.", "Public contract"],
       ["Install", "Teams attach the skill to a project key or MCP server with explicit policy context.", "Project gate"],
-      ["Invoke", "Runtime calls carry typed input, budget checks, success signals, and reviewable output.", "Usage ledger"],
-      ["Return", "Feedback, incidents, changelog updates, and payout review create the next publisher action.", "Retention loop"]
+      ["Invoke", "Verified runtime calls carry typed input, project policy checks, success signals, and reviewable output.", "Runtime evidence"],
+      ["Return", "Feedback, incidents, changelog updates, and paid-readiness blockers create the next publisher action.", "Retention loop"]
     ],
     loopMetrics: {
       callable: "Callable skills",
       calls: "Recorded calls",
       feedback: "Feedback signals",
-      payout: "Payout-ready publishers"
+      payout: "Paid-readiness publishers"
     },
     loopLedgerTitle: "What teams can revisit",
     loopLedgerRows: [
       ["Buyer view", "Install trail", "Command, permission profile, pricing model, and project policy stay inspectable."],
       ["Agent view", "Runtime proof", "The agent can validate schema, latency, and success history before repeated calls."],
       ["Publisher view", "Action queue", "Reviews, incidents, usage, and changelog pressure feed the next version."],
-      ["Finance view", "Payout audit", "Paid usage reaches ledger review before publisher payout."]
+      ["Finance view", "Manual payout audit", "Future paid usage reaches ledger review before finance records manual transfer evidence."]
     ]
   },
   zh: {
@@ -194,25 +194,25 @@ const pageCopy = {
       ["资金", "版本化佣金规则、不可变分账交易、提现审计链路。"],
       ["支持", "更新记录、弃用政策、问题通道、响应预期。"]
     ],
-    moneyTitle: "分佣和提现模型",
+    moneyTitle: "未来付费市场模型",
     moneyRows: [
-      ["默认分账", "20% 平台 / 80% 发布者"],
-      ["提现延迟", "资金经过退款和风控窗口后成熟"],
-      ["审核阈值", "超过配置金额进入人工审核"],
-      ["账本规则", "绝不直接从用量日志打款"]
+      ["当前阶段", "开发者预览目录；支付扣款仍处于预发布"],
+      ["人工打款路径", "发布者留下 PayPal/Alipay 信息，财务人工复核"],
+      ["未来账本规则", "可计费使用会先形成交易，再进入余额复核"],
+      ["运营控制", "财务记录人工转账凭证后才标记已支付"]
     ],
     overview: {
-      eyebrow: "运营总览",
-      title: "市场已经拆出了买家、发布者、平台运营三条回访闭环。",
+      eyebrow: "架构预览",
+      title: "目录已连接买家、发布者和运营状态，但不宣称付费市场已上线。",
       body:
-        "这些信号来自 platform overview API，所以市场页展示的不只是目录，而是目录背后的真实工作台、队列和运营状态。",
+        "这些预览信号来自 platform overview API，用来解释从发现到运行的架构；付费市场运营仍处于预发布阶段。",
       metrics: {
         activeSubscriptions: "活跃订阅",
         availableBalance: "可用余额",
         failedChecks: "失败检查",
         installedSkills: "已安装技能",
         openBuyerRequests: "买方需求",
-        payoutReview: "提现审核",
+        payoutReview: "人工提现审核",
         projects: "项目",
         queuedNotifications: "排队通知",
         reviewQueue: "审核队列",
@@ -223,7 +223,7 @@ const pageCopy = {
       roles: {
         admin: {
           empty: "暂无活跃风险信号。",
-          subtitle: "审核、资金、通知和事故队列保护整个市场。",
+          subtitle: "审核、人工打款、通知和事故队列用于保护上线准备。",
           title: "平台运营"
         },
         developer: {
@@ -233,7 +233,7 @@ const pageCopy = {
         },
         publisher: {
           empty: "暂无发布者行动。",
-          subtitle: "作者会为了审核反馈、运行检查、需求、收入和提现准备回到平台。",
+          subtitle: "作者会为了审核反馈、运行检查、需求信号和付费准备阻断项回到平台。",
           title: "发布者"
         }
       },
@@ -254,44 +254,44 @@ const pageCopy = {
         ],
         publisher: [
           "在失去分发前修复审核和运行问题。",
-          "把买方需求和反馈转成新的付费版本。",
-          "用量入账后持续跟踪账本和提现准备。"
+          "把买方需求和反馈转成改进版本。",
+          "在真实付费使用上线前准备付费门槛和人工打款信息。"
         ]
       }
     },
-    catalogMetric: "实时目录",
+    catalogMetric: "公开目录预览",
     publisherMetric: "公开发布者",
     verifiedPublisherMetric: "已验证发布者",
     reviewMetric: "审核关卡",
     reviewMetricValue: "Schema / 运行时 / 人审",
-    moneyMetric: "资金流",
-    moneyMetricValue: "先入账本再提现",
+    moneyMetric: "付费流程",
+    moneyMetricValue: "预发布模型",
     publisherDirectoryTitle: "供应方信任也是发现的一部分",
     publisherDirectoryBody:
-      "每张市场技能卡现在都会连接到背后的发布者。公开目录让团队在安装前比较已验证上架、提现准备、运行证据和活跃付费技能。",
+      "每张市场技能卡都会连接到背后的发布者。公开目录让团队在安装前比较资料状态、已验证上架、公开审核状态、安装证据和运行证据。",
     publisherDirectoryCta: "浏览发布者",
     loopEyebrow: "已安装技能运营",
     loopTitle: "市场在安装后仍然保留一条实时路径。",
     loopBody:
-      "有用的技能市场不止于复制一条命令。买家需要运行证据和预算控制；发布者需要反馈、更新压力和可进入提现审核的用量记录。",
+      "有用的技能库不止于复制一条命令。已验证技能可以进入项目策略和运行证据；已提交但未验证的技能只能公开查看，不能安装或测试运行。",
     loopSteps: [
       ["检查", "安装前可以看到 manifest、权限、运行时、价格和发布者档案。", "公共合约"],
       ["安装", "团队把技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
-      ["调用", "运行时调用携带类型化输入、预算检查、成功信号和可复核输出。", "用量账本"],
-      ["回访", "反馈、事故、更新记录和提现审核会形成下一次发布者行动。", "留存闭环"]
+      ["调用", "已验证运行调用携带类型化输入、项目策略检查、成功信号和可复核输出。", "运行证据"],
+      ["回访", "反馈、事故、更新记录和付费准备阻断项会形成下一次发布者行动。", "留存闭环"]
     ],
     loopMetrics: {
       callable: "可调用技能",
       calls: "已记录调用",
       feedback: "反馈信号",
-      payout: "提现就绪发布者"
+      payout: "付费准备发布者"
     },
     loopLedgerTitle: "团队可回访的信息",
     loopLedgerRows: [
       ["买家视角", "安装轨迹", "命令、权限画像、价格模型和项目策略都保持可检查。"],
       ["Agent 视角", "运行证据", "Agent 可在重复调用前校验 schema、延迟和成功历史。"],
       ["发布者视角", "行动队列", "评价、事故、用量和更新压力会进入下一版本。"],
-      ["财务视角", "提现审计", "付费用量先进入账本审核，再进入发布者提现。"]
+      ["财务视角", "人工提现审计", "未来付费用量先进入账本审核，再由财务记录人工转账凭证。"]
     ]
   }
 } as const;

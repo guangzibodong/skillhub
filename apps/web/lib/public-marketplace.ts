@@ -9,6 +9,11 @@ import {
   isVerifiedSkillStatus,
   publicApiInspectCommand,
 } from "@/lib/skill-install-state";
+import {
+  publicSkillDescription,
+  publicSkillDisplayName,
+  publicSkillTags,
+} from "@/lib/public-skill-localization";
 
 type SkillPriceRecord = {
   id: string;
@@ -259,10 +264,7 @@ function manifestToMarketplaceSkill(
       sdk: `CLI/SDK preview: ${summary.slug}`,
     },
     latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),
-    name: {
-      en: summary.displayName,
-      zh: staticSkill?.name.zh ?? summary.displayName,
-    },
+    name: staticSkill?.name ?? publicSkillDisplayName(summary.slug, summary.displayName),
     outputExample:
       staticSkill?.outputExample ??
       schemaExample(manifest?.outputSchema, "output"),
@@ -290,14 +292,8 @@ function manifestToMarketplaceSkill(
     slug: summary.slug,
     successRate:
       staticSkill?.successRate ?? formatSuccessRate(summary.successRate),
-    summary: {
-      en: summary.description,
-      zh: staticSkill?.summary.zh ?? summary.description,
-    },
-    tags: {
-      en: summary.tags,
-      zh: staticSkill?.tags.zh ?? summary.tags,
-    },
+    summary: staticSkill?.summary ?? publicSkillDescription(summary.slug, summary.description),
+    tags: staticSkill?.tags ?? publicSkillTags(summary.slug, summary.tags),
     useCases: staticSkill?.useCases ?? [
       {
         en: `Use ${summary.displayName} as a reusable agent capability instead of rebuilding the same workflow.`,

@@ -505,7 +505,9 @@ const RELEASE_COMMAND_GUARDS = [
 
 const smokeContext = {
   publicPublisherSlug: undefined,
+  publicSubmittedSkillSlug: undefined,
   publicSkillSlug: undefined,
+  publicVerifiedSkillSlug: undefined,
   stats: undefined,
 };
 
@@ -971,6 +973,14 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
     }
 
     smokeContext.publicSkillSlug = json.skills[0]?.slug;
+    smokeContext.publicVerifiedSkillSlug = json.skills.find(
+      (skill) =>
+        skill?.verificationStatus === "verified" ||
+        skill?.verificationStatus === "approved",
+    )?.slug;
+    smokeContext.publicSubmittedSkillSlug = json.skills.find(
+      (skill) => skill?.verificationStatus === "submitted",
+    )?.slug;
 
     pass(name, `skills=${json.skills.length}`);
   } catch (error) {
@@ -2408,7 +2418,9 @@ async function checkAppPages({ appUrl, appPaths, timeoutMs }) {
 
   await checkAppNotFoundPage({ appUrl, timeoutMs });
   await checkPublicSkillDetailPage({ appUrl, timeoutMs });
+  await checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs });
   await checkPublicPublisherProfilePage({ appUrl, timeoutMs });
+  await checkPublicPublisherLegacySlugPage({ appUrl, timeoutMs });
 }
 
 async function checkAppNotFoundPage({ appUrl, timeoutMs }) {
@@ -2543,13 +2555,14 @@ async function checkProductionAppAliases({ appAliasUrls, appUrl, timeoutMs }) {
 }
 
 async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
-  const slug = smokeContext.publicSkillSlug;
+  const slug =
+    smokeContext.publicVerifiedSkillSlug ?? smokeContext.publicSkillSlug;
   const name = "GET app public skill detail";
 
   if (!slug) {
     skip(
       name,
-      "no public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+      "no verified or public skill returned by /v1/skills/search; API smoke reports whether that is expected",
     );
     return;
   }
@@ -2611,6 +2624,105 @@ async function checkPublicSkillDetailPage({ appUrl, timeoutMs }) {
   }
 }
 
+async function checkSubmittedSkillInspectionOnlyPage({ appUrl, timeoutMs }) {
+  const slug = smokeContext.publicSubmittedSkillSlug;
+  const name = "GET app submitted skill inspection-only detail";
+
+  if (!slug) {
+    skip(
+      name,
+      "no submitted public skill returned by /v1/skills/search; API smoke reports whether that is expected",
+    );
+    return;
+  }
+
+  const paths = [
+    `/skills/${encodeURIComponent(slug)}`,
+    `/skills/${encodeURIComponent(slug)}?lang=zh`,
+  ];
+
+  const requiredByLocale = {
+    en: ["inspection only", "not verified yet"],
+    zh: ["\u4ec5\u53ef\u67e5\u770b", "\u5c1a\u672a\u901a\u8fc7"],
+  };
+  const forbiddenByLocale = {
+    en: [
+      "developer install journey",
+      "discovery becomes project install state",
+      "developer handoff packet",
+      "add this skill to a project",
+      "next: finish the project handoff",
+      "runtime can be tested",
+      "project state",
+      "project command",
+      "run governed test",
+      "billing gate",
+      "usage ledger",
+      "open developer workspace",
+    ],
+    zh: [
+      "\u5f00\u53d1\u8005\u5b89\u88c5\u8def\u5f84",
+      "\u53d1\u73b0\u4f1a\u53d8\u6210\u9879\u76ee\u5b89\u88c5\u72b6\u6001",
+      "\u5f00\u53d1\u8005\u4ea4\u63a5\u5305",
+      "\u628a\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
+      "\u5b8c\u6210\u9879\u76ee\u4ea4\u63a5",
+      "\u53ef\u901a\u8fc7 SkillHub \u7f51\u5173\u6d4b\u8bd5\u8fd0\u884c",
+      "\u9879\u76ee\u72b6\u6001",
+      "\u9879\u76ee\u6307\u6325\u53f0",
+      "\u8fd0\u884c\u6cbb\u7406\u6d4b\u8bd5",
+      "\u8ba1\u8d39\u95e8\u69db",
+      "\u7528\u91cf\u8d26\u672c",
+      "\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    ],
+  };
+
+  for (const path of paths) {
+    try {
+      const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+      if (response.status !== 200) {
+        fail(name, `expected HTTP 200 for ${path}, got ${response.status}`);
+        continue;
+      }
+
+      const locale = isZhAppPath(path) ? "zh" : "en";
+      const html = response.text.toLowerCase();
+      const requiredMarkers = requiredByLocale[locale];
+      const forbiddenMarkers = forbiddenByLocale[locale];
+      const missingMarkers = requiredMarkers.filter(
+        (token) => !html.includes(token.toLowerCase()),
+      );
+
+      if (missingMarkers.length > 0) {
+        fail(
+          name,
+          `submitted skill page is missing inspection-only markers in ${path}: ${missingMarkers.join(", ")}`,
+        );
+        continue;
+      }
+
+      const presentForbiddenMarkers = forbiddenMarkers.filter((token) =>
+        html.includes(token.toLowerCase()),
+      );
+
+      if (presentForbiddenMarkers.length > 0) {
+        fail(
+          name,
+          `submitted skill page must not show install/runtime/project handoff markers in ${path}: ${presentForbiddenMarkers.join(", ")}`,
+        );
+        continue;
+      }
+
+      pass(
+        name,
+        `${path} inspection-only html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+      );
+    } catch (error) {
+      fail(name, error.message);
+    }
+  }
+}
+
 async function checkPublicPublisherProfilePage({ appUrl, timeoutMs }) {
   const slug = smokeContext.publicPublisherSlug;
   const name = "GET app public publisher profile";
@@ -2658,6 +2770,56 @@ async function checkPublicPublisherProfilePage({ appUrl, timeoutMs }) {
       pass(
         name,
         `${path} html bytes=${Buffer.byteLength(response.text, "utf8")}`,
+      );
+    } catch (error) {
+      fail(name, error.message);
+    }
+  }
+}
+
+async function checkPublicPublisherLegacySlugPage({ appUrl, timeoutMs }) {
+  const canonicalSlug = smokeContext.publicPublisherSlug;
+  const name = "GET app public publisher legacy slug alias";
+
+  if (canonicalSlug !== "skillhub") {
+    skip(
+      name,
+      "canonical SkillHub publisher profile was not returned by /v1/publishers; publisher profile smoke covers the active public slug",
+    );
+    return;
+  }
+
+  const paths = [
+    "/publishers/skillhub-publisher",
+    "/publishers/skillhub-publisher?lang=zh",
+  ];
+
+  for (const path of paths) {
+    try {
+      const response = await requestText(joinUrl(appUrl, path), { timeoutMs });
+
+      if (response.status !== 200) {
+        fail(name, `expected HTTP 200 for legacy publisher slug ${path}, got ${response.status}`);
+        continue;
+      }
+
+      const html = response.text.toLowerCase();
+      const hasProfileMarkers = isZhAppPath(path)
+        ? response.text.includes("\u53d1\u5e03\u8005\u6863\u6848") &&
+          response.text.includes("\u516c\u5f00\u6280\u80fd")
+        : html.includes("publisher profile") && html.includes("public skills");
+
+      if (!hasProfileMarkers || !html.includes("/publishers/skillhub")) {
+        fail(
+          name,
+          `legacy publisher slug ${path} did not render the canonical SkillHub publisher profile`,
+        );
+        continue;
+      }
+
+      pass(
+        name,
+        `${path} alias html bytes=${Buffer.byteLength(response.text, "utf8")}`,
       );
     } catch (error) {
       fail(name, error.message);
@@ -2751,6 +2913,26 @@ async function checkPublicPreviewSourceContract() {
       "apps/web/lib/skill-install-state.ts",
       "utf8",
     );
+    const skillDetailPage = await readFile(
+      "apps/web/app/skills/[slug]/page.tsx",
+      "utf8",
+    );
+    const skillLocalization = await readFile(
+      "apps/web/lib/public-skill-localization.ts",
+      "utf8",
+    );
+    const webPublishers = await readFile(
+      "apps/web/lib/public-publishers.ts",
+      "utf8",
+    );
+    const gatewayPublishers = await readFile(
+      "apps/gateway/src/public-publishers.ts",
+      "utf8",
+    );
+    const availabilityTest = await readFile(
+      "scripts/skill-availability.test.mjs",
+      "utf8",
+    );
     const siteHeaderClient = await readFile(
       "apps/web/components/site-header-client.tsx",
       "utf8",
@@ -2762,6 +2944,12 @@ async function checkPublicPreviewSourceContract() {
       ["callableSkills stat", /callableSkills/.test(publicStats)],
       ["isCallableSkillSummary helper", /function\s+isCallableSkillSummary/.test(publicStats)],
       ["inspection-only install state", /Inspection only/.test(installState)],
+      ["getSkillAvailability helper", /function\s+getSkillAvailability/.test(installState)],
+      ["submitted handoff gate", /canShowProjectHandoff/.test(skillDetailPage)],
+      ["public skill localization helper", /publicSkillDisplayName/.test(skillLocalization)],
+      ["web canonical publisher alias", /skillhub-publisher["']:\s*["']skillhub/.test(webPublishers)],
+      ["gateway canonical publisher alias", /skillhub-publisher["']:\s*["']skillhub/.test(gatewayPublishers)],
+      ["skill availability regression test", /submitted skills stay inspection-only/.test(availabilityTest)],
       ["anonymous publish entry", /href=\{localizedHref\("\/publish"/.test(siteHeaderClient)],
     ];
     const missing = requiredSourceMarkers

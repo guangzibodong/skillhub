@@ -27,7 +27,7 @@ type PageProps = {
 
 const copy = {
   en: {
-    activePaid: "Active paid skills",
+    activePaid: "Paid preview skills",
     back: "Back to marketplace",
     calls: "Calls",
     details: "Skill details",
@@ -37,14 +37,14 @@ const copy = {
     metricInstalls: "Installs",
     metricPublic: "Public skills",
     metricVerified: "Verified skills",
-    payout: "Payout readiness",
+    payout: "Paid marketplace payout preview",
     profile: "Publisher profile",
     publicSkills: "Public skills",
     skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
     status: "Publisher status",
     success: "Avg success",
     trust: "Trust signals",
-    trustBody: "Publisher trust is based on profile state, verified skill count, payout readiness, public listings, runtime calls, and install evidence.",
+    trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, runtime evidence, and install evidence. Payout readiness is shown only for paid marketplace preview operations.",
     trustLevels: {
       active: "Active publisher",
       blocked: "Blocked publisher",
@@ -58,7 +58,7 @@ const copy = {
     },
     payoutStatuses: {
       blocked: "Blocked",
-      not_configured: "Not configured",
+      not_configured: "Prelaunch / not configured",
       verification_required: "Verification required",
       verified: "Verified"
     },
@@ -83,7 +83,7 @@ const copy = {
     }
   },
   zh: {
-    activePaid: "付费技能",
+    activePaid: "付费预览技能",
     back: "返回市场",
     calls: "调用",
     details: "技能详情",
@@ -93,14 +93,14 @@ const copy = {
     metricInstalls: "安装量",
     metricPublic: "公开技能",
     metricVerified: "已验证技能",
-    payout: "提现准备",
+    payout: "付费市场提现预览",
     profile: "发布者档案",
     publicSkills: "公开技能",
     skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
     status: "发布者状态",
     success: "平均成功率",
     trust: "信任信号",
-    trustBody: "发布者信任由档案状态、已验证技能数量、提现准备、公开上架、运行调用和安装证据共同决定。",
+    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。提现准备只作为付费市场预览状态展示。",
     trustLevels: {
       active: "活跃发布者",
       blocked: "已阻断发布者",
@@ -114,7 +114,7 @@ const copy = {
     },
     payoutStatuses: {
       blocked: "已阻断",
-      not_configured: "未配置",
+      not_configured: "预发布 / 未配置",
       verification_required: "需要验证",
       verified: "已验证"
     },

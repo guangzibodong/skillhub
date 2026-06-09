@@ -121,7 +121,7 @@ export async function listPublicPublishers(
 export async function getPublicPublisherProfile(
   slug: string,
 ): Promise<PublicPublisherProfile | null> {
-  const normalizedSlug = normalizeSlug(slug);
+  const normalizedSlug = canonicalPublisherSlug(slug);
   const sql = await getSql();
 
   if (!sql) {
@@ -137,11 +137,11 @@ export async function getPublicPublisherProfile(
   const profiles = await listPublisherProfileRows(sql, 100, schema);
   const profile = profiles.find(
     (item) =>
-      item.organizationSlug === normalizedSlug ||
-      normalizeSlug(item.displayName) === normalizedSlug ||
-      normalizeSlug(item.organizationName) === normalizedSlug ||
+      canonicalPublisherSlug(item.organizationSlug) === normalizedSlug ||
+      canonicalPublisherSlug(item.displayName) === normalizedSlug ||
+      canonicalPublisherSlug(item.organizationName) === normalizedSlug ||
       (item.publicAuthorName
-        ? normalizeSlug(item.publicAuthorName) === normalizedSlug
+        ? canonicalPublisherSlug(item.publicAuthorName) === normalizedSlug
         : false),
   );
 
@@ -387,7 +387,7 @@ async function hydratePublicPublisher(
     metrics: publisherMetrics(skills),
     payoutStatus: profile.payoutStatus,
     skills,
-    slug: profile.organizationSlug,
+    slug: canonicalPublisherSlug(profile.organizationSlug),
     status: profile.status,
     trustLevel: trustLevel(profile),
     updatedAt: profile.updatedAt,
@@ -556,7 +556,7 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
 
   demoSkills.forEach((skill) => {
     const publisher = skill.author?.name?.trim() || "SkillHub Publisher";
-    const slug = normalizeSlug(publisher);
+    const slug = canonicalPublisherSlug(publisher);
     groups.set(slug, [...(groups.get(slug) ?? []), skill]);
   });
 
@@ -668,6 +668,26 @@ function publisherStatusRank(status: PublisherProfileRow["status"]) {
 
 function normalizeLimit(limit: number) {
   return Math.min(Math.max(Math.trunc(limit) || 20, 1), 50);
+}
+
+const publisherSlugAliases: Record<string, string> = {
+  "skillhub-publisher": "skillhub",
+};
+
+const publisherDisplayNameSlugs: Record<string, string> = {
+  "skillhub publisher": "skillhub",
+};
+
+function canonicalPublisherSlug(value: string) {
+  const normalizedName = value.trim().toLowerCase();
+  const displayNameSlug = publisherDisplayNameSlugs[normalizedName];
+
+  if (displayNameSlug) {
+    return displayNameSlug;
+  }
+
+  const slug = normalizeSlug(value);
+  return publisherSlugAliases[slug] ?? slug;
 }
 
 function normalizeSlug(value: string) {

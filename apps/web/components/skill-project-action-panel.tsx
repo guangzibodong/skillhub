@@ -30,6 +30,7 @@ type SkillProjectActionPanelProps = {
   lockedCtaLabel: string;
   lockedTitle: string;
   projects: DeveloperProjectRecord[];
+  showHandoff?: boolean;
   skillName: string;
   skillSlug: string;
 };
@@ -122,6 +123,7 @@ export function SkillProjectActionPanel({
   lockedCtaLabel,
   lockedTitle,
   projects,
+  showHandoff = true,
   skillName,
   skillSlug
 }: SkillProjectActionPanelProps) {
@@ -224,6 +226,7 @@ export function SkillProjectActionPanel({
         </div>
       )}
 
+      {showHandoff ? (
       <div className="skill-project-handoff">
         <div className="skill-project-handoff__copy">
           <div className="skill-project-handoff__title">
@@ -245,6 +248,7 @@ export function SkillProjectActionPanel({
           <ArrowRight size={15} aria-hidden="true" />
         </a>
       </div>
+      ) : null}
 
       {latestVersion ? (
         <p className="skill-project-action-footnote">

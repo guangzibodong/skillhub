@@ -26,12 +26,12 @@ import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
-import { getSkillInstallState } from "@/lib/skill-install-state";
+import { getSkillAvailability, getSkillInstallState } from "@/lib/skill-install-state";
 import { getSkillFeedback } from "@/lib/skill-feedback";
 
 export const dynamic = "force-dynamic";
@@ -231,19 +231,6 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasDeveloperAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
   const developerProjects = hasDeveloperAccess ? projects : [];
-  const developerAccessHref = hasDeveloperAccess ? "/developer" : hasWorkspaceSession ? "/account" : "/login";
-  const developerAccessLabel = hasDeveloperAccess
-    ? locale === "zh"
-      ? "开发者工作台"
-      : "Developer workspace"
-    : hasWorkspaceSession
-      ? locale === "zh"
-        ? "检查账号角色"
-        : "Check account roles"
-      : locale === "zh"
-        ? "登录后查看"
-        : "Sign in to inspect";
-  const DeveloperAccessIcon = hasDeveloperAccess ? WalletCards : KeyRound;
 
   if (!skill) {
     notFound();
@@ -251,8 +238,32 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
   const publisherProfile = await getPublicPublisherProfile(publisherSlugFromName(skill.author));
   const latestVersion = skill.changelog[0]?.version;
+  const skillAvailability = getSkillAvailability(skill.verification.en);
   const installState = getSkillInstallState(skill.verification.en);
-  const isSkillInstallable = installState.installable;
+  const isSkillInstallable = skillAvailability.canInstall;
+  const developerAccessHref = skillAvailability.canShowProjectHandoff
+    ? hasDeveloperAccess
+      ? "/developer"
+      : hasWorkspaceSession
+        ? "/account"
+        : "/login"
+    : "/marketplace";
+  const developerAccessLabel = skillAvailability.canShowProjectHandoff
+    ? hasDeveloperAccess
+      ? locale === "zh"
+        ? "开发者工作台"
+        : "Developer workspace"
+      : hasWorkspaceSession
+        ? locale === "zh"
+          ? "检查账号角色"
+          : "Check account roles"
+        : locale === "zh"
+          ? "登录后继续"
+          : "Sign in to continue"
+    : locale === "zh"
+      ? "返回市场"
+      : "Compare in marketplace";
+  const DeveloperAccessIcon = skillAvailability.canShowProjectHandoff && hasDeveloperAccess ? WalletCards : KeyRound;
 
   const installRows = [
     {
@@ -331,6 +342,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         actionHrefOverride={developerAccessHref}
         actionLabelOverride={developerAccessLabel}
         currentStep="skill"
+        developerMode={skillAvailability.canShowProjectHandoff ? "install" : "inspection"}
         journey="developer"
         locale={locale}
       />
@@ -346,6 +358,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               billingModel={skill.billing}
               commands={installRows}
               installable={isSkillInstallable}
+              installLockedReason={skillAvailability.reason[locale]}
               lastReviewed={skill.lastReviewed}
               latestVersion={latestVersion}
               locale={locale}
@@ -355,61 +368,56 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               verificationLabel={localizeText(skill.verification, locale)}
               verificationLabelEn={skill.verification.en}
             />
-            <DeveloperHandoffPacket
-              billingModel={skill.billing}
-              latestVersion={latestVersion}
-              locale={locale}
-              projectCount={developerProjects.length}
-              risk={skill.risk}
-              runtime={skill.runtime}
-            />
-            <SkillProjectActionPanel
-              billingModel={skill.billing}
-              canOperate={hasDeveloperAccess && isSkillInstallable}
-              dashboardHref={localizedHref("/developer", locale)}
-              inputExample={skill.inputExample}
-              latestVersion={latestVersion}
-              locale={locale}
-              lockedBody={
-                !isSkillInstallable
-                  ? locale === "zh"
-                    ? "该技能尚未完成 verified 审核，暂时只能查看和评估。安装、订阅和测试会写入项目状态，必须等审核通过后开放。"
-                    : "This skill has not completed verified review yet, so it is available for inspection only. Install, subscription, and test actions unlock after review approval."
-                  : locale === "zh"
-                    ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
-                    : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
-              }
-              lockedCtaHref={localizedHref(!isSkillInstallable ? "/marketplace" : hasWorkspaceSession ? "/account" : "/login", locale)}
-              lockedCtaLabel={
-                !isSkillInstallable
-                  ? locale === "zh"
-                    ? "返回市场"
-                    : "Back to marketplace"
-                  : hasWorkspaceSession
-                    ? locale === "zh"
-                      ? "查看账号角色"
-                      : "Check account roles"
-                    : locale === "zh"
-                      ? "先登录"
-                      : "Sign in"
-              }
-              lockedTitle={
-                !isSkillInstallable
-                  ? locale === "zh"
-                    ? "等待 verified 审核"
-                    : "Verified review required"
-                  : hasWorkspaceSession
-                    ? locale === "zh"
-                      ? "需要开发者角色"
-                      : "Developer role required"
-                    : locale === "zh"
-                      ? "需要先登录"
-                      : "Sign-in required"
-              }
-              projects={developerProjects}
-              skillName={localizeText(skill.name, locale)}
-              skillSlug={skill.slug}
-            />
+            {skillAvailability.canShowProjectHandoff ? (
+              <>
+                <DeveloperHandoffPacket
+                  billingModel={skill.billing}
+                  latestVersion={latestVersion}
+                  locale={locale}
+                  projectCount={developerProjects.length}
+                  risk={skill.risk}
+                  runtime={skill.runtime}
+                />
+                <SkillProjectActionPanel
+                  billingModel={skill.billing}
+                  canOperate={hasDeveloperAccess && isSkillInstallable}
+                  dashboardHref={localizedHref("/developer", locale)}
+                  inputExample={skill.inputExample}
+                  latestVersion={latestVersion}
+                  locale={locale}
+                  lockedBody={
+                    locale === "zh"
+                      ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
+                      : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
+                  }
+                  lockedCtaHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+                  lockedCtaLabel={
+                    hasWorkspaceSession
+                      ? locale === "zh"
+                        ? "查看账号角色"
+                        : "Check account roles"
+                      : locale === "zh"
+                        ? "先登录"
+                        : "Sign in"
+                  }
+                  lockedTitle={
+                    hasWorkspaceSession
+                      ? locale === "zh"
+                        ? "需要开发者角色"
+                        : "Developer role required"
+                      : locale === "zh"
+                        ? "需要先登录"
+                        : "Sign-in required"
+                  }
+                  projects={developerProjects}
+                  showHandoff={skillAvailability.canShowProjectHandoff}
+                  skillName={localizeText(skill.name, locale)}
+                  skillSlug={skill.slug}
+                />
+              </>
+            ) : (
+              <SkillInspectionOnlyNotice locale={locale} />
+            )}
           </article>
 
           <article className="skill-detail-panel">
@@ -630,7 +638,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
             <div className="price-block">
               <strong>{skill.price[locale]}</strong>
-              <span>{labels.payoutBody}</span>
+              <span>{pricingPreviewBody(skill.billing, skillAvailability.kind, locale)}</span>
             </div>
           </section>
 
@@ -771,6 +779,42 @@ function DeveloperHandoffPacket({
       </div>
     </div>
   );
+}
+
+function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
+  return (
+    <div className="skill-action-locked">
+      <ShieldCheck size={18} aria-hidden="true" />
+      <strong>{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
+      <p>
+        {locale === "zh"
+          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；安装、项目交接、运行测试、订阅、计费和账本动作只会在 verified 审核通过后开放。"
+          : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Install, project handoff, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
+      </p>
+    </div>
+  );
+}
+
+function pricingPreviewBody(
+  billingModel: "free" | "per_call" | "subscription",
+  availabilityKind: "callable" | "inspection_only",
+  locale: Locale,
+) {
+  if (availabilityKind === "inspection_only") {
+    return locale === "zh"
+      ? "仅可查看。价格、安装、运行、计费和账本动作只会在 verified 审核通过后开放。"
+      : "Inspection only. Pricing, install, runtime, billing, and ledger actions unlock only after verified approval.";
+  }
+
+  if (billingModel === "free") {
+    return locale === "zh"
+      ? "付费市场计费仍处于预发布阶段。免费技能可公开查看；运行调用仍需要登录后的项目 Key。"
+      : "Paid marketplace billing is prelaunch. Free skills may be inspected publicly; runtime use still requires a signed-in project key.";
+  }
+
+  return locale === "zh"
+    ? "付费市场计费仍处于预发布阶段。当前价格用于展示商业意图；真实运行仍需要登录后的项目 Key 和策略检查。"
+    : "Paid marketplace billing is prelaunch. The current price describes commercial intent; real runtime use still requires a signed-in project key and policy checks.";
 }
 
 function formatDate(value: string, locale: "en" | "zh") {

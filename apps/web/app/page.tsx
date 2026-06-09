@@ -79,7 +79,7 @@ const proofCopy = {
       ],
       [
         "Commercial ledger",
-        "Usage and subscriptions post into transactions, splits, balances, invoice records, refunds, disputes, and payouts.",
+        "Future paid marketplace usage is modeled through transactions, splits, balances, invoice records, refunds, disputes, and manual payout review.",
       ],
       [
         "Notification loop",
@@ -132,7 +132,7 @@ const operatingCopy = {
   en: {
     eyebrow: "Registry preview loops",
     title: "One platform for developers, publishers, and operators.",
-    body: "The product only feels real when a listing becomes install state, runtime state, review state, ledger state, and prelaunch payout state. SkillHub keeps those loops visible from day one.",
+    body: "The product only feels real when a listing becomes install state, runtime state, review state, and future paid-marketplace state. SkillHub keeps those Developer Preview architecture loops visible from day one.",
     flow: ["Publish", "Review", "Install", "Invoke", "Ledger", "Payout"],
     loops: [
       {
@@ -208,7 +208,7 @@ const manifestSnippet = `{
   "name": "browser-research",
   "runtime": {
     "type": "http",
-    "entrypoint": "https://api.useskillhub.com/demo/browser-research"
+    "entrypoint": "https://example.com/skill-runtime"
   },
   "permissions": {
     "network": true,
@@ -618,7 +618,7 @@ tools: skillhub.search, skillhub.get`}</code>
         <div className="code-panel" aria-label="Example SkillHub manifest">
           <div className="code-panel__bar">
             <span>skillhub.json</span>
-            <span>schema v0.1</span>
+            <span>{locale === "zh" ? "示例，非实时端点" : "example, not live endpoint"}</span>
           </div>
           <pre>
             <code>{manifestSnippet}</code>

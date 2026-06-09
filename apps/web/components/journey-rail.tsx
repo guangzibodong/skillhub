@@ -28,6 +28,13 @@ type JourneyStep = {
   id: JourneyStepId;
   label: string;
 };
+type JourneyCopy = {
+  body: string;
+  current: string;
+  next: string;
+  steps: JourneyStep[];
+  title: string;
+};
 
 const journeyIcons = {
   admin: ShieldCheck,
@@ -37,19 +44,7 @@ const journeyIcons = {
 
 const stepIcons = [Route, BadgeCheck, KeyRound, Terminal, WalletCards] as const;
 
-const copy: Record<
-  Locale,
-  Record<
-    JourneyId,
-    {
-      body: string;
-      current: string;
-      next: string;
-      steps: JourneyStep[];
-      title: string;
-    }
-  >
-> = {
+const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
   en: {
     admin: {
       body:
@@ -320,11 +315,103 @@ const copy: Record<
   }
 };
 
+const developerInspectionCopy: Record<Locale, JourneyCopy> = {
+  en: {
+    body:
+      "Submitted skills stay inspection-only: developers can review the public contract now, while install, project handoff, runtime test, billing, and ledger actions unlock only after verified approval.",
+    current: "Current",
+    next: "Next",
+    steps: [
+      {
+        action: "Browse marketplace",
+        detail: "Find public listings and compare review state, permissions, runtime type, and publisher signals.",
+        href: "/marketplace",
+        id: "marketplace",
+        label: "Marketplace"
+      },
+      {
+        action: "Inspect contract",
+        detail: "Review manifest, schemas, permissions, publisher profile, and submitted review state.",
+        href: "/marketplace#catalog",
+        id: "skill",
+        label: "Inspection detail"
+      },
+      {
+        action: "Review required",
+        detail: "A verified review must complete before this listing can be installed or tested.",
+        href: "/docs",
+        id: "developer",
+        label: "Verification review"
+      },
+      {
+        action: "Unlock after approval",
+        detail: "Project install and policy handoff become available only for verified listings.",
+        href: "/marketplace",
+        id: "project",
+        label: "Project install locked"
+      },
+      {
+        action: "Unlock after project setup",
+        detail: "Runtime invocation still requires a signed-in project key and policy checks after verification.",
+        href: "/docs",
+        id: "runtime",
+        label: "Runtime test locked"
+      }
+    ],
+    title: "Public inspection journey"
+  },
+  zh: {
+    body:
+      "\u5df2\u63d0\u4ea4\u6280\u80fd\u4fdd\u6301\u4ec5\u53ef\u67e5\u770b\uff1a\u5f00\u53d1\u8005\u73b0\u5728\u53ef\u4ee5\u68c0\u67e5\u516c\u5f00\u5408\u7ea6\uff0c\u5b89\u88c5\u3001\u9879\u76ee\u4ea4\u63a5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728 verified \u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
+    current: "\u5f53\u524d",
+    next: "\u4e0b\u4e00\u6b65",
+    steps: [
+      {
+        action: "\u6d4f\u89c8\u5e02\u573a",
+        detail: "\u67e5\u627e\u516c\u5f00\u5217\u8868\uff0c\u6bd4\u8f83\u5ba1\u6838\u72b6\u6001\u3001\u6743\u9650\u3001\u8fd0\u884c\u7c7b\u578b\u548c\u53d1\u5e03\u8005\u4fe1\u53f7\u3002",
+        href: "/marketplace",
+        id: "marketplace",
+        label: "\u5e02\u573a"
+      },
+      {
+        action: "\u67e5\u770b\u5408\u7ea6",
+        detail: "\u68c0\u67e5 manifest\u3001schema\u3001\u6743\u9650\u3001\u53d1\u5e03\u8005\u8d44\u6599\u548c\u5df2\u63d0\u4ea4\u5ba1\u6838\u72b6\u6001\u3002",
+        href: "/marketplace#catalog",
+        id: "skill",
+        label: "\u67e5\u770b\u8be6\u60c5"
+      },
+      {
+        action: "\u9700\u8981\u5ba1\u6838",
+        detail: "\u5fc5\u987b\u5b8c\u6210 verified \u5ba1\u6838\u540e\uff0c\u624d\u80fd\u5b89\u88c5\u6216\u6d4b\u8bd5\u8be5\u5217\u8868\u3002",
+        href: "/docs",
+        id: "developer",
+        label: "\u9a8c\u8bc1\u5ba1\u6838"
+      },
+      {
+        action: "\u5ba1\u6838\u540e\u89e3\u9501",
+        detail: "\u53ea\u6709 verified \u5217\u8868\u624d\u4f1a\u5f00\u653e\u9879\u76ee\u5b89\u88c5\u548c\u7b56\u7565\u4ea4\u63a5\u3002",
+        href: "/marketplace",
+        id: "project",
+        label: "\u9879\u76ee\u5b89\u88c5\u672a\u89e3\u9501"
+      },
+      {
+        action: "\u9879\u76ee\u914d\u7f6e\u540e\u89e3\u9501",
+        detail: "\u9a8c\u8bc1\u901a\u8fc7\u540e\uff0c\u8fd0\u884c\u8c03\u7528\u4ecd\u9700\u8981\u767b\u5f55\u540e\u7684\u9879\u76ee Key \u548c\u7b56\u7565\u68c0\u67e5\u3002",
+        href: "/docs",
+        id: "runtime",
+        label: "\u8fd0\u884c\u6d4b\u8bd5\u672a\u89e3\u9501"
+      }
+    ],
+    title: "\u516c\u5f00\u67e5\u770b\u8def\u5f84"
+  }
+};
+
 export function JourneyRail({
   actionHrefOverride,
   actionLabelOverride,
   className,
   currentStep,
+  developerMode = "install",
   journey,
   locale,
   publicSurface = false
@@ -333,11 +420,15 @@ export function JourneyRail({
   actionLabelOverride?: string;
   className?: string;
   currentStep: JourneyStepId;
+  developerMode?: "inspection" | "install";
   journey: JourneyId;
   locale: Locale;
   publicSurface?: boolean;
 }) {
-  const labels = copy[locale][journey];
+  const labels =
+    journey === "developer" && developerMode === "inspection"
+      ? developerInspectionCopy[locale]
+      : copy[locale][journey];
   const currentIndex = Math.max(
     labels.steps.findIndex((step) => step.id === currentStep),
     0

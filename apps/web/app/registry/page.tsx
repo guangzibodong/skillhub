@@ -63,7 +63,7 @@ const registryProtocolCopy = {
     notes: [
       "Public registry rows are live API results; production-like runtimes do not fill fake supply unless demo fallback is explicitly enabled.",
       "The registry explains contracts. Marketplace pages explain discovery, buyer comparison, pricing, and publisher trust.",
-      "A search field that does not change state is intentionally avoided here; use marketplace filters or the public API endpoint."
+      "This page intentionally stays browse-only. Use marketplace filters or the public API endpoint when you need search."
     ],
     protocolEyebrow: "Registry protocol",
     protocolTitle: "The registry is the contract layer behind the marketplace.",
@@ -117,7 +117,7 @@ const registryProtocolCopy = {
     notes: [
       "公开注册表只展示实时 API 结果；生产类环境不会用假供给填充，除非显式启用 demo fallback。",
       "注册表解释技能合约；市场页面负责发现、买方对比、定价和发布者信任。",
-      "这里刻意不放无状态搜索框；需要筛选请使用市场筛选或公开 API endpoint。"
+      "这里刻意保持浏览型页面；需要搜索或筛选时，请使用市场筛选或公开 API endpoint。"
     ],
     protocolEyebrow: "注册表协议",
     protocolTitle: "注册表是市场背后的技能合约层。",

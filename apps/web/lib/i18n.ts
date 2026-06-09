@@ -40,9 +40,9 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "Agent skill infrastructure",
-      title: "Universal skills agents can discover, trust, and run.",
+      title: "Trusted skills for AI agents.",
       description:
-        "SkillHub is the registry, marketplace, and Developer Preview gateway layer for reusable AI-agent capabilities: one manifest format, searchable packages, permission profiles, ledger-ready usage models, and agent-ready APIs.",
+        "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Developer Preview: public discovery and inspection are live; runtime invocation requires a signed-in project key; paid marketplace features remain prelaunch.",
       publishCta: "Publish a skill",
       gatewayTitle: "Developer Preview gateway",
       registryEyebrow: "Registry",
@@ -140,7 +140,7 @@ export const dictionaries = {
       eyebrow: "Public registry",
       title: "Browse reusable skills for agent workflows.",
       description:
-        "Search the live registry, inspect package risk, and open each manifest through the public API.",
+        "Browse public registry contracts, inspect package risk, and open each manifest through the public API. Use Marketplace filters or the public API for search.",
       filtersTitle: "Registry filters",
       filters: ["Research", "Browser", "Schema", "Low risk"],
       endpointTitle: "Discovery endpoint",
@@ -309,7 +309,7 @@ export const dictionaries = {
           tag: "SDK preview"
         }
       ],
-      snippetsTitle: "Copy-ready runtime shapes",
+      snippetsTitle: "Runtime connection preview",
       snippets: {
         mcpTitle: "MCP client",
         restTitle: "REST invocation",
@@ -443,9 +443,9 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "智能体技能基础设施",
-      title: "让智能体发现、信任并运行通用技能。",
+      title: "给 AI Agent 使用的可信技能注册表。",
       description:
-        "SkillHub 是给 AI 智能体使用的技能注册表、市场和运行网关：统一 manifest 格式、可搜索技能包、权限画像、账本就绪的用量模型，以及面向智能体的 API。",
+        "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。开发者预览版：公开发现和查看已上线；运行调用需要登录后的项目 Key；付费市场能力仍处于预发布阶段。",
       publishCta: "发布一个技能",
       gatewayTitle: "开发者预览版网关",
       registryEyebrow: "技能库",
@@ -542,7 +542,7 @@ export const dictionaries = {
     registryPage: {
       eyebrow: "公开技能库",
       title: "浏览可复用的智能体技能。",
-      description: "搜索实时注册表，查看技能包风险，并通过公开 API 打开每个 manifest。",
+      description: "浏览公开注册表合约，查看技能包风险，并通过公开 API 打开每个 manifest。如需搜索，请使用市场筛选或公开 API。",
       filtersTitle: "注册表筛选",
       filters: ["研究", "浏览器", "Schema", "低风险"],
       endpointTitle: "发现端点",
@@ -711,7 +711,7 @@ export const dictionaries = {
           tag: "SDK \u9884\u89c8"
         }
       ],
-      snippetsTitle: "可复制的运行时形态",
+      snippetsTitle: "运行连接预览",
       snippets: {
         mcpTitle: "MCP 客户端",
         restTitle: "REST 调用",

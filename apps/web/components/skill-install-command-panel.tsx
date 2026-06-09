@@ -28,6 +28,7 @@ type SkillInstallCommandPanelProps = {
   lastReviewed: string;
   latestVersion?: string;
   installable: boolean;
+  installLockedReason?: string;
   locale: Locale;
   projectCount: number;
   risk: "high" | "low" | "medium";
@@ -54,6 +55,11 @@ const copy = {
     projectMissing: "Create or select a project before install/test.",
     projectReady: "Developer project is available for install/test.",
     risk: "Permission risk",
+    riskLabels: {
+      high: "High risk",
+      low: "Low risk",
+      medium: "Medium risk",
+    },
     riskHigh: "High-risk installs require owner approval before agents can call.",
     riskReady: "Permission profile can enter normal project policy.",
     runtime: "Runtime",
@@ -61,7 +67,12 @@ const copy = {
     trust: "Review trust",
     trustReady: "Verified review is available for this listing.",
     trustWarning: "Inspection only. This listing is not verified yet.",
-    version: "Version pin"
+    version: "Version pin",
+    billingModels: {
+      free: "Free",
+      per_call: "Per call",
+      subscription: "Subscription",
+    }
   },
   zh: {
     billing: "\u8ba1\u8d39\u95e8\u69db",
@@ -80,6 +91,11 @@ const copy = {
     projectMissing: "\u5b89\u88c5/\u6d4b\u8bd5\u524d\u8bf7\u5148\u521b\u5efa\u6216\u9009\u62e9\u9879\u76ee\u3002",
     projectReady: "\u5df2\u6709\u5f00\u53d1\u8005\u9879\u76ee\u53ef\u7528\u4e8e\u5b89\u88c5/\u6d4b\u8bd5\u3002",
     risk: "\u6743\u9650\u98ce\u9669",
+    riskLabels: {
+      high: "\u9ad8\u98ce\u9669",
+      low: "\u4f4e\u98ce\u9669",
+      medium: "\u4e2d\u98ce\u9669",
+    },
     riskHigh: "\u9ad8\u98ce\u9669\u5b89\u88c5\u9700\u8981 owner \u6279\u51c6\u540e\u624d\u80fd\u8c03\u7528\u3002",
     riskReady: "\u6743\u9650\u753b\u50cf\u53ef\u8fdb\u5165\u5e38\u89c4\u9879\u76ee\u7b56\u7565\u3002",
     runtime: "\u8fd0\u884c\u65f6",
@@ -87,7 +103,12 @@ const copy = {
     trust: "\u5ba1\u6838\u4fe1\u4efb",
     trustReady: "\u8be5\u5217\u8868\u5df2\u6709 verified \u5ba1\u6838\u3002",
     trustWarning: "\u4ec5\u53ef\u67e5\u770b\u3002\u8be5\u5217\u8868\u5c1a\u672a verified\u3002",
-    version: "\u7248\u672c\u56fa\u5b9a"
+    version: "\u7248\u672c\u56fa\u5b9a",
+    billingModels: {
+      free: "\u514d\u8d39",
+      per_call: "\u6309\u6b21\u8c03\u7528",
+      subscription: "\u8ba2\u9605",
+    }
   }
 } as const;
 
@@ -95,6 +116,7 @@ export function SkillInstallCommandPanel({
   billingModel,
   commands,
   installable,
+  installLockedReason,
   lastReviewed,
   latestVersion,
   locale,
@@ -112,8 +134,8 @@ export function SkillInstallCommandPanel({
     message: string;
   } | null>(null);
   const readiness = useMemo(
-    () => buildReadiness({ billingModel, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn }),
-    [billingModel, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn]
+    () => buildReadiness({ billingModel, installable, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn }),
+    [billingModel, installable, labels, projectCount, risk, runtime, verificationLabel, verificationLabelEn]
   );
 
   async function copyCommand(label: string, value: string) {
@@ -194,6 +216,12 @@ export function SkillInstallCommandPanel({
           <div className="install-command-row install-command-row--locked">
             <span>{labels.trust}</span>
             <strong>{labels.installLocked}</strong>
+            {installLockedReason ? (
+              <div className="install-command-status install-command-status--info">
+                <ShieldCheck size={14} aria-hidden="true" />
+                <span>{installLockedReason}</span>
+              </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -249,6 +277,7 @@ function getCommandButtonLabel({
 
 function buildReadiness({
   billingModel,
+  installable,
   labels,
   projectCount,
   risk,
@@ -257,6 +286,7 @@ function buildReadiness({
   verificationLabelEn
 }: {
   billingModel: SkillInstallCommandPanelProps["billingModel"];
+  installable: boolean;
   labels: (typeof copy)["en" | "zh"];
   projectCount: number;
   risk: SkillInstallCommandPanelProps["risk"];
@@ -265,21 +295,26 @@ function buildReadiness({
   verificationLabelEn: string;
 }) {
   const verified = verificationLabelEn.toLowerCase() === "verified";
+  const trustRow = {
+    detail: verified ? labels.trustReady : labels.trustWarning,
+    icon: <ShieldCheck size={15} aria-hidden="true" />,
+    label: labels.trust,
+    ready: verified,
+    value: verificationLabel
+  };
+
+  if (!installable) {
+    return [trustRow];
+  }
 
   return [
-    {
-      detail: verified ? labels.trustReady : labels.trustWarning,
-      icon: <ShieldCheck size={15} aria-hidden="true" />,
-      label: labels.trust,
-      ready: verified,
-      value: verificationLabel
-    },
+    trustRow,
     {
       detail: risk === "high" ? labels.riskHigh : labels.riskReady,
       icon: <KeyRound size={15} aria-hidden="true" />,
       label: labels.risk,
       ready: risk !== "high",
-      value: risk
+      value: labels.riskLabels[risk]
     },
     {
       detail: runtime === "Local" ? labels.localRuntime : labels.runtimeReady,
@@ -300,7 +335,7 @@ function buildReadiness({
       icon: <CreditCard size={15} aria-hidden="true" />,
       label: labels.billing,
       ready: billingModel !== "subscription",
-      value: billingModel
+      value: labels.billingModels[billingModel]
     }
   ];
 }

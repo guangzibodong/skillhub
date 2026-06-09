@@ -8,6 +8,10 @@ import {
   isVerifiedSkillStatus,
   publicApiInspectCommand,
 } from "@/lib/skill-install-state";
+import {
+  publicSkillDescription,
+  publicSkillDisplayName,
+} from "@/lib/public-skill-localization";
 
 type PublicPublisherApiSkill = {
   billingModel: MarketplaceSkill["billing"];
@@ -82,6 +86,12 @@ export type PublicPublisherProfile = {
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const publisherSlugAliases: Record<string, string> = {
+  "skillhub-publisher": "skillhub",
+};
+const publisherDisplayNameSlugs: Record<string, string> = {
+  "skillhub publisher": "skillhub",
+};
 
 export async function getPublicPublisherProfile(
   slug: string,
@@ -138,11 +148,19 @@ export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
 }
 
 export function publisherSlugFromName(name: string) {
-  return name
+  const normalizedName = name.trim().toLowerCase();
+  const displayNameSlug = publisherDisplayNameSlugs[normalizedName];
+
+  if (displayNameSlug) {
+    return displayNameSlug;
+  }
+
+  const slug = normalizedName
     .trim()
-    .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+  return publisherSlugAliases[slug] ?? slug;
 }
 
 function apiProfileToPublicProfile(
@@ -151,14 +169,8 @@ function apiProfileToPublicProfile(
   const skills = profile.skills.map((skill) => ({
     billing: skill.billingModel,
     callCount: skill.callCount,
-    description: {
-      en: skill.description,
-      zh: skill.description,
-    },
-    displayName: {
-      en: skill.displayName,
-      zh: skill.displayName,
-    },
+    description: publicSkillDescription(skill.slug, skill.description),
+    displayName: publicSkillDisplayName(skill.slug, skill.displayName),
     installCommand: publicApiInspectCommand(apiUrl, skill.slug),
     installCount: skill.installCount,
     permissionLevel: skill.permissionLevel,

@@ -8,17 +8,19 @@ SkillHub is a registry and runtime layer for agent skills. It gives AI agents a 
 
 SkillHub is currently in Developer Preview.
 
-Public registry discovery and skill inspection are live. Runtime invocation requires authenticated project keys. CLI and SDK packages exist in the monorepo but are not yet published for public installation unless release metadata says otherwise.
+Public registry discovery and public skill inspection are live. Runtime invocation requires authenticated project keys and project policy checks.
 
-Paid marketplace activation, payment capture, automated payouts, tax/KYC automation, and final email delivery remain prelaunch integrations.
+CLI and SDK packages exist in the monorepo, but they are not published as public copy-and-run installs unless release/package metadata explicitly says otherwise.
+
+Paid marketplace, payment capture, automated payouts, tax/KYC automation, final legal terms, and final email provider delivery are prelaunch integrations.
 
 ## Product Shape
 
 - `apps/web`: public site and SaaS console.
 - `apps/gateway`: Cloudflare Worker API and agent gateway.
 - `packages/schema`: the `skillhub.json` manifest contract.
-- `packages/sdk`: TypeScript client for apps and agents.
-- `packages/cli`: `skillhub` developer CLI.
+- `packages/sdk`: TypeScript client source. Public package publication is not claimed in Developer Preview.
+- `packages/cli`: CLI source. Public copy-and-run installation is not claimed until a release/package exists.
 - `docs`: platform architecture and package docs.
 - `examples`: reference skill packages.
 - `supabase`: database migrations.
@@ -31,11 +33,11 @@ Paid marketplace activation, payment capture, automated payouts, tax/KYC automat
 - Search skills by task, tags, permission profile, runtime, and pricing model.
 - Agent-friendly discovery and invocation endpoints.
 - Project API keys and runtime policy gates for installed skills.
-- Billing-ready ledger posting from billable usage to transaction splits and publisher balances.
+- Ledger-ready usage model for future paid marketplace operations.
 - Usage, transactions, commission splits, balances, payout states, refunds, and disputes.
 - Preview manual payout workflow: publishers submit PayPal/Alipay receiving details and finance records manual transfers; provider-specific payout automation can replace this later.
 - Notification events and templates, with actual email protocol integration handled at the final integration stage.
-- Payment provider and email provider integrations are final-stage external integrations, not early product blockers.
+- Payment capture, payout provider automation, tax/KYC automation, final legal terms, and final email provider delivery remain prelaunch integrations.
 - CLI and SDK packages are present in the monorepo but are not yet published for public copy-and-run installation.
 
 ## Product Documents
