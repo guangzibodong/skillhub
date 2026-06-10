@@ -4049,9 +4049,11 @@ a {
 
 .login-product-shell {
   min-height: 100vh;
+  overflow-x: clip;
   background:
     linear-gradient(180deg, rgba(7, 12, 10, 0.8), rgba(5, 9, 7, 0.98)),
     var(--bg);
+  --login-top-align: clamp(38px, 5.6vh, 64px);
 }
 
 .login-workspace {
@@ -4062,9 +4064,9 @@ a {
   gap: clamp(30px, 5vw, 76px);
   align-items: start;
   width: min(1540px, calc(100% - 64px));
-  min-height: calc(100vh - 154px);
+  min-height: auto;
   margin: 0 auto;
-  padding: 26px 0 10px;
+  padding: 0 0 10px;
 }
 
 .login-workspace::before {
@@ -4086,10 +4088,10 @@ a {
   position: relative;
   overflow: hidden;
   display: grid;
-  min-height: calc(100vh - 172px);
+  min-height: clamp(700px, calc(100vh - 212px), 820px);
   align-content: start;
   border-right: 1px solid rgba(155, 226, 141, 0.1);
-  padding: clamp(64px, 9.2vh, 108px) clamp(20px, 4vw, 70px) 118px 0;
+  padding: var(--login-top-align) clamp(20px, 4vw, 70px) 88px 0;
 }
 
 .login-workspace-hero::before {
@@ -4203,14 +4205,23 @@ a {
 
 .login-neural-field {
   position: absolute;
-  inset: clamp(332px, 35vh, 404px) clamp(34px, 6vw, 108px) clamp(138px, 17vh, 206px) 0;
+  inset: clamp(332px, 36vh, 372px) clamp(42px, 6vw, 112px) auto 12px;
   z-index: 1;
   overflow: hidden;
-  border-radius: 0 28px 28px 0;
+  height: clamp(318px, 36vh, 388px);
+  border: 1px solid rgba(155, 226, 141, 0.11);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(155, 226, 141, 0.09), rgba(124, 199, 216, 0.035) 48%, transparent 72%),
+    rgba(8, 18, 13, 0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 0 0 72px rgba(155, 226, 141, 0.035),
+    0 32px 90px rgba(0, 0, 0, 0.22);
   pointer-events: none;
   mask-image:
-    linear-gradient(180deg, transparent 0%, #000 13%, #000 86%, transparent 100%),
-    linear-gradient(90deg, #000 0%, #000 76%, transparent 100%);
+    linear-gradient(180deg, transparent 0%, #000 8%, #000 92%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, #000 5%, #000 88%, transparent 100%);
   mask-composite: intersect;
 }
 
@@ -4223,41 +4234,43 @@ a {
 
 .login-neural-field::before {
   background:
-    radial-gradient(circle at 21% 42%, rgba(155, 226, 141, 0.13), transparent 23%),
-    radial-gradient(circle at 71% 58%, rgba(124, 199, 216, 0.1), transparent 26%),
-    linear-gradient(115deg, transparent 0 30%, rgba(155, 226, 141, 0.06) 45%, transparent 62% 100%);
-  opacity: 0.82;
-  animation: login-neural-haze 8s ease-in-out infinite;
+    conic-gradient(from 0deg at 58% 56%, transparent 0 23%, rgba(155, 226, 141, 0.18) 32%, transparent 43% 100%),
+    radial-gradient(circle at 32% 50%, rgba(155, 226, 141, 0.15), transparent 25%),
+    radial-gradient(circle at 72% 42%, rgba(124, 199, 216, 0.12), transparent 24%);
+  opacity: 0.72;
+  transform: scale(1.1);
+  animation: login-neural-haze 12s linear infinite;
 }
 
 .login-neural-field::after {
   background:
     linear-gradient(rgba(155, 226, 141, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(155, 226, 141, 0.048) 1px, transparent 1px);
-  background-size: 38px 38px;
-  opacity: 0.54;
+  background-size: 34px 34px;
+  opacity: 0.42;
   transform: translate3d(0, 0, 0);
-  animation: login-neural-grid 22s linear infinite;
+  animation: login-neural-grid 24s linear infinite;
 }
 
 .login-neural-field__mesh {
   position: absolute;
-  inset: 10% 4% 8% 2%;
+  inset: 11% 6%;
   border: 1px solid rgba(155, 226, 141, 0.08);
-  border-radius: 26px;
+  border-radius: 20px;
   background:
-    radial-gradient(circle at 0 0, rgba(155, 226, 141, 0.12), transparent 26%),
+    radial-gradient(circle at 50% 58%, rgba(155, 226, 141, 0.16), transparent 24%),
+    radial-gradient(circle at 75% 30%, rgba(124, 199, 216, 0.08), transparent 22%),
     repeating-linear-gradient(
       135deg,
-      transparent 0 32px,
-      rgba(155, 226, 141, 0.045) 33px,
-      transparent 34px 78px
+      transparent 0 36px,
+      rgba(155, 226, 141, 0.04) 37px,
+      transparent 38px 86px
     );
   box-shadow:
-    inset 0 0 60px rgba(155, 226, 141, 0.045),
-    0 0 70px rgba(155, 226, 141, 0.04);
-  opacity: 0.72;
-  animation: login-neural-mesh 10s ease-in-out infinite;
+    inset 0 0 52px rgba(155, 226, 141, 0.05),
+    0 0 60px rgba(155, 226, 141, 0.03);
+  opacity: 0.84;
+  animation: login-neural-mesh 9s ease-in-out infinite;
 }
 
 .login-neural-node,
@@ -4274,12 +4287,12 @@ a {
   width: var(--node-size);
   height: var(--node-size);
   border-radius: 999px;
-  background: rgba(174, 238, 163, 0.92);
+  background: rgba(174, 238, 163, 0.9);
   box-shadow:
-    0 0 0 5px rgba(155, 226, 141, 0.06),
-    0 0 22px rgba(155, 226, 141, 0.52);
+    0 0 0 4px rgba(155, 226, 141, 0.055),
+    0 0 18px rgba(155, 226, 141, 0.46);
   transform: translate(-50%, -50%);
-  animation: login-neural-node 4.8s ease-in-out infinite;
+  animation: login-neural-node 5.8s ease-in-out infinite;
   animation-delay: var(--node-delay);
 }
 
@@ -4300,15 +4313,15 @@ a {
     linear-gradient(
       90deg,
       transparent,
-      rgba(155, 226, 141, 0.14) 18%,
-      rgba(155, 226, 141, 0.52) 48%,
-      rgba(124, 199, 216, 0.24) 72%,
+      rgba(155, 226, 141, 0.1) 18%,
+      rgba(155, 226, 141, 0.34) 48%,
+      rgba(124, 199, 216, 0.16) 72%,
       transparent
     );
-  opacity: 0.52;
+  opacity: 0.48;
   transform: rotate(var(--link-rotate));
   transform-origin: left center;
-  animation: login-neural-link 5.8s ease-in-out infinite;
+  animation: login-neural-link 6.6s ease-in-out infinite;
   animation-delay: var(--link-delay);
 }
 
@@ -4319,11 +4332,11 @@ a {
   width: 28%;
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(245, 241, 232, 0.82), transparent);
+  background: linear-gradient(90deg, transparent, rgba(245, 241, 232, 0.74), transparent);
   content: "";
   filter: blur(1px);
   opacity: 0;
-  animation: login-neural-packet 5.8s ease-in-out infinite;
+  animation: login-neural-packet 6.6s ease-in-out infinite;
   animation-delay: var(--link-delay);
 }
 
@@ -4352,10 +4365,11 @@ a {
 
 .login-workspace-hero__scene {
   position: absolute;
-  right: clamp(34px, 10vw, 188px);
-  bottom: clamp(112px, 14vh, 168px);
+  right: clamp(128px, 16vw, 226px);
+  top: clamp(470px, 49vh, 526px);
+  bottom: auto;
   z-index: 1;
-  width: min(420px, 44vw);
+  width: min(344px, 36vw);
   aspect-ratio: 1.72;
   border-bottom: 1px solid rgba(155, 226, 141, 0.2);
 }
@@ -4383,16 +4397,16 @@ a {
   bottom: 34%;
   z-index: 2;
   display: grid;
-  width: 116px;
-  height: 116px;
+  width: 104px;
+  height: 104px;
   place-items: center;
   border: 8px solid rgba(155, 226, 141, 0.82);
-  border-radius: 28px;
+  border-radius: 26px;
   background: rgba(13, 31, 20, 0.68);
   color: var(--signal);
   box-shadow:
     0 0 0 12px rgba(155, 226, 141, 0.08),
-    0 0 54px rgba(155, 226, 141, 0.46);
+    0 0 52px rgba(155, 226, 141, 0.42);
   transform: translateX(-50%);
   animation: login-platform-float 5.2s ease-in-out infinite;
 }
@@ -4440,8 +4454,8 @@ a {
   left: 50%;
   bottom: 27%;
   z-index: 1;
-  width: 220px;
-  height: 220px;
+  width: 190px;
+  height: 190px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -4544,7 +4558,7 @@ a {
   gap: 14px;
   align-content: start;
   min-width: 0;
-  padding: clamp(28px, 4.6vh, 62px) 0 24px;
+  padding: var(--login-top-align) 0 24px;
 }
 
 .login-panel-stack > .ops-panel,
@@ -5091,13 +5105,13 @@ a {
 @keyframes login-neural-haze {
   0%,
   100% {
-    opacity: 0.58;
-    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.48;
+    transform: rotate(0deg) scale(1.08);
   }
 
   50% {
-    opacity: 0.92;
-    transform: translate3d(2%, -2%, 0) scale(1.03);
+    opacity: 0.82;
+    transform: rotate(12deg) scale(1.14);
   }
 }
 
@@ -5107,33 +5121,33 @@ a {
   }
 
   100% {
-    background-position: 38px 38px, 38px 38px;
+    background-position: 34px 34px, 34px 34px;
   }
 }
 
 @keyframes login-neural-mesh {
   0%,
   100% {
-    opacity: 0.56;
+    opacity: 0.62;
     transform: translateY(0);
   }
 
   50% {
-    opacity: 0.86;
-    transform: translateY(-6px);
+    opacity: 0.9;
+    transform: translateY(-4px);
   }
 }
 
 @keyframes login-neural-node {
   0%,
   100% {
-    opacity: 0.42;
-    transform: translate(-50%, -50%) scale(0.82);
+    opacity: 0.46;
+    transform: translate(-50%, -50%) scale(0.86);
   }
 
   45% {
-    opacity: 0.96;
-    transform: translate(-50%, -50%) scale(1.18);
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.14);
   }
 
   72% {
@@ -5145,11 +5159,11 @@ a {
 @keyframes login-neural-link {
   0%,
   100% {
-    opacity: 0.16;
+    opacity: 0.14;
   }
 
   48% {
-    opacity: 0.66;
+    opacity: 0.5;
   }
 
   72% {
@@ -5187,7 +5201,7 @@ a {
   }
 
   42% {
-    opacity: 0.44;
+    opacity: 0.34;
   }
 
   68% {
@@ -19499,13 +19513,15 @@ a {
 
   .login-workspace-hero__scene {
     right: 50%;
+    top: auto;
     bottom: 34px;
     width: min(520px, 78vw);
     transform: translateX(50%);
   }
 
   .login-neural-field {
-    inset: 260px 0 112px;
+    inset: 248px 0 96px;
+    height: auto;
     border-radius: 24px;
   }
 

@@ -117,6 +117,9 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.doesNotMatch(oauthPanel, /\{provider\.label\} \{labels\.disabledAction\}/);
 
   assert.match(globals, /\.login-workspace/);
+  assert.match(globals, /--login-top-align:\s*clamp/);
+  assert.match(globals, /\.login-product-shell\s*\{[\s\S]*overflow-x:\s*clip/);
+  assert.match(globals, /\.login-panel-stack\s*\{[\s\S]*padding:\s*var\(--login-top-align\)/);
   assert.match(globals, /\.login-workspace-hero__scene/);
   assert.match(globals, /\.login-session-grid/);
   assert.match(globals, /\.brand-google-mark/);
