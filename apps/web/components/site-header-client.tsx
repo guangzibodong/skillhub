@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogIn, Menu, UploadCloud, X } from "lucide-react";
+import { KeyRound, LogIn, Menu, X } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { getProductStageCopy } from "@/lib/product-stage";
 import { LanguageSwitcher } from "./language-switcher";
@@ -12,11 +12,15 @@ export type SiteHeaderDictionary = {
     publish: string;
   };
   nav: {
+    exploreSkills?: string;
     home: string;
     marketplace: string;
     registry: string;
     agents: string;
     docs: string;
+    publish?: string;
+    security?: string;
+    pricing?: string;
     dashboard: string;
     developer: string;
     publisher: string;
@@ -61,10 +65,11 @@ export function SiteHeaderClient({
   const labels = headerLabels(dictionary, locale);
   const productStage = getProductStageCopy(locale);
   const navItems = [
-    { id: "home", label: labels.nav.home, href: "/" },
-    { id: "registry", label: labels.nav.registry, href: "/registry" },
-    { id: "marketplace", label: labels.nav.marketplace, href: "/marketplace" },
+    { id: "marketplace", label: labels.nav.exploreSkills, href: "/marketplace" },
     { id: "docs", label: labels.nav.docs, href: "/docs" },
+    { id: "publish", label: labels.nav.publish, href: "/publish" },
+    { id: "security", label: labels.nav.security, href: "/security" },
+    { id: "pricing", label: labels.nav.pricing, href: "/marketplace#pricing" },
   ] as const;
 
   useEffect(() => {
@@ -126,6 +131,9 @@ export function SiteHeaderClient({
               key={item.id}
             >
               {item.label}
+              {item.id === "pricing" ? (
+                <span className="site-nav__badge">{labels.preview}</span>
+              ) : null}
             </a>
           ))}
         </nav>
@@ -137,18 +145,18 @@ export function SiteHeaderClient({
             pathname={pathname}
           />
           <a
-            className="primary-button site-action-publish"
-            href={localizedHref("/publish", locale)}
-          >
-            <UploadCloud size={17} aria-hidden="true" />
-            <span>{labels.publish}</span>
-          </a>
-          <a
-            className="ghost-button site-action-secondary"
+            className="secondary-button site-action-secondary"
             href={consoleHref ?? localizedHref("/login", locale)}
           >
             <LogIn size={17} aria-hidden="true" />
             <span>{consoleLabel ?? labels.console}</span>
+          </a>
+          <a
+            className="primary-button site-action-publish"
+            href={localizedHref("/developer", locale)}
+          >
+            <KeyRound size={17} aria-hidden="true" />
+            <span>{labels.getProjectKey}</span>
           </a>
         </div>
 
@@ -191,17 +199,20 @@ export function SiteHeaderClient({
                 key={item.id}
               >
                 {item.label}
+                {item.id === "pricing" ? (
+                  <span className="site-nav__badge">{labels.preview}</span>
+                ) : null}
               </a>
             ))}
           </nav>
           <div className="site-mobile-panel__actions">
-            <a className="primary-button" href={localizedHref("/publish", locale)}>
-              <UploadCloud size={17} aria-hidden="true" />
-              <span>{labels.publish}</span>
-            </a>
             <a className="ghost-button" href={consoleHref ?? localizedHref("/login", locale)}>
               <LogIn size={17} aria-hidden="true" />
               <span>{consoleLabel ?? labels.console}</span>
+            </a>
+            <a className="primary-button" href={localizedHref("/developer", locale)}>
+              <KeyRound size={17} aria-hidden="true" />
+              <span>{labels.getProjectKey}</span>
             </a>
           </div>
         </div>
@@ -219,17 +230,23 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
     return {
       closeNavigation: "关闭导航",
       console: "登录入口",
+      getProjectKey: "获取 Project Key",
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
+      preview: "预览",
       primaryNavigation: "主导航",
       publish: "发布",
       nav: {
+        exploreSkills: "浏览 Skills",
         home: "首页",
         marketplace: "市场",
         registry: "技能库",
         agents: "智能体",
         docs: "文档",
+        publish: "发布",
+        security: "安全",
+        pricing: "价格",
         dashboard: "工作台",
         developer: "开发者",
         publisher: "发布者",
@@ -241,11 +258,19 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
   return {
     closeNavigation: "Close navigation",
     console: "Sign in",
+    getProjectKey: "Get Project Key",
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",
+    preview: "Preview",
     primaryNavigation: "Primary navigation",
     publish: dictionary.common.publish,
-    nav: dictionary.nav,
+    nav: {
+      ...dictionary.nav,
+      exploreSkills: "Explore Skills",
+      publish: "Publish",
+      security: "Security",
+      pricing: "Pricing",
+    },
   };
 }

@@ -1,44 +1,27 @@
+import type { SkillSummary } from "@useskillhub/schema";
 import {
-  Activity,
   ArrowRight,
+  BarChart3,
   Boxes,
-  Braces,
   CheckCircle2,
-  Code2,
-  Database,
   FileJson,
-  Gauge,
   KeyRound,
-  Network,
+  LockKeyhole,
   PackageCheck,
-  Plus,
-  Radar,
-  Repeat2,
-  Rocket,
   Search,
   ServerCog,
   ShieldCheck,
+  ShoppingCart,
   Terminal,
-  WalletCards,
   Zap,
 } from "lucide-react";
-import { ConsoleAccessPanel } from "@/components/console-access-panel";
-import { JourneyRailDeck } from "@/components/journey-rail";
-import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
-import { PublicAccessScope } from "@/components/public-access-scope";
 import { SiteHeader } from "@/components/site-header";
-import { SkillTable } from "@/components/skill-table";
-import { getWorkspaceSession } from "@/lib/auth-session";
 import {
   getDictionary,
   getLocaleFromSearchParams,
   localizedHref,
 } from "@/lib/i18n";
-import {
-  formatPublicPlatformLatency,
-  formatPublicPlatformShare,
-  getPublicPlatformStats,
-} from "@/lib/public-platform-stats";
+import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
@@ -47,177 +30,306 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-const workflowIcons = [Radar, FileJson, Zap] as const;
-const trustIcons = [ShieldCheck, PackageCheck, KeyRound] as const;
-const proofIcons = [
-  KeyRound,
-  ShieldCheck,
-  Gauge,
-  WalletCards,
-  Activity,
-  Terminal,
-] as const;
-const operatingIcons = [Code2, PackageCheck, ShieldCheck] as const;
+const proofIcons = [ShieldCheck, LockKeyhole, CheckCircle2] as const;
+const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
+const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
+const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
+const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
 
-const proofCopy = {
+const fallbackFeaturedSkills: SkillSummary[] = [
+  {
+    id: "browser-research",
+    slug: "browser-research-pro",
+    displayName: "Browser Research",
+    description: "Search the web and extract structured insights with source links.",
+    tags: ["research", "browser", "citations"],
+    version: "1.2.0",
+    verificationStatus: "verified",
+    permissionLevel: "medium",
+    runtimeType: "http",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  },
+  {
+    id: "dataset-summarizer",
+    slug: "dataset-summarizer",
+    displayName: "Dataset Summarizer",
+    description: "Summarize large datasets and generate key insights.",
+    tags: ["data", "analysis", "summary"],
+    version: "0.9.4",
+    verificationStatus: "verified",
+    permissionLevel: "low",
+    runtimeType: "http",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  },
+  {
+    id: "code-runner",
+    slug: "code-runner",
+    displayName: "Code Runner",
+    description: "Execute code securely in isolated environments and return results.",
+    tags: ["dev", "code", "execute"],
+    version: "0.8.1",
+    verificationStatus: "verified",
+    permissionLevel: "high",
+    runtimeType: "mcp",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  },
+  {
+    id: "doc-qa",
+    slug: "doc-qa",
+    displayName: "Doc Q&A",
+    description: "Answer questions based on documentation and knowledge sources.",
+    tags: ["docs", "qa"],
+    version: "0.7.2",
+    verificationStatus: "submitted",
+    permissionLevel: "low",
+    runtimeType: "mcp",
+    updatedAt: "2026-06-01T00:00:00.000Z",
+  },
+];
+
+const homeLandingCopy = {
   en: {
-    action: "Read operating reference",
-    commandAction: "Sign in for workspace entry",
-    body: "These are not brochure claims. They are Developer Preview operating references for the signed-in workspace path.",
-    eyebrow: "Architecture reference",
-    items: [
-      [
-        "Account entry",
-        "Email-code login, OAuth readiness, session fingerprints, and connected identity state are modeled before launch.",
-      ],
-      [
-        "Review gate",
-        "Submitted versions run automated manifest, runtime, example, and security checks before approval.",
-      ],
-      [
-        "Runtime governance",
-        "REST and MCP calls pass through project install, policy, budget, subscription, logging, and metering controls.",
-      ],
-      [
-        "Paid-preview ledger",
-        "Future paid marketplace usage is modeled through transactions, splits, balances, invoice records, refunds, disputes, and finance-review readiness.",
-      ],
-      [
-        "Notification loop",
-        "In-app events fan out to email and organization webhooks with templates, retry state, and admin recovery.",
-      ],
-      [
-        "Smoke checks",
-        "Production smoke commands verify stats, auth providers, launch readiness protection, and key app pages.",
-      ],
+    banner: {
+      label: "Developer Preview",
+      body: "Discovery and manifest inspection are live. Runtime invocation requires a Project Key. Paid marketplace is in preview.",
+      action: "Learn more",
+    },
+    eyebrow: "Skill registry + runtime gateway",
+    title: "The skill registry and runtime gateway for AI agents.",
+    mobileTitle: "AI agent skills, governed from discovery to runtime.",
+    description:
+      "Browse reusable skills, inspect manifests and permissions, then invoke them over REST or MCP with project-level controls.",
+    primaryCta: "Browse Skills",
+    quickstartCta: "Run Quickstart",
+    publishCta: "Publish a skill",
+    evidence: [
+      ["Verified manifests", "Schema and permission checks"],
+      ["Permission scopes", "Declared before adoption"],
+      ["Audit-ready runtime", "Status, latency, and logs"],
     ],
-    title: "A customer can inspect the platform, not just the pitch.",
+    control: {
+      title: "Runtime control plane",
+      marketplace: "Marketplace",
+      skillName: "Browser Research",
+      verified: "Verified",
+      publisher: "SkillHub Labs",
+      runtime: "REST / MCP",
+      scopes: "3 scopes",
+      manifest: "Manifest",
+      schema: "Schema",
+      permissions: "Permissions",
+      policy: "Runtime policy",
+      keyRequired: "Project Key required",
+      request: "Request",
+      response: "Response",
+      audit: "Audit log (latest)",
+      status: "200 OK",
+      latency: "1.23s",
+      viewSkill: "View skill",
+      schemaValid: "Schema valid",
+      allSystems: "All systems operational",
+    },
+    capabilities: [
+      {
+        title: "Public discovery",
+        badge: "Live",
+        body: "Search and explore verified skills.",
+        tone: "live",
+      },
+      {
+        title: "Manifest inspection",
+        badge: "Live",
+        body: "View schema, permissions, and runtime metadata.",
+        tone: "live",
+      },
+      {
+        title: "Runtime invocation",
+        badge: "Key required",
+        body: "Invoke skills over REST / MCP with your project key.",
+        tone: "key",
+      },
+      {
+        title: "Paid marketplace",
+        badge: "Preview",
+        body: "Paid listings and billing are in preview.",
+        tone: "preview",
+      },
+    ],
+    trustTitle: "Built for trust before invocation",
+    trustModules: [
+      {
+        title: "Permission review",
+        body: "Understand what a skill can do before you run it.",
+        status: "Scopes visible",
+        rows: ["web.search", "web.fetch", "data.store"],
+      },
+      {
+        title: "Runtime governance",
+        body: "Project keys, policies, and audit logs enforce safe usage.",
+        status: "Policy checked",
+        rows: ["Project Key required", "Rate limit: 60 / min", "Allowed: web.search, web.fetch"],
+      },
+      {
+        title: "Publisher review",
+        body: "Human and automated checks ensure quality and safety.",
+        status: "Review queue",
+        rows: ["Static analysis", "Permission review", "Security scan"],
+      },
+    ],
+    featuredTitle: "Featured skills",
+    featuredAction: "View all skills",
+    inspect: "Inspect",
+    submitted: "Submitted",
+    verified: "Verified",
+    runtime: "Runtime",
+    permissions: "Permissions",
+    howTitle: "How it works",
+    howSteps: [
+      ["Discover", "Find the right skill for your agent."],
+      ["Inspect", "Review manifests, permissions, and runtime details."],
+      ["Get Key", "Create a project and get your Project Key."],
+      ["Invoke", "Call the skill via REST API or MCP with your key."],
+      ["Monitor", "Track usage, logs, and performance."],
+    ],
+    finalTitle: "Inspect your first agent skill",
+    finalBody: "Start exploring the skill registry and runtime gateway.",
+    readDocs: "Read Docs",
+    footerBody: "The skill registry and runtime gateway for AI agents. Trusted by builders.",
+    systemStatus: "All systems operational",
+    viewStatus: "View status",
   },
   zh: {
-    action: "阅读运营参考",
-    commandAction: "登录后进入工作台",
-    body: "这不是宣传文案。这些是开发者预览版里登录后工作区路径的运营参考。",
-    eyebrow: "架构参考",
-    items: [
-      [
-        "\u8d26\u53f7\u5165\u53e3",
-        "\u90ae\u7bb1\u9a8c\u8bc1\u7801\u767b\u5f55\u3001OAuth \u5c31\u7eea\u5ea6\u3001\u4f1a\u8bdd\u6307\u7eb9\u548c\u8fde\u63a5\u8eab\u4efd\u72b6\u6001\u90fd\u5df2\u5efa\u6a21\u3002",
-      ],
-      [
-        "\u5ba1\u6838\u95f8\u95e8",
-        "\u7248\u672c\u63d0\u4ea4\u540e\u4f1a\u7ecf\u8fc7 manifest\u3001runtime\u3001example\u3001security \u81ea\u52a8\u68c0\u67e5\u518d\u8fdb\u5165\u6279\u51c6\u3002",
-      ],
-      [
-        "\u8fd0\u884c\u6cbb\u7406",
-        "REST \u548c MCP \u8c03\u7528\u90fd\u7ecf\u8fc7\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u3001\u9884\u7b97\u3001\u8ba2\u9605\u3001\u65e5\u5fd7\u548c\u8ba1\u91cf\u63a7\u5236\u3002",
-      ],
-      [
-        "\u4ed8\u8d39\u9884\u89c8\u8d26\u672c",
-        "\u672a\u6765\u4ed8\u8d39\u7528\u91cf\u548c\u8ba2\u9605\u4f1a\u5728\u4e0a\u7ebf\u95e8\u69db\u901a\u8fc7\u540e\u8fdb\u5165\u4ea4\u6613\u3001\u5206\u6210\u3001\u4f59\u989d\u3001\u53d1\u7968\u3001\u9000\u6b3e\u3001\u4e89\u8bae\u548c\u8d22\u52a1\u590d\u6838\u72b6\u6001\u3002",
-      ],
-      [
-        "\u901a\u77e5\u56de\u8def",
-        "\u7ad9\u5185\u4e8b\u4ef6\u53ef fan-out \u5230\u90ae\u4ef6\u548c\u7ec4\u7ec7 webhook\uff0c\u5e76\u6709\u6a21\u677f\u3001\u91cd\u8bd5\u548c\u7ba1\u7406\u5458\u6062\u590d\u72b6\u6001\u3002",
-      ],
-      [
-        "\u70df\u6d4b\u95f8\u95e8",
-        "\u751f\u4ea7\u70df\u6d4b\u547d\u4ee4\u4f1a\u68c0\u67e5 stats\u3001auth providers\u3001readiness \u4fdd\u62a4\u548c\u5173\u952e\u9875\u9762\u3002",
-      ],
+    banner: {
+      label: "开发者预览",
+      body: "公开发现和 manifest 检查已开放。运行调用需要 Project Key；付费市场仍为预览状态。",
+      action: "了解更多",
+    },
+    eyebrow: "技能注册中心 + 运行网关",
+    title: "AI Agent 的技能注册中心与运行网关。",
+    mobileTitle: "AI Agent 技能，从发现到运行都受治理。",
+    description:
+      "浏览可复用 Skill，检查 manifest 与权限，再通过 REST 或 MCP 在项目级治理下安全调用。",
+    primaryCta: "浏览 Skills",
+    quickstartCta: "快速开始",
+    publishCta: "发布 Skill",
+    evidence: [
+      ["已验证 manifest", "Schema 与权限检查"],
+      ["权限范围", "采用前先声明"],
+      ["可审计运行时", "状态、延迟和日志"],
     ],
-    title:
-      "\u5ba2\u6237\u80fd\u770b\u5230\u5e73\u53f0\uff0c\u4e0d\u53ea\u662f\u542c\u5230\u613f\u666f\u3002",
+    control: {
+      title: "运行控制平面",
+      marketplace: "市场",
+      skillName: "Browser Research",
+      verified: "已验证",
+      publisher: "SkillHub Labs",
+      runtime: "REST / MCP",
+      scopes: "3 个权限",
+      manifest: "Manifest",
+      schema: "Schema",
+      permissions: "权限",
+      policy: "运行策略",
+      keyRequired: "需要 Project Key",
+      request: "请求",
+      response: "响应",
+      audit: "审计日志（最新）",
+      status: "200 OK",
+      latency: "1.23 秒",
+      viewSkill: "查看 Skill",
+      schemaValid: "Schema 有效",
+      allSystems: "系统运行正常",
+    },
+    capabilities: [
+      {
+        title: "公开发现",
+        badge: "已开放",
+        body: "搜索和浏览已验证 Skill。",
+        tone: "live",
+      },
+      {
+        title: "Manifest 检查",
+        badge: "已开放",
+        body: "查看 schema、权限和运行元数据。",
+        tone: "live",
+      },
+      {
+        title: "运行调用",
+        badge: "需 Key",
+        body: "用项目 Key 通过 REST / MCP 调用。",
+        tone: "key",
+      },
+      {
+        title: "付费市场",
+        badge: "预览",
+        body: "付费 listing 和账单仍在预览。",
+        tone: "preview",
+      },
+    ],
+    trustTitle: "调用前先建立信任",
+    trustModules: [
+      {
+        title: "权限检查",
+        body: "运行前先看清一个 Skill 能做什么。",
+        status: "权限可见",
+        rows: ["web.search", "web.fetch", "data.store"],
+      },
+      {
+        title: "运行治理",
+        body: "Project Key、策略和审计日志一起约束安全使用。",
+        status: "策略已检查",
+        rows: ["需要 Project Key", "限流：60 / 分钟", "允许：web.search, web.fetch"],
+      },
+      {
+        title: "发布审核",
+        body: "人工和自动化检查共同保证质量和安全。",
+        status: "审核队列",
+        rows: ["静态分析", "权限复核", "安全扫描"],
+      },
+    ],
+    featuredTitle: "精选 Skills",
+    featuredAction: "查看全部",
+    inspect: "查看",
+    submitted: "已提交",
+    verified: "已验证",
+    runtime: "运行时",
+    permissions: "权限",
+    howTitle: "如何使用",
+    howSteps: [
+      ["发现", "找到适合 agent 的 Skill。"],
+      ["检查", "查看 manifest、权限和运行细节。"],
+      ["获取 Key", "创建项目并获取 Project Key。"],
+      ["调用", "用 REST API 或 MCP 调用 Skill。"],
+      ["监控", "追踪用量、日志和性能。"],
+    ],
+    finalTitle: "检查你的第一个 Agent Skill",
+    finalBody: "从 Skill 注册中心和运行网关开始探索。",
+    readDocs: "阅读文档",
+    footerBody: "AI Agent 的技能注册中心与运行网关，给真实构建者使用。",
+    systemStatus: "系统运行正常",
+    viewStatus: "查看状态",
   },
 } as const;
 
-const operatingCopy = {
-  en: {
-    eyebrow: "Registry preview loops",
-    title: "One platform for developers, publishers, and operators.",
-    body: "The product only feels real when a listing becomes authenticated project adoption state, runtime state, review state, and future paid-marketplace state. SkillHub keeps those Developer Preview architecture loops visible from day one.",
-    flow: ["Publish", "Review", "Adopt", "Invoke", "Ledger", "Paid preview"],
-    loops: [
-      {
-        action: "Sign in for developer workspace",
-        body: "Find a verified skill, sign in to add it to a project, create a reveal-once runtime key, run a governed test call, and monitor cost or incidents later.",
-        href: "/developer",
-        label: "Developer / Agent Builder",
-        metric: "Project runtime",
-        status: "Sign in -> test -> monitor",
-      },
-      {
-        action: "Sign in for publisher workspace",
-        body: "Upload a manifest, submit an exact version, repair review blockers, record pricing intent, respond to feedback, and track paid-readiness metadata for future review.",
-        href: "/publisher",
-        label: "Publisher / Skill Author",
-        metric: "Supply operations",
-        status: "Draft -> review -> improve",
-      },
-      {
-        action: "Operator direct link only",
-        body: "Prioritize reviews, govern abuse and incidents, process ledger states, manage notification delivery, and inspect launch readiness without exposing secrets.",
-        href: null,
-        label: "Platform Operator",
-        metric: "Trust and finance",
-        status: "Review -> govern -> launch",
-      },
-    ],
-  },
-  zh: {
-    eyebrow: "\u6ce8\u518c\u8868\u9884\u89c8\u95ed\u73af",
-    title:
-      "\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u3001\u8fd0\u8425\u5458\u5171\u7528\u4e00\u4e2a\u5e73\u53f0\u3002",
-    body: "\u4e00\u4e2a\u9875\u9762\u50cf\u4e0d\u50cf\u4ea7\u54c1\uff0c\u5173\u952e\u4e0d\u662f\u6587\u6848\uff0c\u800c\u662f\u5217\u8868\u80fd\u4e0d\u80fd\u5728\u767b\u5f55\u540e\u53d8\u6210\u9879\u76ee\u91c7\u7528\u72b6\u6001\u3001\u8fd0\u884c\u72b6\u6001\u3001\u5ba1\u6838\u72b6\u6001\u3001\u9884\u53d1\u5e03\u8d26\u672c\u548c\u8d22\u52a1\u590d\u6838\u6a21\u578b\u72b6\u6001\u3002",
-    flow: [
-      "\u53d1\u5e03",
-      "\u5ba1\u6838",
-      "\u91c7\u7528",
-      "\u8c03\u7528",
-      "\u8d26\u672c",
-      "\u4ed8\u8d39\u9884\u89c8",
-    ],
-    loops: [
-      {
-        action: "\u767b\u5f55\u540e\u8fdb\u5165\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
-        body: "\u627e\u5230\u5df2\u9a8c\u8bc1\u6280\u80fd\uff0c\u767b\u5f55\u540e\u91c7\u7528\u5230\u9879\u76ee\uff0c\u521b\u5efa\u4e00\u6b21\u53ef\u89c1\u7684\u8fd0\u884c Key\uff0c\u8dd1\u4e00\u6b21\u53d7\u6cbb\u7406\u7684\u6d4b\u8bd5\u8c03\u7528\uff0c\u4e4b\u540e\u56de\u6765\u770b\u6210\u672c\u548c\u4e8b\u6545\u3002",
-        href: "/developer",
-        label: "\u5f00\u53d1\u8005 / Agent Builder",
-        metric: "\u9879\u76ee\u8fd0\u884c",
-        status: "\u767b\u5f55 -> \u6d4b\u8bd5 -> \u76d1\u63a7",
-      },
-      {
-        action: "\u767b\u5f55\u540e\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0",
-        body: "\u4e0a\u4f20 manifest\uff0c\u63d0\u4ea4\u7cbe\u786e\u7248\u672c\uff0c\u4fee\u590d\u5ba1\u6838\u963b\u65ad\uff0c\u8bb0\u5f55\u5b9a\u4ef7\u610f\u56fe\uff0c\u56de\u590d\u53cd\u9988\uff0c\u8ddf\u8e2a\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e\u3002",
-        href: "/publisher",
-        label: "\u53d1\u5e03\u8005 / \u6280\u80fd\u4f5c\u8005",
-        metric: "\u4f9b\u7ed9\u4fa7\u8fd0\u8425",
-        status: "\u8349\u7a3f -> \u5ba1\u6838 -> \u6539\u8fdb",
-      },
-      {
-        action: "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5",
-        body: "\u5904\u7406\u5ba1\u6838\u4f18\u5148\u7ea7\uff0c\u6cbb\u7406\u6ee5\u7528\u548c\u4e8b\u6545\uff0c\u5904\u7406\u8d26\u672c\u72b6\u6001\uff0c\u7ba1\u7406\u901a\u77e5\u6295\u9012\uff0c\u5e76\u7528\u4e0d\u66b4\u9732\u5bc6\u94a5\u7684\u65b9\u5f0f\u68c0\u67e5\u4e0a\u7ebf\u5c31\u7eea\u5ea6\u3002",
-        href: null,
-        label: "\u5e73\u53f0\u8fd0\u8425",
-        metric: "\u4fe1\u4efb\u548c\u8d22\u52a1",
-        status: "\u5ba1\u6838 -> \u6cbb\u7406 -> \u4e0a\u7ebf",
-      },
-    ],
-  },
-} as const;
-
-const manifestSnippet = `{
-  "schemaVersion": "0.1",
-  "name": "browser-research",
-  "runtime": {
-    "type": "http",
-    "entrypoint": "https://example.com/skill-runtime"
-  },
-  "permissions": {
-    "network": true,
-    "browser": true,
-    "filesystem": "none",
-    "secrets": []
+function statusLabel(status: SkillSummary["verificationStatus"], locale: "en" | "zh") {
+  if (status === "verified") {
+    return homeLandingCopy[locale].verified;
   }
-}`;
+
+  if (status === "submitted") {
+    return homeLandingCopy[locale].submitted;
+  }
+
+  return locale === "zh" ? "预览" : "Preview";
+}
+
+function riskLabel(level: SkillSummary["permissionLevel"], locale: "en" | "zh") {
+  const labels = {
+    en: { low: "1 scope", medium: "3 scopes", high: "4 scopes" },
+    zh: { low: "1 个权限", medium: "3 个权限", high: "4 个权限" },
+  };
+
+  return labels[locale][level];
+}
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -226,469 +338,402 @@ export default async function Home({ searchParams }: PageProps) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const skills = await getSkills();
-  const [publicStats, session] = await Promise.all([
-    getPublicPlatformStats({ skills }),
-    getWorkspaceSession(),
-  ]);
-  const visibleMetrics = [
-    {
-      label: dictionary.metrics.publishedSkills,
-      value: String(publicStats.publicSkills),
-    },
-    {
-      label: dictionary.metrics.totalSkillRecords,
-      value: String(publicStats.totalSkillRecords),
-    },
-    { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
-    {
-      label: dictionary.metrics.callableSkills,
-      value: String(publicStats.callableSkills),
-    },
-  ];
-  const verifiedShare = formatPublicPlatformShare(publicStats.verifiedSkills, publicStats.publicSkills);
-  const statusSignals = [
-    {
-      label: dictionary.home.status.api,
-      value: dictionary.home.status.online,
-      icon: Activity,
-    },
-    { label: dictionary.home.status.mcp, value: "/mcp", icon: Network },
-    { label: dictionary.home.status.schema, value: "v0.1", icon: Braces },
-    { label: dictionary.home.status.store, value: "Postgres", icon: Database },
-  ];
-  const operating = operatingCopy[locale];
-  const proof = proofCopy[locale];
+  const publicStats = await getPublicPlatformStats({ skills });
+  const landing = homeLandingCopy[locale];
+  const seenSkillKeys = new Set<string>();
+  const featuredSkills = [...skills, ...fallbackFeaturedSkills]
+    .filter((skill) => {
+      const skillKey = `${skill.slug}:${skill.displayName.toLowerCase()}`;
+      const displayKey = `display:${skill.displayName.toLowerCase()}`;
+
+      if (seenSkillKeys.has(skillKey) || seenSkillKeys.has(displayKey)) {
+        return false;
+      }
+
+      seenSkillKeys.add(skillKey);
+      seenSkillKeys.add(displayKey);
+      return true;
+    })
+    .slice(0, 4);
+  const leadSkill = featuredSkills[0] ?? fallbackFeaturedSkills[0];
+  const leadRuntime = leadSkill.runtimeType
+    ? leadSkill.runtimeType.toUpperCase()
+    : landing.control.runtime;
 
   return (
-    <main className="product-shell">
-      <SiteHeader
-        active="home"
-        apiUrl={apiUrl}
-        dictionary={dictionary}
-        locale={locale}
-        pathname="/"
-      />
+    <main className="product-shell home-shell">
+      <section className="home-frame" aria-labelledby="home-heading">
+        <SiteHeader
+          active="home"
+          apiUrl={apiUrl}
+          dictionary={dictionary}
+          locale={locale}
+          pathname="/"
+        />
 
-      <section
-        className="command-screen reveal-scope"
-        aria-labelledby="home-heading"
-      >
-        <div className="hero-copy reveal-item">
-          <div className="eyebrow">
-            <Radar size={16} aria-hidden="true" />
-            <span>{dictionary.home.eyebrow}</span>
-          </div>
-          <h1 id="home-heading">{dictionary.home.title}</h1>
-          <p>{dictionary.home.description}</p>
-          <div className="hero-actions">
-            <a
-              className="primary-button primary-button--large"
-              href={localizedHref("/marketplace", locale)}
-            >
-              <Search size={18} aria-hidden="true" />
-              <span>{dictionary.common.marketplace}</span>
-            </a>
-            <a
-              className="secondary-button secondary-button--large"
-              href={localizedHref("/publish", locale)}
-            >
-              <Plus size={18} aria-hidden="true" />
-              <span>{dictionary.home.publishCta}</span>
-            </a>
-            <a
-              className="secondary-button secondary-button--large"
-              href={localizedHref("/docs#mcp", locale)}
-            >
-              <FileJson size={18} aria-hidden="true" />
-              <span>
-                {locale === "zh" ? "\u5f00\u53d1\u8005\u5feb\u901f\u5f00\u59cb" : "Developer quickstart"}
-              </span>
+        <div className="home-preview-banner" role="status">
+          <div className="home-preview-banner__inner">
+            <span className="home-preview-banner__dot" aria-hidden="true" />
+            <strong>{landing.banner.label}</strong>
+            <p>{landing.banner.body}</p>
+            <a href={localizedHref("/status", locale)}>
+              {landing.banner.action}
+              <ArrowRight size={14} aria-hidden="true" />
             </a>
           </div>
         </div>
 
-        <aside
-          className="gateway-card reveal-item reveal-item--delay"
-          aria-label={dictionary.common.gateway}
-        >
-          <div className="card-kicker">
-            <ServerCog size={16} aria-hidden="true" />
-            <span>{dictionary.common.gateway}</span>
-          </div>
-          <div className="gateway-card__head">
-            <div>
-              <h2>{dictionary.home.gatewayTitle}</h2>
-              <p>api.useskillhub.com</p>
+        <section className="home-hero-grid reveal-scope">
+          <div className="hero-copy home-hero-copy reveal-item">
+            <div className="eyebrow">
+              <span>{landing.eyebrow}</span>
             </div>
-            <span className="live-dot">
-              <span />
-              {dictionary.common.live}
-            </span>
-          </div>
-
-          <div className="status-grid">
-            {statusSignals.map((item) => (
-              <div className="status-tile" key={item.label}>
-                <item.icon size={16} aria-hidden="true" />
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className="terminal-card">
-            <div className="terminal-card__bar">
-              <span />
-              <span />
-              <span />
-            </div>
-            <pre>
-              <code>{`GET /v1/skills/search?tag=research
-200 OK  ${publicStats.publicSkills} public skills
-
-POST /mcp
-tools: skillhub.search, skillhub.get`}</code>
-            </pre>
-          </div>
-        </aside>
-
-        <PublicAccessScope locale={locale} />
-
-        <section
-          className="registry-workbench reveal-item reveal-item--late"
-          id="registry"
-          aria-labelledby="registry-heading"
-        >
-          <div className="workbench-top">
-            <div>
-              <div className="card-kicker">
-                <Boxes size={16} aria-hidden="true" />
-                <span>{dictionary.home.registryEyebrow}</span>
-              </div>
-              <h2 id="registry-heading">{dictionary.home.registryTitle}</h2>
-            </div>
-            <div className="workbench-actions">
-              <form
-                action="/marketplace"
-                className="search-box"
-                method="get"
-                role="search"
-              >
-                {locale === "zh" ? (
-                  <input name="lang" type="hidden" value="zh" />
-                ) : null}
-                <Search size={17} aria-hidden="true" />
-                <input
-                  aria-label={dictionary.home.searchPlaceholder}
-                  name="q"
-                  placeholder={dictionary.home.searchPlaceholder}
-                />
-                <button
-                  aria-label={
-                    locale === "zh" ? "搜索市场" : "Search marketplace"
-                  }
-                  className="search-box__submit"
-                  title={locale === "zh" ? "搜索市场" : "Search marketplace"}
-                  type="submit"
-                >
-                  <ArrowRight size={15} aria-hidden="true" />
-                </button>
-              </form>
+            <h1 id="home-heading">
+              <span className="home-heading-desktop">
+              {locale === "en" ? (
+                <>
+                  The skill registry and runtime gateway for{" "}
+                  <span>AI agents</span>
+                </>
+              ) : (
+                <>
+                  AI Agent 的技能注册中心与<span>运行网关</span>
+                </>
+              )}
+              </span>
+              <span className="home-heading-mobile">
+                {locale === "en" ? (
+                  <>
+                    AI agent skills, governed from{" "}
+                    <strong>discovery to runtime.</strong>
+                  </>
+                ) : (
+                  <>
+                    AI Agent 技能，<strong>从发现到运行</strong>都受治理。
+                  </>
+                )}
+              </span>
+            </h1>
+            <p>{landing.description}</p>
+            <div className="hero-actions">
               <a
-                className="secondary-button"
+                className="primary-button primary-button--large"
+                href={localizedHref("/marketplace", locale)}
+              >
+                <Search size={18} aria-hidden="true" />
+                <span>{landing.primaryCta}</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <a
+                className="secondary-button secondary-button--large"
+                href={localizedHref("/docs#mcp", locale)}
+              >
+                <Terminal size={18} aria-hidden="true" />
+                <span>{landing.quickstartCta}</span>
+              </a>
+              <a
+                className="ghost-button ghost-button--large"
                 href={localizedHref("/publish", locale)}
               >
-                <Plus size={17} aria-hidden="true" />
-                <span>{locale === "zh" ? "提交技能" : "Submit a skill"}</span>
+                <span>{landing.publishCta}</span>
+                <ArrowRight size={15} aria-hidden="true" />
               </a>
             </div>
-          </div>
 
-          <div className="metric-strip">
-            {visibleMetrics.map((item) => (
-              <div className="metric" key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-            <div className="metric metric--accent">
-              <span>{dictionary.metrics.verifiedShare}</span>
-              <strong>{verifiedShare}</strong>
+            <div className="home-evidence-row" aria-label={landing.eyebrow}>
+              {landing.evidence.map(([label, detail], index) => {
+                const Icon = proofIcons[index];
+
+                return (
+                  <div className="home-evidence-pill" key={label}>
+                    <Icon size={18} aria-hidden="true" />
+                    <span>{label}</span>
+                    <small>{detail}</small>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <SkillTable
-            apiUrl={apiUrl}
-            labels={dictionary.skillTable}
-            locale={locale}
-            skills={skills}
-          />
-        </section>
-
-        <OperatingEvidenceChain
-          focus="platform"
-          locale={locale}
-          stats={[
-            {
-              label: dictionary.metrics.publishedSkills,
-              value: String(publicStats.publicSkills),
-            },
-            {
-              label: dictionary.metrics.verified,
-              tone: "good",
-              value: String(publicStats.verifiedSkills),
-            },
-            {
-              label: dictionary.metrics.callableSkills,
-              value: String(publicStats.callableSkills),
-            },
-            {
-              label: dictionary.metrics.avgLatency,
-              tone: "neutral",
-              value: formatPublicPlatformLatency(publicStats.avgLatencyMs),
-            },
-          ]}
-        />
-
-        <ConsoleAccessPanel locale={locale} session={session} />
-
-        <JourneyRailDeck locale={locale} publicSurface />
-
-        <section
-          className="operating-console reveal-item reveal-item--late"
-          aria-labelledby="operating-heading"
-        >
-          <div className="operating-console__intro">
-            <div className="operating-console__headline">
-              <div className="card-kicker">
-                <Repeat2 size={16} aria-hidden="true" />
-                <span>{operating.eyebrow}</span>
-              </div>
-              <h2 id="operating-heading">{operating.title}</h2>
+          <aside className="control-plane reveal-item reveal-item--delay" aria-label={landing.control.title}>
+            <div className="control-mobile-tabs" aria-hidden="true">
+              <span className="control-mobile-tabs__item control-mobile-tabs__item--active">
+                Skill
+              </span>
+              <span className="control-mobile-tabs__item">{landing.control.manifest}</span>
+              <span className="control-mobile-tabs__item">{landing.control.policy}</span>
             </div>
-            <p>{operating.body}</p>
-          </div>
 
-          <div className="operating-flow-rail" aria-label={operating.eyebrow}>
-            {operating.flow.map((step, index) => (
-              <div className="operating-flow-node" key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
+            <article className="control-pane control-pane--market">
+              <div className="control-pane__label">
+                <span>{landing.control.marketplace}</span>
               </div>
-            ))}
-          </div>
+              <div className="control-skill-card">
+                <div className="control-skill-card__icon" aria-hidden="true">
+                  <Boxes size={22} />
+                </div>
+                <div>
+                  <strong>{leadSkill.displayName}</strong>
+                  <span>
+                    by {landing.control.publisher}
+                    <CheckCircle2 size={12} aria-hidden="true" />
+                  </span>
+                </div>
+                <span className="control-badge control-badge--verified">
+                  {landing.control.verified}
+                </span>
+              </div>
+              <p className="control-skill-description">{leadSkill.description}</p>
+              <div className="control-tag-row">
+                {leadSkill.tags.slice(0, 2).map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+              <dl className="control-meta-list">
+                <div>
+                  <dt>{landing.control.runtime}</dt>
+                  <dd>{leadRuntime}</dd>
+                </div>
+                <div>
+                  <dt>{landing.control.permissions}</dt>
+                  <dd>{riskLabel(leadSkill.permissionLevel, locale)}</dd>
+                </div>
+              </dl>
+              <a className="control-pane__button" href={localizedHref(`/skills/${leadSkill.slug}`, locale)}>
+                {landing.control.viewSkill}
+              </a>
+            </article>
 
-          <div className="operating-loop-grid">
-            {operating.loops.map((loop, index) => {
-              const Icon = operatingIcons[index];
+            <div className="control-flow-line" aria-hidden="true" />
+
+            <article className="control-pane control-pane--manifest">
+              <div className="control-tabs" aria-label={landing.control.manifest}>
+                <span className="control-tabs__item control-tabs__item--active">
+                  {landing.control.manifest}
+                </span>
+                <span className="control-tabs__item">{landing.control.schema}</span>
+                <span className="control-tabs__item">{landing.control.permissions}</span>
+              </div>
+              <div className="control-code" aria-label="SkillHub manifest preview">
+                <span className="control-code__line">
+                  <em>1</em> {"{"}
+                </span>
+                <span className="control-code__line control-code__line--active">
+                  <em>2</em> {'"name": "browser.research",'}
+                </span>
+                <span className="control-code__line">
+                  <em>3</em> {'"version": "1.2.0",'}
+                </span>
+                <span className="control-code__line control-code__line--active control-code__line--delay">
+                  <em>4</em> {'"permissions": ["web.search", "web.fetch", "data.store"],'}
+                </span>
+                <span className="control-code__line">
+                  <em>5</em> {'"runtime": {"protocols": ["rest", "mcp"]}'}
+                </span>
+                <span className="control-code__line">
+                  <em>6</em> {"}"}
+                </span>
+              </div>
+              <div className="control-pane__foot">
+                <span className="home-preview-banner__dot" aria-hidden="true" />
+                <span>{landing.control.schemaValid}</span>
+                <code>v1.2.0</code>
+              </div>
+            </article>
+
+            <div className="control-flow-line control-flow-line--late" aria-hidden="true" />
+
+            <article className="control-pane control-pane--runtime">
+              <div className="control-pane__label">
+                <span>{landing.control.policy}</span>
+                <span className="control-badge control-badge--key">
+                  {landing.control.keyRequired}
+                </span>
+              </div>
+              <div className="runtime-console">
+                <span>{landing.control.request}</span>
+                <code>POST /v1/skills/browser.research/run</code>
+                <pre>{`{
+  "query": "latest AI agent framework comparison",
+  "max_results": 5
+}`}</pre>
+              </div>
+              <div className="runtime-console runtime-console--success">
+                <span>{landing.control.response}</span>
+                <strong>{landing.control.status}</strong>
+                <code>{landing.control.latency}</code>
+              </div>
+              <div className="runtime-audit">
+                <span>{landing.control.audit}</span>
+                <strong>POST /run</strong>
+                <strong>200</strong>
+              </div>
+              <div className="control-pane__foot">
+                <span className="home-preview-banner__dot" aria-hidden="true" />
+                <span>{landing.control.allSystems}</span>
+              </div>
+            </article>
+          </aside>
+
+          <section className="home-capability-strip reveal-item reveal-item--late" aria-label={landing.banner.label}>
+            {landing.capabilities.map((item, index) => {
+              const Icon = capabilityIcons[index];
 
               return (
-                <article className="operating-loop-card" key={loop.label}>
-                  <div className="operating-loop-card__head">
-                    <div
-                      className="operating-loop-card__icon"
-                      aria-hidden="true"
-                    >
-                      <Icon size={18} />
-                    </div>
-                    <div>
-                      <strong>{loop.label}</strong>
-                      <span>{loop.metric}</span>
-                    </div>
-                  </div>
-                  <p>{loop.body}</p>
-                  <div className="operating-loop-card__foot">
-                    <span className="operating-loop-card__status">
-                      {loop.status}
-                    </span>
-                    {loop.href ? (
-                      <a href={localizedHref(loop.href, locale)}>
-                        {loop.action}
-                        <Rocket size={15} aria-hidden="true" />
-                      </a>
-                    ) : (
-                      <span className="operating-loop-card__locked">
-                        {loop.action}
-                        <ShieldCheck size={15} aria-hidden="true" />
+                <article className="home-capability" key={item.title}>
+                  <Icon size={22} aria-hidden="true" />
+                  <div>
+                    <div className="home-capability__head">
+                      <strong>{item.title}</strong>
+                      <span className={`state-badge state-badge--${item.tone}`}>
+                        {item.badge}
                       </span>
-                    )}
+                    </div>
+                    <p>{item.body}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        </section>
+
+        <section className="home-section home-trust-section" aria-labelledby="home-trust-heading">
+          <h2 id="home-trust-heading">{landing.trustTitle}</h2>
+          <div className="home-trust-modules">
+            {landing.trustModules.map((item, index) => {
+              const Icon = trustModuleIcons[index];
+
+              return (
+                <article className="home-trust-module lift-card" key={item.title}>
+                  <div className="home-trust-module__head">
+                    <Icon size={20} aria-hidden="true" />
+                    <span>{item.status}</span>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                  <div className="home-trust-module__rows">
+                    {item.rows.map((row, rowIndex) => (
+                      <span key={row}>
+                        {row}
+                        <strong>{rowIndex === 0 ? "Low" : rowIndex === 1 ? "OK" : "Passed"}</strong>
+                      </span>
+                    ))}
                   </div>
                 </article>
               );
             })}
           </div>
         </section>
-      </section>
 
-      <section
-        className="proof-section reveal-scope"
-        aria-labelledby="proof-heading"
-      >
-        <div className="proof-section__copy reveal-item">
-          <div className="eyebrow">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>{proof.eyebrow}</span>
+        <section className="home-section home-featured-section" aria-labelledby="home-featured-heading">
+          <div className="home-section__head">
+            <h2 id="home-featured-heading">{landing.featuredTitle}</h2>
+            <a href={localizedHref("/marketplace", locale)}>
+              {landing.featuredAction}
+              <ArrowRight size={15} aria-hidden="true" />
+            </a>
           </div>
-          <h2 id="proof-heading">{proof.title}</h2>
-          <p>{proof.body}</p>
+
+          <div className="home-featured-grid">
+            {featuredSkills.map((skill, index) => {
+              const Icon = skillIcons[index] ?? Boxes;
+              const status = statusLabel(skill.verificationStatus, locale);
+              const isVerified = skill.verificationStatus === "verified";
+
+              return (
+                <article className="home-skill-card lift-card" key={skill.id}>
+                  <div className="home-skill-card__head">
+                    <div className={`home-skill-card__icon home-skill-card__icon--${index + 1}`} aria-hidden="true">
+                      <Icon size={23} />
+                    </div>
+                    <div>
+                      <h3>{skill.displayName}</h3>
+                      <span className={isVerified ? "control-badge control-badge--verified" : "state-badge state-badge--preview"}>
+                        {status}
+                      </span>
+                    </div>
+                  </div>
+                  <p>{skill.description}</p>
+                  <div className="control-tag-row">
+                    {skill.tags.slice(0, 2).map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                  <dl className="home-skill-card__meta">
+                    <div>
+                      <dt>{landing.runtime}</dt>
+                      <dd>{skill.runtimeType ? skill.runtimeType.toUpperCase() : "REST / MCP"}</dd>
+                    </div>
+                    <div>
+                      <dt>{landing.permissions}</dt>
+                      <dd>{riskLabel(skill.permissionLevel, locale)}</dd>
+                    </div>
+                  </dl>
+                  <a className="secondary-button" href={localizedHref(`/skills/${skill.slug}`, locale)}>
+                    {landing.inspect}
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="home-section home-how-section" aria-labelledby="home-how-heading">
+          <h2 id="home-how-heading">{landing.howTitle}</h2>
+          <div className="home-how-rail">
+            {landing.howSteps.map(([title, body], index) => {
+              const Icon = howIcons[index];
+
+              return (
+                <article className="home-how-step" key={title}>
+                  <div className="home-how-step__icon" aria-hidden="true">
+                    <Icon size={22} />
+                  </div>
+                  <span>{index + 1}</span>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="home-final-cta">
+          <div>
+            <h2>{landing.finalTitle}</h2>
+            <p>{landing.finalBody}</p>
+          </div>
           <div className="hero-actions">
-            <a
-              className="secondary-button secondary-button--large"
-              href={localizedHref("/docs#operating-reference", locale)}
-            >
-              <Gauge size={18} aria-hidden="true" />
-              <span>{proof.action}</span>
+            <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
+              {landing.primaryCta}
+              <ArrowRight size={16} aria-hidden="true" />
             </a>
-            <a
-              className="ghost-button"
-              href={localizedHref("/login", locale)}
-            >
-              <KeyRound size={18} aria-hidden="true" />
-              <span>{proof.commandAction}</span>
+            <a className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)}>
+              <FileJson size={17} aria-hidden="true" />
+              {landing.readDocs}
             </a>
           </div>
-        </div>
+        </section>
 
-        <div className="proof-board">
-          {proof.items.map(([title, description], index) => {
-            const Icon = proofIcons[index];
-
-            return (
-              <article
-                className="proof-card lift-card reveal-item reveal-item--delay"
-                key={title}
-              >
-                <div>
-                  <Icon size={18} aria-hidden="true" />
-                  <strong>{title}</strong>
-                </div>
-                <p>{description}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section
-        className="platform-section"
-        id="protocol"
-        aria-labelledby="protocol-heading"
-      >
-        <div className="section-heading reveal-item">
-          <div className="eyebrow">
-            <Terminal size={16} aria-hidden="true" />
-            <span>{dictionary.home.protocolEyebrow}</span>
-          </div>
-          <h2 id="protocol-heading">{dictionary.home.protocolTitle}</h2>
-          <p>{dictionary.home.protocolBody}</p>
-        </div>
-
-        <div className="workflow-grid">
-          {dictionary.home.workflows.map((item, index) => {
-            const Icon = workflowIcons[index];
-            return (
-              <article className="workflow-card lift-card" key={item.title}>
-                <div className="workflow-card__icon" aria-hidden="true">
-                  <Icon size={18} />
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="contract-section" aria-labelledby="manifest-heading">
-        <div className="manifest-copy">
-          <div className="card-kicker">
-            <FileJson size={16} aria-hidden="true" />
-            <span>{dictionary.home.manifestEyebrow}</span>
-          </div>
-          <h2 id="manifest-heading">{dictionary.home.manifestTitle}</h2>
-          <p>{dictionary.home.manifestBody}</p>
-
-          <div className="contract-list">
-            {dictionary.home.manifestBullets.map((item) => (
-              <div className="contract-list__item" key={item}>
-                <CheckCircle2 size={16} aria-hidden="true" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="code-panel" aria-label="Example SkillHub manifest">
-          <div className="code-panel__bar">
-            <span>skillhub.json</span>
-            <span>{locale === "zh" ? "示例，非实时端点" : "example, not live endpoint"}</span>
-          </div>
-          <pre>
-            <code>{manifestSnippet}</code>
-          </pre>
-        </div>
-      </section>
-
-      <section
-        className="trust-section"
-        id="trust"
-        aria-labelledby="trust-heading"
-      >
-        <div className="section-heading section-heading--compact">
-          <div className="eyebrow">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>{dictionary.home.trustEyebrow}</span>
-          </div>
-          <h2 id="trust-heading">{dictionary.home.trustTitle}</h2>
-        </div>
-
-        <div className="trust-grid">
-          {dictionary.home.trustItems.map((item, index) => {
-            const Icon = trustIcons[index];
-            return (
-              <article className="trust-card lift-card" key={item.title}>
-                <Icon size={20} aria-hidden="true" />
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <footer className="site-footer">
+      <footer className="site-footer home-footer">
         <div>
           <strong>SkillHub</strong>
-          <span>{dictionary.common.subtitle}</span>
+          <span>{landing.footerBody}</span>
         </div>
         <div className="footer-links">
-          <a href={`${apiUrl}/health`}>{dictionary.common.health}</a>
-          <a href={localizedHref("/docs#mcp", locale)}>
-            {dictionary.common.mcp}
-          </a>
-          <a href={localizedHref("/publish", locale)}>
-            {dictionary.common.publish}
-          </a>
-          <a href={localizedHref("/terms", locale)}>
-            {locale === "zh" ? "\u6761\u6b3e" : "Terms"}
-          </a>
-          <a href={localizedHref("/support", locale)}>
-            {locale === "zh" ? "\u652f\u6301" : "Support"}
-          </a>
-          <a href={localizedHref("/report", locale)}>
-            {locale === "zh" ? "\u62a5\u544a\u95ee\u9898" : "Report issue"}
-          </a>
+          <a href={localizedHref("/marketplace", locale)}>{dictionary.common.marketplace}</a>
+          <a href={localizedHref("/docs", locale)}>{dictionary.nav.docs}</a>
+          <a href={localizedHref("/publish", locale)}>{dictionary.common.publish}</a>
           <a href={localizedHref("/security", locale)}>
-            {locale === "zh" ? "\u5b89\u5168" : "Security"}
+            {locale === "zh" ? "安全" : "Security"}
           </a>
           <a href={localizedHref("/status", locale)}>
-            {locale === "zh" ? "\u72b6\u6001" : "Status"}
+            {landing.systemStatus} · {publicStats.publicSkills} skills
           </a>
-          <a href="https://github.com/guangzibodong/skillhub">
-            {dictionary.common.github}
-          </a>
+          <a href={`${apiUrl}/health`}>{dictionary.common.health}</a>
         </div>
       </footer>
+      </section>
     </main>
   );
 }
