@@ -41,11 +41,15 @@ type SiteHeaderClientProps = {
   dictionary: SiteHeaderDictionary;
   locale: Locale;
   pathname: string;
+  consoleHref?: string;
+  consoleLabel?: string;
   subtitle?: string;
 };
 
 export function SiteHeaderClient({
   active,
+  consoleHref,
+  consoleLabel,
   dictionary,
   locale,
   pathname,
@@ -141,10 +145,10 @@ export function SiteHeaderClient({
           </a>
           <a
             className="ghost-button site-action-secondary"
-            href={localizedHref("/login", locale)}
+            href={consoleHref ?? localizedHref("/login", locale)}
           >
             <LogIn size={17} aria-hidden="true" />
-            <span>{labels.console}</span>
+            <span>{consoleLabel ?? labels.console}</span>
           </a>
         </div>
 
@@ -195,9 +199,9 @@ export function SiteHeaderClient({
               <UploadCloud size={17} aria-hidden="true" />
               <span>{labels.publish}</span>
             </a>
-            <a className="ghost-button" href={localizedHref("/login", locale)}>
+            <a className="ghost-button" href={consoleHref ?? localizedHref("/login", locale)}>
               <LogIn size={17} aria-hidden="true" />
-              <span>{labels.console}</span>
+              <span>{consoleLabel ?? labels.console}</span>
             </a>
           </div>
         </div>

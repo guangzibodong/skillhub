@@ -57,12 +57,16 @@ export async function getWorkspaceSession(): Promise<WorkspaceSession> {
   };
 }
 
-export async function setSessionCookie(token: string) {
+export async function setSessionCookie(
+  token: string,
+  options: { persistent?: boolean } = {},
+) {
   const cookieStore = await cookies();
+  const persistent = options.persistent ?? true;
 
   cookieStore.set(authCookieName, token, {
     httpOnly: true,
-    maxAge: sessionMaxAge,
+    ...(persistent ? { maxAge: sessionMaxAge } : {}),
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production"

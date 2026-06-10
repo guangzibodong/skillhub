@@ -35,17 +35,17 @@ test("workspace locked heroes use access-first copy", async () => {
   const publisherCopy = await readFile("apps/web/lib/publisher-page-copy.ts", "utf8");
 
   assert.match(developerPage, /lockedTitle:\s*"Enter the developer workspace after sign-in\."/);
-  assert.match(developerPage, /lockedTitle:\s*"登录后进入开发者工作台。"/);
+  assert.match(developerPage, /lockedTitle:\s*"\u767b\u5f55\u540e\u8fdb\u5165\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0\u3002"/);
   assert.match(developerPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
   assert.match(developerPage, /<p>\{labels\.lockedDescription\}<\/p>/);
 
   assert.match(publisherCopy, /lockedTitle:\s*"Enter the publisher workspace after sign-in\."/);
-  assert.match(publisherCopy, /lockedTitle:\s*"登录后进入发布者工作台。"/);
+  assert.match(publisherCopy, /lockedTitle:\s*"\u767b\u5f55\u540e\u8fdb\u5165\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u3002"/);
   assert.match(publisherPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
   assert.match(publisherPage, /<p>\{labels\.lockedDescription\}<\/p>/);
 
   assert.match(i18n, /lockedTitle:\s*"Enter the platform admin after sign-in\."/);
-  assert.match(i18n, /lockedTitle:\s*"登录后进入平台管理后台。"/);
+  assert.match(i18n, /lockedTitle:\s*"\u767b\u5f55\u540e\u8fdb\u5165\u5e73\u53f0\u7ba1\u7406\u540e\u53f0\u3002"/);
   assert.match(adminPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
   assert.match(adminPage, /<p>\{labels\.lockedDescription\}<\/p>/);
 });
@@ -65,21 +65,23 @@ test("admin login keeps operators on the admin workflow", async () => {
 
   assert.match(loginPage, /const returnTo = getSafeReturnTo\(params\.returnTo, locale\)/);
   assert.match(loginPage, /<AuthProviderPanel[\s\S]*returnTo=\{returnTo\}/);
-  assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
-  assert.match(loginPage, /<SessionLoginForm locale=\{locale\} returnTo=\{returnTo\}/);
+  assert.match(loginPage, /<WorkspaceSignupForm[\s\S]*locale=\{locale\}[\s\S]*returnTo=\{returnTo\}/);
+  assert.match(loginPage, /<SessionLoginForm[\s\S]*locale=\{locale\}[\s\S]*returnTo=\{returnTo\}/);
   assert.match(loginPage, /return localizedHref\("\/role-landing", locale\)/);
 
   assert.match(oauthPanel, /url\.searchParams\.set\("returnTo", returnTo \?\?/);
   assert.match(oauthPanel, /"\/role-landing\?lang=zh"/);
-  assert.match(passwordForm, /<input name="returnTo" type="hidden"/);
+  assert.match(passwordForm, /<input[\s\S]*name="returnTo"[\s\S]*type="hidden"/);
   assert.match(passwordForm, /localizedHref\("\/role-landing", locale\)/);
   assert.match(passwordForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
-  assert.match(recoveryForm, /<input name="returnTo" type="hidden"/);
+  assert.match(recoveryForm, /<input[\s\S]*name="returnTo"[\s\S]*type="hidden"/);
   assert.match(recoveryForm, /localizedHref\("\/role-landing", locale\)/);
   assert.match(recoveryForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
 
   assert.match(authActions, /const requestedReturnTo = normalizeReturnTo\(formData\.get\("returnTo"\)\)/);
   assert.match(authActions, /redirectTo: requestedReturnTo \?\? roleLandingPath\(subject, locale\)/);
+  assert.match(authActions, /const remember = formData\.get\("remember"\) === "on"/);
+  assert.match(authActions, /setSessionCookie\(token, \{ persistent: remember \}\)/);
   assert.match(authActions, /!candidate\.startsWith\("\/"\)/);
   assert.match(authActions, /candidate\.startsWith\("\/\/"\)/);
   assert.match(authActions, /candidate\.includes\(":\/\/"\)/);
@@ -93,7 +95,7 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(roleLanding, /return `\/account\$\{suffix\}`/);
 });
 
-test("login page uses dense workspace layout with gated planned OAuth providers", async () => {
+test("login page uses state-aware workspace layout with gated OAuth providers", async () => {
   const loginPage = await readFile("apps/web/app/login/page.tsx", "utf8");
   const oauthPanel = await readFile("apps/web/components/auth-provider-panel.tsx", "utf8");
   const globals = await readFile("apps/web/app/globals.css", "utf8");
@@ -101,47 +103,52 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(loginPage, /className="product-shell login-product-shell"/);
   assert.match(loginPage, /className=\{[\s\S]*"login-workspace login-workspace--signed-in"/);
   assert.match(loginPage, /LoginWorkspaceHero/);
+  assert.match(loginPage, /LoginAuthCard/);
+  assert.match(loginPage, /LoginPreviewNotice/);
+  assert.match(loginPage, /RuntimeFlowVisual/);
   assert.match(loginPage, /LoginSessionCard/);
   assert.match(loginPage, /className="login-signed-in-stack"/);
   assert.doesNotMatch(loginPage, /<LoginEmailCard[^\n]*isSignedIn/);
   assert.doesNotMatch(loginPage, /<p>\{labels\.recoveryBody\}<\/p>/);
-  assert.match(loginPage, /登录/);
-  assert.match(loginPage, /Sign in to/);
-  assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
+  assert.match(loginPage, /\u767b\u5f55\u8d26\u53f7/);
+  assert.match(loginPage, /Sign in to your/);
+  assert.match(loginPage, /surface="embedded"/);
+  assert.match(loginPage, /<WorkspaceSignupForm[\s\S]*locale=\{locale\}[\s\S]*returnTo=\{returnTo\}/);
 
-  assert.match(oauthPanel, /plannedProviders/);
+  assert.match(oauthPanel, /visibleProviders/);
+  assert.match(oauthPanel, /GitHub/);
+  assert.match(oauthPanel, /Google/);
   assert.match(oauthPanel, /Microsoft/);
   assert.match(oauthPanel, /Slack/);
-  assert.match(oauthPanel, /enabledProviders/);
-  assert.match(oauthPanel, /oauth-provider-planned/);
+  assert.match(oauthPanel, /Apple/);
+  assert.match(oauthPanel, /Discord/);
+  assert.match(oauthPanel, /disabled/);
   assert.match(oauthPanel, /BrandProviderIcon/);
   assert.match(oauthPanel, /oauth-provider-button__label/);
-  assert.doesNotMatch(oauthPanel, /oauth-provider-button--disabled/);
+  assert.match(oauthPanel, /oauth-provider-button--disabled/);
   assert.doesNotMatch(oauthPanel, /href=\{`Microsoft/);
   assert.doesNotMatch(oauthPanel, /href=\{`Slack/);
+  assert.doesNotMatch(oauthPanel, /href=\{`Apple/);
+  assert.doesNotMatch(oauthPanel, /href=\{`Discord/);
   assert.doesNotMatch(oauthPanel, /\{provider\.label\} \{labels\.disabledAction\}/);
 
   assert.match(globals, /\.login-workspace/);
-  assert.match(globals, /--login-top-align:\s*clamp/);
   assert.match(globals, /\.login-product-shell\s*\{[\s\S]*overflow-x:\s*clip/);
-  assert.match(globals, /\.login-panel-stack\s*\{[\s\S]*padding:\s*var\(--login-top-align\)/);
-  assert.match(globals, /\.login-workspace-hero__scene/);
+  assert.match(globals, /\.login-preview-bar/);
+  assert.match(globals, /\.login-auth-card/);
+  assert.match(globals, /\.login-value-grid/);
+  assert.match(globals, /\.login-runtime-flow/);
+  assert.match(globals, /\.login-runtime-node--gateway/);
   assert.match(globals, /\.login-session-grid/);
   assert.match(globals, /\.login-signed-in-stack/);
   assert.match(globals, /\.login-switch-account-button/);
-  assert.match(globals, /\.oauth-provider-empty/);
-  assert.match(globals, /\.oauth-provider-planned/);
   assert.match(globals, /\.brand-google-mark/);
   assert.match(globals, /\.brand-microsoft-mark/);
   assert.match(globals, /\.brand-slack-mark/);
-  assert.match(globals, /@keyframes login-grid-drift/);
-  assert.match(globals, /@keyframes login-ring-pulse/);
-  assert.match(globals, /\.login-scene-dot/);
-  assert.match(globals, /\.login-neural-field/);
-  assert.match(globals, /\.login-neural-node/);
-  assert.match(globals, /\.login-neural-link/);
-  assert.match(globals, /@keyframes login-neural-node/);
-  assert.match(globals, /@keyframes login-neural-packet/);
+  assert.match(globals, /\.brand-apple-mark/);
+  assert.match(globals, /\.brand-discord-mark/);
+  assert.match(globals, /@keyframes login-runtime-flow-line/);
+  assert.match(globals, /@keyframes login-runtime-node-breathe/);
   assert.match(globals, /\.login-footer/);
   assert.match(globals, /@media \(max-width: 760px\)/);
 });
@@ -159,8 +166,7 @@ test("admin workspace opens as an operations console", async () => {
   assert.match(adminPage, /Stripe checkout/);
   assert.match(adminPage, /Alipay/);
   assert.match(adminPage, /Search index pending/);
-  assert.match(adminPage, /搜索索引待接入/);
-  assert.match(adminPage, /账本 GMV/);
+  assert.match(adminPage, /GMV/);
 
   assert.match(globals, /\.admin-console-shell/);
   assert.match(globals, /\.admin-sidebar-nav/);

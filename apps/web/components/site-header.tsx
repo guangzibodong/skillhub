@@ -19,11 +19,15 @@ type SiteHeaderProps = {
   dictionary: Dictionary;
   locale: Locale;
   pathname: string;
+  consoleHref?: string;
+  consoleLabel?: string;
   subtitle?: string;
 };
 
 export function SiteHeader({
   active,
+  consoleHref,
+  consoleLabel,
   dictionary,
   locale,
   pathname,
@@ -35,6 +39,8 @@ export function SiteHeader({
       dictionary={toSiteHeaderDictionary(dictionary)}
       locale={locale}
       pathname={pathname}
+      consoleHref={consoleHref}
+      consoleLabel={consoleLabel}
       subtitle={subtitle}
     />
   );

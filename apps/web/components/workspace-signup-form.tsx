@@ -2,13 +2,24 @@
 
 import { useActionState, useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, CheckCircle2, Eye, EyeOff, KeyRound, MailCheck, Send, UserPlus, XCircle } from "lucide-react";
+import {
+  Building2,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  KeyRound,
+  MailCheck,
+  Send,
+  UserPlus,
+  XCircle,
+} from "lucide-react";
 import { signUpAction, type SignupActionState } from "@/lib/auth-actions";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type WorkspaceSignupFormProps = {
   locale: Locale;
   returnTo?: string;
+  surface?: "card" | "embedded";
 };
 
 const copy = {
@@ -18,6 +29,8 @@ const copy = {
     codePlaceholder: "123456",
     createAccount: "Create account",
     createMode: "Register",
+    createPrompt: "New to SkillHub?",
+    createPromptAction: "Create a workspace",
     developer: "Developer workspace",
     developerHelp: "Build projects, install skills, and create API keys for agents.",
     displayName: "Your name",
@@ -25,8 +38,11 @@ const copy = {
     email: "Work email",
     emailLoginMode: "Sign in",
     emailPlaceholder: "you@company.com",
+    forgotDisabledTitle:
+      "Password reset is not public yet. Use the advanced invite or recovery token flow below if an operator issued one.",
+    forgotPassword: "Forgot password?",
     hidePassword: "Hide password",
-    helper: "Use your email or username with a password. New teams can create a workspace in the register tab.",
+    helper: "Use email or username with a password, or register a new workspace.",
     identifier: "Email or username",
     identifierPlaceholder: "you@company.com or asha",
     organizationName: "Organization name",
@@ -34,25 +50,28 @@ const copy = {
     organizationSlug: "Workspace slug",
     organizationSlugPlaceholder: "acme-agent-lab",
     owner: "Owner workspace",
-    ownerHelp: "Start with full access across developer, publisher, billing, payout, and team setup.",
+    ownerHelp:
+      "Start with full access across developer, publisher, billing, payout, and team setup.",
     password: "Password",
     passwordPlaceholder: "At least 8 characters",
     previewCode: "Provider-deferred code preview",
-    previewHelp: "Visible only when debug code preview is enabled before the email provider is connected.",
+    previewHelp:
+      "Visible only when debug code preview is enabled before the email provider is connected.",
     publisher: "Publisher workspace",
     publisherHelp: "Publish skills, submit reviews, price listings, and prepare payouts.",
+    remember: "Remember me",
     requestCode: "Send code",
     requestingCode: "Sending",
     role: "Primary workspace path",
     signIn: "Sign in",
     showPassword: "Show password",
     submitting: "Please wait",
-    title: "Sign in or register",
+    title: "Email or username",
     username: "Username",
     usernamePlaceholder: "asha",
     verify: "Verify and enter",
     verifying: "Verifying",
-    workspace: "Open dashboard"
+    workspace: "Open dashboard",
   },
   zh: {
     code: "验证码",
@@ -60,6 +79,8 @@ const copy = {
     codePlaceholder: "123456",
     createAccount: "创建账号",
     createMode: "注册",
+    createPrompt: "还没有账号？",
+    createPromptAction: "创建工作区",
     developer: "开发者工作区",
     developerHelp: "创建项目、安装技能，并为智能体生成 API Key。",
     displayName: "你的姓名",
@@ -67,8 +88,11 @@ const copy = {
     email: "工作邮箱",
     emailLoginMode: "登录",
     emailPlaceholder: "you@company.com",
+    forgotDisabledTitle:
+      "公开密码重置还没有上线。如果管理员给了邀请码或恢复令牌，请使用下方高级登录。",
+    forgotPassword: "忘记密码？",
     hidePassword: "隐藏密码",
-    helper: "使用邮箱或用户名加密码登录。新团队可切换到注册并创建工作区。",
+    helper: "使用邮箱或用户名加密码登录，也可以注册新的工作区。",
     identifier: "邮箱或用户名",
     identifierPlaceholder: "you@company.com 或 asha",
     organizationName: "组织名称",
@@ -83,47 +107,61 @@ const copy = {
     previewHelp: "仅在调试预览开启时显示，正式邮件供应商接入后会关闭。",
     publisher: "发布者工作区",
     publisherHelp: "发布技能、提交审核、设置价格，并准备提现资料。",
+    remember: "记住我",
     requestCode: "发送验证码",
     requestingCode: "发送中",
     role: "主要使用路径",
     signIn: "登录",
     showPassword: "显示密码",
     submitting: "处理中",
-    title: "登录或注册",
+    title: "邮箱或用户名登录",
     username: "用户名",
     usernamePlaceholder: "asha",
     verify: "验证并进入",
     verifying: "验证中",
-    workspace: "打开工作台"
-  }
+    workspace: "打开工作台",
+  },
 } as const;
 
 const initialState: SignupActionState = {
   message: "",
-  status: "idle"
+  status: "idle",
 };
 
-export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormProps) {
+export function WorkspaceSignupForm({
+  locale,
+  returnTo,
+  surface = "card",
+}: WorkspaceSignupFormProps) {
   const labels = copy[locale];
   const router = useRouter();
   const passwordId = useId();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [showPassword, setShowPassword] = useState(false);
-  const [state, action, isPending] = useActionState(signUpAction.bind(null, locale), initialState);
+  const [state, action, isPending] = useActionState(
+    signUpAction.bind(null, locale),
+    initialState,
+  );
   const showChallenge = Boolean(state.challenge && !state.subject);
-  const showPreviewCode = process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
+  const showPreviewCode =
+    process.env.NEXT_PUBLIC_SKILLHUB_SHOW_EMAIL_CODE_PREVIEW === "true";
   const feedbackId = "password-access-feedback";
   const showFeedback = state.status !== "idle" && !state.subject;
+  const rootClass =
+    surface === "embedded"
+      ? "auth-card auth-card--signup auth-card--embedded"
+      : "ops-panel auth-card auth-card--signup";
 
   useEffect(() => {
     if (state.status === "success" && state.subject) {
-      const target = state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale);
+      const target =
+        state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale);
       router.replace(target as Parameters<typeof router.replace>[0]);
     }
   }, [locale, returnTo, router, state.redirectTo, state.status, state.subject]);
 
   return (
-    <article className="ops-panel auth-card auth-card--signup" id="email-registration">
+    <section className={rootClass} id="email-registration">
       <div className="card-kicker">
         <MailCheck size={16} aria-hidden="true" />
         <span>{labels.title}</span>
@@ -139,10 +177,18 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
         >
           <input name="intent" type="hidden" value="password" />
           <input name="mode" type="hidden" value={mode} />
-          <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/role-landing", locale)} />
+          <input
+            name="returnTo"
+            type="hidden"
+            value={returnTo ?? localizedHref("/role-landing", locale)}
+          />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
-              className={mode === "login" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
+              className={
+                mode === "login"
+                  ? "auth-mode-switch__item auth-mode-switch__item--active"
+                  : "auth-mode-switch__item"
+              }
               onClick={() => setMode("login")}
               aria-pressed={mode === "login"}
               type="button"
@@ -151,7 +197,11 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
               <span>{labels.emailLoginMode}</span>
             </button>
             <button
-              className={mode === "signup" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}
+              className={
+                mode === "signup"
+                  ? "auth-mode-switch__item auth-mode-switch__item--active"
+                  : "auth-mode-switch__item"
+              }
               onClick={() => setMode("signup")}
               aria-pressed={mode === "signup"}
               type="button"
@@ -160,16 +210,34 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
               <span>{labels.createMode}</span>
             </button>
           </div>
-          <div className={mode === "login" ? "auth-form-grid auth-form-grid--single" : "auth-form-grid"}>
+
+          <div
+            className={
+              mode === "login"
+                ? "auth-form-grid auth-form-grid--single"
+                : "auth-form-grid"
+            }
+          >
             {mode === "signup" ? (
               <>
                 <label>
                   <span>{labels.username}</span>
-                  <input autoComplete="username" name="username" placeholder={labels.usernamePlaceholder} required />
+                  <input
+                    autoComplete="username"
+                    name="username"
+                    placeholder={labels.usernamePlaceholder}
+                    required
+                  />
                 </label>
                 <label>
                   <span>{labels.email}</span>
-                  <input autoComplete="email" name="email" placeholder={labels.emailPlaceholder} required type="email" />
+                  <input
+                    autoComplete="email"
+                    name="email"
+                    placeholder={labels.emailPlaceholder}
+                    required
+                    type="email"
+                  />
                 </label>
                 <PasswordField
                   autoComplete="new-password"
@@ -181,15 +249,26 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
                 />
                 <label>
                   <span>{labels.displayName}</span>
-                  <input autoComplete="name" name="displayName" placeholder={labels.displayNamePlaceholder} />
+                  <input
+                    autoComplete="name"
+                    name="displayName"
+                    placeholder={labels.displayNamePlaceholder}
+                  />
                 </label>
                 <label>
                   <span>{labels.organizationName}</span>
-                  <input name="organizationName" placeholder={labels.organizationNamePlaceholder} required />
+                  <input
+                    name="organizationName"
+                    placeholder={labels.organizationNamePlaceholder}
+                    required
+                  />
                 </label>
                 <label>
                   <span>{labels.organizationSlug}</span>
-                  <input name="organizationSlug" placeholder={labels.organizationSlugPlaceholder} />
+                  <input
+                    name="organizationSlug"
+                    placeholder={labels.organizationSlugPlaceholder}
+                  />
                 </label>
                 <label className="auth-form-grid__wide">
                   <span>{labels.role}</span>
@@ -204,7 +283,12 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
               <>
                 <label>
                   <span>{labels.identifier}</span>
-                  <input autoComplete="username" name="identifier" placeholder={labels.identifierPlaceholder} required />
+                  <input
+                    autoComplete="username"
+                    name="identifier"
+                    placeholder={labels.identifierPlaceholder}
+                    required
+                  />
                 </label>
                 <PasswordField
                   autoComplete="current-password"
@@ -216,6 +300,23 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
               </>
             )}
           </div>
+
+          {mode === "login" ? (
+            <div className="auth-form-options">
+              <label className="auth-checkbox-row">
+                <input defaultChecked name="remember" type="checkbox" />
+                <span>{labels.remember}</span>
+              </label>
+              <span
+                aria-disabled="true"
+                className="auth-muted-action"
+                title={labels.forgotDisabledTitle}
+              >
+                {labels.forgotPassword}
+              </span>
+            </div>
+          ) : null}
+
           {mode === "signup" ? (
             <div className="auth-role-hints">
               <span>
@@ -226,11 +327,28 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
               <span>{labels.publisherHelp}</span>
             </div>
           ) : null}
+
           {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
-          <button className="primary-button" disabled={isPending} type="submit">
+
+          <button className="primary-button auth-primary-button" disabled={isPending} type="submit">
             <Send size={16} aria-hidden="true" />
-            <span>{isPending ? labels.submitting : mode === "signup" ? labels.createAccount : labels.signIn}</span>
+            <span>
+              {isPending
+                ? labels.submitting
+                : mode === "signup"
+                  ? labels.createAccount
+                  : labels.signIn}
+            </span>
           </button>
+
+          {mode === "login" ? (
+            <p className="auth-register-prompt">
+              <span>{labels.createPrompt}</span>
+              <button onClick={() => setMode("signup")} type="button">
+                {labels.createPromptAction}
+              </button>
+            </p>
+          ) : null}
         </form>
       ) : null}
 
@@ -242,7 +360,11 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
           className="auth-form auth-form--stack auth-verification-form"
         >
           <input name="intent" type="hidden" value="verify" />
-          <input name="challengeId" type="hidden" value={state.challenge?.challengeId} />
+          <input
+            name="challengeId"
+            type="hidden"
+            value={state.challenge?.challengeId}
+          />
           <div className="auth-verification-panel">
             <strong>{state.challenge?.email}</strong>
             <span>{labels.codeHelp}</span>
@@ -265,7 +387,7 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
             />
           </label>
           {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
-          <button className="primary-button" disabled={isPending} type="submit">
+          <button className="primary-button auth-primary-button" disabled={isPending} type="submit">
             <MailCheck size={16} aria-hidden="true" />
             <span>{isPending ? labels.verifying : labels.verify}</span>
           </button>
@@ -275,7 +397,10 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
       {state.subject ? (
         <div className="auth-subject auth-token-result">
           <strong>
-            {state.organization?.name ?? state.subject.displayName ?? state.subject.email ?? "SkillHub"}
+            {state.organization?.name ??
+              state.subject.displayName ??
+              state.subject.email ??
+              "SkillHub"}
             {state.organization?.slug ? ` / ${state.organization.slug}` : ""}
           </strong>
           <span>{state.subject.roles.join(" / ")}</span>
@@ -285,7 +410,7 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
           </a>
         </div>
       ) : null}
-    </article>
+    </section>
   );
 }
 
@@ -295,7 +420,7 @@ function PasswordField({
   id,
   labels,
   showPassword,
-  togglePassword
+  togglePassword,
 }: {
   autoComplete: "current-password" | "new-password";
   className?: string;
@@ -327,7 +452,11 @@ function PasswordField({
           title={actionLabel}
           type="button"
         >
-          {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+          {showPassword ? (
+            <EyeOff size={16} aria-hidden="true" />
+          ) : (
+            <Eye size={16} aria-hidden="true" />
+          )}
         </button>
       </div>
     </div>
@@ -339,11 +468,19 @@ function SignupMessage({ id, state }: { id: string; state: SignupActionState }) 
     <div
       aria-atomic="true"
       aria-live={state.status === "success" ? "polite" : "assertive"}
-      className={state.status === "success" ? "action-message action-message--success auth-form__feedback" : "action-message action-message--error auth-form__feedback"}
+      className={
+        state.status === "success"
+          ? "action-message action-message--success auth-form__feedback"
+          : "action-message action-message--error auth-form__feedback"
+      }
       id={id}
       role={state.status === "success" ? "status" : "alert"}
     >
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+      {state.status === "success" ? (
+        <CheckCircle2 size={16} aria-hidden="true" />
+      ) : (
+        <XCircle size={16} aria-hidden="true" />
+      )}
       <span>{state.message}</span>
     </div>
   );

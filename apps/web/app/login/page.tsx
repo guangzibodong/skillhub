@@ -1,20 +1,22 @@
-import type { CSSProperties } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
   BadgeCheck,
+  Box,
   CheckCircle2,
-  CircuitBoard,
+  ChevronDown,
+  Code2,
+  FileText,
   Globe2,
-  Grid2X2,
+  Info,
   KeyRound,
   LogOut,
-  Network,
+  MonitorUp,
   ShieldCheck,
   UserCircle,
   UserRound,
   Workflow,
   XCircle,
-  Zap,
 } from "lucide-react";
 import { AuthProviderPanel } from "@/components/auth-provider-panel";
 import { SessionLoginForm } from "@/components/session-login-form";
@@ -38,14 +40,14 @@ type PageProps = {
 
 const copy = {
   en: {
-    account: "Account center",
+    account: "Account",
+    accountCenter: "Account center",
     accountFallback: "SkillHub account",
+    authSubtitle: "Choose a method to enter your SkillHub workspace.",
+    authTitle: "Sign in",
     body:
       "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
-    emailCode: "Email and password access",
-    emailCollapsedAction: "Use email sign-in",
-    emailCollapsedBody: "Open this when you need username, email, password, or a new workspace registration.",
-    emailCollapsedTitle: "Email password sign-in",
+    currentBrowser: "Current browser session",
     environment: "Environment fallback",
     eyebrow: "Developer Preview",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
@@ -53,49 +55,90 @@ const copy = {
     footerSecurity: "Security",
     footerStatus: "System status",
     footerTerms: "Terms",
-    heroSignedInPrefix: "SkillHub",
-    heroSignedInSuffix: "workspace is ready",
-    heroTitlePrefix: "Sign in to",
-    heroTitleSuffix: "workspace",
-    methodSubtitle:
-      "Use OAuth when possible, or register with username, email, and password below.",
-    oauthConnectedTitle: "OAuth connected",
+    headerWorkspace: "Enter workspace",
+    heroBrand: "SkillHub",
+    heroSignedInAfter: "",
+    heroSignedInBefore: "Welcome back to",
+    heroTitleAfter: "workspace",
+    heroTitleBefore: "Sign in to your",
+    lastSignedIn: "Last signed in",
+    noticeBody:
+      "public discovery and inspection are live; runtime invocation requires a project key; paid marketplace remains prelaunch.",
+    noticeLabel: "Developer Preview",
+    noticeLink: "Learn more",
     oauthConnected:
       "OAuth login completed. Your browser session is now connected to the workspace.",
+    oauthConnectedTitle: "OAuth connected",
     oauthError: "OAuth login needs attention.",
     oauthErrorFallback:
       "The provider callback could not complete. Check provider configuration and try again.",
-    recoveryBody:
-      "Use this only when a SkillHub administrator or invite flow gave you a one-time recovery or invitation token.",
-    recoveryTitle: "Invite or recovery token (optional)",
+    recoveryTitle: "Advanced sign-in: invite or recovery token",
     role: "Role",
-    secureLogin: "Secure login",
-    secureLoginBody: "Project Keys and runtime policy",
+    runtimeAria: "SkillHub runtime flow",
     sessionActive: "Browser session connected",
     sessionBody:
-      "This browser is connected to your SkillHub workspace. Continue to the workspace, review account status, or sign out before switching users.",
+      "Your browser session is connected. Continue to your workspace to manage projects, adopted skills, Project Keys, and REST / MCP runtime calls.",
+    sessionStatus: "Session status",
     sessionTitle: "Current session",
-    signOut: "Switch account / Sign out",
     signedInEyebrow: "Signed in",
-    status: "Status",
-    switchAccount: "Switch account / Sign out",
+    signOut: "Switch account / Sign out",
     switchAccountBody:
       "Signing out clears this browser session and returns you to the login flow.",
-    title: "Sign in to SkillHub workspace.",
-    trustPreview: "Developer Preview",
-    trustPreviewBody: "Paid marketplace remains prelaunch",
-    trustSession: "Verified skill access",
-    trustSessionBody: "Manifest, schema, and permission inspection",
-    workspace: "Enter workspace",
+    workspace: "Workspace",
+    workspaceAction: "Enter workspace",
+    flowNodes: ["Verified Skill", "Project Key", "SkillHub Gateway", "REST / MCP Runtime"],
+    metrics: [
+      ["Live", "Public discovery"],
+      ["Required", "Project Key"],
+      ["Governed", "REST / MCP"],
+      ["Prelaunch", "Paid marketplace"],
+    ],
+    signedInValueCards: [
+      {
+        body: "Manage project access and runtime credentials.",
+        title: "Manage projects and keys",
+      },
+      {
+        body: "Review adopted skills and approval state.",
+        title: "Review adopted skills",
+      },
+      {
+        body: "Track runtime logs and invocation status.",
+        title: "Monitor runtime calls",
+      },
+      {
+        body: "Review profile, roles, sessions, and security.",
+        title: "Account and security settings",
+      },
+    ],
+    valueCards: [
+      {
+        body: "Use trusted capabilities that passed review.",
+        title: "Adopt verified skills",
+      },
+      {
+        body: "Create project keys and control runtime access.",
+        title: "Manage Project Keys",
+      },
+      {
+        body: "Review schema, permissions, and approval state.",
+        title: "Inspect manifests and permissions",
+      },
+      {
+        body: "Track runtime logs and invocation status.",
+        title: "Monitor REST / MCP calls",
+      },
+    ],
   },
   zh: {
-    account: "账户中心",
-    accountFallback: "SkillHub 账户",
-    body: "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
-    emailCode: "邮箱密码登录",
-    emailCollapsedAction: "使用邮箱登录",
-    emailCollapsedBody: "需要用户名、邮箱、密码登录，或注册新的工作区时，在这里展开。",
-    emailCollapsedTitle: "邮箱密码登录",
+    account: "账号",
+    accountCenter: "账户中心",
+    accountFallback: "SkillHub 账号",
+    authSubtitle: "选择一种方式进入 SkillHub 工作区。",
+    authTitle: "登录账号",
+    body:
+      "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
+    currentBrowser: "当前浏览器会话",
     environment: "环境变量兜底",
     eyebrow: "开发者预览版",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
@@ -103,98 +146,84 @@ const copy = {
     footerSecurity: "安全",
     footerStatus: "系统状态",
     footerTerms: "服务条款",
-    heroSignedInPrefix: "已登录",
-    heroSignedInSuffix: "工作区",
-    heroTitlePrefix: "登录",
-    heroTitleSuffix: "工作区",
-    methodSubtitle: "优先使用 OAuth 安全登录；也可以使用用户名、邮箱和密码完成登录或注册。",
-    oauthConnectedTitle: "OAuth 已连接",
+    headerWorkspace: "进入工作区",
+    heroBrand: "SkillHub",
+    heroSignedInAfter: "",
+    heroSignedInBefore: "欢迎回到",
+    heroTitleAfter: "工作区",
+    heroTitleBefore: "登录",
+    lastSignedIn: "登录时间",
+    noticeBody:
+      "公开发现与查看已上线；运行调用需要项目 Key；付费市场仍处于预发布阶段。",
+    noticeLabel: "开发者预览版",
+    noticeLink: "了解详情",
     oauthConnected: "OAuth 登录已完成，浏览器会话已连接到工作区。",
+    oauthConnectedTitle: "OAuth 已连接",
     oauthError: "OAuth 登录需要处理",
     oauthErrorFallback: "Provider 回调没有完成，请检查配置后重试。",
-    recoveryBody:
-      "仅当 SkillHub 管理员或邀请流程提供一次性邀请 / 恢复令牌时使用。",
-    recoveryTitle: "邀请码 / 恢复令牌（可选）",
+    recoveryTitle: "高级登录方式：邀请码 / 恢复令牌",
     role: "角色",
-    secureLogin: "安全登录",
-    secureLoginBody: "Project Key 与运行策略",
+    runtimeAria: "SkillHub 运行调用流程",
     sessionActive: "浏览器会话已连接",
     sessionBody:
-      "当前浏览器已连接到 SkillHub 工作区。你可以继续进入工作区，或查看账户中心与会话状态。",
+      "你的浏览器会话已连接，可以继续进入工作区，管理项目、已接入技能、Project Key 和 REST / MCP 运行调用。",
+    sessionStatus: "会话状态",
     sessionTitle: "当前会话",
+    signedInEyebrow: "已登录账号",
     signOut: "切换账号 / 退出登录",
-    signedInEyebrow: "已登录",
-    status: "状态",
-    switchAccount: "切换账号 / 退出登录",
-    switchAccountBody:
-      "退出后会清除当前浏览器会话，并回到登录流程。",
-    title: "登录 SkillHub 工作区。",
-    trustPreview: "Developer Preview",
-    trustPreviewBody: "付费市场仍处于预发布阶段",
-    trustSession: "已验证技能接入",
-    trustSessionBody: "查看 Manifest / Schema / 权限",
-    workspace: "进入工作区",
+    switchAccountBody: "退出后会清除当前浏览器会话，并回到登录流程。",
+    workspace: "工作区",
+    workspaceAction: "进入工作区",
+    flowNodes: ["已验证技能", "项目密钥", "SkillHub Gateway", "REST / MCP Runtime"],
+    metrics: [
+      ["已上线", "公开发现"],
+      ["必需", "项目 Key"],
+      ["受治理", "REST / MCP"],
+      ["预发布", "付费市场"],
+    ],
+    signedInValueCards: [
+      {
+        body: "管理项目访问与运行凭证。",
+        title: "管理项目与 Key",
+      },
+      {
+        body: "查看已接入技能和审批状态。",
+        title: "查看已接入技能",
+      },
+      {
+        body: "追踪运行日志与调用状态。",
+        title: "监控运行调用",
+      },
+      {
+        body: "查看资料、角色、会话与安全设置。",
+        title: "账户与安全设置",
+      },
+    ],
+    valueCards: [
+      {
+        body: "快速采用通过审核的可信能力。",
+        title: "接入已验证技能",
+      },
+      {
+        body: "创建项目密钥，控制运行权限。",
+        title: "管理 Project Key",
+      },
+      {
+        body: "查看 schema、权限与审核状态。",
+        title: "查看 Manifest / 权限",
+      },
+      {
+        body: "追踪运行日志与调用状态。",
+        title: "监控 REST / MCP 调用",
+      },
+    ],
   },
 } as const;
 
-type LoginCopy = {
-  [Key in keyof (typeof copy)["en"]]: string;
-};
+type LoginCopy = (typeof copy)[keyof typeof copy];
 
-const neuralNodes = [
-  ["12%", "28%", "5px", "0s"],
-  ["22%", "18%", "7px", "-1.4s"],
-  ["36%", "29%", "5px", "-0.4s"],
-  ["50%", "17%", "6px", "-2.1s"],
-  ["64%", "28%", "5px", "-0.8s"],
-  ["78%", "19%", "7px", "-2.7s"],
-  ["90%", "34%", "5px", "-1.9s"],
-  ["16%", "50%", "6px", "-2.8s"],
-  ["30%", "55%", "5px", "-1s"],
-  ["44%", "44%", "8px", "-2.5s"],
-  ["58%", "57%", "5px", "-1.7s"],
-  ["72%", "47%", "6px", "-3.1s"],
-  ["86%", "62%", "5px", "-0.9s"],
-  ["12%", "76%", "6px", "-2.2s"],
-  ["27%", "69%", "5px", "-0.7s"],
-  ["42%", "80%", "7px", "-3.4s"],
-  ["55%", "70%", "5px", "-1.2s"],
-  ["70%", "82%", "6px", "-2.9s"],
-  ["84%", "74%", "5px", "-1.6s"],
-] as const;
-
-const neuralLinks = [
-  ["12%", "28%", "148px", "-24deg", "0s"],
-  ["22%", "18%", "162px", "24deg", "-1.5s"],
-  ["36%", "29%", "142px", "-28deg", "-0.6s"],
-  ["50%", "17%", "156px", "24deg", "-2.3s"],
-  ["64%", "28%", "138px", "-24deg", "-1.1s"],
-  ["16%", "50%", "144px", "12deg", "-1s"],
-  ["30%", "55%", "134px", "-22deg", "-2.7s"],
-  ["44%", "44%", "146px", "28deg", "-1.8s"],
-  ["58%", "57%", "128px", "-20deg", "-3.1s"],
-  ["72%", "47%", "118px", "28deg", "-2s"],
-  ["12%", "76%", "150px", "-18deg", "-2.1s"],
-  ["27%", "69%", "142px", "18deg", "-0.9s"],
-  ["42%", "80%", "130px", "-24deg", "-3.4s"],
-  ["55%", "70%", "144px", "24deg", "-1.2s"],
-  ["70%", "82%", "110px", "-22deg", "-2.6s"],
-] as const;
-
-type NeuralNodeStyle = CSSProperties & {
-  "--node-delay": string;
-  "--node-size": string;
-  "--node-x": string;
-  "--node-y": string;
-};
-
-type NeuralLinkStyle = CSSProperties & {
-  "--link-delay": string;
-  "--link-length": string;
-  "--link-rotate": string;
-  "--link-x": string;
-  "--link-y": string;
-};
+const valueIcons = [Box, KeyRound, FileText, MonitorUp] as const;
+const flowIcons = [Box, KeyRound, ShieldCheck, Code2] as const;
 
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -216,10 +245,13 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <SiteHeader
         active="dashboard"
         apiUrl={apiUrl}
+        consoleHref={isSignedIn ? returnTo : localizedHref("/login", locale)}
+        consoleLabel={isSignedIn ? labels.headerWorkspace : undefined}
         dictionary={dictionary}
         locale={locale}
         pathname="/login"
       />
+      <LoginPreviewNotice labels={labels} locale={locale} />
 
       <section
         className={
@@ -231,27 +263,9 @@ export default async function LoginPage({ searchParams }: PageProps) {
         <LoginWorkspaceHero isSignedIn={isSignedIn} labels={labels} />
 
         <div className="login-panel-stack">
-          {notice ? (
-            <section
-              className={`auth-callback-notice auth-callback-notice--${notice.kind}`}
-              aria-atomic="true"
-              aria-live={notice.kind === "error" ? "assertive" : "polite"}
-              role={notice.kind === "error" ? "alert" : "status"}
-            >
-              {notice.kind === "success" ? (
-                <CheckCircle2 size={18} aria-hidden="true" />
-              ) : (
-                <XCircle size={18} aria-hidden="true" />
-              )}
-              <div>
-                <strong>{notice.title}</strong>
-                <span>{notice.message}</span>
-              </div>
-            </section>
-          ) : null}
-
           {isSignedIn ? (
             <div className="login-signed-in-stack">
+              {notice ? <LoginNotice notice={notice} /> : null}
               <LoginSessionCard
                 labels={labels}
                 locale={locale}
@@ -260,33 +274,44 @@ export default async function LoginPage({ searchParams }: PageProps) {
               />
             </div>
           ) : (
-            <>
-              <AuthProviderPanel
-                apiUrl={apiUrl}
-                locale={locale}
-                providers={providers}
-                returnTo={returnTo}
-              />
-
-              <LoginEmailCard
-                labels={labels}
-                locale={locale}
-                returnTo={returnTo}
-              />
-
-              <LoginRecoveryBlock
-                labels={labels}
-                locale={locale}
-                returnTo={returnTo}
-              />
-
-            </>
+            <LoginAuthCard
+              apiUrl={apiUrl}
+              labels={labels}
+              locale={locale}
+              notice={notice}
+              providers={providers}
+              returnTo={returnTo}
+            />
           )}
         </div>
       </section>
 
       <LoginFooter labels={labels} locale={locale} />
     </main>
+  );
+}
+
+function LoginPreviewNotice({
+  labels,
+  locale,
+}: {
+  labels: LoginCopy;
+  locale: Locale;
+}) {
+  return (
+    <div className="login-preview-bar" role="status">
+      <div className="login-preview-bar__inner">
+        <Info size={15} aria-hidden="true" />
+        <p>
+          <strong>{labels.noticeLabel}: </strong>
+          <span>{labels.noticeBody}</span>
+        </p>
+        <a href={localizedHref("/status", locale)}>
+          <span>{labels.noticeLink}</span>
+          <ArrowRight size={14} aria-hidden="true" />
+        </a>
+      </div>
+    </div>
   );
 }
 
@@ -297,23 +322,7 @@ function LoginWorkspaceHero({
   isSignedIn: boolean;
   labels: LoginCopy;
 }) {
-  const trustItems = [
-    {
-      body: labels.secureLoginBody,
-      icon: ShieldCheck,
-      title: labels.secureLogin,
-    },
-    {
-      body: labels.trustSessionBody,
-      icon: Network,
-      title: labels.trustSession,
-    },
-    {
-      body: labels.trustPreviewBody,
-      icon: Zap,
-      title: labels.trustPreview,
-    },
-  ];
+  const valueCards = isSignedIn ? labels.signedInValueCards : labels.valueCards;
 
   return (
     <div className="login-workspace-hero">
@@ -323,87 +332,153 @@ function LoginWorkspaceHero({
           <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
         </div>
         <h1 id="login-title">
-          {isSignedIn ? labels.heroSignedInPrefix : labels.heroTitlePrefix}{" "}
-          <span className="login-title-brand">SkillHub</span>{" "}
+          <span>{isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}</span>{" "}
+          <span className="login-title-brand">{labels.heroBrand}</span>{" "}
           <span className="login-title-tail">
-            {isSignedIn ? labels.heroSignedInSuffix : labels.heroTitleSuffix}
+            {isSignedIn ? labels.heroSignedInAfter : labels.heroTitleAfter}
           </span>
         </h1>
         <p>{isSignedIn ? labels.sessionBody : labels.body}</p>
 
-        <div className="login-hero-trust">
-          {trustItems.map((item) => {
-            const Icon = item.icon;
+        <div className="login-value-grid">
+          {valueCards.map((item, index) => {
+            const Icon = valueIcons[index] ?? ShieldCheck;
 
             return (
-              <div className="login-hero-trust__item" key={item.title}>
-                <Icon size={24} aria-hidden="true" />
-                <div>
-                  <strong>{item.title}</strong>
-                  <span>{item.body}</span>
-                </div>
-              </div>
+              <ValueCard
+                body={item.body}
+                icon={Icon}
+                key={item.title}
+                title={item.title}
+              />
             );
           })}
         </div>
       </div>
 
-      <div className="login-neural-field" aria-hidden="true">
-        <div className="login-neural-field__mesh" />
-        {neuralLinks.map(([x, y, length, rotate, delay], index) => (
-          <span
-            className="login-neural-link"
-            key={`link-${index}`}
-            style={
-              {
-                "--link-delay": delay,
-                "--link-length": length,
-                "--link-rotate": rotate,
-                "--link-x": x,
-                "--link-y": y,
-              } as NeuralLinkStyle
-            }
-          />
-        ))}
-        {neuralNodes.map(([x, y, size, delay], index) => (
-          <span
-            className="login-neural-node"
-            key={`node-${index}`}
-            style={
-              {
-                "--node-delay": delay,
-                "--node-size": size,
-                "--node-x": x,
-                "--node-y": y,
-              } as NeuralNodeStyle
-            }
-          />
-        ))}
-        <span className="login-neural-scan login-neural-scan--a" />
-        <span className="login-neural-scan login-neural-scan--b" />
-      </div>
+      <RuntimeFlowVisual labels={labels} />
 
-      <div className="login-workspace-hero__scene" aria-hidden="true">
-        <div className="login-scene-network">
-          <span className="login-scene-dot login-scene-dot--a" />
-          <span className="login-scene-dot login-scene-dot--b" />
-          <span className="login-scene-dot login-scene-dot--c" />
-          <span className="login-scene-dot login-scene-dot--d" />
-          <span className="login-scene-dot login-scene-dot--e" />
-          <span className="login-scene-line login-scene-line--a" />
-          <span className="login-scene-line login-scene-line--b" />
-          <span className="login-scene-line login-scene-line--c" />
-        </div>
-        <div className="login-platform-beam" />
-        <div className="login-platform-mark">
-          <Grid2X2 size={58} />
-        </div>
-        <div className="login-platform-ring login-platform-ring--outer" />
-        <div className="login-platform-ring login-platform-ring--inner" />
-        <div className="login-platform-ring login-platform-ring--pulse" />
-        <CircuitBoard className="login-platform-circuit" size={104} />
+      <div className="login-metric-strip" aria-label="SkillHub preview state">
+        {labels.metrics.map(([value, label]) => (
+          <div className="login-metric" key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
       </div>
     </div>
+  );
+}
+
+function ValueCard({
+  body,
+  icon: Icon,
+  title,
+}: {
+  body: string;
+  icon: LucideIcon;
+  title: string;
+}) {
+  return (
+    <article className="login-value-card">
+      <Icon size={22} aria-hidden="true" />
+      <strong>{title}</strong>
+      <span>{body}</span>
+    </article>
+  );
+}
+
+function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
+  return (
+    <div className="login-runtime-flow" aria-label={labels.runtimeAria}>
+      <div className="login-runtime-flow__grid" aria-hidden="true" />
+      <div className="login-runtime-flow__line" aria-hidden="true" />
+      <span className="login-runtime-particle login-runtime-particle--a" />
+      <span className="login-runtime-particle login-runtime-particle--b" />
+      <span className="login-runtime-particle login-runtime-particle--c" />
+      <span className="login-runtime-particle login-runtime-particle--d" />
+      {labels.flowNodes.map((label, index) => {
+        const Icon = flowIcons[index] ?? ShieldCheck;
+        const isGateway = index === 2;
+
+        return (
+          <div
+            className={
+              isGateway
+                ? "login-runtime-node login-runtime-node--gateway"
+                : "login-runtime-node"
+            }
+            key={label}
+          >
+            <Icon size={isGateway ? 30 : 24} aria-hidden="true" />
+            <strong>{label}</strong>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LoginAuthCard({
+  apiUrl,
+  labels,
+  locale,
+  notice,
+  providers,
+  returnTo,
+}: {
+  apiUrl: string;
+  labels: LoginCopy;
+  locale: Locale;
+  notice: ReturnType<typeof oauthNotice>;
+  providers: Awaited<ReturnType<typeof getAuthProviders>>;
+  returnTo: string;
+}) {
+  return (
+    <section className="ops-panel login-auth-card" aria-labelledby="login-card-title">
+      {notice ? <LoginNotice notice={notice} /> : null}
+      <div className="login-auth-card__head">
+        <h2 id="login-card-title">{labels.authTitle}</h2>
+        <p>{labels.authSubtitle}</p>
+      </div>
+      <AuthProviderPanel
+        apiUrl={apiUrl}
+        locale={locale}
+        providers={providers}
+        returnTo={returnTo}
+        surface="embedded"
+      />
+      <div className="login-divider" role="separator">
+        <span>{locale === "zh" ? "或" : "or"}</span>
+      </div>
+      <LoginEmailCard labels={labels} locale={locale} returnTo={returnTo} />
+      <LoginRecoveryBlock labels={labels} locale={locale} returnTo={returnTo} />
+    </section>
+  );
+}
+
+function LoginNotice({
+  notice,
+}: {
+  notice: NonNullable<ReturnType<typeof oauthNotice>>;
+}) {
+  return (
+    <section
+      className={`auth-callback-notice auth-callback-notice--${notice.kind}`}
+      aria-atomic="true"
+      aria-live={notice.kind === "error" ? "assertive" : "polite"}
+      role={notice.kind === "error" ? "alert" : "status"}
+    >
+      {notice.kind === "success" ? (
+        <CheckCircle2 size={18} aria-hidden="true" />
+      ) : (
+        <XCircle size={18} aria-hidden="true" />
+      )}
+      <div>
+        <strong>{notice.title}</strong>
+        <span>{notice.message}</span>
+      </div>
+    </section>
   );
 }
 
@@ -428,7 +503,40 @@ function LoginSessionCard({
     session.source === "cookie"
       ? subject.displayName ?? subject.email ?? labels.accountFallback
       : labels.environment;
-  const workspaceName = locale === "zh" ? "已连接工作区" : "Connected workspace";
+  const workspaceName =
+    subject.organizationId ?? (locale === "zh" ? "已连接工作区" : "Connected workspace");
+  const fields = [
+    {
+      icon: UserRound,
+      label: labels.account,
+      value: accountName,
+      meta: subject.email ?? roleLabel(subject.roles, locale),
+    },
+    {
+      icon: Workflow,
+      label: labels.role,
+      value: roleLabel(subject.roles, locale),
+      meta: subject.platformRole,
+    },
+    {
+      icon: UserCircle,
+      label: labels.workspace,
+      value: workspaceName,
+      meta: session.source,
+    },
+    {
+      icon: ShieldCheck,
+      label: labels.sessionStatus,
+      value: labels.sessionActive,
+      meta: labels.currentBrowser,
+    },
+    {
+      icon: KeyRound,
+      label: labels.lastSignedIn,
+      value: labels.currentBrowser,
+      meta: "HTTP-only cookie",
+    },
+  ];
 
   return (
     <article className="ops-panel login-session-card">
@@ -437,47 +545,45 @@ function LoginSessionCard({
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.sessionTitle}</span>
         </div>
+        <span className="status-chip status-chip--success">
+          {labels.sessionActive}
+        </span>
       </div>
 
       <div className="login-session-grid">
-        <div>
-          <span>{labels.account}</span>
-          <strong>{accountName}</strong>
-          <small>{roleLabel(subject.roles, locale)}</small>
-        </div>
-        <div>
-          <span>{labels.role}</span>
-          <strong>{roleLabel(subject.roles, locale)}</strong>
-          <UserRound size={19} aria-hidden="true" />
-        </div>
-        <div>
-          <span>{locale === "zh" ? "工作区" : "Workspace"}</span>
-          <strong>{workspaceName}</strong>
-          <Workflow size={19} aria-hidden="true" />
-        </div>
-        <div>
-          <span>{labels.status}</span>
-          <strong>{labels.sessionActive}</strong>
-          <ShieldCheck size={19} aria-hidden="true" />
-        </div>
+        {fields.map((field) => {
+          const Icon = field.icon;
+
+          return (
+            <div key={field.label}>
+              <span>{field.label}</span>
+              <strong>{field.value}</strong>
+              <small>{field.meta}</small>
+              <Icon size={19} aria-hidden="true" />
+            </div>
+          );
+        })}
       </div>
 
       <div className="login-session-actions">
-        <a className="primary-button" href={returnTo}>
+        <a className="primary-button auth-primary-button" href={returnTo}>
           <UserCircle size={17} aria-hidden="true" />
-          <span>{labels.workspace}</span>
+          <span>{labels.workspaceAction}</span>
         </a>
         <a
           className="secondary-button"
           href={localizedHref("/account", locale)}
         >
           <UserRound size={17} aria-hidden="true" />
-          <span>{labels.account}</span>
+          <span>{labels.accountCenter}</span>
         </a>
         <form action={signOutAction.bind(null, locale)}>
-          <button className="ghost-button ghost-button--inline login-switch-account-button" type="submit">
+          <button
+            className="ghost-button ghost-button--inline login-switch-account-button"
+            type="submit"
+          >
             <LogOut size={15} aria-hidden="true" />
-            <span>{labels.switchAccount}</span>
+            <span>{labels.signOut}</span>
           </button>
         </form>
       </div>
@@ -487,7 +593,6 @@ function LoginSessionCard({
 }
 
 function LoginEmailCard({
-  labels,
   locale,
   returnTo,
 }: {
@@ -495,7 +600,13 @@ function LoginEmailCard({
   locale: Locale;
   returnTo: string;
 }) {
-  return <WorkspaceSignupForm locale={locale} returnTo={returnTo} />;
+  return (
+    <WorkspaceSignupForm
+      locale={locale}
+      returnTo={returnTo}
+      surface="embedded"
+    />
+  );
 }
 
 function LoginRecoveryBlock({
@@ -512,9 +623,13 @@ function LoginRecoveryBlock({
       <summary>
         <KeyRound size={17} aria-hidden="true" />
         <span>{labels.recoveryTitle}</span>
-        <ArrowRight size={16} aria-hidden="true" />
+        <ChevronDown size={16} aria-hidden="true" />
       </summary>
-      <SessionLoginForm locale={locale} returnTo={returnTo} />
+      <SessionLoginForm
+        locale={locale}
+        returnTo={returnTo}
+        surface="embedded"
+      />
     </details>
   );
 }

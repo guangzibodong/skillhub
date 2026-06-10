@@ -1,4 +1,4 @@
-import { Github, ShieldCheck } from "lucide-react";
+import { Github, LockKeyhole } from "lucide-react";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
@@ -7,96 +7,109 @@ type AuthProviderPanelProps = {
   locale: Locale;
   providers: AuthProviderStatus[];
   returnTo?: string;
+  surface?: "card" | "embedded";
 };
+
+type ProviderId = "github" | "google" | "microsoft" | "slack" | "apple" | "discord";
 
 const copy = {
   en: {
-    disabledAction: "coming soon",
-    helper: "Sign in securely with OAuth, no password required.",
+    disabledAction: "Not configured",
+    helper: "OAuth redirects only appear active when the provider is configured.",
     oauthAction: "Continue with",
     title: "Use another sign-in method",
   },
   zh: {
-    disabledAction: "待接入",
-    helper: "通过 OAuth 安全登录，无需记住密码",
+    disabledAction: "暂未配置",
+    helper: "只有已完成配置的第三方登录才会启用跳转。",
     oauthAction: "继续使用",
     title: "使用其他方式登录",
   },
 } as const;
 
-const providerOrder = ["github", "google"] as const;
-const plannedProviders = [
+const visibleProviders: Array<{ id: ProviderId; label: string }> = [
+  { id: "github", label: "GitHub" },
+  { id: "google", label: "Google" },
   { id: "microsoft", label: "Microsoft" },
   { id: "slack", label: "Slack" },
-] as const;
+  { id: "apple", label: "Apple" },
+  { id: "discord", label: "Discord" },
+];
 
 export function AuthProviderPanel({
   apiUrl,
   locale,
   providers,
   returnTo,
+  surface = "card",
 }: AuthProviderPanelProps) {
   const labels = copy[locale];
-  const providersById = new Map(
-    providers.map((provider) => [provider.provider, provider]),
-  );
-  const orderedProviders = providerOrder.flatMap((provider) => {
-    const item = providersById.get(provider);
-    return item ? [item] : [];
-  });
-  const enabledProviders = orderedProviders.flatMap((provider) => {
-    const action = providerAction(
-      provider,
-      apiUrl,
-      locale,
-      labels,
-      returnTo,
-    );
-
-    return action.href ? [{ action, provider }] : [];
-  });
-  const plannedProviderNames = plannedProviders
-    .map((provider) => provider.label)
-    .join(locale === "zh" ? "、" : ", ");
+  const Wrapper = surface === "embedded" ? "section" : "article";
+  const className =
+    surface === "embedded"
+      ? "auth-provider-panel auth-provider-panel--oauth auth-provider-panel--embedded"
+      : "ops-panel auth-provider-panel auth-provider-panel--oauth";
 
   return (
-    <article className="ops-panel auth-provider-panel auth-provider-panel--oauth">
-      <div className="card-kicker">
-        <ShieldCheck size={16} aria-hidden="true" />
+    <Wrapper className={className}>
+      <div className="card-kicker auth-provider-panel__title">
         <span>{labels.title}</span>
       </div>
-      <div className="oauth-provider-stack">
-        {enabledProviders.length > 0 ? (
-          enabledProviders.map(({ action, provider }) => {
-          const providerName = providerLabel(provider, locale);
+      <div className="oauth-provider-stack" aria-label={labels.title}>
+        {visibleProviders.map((providerConfig) => {
+          const provider = providers.find(
+            (item) => item.provider === providerConfig.id,
+          );
+          const action = provider
+            ? providerAction(provider, apiUrl, locale, labels, returnTo)
+            : { href: null, label: `${providerConfig.label} ${labels.disabledAction}` };
+          const providerName = providerConfig.label;
+          const buttonClass = [
+            "oauth-provider-button",
+            `oauth-provider-button--${providerConfig.id}`,
+            action.href ? "" : "oauth-provider-button--disabled",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+          if (action.href) {
+            return (
+              <a
+                aria-label={`${labels.oauthAction} ${providerName}`}
+                className={buttonClass}
+                href={action.href}
+                key={providerConfig.id}
+              >
+                <BrandProviderIcon provider={providerConfig.id} />
+                <span className="oauth-provider-button__label">
+                  {providerName}
+                </span>
+              </a>
+            );
+          }
 
           return (
-            <a
-              aria-label={`${labels.oauthAction} ${providerName}`}
-              className={`oauth-provider-button oauth-provider-button--${provider.provider}`}
-              href={action.href}
-              key={provider.provider}
+            <button
+              aria-label={action.label}
+              className={buttonClass}
+              disabled
+              key={providerConfig.id}
+              title={labels.disabledAction}
+              type="button"
             >
-              <BrandProviderIcon provider={provider.provider} />
-              <span className="oauth-provider-button__label">
-                {providerName}
-              </span>
-            </a>
+              <BrandProviderIcon provider={providerConfig.id} />
+              <span className="oauth-provider-button__label">{providerName}</span>
+              <LockKeyhole
+                className="oauth-provider-button__lock"
+                size={13}
+                aria-hidden="true"
+              />
+            </button>
           );
-          })
-        ) : (
-          <p className="oauth-provider-empty">
-            {locale === "zh"
-              ? "OAuth 暂未配置，请使用下方邮箱密码登录。"
-              : "OAuth providers are not configured yet. Use email and password below."}
-          </p>
-        )}
+        })}
       </div>
       <p className="oauth-provider-note">{labels.helper}</p>
-      <p className="oauth-provider-planned">
-        {locale === "zh" ? `即将支持：${plannedProviderNames}` : `Coming later: ${plannedProviderNames}`}
-      </p>
-    </article>
+    </Wrapper>
   );
 }
 
@@ -118,21 +131,17 @@ function providerAction(
 
     return {
       href: url.toString(),
-      label: `${labels.oauthAction} ${providerLabel(provider, locale)}`,
+      label: `${labels.oauthAction} ${providerLabel(provider)}`,
     };
   }
 
   return {
     href: null,
-    label: `${providerLabel(provider, locale)} ${labels.disabledAction}`,
+    label: `${providerLabel(provider)} ${labels.disabledAction}`,
   };
 }
 
-function BrandProviderIcon({
-  provider,
-}: {
-  provider: AuthProviderStatus["provider"] | "microsoft" | "slack";
-}) {
+function BrandProviderIcon({ provider }: { provider: ProviderId }) {
   if (provider === "github") {
     return (
       <span className="oauth-provider-button__icon brand-provider-icon brand-provider-icon--github">
@@ -142,10 +151,11 @@ function BrandProviderIcon({
   }
 
   return (
-    <span className={`oauth-provider-button__icon brand-provider-icon brand-provider-icon--${provider}`} aria-hidden="true">
-      {provider === "google" ? (
-        <span className="brand-google-mark" />
-      ) : null}
+    <span
+      className={`oauth-provider-button__icon brand-provider-icon brand-provider-icon--${provider}`}
+      aria-hidden="true"
+    >
+      {provider === "google" ? <span className="brand-google-mark" /> : null}
       {provider === "microsoft" ? (
         <span className="brand-microsoft-mark">
           <span />
@@ -162,11 +172,18 @@ function BrandProviderIcon({
           <span />
         </span>
       ) : null}
+      {provider === "apple" ? <span className="brand-apple-mark" /> : null}
+      {provider === "discord" ? (
+        <span className="brand-discord-mark">
+          <span />
+          <span />
+        </span>
+      ) : null}
     </span>
   );
 }
 
-function providerLabel(provider: AuthProviderStatus, locale: Locale) {
+function providerLabel(provider: AuthProviderStatus) {
   if (provider.provider === "google") {
     return "Google";
   }
@@ -175,5 +192,5 @@ function providerLabel(provider: AuthProviderStatus, locale: Locale) {
     return "GitHub";
   }
 
-  return locale === "zh" ? "第三方登录" : provider.label;
+  return provider.label;
 }

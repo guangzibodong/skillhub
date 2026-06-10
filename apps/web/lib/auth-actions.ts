@@ -137,6 +137,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const identifier = String(formData.get("identifier") ?? (email || username)).trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const remember = formData.get("remember") === "on";
   const displayName = String(formData.get("displayName") ?? "").trim();
   const organizationName = String(formData.get("organizationName") ?? "").trim();
   const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
@@ -205,7 +206,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
       return { message: passwordErrorMessage(payload.error, labels), status: "error" };
     }
 
-    await setSessionCookie(token);
+    await setSessionCookie(token, { persistent: remember });
     const subject = await fetchSessionSubject(token);
     revalidateWorkspace();
 
