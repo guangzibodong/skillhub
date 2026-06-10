@@ -125,6 +125,11 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(globals, /@keyframes login-grid-drift/);
   assert.match(globals, /@keyframes login-ring-pulse/);
   assert.match(globals, /\.login-scene-dot/);
+  assert.match(globals, /\.login-neural-field/);
+  assert.match(globals, /\.login-neural-node/);
+  assert.match(globals, /\.login-neural-link/);
+  assert.match(globals, /@keyframes login-neural-node/);
+  assert.match(globals, /@keyframes login-neural-packet/);
   assert.match(globals, /\.login-footer/);
   assert.match(globals, /@media \(max-width: 760px\)/);
 });

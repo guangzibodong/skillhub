@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -139,6 +140,54 @@ const copy = {
 
 type LoginCopy = {
   [Key in keyof (typeof copy)["en"]]: string;
+};
+
+const neuralNodes = [
+  ["12%", "18%", "8px", "0s"],
+  ["28%", "10%", "5px", "-1.4s"],
+  ["43%", "24%", "7px", "-0.4s"],
+  ["64%", "15%", "6px", "-2.1s"],
+  ["82%", "30%", "8px", "-0.8s"],
+  ["18%", "45%", "6px", "-2.8s"],
+  ["37%", "52%", "9px", "-1s"],
+  ["55%", "43%", "5px", "-2.5s"],
+  ["73%", "58%", "7px", "-1.7s"],
+  ["90%", "48%", "5px", "-3.1s"],
+  ["10%", "76%", "5px", "-2.2s"],
+  ["30%", "82%", "7px", "-0.7s"],
+  ["49%", "72%", "6px", "-3.4s"],
+  ["68%", "84%", "8px", "-1.2s"],
+  ["86%", "76%", "5px", "-2.9s"],
+] as const;
+
+const neuralLinks = [
+  ["12%", "18%", "160px", "18deg", "0s"],
+  ["28%", "10%", "148px", "46deg", "-1.5s"],
+  ["43%", "24%", "172px", "-8deg", "-0.6s"],
+  ["64%", "15%", "132px", "32deg", "-2.3s"],
+  ["18%", "45%", "150px", "12deg", "-1s"],
+  ["37%", "52%", "160px", "-24deg", "-2.7s"],
+  ["55%", "43%", "152px", "34deg", "-1.8s"],
+  ["73%", "58%", "126px", "-16deg", "-3.1s"],
+  ["10%", "76%", "184px", "-10deg", "-2.1s"],
+  ["30%", "82%", "176px", "-38deg", "-0.9s"],
+  ["49%", "72%", "156px", "20deg", "-3.4s"],
+  ["68%", "84%", "134px", "-30deg", "-1.2s"],
+] as const;
+
+type NeuralNodeStyle = CSSProperties & {
+  "--node-delay": string;
+  "--node-size": string;
+  "--node-x": string;
+  "--node-y": string;
+};
+
+type NeuralLinkStyle = CSSProperties & {
+  "--link-delay": string;
+  "--link-length": string;
+  "--link-rotate": string;
+  "--link-x": string;
+  "--link-y": string;
 };
 
 export default async function LoginPage({ searchParams }: PageProps) {
@@ -321,6 +370,41 @@ function LoginWorkspaceHero({
             );
           })}
         </div>
+      </div>
+
+      <div className="login-neural-field" aria-hidden="true">
+        <div className="login-neural-field__mesh" />
+        {neuralLinks.map(([x, y, length, rotate, delay], index) => (
+          <span
+            className="login-neural-link"
+            key={`link-${index}`}
+            style={
+              {
+                "--link-delay": delay,
+                "--link-length": length,
+                "--link-rotate": rotate,
+                "--link-x": x,
+                "--link-y": y,
+              } as NeuralLinkStyle
+            }
+          />
+        ))}
+        {neuralNodes.map(([x, y, size, delay], index) => (
+          <span
+            className="login-neural-node"
+            key={`node-${index}`}
+            style={
+              {
+                "--node-delay": delay,
+                "--node-size": size,
+                "--node-x": x,
+                "--node-y": y,
+              } as NeuralNodeStyle
+            }
+          />
+        ))}
+        <span className="login-neural-scan login-neural-scan--a" />
+        <span className="login-neural-scan login-neural-scan--b" />
       </div>
 
       <div className="login-workspace-hero__scene" aria-hidden="true">
