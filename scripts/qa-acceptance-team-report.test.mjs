@@ -92,3 +92,27 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(roleLanding, /return `\/dashboard\$\{suffix\}`/);
   assert.match(roleLanding, /return `\/account\$\{suffix\}`/);
 });
+
+test("admin workspace opens as an operations console", async () => {
+  const adminPage = await readFile("apps/web/app/admin/page.tsx", "utf8");
+  const globals = await readFile("apps/web/app/globals.css", "utf8");
+
+  assert.match(adminPage, /className="product-shell admin-console-page"/);
+  assert.match(adminPage, /className="admin-console-shell"/);
+  assert.match(adminPage, /className="admin-sidebar-nav"/);
+  assert.match(adminPage, /id="admin-orders"/);
+  assert.match(adminPage, /adminConsoleLabels\.payment\.title/);
+  assert.match(adminPage, /adminConsoleLabels\.analytics\.title/);
+  assert.match(adminPage, /Stripe checkout/);
+  assert.match(adminPage, /Alipay/);
+  assert.match(adminPage, /Search index pending/);
+  assert.match(adminPage, /搜索索引待接入/);
+  assert.match(adminPage, /账本 GMV/);
+
+  assert.match(globals, /\.admin-console-shell/);
+  assert.match(globals, /\.admin-sidebar-nav/);
+  assert.match(globals, /\.admin-kpi-grid/);
+  assert.match(globals, /\.admin-order-panel/);
+  assert.match(globals, /\.admin-payment-panel/);
+  assert.match(globals, /@media \(max-width: 1180px\)/);
+});

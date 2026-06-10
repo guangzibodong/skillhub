@@ -1,15 +1,23 @@
 import {
+  Activity,
   AlertTriangle,
   ArrowRight,
   Banknote,
-  Clock3,
+  BarChart3,
+  Bell,
+  CreditCard,
   Gavel,
+  Landmark,
   ListChecks,
   LockKeyhole,
   ReceiptText,
   Scale,
+  Search,
+  Settings,
+  ShieldCheck,
   Siren,
-  Webhook
+  Users,
+  WalletCards
 } from "lucide-react";
 import { AdminLaunchReadinessPanel } from "@/components/admin-launch-readiness-panel";
 import { AdminAuditLogPanel } from "@/components/admin-audit-log-panel";
@@ -74,14 +82,6 @@ type AdminPriorityItem = {
   priority: number;
   title: string;
   tone: AdminPriorityTone;
-};
-
-type AdminOperationsSummary = {
-  deliveryActions: number;
-  financeActions: number;
-  launchGaps: number;
-  reviewActions: number;
-  riskActions: number;
 };
 
 type AdminPriorityInput = {
@@ -387,6 +387,155 @@ const adminOpsCopy = {
   }
 } as const;
 
+const adminConsoleCopy = {
+  en: {
+    analytics: {
+      cards: {
+        availableBalance: "Available balance",
+        gmv: "Ledger GMV",
+        platformRevenue: "Platform revenue",
+        publisherShare: "Publisher share",
+        subscriptionOrders: "Subscription tx",
+        usageOrders: "Usage tx"
+      },
+      description:
+        "Financial analytics are shown from posted ledger state. Real-time payment-provider analytics stay gated until Stripe and Alipay checkout integrations are connected.",
+      title: "Business analytics"
+    },
+    kpis: {
+      delivery: "Delivery failures",
+      deliveryDetail: "Notifications + webhooks needing retry",
+      launch: "Launch blockers",
+      launchDetail: "Warnings and deferred checks",
+      money: "Payout/refund work",
+      moneyDetail: "Payouts plus refund/dispute decisions",
+      revenue: "Ledger GMV",
+      revenueDetail: "Posted finance transactions",
+      reviews: "Review work",
+      reviewsDetail: "Danger / warning / ready",
+      risk: "Risk events",
+      riskDetail: "Incidents, reports, feedback"
+    },
+    nav: [
+      ["Overview", "#admin-overview"],
+      ["Review", "#admin-reviews"],
+      ["Orders", "#admin-orders"],
+      ["Finance", "#admin-finance"],
+      ["Payouts", "#admin-payouts"],
+      ["Risk", "#admin-risk"],
+      ["Notifications", "#admin-deliveries"],
+      ["Users / orgs", "#admin-identity"],
+      ["Audit", "#admin-audit"],
+      ["Settings", "#admin-templates"]
+    ],
+    order: {
+      description:
+        "Recent ledger rows are the order/payment source of truth for now. Checkout order IDs, provider charges, and refunds must be reconciled here after provider integration.",
+      empty: "No posted ledger transactions yet.",
+      headers: ["Reference", "Type", "Amount", "State"],
+      title: "Order and payment center"
+    },
+    payment: {
+      description:
+        "Money movement is deliberately explicit: payment capture is provider-gated, while manual PayPal/Alipay payouts and ledger adjustments remain auditable.",
+      items: [
+        ["Stripe checkout", "Integration gated"],
+        ["Alipay checkout", "Integration gated"],
+        ["Manual PayPal/Alipay payouts", "P0 finance workflow"],
+        ["Refund / dispute adjustments", "Admin decision required"]
+      ],
+      title: "Payment integration state"
+    },
+    shell: {
+      environment: "Environment",
+      eyebrow: "SkillHub Admin",
+      primaryAction: "Open top priority",
+      searchPlaceholder: "Global search will cover user, org, skill, order, refund, payout, audit, and notification IDs.",
+      searchPreview: "Search index pending",
+      subtitle: "Operations command center",
+      title: "Platform operations console"
+    },
+    spotlight: {
+      audit: "Latest audit",
+      readiness: "Launch readiness"
+    }
+  },
+  zh: {
+    analytics: {
+      cards: {
+        availableBalance: "可提现余额",
+        gmv: "账本 GMV",
+        platformRevenue: "平台收入",
+        publisherShare: "发布者收入",
+        subscriptionOrders: "订阅交易",
+        usageOrders: "调用交易"
+      },
+      description:
+        "数据分析来自已入账的账本状态。Stripe 和 Alipay 收单接入前，不展示伪实时支付分析。",
+      title: "业务数据分析"
+    },
+    kpis: {
+      delivery: "投递失败",
+      deliveryDetail: "通知 + Webhook 需要重试",
+      launch: "上线阻断",
+      launchDetail: "提醒和延后检查",
+      money: "提现/退款待办",
+      moneyDetail: "提现加退款/争议决策",
+      revenue: "账本 GMV",
+      revenueDetail: "已入账财务交易",
+      reviews: "审核待办",
+      reviewsDetail: "紧急 / 提醒 / 可决策",
+      risk: "风险事件",
+      riskDetail: "事故、举报、反馈"
+    },
+    nav: [
+      ["总览", "#admin-overview"],
+      ["审核", "#admin-reviews"],
+      ["订单", "#admin-orders"],
+      ["财务", "#admin-finance"],
+      ["提现", "#admin-payouts"],
+      ["风控", "#admin-risk"],
+      ["通知", "#admin-deliveries"],
+      ["用户/组织", "#admin-identity"],
+      ["审计", "#admin-audit"],
+      ["设置", "#admin-templates"]
+    ],
+    order: {
+      description:
+        "当前以账本交易作为订单/支付核对源。接入支付后，支付订单号、渠道流水、退款和争议都要在这里对账。",
+      empty: "暂无已入账交易。",
+      headers: ["编号", "类型", "金额", "状态"],
+      title: "订单与支付中心"
+    },
+    payment: {
+      description:
+        "资金动作必须明确可审计：收单仍由支付集成门控，PayPal/Alipay 人工打款和账本调整继续走后台记录。",
+      items: [
+        ["Stripe 收单", "集成门控"],
+        ["Alipay 收单", "集成门控"],
+        ["PayPal/Alipay 人工提现", "P0 财务流程"],
+        ["退款/争议调整", "需要后台决策"]
+      ],
+      title: "支付接入状态"
+    },
+    shell: {
+      environment: "环境",
+      eyebrow: "SkillHub Admin",
+      primaryAction: "处理最高优先级",
+      searchPlaceholder: "全局查询将覆盖用户、组织、技能、订单、退款、提现、审计和通知编号。",
+      searchPreview: "搜索索引待接入",
+      subtitle: "运营指挥中心",
+      title: "平台运营控制台"
+    },
+    spotlight: {
+      audit: "最新审计",
+      readiness: "上线就绪"
+    }
+  }
+} as const;
+
+type AdminKpiTone = "danger" | "neutral" | "ready" | "warning";
+
 export default async function AdminPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
@@ -523,12 +672,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
         ].slice(0, 5)
       : [];
   const activeIncidentCount = incidents.filter((incident) => incident.status === "open" || incident.status === "monitoring").length;
-  const visibleMetrics = [
-    [labels.metrics[0][0], formatMoney(financeLedger.summary.grossCents)],
-    [labels.metrics[1][0], formatMoney(financeLedger.summary.platformFeeCents)],
-    [labels.metrics[2][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
-    [labels.metrics[3][0], String(reviews.length + activeIncidentCount + skillFeedback.filter((feedback) => feedback.status === "pending").length)]
-  ];
+  const openAbuseReportCount = abuseReports.filter(isOpenAbuseReport).length;
+  const pendingFeedbackCount = skillFeedback.filter((feedback) => feedback.status === "pending").length;
+  const reviewMetrics = buildAdminReviewMetrics(reviews);
+  const payoutActionCount = countAdminPayoutActions(payouts);
+  const adjustmentActionCount = countAdminAdjustmentActions(refunds, disputes);
+  const notificationActionCount = countNotificationDeliveryActions(notificationDeliveries);
+  const webhookActionCount = countWebhookDeliveryActions(webhookDeliveries);
+  const deliveryActionCount = notificationActionCount + webhookActionCount;
   const adminPriorityInput = {
     abuseReports,
     commissionRules,
@@ -545,111 +696,287 @@ export default async function AdminPage({ searchParams }: PageProps) {
     skillFeedback,
     webhookDeliveries
   };
-  const adminPrioritySummary = buildAdminOperationsSummary(adminPriorityInput);
   const adminPriorityItems = buildAdminPriorityItems(adminPriorityInput);
   const primaryPriorityItem = adminPriorityItems[0];
   const adminCommandLabels = adminCommandCopy[locale];
-  const adminCommandMetrics = [
-    [adminCommandLabels.metrics.launch, formatCompactNumber(adminPrioritySummary.launchGaps)],
-    [adminCommandLabels.metrics.review, formatCompactNumber(adminPrioritySummary.reviewActions)],
-    [adminCommandLabels.metrics.risk, formatCompactNumber(adminPrioritySummary.riskActions)],
-    [adminCommandLabels.metrics.finance, formatCompactNumber(adminPrioritySummary.financeActions)],
-    [adminCommandLabels.metrics.delivery, formatCompactNumber(adminPrioritySummary.deliveryActions)]
+  const adminConsoleLabels = adminConsoleCopy[locale];
+  const adminKpis: Array<{
+    detail: string;
+    href: string;
+    label: string;
+    tone: AdminKpiTone;
+    value: string;
+  }> = [
+    {
+      detail: `${launchReadiness.summary.warning + launchReadiness.summary.deferred} ${adminConsoleLabels.kpis.launchDetail}`,
+      href: localizedHref("/admin#launch-readiness", locale),
+      label: adminConsoleLabels.kpis.launch,
+      tone: launchReadiness.summary.blocker > 0 ? "danger" : launchReadiness.summary.warning + launchReadiness.summary.deferred > 0 ? "warning" : "ready",
+      value: formatCompactNumber(launchReadiness.summary.blocker)
+    },
+    {
+      detail: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)} ${adminConsoleLabels.kpis.reviewsDetail}`,
+      href: localizedHref("/admin#admin-reviews", locale),
+      label: adminConsoleLabels.kpis.reviews,
+      tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.warning > 0 ? "warning" : reviewMetrics.actionable > 0 ? "ready" : "neutral",
+      value: formatCompactNumber(reviewMetrics.actionable)
+    },
+    {
+      detail: adminConsoleLabels.kpis.riskDetail,
+      href: localizedHref("/admin#admin-risk", locale),
+      label: adminConsoleLabels.kpis.risk,
+      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : pendingFeedbackCount > 0 ? "warning" : "ready",
+      value: formatCompactNumber(activeIncidentCount + openAbuseReportCount + pendingFeedbackCount)
+    },
+    {
+      detail: adminConsoleLabels.kpis.moneyDetail,
+      href: localizedHref("/admin#admin-payouts", locale),
+      label: adminConsoleLabels.kpis.money,
+      tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
+      value: formatCompactNumber(payoutActionCount + adjustmentActionCount)
+    },
+    {
+      detail: adminConsoleLabels.kpis.deliveryDetail,
+      href: localizedHref("/admin#admin-deliveries", locale),
+      label: adminConsoleLabels.kpis.delivery,
+      tone: deliveryActionCount > 0 ? "warning" : "ready",
+      value: formatCompactNumber(deliveryActionCount)
+    },
+    {
+      detail: adminConsoleLabels.kpis.revenueDetail,
+      href: localizedHref("/admin#admin-finance", locale),
+      label: adminConsoleLabels.kpis.revenue,
+      tone: "neutral",
+      value: formatMoney(financeLedger.summary.grossCents)
+    }
   ];
+  const adminAnalytics = [
+    [adminConsoleLabels.analytics.cards.gmv, formatMoney(financeLedger.summary.grossCents)],
+    [adminConsoleLabels.analytics.cards.platformRevenue, formatMoney(financeLedger.summary.platformFeeCents)],
+    [adminConsoleLabels.analytics.cards.publisherShare, formatMoney(financeLedger.summary.publisherShareCents)],
+    [adminConsoleLabels.analytics.cards.availableBalance, formatMoney(financeLedger.summary.availableBalanceCents)],
+    [adminConsoleLabels.analytics.cards.usageOrders, formatCompactNumber(financeLedger.summary.usageTransactionCount)],
+    [adminConsoleLabels.analytics.cards.subscriptionOrders, formatCompactNumber(financeLedger.summary.subscriptionTransactionCount)]
+  ];
+  const recentOrderRows = financeLedger.recentTransactions.slice(0, 4);
 
   return (
-    <main className="product-shell">
+    <main className="product-shell admin-console-page">
       <SiteHeader active="admin" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/admin" />
 
-      <section className="page-hero page-hero--compact">
-        <div>
-          <div className="eyebrow">
-            <LockKeyhole size={16} aria-hidden="true" />
-            <span>{labels.eyebrow}</span>
-          </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.description}</p>
-        </div>
-      </section>
-
-      <JourneyRail currentStep="admin" journey="admin" locale={locale} />
-
-      <OperatingEvidenceChain
-        focus="admin"
-        locale={locale}
-        stats={[
-          { label: labels.metrics[0][0], value: formatMoney(financeLedger.summary.grossCents) },
-          { label: labels.metrics[2][0], tone: financeLedger.summary.pendingBalanceCents > 0 ? "attention" : "neutral", value: formatMoney(financeLedger.summary.pendingBalanceCents) },
-          { label: labels.metrics[3][0], tone: reviews.length > 0 ? "attention" : "good", value: String(reviews.length + activeIncidentCount + skillFeedback.filter((feedback) => feedback.status === "pending").length) },
-          { label: ops.moneyTitle, value: String(financeLedger.recentTransactions.length) }
-        ]}
-      />
-
-      <section className="console-board">
-        <SessionStatusPanel locale={locale} session={session} />
-        <WorkspaceAccessPanel
-          locale={locale}
-          requiredRoles={adminAccessRoles}
-          session={session}
-          workspace="admin"
-        />
-
-        <div className="metric-strip metric-strip--four metric-strip--standalone">
-          {visibleMetrics.map(([label, value]) => (
-            <div className="metric" key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
+      <section className="admin-console-shell" id="admin-overview" aria-labelledby="admin-console-title">
+        <aside className="admin-sidebar" aria-label={locale === "zh" ? "管理员后台导航" : "Admin console navigation"}>
+          <div className="admin-sidebar__brand">
+            <span aria-hidden="true">SH</span>
+            <div>
+              <strong>{adminConsoleLabels.shell.eyebrow}</strong>
+              <small>{adminConsoleLabels.shell.subtitle}</small>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="publisher-priority-board admin-priority-board" aria-labelledby="admin-priority-heading">
-        <article className="publisher-priority-card admin-priority-card">
-          <div className="publisher-priority-card__main">
-            <div className="card-kicker">
-              <ListChecks size={16} aria-hidden="true" />
-              <span>{adminCommandLabels.eyebrow}</span>
-            </div>
-            <h2 id="admin-priority-heading">{adminCommandLabels.title}</h2>
-            <p>{adminCommandLabels.body}</p>
-
-            <div className="publisher-priority-list admin-priority-list" aria-label={adminCommandLabels.queue.title}>
-              {adminPriorityItems.map((item) => (
-                <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
-                  <span>
-                    {adminCommandLabels.queueTones[item.tone]} / {item.metric}
-                  </span>
-                  <strong>{item.title}</strong>
-                  <p>{item.detail}</p>
-                  <b>
-                    {item.actionLabel}
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </b>
-                </a>
-              ))}
-            </div>
-
-            <a className="primary-button publisher-priority-card__action" href={primaryPriorityItem.href}>
-              <span>{primaryPriorityItem.actionLabel}</span>
-              <ArrowRight size={16} aria-hidden="true" />
-            </a>
           </div>
 
-          <div className="publisher-priority-metrics admin-priority-metrics">
-            {adminCommandMetrics.map(([label, value], index) => {
-              const Icon = index === 0 ? Clock3 : index === 1 ? Gavel : index === 2 ? Siren : index === 3 ? Banknote : Webhook;
+          <nav className="admin-sidebar-nav">
+            {adminConsoleLabels.nav.map(([label, anchor], index) => {
+              const Icon = [BarChart3, Gavel, CreditCard, Landmark, WalletCards, ShieldCheck, Bell, Users, ReceiptText, Settings][index] ?? ListChecks;
 
               return (
-                <div className="publisher-priority-metric admin-priority-metric" key={label}>
-                  <Icon size={16} aria-hidden="true" />
+                <a href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
+                  <Icon size={15} aria-hidden="true" />
                   <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
+                </a>
               );
             })}
+          </nav>
+
+          <div className="admin-sidebar__status">
+            <span>{adminConsoleLabels.shell.environment}</span>
+            <strong>{launchReadiness.environment.runtime}</strong>
+            <small>{launchReadiness.environment.isProductionLike ? "production-like" : "non-production"}</small>
           </div>
-        </article>
+        </aside>
+
+        <div className="admin-console-main">
+          <header className="admin-console-topbar">
+            <div>
+              <div className="card-kicker">
+                <Activity size={16} aria-hidden="true" />
+                <span>{adminConsoleLabels.shell.subtitle}</span>
+              </div>
+              <h1 id="admin-console-title">{adminConsoleLabels.shell.title}</h1>
+              <p>{labels.description}</p>
+            </div>
+
+            <div className="admin-console-tools">
+              <div className="admin-search-preview" aria-label={adminConsoleLabels.shell.searchPlaceholder}>
+                <Search size={16} aria-hidden="true" />
+                <div>
+                  <strong>{adminConsoleLabels.shell.searchPreview}</strong>
+                  <span>{adminConsoleLabels.shell.searchPlaceholder}</span>
+                </div>
+              </div>
+              <a className="primary-button" href={primaryPriorityItem.href}>
+                <span>{adminConsoleLabels.shell.primaryAction}</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            </div>
+          </header>
+
+          <div className="admin-kpi-grid" aria-label={locale === "zh" ? "后台关键指标" : "Admin key metrics"}>
+            {adminKpis.map((metric) => (
+              <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </a>
+            ))}
+          </div>
+
+          <div className="admin-dashboard-grid">
+            <article className="admin-priority-panel" aria-labelledby="admin-priority-heading">
+              <div className="card-kicker">
+                <ListChecks size={16} aria-hidden="true" />
+                <span>{adminCommandLabels.eyebrow}</span>
+              </div>
+              <h2 id="admin-priority-heading">{adminCommandLabels.title}</h2>
+              <p>{adminCommandLabels.body}</p>
+
+              <div className="admin-priority-list" aria-label={adminCommandLabels.queue.title}>
+                {adminPriorityItems.map((item) => (
+                  <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
+                    <span>
+                      {adminCommandLabels.queueTones[item.tone]} / {item.metric}
+                    </span>
+                    <strong>{item.title}</strong>
+                    <p>{item.detail}</p>
+                    <b>
+                      {item.actionLabel}
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </b>
+                  </a>
+                ))}
+              </div>
+            </article>
+
+            <aside className="admin-spotlight">
+              <article className="admin-spotlight-card">
+                <div className="card-kicker">
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  <span>{adminConsoleLabels.spotlight.readiness}</span>
+                </div>
+                <div className="admin-readiness-mini">
+                  {[
+                    ["blocker", launchReadiness.summary.blocker],
+                    ["warning", launchReadiness.summary.warning],
+                    ["deferred", launchReadiness.summary.deferred],
+                    ["ready", launchReadiness.summary.ready]
+                  ].map(([status, count]) => (
+                    <a className={`admin-readiness-mini__item admin-readiness-mini__item--${status}`} href={localizedHref("/admin#launch-readiness", locale)} key={status}>
+                      <span>{status}</span>
+                      <strong>{formatCompactNumber(Number(count))}</strong>
+                    </a>
+                  ))}
+                </div>
+              </article>
+
+              <article className="admin-spotlight-card">
+                <div className="card-kicker">
+                  <ReceiptText size={16} aria-hidden="true" />
+                  <span>{adminConsoleLabels.spotlight.audit}</span>
+                </div>
+                <div className="admin-audit-mini">
+                  {auditLogs.slice(0, 3).map((log) => (
+                    <a href={localizedHref("/admin#admin-audit", locale)} key={log.id}>
+                      <strong>{log.action}</strong>
+                      <span>{log.reason ?? log.entityType}</span>
+                    </a>
+                  ))}
+                  {auditLogs.length === 0 ? <span>{locale === "zh" ? "暂无审计记录。" : "No audit records yet."}</span> : null}
+                </div>
+              </article>
+            </aside>
+          </div>
+
+          <section className="admin-insight-grid" aria-labelledby="admin-analytics-title">
+            <article className="admin-analytics-panel">
+              <div className="card-kicker">
+                <BarChart3 size={16} aria-hidden="true" />
+                <span>{adminConsoleLabels.analytics.title}</span>
+              </div>
+              <h2 id="admin-analytics-title">{adminConsoleLabels.analytics.title}</h2>
+              <p>{adminConsoleLabels.analytics.description}</p>
+              <div className="admin-analytics-metrics">
+                {adminAnalytics.map(([label, value]) => (
+                  <div key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="admin-order-panel" id="admin-orders">
+              <div className="card-kicker">
+                <CreditCard size={16} aria-hidden="true" />
+                <span>{adminConsoleLabels.order.title}</span>
+              </div>
+              <p>{adminConsoleLabels.order.description}</p>
+              <div className="admin-order-list">
+                <div className="admin-order-row admin-order-row--head">
+                  {adminConsoleLabels.order.headers.map((header) => (
+                    <span key={header}>{header}</span>
+                  ))}
+                </div>
+                {recentOrderRows.map((transaction) => (
+                  <a className="admin-order-row" href={localizedHref("/admin#admin-ledger", locale)} key={transaction.id}>
+                    <strong>{transaction.sourceReference ?? transaction.id}</strong>
+                    <span>{transaction.sourceType ?? transaction.status}</span>
+                    <span>{formatMoney(transaction.grossCents, transaction.currency)}</span>
+                    <span className="status-chip">{transaction.balanceState ?? transaction.status}</span>
+                  </a>
+                ))}
+                {recentOrderRows.length === 0 ? <div className="admin-order-empty">{adminConsoleLabels.order.empty}</div> : null}
+              </div>
+            </article>
+
+            <article className="admin-payment-panel">
+              <div className="card-kicker">
+                <WalletCards size={16} aria-hidden="true" />
+                <span>{adminConsoleLabels.payment.title}</span>
+              </div>
+              <p>{adminConsoleLabels.payment.description}</p>
+              <div className="admin-payment-list">
+                {adminConsoleLabels.payment.items.map(([title, state]) => (
+                  <div key={title}>
+                    <strong>{title}</strong>
+                    <span>{state}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </section>
+
+          <section className="console-board admin-access-strip">
+            <SessionStatusPanel locale={locale} session={session} />
+            <WorkspaceAccessPanel
+              locale={locale}
+              requiredRoles={adminAccessRoles}
+              session={session}
+              workspace="admin"
+            />
+          </section>
+        </div>
+      </section>
+
+      <section className="admin-evidence-section">
+        <OperatingEvidenceChain
+          focus="admin"
+          locale={locale}
+          stats={[
+            { label: labels.metrics[0][0], value: formatMoney(financeLedger.summary.grossCents) },
+            { label: labels.metrics[2][0], tone: financeLedger.summary.pendingBalanceCents > 0 ? "attention" : "neutral", value: formatMoney(financeLedger.summary.pendingBalanceCents) },
+            { label: labels.metrics[3][0], tone: reviewMetrics.actionable > 0 ? "attention" : "good", value: String(reviewMetrics.actionable + activeIncidentCount + pendingFeedbackCount) },
+            { label: ops.moneyTitle, value: String(financeLedger.recentTransactions.length) }
+          ]}
+        />
       </section>
 
       <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
@@ -911,25 +1238,6 @@ function getAdminLockedGuide(locale: Locale) {
         title: "Open operations"
       }
     ]
-  };
-}
-
-function buildAdminOperationsSummary(input: AdminPriorityInput): AdminOperationsSummary {
-  const reviewMetrics = buildAdminReviewMetrics(input.reviews);
-  const activeIncidents = input.incidents.filter(isActiveIncident).length;
-  const openAbuseReports = input.abuseReports.filter(isOpenAbuseReport).length;
-  const pendingFeedback = input.skillFeedback.filter((feedback) => feedback.status === "pending").length;
-  const payoutActions = countAdminPayoutActions(input.payouts);
-  const adjustmentActions = countAdminAdjustmentActions(input.refunds, input.disputes);
-  const missingActiveCommission = !input.commissionRules.some((rule) => rule.isActive);
-  const deliveryActions = countNotificationDeliveryActions(input.notificationDeliveries) + countWebhookDeliveryActions(input.webhookDeliveries);
-
-  return {
-    deliveryActions,
-    financeActions: payoutActions + adjustmentActions + (missingActiveCommission ? 1 : 0),
-    launchGaps: input.launchReadiness.summary.blocker + input.launchReadiness.summary.warning + input.launchReadiness.summary.deferred,
-    reviewActions: reviewMetrics.actionable,
-    riskActions: activeIncidents + openAbuseReports + pendingFeedback
   };
 }
 
