@@ -153,12 +153,12 @@ export function WorkspaceSignupForm({
       : "ops-panel auth-card auth-card--signup";
 
   useEffect(() => {
-    if (state.status === "success" && state.subject) {
+    if (state.status === "success") {
       const target =
         state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale);
       router.replace(target as Parameters<typeof router.replace>[0]);
     }
-  }, [locale, returnTo, router, state.redirectTo, state.status, state.subject]);
+  }, [locale, returnTo, router, state.redirectTo, state.status]);
 
   return (
     <section className={rootClass} id="email-registration">

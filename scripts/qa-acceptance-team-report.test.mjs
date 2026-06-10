@@ -73,6 +73,8 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(oauthPanel, /"\/role-landing\?lang=zh"/);
   assert.match(passwordForm, /<input[\s\S]*name="returnTo"[\s\S]*type="hidden"/);
   assert.match(passwordForm, /localizedHref\("\/role-landing", locale\)/);
+  assert.match(passwordForm, /if \(state\.status === "success"\) \{/);
+  assert.doesNotMatch(passwordForm, /state\.status === "success" && state\.subject/);
   assert.match(passwordForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
   assert.match(recoveryForm, /<input[\s\S]*name="returnTo"[\s\S]*type="hidden"/);
   assert.match(recoveryForm, /localizedHref\("\/role-landing", locale\)/);
