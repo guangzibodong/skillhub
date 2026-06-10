@@ -117,7 +117,7 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
 
   useEffect(() => {
     if (state.status === "success" && state.subject) {
-      const target = state.redirectTo ?? returnTo ?? localizedHref("/account", locale);
+      const target = state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale);
       router.replace(target as Parameters<typeof router.replace>[0]);
     }
   }, [locale, returnTo, router, state.redirectTo, state.status, state.subject]);
@@ -139,7 +139,7 @@ export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormPro
         >
           <input name="intent" type="hidden" value="password" />
           <input name="mode" type="hidden" value={mode} />
-          <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/account", locale)} />
+          <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/role-landing", locale)} />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
               className={mode === "login" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}

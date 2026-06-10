@@ -55,6 +55,8 @@ test("admin login keeps operators on the admin workflow", async () => {
   const authActions = await readFile("apps/web/lib/auth-actions.ts", "utf8");
   const loginPage = await readFile("apps/web/app/login/page.tsx", "utf8");
   const oauthPanel = await readFile("apps/web/components/auth-provider-panel.tsx", "utf8");
+  const roleLanding = await readFile("apps/web/lib/role-landing.ts", "utf8");
+  const roleLandingPage = await readFile("apps/web/app/role-landing/page.tsx", "utf8");
   const recoveryForm = await readFile("apps/web/components/session-login-form.tsx", "utf8");
   const passwordForm = await readFile("apps/web/components/workspace-signup-form.tsx", "utf8");
 
@@ -65,16 +67,28 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(loginPage, /<AuthProviderPanel[\s\S]*returnTo=\{returnTo\}/);
   assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
   assert.match(loginPage, /<SessionLoginForm locale=\{locale\} returnTo=\{returnTo\}/);
+  assert.match(loginPage, /return localizedHref\("\/role-landing", locale\)/);
 
   assert.match(oauthPanel, /url\.searchParams\.set\("returnTo", returnTo \?\?/);
+  assert.match(oauthPanel, /"\/role-landing\?lang=zh"/);
   assert.match(passwordForm, /<input name="returnTo" type="hidden"/);
+  assert.match(passwordForm, /localizedHref\("\/role-landing", locale\)/);
   assert.match(passwordForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
   assert.match(recoveryForm, /<input name="returnTo" type="hidden"/);
+  assert.match(recoveryForm, /localizedHref\("\/role-landing", locale\)/);
   assert.match(recoveryForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
 
-  assert.match(authActions, /const redirectTo = normalizeReturnTo\(formData\.get\("returnTo"\), locale, "\/account"\)/);
-  assert.match(authActions, /const redirectTo = normalizeReturnTo\(formData\.get\("returnTo"\), locale, "\/dashboard"\)/);
+  assert.match(authActions, /const requestedReturnTo = normalizeReturnTo\(formData\.get\("returnTo"\)\)/);
+  assert.match(authActions, /redirectTo: requestedReturnTo \?\? roleLandingPath\(subject, locale\)/);
   assert.match(authActions, /!candidate\.startsWith\("\/"\)/);
   assert.match(authActions, /candidate\.startsWith\("\/\/"\)/);
   assert.match(authActions, /candidate\.includes\(":\/\/"\)/);
+
+  assert.match(roleLandingPage, /redirect\(roleLandingPath\(session\.subject, locale\) as Parameters<typeof redirect>\[0\]\)/);
+  assert.match(roleLanding, /const adminRoles = new Set\(\["admin", "finance", "reviewer", "support", "super_admin"\]\)/);
+  assert.match(roleLanding, /return `\/admin\$\{suffix\}`/);
+  assert.match(roleLanding, /return `\/publisher\$\{suffix\}`/);
+  assert.match(roleLanding, /return `\/developer\$\{suffix\}`/);
+  assert.match(roleLanding, /return `\/dashboard\$\{suffix\}`/);
+  assert.match(roleLanding, /return `\/account\$\{suffix\}`/);
 });

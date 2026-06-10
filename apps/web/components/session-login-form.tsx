@@ -48,7 +48,7 @@ export function SessionLoginForm({ locale, returnTo }: SessionLoginFormProps) {
 
   useEffect(() => {
     if (state.status === "success") {
-      const target = state.redirectTo ?? returnTo ?? localizedHref("/dashboard", locale);
+      const target = state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale);
       router.replace(target as Parameters<typeof router.replace>[0]);
     }
   }, [locale, returnTo, router, state.redirectTo, state.status]);
@@ -66,7 +66,7 @@ export function SessionLoginForm({ locale, returnTo }: SessionLoginFormProps) {
         aria-describedby={showFeedback ? feedbackId : undefined}
         className="auth-form"
       >
-        <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/dashboard", locale)} />
+        <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/role-landing", locale)} />
         <label>
           <span>{labels.label}</span>
           <input autoComplete="off" name="token" placeholder={labels.placeholder} required type="password" />

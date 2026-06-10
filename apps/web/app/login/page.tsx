@@ -284,7 +284,7 @@ function getSafeReturnTo(value: string | string[] | undefined, locale: Locale) {
     return candidate;
   }
 
-  return localizedHref("/account", locale);
+  return localizedHref("/role-landing", locale);
 }
 
 function oauthNotice(

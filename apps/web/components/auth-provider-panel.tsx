@@ -82,7 +82,7 @@ function providerAction(
 ) {
   if (provider.startUrl && (provider.status === "active" || provider.status === "connected")) {
     const url = new URL(provider.startUrl, apiUrl);
-    url.searchParams.set("returnTo", returnTo ?? (locale === "zh" ? "/account?lang=zh" : "/account?lang=en"));
+    url.searchParams.set("returnTo", returnTo ?? (locale === "zh" ? "/role-landing?lang=zh" : "/role-landing?lang=en"));
 
     return {
       href: url.toString(),
