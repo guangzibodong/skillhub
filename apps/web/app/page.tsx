@@ -118,16 +118,16 @@ const homeLandingCopy = {
       manifest: "Manifest",
       schema: "Schema",
       permissions: "Permissions",
-      policy: "Runtime policy",
-      keyRequired: "Project Key required",
-      request: "Request",
-      response: "Response",
-      audit: "Audit log (latest)",
-      status: "200 OK",
+      policy: "Runtime policy preview",
+      keyRequired: "Sign in + Project Key",
+      request: "Sample request",
+      response: "Sample response",
+      audit: "Example audit snapshot",
+      status: "Sample 200 OK",
       latency: "1.23s",
       viewSkill: "View skill",
       schemaValid: "Schema valid",
-      allSystems: "All systems operational",
+      allSystems: "Preview sample - gated by Project Key",
     },
     capabilities: [
       {
@@ -187,7 +187,7 @@ const homeLandingCopy = {
     howSteps: [
       ["Discover", "Find the right skill for your agent."],
       ["Inspect", "Review manifests, permissions, and runtime details."],
-      ["Get Key", "Create a project and get your Project Key."],
+      ["Prepare key", "Sign in, create a project, and reveal a Project Key when available."],
       ["Invoke", "Call the skill via REST API or MCP with your key."],
       ["Monitor", "Track usage, logs, and performance."],
     ],
@@ -195,7 +195,7 @@ const homeLandingCopy = {
     finalBody: "Start exploring the skill registry and runtime gateway.",
     readDocs: "Read Docs",
     footerBody: "The skill registry and runtime gateway for AI agents. Trusted by builders.",
-    systemStatus: "All systems operational",
+    systemStatus: "Public web/API health OK",
     viewStatus: "View status",
   },
   zh: {
@@ -228,16 +228,16 @@ const homeLandingCopy = {
       manifest: "Manifest",
       schema: "Schema",
       permissions: "权限",
-      policy: "运行策略",
-      keyRequired: "需要 Project Key",
-      request: "请求",
-      response: "响应",
-      audit: "审计日志（最新）",
-      status: "200 OK",
+      policy: "运行策略预览",
+      keyRequired: "登录 + Project Key",
+      request: "示例请求",
+      response: "示例响应",
+      audit: "示例审计快照",
+      status: "示例 200 OK",
       latency: "1.23 秒",
       viewSkill: "查看 Skill",
       schemaValid: "Schema 有效",
-      allSystems: "系统运行正常",
+      allSystems: "示例预览，需 Project Key 才能真实调用",
     },
     capabilities: [
       {
@@ -297,7 +297,7 @@ const homeLandingCopy = {
     howSteps: [
       ["发现", "找到适合 agent 的 Skill。"],
       ["检查", "查看 manifest、权限和运行细节。"],
-      ["获取 Key", "创建项目并获取 Project Key。"],
+      ["准备 Key", "登录后在开发者工作台创建项目，并在可用时揭示 Project Key。"],
       ["调用", "用 REST API 或 MCP 调用 Skill。"],
       ["监控", "追踪用量、日志和性能。"],
     ],
@@ -305,10 +305,63 @@ const homeLandingCopy = {
     finalBody: "从 Skill 注册中心和运行网关开始探索。",
     readDocs: "阅读文档",
     footerBody: "AI Agent 的技能注册中心与运行网关，给真实构建者使用。",
-    systemStatus: "系统运行正常",
+    systemStatus: "公共 Web/API 健康正常",
     viewStatus: "查看状态",
   },
 } as const;
+
+const homeSkillZhCopy: Record<string, { description: string; tags: string[] }> = {
+  "browser-research-pro": {
+    description: "搜索网页并返回带来源链接的结构化洞察。",
+    tags: ["研究", "浏览器", "引用"],
+  },
+  "crm-enrichment": {
+    description: "补全 CRM 线索资料，并保留可审计的数据来源。",
+    tags: ["销售", "CRM", "线索"],
+  },
+  "support-triage": {
+    description: "将客服请求分类、提取优先级，并给出下一步处理建议。",
+    tags: ["客服", "分类", "工单"],
+  },
+  "dataset-insight": {
+    description: "分析数据集结构、异常和摘要，输出可复核的洞察。",
+    tags: ["数据", "分析", "摘要"],
+  },
+  "dataset-summarizer": {
+    description: "汇总大型数据集并生成关键洞察。",
+    tags: ["数据", "分析", "摘要"],
+  },
+  "code-runner": {
+    description: "在隔离环境中安全执行代码并返回结果。",
+    tags: ["开发", "代码", "执行"],
+  },
+  "codebase-risk-scanner": {
+    description: "扫描代码快照中的风险文件、敏感模式和负责人复核线索。",
+    tags: ["安全", "代码", "审核"],
+  },
+  "invoice-extraction": {
+    description: "从发票文件中提取结构化字段，并保留审批提示。",
+    tags: ["财务", "发票", "OCR"],
+  },
+  "doc-qa": {
+    description: "基于文档和知识源回答问题。",
+    tags: ["文档", "问答"],
+  },
+};
+
+const homeTagZhLabels: Record<string, string> = {
+  analysis: "分析",
+  browser: "浏览器",
+  citations: "引用",
+  code: "代码",
+  data: "数据",
+  dev: "开发",
+  docs: "文档",
+  execute: "执行",
+  qa: "问答",
+  research: "研究",
+  summary: "摘要",
+};
 
 function statusLabel(status: SkillSummary["verificationStatus"], locale: "en" | "zh") {
   if (status === "verified") {
@@ -329,6 +382,34 @@ function riskLabel(level: SkillSummary["permissionLevel"], locale: "en" | "zh") 
   };
 
   return labels[locale][level];
+}
+
+function trustEvidenceLabel(index: number, locale: "en" | "zh") {
+  const labels = {
+    en: ["Low", "OK", "Passed"],
+    zh: ["低", "正常", "通过"],
+  };
+
+  return labels[locale][index] ?? labels[locale][labels[locale].length - 1];
+}
+
+function homeSkillDescription(skill: SkillSummary, locale: "en" | "zh") {
+  if (locale === "en") {
+    return skill.description;
+  }
+
+  return homeSkillZhCopy[skill.slug]?.description ?? skill.description;
+}
+
+function homeSkillTags(skill: SkillSummary, locale: "en" | "zh") {
+  if (locale === "en") {
+    return skill.tags;
+  }
+
+  return (
+    homeSkillZhCopy[skill.slug]?.tags ??
+    skill.tags.map((tag) => homeTagZhLabels[tag.toLowerCase()] ?? tag)
+  );
 }
 
 export default async function Home({ searchParams }: PageProps) {
@@ -519,7 +600,7 @@ export default async function Home({ searchParams }: PageProps) {
                   <em>1</em> {"{"}
                 </span>
                 <span className="control-code__line control-code__line--active">
-                  <em>2</em> {'"name": "browser.research",'}
+                  <em>2</em> {'"name": "browser-research-pro",'}
                 </span>
                 <span className="control-code__line">
                   <em>3</em> {'"version": "1.2.0",'}
@@ -552,7 +633,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
               <div className="runtime-console">
                 <span>{landing.control.request}</span>
-                <code>POST /v1/skills/browser.research/run</code>
+                <code>POST /v1/skills/browser-research-pro/run</code>
                 <pre>{`{
   "query": "latest AI agent framework comparison",
   "max_results": 5
@@ -615,7 +696,7 @@ export default async function Home({ searchParams }: PageProps) {
                     {item.rows.map((row, rowIndex) => (
                       <span key={row}>
                         {row}
-                        <strong>{rowIndex === 0 ? "Low" : rowIndex === 1 ? "OK" : "Passed"}</strong>
+                        <strong>{trustEvidenceLabel(rowIndex, locale)}</strong>
                       </span>
                     ))}
                   </div>
@@ -653,9 +734,9 @@ export default async function Home({ searchParams }: PageProps) {
                       </span>
                     </div>
                   </div>
-                  <p>{skill.description}</p>
+                  <p>{homeSkillDescription(skill, locale)}</p>
                   <div className="control-tag-row">
-                    {skill.tags.slice(0, 2).map((tag) => (
+                    {homeSkillTags(skill, locale).slice(0, 2).map((tag) => (
                       <span key={tag}>{tag}</span>
                     ))}
                   </div>

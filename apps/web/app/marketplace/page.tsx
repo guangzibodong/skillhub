@@ -65,6 +65,9 @@ const pageCopy = {
     mcpMetadataNote: "MCP metadata only; runtime invocation uses POST /mcp after project auth.",
     requests: "Example skill requests - not live data",
     requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
+    requestBudget: "Sample budget",
+    requestState: "Example state",
+    requestTag: "Not live",
     publishTitle: "Publisher review path",
     publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Paid-readiness metadata", "Public listing", "Prelaunch ledger model", "Future paid review"],
     trustTitle: "Launch requirements",
@@ -188,6 +191,9 @@ const pageCopy = {
     mcpMetadataNote: "仅 MCP 元数据；运行调用需项目认证后使用 POST /mcp。",
     requests: "示例技能需求 - 非实时数据",
     requestsBody: "这些是未来付费市场的示例需求场景。真实买方需求会在用户提交后才出现，生产数据为空时保持为空。",
+    requestBudget: "示例预算",
+    requestState: "示例状态",
+    requestTag: "非实时",
     publishTitle: "发布者审核路径",
     publishSteps: ["草稿 manifest", "运行测试", "人工审核", "付费准备元数据", "公开上架", "预发布账本模型", "未来付费审核"],
     trustTitle: "上线要求",
@@ -683,12 +689,24 @@ curl "https://api.useskillhub.com/mcp"`}</code>
             {marketplaceRequests.map((request) => (
               <div className="request-row" key={localizeText(request.title, locale)}>
                 <div>
-                  <strong>{localizeText(request.title, locale)}</strong>
+                  <strong>
+                    {localizeText(request.title, locale)}
+                    {request.state === "example" ? (
+                      <span className="request-row__badge">{labels.requestTag}</span>
+                    ) : null}
+                  </strong>
                   <span>
-                    {localizeText(request.status, locale)} | {localizeText(request.due, locale)}
+                    {request.state === "example"
+                      ? `${labels.requestState}: ${localizeText(request.status, locale)}`
+                      : localizeText(request.status, locale)}
+                    {" | "}
+                    {localizeText(request.due, locale)}
                   </span>
                 </div>
-                <b>{request.bounty}</b>
+                <b>
+                  <small>{labels.requestBudget}</small>
+                  {request.bounty}
+                </b>
               </div>
             ))}
           </div>

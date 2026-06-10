@@ -59,8 +59,8 @@ const labels = {
     by: "by",
     allPricing: "All pricing",
     free: "Free",
-    perCall: "Per call",
-    subscription: "Subscription",
+    perCall: "Per-call intent",
+    subscription: "Subscription intent",
     success: "success",
     latency: "latency",
     feedback: "feedback",
@@ -70,7 +70,7 @@ const labels = {
     catalog: "SkillHub Catalog",
     filters: "Discovery filters",
     category: "Category",
-    pricing: "Pricing",
+    pricing: "Pricing intent",
     permissionRisk: "Permission risk",
     runtime: "Runtime",
     verification: "Verification",
@@ -133,8 +133,8 @@ const labels = {
     by: "来自",
     allPricing: "全部价格",
     free: "免费",
-    perCall: "按次调用",
-    subscription: "订阅",
+    perCall: "按次意向",
+    subscription: "订阅意向",
     success: "成功率",
     latency: "延迟",
     feedback: "反馈",
@@ -144,7 +144,7 @@ const labels = {
     catalog: "SkillHub 技能目录",
     filters: "发现筛选",
     category: "类别",
-    pricing: "价格",
+    pricing: "定价意向",
     permissionRisk: "权限风险",
     runtime: "运行时",
     verification: "验证状态",
@@ -200,8 +200,8 @@ const labels = {
 const pricingOptions = [
   { key: "all", label: { en: "All pricing", zh: "全部价格" } },
   { key: "free", label: { en: "Free", zh: "免费" } },
-  { key: "per_call", label: { en: "Per call", zh: "按次调用" } },
-  { key: "subscription", label: { en: "Subscription", zh: "订阅" } },
+  { key: "per_call", label: { en: "Per-call intent", zh: "按次意向" } },
+  { key: "subscription", label: { en: "Subscription intent", zh: "订阅意向" } },
 ] as const;
 
 const riskOptions = ["all", "low", "medium", "high"] as const;
@@ -760,7 +760,7 @@ export function MarketplaceBrowser({
 
               <div className="market-skill-card__foot">
                 <div>
-                  <span>{skill.price[locale]}</span>
+                  <span>{formatPublicPrice(skill, locale)}</span>
                   <strong>{localizeText(skill.verification, locale)}</strong>
                 </div>
                 <a
@@ -996,6 +996,18 @@ function formatFeedbackSignal(skill: MarketplaceSkill, feedbackLabel: string) {
   return count > 0
     ? `${skill.rating} / ${count} ${feedbackLabel}`
     : skill.rating;
+}
+
+function formatPublicPrice(skill: MarketplaceSkill, locale: Locale) {
+  const price = skill.price[locale];
+
+  if (skill.billing === "free") {
+    return price;
+  }
+
+  return locale === "zh"
+    ? `${price}（预发布定价意向）`
+    : `${price} (prelaunch intent)`;
 }
 
 function buildRecommendationReasons(

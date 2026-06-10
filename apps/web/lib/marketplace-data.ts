@@ -52,6 +52,7 @@ export type MarketplaceRequest = {
   title: LocalizedText;
   bounty: string;
   due: LocalizedText;
+  state: "example" | "live";
   status: LocalizedText;
 };
 
@@ -648,6 +649,7 @@ export const marketplaceRequests: MarketplaceRequest[] = [
       en: "7 days",
       zh: "7 天"
     },
+    state: "example",
     status: {
       en: "Open",
       zh: "开放"
@@ -663,6 +665,7 @@ export const marketplaceRequests: MarketplaceRequest[] = [
       en: "12 days",
       zh: "12 天"
     },
+    state: "example",
     status: {
       en: "Spec review",
       zh: "需求审核"
@@ -678,6 +681,7 @@ export const marketplaceRequests: MarketplaceRequest[] = [
       en: "5 days",
       zh: "5 天"
     },
+    state: "example",
     status: {
       en: "Matched",
       zh: "已匹配"

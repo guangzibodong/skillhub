@@ -230,7 +230,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
     return {
       closeNavigation: "关闭导航",
       console: "登录入口",
-      getProjectKey: "获取 Project Key",
+      getProjectKey: "开发者工作台",
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
@@ -258,7 +258,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
   return {
     closeNavigation: "Close navigation",
     console: "Sign in",
-    getProjectKey: "Get Project Key",
+    getProjectKey: "Developer workspace",
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",

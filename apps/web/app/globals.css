@@ -689,13 +689,15 @@
   flex: 0 0 auto;
   gap: 8px !important;
   align-items: center;
+  min-height: 44px;
   color: var(--sh-text-muted);
   font-size: 13px;
+  padding: 4px 0;
 }
 
 .auth-checkbox-row input {
-  width: 17px !important;
-  min-height: 17px !important;
+  width: 20px !important;
+  min-height: 20px !important;
   accent-color: var(--sh-green);
 }
 
@@ -1087,10 +1089,12 @@
 
 html {
   min-height: 100%;
+  overflow-x: clip;
   scroll-behavior: smooth;
 }
 
 body {
+  overflow-x: clip;
   min-height: 100vh;
   margin: 0;
   background: var(--bg);
@@ -1142,6 +1146,7 @@ a {
 
 .product-shell,
 .publish-shell {
+  overflow-x: clip;
   min-height: 100vh;
   background: var(--bg);
 }
@@ -1322,8 +1327,8 @@ a {
 .site-mobile-menu-button {
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.045);
@@ -1349,7 +1354,7 @@ a {
 .site-mobile-panel__link {
   display: flex;
   align-items: center;
-  min-height: 38px;
+  min-height: 44px;
   border: 1px solid transparent;
   border-radius: var(--radius);
   color: var(--muted);
@@ -1375,7 +1380,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  min-height: 36px;
+  min-height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.035);
@@ -1386,12 +1391,12 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 28px;
+  min-height: 44px;
   border-radius: 999px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 760;
-  padding: 0 9px;
+  padding: 0 11px;
 }
 
 .language-switcher__item--active {
@@ -1407,7 +1412,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   border-radius: var(--radius);
   font-size: 14px;
   font-weight: 720;
@@ -6745,18 +6750,18 @@ a {
 }
 
 .auth-password-control input {
-  padding-right: 46px;
+  padding-right: 56px;
 }
 
 .auth-password-toggle {
   position: absolute;
   top: 50%;
-  right: 4px;
+  right: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
@@ -14136,6 +14141,27 @@ a {
   line-height: 1.3;
 }
 
+.request-row strong {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+.request-row__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border: 1px solid rgba(215, 168, 76, 0.24);
+  border-radius: 999px;
+  background: rgba(215, 168, 76, 0.1);
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1;
+  padding: 0 8px;
+}
+
 .request-row span,
 .trust-requirement span {
   color: var(--muted);
@@ -14144,8 +14170,18 @@ a {
 }
 
 .request-row b {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
   color: var(--signal);
   font-size: 16px;
+}
+
+.request-row b small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.2;
 }
 
 .publish-flow-list {
@@ -21974,6 +22010,10 @@ a {
     padding: 10px 0;
   }
 
+  .request-row b {
+    justify-items: start;
+  }
+
   .install-command-row .icon-button {
     justify-self: start;
   }
@@ -24213,7 +24253,7 @@ a {
 
   .home-frame .site-header {
     grid-template-columns: minmax(0, 1fr) auto auto;
-    min-height: 54px;
+    min-height: 62px;
     gap: 8px;
     padding: 0 10px;
   }
@@ -24239,18 +24279,25 @@ a {
   }
 
   .home-frame .language-switcher {
-    min-height: 32px;
+    min-height: 50px;
   }
 
   .home-frame .language-switcher__item {
-    min-height: 28px;
+    min-height: 44px;
     font-size: 11px;
-    padding: 0 7px;
+    padding: 0 10px;
   }
 
   .home-frame .site-mobile-menu-button {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .home-frame .site-mobile-panel--open {
+    display: block;
+    grid-column: 1 / -1;
+    position: relative;
+    z-index: 40;
   }
 
   .home-frame .home-preview-banner__inner {
@@ -24389,20 +24436,17 @@ a {
 
   .home-featured-grid {
     display: grid;
-    grid-auto-columns: minmax(146px, 48%);
-    grid-auto-flow: column;
-    grid-template-columns: none;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-    overflow-x: auto;
+    overflow-x: visible;
     padding-bottom: 6px;
-    scroll-snap-type: x proximity;
   }
 
   .home-skill-card {
     gap: 9px;
     min-height: 178px;
     padding: 12px;
-    scroll-snap-align: start;
   }
 
   .home-skill-card__head {
@@ -24481,5 +24525,11 @@ a {
 @media (max-width: 760px) {
   .site-actions .site-action-publish {
     display: none;
+  }
+}
+
+@media (max-width: 460px) {
+  .home-featured-grid {
+    grid-template-columns: 1fr;
   }
 }
