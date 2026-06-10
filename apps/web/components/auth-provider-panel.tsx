@@ -1,4 +1,4 @@
-import { Github, LockKeyhole, ShieldCheck } from "lucide-react";
+import { Github, ShieldCheck } from "lucide-react";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
@@ -44,6 +44,20 @@ export function AuthProviderPanel({
     const item = providersById.get(provider);
     return item ? [item] : [];
   });
+  const enabledProviders = orderedProviders.flatMap((provider) => {
+    const action = providerAction(
+      provider,
+      apiUrl,
+      locale,
+      labels,
+      returnTo,
+    );
+
+    return action.href ? [{ action, provider }] : [];
+  });
+  const plannedProviderNames = plannedProviders
+    .map((provider) => provider.label)
+    .join(locale === "zh" ? "、" : ", ");
 
   return (
     <article className="ops-panel auth-provider-panel auth-provider-panel--oauth">
@@ -52,17 +66,11 @@ export function AuthProviderPanel({
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack">
-        {orderedProviders.map((provider) => {
-          const action = providerAction(
-            provider,
-            apiUrl,
-            locale,
-            labels,
-            returnTo,
-          );
+        {enabledProviders.length > 0 ? (
+          enabledProviders.map(({ action, provider }) => {
           const providerName = providerLabel(provider, locale);
 
-          return action.href ? (
+          return (
             <a
               aria-label={`${labels.oauthAction} ${providerName}`}
               className={`oauth-provider-button oauth-provider-button--${provider.provider}`}
@@ -74,41 +82,20 @@ export function AuthProviderPanel({
                 {providerName}
               </span>
             </a>
-          ) : (
-            <button
-              aria-label={`${providerName} ${labels.disabledAction}`}
-              className={`oauth-provider-button oauth-provider-button--${provider.provider} oauth-provider-button--disabled`}
-              disabled
-              key={provider.provider}
-              title={`${providerName} ${labels.disabledAction}`}
-              type="button"
-            >
-              <BrandProviderIcon provider={provider.provider} />
-              <span className="oauth-provider-button__label">
-                {providerName}
-              </span>
-              <LockKeyhole className="oauth-provider-button__lock" size={14} aria-hidden="true" />
-            </button>
           );
-        })}
-        {plannedProviders.map((provider) => (
-          <button
-            aria-label={`${provider.label} ${labels.disabledAction}`}
-            className={`oauth-provider-button oauth-provider-button--${provider.id} oauth-provider-button--disabled oauth-provider-button--planned`}
-            disabled
-            key={provider.id}
-            title={`${provider.label} ${labels.disabledAction}`}
-            type="button"
-          >
-            <BrandProviderIcon provider={provider.id} />
-            <span className="oauth-provider-button__label">
-              {provider.label}
-            </span>
-            <LockKeyhole className="oauth-provider-button__lock" size={14} aria-hidden="true" />
-          </button>
-        ))}
+          })
+        ) : (
+          <p className="oauth-provider-empty">
+            {locale === "zh"
+              ? "OAuth 暂未配置，请使用下方邮箱密码登录。"
+              : "OAuth providers are not configured yet. Use email and password below."}
+          </p>
+        )}
       </div>
       <p className="oauth-provider-note">{labels.helper}</p>
+      <p className="oauth-provider-planned">
+        {locale === "zh" ? `即将支持：${plannedProviderNames}` : `Coming later: ${plannedProviderNames}`}
+      </p>
     </article>
   );
 }

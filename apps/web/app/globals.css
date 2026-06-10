@@ -4598,7 +4598,7 @@ a {
 }
 
 .login-panel-stack .oauth-provider-stack {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -4764,6 +4764,20 @@ a {
   text-align: center;
 }
 
+.login-panel-stack .oauth-provider-empty,
+.login-panel-stack .oauth-provider-planned {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.login-panel-stack .oauth-provider-planned {
+  color: rgba(245, 241, 232, 0.5);
+}
+
 .login-session-card {
   display: grid;
   gap: 20px;
@@ -4779,7 +4793,7 @@ a {
 
 .login-session-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.84fr) minmax(0, 0.84fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4794,12 +4808,21 @@ a {
   min-width: 0;
   align-content: center;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.035);
   padding: 18px 20px;
 }
 
 .login-session-grid div:last-child {
   border-right: 0;
+}
+
+.login-session-grid div:nth-child(2n) {
+  border-right: 0;
+}
+
+.login-session-grid div:nth-last-child(-n + 2) {
+  border-bottom: 0;
 }
 
 .login-session-grid span,
@@ -4837,15 +4860,34 @@ a {
 
 .login-session-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 .login-session-actions .primary-button,
-.login-session-actions .secondary-button {
+.login-session-actions .secondary-button,
+.login-session-actions form,
+.login-switch-account-button {
   justify-content: center;
   width: 100%;
   min-height: 52px;
+}
+
+.login-switch-account-button {
+  border-color: rgba(255, 255, 255, 0.11);
+}
+
+.login-session-card__note {
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-signed-in-stack {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
 }
 
 .login-method-card {

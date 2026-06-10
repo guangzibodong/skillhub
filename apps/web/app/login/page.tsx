@@ -8,7 +8,6 @@ import {
   Grid2X2,
   KeyRound,
   LogOut,
-  MailCheck,
   Network,
   ShieldCheck,
   UserCircle,
@@ -42,7 +41,7 @@ const copy = {
     account: "Account center",
     accountFallback: "SkillHub account",
     body:
-      "Continue development, collaboration, protected tools, skills, and workspace data from one secure entry point.",
+      "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
     emailCode: "Email and password access",
     emailCollapsedAction: "Use email sign-in",
     emailCollapsedBody: "Open this when you need username, email, password, or a new workspace registration.",
@@ -71,28 +70,28 @@ const copy = {
     recoveryTitle: "Invite or recovery token (optional)",
     role: "Role",
     secureLogin: "Secure login",
-    secureLoginBody: "Layered protection and encrypted transport",
+    secureLoginBody: "Project Keys and runtime policy",
     sessionActive: "Browser session connected",
     sessionBody:
-      "Your browser already has an active SkillHub session. Continue by role, review your account, or sign out before switching users.",
-    sessionTitle: "Session and account",
-    signOut: "Sign out",
-    signedInEyebrow: "Signed-in account",
+      "This browser is connected to your SkillHub workspace. Continue to the workspace, review account status, or sign out before switching users.",
+    sessionTitle: "Current session",
+    signOut: "Switch account / Sign out",
+    signedInEyebrow: "Signed in",
     status: "Status",
-    switchAccount: "Switch account or sign in again",
+    switchAccount: "Switch account / Sign out",
     switchAccountBody:
-      "Use the options below only when you need to connect a different Google, GitHub, password, or recovery-token session.",
-    title: "Sign in to SkillHub.",
+      "Signing out clears this browser session and returns you to the login flow.",
+    title: "Sign in to SkillHub workspace.",
     trustPreview: "Developer Preview",
-    trustPreviewBody: "Early-access features stay clearly labeled",
-    trustSession: "Session state connected",
-    trustSessionBody: "This device keeps the current sign-in state",
+    trustPreviewBody: "Paid marketplace remains prelaunch",
+    trustSession: "Verified skill access",
+    trustSessionBody: "Manifest, schema, and permission inspection",
     workspace: "Enter workspace",
   },
   zh: {
     account: "账户中心",
     accountFallback: "SkillHub 账户",
-    body: "继续你的开发与协作，访问受保护的工具、技能与数据。一切已就绪，开启高效的构建体验。",
+    body: "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
     emailCode: "邮箱密码登录",
     emailCollapsedAction: "使用邮箱登录",
     emailCollapsedBody: "需要用户名、邮箱、密码登录，或注册新的工作区时，在这里展开。",
@@ -118,22 +117,22 @@ const copy = {
     recoveryTitle: "邀请码 / 恢复令牌（可选）",
     role: "角色",
     secureLogin: "安全登录",
-    secureLoginBody: "多重防护与加密传输",
+    secureLoginBody: "Project Key 与运行策略",
     sessionActive: "浏览器会话已连接",
     sessionBody:
-      "当前浏览器已连接 SkillHub 工作区。你可以按角色进入工作区、查看账户中心，或退出后切换用户。",
-    sessionTitle: "会话与账户",
-    signOut: "退出登录",
-    signedInEyebrow: "已登录账号",
+      "当前浏览器已连接到 SkillHub 工作区。你可以继续进入工作区，或查看账户中心与会话状态。",
+    sessionTitle: "当前会话",
+    signOut: "切换账号 / 退出登录",
+    signedInEyebrow: "已登录",
     status: "状态",
-    switchAccount: "切换账号或重新登录",
+    switchAccount: "切换账号 / 退出登录",
     switchAccountBody:
-      "只有需要更换 Google、GitHub、账号密码或恢复令牌会话时，才使用下方入口。",
-    title: "登录 SkillHub。",
+      "退出后会清除当前浏览器会话，并回到登录流程。",
+    title: "登录 SkillHub 工作区。",
     trustPreview: "Developer Preview",
-    trustPreviewBody: "抢先体验最新功能",
-    trustSession: "浏览器会话已连接",
-    trustSessionBody: "本设备信任登录状态",
+    trustPreviewBody: "付费市场仍处于预发布阶段",
+    trustSession: "已验证技能接入",
+    trustSessionBody: "查看 Manifest / Schema / 权限",
     workspace: "进入工作区",
   },
 } as const;
@@ -252,34 +251,14 @@ export default async function LoginPage({ searchParams }: PageProps) {
           ) : null}
 
           {isSignedIn ? (
-            <>
+            <div className="login-signed-in-stack">
               <LoginSessionCard
                 labels={labels}
                 locale={locale}
                 returnTo={returnTo}
                 session={session}
               />
-
-              <AuthProviderPanel
-                apiUrl={apiUrl}
-                locale={locale}
-                providers={providers}
-                returnTo={returnTo}
-              />
-
-              <LoginEmailCard
-                isSignedIn
-                labels={labels}
-                locale={locale}
-                returnTo={returnTo}
-              />
-
-              <LoginRecoveryBlock
-                labels={labels}
-                locale={locale}
-                returnTo={returnTo}
-              />
-            </>
+            </div>
           ) : (
             <>
               <AuthProviderPanel
@@ -290,7 +269,6 @@ export default async function LoginPage({ searchParams }: PageProps) {
               />
 
               <LoginEmailCard
-                isSignedIn={false}
                 labels={labels}
                 locale={locale}
                 returnTo={returnTo}
@@ -302,15 +280,6 @@ export default async function LoginPage({ searchParams }: PageProps) {
                 returnTo={returnTo}
               />
 
-              <div className="login-secondary-links">
-                <a
-                  className="login-account-link"
-                  href={localizedHref("/account", locale)}
-                >
-                  <UserCircle size={17} aria-hidden="true" />
-                  <span>{labels.account}</span>
-                </a>
-              </div>
             </>
           )}
         </div>
@@ -459,6 +428,7 @@ function LoginSessionCard({
     session.source === "cookie"
       ? subject.displayName ?? subject.email ?? labels.accountFallback
       : labels.environment;
+  const workspaceName = locale === "zh" ? "已连接工作区" : "Connected workspace";
 
   return (
     <article className="ops-panel login-session-card">
@@ -467,12 +437,6 @@ function LoginSessionCard({
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.sessionTitle}</span>
         </div>
-        <form action={signOutAction.bind(null, locale)}>
-          <button className="ghost-button ghost-button--inline" type="submit">
-            <LogOut size={15} aria-hidden="true" />
-            <span>{labels.signOut}</span>
-          </button>
-        </form>
       </div>
 
       <div className="login-session-grid">
@@ -485,6 +449,11 @@ function LoginSessionCard({
           <span>{labels.role}</span>
           <strong>{roleLabel(subject.roles, locale)}</strong>
           <UserRound size={19} aria-hidden="true" />
+        </div>
+        <div>
+          <span>{locale === "zh" ? "工作区" : "Workspace"}</span>
+          <strong>{workspaceName}</strong>
+          <Workflow size={19} aria-hidden="true" />
         </div>
         <div>
           <span>{labels.status}</span>
@@ -505,43 +474,27 @@ function LoginSessionCard({
           <UserRound size={17} aria-hidden="true" />
           <span>{labels.account}</span>
         </a>
+        <form action={signOutAction.bind(null, locale)}>
+          <button className="ghost-button ghost-button--inline login-switch-account-button" type="submit">
+            <LogOut size={15} aria-hidden="true" />
+            <span>{labels.switchAccount}</span>
+          </button>
+        </form>
       </div>
+      <p className="login-session-card__note">{labels.switchAccountBody}</p>
     </article>
   );
 }
 
 function LoginEmailCard({
-  isSignedIn,
   labels,
   locale,
   returnTo,
 }: {
-  isSignedIn: boolean;
   labels: LoginCopy;
   locale: Locale;
   returnTo: string;
 }) {
-  if (isSignedIn) {
-    return (
-      <details className="login-email-details login-method-card">
-        <summary>
-          <span>
-            <MailCheck size={18} aria-hidden="true" />
-            <strong>{labels.emailCollapsedTitle}</strong>
-            <small>{labels.emailCollapsedBody}</small>
-          </span>
-          <span className="login-method-card__action">
-            {labels.emailCollapsedAction}
-            <ArrowRight size={16} aria-hidden="true" />
-          </span>
-        </summary>
-        <div className="login-email-details__body">
-          <WorkspaceSignupForm locale={locale} returnTo={returnTo} />
-        </div>
-      </details>
-    );
-  }
-
   return <WorkspaceSignupForm locale={locale} returnTo={returnTo} />;
 }
 
@@ -561,7 +514,6 @@ function LoginRecoveryBlock({
         <span>{labels.recoveryTitle}</span>
         <ArrowRight size={16} aria-hidden="true" />
       </summary>
-      <p>{labels.recoveryBody}</p>
       <SessionLoginForm locale={locale} returnTo={returnTo} />
     </details>
   );

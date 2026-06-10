@@ -102,6 +102,9 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(loginPage, /className=\{[\s\S]*"login-workspace login-workspace--signed-in"/);
   assert.match(loginPage, /LoginWorkspaceHero/);
   assert.match(loginPage, /LoginSessionCard/);
+  assert.match(loginPage, /className="login-signed-in-stack"/);
+  assert.doesNotMatch(loginPage, /<LoginEmailCard[^\n]*isSignedIn/);
+  assert.doesNotMatch(loginPage, /<p>\{labels\.recoveryBody\}<\/p>/);
   assert.match(loginPage, /登录/);
   assert.match(loginPage, /Sign in to/);
   assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
@@ -109,9 +112,11 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(oauthPanel, /plannedProviders/);
   assert.match(oauthPanel, /Microsoft/);
   assert.match(oauthPanel, /Slack/);
+  assert.match(oauthPanel, /enabledProviders/);
+  assert.match(oauthPanel, /oauth-provider-planned/);
   assert.match(oauthPanel, /BrandProviderIcon/);
   assert.match(oauthPanel, /oauth-provider-button__label/);
-  assert.match(oauthPanel, /oauth-provider-button--disabled/);
+  assert.doesNotMatch(oauthPanel, /oauth-provider-button--disabled/);
   assert.doesNotMatch(oauthPanel, /href=\{`Microsoft/);
   assert.doesNotMatch(oauthPanel, /href=\{`Slack/);
   assert.doesNotMatch(oauthPanel, /\{provider\.label\} \{labels\.disabledAction\}/);
@@ -122,6 +127,10 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(globals, /\.login-panel-stack\s*\{[\s\S]*padding:\s*var\(--login-top-align\)/);
   assert.match(globals, /\.login-workspace-hero__scene/);
   assert.match(globals, /\.login-session-grid/);
+  assert.match(globals, /\.login-signed-in-stack/);
+  assert.match(globals, /\.login-switch-account-button/);
+  assert.match(globals, /\.oauth-provider-empty/);
+  assert.match(globals, /\.oauth-provider-planned/);
   assert.match(globals, /\.brand-google-mark/);
   assert.match(globals, /\.brand-microsoft-mark/);
   assert.match(globals, /\.brand-slack-mark/);
