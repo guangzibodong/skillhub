@@ -1,4 +1,11 @@
-import { Chrome, Github, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  Chrome,
+  Github,
+  Grid2X2,
+  LockKeyhole,
+  ShieldCheck,
+  Workflow,
+} from "lucide-react";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
@@ -11,24 +18,37 @@ type AuthProviderPanelProps = {
 
 const copy = {
   en: {
-    disabledAction: "setup required",
-    helper: "Fastest for teams already using Google or GitHub. If a provider is unavailable, use email below.",
+    disabledAction: "coming soon",
+    helper:
+      "Google and GitHub can start OAuth when configured. Microsoft and Slack are reserved provider slots until their API credentials are connected.",
     oauthAction: "Continue with",
-    title: "Continue with Google or GitHub"
+    title: "Use another sign-in method",
   },
   zh: {
-    disabledAction: "待配置",
-    helper: "团队已使用 Google 或 GitHub 时，这是最快入口。若暂不可用，可先使用下方邮箱登录。",
+    disabledAction: "待接入",
+    helper:
+      "Google 和 GitHub 配置完成后可直接 OAuth 登录。Microsoft 和 Slack 先作为预留入口展示，接入凭据后再开放。",
     oauthAction: "继续使用",
-    title: "使用 Google 或 GitHub 继续"
-  }
+    title: "使用其他方式登录",
+  },
 } as const;
 
-const providerOrder = ["google", "github"] as const;
+const providerOrder = ["github", "google"] as const;
+const plannedProviders = [
+  { icon: Grid2X2, id: "microsoft", label: "Microsoft" },
+  { icon: Workflow, id: "slack", label: "Slack" },
+] as const;
 
-export function AuthProviderPanel({ apiUrl, locale, providers, returnTo }: AuthProviderPanelProps) {
+export function AuthProviderPanel({
+  apiUrl,
+  locale,
+  providers,
+  returnTo,
+}: AuthProviderPanelProps) {
   const labels = copy[locale];
-  const providersById = new Map(providers.map((provider) => [provider.provider, provider]));
+  const providersById = new Map(
+    providers.map((provider) => [provider.provider, provider]),
+  );
   const orderedProviders = providerOrder.flatMap((provider) => {
     const item = providersById.get(provider);
     return item ? [item] : [];
@@ -43,10 +63,20 @@ export function AuthProviderPanel({ apiUrl, locale, providers, returnTo }: AuthP
       <div className="oauth-provider-stack">
         {orderedProviders.map((provider) => {
           const Icon = providerIcon(provider.provider);
-          const action = providerAction(provider, apiUrl, locale, labels, returnTo);
+          const action = providerAction(
+            provider,
+            apiUrl,
+            locale,
+            labels,
+            returnTo,
+          );
 
           return action.href ? (
-            <a className={`oauth-provider-button oauth-provider-button--${provider.provider}`} href={action.href} key={provider.provider}>
+            <a
+              className={`oauth-provider-button oauth-provider-button--${provider.provider}`}
+              href={action.href}
+              key={provider.provider}
+            >
               <span className="oauth-provider-button__icon">
                 <Icon size={18} aria-hidden="true" />
               </span>
@@ -67,6 +97,26 @@ export function AuthProviderPanel({ apiUrl, locale, providers, returnTo }: AuthP
             </button>
           );
         })}
+        {plannedProviders.map((provider) => {
+          const Icon = provider.icon;
+
+          return (
+            <button
+              className={`oauth-provider-button oauth-provider-button--${provider.id} oauth-provider-button--disabled`}
+              disabled
+              key={provider.id}
+              type="button"
+            >
+              <span className="oauth-provider-button__icon">
+                <Icon size={18} aria-hidden="true" />
+              </span>
+              <span>
+                {provider.label} {labels.disabledAction}
+              </span>
+              <LockKeyhole size={15} aria-hidden="true" />
+            </button>
+          );
+        })}
       </div>
       <p className="oauth-provider-note">{labels.helper}</p>
     </article>
@@ -78,21 +128,26 @@ function providerAction(
   apiUrl: string,
   locale: Locale,
   labels: (typeof copy)["en"] | (typeof copy)["zh"],
-  returnTo?: string
+  returnTo?: string,
 ) {
-  if (provider.startUrl && (provider.status === "active" || provider.status === "connected")) {
+  if (
+    provider.startUrl &&
+    (provider.status === "active" || provider.status === "connected")
+  ) {
     const url = new URL(provider.startUrl, apiUrl);
-    url.searchParams.set("returnTo", returnTo ?? (locale === "zh" ? "/role-landing?lang=zh" : "/role-landing?lang=en"));
+    const fallbackReturnTo =
+      locale === "zh" ? "/role-landing?lang=zh" : "/role-landing?lang=en";
+    url.searchParams.set("returnTo", returnTo ?? fallbackReturnTo);
 
     return {
       href: url.toString(),
-      label: `${labels.oauthAction} ${providerLabel(provider, locale)}`
+      label: `${labels.oauthAction} ${providerLabel(provider, locale)}`,
     };
   }
 
   return {
     href: null,
-    label: `${providerLabel(provider, locale)} ${labels.disabledAction}`
+    label: `${providerLabel(provider, locale)} ${labels.disabledAction}`,
   };
 }
 

@@ -93,6 +93,33 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(roleLanding, /return `\/account\$\{suffix\}`/);
 });
 
+test("login page uses dense workspace layout with gated planned OAuth providers", async () => {
+  const loginPage = await readFile("apps/web/app/login/page.tsx", "utf8");
+  const oauthPanel = await readFile("apps/web/components/auth-provider-panel.tsx", "utf8");
+  const globals = await readFile("apps/web/app/globals.css", "utf8");
+
+  assert.match(loginPage, /className="product-shell login-product-shell"/);
+  assert.match(loginPage, /className=\{[\s\S]*"login-workspace login-workspace--signed-in"/);
+  assert.match(loginPage, /LoginWorkspaceHero/);
+  assert.match(loginPage, /LoginSessionCard/);
+  assert.match(loginPage, /登录/);
+  assert.match(loginPage, /Sign in to/);
+  assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
+
+  assert.match(oauthPanel, /plannedProviders/);
+  assert.match(oauthPanel, /Microsoft/);
+  assert.match(oauthPanel, /Slack/);
+  assert.match(oauthPanel, /oauth-provider-button--disabled/);
+  assert.doesNotMatch(oauthPanel, /href=\{`Microsoft/);
+  assert.doesNotMatch(oauthPanel, /href=\{`Slack/);
+
+  assert.match(globals, /\.login-workspace/);
+  assert.match(globals, /\.login-workspace-hero__scene/);
+  assert.match(globals, /\.login-session-grid/);
+  assert.match(globals, /\.login-footer/);
+  assert.match(globals, /@media \(max-width: 760px\)/);
+});
+
 test("admin workspace opens as an operations console", async () => {
   const adminPage = await readFile("apps/web/app/admin/page.tsx", "utf8");
   const globals = await readFile("apps/web/app/globals.css", "utf8");
