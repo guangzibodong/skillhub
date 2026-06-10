@@ -22121,6 +22121,107 @@ a {
   padding: 0;
 }
 
+.login-ambient-routing {
+  position: absolute;
+  inset: -12% -4% -8% -10%;
+  overflow: hidden;
+  border-radius: 28px;
+  pointer-events: none;
+  opacity: 0.86;
+  mask-image: radial-gradient(circle at 52% 50%, #000 0 58%, transparent 82%);
+}
+
+.login-ambient-routing__scan,
+.login-ambient-routing__path,
+.login-ambient-routing__node {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.login-ambient-routing__scan {
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(116, 238, 122, 0.18), transparent);
+  box-shadow: 0 0 24px rgba(116, 238, 122, 0.12);
+  transform: translateX(-18%);
+  animation: login-ambient-scan 11s ease-in-out infinite;
+}
+
+.login-ambient-routing__scan--a {
+  top: 31%;
+}
+
+.login-ambient-routing__scan--b {
+  top: 66%;
+  opacity: 0.72;
+  animation-delay: -5.4s;
+}
+
+.login-ambient-routing__path {
+  width: min(58vw, 620px);
+  height: 1px;
+  background:
+    linear-gradient(90deg, transparent, rgba(116, 238, 122, 0.14) 28%, rgba(116, 238, 122, 0.34) 50%, rgba(116, 238, 122, 0.12) 72%, transparent),
+    repeating-linear-gradient(90deg, transparent 0 34px, rgba(116, 238, 122, 0.28) 34px 38px, transparent 38px 70px);
+  background-size: 100% 100%, 180px 100%;
+  box-shadow: 0 0 18px rgba(116, 238, 122, 0.08);
+  opacity: 0.58;
+  transform-origin: left center;
+  animation: login-ambient-route 7.8s linear infinite;
+}
+
+.login-ambient-routing__path--a {
+  left: 2%;
+  top: 38%;
+  transform: rotate(0deg);
+}
+
+.login-ambient-routing__path--b {
+  left: 12%;
+  top: 58%;
+  width: min(48vw, 520px);
+  transform: rotate(-9deg);
+  animation-delay: -2.6s;
+}
+
+.login-ambient-routing__path--c {
+  left: 35%;
+  top: 22%;
+  width: min(38vw, 420px);
+  transform: rotate(12deg);
+  opacity: 0.38;
+  animation-delay: -5.1s;
+}
+
+.login-ambient-routing__node {
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(116, 238, 122, 0.5);
+  border-radius: 999px;
+  background: rgba(116, 238, 122, 0.16);
+  box-shadow: 0 0 18px rgba(116, 238, 122, 0.2);
+  animation: login-ambient-node 5.6s ease-in-out infinite;
+}
+
+.login-ambient-routing__node--a {
+  left: 18%;
+  top: 32%;
+}
+
+.login-ambient-routing__node--b {
+  left: 57%;
+  top: 64%;
+  animation-delay: -1.8s;
+}
+
+.login-ambient-routing__node--c {
+  left: 76%;
+  top: 28%;
+  animation-delay: -3.4s;
+}
+
 .login-workspace-hero::before {
   left: -8%;
   bottom: 2%;
@@ -22171,6 +22272,8 @@ a {
 }
 
 .login-value-card {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 10px;
   min-height: 126px;
@@ -22180,16 +22283,42 @@ a {
   padding: 18px;
 }
 
+.login-value-card::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(115deg, transparent 0 34%, rgba(116, 238, 122, 0.12) 48%, transparent 62% 100%);
+  opacity: 0;
+  transform: translateX(-38%);
+  animation: login-card-sheen 8.5s ease-in-out infinite;
+}
+
+.login-value-card:nth-child(2)::before {
+  animation-delay: -2s;
+}
+
+.login-value-card:nth-child(3)::before {
+  animation-delay: -4s;
+}
+
+.login-value-card:nth-child(4)::before {
+  animation-delay: -6s;
+}
+
 .login-value-card svg {
+  position: relative;
   color: #74ee7a;
 }
 
 .login-value-card strong {
+  position: relative;
   color: #f4f7f2;
   font-size: 14px;
 }
 
 .login-value-card span {
+  position: relative;
   color: rgba(244, 247, 242, 0.68);
   font-size: 12px;
 }
@@ -22246,6 +22375,44 @@ a {
   animation: login-runtime-flow-line 4.8s linear infinite;
 }
 
+.login-runtime-flow__line::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 54px;
+  height: 2px;
+  border-radius: 999px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(192, 255, 188, 0.92), transparent);
+  box-shadow: 0 0 18px rgba(116, 238, 122, 0.34);
+  transform: translate(-50%, -50%);
+  animation: login-runtime-line-glint 5.9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.login-runtime-packet {
+  position: absolute;
+  z-index: 1;
+  left: 9%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #a7ffa3;
+  box-shadow:
+    0 0 0 5px rgba(116, 238, 122, 0.08),
+    0 0 22px rgba(116, 238, 122, 0.45);
+  transform: translate(-50%, -50%);
+  animation: login-runtime-packet 7.2s cubic-bezier(0.64, 0, 0.36, 1) infinite;
+}
+
+.login-runtime-packet--b {
+  animation-delay: -2.4s;
+}
+
+.login-runtime-packet--c {
+  animation-delay: -4.8s;
+}
+
 .login-runtime-node {
   position: relative;
   z-index: 2;
@@ -22272,6 +22439,18 @@ a {
   border-radius: 999px;
   background: radial-gradient(circle, rgba(116, 238, 122, 0.34), rgba(20, 56, 27, 0.92) 58%, rgba(5, 12, 7, 0.96));
   animation: login-runtime-gateway-pulse 3.6s ease-in-out infinite;
+}
+
+.login-runtime-node--gateway::before {
+  position: absolute;
+  inset: 4px auto auto 50%;
+  width: 118px;
+  height: 118px;
+  border: 1px solid rgba(116, 238, 122, 0.16);
+  border-radius: 999px;
+  content: "";
+  transform: translateX(-50%);
+  animation: login-runtime-gateway-ring 5.6s ease-in-out infinite;
 }
 
 .login-runtime-node strong {
@@ -22388,6 +22567,123 @@ a {
   grid-template-columns: 1fr;
 }
 
+@keyframes login-ambient-scan {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(-28%) scaleX(0.72);
+  }
+
+  38%,
+  62% {
+    opacity: 1;
+    transform: translateX(18%) scaleX(1);
+  }
+}
+
+@keyframes login-ambient-route {
+  0% {
+    background-position: 0 0, -180px 0;
+    opacity: 0.26;
+  }
+
+  42% {
+    opacity: 0.64;
+  }
+
+  100% {
+    background-position: 0 0, 180px 0;
+    opacity: 0.3;
+  }
+}
+
+@keyframes login-ambient-node {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(0.78);
+  }
+
+  48% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes login-card-sheen {
+  0%,
+  64%,
+  100% {
+    opacity: 0;
+    transform: translateX(-48%);
+  }
+
+  76% {
+    opacity: 1;
+    transform: translateX(54%);
+  }
+}
+
+@keyframes login-runtime-line-glint {
+  0%,
+  16% {
+    left: 0;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  24%,
+  72% {
+    opacity: 1;
+  }
+
+  88%,
+  100% {
+    left: 100%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes login-runtime-packet {
+  0%,
+  12% {
+    left: 9%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  72% {
+    left: 91%;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  88%,
+  100% {
+    left: 91%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+}
+
+@keyframes login-runtime-gateway-ring {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translateX(-50%) scale(0.84);
+  }
+
+  50% {
+    opacity: 0.56;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
 @media (max-width: 1080px) {
   .login-workspace {
     grid-template-columns: minmax(0, 1fr);
@@ -22408,6 +22704,11 @@ a {
 
   .login-value-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .login-ambient-routing {
+    inset: -6% -6% -4%;
+    opacity: 0.58;
   }
 }
 
@@ -22435,6 +22736,10 @@ a {
 
   .login-workspace-hero p {
     font-size: 15px;
+  }
+
+  .login-ambient-routing {
+    display: none;
   }
 
   .login-value-grid,
@@ -22478,5 +22783,17 @@ a {
   .login-value-grid,
   .login-metric-strip {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-ambient-routing__scan,
+  .login-ambient-routing__path,
+  .login-ambient-routing__node,
+  .login-runtime-packet,
+  .login-runtime-flow__line::after,
+  .login-runtime-node--gateway::before,
+  .login-value-card::before {
+    animation: none !important;
   }
 }

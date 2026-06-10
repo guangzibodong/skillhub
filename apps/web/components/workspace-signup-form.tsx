@@ -365,6 +365,11 @@ export function WorkspaceSignupForm({
             type="hidden"
             value={state.challenge?.challengeId}
           />
+          <input
+            name="returnTo"
+            type="hidden"
+            value={returnTo ?? localizedHref("/role-landing", locale)}
+          />
           <div className="auth-verification-panel">
             <strong>{state.challenge?.email}</strong>
             <span>{labels.codeHelp}</span>
@@ -404,7 +409,10 @@ export function WorkspaceSignupForm({
             {state.organization?.slug ? ` / ${state.organization.slug}` : ""}
           </strong>
           <span>{state.subject.roles.join(" / ")}</span>
-          <a className="ghost-button ghost-button--inline" href={localizedHref("/dashboard", locale)}>
+          <a
+            className="ghost-button ghost-button--inline"
+            href={state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale)}
+          >
             <KeyRound size={15} aria-hidden="true" />
             {labels.workspace}
           </a>

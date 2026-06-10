@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   BadgeCheck,
@@ -31,6 +32,7 @@ import {
   localizedHref,
   type Locale,
 } from "@/lib/i18n";
+import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
 
 export const dynamic = "force-dynamic";
 
@@ -240,6 +242,12 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const notice = oauthNotice(params, labels);
   const isSignedIn = Boolean(session.subject);
 
+  if (session.subject) {
+    const landingPath = resolveSignedInLandingPath(session.subject, returnTo, locale);
+
+    redirect(landingPath as Parameters<typeof redirect>[0]);
+  }
+
   return (
     <main className="product-shell login-product-shell">
       <SiteHeader
@@ -326,6 +334,16 @@ function LoginWorkspaceHero({
 
   return (
     <div className="login-workspace-hero">
+      <div className="login-ambient-routing" aria-hidden="true">
+        <span className="login-ambient-routing__scan login-ambient-routing__scan--a" />
+        <span className="login-ambient-routing__scan login-ambient-routing__scan--b" />
+        <span className="login-ambient-routing__path login-ambient-routing__path--a" />
+        <span className="login-ambient-routing__path login-ambient-routing__path--b" />
+        <span className="login-ambient-routing__path login-ambient-routing__path--c" />
+        <span className="login-ambient-routing__node login-ambient-routing__node--a" />
+        <span className="login-ambient-routing__node login-ambient-routing__node--b" />
+        <span className="login-ambient-routing__node login-ambient-routing__node--c" />
+      </div>
       <div className="login-workspace-hero__content">
         <div className="eyebrow login-workspace-hero__eyebrow">
           <BadgeCheck size={16} aria-hidden="true" />
@@ -393,6 +411,9 @@ function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
     <div className="login-runtime-flow" aria-label={labels.runtimeAria}>
       <div className="login-runtime-flow__grid" aria-hidden="true" />
       <div className="login-runtime-flow__line" aria-hidden="true" />
+      <span className="login-runtime-packet login-runtime-packet--a" aria-hidden="true" />
+      <span className="login-runtime-packet login-runtime-packet--b" aria-hidden="true" />
+      <span className="login-runtime-packet login-runtime-packet--c" aria-hidden="true" />
       <span className="login-runtime-particle login-runtime-particle--a" />
       <span className="login-runtime-particle login-runtime-particle--b" />
       <span className="login-runtime-particle login-runtime-particle--c" />
@@ -666,12 +687,33 @@ function getSafeReturnTo(value: string | string[] | undefined, locale: Locale) {
     candidate &&
     candidate.startsWith("/") &&
     !candidate.startsWith("//") &&
-    !candidate.includes("://")
+    !candidate.includes("://") &&
+    !isLoginRoute(candidate)
   ) {
     return candidate;
   }
 
   return localizedHref("/role-landing", locale);
+}
+
+function resolveSignedInLandingPath(
+  subject: WorkspaceSession["subject"],
+  returnTo: string,
+  locale: Locale,
+) {
+  if (!subject) {
+    return localizedHref("/login", locale);
+  }
+
+  if (returnTo && roleCanOpenRequestedPath(subject, returnTo)) {
+    return returnTo;
+  }
+
+  return roleLandingPath(subject, locale);
+}
+
+function isLoginRoute(path: string) {
+  return path === "/login" || path.startsWith("/login?");
 }
 
 function oauthNotice(

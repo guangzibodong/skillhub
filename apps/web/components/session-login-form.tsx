@@ -106,7 +106,10 @@ export function SessionLoginForm({
             {state.subject.displayName ?? state.subject.email ?? "SkillHub user"}
           </strong>
           <span>{state.subject.roles.join(" / ")}</span>
-          <a className="ghost-button ghost-button--inline" href={localizedHref("/dashboard", locale)}>
+          <a
+            className="ghost-button ghost-button--inline"
+            href={state.redirectTo ?? returnTo ?? localizedHref("/role-landing", locale)}
+          >
             {labels.workspace}
           </a>
         </div>

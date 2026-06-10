@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearSessionCookie, fetchSessionSubject, setSessionCookie, type SessionSubject } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
-import { roleLandingPath } from "@/lib/role-landing";
+import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
 
 export type AuthActionState = {
   message: string;
@@ -100,7 +100,7 @@ export async function signInAction(
 
   return {
     message: labels.signedIn,
-    redirectTo: requestedReturnTo ?? roleLandingPath(subject, locale),
+    redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
     status: "success",
     subject
   };
@@ -216,7 +216,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
         name: payload.login?.organization?.name ?? (organizationName || "SkillHub workspace"),
         slug: payload.login?.organization?.slug ?? organizationSlug
       },
-      redirectTo: requestedReturnTo ?? roleLandingPath(subject, locale),
+      redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
       status: "success",
       subject: subject ?? undefined
     };
@@ -302,6 +302,7 @@ async function verifyEmailCodeAction(
   const labels = copy[locale];
   const challengeId = String(formData.get("challengeId") ?? previousState.challenge?.challengeId ?? "").trim();
   const code = String(formData.get("code") ?? "").trim();
+  const requestedReturnTo = normalizeReturnTo(formData.get("returnTo"));
 
   if (!challengeId || !/^\d{6}$/.test(code.replace(/\D/g, ""))) {
     return {
@@ -355,6 +356,7 @@ async function verifyEmailCodeAction(
         name: payload.login?.organization?.name ?? previousState.challenge?.organizationName ?? "SkillHub workspace",
         slug: payload.login?.organization?.slug ?? previousState.challenge?.organizationSlug ?? ""
       },
+      redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
       status: "success",
       subject: subject ?? undefined
     };
@@ -393,6 +395,22 @@ function normalizeReturnTo(value: FormDataEntryValue | null) {
   }
 
   return candidate;
+}
+
+function resolveAuthRedirect(
+  subject: SessionSubject | null | undefined,
+  requestedReturnTo: string | null,
+  locale: Locale
+) {
+  if (!subject) {
+    return locale === "zh" ? "/role-landing?lang=zh" : "/role-landing?lang=en";
+  }
+
+  if (requestedReturnTo && roleCanOpenRequestedPath(subject, requestedReturnTo)) {
+    return requestedReturnTo;
+  }
+
+  return roleLandingPath(subject, locale);
 }
 
 function getApiUrl() {

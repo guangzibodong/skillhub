@@ -64,10 +64,17 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(adminLogin, /redirect\(`\/login\?\$\{params\.toString\(\)\}`\)/);
 
   assert.match(loginPage, /const returnTo = getSafeReturnTo\(params\.returnTo, locale\)/);
+  assert.match(loginPage, /import \{ redirect \} from "next\/navigation"/);
+  assert.match(loginPage, /import \{ roleCanOpenRequestedPath, roleLandingPath \} from "@\/lib\/role-landing"/);
+  assert.match(loginPage, /if \(session\.subject\) \{/);
+  assert.match(loginPage, /const landingPath = resolveSignedInLandingPath\(session\.subject, returnTo, locale\)/);
+  assert.match(loginPage, /redirect\(landingPath as Parameters<typeof redirect>\[0\]\)/);
   assert.match(loginPage, /<AuthProviderPanel[\s\S]*returnTo=\{returnTo\}/);
   assert.match(loginPage, /<WorkspaceSignupForm[\s\S]*locale=\{locale\}[\s\S]*returnTo=\{returnTo\}/);
   assert.match(loginPage, /<SessionLoginForm[\s\S]*locale=\{locale\}[\s\S]*returnTo=\{returnTo\}/);
   assert.match(loginPage, /return localizedHref\("\/role-landing", locale\)/);
+  assert.match(loginPage, /!isLoginRoute\(candidate\)/);
+  assert.match(loginPage, /return roleLandingPath\(subject, locale\)/);
 
   assert.match(oauthPanel, /url\.searchParams\.set\("returnTo", returnTo \?\?/);
   assert.match(oauthPanel, /"\/role-landing\?lang=zh"/);
@@ -81,7 +88,10 @@ test("admin login keeps operators on the admin workflow", async () => {
   assert.match(recoveryForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
 
   assert.match(authActions, /const requestedReturnTo = normalizeReturnTo\(formData\.get\("returnTo"\)\)/);
-  assert.match(authActions, /redirectTo: requestedReturnTo \?\? roleLandingPath\(subject, locale\)/);
+  assert.match(authActions, /import \{ roleCanOpenRequestedPath, roleLandingPath \} from "@\/lib\/role-landing"/);
+  assert.match(authActions, /redirectTo: resolveAuthRedirect\(subject, requestedReturnTo, locale\)/);
+  assert.match(authActions, /function resolveAuthRedirect\(/);
+  assert.match(authActions, /roleCanOpenRequestedPath\(subject, requestedReturnTo\)/);
   assert.match(authActions, /const remember = formData\.get\("remember"\) === "on"/);
   assert.match(authActions, /setSessionCookie\(token, \{ persistent: remember \}\)/);
   assert.match(authActions, /!candidate\.startsWith\("\/"\)/);
@@ -90,10 +100,14 @@ test("admin login keeps operators on the admin workflow", async () => {
 
   assert.match(roleLandingPage, /redirect\(roleLandingPath\(session\.subject, locale\) as Parameters<typeof redirect>\[0\]\)/);
   assert.match(roleLanding, /const adminRoles = new Set\(\["admin", "finance", "reviewer", "support", "super_admin"\]\)/);
+  assert.match(roleLanding, /export function roleCanOpenRequestedPath\(/);
+  assert.match(roleLanding, /isRoute\(pathname, "\/admin"\)/);
+  assert.match(roleLanding, /isRoute\(pathname, "\/publisher"\)/);
+  assert.match(roleLanding, /isRoute\(pathname, "\/developer"\)/);
   assert.match(roleLanding, /return `\/admin\$\{suffix\}`/);
   assert.match(roleLanding, /return `\/publisher\$\{suffix\}`/);
   assert.match(roleLanding, /return `\/developer\$\{suffix\}`/);
-  assert.match(roleLanding, /return `\/dashboard\$\{suffix\}`/);
+  assert.doesNotMatch(roleLanding, /return `\/dashboard\$\{suffix\}`/);
   assert.match(roleLanding, /return `\/account\$\{suffix\}`/);
 });
 
@@ -109,6 +123,8 @@ test("login page uses state-aware workspace layout with gated OAuth providers", 
   assert.match(loginPage, /LoginPreviewNotice/);
   assert.match(loginPage, /RuntimeFlowVisual/);
   assert.match(loginPage, /LoginSessionCard/);
+  assert.match(loginPage, /login-ambient-routing/);
+  assert.match(loginPage, /login-runtime-packet/);
   assert.match(loginPage, /className="login-signed-in-stack"/);
   assert.doesNotMatch(loginPage, /<LoginEmailCard[^\n]*isSignedIn/);
   assert.doesNotMatch(loginPage, /<p>\{labels\.recoveryBody\}<\/p>/);
@@ -140,6 +156,8 @@ test("login page uses state-aware workspace layout with gated OAuth providers", 
   assert.match(globals, /\.login-auth-card/);
   assert.match(globals, /\.login-value-grid/);
   assert.match(globals, /\.login-runtime-flow/);
+  assert.match(globals, /\.login-ambient-routing/);
+  assert.match(globals, /\.login-runtime-packet/);
   assert.match(globals, /\.login-runtime-node--gateway/);
   assert.match(globals, /\.login-session-grid/);
   assert.match(globals, /\.login-signed-in-stack/);
@@ -151,6 +169,9 @@ test("login page uses state-aware workspace layout with gated OAuth providers", 
   assert.match(globals, /\.brand-discord-mark/);
   assert.match(globals, /@keyframes login-runtime-flow-line/);
   assert.match(globals, /@keyframes login-runtime-node-breathe/);
+  assert.match(globals, /@keyframes login-ambient-scan/);
+  assert.match(globals, /@keyframes login-runtime-packet/);
+  assert.match(globals, /prefers-reduced-motion: reduce/);
   assert.match(globals, /\.login-footer/);
   assert.match(globals, /@media \(max-width: 760px\)/);
 });
