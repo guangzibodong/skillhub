@@ -109,13 +109,22 @@ test("login page uses dense workspace layout with gated planned OAuth providers"
   assert.match(oauthPanel, /plannedProviders/);
   assert.match(oauthPanel, /Microsoft/);
   assert.match(oauthPanel, /Slack/);
+  assert.match(oauthPanel, /BrandProviderIcon/);
+  assert.match(oauthPanel, /oauth-provider-button__label/);
   assert.match(oauthPanel, /oauth-provider-button--disabled/);
   assert.doesNotMatch(oauthPanel, /href=\{`Microsoft/);
   assert.doesNotMatch(oauthPanel, /href=\{`Slack/);
+  assert.doesNotMatch(oauthPanel, /\{provider\.label\} \{labels\.disabledAction\}/);
 
   assert.match(globals, /\.login-workspace/);
   assert.match(globals, /\.login-workspace-hero__scene/);
   assert.match(globals, /\.login-session-grid/);
+  assert.match(globals, /\.brand-google-mark/);
+  assert.match(globals, /\.brand-microsoft-mark/);
+  assert.match(globals, /\.brand-slack-mark/);
+  assert.match(globals, /@keyframes login-grid-drift/);
+  assert.match(globals, /@keyframes login-ring-pulse/);
+  assert.match(globals, /\.login-scene-dot/);
   assert.match(globals, /\.login-footer/);
   assert.match(globals, /@media \(max-width: 760px\)/);
 });

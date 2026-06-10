@@ -324,11 +324,23 @@ function LoginWorkspaceHero({
       </div>
 
       <div className="login-workspace-hero__scene" aria-hidden="true">
+        <div className="login-scene-network">
+          <span className="login-scene-dot login-scene-dot--a" />
+          <span className="login-scene-dot login-scene-dot--b" />
+          <span className="login-scene-dot login-scene-dot--c" />
+          <span className="login-scene-dot login-scene-dot--d" />
+          <span className="login-scene-dot login-scene-dot--e" />
+          <span className="login-scene-line login-scene-line--a" />
+          <span className="login-scene-line login-scene-line--b" />
+          <span className="login-scene-line login-scene-line--c" />
+        </div>
+        <div className="login-platform-beam" />
         <div className="login-platform-mark">
           <Grid2X2 size={58} />
         </div>
         <div className="login-platform-ring login-platform-ring--outer" />
         <div className="login-platform-ring login-platform-ring--inner" />
+        <div className="login-platform-ring login-platform-ring--pulse" />
         <CircuitBoard className="login-platform-circuit" size={104} />
       </div>
     </div>
