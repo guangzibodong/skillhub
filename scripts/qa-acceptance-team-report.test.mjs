@@ -49,3 +49,32 @@ test("workspace locked heroes use access-first copy", async () => {
   assert.match(adminPage, /<h1>\{labels\.lockedTitle\}<\/h1>/);
   assert.match(adminPage, /<p>\{labels\.lockedDescription\}<\/p>/);
 });
+
+test("admin login keeps operators on the admin workflow", async () => {
+  const adminLogin = await readFile("apps/web/app/admin-login/page.tsx", "utf8");
+  const authActions = await readFile("apps/web/lib/auth-actions.ts", "utf8");
+  const loginPage = await readFile("apps/web/app/login/page.tsx", "utf8");
+  const oauthPanel = await readFile("apps/web/components/auth-provider-panel.tsx", "utf8");
+  const recoveryForm = await readFile("apps/web/components/session-login-form.tsx", "utf8");
+  const passwordForm = await readFile("apps/web/components/workspace-signup-form.tsx", "utf8");
+
+  assert.match(adminLogin, /returnTo:\s*locale === "zh" \? "\/admin\?lang=zh" : "\/admin\?lang=en"/);
+  assert.match(adminLogin, /redirect\(`\/login\?\$\{params\.toString\(\)\}`\)/);
+
+  assert.match(loginPage, /const returnTo = getSafeReturnTo\(params\.returnTo, locale\)/);
+  assert.match(loginPage, /<AuthProviderPanel[\s\S]*returnTo=\{returnTo\}/);
+  assert.match(loginPage, /<WorkspaceSignupForm locale=\{locale\} returnTo=\{returnTo\}/);
+  assert.match(loginPage, /<SessionLoginForm locale=\{locale\} returnTo=\{returnTo\}/);
+
+  assert.match(oauthPanel, /url\.searchParams\.set\("returnTo", returnTo \?\?/);
+  assert.match(passwordForm, /<input name="returnTo" type="hidden"/);
+  assert.match(passwordForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
+  assert.match(recoveryForm, /<input name="returnTo" type="hidden"/);
+  assert.match(recoveryForm, /router\.replace\(target as Parameters<typeof router\.replace>\[0\]\)/);
+
+  assert.match(authActions, /const redirectTo = normalizeReturnTo\(formData\.get\("returnTo"\), locale, "\/account"\)/);
+  assert.match(authActions, /const redirectTo = normalizeReturnTo\(formData\.get\("returnTo"\), locale, "\/dashboard"\)/);
+  assert.match(authActions, /!candidate\.startsWith\("\/"\)/);
+  assert.match(authActions, /candidate\.startsWith\("\/\/"\)/);
+  assert.match(authActions, /candidate\.includes\(":\/\/"\)/);
+});

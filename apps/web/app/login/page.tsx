@@ -96,6 +96,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const labels = copy[locale];
+  const returnTo = getSafeReturnTo(params.returnTo, locale);
   const apiUrl =
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const [providers, session] = await Promise.all([
@@ -164,6 +165,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   apiUrl={apiUrl}
                   locale={locale}
                   providers={providers}
+                  returnTo={returnTo}
                 />
 
                 <div className="login-divider">
@@ -171,7 +173,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   <span>{labels.emailCode}</span>
                 </div>
 
-                <WorkspaceSignupForm locale={locale} />
+                <WorkspaceSignupForm locale={locale} returnTo={returnTo} />
 
                 <details className="login-recovery-details">
                   <summary>
@@ -179,7 +181,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                     <span>{labels.tokenFallback}</span>
                   </summary>
                   <p>{labels.tokenFallbackBody}</p>
-                  <SessionLoginForm locale={locale} />
+                  <SessionLoginForm locale={locale} returnTo={returnTo} />
                 </details>
               </details>
             </>
@@ -189,6 +191,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                 apiUrl={apiUrl}
                 locale={locale}
                 providers={providers}
+                returnTo={returnTo}
               />
 
               <div className="login-divider">
@@ -196,7 +199,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                 <span>{labels.emailCode}</span>
               </div>
 
-              <WorkspaceSignupForm locale={locale} />
+              <WorkspaceSignupForm locale={locale} returnTo={returnTo} />
 
               <details className="login-recovery-details">
                 <summary>
@@ -204,7 +207,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
                   <span>{labels.tokenFallback}</span>
                 </summary>
                 <p>{labels.tokenFallbackBody}</p>
-                <SessionLoginForm locale={locale} />
+                <SessionLoginForm locale={locale} returnTo={returnTo} />
               </details>
 
               <div className="login-secondary-links">
@@ -267,6 +270,21 @@ function LoginPathPreview({
       </div>
     </div>
   );
+}
+
+function getSafeReturnTo(value: string | string[] | undefined, locale: Locale) {
+  const candidate = Array.isArray(value) ? value[0] : value;
+
+  if (
+    candidate &&
+    candidate.startsWith("/") &&
+    !candidate.startsWith("//") &&
+    !candidate.includes("://")
+  ) {
+    return candidate;
+  }
+
+  return localizedHref("/account", locale);
 }
 
 function oauthNotice(

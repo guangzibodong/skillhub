@@ -6,6 +6,7 @@ type AuthProviderPanelProps = {
   apiUrl: string;
   locale: Locale;
   providers: AuthProviderStatus[];
+  returnTo?: string;
 };
 
 const copy = {
@@ -25,7 +26,7 @@ const copy = {
 
 const providerOrder = ["google", "github"] as const;
 
-export function AuthProviderPanel({ apiUrl, locale, providers }: AuthProviderPanelProps) {
+export function AuthProviderPanel({ apiUrl, locale, providers, returnTo }: AuthProviderPanelProps) {
   const labels = copy[locale];
   const providersById = new Map(providers.map((provider) => [provider.provider, provider]));
   const orderedProviders = providerOrder.flatMap((provider) => {
@@ -42,7 +43,7 @@ export function AuthProviderPanel({ apiUrl, locale, providers }: AuthProviderPan
       <div className="oauth-provider-stack">
         {orderedProviders.map((provider) => {
           const Icon = providerIcon(provider.provider);
-          const action = providerAction(provider, apiUrl, locale, labels);
+          const action = providerAction(provider, apiUrl, locale, labels, returnTo);
 
           return action.href ? (
             <a className={`oauth-provider-button oauth-provider-button--${provider.provider}`} href={action.href} key={provider.provider}>
@@ -76,11 +77,12 @@ function providerAction(
   provider: AuthProviderStatus,
   apiUrl: string,
   locale: Locale,
-  labels: (typeof copy)["en"] | (typeof copy)["zh"]
+  labels: (typeof copy)["en"] | (typeof copy)["zh"],
+  returnTo?: string
 ) {
   if (provider.startUrl && (provider.status === "active" || provider.status === "connected")) {
     const url = new URL(provider.startUrl, apiUrl);
-    url.searchParams.set("returnTo", locale === "zh" ? "/account?lang=zh" : "/account?lang=en");
+    url.searchParams.set("returnTo", returnTo ?? (locale === "zh" ? "/account?lang=zh" : "/account?lang=en"));
 
     return {
       href: url.toString(),

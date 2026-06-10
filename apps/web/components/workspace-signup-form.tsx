@@ -8,6 +8,7 @@ import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type WorkspaceSignupFormProps = {
   locale: Locale;
+  returnTo?: string;
 };
 
 const copy = {
@@ -102,7 +103,7 @@ const initialState: SignupActionState = {
   status: "idle"
 };
 
-export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
+export function WorkspaceSignupForm({ locale, returnTo }: WorkspaceSignupFormProps) {
   const labels = copy[locale];
   const router = useRouter();
   const passwordId = useId();
@@ -116,9 +117,10 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
 
   useEffect(() => {
     if (state.status === "success" && state.subject) {
-      router.refresh();
+      const target = state.redirectTo ?? returnTo ?? localizedHref("/account", locale);
+      router.replace(target as Parameters<typeof router.replace>[0]);
     }
-  }, [router, state.status, state.subject]);
+  }, [locale, returnTo, router, state.redirectTo, state.status, state.subject]);
 
   return (
     <article className="ops-panel auth-card auth-card--signup" id="email-registration">
@@ -137,6 +139,7 @@ export function WorkspaceSignupForm({ locale }: WorkspaceSignupFormProps) {
         >
           <input name="intent" type="hidden" value="password" />
           <input name="mode" type="hidden" value={mode} />
+          <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/account", locale)} />
           <div className="auth-mode-switch" role="group" aria-label={labels.title}>
             <button
               className={mode === "login" ? "auth-mode-switch__item auth-mode-switch__item--active" : "auth-mode-switch__item"}

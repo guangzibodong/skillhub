@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/i18n";
 
 export type AuthActionState = {
   message: string;
+  redirectTo?: string;
   status: "idle" | "success" | "error";
   subject?: SessionSubject;
 };
@@ -81,6 +82,7 @@ export async function signInAction(
 ): Promise<AuthActionState> {
   const labels = copy[locale];
   const token = String(formData.get("token") ?? "").trim();
+  const redirectTo = normalizeReturnTo(formData.get("returnTo"), locale, "/dashboard");
 
   if (!token) {
     return { message: labels.invalidToken, status: "error" };
@@ -97,6 +99,7 @@ export async function signInAction(
 
   return {
     message: labels.signedIn,
+    redirectTo,
     status: "success",
     subject
   };
@@ -137,6 +140,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
   const organizationName = String(formData.get("organizationName") ?? "").trim();
   const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
   const role = String(formData.get("role") ?? "owner").trim();
+  const redirectTo = normalizeReturnTo(formData.get("returnTo"), locale, "/account");
 
   if (mode === "signup" && !/^[a-z0-9][a-z0-9_-]{2,31}$/.test(username)) {
     return { message: labels.usernameRequired, status: "error" };
@@ -210,6 +214,7 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
         name: payload.login?.organization?.name ?? (organizationName || "SkillHub workspace"),
         slug: payload.login?.organization?.slug ?? organizationSlug
       },
+      redirectTo,
       status: "success",
       subject: subject ?? undefined
     };
@@ -372,6 +377,22 @@ function revalidateWorkspace() {
 
 function normalizeEmailMode(value: FormDataEntryValue | null): "login" | "signup" {
   return value === "login" ? "login" : "signup";
+}
+
+function normalizeReturnTo(value: FormDataEntryValue | null, locale: Locale, fallbackPath: "/account" | "/dashboard") {
+  const fallback = locale === "zh" ? `${fallbackPath}?lang=zh` : `${fallbackPath}?lang=en`;
+
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const candidate = value.trim();
+
+  if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//") || candidate.includes("://")) {
+    return fallback;
+  }
+
+  return candidate;
 }
 
 function getApiUrl() {

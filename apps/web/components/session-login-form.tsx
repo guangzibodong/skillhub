@@ -8,6 +8,7 @@ import { localizedHref, type Locale } from "@/lib/locale-routing";
 
 type SessionLoginFormProps = {
   locale: Locale;
+  returnTo?: string;
 };
 
 const copy = {
@@ -38,7 +39,7 @@ const initialState: AuthActionState = {
   status: "idle"
 };
 
-export function SessionLoginForm({ locale }: SessionLoginFormProps) {
+export function SessionLoginForm({ locale, returnTo }: SessionLoginFormProps) {
   const labels = copy[locale];
   const router = useRouter();
   const [state, action, isPending] = useActionState(signInAction.bind(null, locale), initialState);
@@ -47,9 +48,10 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
 
   useEffect(() => {
     if (state.status === "success") {
-      router.refresh();
+      const target = state.redirectTo ?? returnTo ?? localizedHref("/dashboard", locale);
+      router.replace(target as Parameters<typeof router.replace>[0]);
     }
-  }, [router, state.status]);
+  }, [locale, returnTo, router, state.redirectTo, state.status]);
 
   return (
     <article className="ops-panel auth-card auth-card--token-fallback" id="token-fallback">
@@ -64,6 +66,7 @@ export function SessionLoginForm({ locale }: SessionLoginFormProps) {
         aria-describedby={showFeedback ? feedbackId : undefined}
         className="auth-form"
       >
+        <input name="returnTo" type="hidden" value={returnTo ?? localizedHref("/dashboard", locale)} />
         <label>
           <span>{labels.label}</span>
           <input autoComplete="off" name="token" placeholder={labels.placeholder} required type="password" />
