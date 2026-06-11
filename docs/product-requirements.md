@@ -362,6 +362,9 @@ Requirements:
 Requirements:
 
 - Platform metrics.
+- Business analytics for ledger GMV, platform revenue, publisher share, balances, and transaction counts.
+- Order and payment operations for ledger references, provider-gated Stripe/Alipay status, manual PayPal/Alipay payout workflow, refunds, disputes, and reconciliation.
+- Traffic and IP access analysis for UV, page views, unique IPs, suspicious IPs, referrers, and hot paths. These metrics must be clearly gated until a real access-log, CDN analytics, or analytics event source is connected.
 - Skill review queue.
 - Skill review queue aging and SLA pressure, including due-soon and overdue rows derived from the submitted version timestamp.
 - Skill review queue prioritization with operator filters for SLA pressure, blocking automated checks, high-risk permission profiles, warning checks, and sort modes for recommended priority, oldest submitted, earliest SLA due time, and highest risk.

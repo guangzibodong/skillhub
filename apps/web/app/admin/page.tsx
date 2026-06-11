@@ -409,39 +409,76 @@ const adminConsoleCopy = {
       launchDetail: "Warnings and deferred checks",
       money: "Payout/refund work",
       moneyDetail: "Payouts plus refund/dispute decisions",
+      orders: "Orders to process",
+      ordersDetail: "Usage, subscription, refund, and dispute rows needing operations",
       revenue: "Ledger GMV",
       revenueDetail: "Posted finance transactions",
       reviews: "Review work",
       reviewsDetail: "Danger / warning / ready",
       risk: "Risk events",
-      riskDetail: "Incidents, reports, feedback"
+      riskDetail: "Incidents, reports, feedback",
+      traffic: "Traffic / IP",
+      trafficDetail: "UV, access IP, referrer, and path analytics source gated",
+      trafficValue: "Gated"
     },
     nav: [
-      ["Overview", "#admin-overview"],
-      ["Review", "#admin-reviews"],
-      ["Orders", "#admin-orders"],
-      ["Finance", "#admin-finance"],
-      ["Payouts", "#admin-payouts"],
-      ["Risk", "#admin-risk"],
-      ["Notifications", "#admin-deliveries"],
-      ["Users / orgs", "#admin-identity"],
-      ["Audit", "#admin-audit"],
-      ["Settings", "#admin-templates"]
+      {
+        label: "Operations",
+        items: [
+          ["Overview", "#admin-overview"],
+          ["Priority queue", "#admin-priority"],
+          ["Launch readiness", "#launch-readiness"]
+        ]
+      },
+      {
+        label: "Governance",
+        items: [
+          ["Review queue", "#admin-reviews"],
+          ["Skill curation", "#admin-curation"]
+        ]
+      },
+      {
+        label: "Money",
+        items: [
+          ["Orders", "#admin-orders"],
+          ["Finance", "#admin-finance"],
+          ["Payouts", "#admin-payouts"],
+          ["Ledger", "#admin-ledger"]
+        ]
+      },
+      {
+        label: "Traffic & risk",
+        items: [
+          ["Traffic / IP", "#admin-traffic"],
+          ["Risk center", "#admin-risk"],
+          ["Notifications", "#admin-deliveries"]
+        ]
+      },
+      {
+        label: "System",
+        items: [
+          ["Users / orgs", "#admin-identity"],
+          ["Audit", "#admin-audit"],
+          ["Settings", "#admin-templates"]
+        ]
+      }
     ],
     order: {
       description:
         "Recent ledger rows are the order/payment source of truth for now. Checkout order IDs, provider charges, and refunds must be reconciled here after provider integration.",
       empty: "No posted ledger transactions yet.",
       headers: ["Reference", "Type", "Amount", "State"],
+      tabs: ["All", "Pending", "Paid", "Refunds", "Disputes", "Failed"],
       title: "Order and payment center"
     },
     payment: {
       description:
         "Money movement is deliberately explicit: payment capture is provider-gated, while manual PayPal/Alipay payouts and ledger adjustments remain auditable.",
       items: [
-        ["Stripe checkout", "Integration gated"],
-        ["Alipay checkout", "Integration gated"],
-        ["Manual PayPal/Alipay payouts", "P0 finance workflow"],
+        ["Stripe checkout", "Config required"],
+        ["Alipay checkout", "Config required"],
+        ["Webhook callback", "Not connected"],
+        ["Manual PayPal/Alipay payouts", "Active P0"],
         ["Refund / dispute adjustments", "Admin decision required"]
       ],
       title: "Payment integration state"
@@ -453,11 +490,32 @@ const adminConsoleCopy = {
       searchPlaceholder: "Global search will cover user, org, skill, order, refund, payout, audit, and notification IDs.",
       searchPreview: "Search index pending",
       subtitle: "Operations command center",
+      timeRanges: ["Today", "7D", "30D", "Custom"],
       title: "Platform operations console"
     },
     spotlight: {
       audit: "Latest audit",
       readiness: "Launch readiness"
+    },
+    traffic: {
+      description:
+        "UV, page views, unique IPs, abnormal IPs, referrers, and hot paths stay gated until an access-log or analytics source is connected. This panel shows the operating contract without estimating traffic.",
+      metrics: [
+        ["UV", "Source pending"],
+        ["Page views", "Source pending"],
+        ["Unique IPs", "Source pending"],
+        ["Suspicious IPs", "Source pending"],
+        ["Top referrer", "Not connected"],
+        ["Hot path", "Not connected"]
+      ],
+      sources: [
+        ["Cloudflare analytics", "Not connected"],
+        ["Nginx / 1Panel access logs", "Manual inspection"],
+        ["Auth abuse signals", "API source pending"],
+        ["Runtime IP rate limits", "Policy source pending"]
+      ],
+      sourcesTitle: "Data sources to connect",
+      title: "Traffic and IP intelligence"
     }
   },
   zh: {
@@ -481,39 +539,76 @@ const adminConsoleCopy = {
       launchDetail: "提醒和延后检查",
       money: "提现/退款待办",
       moneyDetail: "提现加退款/争议决策",
+      orders: "订单待处理",
+      ordersDetail: "调用、订阅、退款和争议中的运营待办",
       revenue: "账本 GMV",
       revenueDetail: "已入账财务交易",
       reviews: "审核待办",
       reviewsDetail: "紧急 / 提醒 / 可决策",
       risk: "风险事件",
-      riskDetail: "事故、举报、反馈"
+      riskDetail: "事故、举报、反馈",
+      traffic: "流量 / IP",
+      trafficDetail: "UV、访问 IP、来源和路径分析仍需接入数据源",
+      trafficValue: "待接入"
     },
     nav: [
-      ["总览", "#admin-overview"],
-      ["审核", "#admin-reviews"],
-      ["订单", "#admin-orders"],
-      ["财务", "#admin-finance"],
-      ["提现", "#admin-payouts"],
-      ["风控", "#admin-risk"],
-      ["通知", "#admin-deliveries"],
-      ["用户/组织", "#admin-identity"],
-      ["审计", "#admin-audit"],
-      ["设置", "#admin-templates"]
+      {
+        label: "运营",
+        items: [
+          ["总览", "#admin-overview"],
+          ["优先队列", "#admin-priority"],
+          ["上线就绪", "#launch-readiness"]
+        ]
+      },
+      {
+        label: "治理",
+        items: [
+          ["审核队列", "#admin-reviews"],
+          ["技能分发", "#admin-curation"]
+        ]
+      },
+      {
+        label: "资金",
+        items: [
+          ["订单", "#admin-orders"],
+          ["财务", "#admin-finance"],
+          ["提现", "#admin-payouts"],
+          ["账本", "#admin-ledger"]
+        ]
+      },
+      {
+        label: "流量与风控",
+        items: [
+          ["流量/IP", "#admin-traffic"],
+          ["风险中心", "#admin-risk"],
+          ["通知", "#admin-deliveries"]
+        ]
+      },
+      {
+        label: "系统",
+        items: [
+          ["用户/组织", "#admin-identity"],
+          ["审计", "#admin-audit"],
+          ["设置", "#admin-templates"]
+        ]
+      }
     ],
     order: {
       description:
         "当前以账本交易作为订单/支付核对源。接入支付后，支付订单号、渠道流水、退款和争议都要在这里对账。",
       empty: "暂无已入账交易。",
       headers: ["编号", "类型", "金额", "状态"],
+      tabs: ["全部", "待处理", "已支付", "退款", "争议", "失败"],
       title: "订单与支付中心"
     },
     payment: {
       description:
         "资金动作必须明确可审计：收单仍由支付集成门控，PayPal/Alipay 人工打款和账本调整继续走后台记录。",
       items: [
-        ["Stripe 收单", "集成门控"],
-        ["Alipay 收单", "集成门控"],
-        ["PayPal/Alipay 人工提现", "P0 财务流程"],
+        ["Stripe 收单", "需要配置"],
+        ["Alipay 收单", "需要配置"],
+        ["Webhook 回调", "未连接"],
+        ["PayPal/Alipay 人工提现", "P0 可用"],
         ["退款/争议调整", "需要后台决策"]
       ],
       title: "支付接入状态"
@@ -525,11 +620,32 @@ const adminConsoleCopy = {
       searchPlaceholder: "全局查询将覆盖用户、组织、技能、订单、退款、提现、审计和通知编号。",
       searchPreview: "搜索索引待接入",
       subtitle: "运营指挥中心",
+      timeRanges: ["今日", "7天", "30天", "自定义"],
       title: "平台运营控制台"
     },
     spotlight: {
       audit: "最新审计",
       readiness: "上线就绪"
+    },
+    traffic: {
+      description:
+        "UV、PV、独立 IP、异常 IP、来源渠道和热门路径需要接入访问日志或分析数据源后才展示真实数值。这里先把后台应看的运营结构明确出来，不估算、不造假。",
+      metrics: [
+        ["UV", "数据源待接入"],
+        ["PV", "数据源待接入"],
+        ["独立 IP", "数据源待接入"],
+        ["异常 IP", "数据源待接入"],
+        ["Top 来源", "未连接"],
+        ["热门路径", "未连接"]
+      ],
+      sources: [
+        ["Cloudflare Analytics", "未连接"],
+        ["Nginx / 1Panel 访问日志", "人工查看"],
+        ["登录风控信号", "API 数据源待接入"],
+        ["运行时 IP 限流", "策略数据源待接入"]
+      ],
+      sourcesTitle: "待接入数据源",
+      title: "流量与 IP 访问分析"
     }
   }
 } as const;
@@ -677,6 +793,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const reviewMetrics = buildAdminReviewMetrics(reviews);
   const payoutActionCount = countAdminPayoutActions(payouts);
   const adjustmentActionCount = countAdminAdjustmentActions(refunds, disputes);
+  const orderActionCount =
+    financeLedger.summary.unprocessedUsageCount +
+    financeLedger.summary.unprocessedSubscriptionCount +
+    financeLedger.summary.renewableSubscriptionCount;
   const notificationActionCount = countNotificationDeliveryActions(notificationDeliveries);
   const webhookActionCount = countWebhookDeliveryActions(webhookDeliveries);
   const deliveryActionCount = notificationActionCount + webhookActionCount;
@@ -708,11 +828,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
     value: string;
   }> = [
     {
-      detail: `${launchReadiness.summary.warning + launchReadiness.summary.deferred} ${adminConsoleLabels.kpis.launchDetail}`,
-      href: localizedHref("/admin#launch-readiness", locale),
-      label: adminConsoleLabels.kpis.launch,
-      tone: launchReadiness.summary.blocker > 0 ? "danger" : launchReadiness.summary.warning + launchReadiness.summary.deferred > 0 ? "warning" : "ready",
-      value: formatCompactNumber(launchReadiness.summary.blocker)
+      detail: adminConsoleLabels.kpis.revenueDetail,
+      href: localizedHref("/admin#admin-finance", locale),
+      label: adminConsoleLabels.kpis.revenue,
+      tone: "neutral",
+      value: formatMoney(financeLedger.summary.grossCents)
     },
     {
       detail: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)} ${adminConsoleLabels.kpis.reviewsDetail}`,
@@ -722,11 +842,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
       value: formatCompactNumber(reviewMetrics.actionable)
     },
     {
-      detail: adminConsoleLabels.kpis.riskDetail,
-      href: localizedHref("/admin#admin-risk", locale),
-      label: adminConsoleLabels.kpis.risk,
-      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : pendingFeedbackCount > 0 ? "warning" : "ready",
-      value: formatCompactNumber(activeIncidentCount + openAbuseReportCount + pendingFeedbackCount)
+      detail: adminConsoleLabels.kpis.ordersDetail,
+      href: localizedHref("/admin#admin-orders", locale),
+      label: adminConsoleLabels.kpis.orders,
+      tone: orderActionCount > 0 ? "warning" : "ready",
+      value: formatCompactNumber(orderActionCount)
     },
     {
       detail: adminConsoleLabels.kpis.moneyDetail,
@@ -736,18 +856,18 @@ export default async function AdminPage({ searchParams }: PageProps) {
       value: formatCompactNumber(payoutActionCount + adjustmentActionCount)
     },
     {
-      detail: adminConsoleLabels.kpis.deliveryDetail,
-      href: localizedHref("/admin#admin-deliveries", locale),
-      label: adminConsoleLabels.kpis.delivery,
-      tone: deliveryActionCount > 0 ? "warning" : "ready",
-      value: formatCompactNumber(deliveryActionCount)
+      detail: adminConsoleLabels.kpis.riskDetail,
+      href: localizedHref("/admin#admin-risk", locale),
+      label: adminConsoleLabels.kpis.risk,
+      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : pendingFeedbackCount + deliveryActionCount > 0 ? "warning" : "ready",
+      value: formatCompactNumber(activeIncidentCount + openAbuseReportCount + pendingFeedbackCount + deliveryActionCount)
     },
     {
-      detail: adminConsoleLabels.kpis.revenueDetail,
-      href: localizedHref("/admin#admin-finance", locale),
-      label: adminConsoleLabels.kpis.revenue,
-      tone: "neutral",
-      value: formatMoney(financeLedger.summary.grossCents)
+      detail: adminConsoleLabels.kpis.trafficDetail,
+      href: localizedHref("/admin#admin-traffic", locale),
+      label: adminConsoleLabels.kpis.traffic,
+      tone: "warning",
+      value: adminConsoleLabels.kpis.trafficValue
     }
   ];
   const adminAnalytics = [
@@ -775,16 +895,21 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
 
           <nav className="admin-sidebar-nav">
-            {adminConsoleLabels.nav.map(([label, anchor], index) => {
-              const Icon = [BarChart3, Gavel, CreditCard, Landmark, WalletCards, ShieldCheck, Bell, Users, ReceiptText, Settings][index] ?? ListChecks;
+            {adminConsoleLabels.nav.map((group) => (
+              <div className="admin-sidebar-nav__group" key={group.label}>
+                <span>{group.label}</span>
+                {group.items.map(([label, anchor]) => {
+                  const Icon = getAdminNavIcon(anchor);
 
-              return (
-                <a href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
-                  <Icon size={15} aria-hidden="true" />
-                  <span>{label}</span>
-                </a>
-              );
-            })}
+                  return (
+                    <a href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
+                      <Icon size={15} aria-hidden="true" />
+                      <span>{label}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
 
           <div className="admin-sidebar__status">
@@ -806,6 +931,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
 
             <div className="admin-console-tools">
+              <div className="admin-time-range" aria-label={locale === "zh" ? "数据时间范围" : "Data time range"}>
+                {adminConsoleLabels.shell.timeRanges.map((range, index) => (
+                  <span className={index === 0 ? "is-active" : undefined} key={range}>
+                    {range}
+                  </span>
+                ))}
+              </div>
               <div className="admin-search-preview" aria-label={adminConsoleLabels.shell.searchPlaceholder}>
                 <Search size={16} aria-hidden="true" />
                 <div>
@@ -831,7 +963,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
 
           <div className="admin-dashboard-grid">
-            <article className="admin-priority-panel" aria-labelledby="admin-priority-heading">
+            <article className="admin-priority-panel" id="admin-priority" aria-labelledby="admin-priority-heading">
               <div className="card-kicker">
                 <ListChecks size={16} aria-hidden="true" />
                 <span>{adminCommandLabels.eyebrow}</span>
@@ -919,6 +1051,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span>{adminConsoleLabels.order.title}</span>
               </div>
               <p>{adminConsoleLabels.order.description}</p>
+              <div className="admin-order-tabs" aria-label={locale === "zh" ? "订单状态筛选" : "Order status filters"}>
+                {adminConsoleLabels.order.tabs.map((tab, index) => (
+                  <span className={index === 0 ? "is-active" : undefined} key={tab}>
+                    {tab}
+                  </span>
+                ))}
+              </div>
               <div className="admin-order-list">
                 <div className="admin-order-row admin-order-row--head">
                   {adminConsoleLabels.order.headers.map((header) => (
@@ -952,6 +1091,41 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 ))}
               </div>
             </article>
+          </section>
+
+          <section className="admin-traffic-panel" id="admin-traffic" aria-labelledby="admin-traffic-title">
+            <div className="admin-traffic-panel__head">
+              <div>
+                <div className="card-kicker">
+                  <Activity size={16} aria-hidden="true" />
+                  <span>{adminConsoleLabels.traffic.title}</span>
+                </div>
+                <h2 id="admin-traffic-title">{adminConsoleLabels.traffic.title}</h2>
+                <p>{adminConsoleLabels.traffic.description}</p>
+              </div>
+              <span className="status-chip">{adminConsoleLabels.kpis.trafficValue}</span>
+            </div>
+
+            <div className="admin-traffic-grid">
+              {adminConsoleLabels.traffic.metrics.map(([label, value]) => (
+                <div className="admin-traffic-metric" key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div className="admin-traffic-sources" aria-label={adminConsoleLabels.traffic.sourcesTitle}>
+              <strong>{adminConsoleLabels.traffic.sourcesTitle}</strong>
+              <div>
+                {adminConsoleLabels.traffic.sources.map(([source, state]) => (
+                  <span key={source}>
+                    {source}
+                    <em>{state}</em>
+                  </span>
+                ))}
+              </div>
+            </div>
           </section>
 
           <section className="console-board admin-access-strip">
@@ -1557,6 +1731,43 @@ function isDeliveryDue(value: string | null | undefined) {
 
 function adminAnchor(anchor: string, locale: Locale) {
   return localizedHref(`/admin#${anchor}`, locale);
+}
+
+function getAdminNavIcon(anchor: string) {
+  switch (anchor) {
+    case "#admin-overview":
+      return BarChart3;
+    case "#admin-priority":
+      return ListChecks;
+    case "#launch-readiness":
+      return ShieldCheck;
+    case "#admin-reviews":
+      return Gavel;
+    case "#admin-curation":
+      return Settings;
+    case "#admin-orders":
+      return CreditCard;
+    case "#admin-finance":
+      return Landmark;
+    case "#admin-payouts":
+      return WalletCards;
+    case "#admin-ledger":
+      return ReceiptText;
+    case "#admin-traffic":
+      return Activity;
+    case "#admin-risk":
+      return Siren;
+    case "#admin-deliveries":
+      return Bell;
+    case "#admin-identity":
+      return Users;
+    case "#admin-audit":
+      return ReceiptText;
+    case "#admin-templates":
+      return Settings;
+    default:
+      return ListChecks;
+  }
 }
 
 type AdminOpsCopy = (typeof adminOpsCopy)["en"] | (typeof adminOpsCopy)["zh"];
