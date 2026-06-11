@@ -192,6 +192,13 @@ test("admin workspace opens as an operations console", async () => {
   assert.match(adminPage, /className="admin-status-strip"/);
   assert.match(adminPage, /className="admin-detail-workbench"/);
   assert.match(adminPage, /className="admin-workbench-nav"/);
+  assert.match(adminPage, /className="admin-detail-workbench__modules admin-workbench-groups"/);
+  assert.match(adminPage, /className=\{`admin-module-group admin-module-group--\$\{workbenchCards\[0\]\.tone\}/);
+  assert.match(adminPage, /id="admin-group-launch"/);
+  assert.match(adminPage, /id="admin-group-finance"/);
+  assert.match(adminPage, /workbenchGroupLabels\.action/);
+  assert.match(adminPage, /admin-module-group--priority/);
+  assert.doesNotMatch(adminPage, /open=\{defaultWorkbenchGroup ===/);
   assert.match(adminPage, /adminV2Labels\.workbench\.cards/);
   assert.match(adminPage, /adminV2Labels\.selectedOrder\.ledgerAction/);
   assert.match(adminPage, /adminV2Labels\.selectedOrder\.gatedActions/);
@@ -230,6 +237,11 @@ test("admin workspace opens as an operations console", async () => {
   assert.match(globals, /\.admin-detail-workbench/);
   assert.match(globals, /\.admin-workbench-nav/);
   assert.match(globals, /\.admin-workbench-card/);
+  assert.match(globals, /\.admin-workbench-groups/);
+  assert.match(globals, /\.admin-module-group/);
+  assert.match(globals, /\.admin-module-group--priority/);
+  assert.match(globals, /\.admin-module-group__summary/);
+  assert.match(globals, /\.admin-module-group__body/);
   assert.match(globals, /\.admin-time-range/);
   assert.match(globals, /\.admin-kpi-grid/);
   assert.match(globals, /repeat\(auto-fit, minmax\(148px, 1fr\)\)/);

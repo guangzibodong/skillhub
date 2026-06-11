@@ -72,12 +72,12 @@ type PageProps = {
 
 const financeIcons = [Scale, Banknote, AlertTriangle] as const;
 const adminWorkbenchAnchors = [
-  "#launch-readiness",
-  "#admin-reviews",
-  "#admin-identity",
-  "#admin-deliveries",
-  "#admin-risk",
-  "#admin-finance"
+  "#admin-group-launch",
+  "#admin-group-review",
+  "#admin-group-identity",
+  "#admin-group-delivery",
+  "#admin-group-risk",
+  "#admin-group-finance"
 ] as const;
 const adminWorkbenchIcons = [ShieldCheck, Gavel, Users, Bell, Siren, ReceiptText] as const;
 const adminAccessRoles = ["reviewer", "finance", "support", "admin", "super_admin"];
@@ -1123,6 +1123,43 @@ export default async function AdminPage({ searchParams }: PageProps) {
     tone: workbenchTones[index] ?? "neutral",
     value: formatCompactNumber(workbenchCounts[index] ?? 0)
   }));
+  const workbenchGroupLabels =
+    locale === "zh"
+      ? {
+          action: "展开 / 收起",
+          audit: "含审核证据、操作审计和权限留痕",
+          curation: "含身份目录、作者准入和市场分发",
+          delivery: "含邮件、Webhook、模板和失败重试",
+          finance: "含订单、退款、提现、佣金和账本",
+          launch: "含上线阻断、提醒项和发布门禁",
+          risk: "含举报、事故、反馈、退款和争议",
+          title: "运营详情按岗位收起，避免整页堆叠"
+        }
+      : {
+          action: "Expand / collapse",
+          audit: "Includes review evidence, audit trail, and permission traces",
+          curation: "Includes identity directory, publisher access, and marketplace curation",
+          delivery: "Includes email, webhook, templates, and retry queues",
+          finance: "Includes orders, refunds, payouts, commission, and ledger",
+          launch: "Includes launch blockers, warnings, and release gates",
+          risk: "Includes abuse, incidents, feedback, refunds, and disputes",
+          title: "Operational details are grouped by role instead of stacked"
+        };
+  const defaultWorkbenchGroup = primaryPriorityItem.href.includes("#admin-finance") ||
+    primaryPriorityItem.href.includes("#admin-payouts") ||
+    primaryPriorityItem.href.includes("#admin-ledger")
+    ? "finance"
+    : primaryPriorityItem.href.includes("#admin-risk") || primaryPriorityItem.href.includes("#admin-adjustments")
+      ? "risk"
+      : primaryPriorityItem.href.includes("#admin-deliveries") || primaryPriorityItem.href.includes("#admin-webhooks")
+        ? "delivery"
+        : primaryPriorityItem.href.includes("#admin-identity") || primaryPriorityItem.href.includes("#admin-curation")
+          ? "identity"
+          : primaryPriorityItem.href.includes("#admin-reviews") || primaryPriorityItem.href.includes("#admin-audit")
+            ? "review"
+            : "launch";
+  const workbenchGroupStatusClass = (tone: AdminKpiTone) =>
+    tone === "danger" ? "admin-state-pill--red" : tone === "warning" ? "admin-state-pill--amber" : "admin-state-pill--green";
 
   return (
     <main className="product-shell admin-console-page">
@@ -1721,55 +1758,143 @@ export default async function AdminPage({ searchParams }: PageProps) {
               })}
             </nav>
 
-            <div className="admin-detail-workbench__modules">
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
-                <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
-              </section>
-
-              <section className="admin-layout" id="admin-reviews">
-                <AdminReviewManager locale={locale} reviews={reviews} />
-
-                <div id="admin-audit">
-                  <AdminAuditLogPanel locale={locale} logs={auditLogs} />
+            <div className="admin-detail-workbench__modules admin-workbench-groups" aria-label={workbenchGroupLabels.title}>
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[0].tone} ${defaultWorkbenchGroup === "launch" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-launch"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">01</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[0].title}</strong>
+                    <small>{workbenchGroupLabels.launch}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[0].tone)}`}>
+                    {workbenchCards[0].value} {workbenchCards[0].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
+                    <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
+                  </section>
                 </div>
-              </section>
+              </details>
 
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-identity">
-                <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
-              </section>
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[1].tone} ${defaultWorkbenchGroup === "review" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-review"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">02</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[1].title}</strong>
+                    <small>{workbenchGroupLabels.audit}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[1].tone)}`}>
+                    {workbenchCards[1].value} {workbenchCards[1].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="admin-layout" id="admin-reviews">
+                    <AdminReviewManager locale={locale} reviews={reviews} />
 
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-curation">
-                <AdminMarketplaceCurationManager
-                  appeals={marketplaceCuration.appeals}
-                  connectionMessage={marketplaceCuration.message}
-                  connectionMode={marketplaceCuration.mode}
-                  curation={marketplaceCuration.curation}
-                  locale={locale}
-                />
-              </section>
-
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-deliveries">
-                <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
-              </section>
-
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-webhooks">
-                <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
-              </section>
-
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-templates">
-                <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
-              </section>
-
-              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-risk">
-                <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
-                <AdminIncidentManager incidents={incidents} locale={locale} />
-                <AbuseReportManager locale={locale} reports={abuseReports} />
-                <div id="admin-adjustments">
-                  <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
+                    <div id="admin-audit">
+                      <AdminAuditLogPanel locale={locale} logs={auditLogs} />
+                    </div>
+                  </section>
                 </div>
-              </section>
+              </details>
 
-              <section className="admin-layout">
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[2].tone} ${defaultWorkbenchGroup === "identity" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-identity"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">03</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[2].title}</strong>
+                    <small>{workbenchGroupLabels.curation}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[2].tone)}`}>
+                    {workbenchCards[2].value} {workbenchCards[2].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-identity">
+                    <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
+                  </section>
+
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-curation">
+                    <AdminMarketplaceCurationManager
+                      appeals={marketplaceCuration.appeals}
+                      connectionMessage={marketplaceCuration.message}
+                      connectionMode={marketplaceCuration.mode}
+                      curation={marketplaceCuration.curation}
+                      locale={locale}
+                    />
+                  </section>
+                </div>
+              </details>
+
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[3].tone} ${defaultWorkbenchGroup === "delivery" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-delivery"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">04</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[3].title}</strong>
+                    <small>{workbenchGroupLabels.delivery}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[3].tone)}`}>
+                    {workbenchCards[3].value} {workbenchCards[3].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-deliveries">
+                    <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
+                  </section>
+
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-webhooks">
+                    <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
+                  </section>
+
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-templates">
+                    <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
+                  </section>
+                </div>
+              </details>
+
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[4].tone} ${defaultWorkbenchGroup === "risk" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-risk"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">05</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[4].title}</strong>
+                    <small>{workbenchGroupLabels.risk}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[4].tone)}`}>
+                    {workbenchCards[4].value} {workbenchCards[4].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-risk">
+                    <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
+                    <AdminIncidentManager incidents={incidents} locale={locale} />
+                    <AbuseReportManager locale={locale} reports={abuseReports} />
+                    <div id="admin-adjustments">
+                      <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
+                    </div>
+                  </section>
+
+                  <section className="admin-layout">
                 <article className="ops-panel work-table-panel">
                   <div className="card-kicker">
                     <Siren size={16} aria-hidden="true" />
@@ -1812,10 +1937,28 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     ))}
                   </div>
                 </aside>
-              </section>
+                  </section>
+                </div>
+              </details>
 
-              <section className="workspace-ops-layout" id="admin-finance">
-                <article className="ops-panel work-table-panel">
+              <details
+                className={`admin-module-group admin-module-group--${workbenchCards[5].tone} ${defaultWorkbenchGroup === "finance" ? "admin-module-group--priority" : ""}`}
+                id="admin-group-finance"
+              >
+                <summary className="admin-module-group__summary">
+                  <span className="admin-module-group__number">06</span>
+                  <span className="admin-module-group__copy">
+                    <strong>{workbenchCards[5].title}</strong>
+                    <small>{workbenchGroupLabels.finance}</small>
+                  </span>
+                  <b className={`admin-state-pill ${workbenchGroupStatusClass(workbenchCards[5].tone)}`}>
+                    {workbenchCards[5].value} {workbenchCards[5].statLabel}
+                  </b>
+                  <em>{workbenchGroupLabels.action}</em>
+                </summary>
+                <div className="admin-module-group__body">
+                  <section className="workspace-ops-layout" id="admin-finance">
+                    <article className="ops-panel work-table-panel">
                   <div className="card-kicker">
                     <ReceiptText size={16} aria-hidden="true" />
                     <span>{ops.moneyTitle}</span>
@@ -1873,6 +2016,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   })}
                 </div>
               </section>
+                </div>
+              </details>
             </div>
           </section>
         </div>
