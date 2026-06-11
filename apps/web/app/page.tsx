@@ -1,28 +1,20 @@
 import type { SkillSummary } from "@useskillhub/schema";
 import {
   ArrowRight,
-  BarChart3,
-  Boxes,
-  CheckCircle2,
-  FileJson,
-  KeyRound,
-  LockKeyhole,
-  PackageCheck,
   Search,
-  ServerCog,
-  ShieldCheck,
-  ShoppingCart,
-  Terminal,
+  FileJson,
   Zap,
+  ShieldCheck,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import {
-  getDictionary,
-  getLocaleFromSearchParams,
-  localizedHref,
-} from "@/lib/i18n";
+import { getLocaleFromSearchParams } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
+import { HomeNav } from "@/components/home/nav";
+import { HomeFooter } from "@/components/home/footer";
+import { SkillCard } from "@/components/home/skill-card";
+import { CodeAnimation } from "@/components/home/code-animation";
+import { Reveal } from "@/components/home/reveal";
+import "./tailwind.css";
 
 export const dynamic = "force-dynamic";
 
@@ -30,805 +22,268 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-const proofIcons = [ShieldCheck, LockKeyhole, CheckCircle2] as const;
-const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
-const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
-const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
-const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
-
-const fallbackFeaturedSkills: SkillSummary[] = [
-  {
-    id: "browser-research",
-    slug: "browser-research-pro",
-    displayName: "Browser Research",
-    description: "Search the web and extract structured insights with source links.",
-    tags: ["research", "browser", "citations"],
-    version: "1.2.0",
-    verificationStatus: "verified",
-    permissionLevel: "medium",
-    runtimeType: "http",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-  {
-    id: "dataset-summarizer",
-    slug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    description: "Summarize large datasets and generate key insights.",
-    tags: ["data", "analysis", "summary"],
-    version: "0.9.4",
-    verificationStatus: "verified",
-    permissionLevel: "low",
-    runtimeType: "http",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-  {
-    id: "code-runner",
-    slug: "code-runner",
-    displayName: "Code Runner",
-    description: "Execute code securely in isolated environments and return results.",
-    tags: ["dev", "code", "execute"],
-    version: "0.8.1",
-    verificationStatus: "verified",
-    permissionLevel: "high",
-    runtimeType: "mcp",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-  {
-    id: "doc-qa",
-    slug: "doc-qa",
-    displayName: "Doc Q&A",
-    description: "Answer questions based on documentation and knowledge sources.",
-    tags: ["docs", "qa"],
-    version: "0.7.2",
-    verificationStatus: "submitted",
-    permissionLevel: "low",
-    runtimeType: "mcp",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-];
-
-const homeLandingCopy = {
+const copy = {
   en: {
-    banner: {
-      label: "Launch Preview",
-      body: "Public discovery and manifest inspection are live. Runtime calls require a signed-in project key. Paid marketplace flows remain labeled as preview.",
-      action: "View status",
-    },
-    eyebrow: "Agent infrastructure / skill runtime",
-    title: "Run agent skills like production infrastructure.",
-    mobileTitle: "Production-grade skill infrastructure for AI agents.",
-    description:
-      "SkillHub connects reusable agent skills to manifests, permission review, project keys, and runtime governance, so teams can adopt skills without guessing what runs underneath.",
-    primaryCta: "Explore registry",
-    quickstartCta: "Read runtime docs",
-    publishCta: "Publish a skill",
-    evidence: [
-      ["Contract-first registry", "Manifest, schema, and version checks"],
-      ["Project-scoped keys", "Policy gates before invocation"],
-      ["Operational proof", "Status, latency, logs, and audit trails"],
+    badge: "Developer Preview",
+    headline: "The skill registry for AI agents",
+    subline: "Discover, inspect, and invoke reusable skills through a governed API. One manifest powers search, trust review, and runtime execution.",
+    cta1: "Browse Skills",
+    cta2: "Read Docs",
+    stats: { skills: "Skills", verified: "Verified", publishers: "Publishers", calls: "API Calls" },
+    features: [
+      { icon: "search", title: "Public Discovery", desc: "Search skills by task, tags, permission profile, and runtime type." },
+      { icon: "manifest", title: "Manifest Inspection", desc: "View schema, permissions, runtime metadata, and version history." },
+      { icon: "runtime", title: "Runtime Invocation", desc: "Call skills over REST or MCP with project-scoped API keys." },
+      { icon: "trust", title: "Trust & Governance", desc: "Automated checks, human review, permission scopes, and audit trails." },
     ],
-    control: {
-      title: "SkillHub runtime plane",
-      marketplace: "Marketplace",
-      skillName: "Browser Research",
-      verified: "Verified",
-      publisher: "SkillHub Labs",
-      runtime: "REST / MCP",
-      scopes: "3 scopes",
-      manifest: "Manifest",
-      schema: "Schema",
-      permissions: "Permissions",
-      policy: "Runtime policy preview",
-      keyRequired: "Sign in + Project Key",
-      request: "Sample request",
-      response: "Sample response",
-      audit: "Example audit snapshot",
-      status: "Sample 200 OK",
-      latency: "1.23s",
-      viewSkill: "View skill",
-      schemaValid: "Schema valid",
-      allSystems: "Preview sample - gated by Project Key",
-    },
-    capabilities: [
-      {
-        title: "Public registry",
-        badge: "Live",
-        body: "Search public skills and compare safe marketplace metadata.",
-        tone: "live",
-      },
-      {
-        title: "Manifest inspection",
-        badge: "Live",
-        body: "Inspect schema, permissions, runtime target, and version state.",
-        tone: "live",
-      },
-      {
-        title: "Runtime invocation",
-        badge: "Key required",
-        body: "Run REST / MCP calls only after project setup and policy checks.",
-        tone: "key",
-      },
-      {
-        title: "Paid marketplace",
-        badge: "Preview",
-        body: "Paid listings, billing, refunds, and payouts stay visibly gated.",
-        tone: "preview",
-      },
-    ],
-    trustTitle: "Trust signals before any agent call",
-    trustModules: [
-      {
-        title: "Permission review",
-        body: "See declared capabilities and risk level before a skill enters your project.",
-        status: "Scopes visible",
-        rows: ["web.search", "web.fetch", "data.store"],
-      },
-      {
-        title: "Runtime governance",
-        body: "Project keys, policies, logs, and limits keep runtime usage accountable.",
-        status: "Policy checked",
-        rows: ["Project Key required", "Rate limit: 60 / min", "Allowed: web.search, web.fetch"],
-      },
-      {
-        title: "Publisher review",
-        body: "Submission review separates ready skills from preview or blocked listings.",
-        status: "Review queue",
-        rows: ["Static analysis", "Permission review", "Security scan"],
-      },
-    ],
-    featuredTitle: "Featured skills",
-    featuredAction: "View all skills",
-    inspect: "Inspect",
-    submitted: "Submitted",
-    verified: "Verified",
-    runtime: "Runtime",
-    permissions: "Permissions",
+    featuredTitle: "Featured Skills",
+    featuredAction: "View all",
     howTitle: "How it works",
     howSteps: [
-      ["Discover", "Find the right skill for your agent."],
-      ["Inspect", "Review manifests, permissions, and runtime details."],
-      ["Prepare key", "Sign in, create a project, and reveal a Project Key when available."],
-      ["Invoke", "Call the skill via REST API or MCP with your key."],
-      ["Monitor", "Track usage, logs, and performance."],
+      { step: "01", title: "Discover", desc: "Find the right skill for your agent's task." },
+      { step: "02", title: "Inspect", desc: "Review manifest, permissions, and runtime details." },
+      { step: "03", title: "Connect", desc: "Create a project, generate an API key." },
+      { step: "04", title: "Invoke", desc: "Call the skill via REST API or MCP protocol." },
+      { step: "05", title: "Monitor", desc: "Track usage, latency, and audit logs." },
     ],
-    finalTitle: "Start from a real skill contract",
-    finalBody: "Explore the public registry first, then connect runtime only after project setup is ready.",
-    readDocs: "Read Docs",
-    footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
-    systemStatus: "Public web/API health OK",
-    viewStatus: "View status",
+    ctaTitle: "Start building with verified skills",
+    ctaDesc: "Explore the registry or publish your own skill.",
+    ctaCta: "Get Started",
   },
   zh: {
-    banner: {
-      label: "上线预览",
-      body: "公开发现和 manifest 检查已开放。真实运行调用需要登录后的项目 Key；付费市场流程仍明确标记为预览。",
-      action: "查看状态",
-    },
-    eyebrow: "Agent 基础设施 / Skill 运行时",
-    title: "把 Agent 技能作为生产基础设施运行。",
-    mobileTitle: "面向 AI Agent 的生产级 Skill 基础设施。",
-    description:
-      "SkillHub 把可复用 Skill、manifest、权限复核、项目 Key 和运行治理连接起来，让团队在采用 Skill 前就知道它能做什么、怎么运行、由谁负责。",
-    primaryCta: "探索注册中心",
-    quickstartCta: "阅读运行文档",
-    publishCta: "发布 Skill",
-    evidence: [
-      ["契约优先注册", "Manifest、Schema 与版本检查"],
-      ["项目级 Key", "调用前先经过策略闸门"],
-      ["运营证据", "状态、延迟、日志和审计轨迹"],
-    ],
-    control: {
-      title: "SkillHub 运行平面",
-      marketplace: "市场",
-      skillName: "Browser Research",
-      verified: "已验证",
-      publisher: "SkillHub Labs",
-      runtime: "REST / MCP",
-      scopes: "3 个权限",
-      manifest: "Manifest",
-      schema: "Schema",
-      permissions: "权限",
-      policy: "运行策略预览",
-      keyRequired: "登录 + Project Key",
-      request: "示例请求",
-      response: "示例响应",
-      audit: "示例审计快照",
-      status: "示例 200 OK",
-      latency: "1.23 秒",
-      viewSkill: "查看 Skill",
-      schemaValid: "Schema 有效",
-      allSystems: "示例预览，需 Project Key 才能真实调用",
-    },
-    capabilities: [
-      {
-        title: "公开注册中心",
-        badge: "已开放",
-        body: "搜索公开 Skill，并对比安全的市场元数据。",
-        tone: "live",
-      },
-      {
-        title: "Manifest 检查",
-        badge: "已开放",
-        body: "查看 schema、权限、运行目标和版本状态。",
-        tone: "live",
-      },
-      {
-        title: "运行调用",
-        badge: "需 Key",
-        body: "只有完成项目设置和策略检查后，才能通过 REST / MCP 调用。",
-        tone: "key",
-      },
-      {
-        title: "付费市场",
-        badge: "预览",
-        body: "付费上架、账单、退款和分账仍保持可见的预览闸门。",
-        tone: "preview",
-      },
-    ],
-    trustTitle: "每次 Agent 调用前先看清信任证据",
-    trustModules: [
-      {
-        title: "权限检查",
-        body: "在 Skill 进入项目之前，先看清声明能力和风险等级。",
-        status: "权限可见",
-        rows: ["web.search", "web.fetch", "data.store"],
-      },
-      {
-        title: "运行治理",
-        body: "Project Key、策略、日志和限流一起约束真实运行。",
-        status: "策略已检查",
-        rows: ["需要 Project Key", "限流：60 / 分钟", "允许：web.search, web.fetch"],
-      },
-      {
-        title: "发布审核",
-        body: "提交审核把可上线 Skill、预览 Skill 和阻塞项清楚区分。",
-        status: "审核队列",
-        rows: ["静态分析", "权限复核", "安全扫描"],
-      },
+    badge: "开发者预览",
+    headline: "AI Agent 的技能注册中心",
+    subline: "通过统一 API 发现、检查和调用可复用技能。一份 manifest 驱动搜索、信任审核和运行执行。",
+    cta1: "浏览 Skills",
+    cta2: "阅读文档",
+    stats: { skills: "技能", verified: "已验证", publishers: "发布者", calls: "API 调用" },
+    features: [
+      { icon: "search", title: "公开发现", desc: "按任务、标签、权限和运行时类型搜索技能。" },
+      { icon: "manifest", title: "Manifest 检查", desc: "查看 schema、权限、运行元数据和版本历史。" },
+      { icon: "runtime", title: "运行调用", desc: "通过项目级 API Key 以 REST 或 MCP 调用技能。" },
+      { icon: "trust", title: "信任与治理", desc: "自动检查、人工审核、权限范围和审计追踪。" },
     ],
     featuredTitle: "精选 Skills",
     featuredAction: "查看全部",
-    inspect: "查看",
-    submitted: "已提交",
-    verified: "已验证",
-    runtime: "运行时",
-    permissions: "权限",
     howTitle: "如何使用",
     howSteps: [
-      ["发现", "找到适合 agent 的 Skill。"],
-      ["检查", "查看 manifest、权限和运行细节。"],
-      ["准备 Key", "登录后在开发者工作台创建项目，并在可用时揭示 Project Key。"],
-      ["调用", "用 REST API 或 MCP 调用 Skill。"],
-      ["监控", "追踪用量、日志和性能。"],
+      { step: "01", title: "发现", desc: "为你的 Agent 找到合适的技能。" },
+      { step: "02", title: "检查", desc: "查看 manifest、权限和运行细节。" },
+      { step: "03", title: "连接", desc: "创建项目，生成 API Key。" },
+      { step: "04", title: "调用", desc: "通过 REST API 或 MCP 调用技能。" },
+      { step: "05", title: "监控", desc: "追踪用量、延迟和审计日志。" },
     ],
-    finalTitle: "从一个真实 Skill 契约开始",
-    finalBody: "先探索公开注册中心，再在项目设置就绪后接入真实运行调用。",
-    readDocs: "阅读文档",
-    footerBody: "面向真实构建流程的 Agent Skill 注册中心、治理层和运行网关。",
-    systemStatus: "公共 Web/API 健康正常",
-    viewStatus: "查看状态",
+    ctaTitle: "用已验证的技能开始构建",
+    ctaDesc: "探索注册表或发布你自己的技能。",
+    ctaCta: "开始使用",
   },
 } as const;
 
-const homeSkillZhCopy: Record<string, { description: string; tags: string[] }> = {
-  "browser-research-pro": {
-    description: "搜索网页并返回带来源链接的结构化洞察。",
-    tags: ["研究", "浏览器", "引用"],
-  },
-  "crm-enrichment": {
-    description: "补全 CRM 线索资料，并保留可审计的数据来源。",
-    tags: ["销售", "CRM", "线索"],
-  },
-  "support-triage": {
-    description: "将客服请求分类、提取优先级，并给出下一步处理建议。",
-    tags: ["客服", "分类", "工单"],
-  },
-  "dataset-insight": {
-    description: "分析数据集结构、异常和摘要，输出可复核的洞察。",
-    tags: ["数据", "分析", "摘要"],
-  },
-  "dataset-summarizer": {
-    description: "汇总大型数据集并生成关键洞察。",
-    tags: ["数据", "分析", "摘要"],
-  },
-  "code-runner": {
-    description: "在隔离环境中安全执行代码并返回结果。",
-    tags: ["开发", "代码", "执行"],
-  },
-  "codebase-risk-scanner": {
-    description: "扫描代码快照中的风险文件、敏感模式和负责人复核线索。",
-    tags: ["安全", "代码", "审核"],
-  },
-  "invoice-extraction": {
-    description: "从发票文件中提取结构化字段，并保留审批提示。",
-    tags: ["财务", "发票", "OCR"],
-  },
-  "doc-qa": {
-    description: "基于文档和知识源回答问题。",
-    tags: ["文档", "问答"],
-  },
+const skillZhCopy: Record<string, { description: string; tags: string[] }> = {
+  "browser-research-pro": { description: "搜索网页并返回带来源链接的结构化洞察。", tags: ["研究", "浏览器", "引用"] },
+  "dataset-summarizer": { description: "汇总大型数据集并生成关键洞察。", tags: ["数据", "分析", "摘要"] },
+  "code-runner": { description: "在隔离环境中安全执行代码并返回结果。", tags: ["开发", "代码", "执行"] },
+  "doc-qa": { description: "基于文档和知识源回答问题。", tags: ["文档", "问答"] },
 };
 
-const homeTagZhLabels: Record<string, string> = {
-  analysis: "分析",
-  browser: "浏览器",
-  citations: "引用",
-  code: "代码",
-  data: "数据",
-  dev: "开发",
-  docs: "文档",
-  execute: "执行",
-  qa: "问答",
-  research: "研究",
-  summary: "摘要",
-};
+const fallbackSkills: SkillSummary[] = [
+  { id: "browser-research", slug: "browser-research-pro", displayName: "Browser Research", description: "Search the web and extract structured insights with source links.", tags: ["research", "browser", "citations"], version: "1.2.0", verificationStatus: "verified", permissionLevel: "medium", runtimeType: "http", updatedAt: "2026-06-01T00:00:00.000Z" },
+  { id: "dataset-summarizer", slug: "dataset-summarizer", displayName: "Dataset Summarizer", description: "Summarize large datasets and generate key insights.", tags: ["data", "analysis", "summary"], version: "0.9.4", verificationStatus: "verified", permissionLevel: "low", runtimeType: "http", updatedAt: "2026-06-01T00:00:00.000Z" },
+  { id: "code-runner", slug: "code-runner", displayName: "Code Runner", description: "Execute code securely in isolated environments and return results.", tags: ["dev", "code", "execute"], version: "0.8.1", verificationStatus: "verified", permissionLevel: "high", runtimeType: "mcp", updatedAt: "2026-06-01T00:00:00.000Z" },
+  { id: "doc-qa", slug: "doc-qa", displayName: "Doc Q&A", description: "Answer questions based on documentation and knowledge sources.", tags: ["docs", "qa"], version: "0.7.2", verificationStatus: "submitted", permissionLevel: "low", runtimeType: "mcp", updatedAt: "2026-06-01T00:00:00.000Z" },
+];
 
-function statusLabel(status: SkillSummary["verificationStatus"], locale: "en" | "zh") {
-  if (status === "verified") {
-    return homeLandingCopy[locale].verified;
+function getFeatureIcon(icon: string) {
+  const cls = "text-[var(--color-accent)]";
+  switch (icon) {
+    case "search": return <Search size={20} className={cls} />;
+    case "manifest": return <FileJson size={20} className={cls} />;
+    case "runtime": return <Zap size={20} className={cls} />;
+    case "trust": return <ShieldCheck size={20} className={cls} />;
+    default: return <Search size={20} className={cls} />;
   }
-
-  if (status === "submitted") {
-    return homeLandingCopy[locale].submitted;
-  }
-
-  return locale === "zh" ? "预览" : "Preview";
-}
-
-function riskLabel(level: SkillSummary["permissionLevel"], locale: "en" | "zh") {
-  const labels = {
-    en: { low: "1 scope", medium: "3 scopes", high: "4 scopes" },
-    zh: { low: "1 个权限", medium: "3 个权限", high: "4 个权限" },
-  };
-
-  return labels[locale][level];
-}
-
-function trustEvidenceLabel(index: number, locale: "en" | "zh") {
-  const labels = {
-    en: ["Low", "OK", "Passed"],
-    zh: ["低", "正常", "通过"],
-  };
-
-  return labels[locale][index] ?? labels[locale][labels[locale].length - 1];
-}
-
-function homeSkillDescription(skill: SkillSummary, locale: "en" | "zh") {
-  if (locale === "en") {
-    return skill.description;
-  }
-
-  return homeSkillZhCopy[skill.slug]?.description ?? skill.description;
-}
-
-function homeSkillTags(skill: SkillSummary, locale: "en" | "zh") {
-  if (locale === "en") {
-    return skill.tags;
-  }
-
-  return (
-    homeSkillZhCopy[skill.slug]?.tags ??
-    skill.tags.map((tag) => homeTagZhLabels[tag.toLowerCase()] ?? tag)
-  );
 }
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const skills = await getSkills();
-  const publicStats = await getPublicPlatformStats({ skills });
-  const landing = homeLandingCopy[locale];
-  const seenSkillKeys = new Set<string>();
-  const featuredSkills = [...skills, ...fallbackFeaturedSkills]
-    .filter((skill) => {
-      const skillKey = `${skill.slug}:${skill.displayName.toLowerCase()}`;
-      const displayKey = `display:${skill.displayName.toLowerCase()}`;
+  const stats = await getPublicPlatformStats({ skills });
+  const t = copy[locale];
+  const langSuffix = locale === "zh" ? "?lang=zh" : "";
 
-      if (seenSkillKeys.has(skillKey) || seenSkillKeys.has(displayKey)) {
-        return false;
-      }
-
-      seenSkillKeys.add(skillKey);
-      seenSkillKeys.add(displayKey);
+  const seenSlugs = new Set<string>();
+  const featuredSkills = [...skills, ...fallbackSkills]
+    .filter((s) => {
+      if (seenSlugs.has(s.slug)) return false;
+      seenSlugs.add(s.slug);
       return true;
     })
     .slice(0, 4);
-  const leadSkill = featuredSkills[0] ?? fallbackFeaturedSkills[0];
-  const leadRuntime = leadSkill.runtimeType
-    ? leadSkill.runtimeType.toUpperCase()
-    : landing.control.runtime;
 
   return (
-    <main className={`product-shell home-shell home-shell--${locale}`}>
-      <section className="home-frame" aria-labelledby="home-heading">
-        <SiteHeader
-          active="home"
-          apiUrl={apiUrl}
-          dictionary={dictionary}
-          locale={locale}
-          pathname="/"
-        />
+    <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)]">
+      <HomeNav locale={locale} />
 
-        <div className="home-preview-banner" role="status">
-          <div className="home-preview-banner__inner">
-            <span className="home-preview-banner__dot" aria-hidden="true" />
-            <strong>{landing.banner.label}</strong>
-            <p>{landing.banner.body}</p>
-            <a href={localizedHref("/status", locale)}>
-              {landing.banner.action}
-              <ArrowRight size={14} aria-hidden="true" />
-            </a>
+      {/* Hero */}
+      <section className="pt-28 pb-16 sm:pt-36 sm:pb-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left: Copy */}
+            <div className="animate-fade-in-up">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-accent-muted)] text-[var(--color-accent)] mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
+                {t.badge}
+              </span>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+                {t.headline}
+              </h1>
+
+              <p className="text-lg text-[var(--color-text-secondary)] max-w-xl mb-8 leading-relaxed">
+                {t.subline}
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`/registry${langSuffix}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[var(--color-accent)] text-black font-medium text-sm hover:bg-[var(--color-accent-hover)] transition-colors"
+                >
+                  {t.cta1}
+                  <ArrowRight size={16} />
+                </a>
+                <a
+                  href={`/docs${langSuffix}`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[var(--color-border-default)] text-[var(--color-text-secondary)] text-sm hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  {t.cta2}
+                </a>
+              </div>
+            </div>
+
+            {/* Right: Code animation */}
+            <div className="animate-fade-in-up animate-delay-200 hidden lg:block">
+              <CodeAnimation />
+            </div>
           </div>
         </div>
-
-        <section className="home-hero-grid reveal-scope">
-          <div className="hero-copy home-hero-copy reveal-item">
-            <div className="eyebrow">
-              <span>{landing.eyebrow}</span>
-            </div>
-            <h1 id="home-heading">
-              <span className="home-heading-desktop">
-              {locale === "en" ? (
-                <>
-                  Run agent skills like{" "}
-                  <span>production infrastructure.</span>
-                </>
-              ) : (
-                <>
-                  把 Agent 技能作为
-                  <br />
-                  <span>生产基础设施</span>
-                  <br />
-                  运行。
-                </>
-              )}
-              </span>
-              <span className="home-heading-mobile">
-                {locale === "en" ? (
-                  <>
-                    Production-grade{" "}
-                    <strong>skill infrastructure</strong> for AI agents.
-                  </>
-                ) : (
-                  <>
-                    面向 AI Agent 的<br />
-                    <strong>生产级 Skill 基础设施。</strong>
-                  </>
-                )}
-              </span>
-            </h1>
-            <p>{landing.description}</p>
-            <div className="hero-actions">
-              <a
-                className="primary-button primary-button--large"
-                href={localizedHref("/marketplace", locale)}
-              >
-                <Search size={18} aria-hidden="true" />
-                <span>{landing.primaryCta}</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </a>
-              <a
-                className="secondary-button secondary-button--large"
-                href={localizedHref("/docs#mcp", locale)}
-              >
-                <Terminal size={18} aria-hidden="true" />
-                <span>{landing.quickstartCta}</span>
-              </a>
-              <a
-                className="ghost-button ghost-button--large"
-                href={localizedHref("/publish", locale)}
-              >
-                <span>{landing.publishCta}</span>
-                <ArrowRight size={15} aria-hidden="true" />
-              </a>
-            </div>
-
-            <div className="home-evidence-row" aria-label={landing.eyebrow}>
-              {landing.evidence.map(([label, detail], index) => {
-                const Icon = proofIcons[index];
-
-                return (
-                  <div className="home-evidence-pill" key={label}>
-                    <Icon size={18} aria-hidden="true" />
-                    <span>{label}</span>
-                    <small>{detail}</small>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <aside className="control-plane reveal-item reveal-item--delay" aria-label={landing.control.title}>
-            <div className="control-runtime-map" aria-hidden="true">
-              <span className="control-runtime-map__node control-runtime-map__node--registry" />
-              <span className="control-runtime-map__node control-runtime-map__node--policy" />
-              <span className="control-runtime-map__node control-runtime-map__node--runtime" />
-              <span className="control-runtime-map__rail control-runtime-map__rail--a" />
-              <span className="control-runtime-map__rail control-runtime-map__rail--b" />
-              <span className="control-runtime-map__pulse control-runtime-map__pulse--a" />
-              <span className="control-runtime-map__pulse control-runtime-map__pulse--b" />
-            </div>
-            <div className="control-mobile-tabs" aria-hidden="true">
-              <span className="control-mobile-tabs__item control-mobile-tabs__item--active">
-                Skill
-              </span>
-              <span className="control-mobile-tabs__item">{landing.control.manifest}</span>
-              <span className="control-mobile-tabs__item">{landing.control.policy}</span>
-            </div>
-
-            <article className="control-pane control-pane--market">
-              <div className="control-pane__label">
-                <span>{landing.control.marketplace}</span>
-              </div>
-              <div className="control-skill-card">
-                <div className="control-skill-card__icon" aria-hidden="true">
-                  <Boxes size={22} />
-                </div>
-                <div>
-                  <strong>{leadSkill.displayName}</strong>
-                  <span>
-                    by {landing.control.publisher}
-                    <CheckCircle2 size={12} aria-hidden="true" />
-                  </span>
-                </div>
-                <span className="control-badge control-badge--verified">
-                  {landing.control.verified}
-                </span>
-              </div>
-              <p className="control-skill-description">{leadSkill.description}</p>
-              <div className="control-tag-row">
-                {leadSkill.tags.slice(0, 2).map((tag) => (
-                  <span key={tag}>{tag}</span>
-                ))}
-              </div>
-              <dl className="control-meta-list">
-                <div>
-                  <dt>{landing.control.runtime}</dt>
-                  <dd>{leadRuntime}</dd>
-                </div>
-                <div>
-                  <dt>{landing.control.permissions}</dt>
-                  <dd>{riskLabel(leadSkill.permissionLevel, locale)}</dd>
-                </div>
-              </dl>
-              <a className="control-pane__button" href={localizedHref(`/skills/${leadSkill.slug}`, locale)}>
-                {landing.control.viewSkill}
-              </a>
-            </article>
-
-            <div className="control-flow-line" aria-hidden="true" />
-
-            <article className="control-pane control-pane--manifest">
-              <div className="control-tabs" aria-label={landing.control.manifest}>
-                <span className="control-tabs__item control-tabs__item--active">
-                  {landing.control.manifest}
-                </span>
-                <span className="control-tabs__item">{landing.control.schema}</span>
-                <span className="control-tabs__item">{landing.control.permissions}</span>
-              </div>
-              <div className="control-code" aria-label="SkillHub manifest preview">
-                <span className="control-code__line">
-                  <em>1</em> {"{"}
-                </span>
-                <span className="control-code__line control-code__line--active">
-                  <em>2</em> {'"name": "browser-research-pro",'}
-                </span>
-                <span className="control-code__line">
-                  <em>3</em> {'"version": "1.2.0",'}
-                </span>
-                <span className="control-code__line control-code__line--active control-code__line--delay">
-                  <em>4</em> {'"permissions": ["web.search", "web.fetch", "data.store"],'}
-                </span>
-                <span className="control-code__line">
-                  <em>5</em> {'"runtime": {"protocols": ["rest", "mcp"]}'}
-                </span>
-                <span className="control-code__line">
-                  <em>6</em> {"}"}
-                </span>
-              </div>
-              <div className="control-pane__foot">
-                <span className="home-preview-banner__dot" aria-hidden="true" />
-                <span>{landing.control.schemaValid}</span>
-                <code>v1.2.0</code>
-              </div>
-            </article>
-
-            <div className="control-flow-line control-flow-line--late" aria-hidden="true" />
-
-            <article className="control-pane control-pane--runtime">
-              <div className="control-pane__label">
-                <span>{landing.control.policy}</span>
-                <span className="control-badge control-badge--key">
-                  {landing.control.keyRequired}
-                </span>
-              </div>
-              <div className="runtime-console">
-                <span>{landing.control.request}</span>
-                <code>POST /v1/skills/browser-research-pro/run</code>
-                <pre>{`{
-  "query": "latest AI agent framework comparison",
-  "max_results": 5
-}`}</pre>
-              </div>
-              <div className="runtime-console runtime-console--success">
-                <span>{landing.control.response}</span>
-                <strong>{landing.control.status}</strong>
-                <code>{landing.control.latency}</code>
-              </div>
-              <div className="runtime-audit">
-                <span>{landing.control.audit}</span>
-                <strong>POST /run</strong>
-                <strong>200</strong>
-              </div>
-              <div className="control-pane__foot">
-                <span className="home-preview-banner__dot" aria-hidden="true" />
-                <span>{landing.control.allSystems}</span>
-              </div>
-            </article>
-          </aside>
-
-          <section className="home-capability-strip reveal-item reveal-item--late" aria-label={landing.banner.label}>
-            {landing.capabilities.map((item, index) => {
-              const Icon = capabilityIcons[index];
-
-              return (
-                <article className="home-capability" key={item.title}>
-                  <Icon size={22} aria-hidden="true" />
-                  <div>
-                    <div className="home-capability__head">
-                      <strong>{item.title}</strong>
-                      <span className={`state-badge state-badge--${item.tone}`}>
-                        {item.badge}
-                      </span>
-                    </div>
-                    <p>{item.body}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </section>
-        </section>
-
-        <section className="home-section home-trust-section" aria-labelledby="home-trust-heading">
-          <h2 id="home-trust-heading">{landing.trustTitle}</h2>
-          <div className="home-trust-modules">
-            {landing.trustModules.map((item, index) => {
-              const Icon = trustModuleIcons[index];
-
-              return (
-                <article className="home-trust-module lift-card" key={item.title}>
-                  <div className="home-trust-module__head">
-                    <Icon size={20} aria-hidden="true" />
-                    <span>{item.status}</span>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                  <div className="home-trust-module__rows">
-                    {item.rows.map((row, rowIndex) => (
-                      <span key={row}>
-                        {row}
-                        <strong>{trustEvidenceLabel(rowIndex, locale)}</strong>
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-section home-featured-section" aria-labelledby="home-featured-heading">
-          <div className="home-section__head">
-            <h2 id="home-featured-heading">{landing.featuredTitle}</h2>
-            <a href={localizedHref("/marketplace", locale)}>
-              {landing.featuredAction}
-              <ArrowRight size={15} aria-hidden="true" />
-            </a>
-          </div>
-
-          <div className="home-featured-grid">
-            {featuredSkills.map((skill, index) => {
-              const Icon = skillIcons[index] ?? Boxes;
-              const status = statusLabel(skill.verificationStatus, locale);
-              const isVerified = skill.verificationStatus === "verified";
-
-              return (
-                <article className="home-skill-card lift-card" key={skill.id}>
-                  <div className="home-skill-card__head">
-                    <div className={`home-skill-card__icon home-skill-card__icon--${index + 1}`} aria-hidden="true">
-                      <Icon size={23} />
-                    </div>
-                    <div>
-                      <h3>{skill.displayName}</h3>
-                      <span className={isVerified ? "control-badge control-badge--verified" : "state-badge state-badge--preview"}>
-                        {status}
-                      </span>
-                    </div>
-                  </div>
-                  <p>{homeSkillDescription(skill, locale)}</p>
-                  <div className="control-tag-row">
-                    {homeSkillTags(skill, locale).slice(0, 2).map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                  <dl className="home-skill-card__meta">
-                    <div>
-                      <dt>{landing.runtime}</dt>
-                      <dd>{skill.runtimeType ? skill.runtimeType.toUpperCase() : "REST / MCP"}</dd>
-                    </div>
-                    <div>
-                      <dt>{landing.permissions}</dt>
-                      <dd>{riskLabel(skill.permissionLevel, locale)}</dd>
-                    </div>
-                  </dl>
-                  <a className="secondary-button" href={localizedHref(`/skills/${skill.slug}`, locale)}>
-                    {landing.inspect}
-                  </a>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-section home-how-section" aria-labelledby="home-how-heading">
-          <h2 id="home-how-heading">{landing.howTitle}</h2>
-          <div className="home-how-rail">
-            {landing.howSteps.map(([title, body], index) => {
-              const Icon = howIcons[index];
-
-              return (
-                <article className="home-how-step" key={title}>
-                  <div className="home-how-step__icon" aria-hidden="true">
-                    <Icon size={22} />
-                  </div>
-                  <span>{index + 1}</span>
-                  <h3>{title}</h3>
-                  <p>{body}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-final-cta">
-          <div>
-            <h2>{landing.finalTitle}</h2>
-            <p>{landing.finalBody}</p>
-          </div>
-          <div className="hero-actions">
-            <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
-              {landing.primaryCta}
-              <ArrowRight size={16} aria-hidden="true" />
-            </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)}>
-              <FileJson size={17} aria-hidden="true" />
-              {landing.readDocs}
-            </a>
-          </div>
-        </section>
-
-      <footer className="site-footer home-footer">
-        <div>
-          <strong>SkillHub</strong>
-          <span>{landing.footerBody}</span>
-        </div>
-        <div className="footer-links">
-          <a href={localizedHref("/marketplace", locale)}>{dictionary.common.marketplace}</a>
-          <a href={localizedHref("/docs", locale)}>{dictionary.nav.docs}</a>
-          <a href={localizedHref("/publish", locale)}>{dictionary.common.publish}</a>
-          <a href={localizedHref("/security", locale)}>
-            {locale === "zh" ? "安全" : "Security"}
-          </a>
-          <a href={localizedHref("/status", locale)}>
-            {landing.systemStatus} · {publicStats.publicSkills} skills
-          </a>
-          <a href={`${apiUrl}/health`}>{dictionary.common.health}</a>
-        </div>
-      </footer>
       </section>
-    </main>
+
+      {/* Stats strip */}
+      <Reveal>
+        <section className="border-y border-[var(--color-border-default)] bg-[var(--color-bg-secondary)]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.publicSkills}</div>
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">{t.stats.skills}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.verifiedSkills}</div>
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">{t.stats.verified}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.publicPublishers}</div>
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">{t.stats.publishers}</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.recordedCalls}</div>
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">{t.stats.calls}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Reveal>
+
+      {/* Features */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {t.features.map((feat, i) => (
+              <Reveal key={feat.title} delay={i * 100}>
+                <div className="glow-card rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 h-full">
+                  <div className="w-10 h-10 rounded-lg bg-[var(--color-accent-muted)] flex items-center justify-center mb-4">
+                    {getFeatureIcon(feat.icon)}
+                  </div>
+                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2">{feat.title}</h3>
+                  <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">{feat.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Skills */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">{t.featuredTitle}</h2>
+              <a
+                href={`/registry${langSuffix}`}
+                className="text-sm text-[var(--color-accent)] hover:underline inline-flex items-center gap-1"
+              >
+                {t.featuredAction}
+                <ArrowRight size={14} />
+              </a>
+            </div>
+          </Reveal>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {featuredSkills.map((skill, i) => (
+              <Reveal key={skill.slug} delay={i * 80}>
+                <SkillCard
+                  skill={skill}
+                  locale={locale}
+                  zhDescription={skillZhCopy[skill.slug]?.description}
+                  zhTags={skillZhCopy[skill.slug]?.tags}
+                />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-16 sm:py-24 bg-[var(--color-bg-secondary)]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <Reveal>
+            <h2 className="text-2xl font-bold text-center mb-12">{t.howTitle}</h2>
+          </Reveal>
+          <div className="space-y-0">
+            {t.howSteps.map((step, i) => (
+              <Reveal key={step.step} delay={i * 80}>
+                <div className="flex items-start gap-4 py-5 border-b border-[var(--color-border-default)] last:border-b-0">
+                  <span className="text-sm font-mono text-[var(--color-accent)] shrink-0 w-8">{step.step}</span>
+                  <div>
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">{step.title}</h3>
+                    <p className="text-sm text-[var(--color-text-muted)]">{step.desc}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 sm:py-28">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <Reveal>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t.ctaTitle}</h2>
+            <p className="text-[var(--color-text-secondary)] mb-8">{t.ctaDesc}</p>
+            <a
+              href={`/registry${langSuffix}`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--color-accent)] text-black font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
+            >
+              {t.ctaCta}
+              <ArrowRight size={16} />
+            </a>
+          </Reveal>
+        </div>
+      </section>
+
+      <HomeFooter locale={locale} />
+    </div>
   );
 }
