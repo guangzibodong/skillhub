@@ -1,5 +1,5 @@
 import type { SkillSummary } from "@useskillhub/schema";
-import { ShieldCheck, Cpu, Tag, TrendingUp } from "lucide-react";
+import { ShieldCheck, Zap } from "lucide-react";
 
 type SkillCardProps = {
   skill: SkillSummary;
@@ -16,67 +16,37 @@ export function SkillCard({ skill, locale, zhDescription, zhTags }: SkillCardPro
   return (
     <a
       href={`/skills/${skill.slug}`}
-      className="glow-card group block rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-6 transition-all duration-400"
+      className="card group block transition-all"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--color-glow-purple)] to-[var(--color-glow-cyan)] flex items-center justify-center border border-[var(--color-border-default)]">
-            <Cpu size={18} className="text-[var(--color-accent-purple)]" />
+      {/* Top: icon area */}
+      <div className="bg-[var(--color-surface-2)] rounded-[var(--radius-sm)] p-4 mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--color-surface-3)] flex items-center justify-center">
+            <Zap size={16} className="text-[var(--color-text-secondary)]" />
           </div>
-          <div>
-            <h3 className="text-[15px] font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-purple)] transition-colors">
-              {skill.displayName}
-            </h3>
-            <span className="text-xs text-[var(--color-text-muted)] font-mono">
-              v{skill.version}
+          {isVerified && (
+            <span className="inline-flex items-center gap-1 text-label text-[var(--color-verified)]">
+              <ShieldCheck size={12} />
+              {locale === "zh" ? "已验证" : "Verified"}
             </span>
-          </div>
+          )}
         </div>
-        {isVerified && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-[rgba(16,185,129,0.1)] text-[var(--color-accent-green)] border border-[rgba(16,185,129,0.2)]">
-            <ShieldCheck size={11} />
-            {locale === "zh" ? "已验证" : "Verified"}
-          </span>
-        )}
-        {!isVerified && (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            {locale === "zh" ? "审核中" : "In Review"}
-          </span>
-        )}
+        <h3 className="text-body-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
+          {skill.displayName}
+        </h3>
       </div>
 
       {/* Description */}
-      <p className="text-sm text-[var(--color-text-secondary)] mb-4 line-clamp-2 leading-relaxed">
+      <p className="text-body-sm text-[var(--color-text-secondary)] line-clamp-2 mb-3 px-1">
         {description}
       </p>
 
-      {/* Stats */}
-      <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)] mb-4">
-        {skill.invocationCount != null && (
-          <span className="inline-flex items-center gap-1">
-            <TrendingUp size={11} />
-            {skill.invocationCount.toLocaleString()} {locale === "zh" ? "次调用" : "calls"}
-          </span>
-        )}
-        {skill.avgLatencyMs != null && (
-          <span className="inline-flex items-center gap-1">
-            ⚡ {skill.avgLatencyMs}ms
-          </span>
-        )}
-        {skill.successRate != null && (
-          <span className="inline-flex items-center gap-1">
-            ✓ {(skill.successRate * 100).toFixed(0)}%
-          </span>
-        )}
-      </div>
-
       {/* Tags */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 px-1">
         {tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="px-2 py-0.5 rounded-md text-[11px] bg-[rgba(255,255,255,0.04)] text-[var(--color-text-muted)] border border-[var(--color-border-default)]"
+            className="pill text-caption"
           >
             {tag}
           </span>

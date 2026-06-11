@@ -1,118 +1,80 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const codeLines = [
-  { text: "import { SkillHub } from '@useskillhub/sdk';", color: "muted" },
+  { text: 'import { SkillHub } from "@useskillhub/sdk";', color: "muted" },
   { text: "", color: "white" },
   { text: "const hub = new SkillHub({", color: "white" },
-  { text: "  apiKey: process.env.SKILLHUB_KEY,", color: "purple" },
+  { text: '  apiKey: process.env.SKILLHUB_KEY', color: "white" },
   { text: "});", color: "white" },
   { text: "", color: "white" },
   { text: "const result = await hub.invoke({", color: "white" },
-  { text: '  skill: "browser-research-pro",', color: "cyan" },
+  { text: '  skill: "browser-research-pro",', color: "accent" },
   { text: "  input: {", color: "white" },
-  { text: '    query: "AI agent frameworks 2026",', color: "green" },
-  { text: "    depth: 3,", color: "purple" },
-  { text: '    format: "structured"', color: "purple" },
+  { text: '    query: "AI agent frameworks 2026",', color: "white" },
+  { text: "    depth: 3,", color: "white" },
   { text: "  }", color: "white" },
   { text: "});", color: "white" },
   { text: "", color: "white" },
-  { text: "console.log(result.summary);", color: "white" },
-  { text: "// ✓ 12 sources · 2.1s · verified", color: "green" },
+  { text: "// ✓ 12 sources · 2.1s · verified", color: "verified" },
 ];
 
 const colorMap: Record<string, string> = {
-  white: "text-[#e2e8f0]",
-  purple: "text-[#a78bfa]",
-  cyan: "text-[#67e8f9]",
-  green: "text-[#6ee7b7]",
-  muted: "text-[#4a5568]",
+  white: "text-[#e5e7eb]",
+  muted: "text-[#525252]",
+  accent: "text-[var(--color-accent)]",
+  verified: "text-[var(--color-verified)]",
 };
 
 export function CodeAnimation() {
-  const [visibleChars, setVisibleChars] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
-  const totalChars = codeLines.reduce((sum, line) => sum + line.text.length + 1, 0);
+  const [visibleLines, setVisibleLines] = useState(0);
+  const totalLines = codeLines.length;
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
-      setVisibleChars(totalChars);
-      setIsComplete(true);
+      setVisibleLines(totalLines);
       return;
     }
 
-    let charCount = 0;
+    let count = 0;
     const timer = setInterval(() => {
-      charCount += 2;
-      if (charCount >= totalChars) {
-        setVisibleChars(totalChars);
-        setIsComplete(true);
+      count++;
+      if (count >= totalLines) {
+        setVisibleLines(totalLines);
         clearInterval(timer);
       } else {
-        setVisibleChars(charCount);
+        setVisibleLines(count);
       }
-    }, 25);
+    }, 120);
 
     return () => clearInterval(timer);
-  }, [totalChars]);
-
-  const getVisibleContent = () => {
-    let remaining = visibleChars;
-    const result: Array<{ text: string; color: string }> = [];
-
-    for (const line of codeLines) {
-      const lineLength = line.text.length + 1;
-      if (remaining <= 0) break;
-
-      if (remaining >= lineLength) {
-        result.push({ text: line.text, color: line.color });
-        remaining -= lineLength;
-      } else {
-        result.push({ text: line.text.slice(0, remaining), color: line.color });
-        remaining = 0;
-      }
-    }
-    return result;
-  };
-
-  const content = getVisibleContent();
+  }, [totalLines]);
 
   return (
-    <div className="relative glass-card rounded-2xl overflow-hidden">
+    <div className="card-lg overflow-hidden">
       {/* Terminal chrome */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)]">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#ff5f57]/80" />
-          <div className="w-3 h-3 rounded-full bg-[#febc2e]/80" />
-          <div className="w-3 h-3 rounded-full bg-[#28c840]/80" />
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--color-border)]">
+        <div className="flex gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-surface-3)]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-surface-3)]" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-surface-3)]" />
         </div>
-        <div className="flex-1 text-center">
-          <span className="text-[11px] font-mono text-[var(--color-text-muted)]">
-            agent.ts
-          </span>
-        </div>
-        <div className="w-[54px]" /> {/* Balance spacing */}
+        <span className="ml-auto text-caption text-[var(--color-text-muted)] font-mono">
+          agent.ts
+        </span>
       </div>
 
-      {/* Code content */}
-      <div className="p-6 font-mono text-[13px] leading-[1.8] min-h-[380px]">
-        {content.map((line, i) => (
-          <div key={i} className="flex">
-            <span className="select-none text-[var(--color-text-muted)] w-7 text-right mr-5 text-[11px] leading-[1.8] opacity-50">
-              {i + 1}
-            </span>
-            <span className={colorMap[line.color]}>
-              {line.text}
-            </span>
+      {/* Code */}
+      <div className="p-5 font-mono text-[13px] leading-[1.75]">
+        {codeLines.slice(0, visibleLines).map((line, i) => (
+          <div key={i}>
+            <span className={colorMap[line.color]}>{line.text}</span>
           </div>
         ))}
-        {!isComplete && (
-          <div className="flex">
-            <span className="select-none w-7 mr-5" />
-            <span className="inline-block w-[2px] h-[18px] bg-[var(--color-accent-purple)] animate-pulse rounded-full" />
-          </div>
+        {visibleLines < totalLines && (
+          <span className="inline-block w-[6px] h-[16px] bg-[var(--color-text-muted)] animate-pulse mt-0.5" />
         )}
       </div>
     </div>

@@ -1,41 +1,38 @@
 @import "tailwindcss";
 
 @theme {
-  /* Background */
-  --color-bg-primary: #050507;
-  --color-bg-elevated: #0a0a0f;
-  --color-bg-card: rgba(255, 255, 255, 0.03);
-  --color-bg-card-hover: rgba(255, 255, 255, 0.06);
-  --color-bg-card-solid: #0c0c12;
-
-  /* Borders */
-  --color-border-default: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
-  --color-border-glow: rgba(139, 92, 246, 0.4);
+  /* Surface stack (Morphic 4-level) */
+  --color-surface-0: #000000;
+  --color-surface-1: #212121;
+  --color-surface-2: #292929;
+  --color-surface-3: #333333;
 
   /* Text */
-  --color-text-primary: #f0f0f5;
-  --color-text-secondary: #8b8b9e;
-  --color-text-muted: #4a4a5e;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #999999;
+  --color-text-body: #999999;
+  --color-text-muted: #666666;
+  --color-text-subtle: #525252;
+  --color-text-icon: #404040;
 
-  /* Accent */
-  --color-accent-purple: #8b5cf6;
-  --color-accent-indigo: #6366f1;
-  --color-accent-cyan: #06b6d4;
-  --color-accent-green: #10b981;
-  --color-accent-pink: #ec4899;
+  /* Accent — single chromatic color */
+  --color-accent: #0075ff;
+  --color-accent-hover: #0066e0;
 
-  /* Glow */
-  --color-glow-purple: rgba(139, 92, 246, 0.15);
-  --color-glow-cyan: rgba(6, 182, 212, 0.1);
-  --color-glow-indigo: rgba(99, 102, 241, 0.12);
+  /* Borders */
+  --color-border: rgba(229, 231, 235, 0.12);
+  --color-border-hover: rgba(229, 231, 235, 0.2);
 
-  /* Spacing & sizing */
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  /* Status */
+  --color-verified: #10b981;
+  --color-warning: #f59e0b;
+
+  /* Radius scale */
+  --radius-sm: 7px;
+  --radius-md: 10px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
+  --radius-xl: 24px;
+  --radius-full: 100px;
 }
 
 /* === Base === */
@@ -44,359 +41,232 @@ html {
 }
 
 body {
-  background: var(--color-bg-primary);
+  background: var(--color-surface-0);
   color: var(--color-text-primary);
-  font-feature-settings: "ss01", "cv02";
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv11", "ss01";
 }
 
-/* === Glass Layers === */
-.glass {
-  background: rgba(5, 5, 7, 0.75);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+/* === Nav Glass (only element with blur) === */
+.nav-glass {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.glass-card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+/* === Two-Tone Heading === */
+.heading-primary {
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.048em;
 }
 
-.glass-card-hover:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.07) 0%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.5),
-    0 0 40px rgba(139, 92, 246, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.heading-secondary {
+  color: #999999;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.048em;
 }
 
-/* === Gradient Text === */
-.gradient-text {
-  background: linear-gradient(135deg, #ffffff 0%, #a78bfa 60%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* === Display Text === */
+.text-display {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.062em;
 }
 
-.gradient-text-hero {
-  background: linear-gradient(
-    to right,
-    #f0f0f5 0%,
-    #f0f0f5 20%,
-    #a78bfa 45%,
-    #818cf8 55%,
-    #06b6d4 70%,
-    #f0f0f5 90%,
-    #f0f0f5 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: text-shimmer 6s ease-in-out infinite;
+.text-heading {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.048em;
 }
 
-@keyframes text-shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -200% center; }
+.text-heading-sm {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.33;
+  letter-spacing: -0.022em;
 }
 
-/* === Ambient Glow Background === */
-.ambient-glow {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+.text-body-lg {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.33;
+  letter-spacing: -0.022em;
 }
 
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
+.text-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
 }
 
-.glow-orb-1 {
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
-  top: -20%;
-  left: 30%;
-  animation: float-slow 8s ease-in-out infinite;
+.text-body-sm {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.44;
+  letter-spacing: -0.01em;
 }
 
-.glow-orb-2 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
-  top: 10%;
-  right: -5%;
-  animation: float-slow 12s ease-in-out infinite reverse;
+.text-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.48;
 }
 
-.glow-orb-3 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
-  top: 40%;
-  left: -5%;
-  animation: float-slow 10s ease-in-out infinite 2s;
+.text-caption {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
 }
 
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
-  50% { transform: translateY(-20px) scale(1.03); opacity: 0.8; }
+/* === Buttons === */
+.btn-primary {
+  background: var(--color-accent);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* === Glow Button === */
-.glow-button {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-indigo));
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.btn-primary:hover {
+  background: var(--color-accent-hover);
 }
 
-.glow-button:hover {
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(139, 92, 246, 0.15);
-  transform: translateY(-1px);
+.btn-secondary {
+  background: var(--color-surface-2);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.glow-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.1) 50%, transparent 60%);
-  background-size: 250% 250%;
-  animation: button-shine 4s ease-in-out infinite;
+.btn-secondary:hover {
+  background: var(--color-surface-3);
 }
 
-@keyframes button-shine {
-  0%, 100% { background-position: 200% 200%; }
-  50% { background-position: -50% -50%; }
+.btn-outline {
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* === Ghost Button === */
-.ghost-button {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s;
+.btn-outline:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-1);
 }
 
-.ghost-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+/* === Card === */
+.card {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  transition: border-color 0.2s;
 }
 
-/* === Rotating Border === */
-.rotating-border {
-  position: relative;
-  overflow: hidden;
+.card:hover {
+  border-color: var(--color-border-hover);
 }
 
-.rotating-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from var(--angle, 0deg),
-    transparent 0%,
-    rgba(139, 92, 246, 0.5) 10%,
-    rgba(6, 182, 212, 0.4) 20%,
-    transparent 30%,
-    transparent 100%
-  );
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  animation: rotate-border 4s linear infinite;
-  opacity: 0;
-  transition: opacity 0.5s;
+.card-lg {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  transition: border-color 0.2s;
 }
 
-.rotating-border:hover::before {
-  opacity: 1;
+.card-lg:hover {
+  border-color: var(--color-border-hover);
 }
 
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
+/* === Pill / Badge === */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
 
-@keyframes rotate-border {
-  to { --angle: 360deg; }
+.badge-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: #ffffff;
 }
 
-/* === Glow Card === */
-.glow-card {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* === Tab Control === */
+.tab {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  cursor: pointer;
 }
 
-.glow-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    135deg,
-    rgba(139, 92, 246, 0.3),
-    transparent 40%,
-    transparent 60%,
-    rgba(6, 182, 212, 0.2)
-  );
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.4s;
+.tab:hover {
+  color: var(--color-text-primary);
 }
 
-.glow-card:hover::before {
-  opacity: 1;
+.tab-active {
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
 }
 
-.glow-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 60px -10px rgba(139, 92, 246, 0.12),
-              0 8px 24px -6px rgba(0, 0, 0, 0.5);
+/* === Section spacing === */
+.section-gap {
+  padding-top: 96px;
+  padding-bottom: 96px;
 }
 
-/* === Grid Pattern === */
-.grid-pattern {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 64px 64px;
-}
-
-/* === Flow Line (Timeline) === */
-.flow-line {
-  position: relative;
-}
-
-.flow-line::before {
-  content: "";
-  position: absolute;
-  left: 19px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(139, 92, 246, 0.3) 20%,
-    rgba(6, 182, 212, 0.3) 80%,
-    transparent
-  );
-}
-
-/* === Animated dot on timeline === */
-.flow-dot {
-  position: relative;
-}
-
-.flow-dot::after {
-  content: "";
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--color-accent-purple);
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
-}
-
-/* === Stats counter effect === */
-.stat-number {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-/* === Marquee === */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-marquee {
-  animation: marquee 40s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* === Fade-in animation === */
+/* === Fade in animation (minimal) === */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
+  opacity: 0;
 }
 
-/* === Noise texture overlay === */
-.noise-overlay::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  mix-blend-mode: overlay;
-}
-
-/* === Section divider glow === */
-.section-glow {
-  position: relative;
-}
-
-.section-glow::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  max-width: 500px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(139, 92, 246, 0.4),
-    rgba(6, 182, 212, 0.3),
-    transparent
-  );
-}
-
-/* === Reduced motion === */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  .glow-orb { animation: none !important; }
-}
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
