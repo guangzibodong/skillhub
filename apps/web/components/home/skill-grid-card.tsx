@@ -7,12 +7,12 @@ type Props = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  "browser-research-pro": <Globe size={20} className="text-[var(--color-accent)]" />,
-  "crm-enrichment": <Database size={20} className="text-[var(--color-accent)]" />,
-  "support-triage": <Activity size={20} className="text-[var(--color-accent)]" />,
-  "code-review-assistant": <FileJson size={20} className="text-[var(--color-accent)]" />,
-  "data-pipeline-orchestrator": <Zap size={20} className="text-[var(--color-accent)]" />,
-  "financial-report-analyzer": <ShieldCheck size={20} className="text-[var(--color-accent)]" />,
+  "browser-research-pro": <Globe size={24} className="text-[#0075ff]" />,
+  "crm-enrichment": <Database size={24} className="text-[#0075ff]" />,
+  "support-triage": <Activity size={24} className="text-[#0075ff]" />,
+  "code-review-assistant": <FileJson size={24} className="text-[#0075ff]" />,
+  "data-pipeline-orchestrator": <Zap size={24} className="text-[#0075ff]" />,
+  "financial-report-analyzer": <ShieldCheck size={24} className="text-[#0075ff]" />,
 };
 
 const zhDesc: Record<string, string> = {
@@ -25,45 +25,43 @@ const zhDesc: Record<string, string> = {
 };
 
 export function SkillGridCard({ skill, locale }: Props) {
-  const icon = iconMap[skill.slug] || <Zap size={20} className="text-[var(--color-accent)]" />;
+  const icon = iconMap[skill.slug] || <Zap size={24} className="text-[#0075ff]" />;
   const desc = locale === "zh" ? zhDesc[skill.slug] || skill.description : skill.description;
   const isVerified = skill.verificationStatus === "verified";
 
   return (
     <a
       href={`/skills/${skill.slug}`}
-      className="skill-grid-card flex-shrink-0 w-[264px]"
+      className="flex-shrink-0 w-[264px] bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] overflow-hidden hover:border-[rgba(255,255,255,0.15)] transition-all group block"
     >
-      {/* Visual area (replaces image) */}
-      <div className="skill-grid-card-image">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-[var(--radius-md)] bg-[var(--color-surface-3)] flex items-center justify-center">
-            {icon}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-caption text-[var(--color-text-muted)]">
-              {(skill.runtimeType || "HTTP").toUpperCase()}
+      {/* Image area (like Morphic's workflow thumbnail) */}
+      <div className="aspect-[16/10] bg-[#292929] flex flex-col items-center justify-center gap-3 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="w-14 h-14 rounded-[12px] bg-[#333] flex items-center justify-center group-hover:bg-[#3a3a3a] transition-colors">
+          {icon}
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono text-[#666] bg-[#212121] px-2 py-0.5 rounded-[4px]">
+            {(skill.runtimeType || "HTTP").toUpperCase()}
+          </span>
+          {isVerified && (
+            <span className="inline-flex items-center gap-1 text-[10px] text-[#10b981]">
+              <ShieldCheck size={9} />
             </span>
-            {isVerified && (
-              <span className="inline-flex items-center gap-1 text-caption text-[var(--color-verified)]">
-                <ShieldCheck size={10} />
-              </span>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Text body */}
-      <div className="skill-grid-card-body">
-        <h3 className="text-body-sm text-[var(--color-text-primary)] mb-1 truncate">
+      {/* Body */}
+      <div className="p-3.5">
+        <h3 className="text-[14px] font-medium text-white mb-1 truncate group-hover:text-[#0075ff] transition-colors">
           {skill.displayName}
         </h3>
-        <p className="text-caption text-[var(--color-text-muted)] line-clamp-2">
+        <p className="text-[12px] text-[#666] leading-[1.5] line-clamp-2 mb-2.5">
           {desc}
         </p>
-        <p className="text-caption text-[var(--color-accent)] mt-2">
+        <span className="text-[12px] text-[#0075ff] font-medium">
           {locale === "zh" ? "调用技能 →" : "Run skill →"}
-        </p>
+        </span>
       </div>
     </a>
   );

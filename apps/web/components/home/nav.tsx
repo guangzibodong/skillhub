@@ -38,58 +38,60 @@ export function HomeNav({ locale }: NavProps) {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "nav-glass border-b border-[var(--color-border)]" : ""
+        scrolled
+          ? "bg-[rgba(0,0,0,0.85)] backdrop-blur-[16px] border-b border-[rgba(255,255,255,0.08)]"
+          : ""
       }`}
     >
-      <nav className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <a href={`/${langSuffix}`} className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-[var(--radius-sm)] bg-[var(--color-accent)] flex items-center justify-center">
-            <span className="text-xs font-bold text-white">S</span>
+      <nav className="max-w-[1200px] mx-auto px-6 h-[64px] flex items-center justify-between">
+        {/* Left: Logo */}
+        <a href={`/${langSuffix}`} className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-[7px] bg-[#0075ff] flex items-center justify-center">
+            <span className="text-[11px] font-bold text-white">S</span>
           </div>
-          <span className="text-body-sm text-[var(--color-text-primary)]">
+          <span className="text-[15px] font-semibold text-white tracking-[-0.02em]">
             SkillHub
           </span>
         </a>
 
-        {/* Desktop links */}
+        {/* Center: nav links */}
         <div className="hidden md:flex items-center gap-1">
           {links.map((link) => (
             <a
               key={link.href}
               href={`${link.href}${langSuffix}`}
-              className="text-body-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-3 py-2"
+              className="text-[14px] font-medium text-[#999] hover:text-white transition-colors px-3.5 py-2"
             >
               {link.label}
             </a>
           ))}
         </div>
 
-        {/* Right side */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Right: auth */}
+        <div className="hidden md:flex items-center gap-4">
           <a
             href={locale === "zh" ? "/?lang=en" : "/?lang=zh"}
-            className="text-label text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors px-2 py-1"
+            className="text-[12px] text-[#525252] hover:text-[#999] transition-colors"
           >
             {locale === "zh" ? "EN" : "中文"}
           </a>
           <a
             href={`/login${langSuffix}`}
-            className="text-body-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors px-3 py-2"
+            className="text-[14px] font-medium text-[#999] hover:text-white transition-colors"
           >
             {locale === "zh" ? "登录" : "Log in"}
           </a>
           <a
             href={`/developer${langSuffix}`}
-            className="btn-primary"
+            className="bg-[#0075ff] hover:bg-[#0066e0] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] transition-colors"
           >
-            {locale === "zh" ? "开始创建" : "Start building"}
+            {locale === "zh" ? "开始创建" : "Start creating"}
           </a>
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-[var(--color-text-secondary)]"
+          className="md:hidden p-2 text-[#999]"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -99,25 +101,25 @@ export function HomeNav({ locale }: NavProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[var(--color-surface-0)] border-t border-[var(--color-border)] px-6 py-4 space-y-1">
+        <div className="md:hidden bg-black border-t border-[rgba(255,255,255,0.08)] px-6 py-4 space-y-1">
           {links.map((link) => (
             <a
               key={link.href}
               href={`${link.href}${langSuffix}`}
-              className="block text-body-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] py-2.5"
+              className="block text-[14px] text-[#999] hover:text-white py-2.5"
             >
               {link.label}
             </a>
           ))}
-          <div className="pt-3 mt-2 border-t border-[var(--color-border)] flex items-center gap-3">
-            <a
-              href={`/login${langSuffix}`}
-              className="text-body-sm text-[var(--color-text-secondary)]"
-            >
+          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] flex items-center gap-3">
+            <a href={`/login${langSuffix}`} className="text-[14px] text-[#999]">
               {locale === "zh" ? "登录" : "Log in"}
             </a>
-            <a href={`/developer${langSuffix}`} className="btn-primary">
-              {locale === "zh" ? "开始创建" : "Start building"}
+            <a
+              href={`/developer${langSuffix}`}
+              className="bg-[#0075ff] text-white text-[14px] font-medium px-4 py-2 rounded-[7px]"
+            >
+              {locale === "zh" ? "开始创建" : "Start creating"}
             </a>
           </div>
         </div>
