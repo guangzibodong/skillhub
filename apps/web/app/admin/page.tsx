@@ -32,7 +32,6 @@ import { AdminMarketplaceCurationManager } from "@/components/admin-marketplace-
 import { AdminPayoutManager } from "@/components/admin-payout-manager";
 import { AdminReviewManager } from "@/components/admin-review-manager";
 import { JourneyRail } from "@/components/journey-rail";
-import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
@@ -72,6 +71,15 @@ type PageProps = {
 };
 
 const financeIcons = [Scale, Banknote, AlertTriangle] as const;
+const adminWorkbenchAnchors = [
+  "#launch-readiness",
+  "#admin-reviews",
+  "#admin-identity",
+  "#admin-deliveries",
+  "#admin-risk",
+  "#admin-finance"
+] as const;
+const adminWorkbenchIcons = [ShieldCheck, Gavel, Users, Bell, Siren, ReceiptText] as const;
 const adminAccessRoles = ["reviewer", "finance", "support", "admin", "super_admin"];
 
 type AdminPriorityTone = "danger" | "ready" | "warning";
@@ -658,17 +666,17 @@ const adminConsoleV2Copy = {
     apiHealthy: "healthy",
     auditSearch: "Search order ID, email, skill, publisher, IP, or event ID",
     checkoutPrelaunch: "Prelaunch",
-    configureDataSource: "Configure source",
+    configureDataSource: "View source checklist",
     customRange: "Custom",
     dataSourcePending: "Source pending",
-    exportDaily: "Export daily report",
+    exportDaily: "Audit log",
     help: "Help",
     keyboardHint: "Ctrl K",
     language: "EN / 中文",
     live: "Live",
     notifications: "Notifications",
     openOrders: "Order center",
-    openPayments: "Payment config",
+    openPayments: "Payment status",
     paymentOpen: "Payment open",
     publicSite: "View public site",
     role: "Role",
@@ -695,7 +703,7 @@ const adminConsoleV2Copy = {
     },
     analytics: {
       export: "Export",
-      filters: ["GMV", "Orders", "Traffic"],
+      filters: ["Ledger source", "Trend preview", "Provider-gated"],
       install: "Installs",
       refundRate: "Refund rate",
       signup: "Signup conversion",
@@ -718,32 +726,47 @@ const adminConsoleV2Copy = {
       subtitle: "Sorted by launch blockers, money risk, and user impact."
     },
     selectedOrder: {
-      actions: ["Confirm manually", "Notify user", "Mark risk"],
       empty: "Select an order after ledger rows are available.",
+      gatedActions: ["Provider callback required", "Notification template gated", "Risk case required"],
       label: "Selected order",
+      ledgerAction: "Open ledger detail",
       pending: "Waiting for provider callback or admin reconciliation.",
       title: "Current order detail"
     },
     traffic: {
       labels: ["Google", "Direct", "GitHub", "/login", "/admin", "/api/auth"],
       title: "Sources, paths, abnormal access"
+    },
+    workbench: {
+      body:
+        "Detailed modules are grouped by real operator jobs. Every card below opens an existing section; prelaunch capabilities stay labeled instead of pretending to be live buttons.",
+      eyebrow: "Detailed operations workbench",
+      title: "Open the exact admin module you need",
+      cards: [
+        ["Launch readiness", "Review blockers, warnings, deferred items, and release gates.", "Blockers"],
+        ["Reviews and audit", "Approve skills, inspect review evidence, and trace audit records.", "Queue"],
+        ["Identity and access", "Check users, organizations, roles, and admin access health.", "Roles"],
+        ["Notifications and webhooks", "Retry failed delivery, inspect callbacks, and edit templates.", "Delivery"],
+        ["Risk and disputes", "Handle feedback, incidents, abuse, refunds, and disputes.", "Risk"],
+        ["Finance and ledger", "Reconcile orders, payouts, commissions, and ledger rows.", "Money"]
+      ]
     }
   },
   zh: {
     apiHealthy: "healthy",
     auditSearch: "搜索订单号、邮箱、技能、发布者、IP、事件 ID",
     checkoutPrelaunch: "Prelaunch",
-    configureDataSource: "配置数据源",
+    configureDataSource: "查看接入清单",
     customRange: "自定义",
     dataSourcePending: "数据源待接入",
-    exportDaily: "导出日报",
+    exportDaily: "查看审计",
     help: "帮助",
     keyboardHint: "Ctrl K",
     language: "EN / 中文",
     live: "Live",
     notifications: "通知",
     openOrders: "订单中心",
-    openPayments: "支付配置",
+    openPayments: "支付状态",
     paymentOpen: "支付开放",
     publicSite: "查看公开站点",
     role: "角色",
@@ -770,7 +793,7 @@ const adminConsoleV2Copy = {
     },
     analytics: {
       export: "导出",
-      filters: ["GMV", "订单", "流量"],
+      filters: ["账本数据", "趋势预览", "渠道待接入"],
       install: "技能安装",
       refundRate: "退款率",
       signup: "注册转化",
@@ -793,15 +816,30 @@ const adminConsoleV2Copy = {
       subtitle: "按上线阻断、资金风险、用户影响排序。"
     },
     selectedOrder: {
-      actions: ["人工确认", "通知用户", "标记异常"],
       empty: "有账本订单后可在这里查看详情。",
+      gatedActions: ["需要渠道回调", "通知模板待接入", "需要风险工单"],
       label: "当前选中订单",
+      ledgerAction: "打开账本详情",
       pending: "等待支付渠道回调或管理员对账确认。",
       title: "当前订单详情"
     },
     traffic: {
       labels: ["Google", "Direct", "GitHub", "/login", "/admin", "/api/auth"],
       title: "来源、路径、异常访问"
+    },
+    workbench: {
+      body:
+        "详细模块按真实运营岗位分组。下面每张卡都打开已有功能区；预上线能力只显示状态，不再伪装成可操作按钮。",
+      eyebrow: "详细运维工作区",
+      title: "按任务进入对应后台模块",
+      cards: [
+        ["上线就绪", "检查阻断项、提醒项、延期项和发布门禁。", "阻断"],
+        ["审核与审计", "处理技能审核、查看审核证据、追踪审计记录。", "队列"],
+        ["身份与权限", "查看用户、组织、角色和管理员准入状态。", "角色"],
+        ["通知与 Webhook", "重试失败投递、检查回调、维护通知模板。", "投递"],
+        ["风险与争议", "处理反馈、事故、举报、退款和争议。", "风控"],
+        ["财务与账本", "核对订单、提现、佣金规则和账本流水。", "资金"]
+      ]
     }
   }
 } as const;
@@ -1060,6 +1098,31 @@ export default async function AdminPage({ searchParams }: PageProps) {
     [locale === "zh" ? "提现结算" : "Payout settlement", adminV2Labels.payments.payout, adminConsoleLabels.payment.items[3][1], "green"]
   ] as const;
   const trafficBars = [74, 56, 42, 68, 28, 38];
+  const workbenchCounts = [
+    launchReadiness.summary.blocker,
+    reviewMetrics.actionable,
+    identityDirectory.summary.userCount,
+    deliveryActionCount,
+    activeIncidentCount + openAbuseReportCount + pendingFeedbackCount + adjustmentActionCount,
+    financeLedger.recentTransactions.length + payoutActionCount
+  ];
+  const workbenchTones: AdminKpiTone[] = [
+    launchReadiness.summary.blocker > 0 ? "danger" : launchReadiness.summary.warning > 0 ? "warning" : "ready",
+    reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready",
+    identityDirectory.summary.adminUserCount > 0 ? "ready" : "warning",
+    deliveryActionCount > 0 ? "warning" : "ready",
+    activeIncidentCount + openAbuseReportCount > 0 ? "danger" : pendingFeedbackCount + adjustmentActionCount > 0 ? "warning" : "ready",
+    payoutActionCount + orderActionCount > 0 ? "warning" : "ready"
+  ];
+  const workbenchCards = adminV2Labels.workbench.cards.map(([title, detail, statLabel], index) => ({
+    detail,
+    href: localizedHref(`/admin${adminWorkbenchAnchors[index]}`, locale),
+    Icon: adminWorkbenchIcons[index],
+    statLabel,
+    title,
+    tone: workbenchTones[index] ?? "neutral",
+    value: formatCompactNumber(workbenchCounts[index] ?? 0)
+  }));
 
   return (
     <main className="product-shell admin-console-page">
@@ -1122,10 +1185,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
         <div className="admin-console-main">
           <header className="admin-operator-topbar" aria-label={locale === "zh" ? "管理员工具栏" : "Admin toolbar"}>
-            <div className="admin-global-search" aria-label={adminV2Labels.auditSearch}>
+            <div className="admin-global-search admin-global-search--status" aria-label={adminConsoleLabels.shell.searchPreview}>
               <Search size={16} aria-hidden="true" />
-              <span>{adminV2Labels.auditSearch}</span>
-              <kbd>{adminV2Labels.keyboardHint}</kbd>
+              <span>{adminConsoleLabels.shell.searchPlaceholder}</span>
+              <em>{adminConsoleLabels.shell.searchPreview}</em>
             </div>
             <div className="admin-top-actions">
               <a className="admin-toolbar-button" href={localizedHref("/admin", alternateLocale)}>{adminV2Labels.language}</a>
@@ -1183,7 +1246,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <aside className="admin-health-panel">
-              <div className="admin-time-range" aria-label={locale === "zh" ? "数据时间范围" : "Data time range"}>
+              <div className="admin-time-range admin-time-range--status" aria-label={locale === "zh" ? "数据时间范围" : "Data time range"}>
                 {adminConsoleLabels.shell.timeRanges.map((range, index) => (
                   <span className={index === 0 ? "is-active" : undefined} key={range}>
                     {range}
@@ -1257,7 +1320,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <h2 id="admin-analytics-v2-title">{adminConsoleLabels.analytics.title}</h2>
                   <p>{adminV2Labels.analytics.subtitle}</p>
                 </div>
-                <div className="admin-segmented-control">
+                <div className="admin-status-strip">
                   {adminV2Labels.analytics.filters.map((filter, index) => (
                     <span className={index === 0 ? "is-active" : undefined} key={filter}>{filter}</span>
                   ))}
@@ -1391,7 +1454,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <h2>{adminV2Labels.orders.title}</h2>
                   <p>{adminConsoleLabels.order.description}</p>
                 </div>
-                <div className="admin-segmented-control admin-segmented-control--wrap">
+                <div className="admin-status-strip admin-status-strip--wrap">
                   {adminV2Labels.orders.tabs.map((tab, index) => (
                     <span className={index === 0 ? "is-active" : undefined} key={tab}>{tab}</span>
                   ))}
@@ -1496,10 +1559,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     <span>{selectedOrder.balanceState ?? adminConsoleLabels.kpis.money}</span>
                   </div>
                   <div className="admin-selected-order__actions">
-                    {adminV2Labels.selectedOrder.actions.map((action, index) => (
-                      <a className={index === 0 ? "primary-button" : "secondary-button"} href={localizedHref("/admin#admin-ledger", locale)} key={action}>
-                        {action}
-                      </a>
+                    <a className="primary-button" href={localizedHref("/admin#admin-ledger", locale)}>
+                      {adminV2Labels.selectedOrder.ledgerAction}
+                    </a>
+                  </div>
+                  <div className="admin-selected-order__gated" aria-label={locale === "zh" ? "订单后续动作状态" : "Order follow-up action states"}>
+                    {adminV2Labels.selectedOrder.gatedActions.map((action) => (
+                      <span className="admin-state-pill admin-state-pill--amber" key={action}>{action}</span>
                     ))}
                   </div>
                 </>
@@ -1619,171 +1685,196 @@ export default async function AdminPage({ searchParams }: PageProps) {
               workspace="admin"
             />
           </section>
-        </div>
-      </section>
 
-      <section className="admin-evidence-section">
-        <OperatingEvidenceChain
-          focus="admin"
-          locale={locale}
-          stats={[
-            { label: labels.metrics[0][0], value: formatMoney(financeLedger.summary.grossCents) },
-            { label: labels.metrics[2][0], tone: financeLedger.summary.pendingBalanceCents > 0 ? "attention" : "neutral", value: formatMoney(financeLedger.summary.pendingBalanceCents) },
-            { label: labels.metrics[3][0], tone: reviewMetrics.actionable > 0 ? "attention" : "good", value: String(reviewMetrics.actionable + activeIncidentCount + pendingFeedbackCount) },
-            { label: ops.moneyTitle, value: String(financeLedger.recentTransactions.length) }
-          ]}
-        />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
-        <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
-      </section>
-
-      <section className="admin-layout" id="admin-reviews">
-        <AdminReviewManager locale={locale} reviews={reviews} />
-
-        <div id="admin-audit">
-          <AdminAuditLogPanel locale={locale} logs={auditLogs} />
-        </div>
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-identity">
-        <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-curation">
-        <AdminMarketplaceCurationManager
-          appeals={marketplaceCuration.appeals}
-          connectionMessage={marketplaceCuration.message}
-          connectionMode={marketplaceCuration.mode}
-          curation={marketplaceCuration.curation}
-          locale={locale}
-        />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-deliveries">
-        <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-webhooks">
-        <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-templates">
-        <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
-      </section>
-
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-risk">
-        <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
-        <AdminIncidentManager incidents={incidents} locale={locale} />
-        <AbuseReportManager locale={locale} reports={abuseReports} />
-        <div id="admin-adjustments">
-          <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
-        </div>
-      </section>
-
-      <section className="admin-layout">
-        <article className="ops-panel work-table-panel">
-          <div className="card-kicker">
-            <Siren size={16} aria-hidden="true" />
-            <span>{ops.riskTitle}</span>
-          </div>
-          <div className="work-table">
-            <div className="work-table__row work-table__row--head">
-              {ops.riskHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
-            </div>
-            {riskRows.map(([signal, scope, action, owner]) => (
-              <div className="work-table__row" key={signal}>
-                <strong>{signal}</strong>
-                <span>{scope}</span>
-                <span>{action}</span>
-                <span>{owner}</span>
-              </div>
-            ))}
-            {riskRows.length === 0 ? (
-              <div className="work-table__empty">{locale === "zh" ? "暂无实时风险信号。" : "No live risk signals recorded yet."}</div>
-            ) : null}
-          </div>
-        </article>
-
-        <aside className="ops-panel">
-          <div className="card-kicker">
-            <Gavel size={16} aria-hidden="true" />
-            <span>{ops.actionTitle}</span>
-          </div>
-          <div className="ops-list">
-            {ops.actionRows.map(([title, detail]) => (
-              <div className="ops-row" key={title}>
-                <Scale size={18} aria-hidden="true" />
-                <div>
-                  <strong>{title}</strong>
-                  <span>{detail}</span>
+          <section className="admin-detail-workbench" aria-labelledby="admin-detail-workbench-title">
+            <div className="admin-detail-workbench__intro">
+              <div>
+                <div className="card-kicker">
+                  <ListChecks size={16} aria-hidden="true" />
+                  <span>{adminV2Labels.workbench.eyebrow}</span>
                 </div>
+                <h2 id="admin-detail-workbench-title">{adminV2Labels.workbench.title}</h2>
+                <p>{adminV2Labels.workbench.body}</p>
               </div>
-            ))}
-          </div>
-        </aside>
-      </section>
-
-      <section className="workspace-ops-layout" id="admin-finance">
-        <article className="ops-panel work-table-panel">
-          <div className="card-kicker">
-            <ReceiptText size={16} aria-hidden="true" />
-            <span>{ops.moneyTitle}</span>
-          </div>
-          <div className="money-table">
-            <div className="money-table__row money-table__row--head">
-              {ops.moneyHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
+              <a className="secondary-button" href={primaryPriorityItem.href}>
+                <span>{adminV2Labels.hero.primary}</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
             </div>
-            {financeRows.map(([batch, gross, fee, share, state]) => (
-              <div className="money-table__row" key={batch}>
-                <strong>{batch}</strong>
-                <span>{gross}</span>
-                <span>{fee}</span>
-                <span>{share}</span>
-                <span className="status-chip">{state}</span>
-              </div>
-            ))}
-            {financeRows.length === 0 ? (
-              <div className="money-table__empty">{locale === "zh" ? "暂无已入账资金流水。" : "No posted ledger transactions yet."}</div>
-            ) : null}
-          </div>
-        </article>
 
-        <div id="admin-payouts">
-          <AdminPayoutManager locale={locale} payouts={payouts} />
-        </div>
-      </section>
+            <nav className="admin-workbench-nav" aria-label={adminV2Labels.workbench.eyebrow}>
+              {workbenchCards.map((card) => {
+                const Icon = card.Icon ?? ListChecks;
+                const stateClass =
+                  card.tone === "danger" ? "admin-state-pill--red" : card.tone === "warning" ? "admin-state-pill--amber" : "admin-state-pill--green";
 
-      <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-ledger">
-        <AdminLedgerProcessor ledger={financeLedger} locale={locale} />
-        <AdminCommissionRuleManager locale={locale} rules={commissionRules} />
-      </section>
+                return (
+                  <a className={`admin-workbench-card admin-workbench-card--${card.tone}`} href={card.href} key={card.title}>
+                    <span className="admin-workbench-card__icon">
+                      <Icon size={18} aria-hidden="true" />
+                    </span>
+                    <strong>{card.title}</strong>
+                    <p>{card.detail}</p>
+                    <b className={`admin-state-pill ${stateClass}`}>{card.value} {card.statLabel}</b>
+                  </a>
+                );
+              })}
+            </nav>
 
-      <section className="admin-finance-section">
-        <div className="section-heading section-heading--compact">
-          <div className="eyebrow">
-            <ListChecks size={16} aria-hidden="true" />
-            <span>{labels.financeTitle}</span>
-          </div>
-        </div>
+            <div className="admin-detail-workbench__modules">
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
+                <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
+              </section>
 
-        <div className="finance-rule-grid">
-          {labels.financeRows.map((row: readonly [string, string], index: number) => {
-            const [title, detail] = row;
-            const Icon = financeIcons[index];
-            return (
-              <article className="finance-rule lift-card" key={title}>
-                <Icon size={19} aria-hidden="true" />
-                <h2>{title}</h2>
-                <p>{detail}</p>
-              </article>
-            );
-          })}
+              <section className="admin-layout" id="admin-reviews">
+                <AdminReviewManager locale={locale} reviews={reviews} />
+
+                <div id="admin-audit">
+                  <AdminAuditLogPanel locale={locale} logs={auditLogs} />
+                </div>
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-identity">
+                <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-curation">
+                <AdminMarketplaceCurationManager
+                  appeals={marketplaceCuration.appeals}
+                  connectionMessage={marketplaceCuration.message}
+                  connectionMode={marketplaceCuration.mode}
+                  curation={marketplaceCuration.curation}
+                  locale={locale}
+                />
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-deliveries">
+                <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-webhooks">
+                <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-templates">
+                <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-risk">
+                <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
+                <AdminIncidentManager incidents={incidents} locale={locale} />
+                <AbuseReportManager locale={locale} reports={abuseReports} />
+                <div id="admin-adjustments">
+                  <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
+                </div>
+              </section>
+
+              <section className="admin-layout">
+                <article className="ops-panel work-table-panel">
+                  <div className="card-kicker">
+                    <Siren size={16} aria-hidden="true" />
+                    <span>{ops.riskTitle}</span>
+                  </div>
+                  <div className="work-table">
+                    <div className="work-table__row work-table__row--head">
+                      {ops.riskHeaders.map((header) => (
+                        <span key={header}>{header}</span>
+                      ))}
+                    </div>
+                    {riskRows.map(([signal, scope, action, owner]) => (
+                      <div className="work-table__row" key={signal}>
+                        <strong>{signal}</strong>
+                        <span>{scope}</span>
+                        <span>{action}</span>
+                        <span>{owner}</span>
+                      </div>
+                    ))}
+                    {riskRows.length === 0 ? (
+                      <div className="work-table__empty">{locale === "zh" ? "暂无实时风险信号。" : "No live risk signals recorded yet."}</div>
+                    ) : null}
+                  </div>
+                </article>
+
+                <aside className="ops-panel">
+                  <div className="card-kicker">
+                    <Gavel size={16} aria-hidden="true" />
+                    <span>{ops.actionTitle}</span>
+                  </div>
+                  <div className="ops-list">
+                    {ops.actionRows.map(([title, detail]) => (
+                      <div className="ops-row" key={title}>
+                        <Scale size={18} aria-hidden="true" />
+                        <div>
+                          <strong>{title}</strong>
+                          <span>{detail}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </aside>
+              </section>
+
+              <section className="workspace-ops-layout" id="admin-finance">
+                <article className="ops-panel work-table-panel">
+                  <div className="card-kicker">
+                    <ReceiptText size={16} aria-hidden="true" />
+                    <span>{ops.moneyTitle}</span>
+                  </div>
+                  <div className="money-table">
+                    <div className="money-table__row money-table__row--head">
+                      {ops.moneyHeaders.map((header) => (
+                        <span key={header}>{header}</span>
+                      ))}
+                    </div>
+                    {financeRows.map(([batch, gross, fee, share, state]) => (
+                      <div className="money-table__row" key={batch}>
+                        <strong>{batch}</strong>
+                        <span>{gross}</span>
+                        <span>{fee}</span>
+                        <span>{share}</span>
+                        <span className="status-chip">{state}</span>
+                      </div>
+                    ))}
+                    {financeRows.length === 0 ? (
+                      <div className="money-table__empty">{locale === "zh" ? "暂无已入账资金流水。" : "No posted ledger transactions yet."}</div>
+                    ) : null}
+                  </div>
+                </article>
+
+                <div id="admin-payouts">
+                  <AdminPayoutManager locale={locale} payouts={payouts} />
+                </div>
+              </section>
+
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-ledger">
+                <AdminLedgerProcessor ledger={financeLedger} locale={locale} />
+                <AdminCommissionRuleManager locale={locale} rules={commissionRules} />
+              </section>
+
+              <section className="admin-finance-section">
+                <div className="section-heading section-heading--compact">
+                  <div className="eyebrow">
+                    <ListChecks size={16} aria-hidden="true" />
+                    <span>{labels.financeTitle}</span>
+                  </div>
+                </div>
+
+                <div className="finance-rule-grid">
+                  {labels.financeRows.map((row: readonly [string, string], index: number) => {
+                    const [title, detail] = row;
+                    const Icon = financeIcons[index];
+                    return (
+                      <article className="finance-rule lift-card" key={title}>
+                        <Icon size={19} aria-hidden="true" />
+                        <h2>{title}</h2>
+                        <p>{detail}</p>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            </div>
+          </section>
         </div>
       </section>
     </main>
