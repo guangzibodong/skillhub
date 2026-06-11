@@ -11,8 +11,8 @@ import {
   Scale,
   ShieldCheck
 } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { AppShell } from "@/components/app-shell";
+import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -145,114 +145,114 @@ const pageCopy = {
     ]
   },
   zh: {
-    eyebrow: "\u8fd0\u8425\u6761\u6b3e",
-    title: "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u8fd0\u8425\u6761\u6b3e\u3002",
+    eyebrow: "运营条款",
+    title: "开发者预览版运营条款。",
     description:
-      "\u8fd9\u4e9b\u6761\u6b3e\u8986\u76d6\u516c\u5f00\u53d1\u73b0\u3001\u67e5\u770b\u3001\u5ba1\u6838\u3001\u8fd0\u884c\u6cbb\u7406\u548c\u9884\u53d1\u5e03\u4ed8\u8d39\u5e02\u573a\u5efa\u6a21\u3002\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u63d0\u73b0\u5c1a\u672a\u9762\u5411\u516c\u4f17\u901a\u7528\u5f00\u653e\u3002",
-    effective: "\u5f53\u524d\u4e0a\u7ebf\u8fd0\u8425\u653f\u7b56",
-    primary: "\u53d1\u5e03\u6280\u80fd",
-    secondary: "\u67e5\u770b API \u6587\u6863",
+      "这些条款覆盖公开发现、查看、审核、运行治理和预发布付费市场建模。支付扣款和自动提现尚未面向公众通用开放。",
+    effective: "当前上线运营政策",
+    primary: "发布技能",
+    secondary: "查看 API 文档",
     summary: [
-      ["\u8303\u56f4", "\u6ce8\u518c\u5e93\u3001\u5e02\u573a\u3001\u8fd0\u884c\u7f51\u5173"],
-      ["\u8d44\u91d1", "\u9884\u53d1\u5e03\u8d26\u672c\u6a21\u578b\uff1b\u6682\u4e0d\u63d0\u4f9b\u901a\u7528\u652f\u4ed8\u6263\u6b3e"],
-      ["\u4fe1\u4efb", "\u5ba1\u6838\u3001\u4e8b\u6545\u3001\u4e3e\u62a5\u3001\u4e0b\u67b6"],
-      ["\u6570\u636e", "\u534f\u8bae\u3001\u8fd0\u884c\u3001\u8d26\u52a1\u3001\u901a\u77e5\u8bb0\u5f55"]
+      ["范围", "注册库、市场、运行网关"],
+      ["资金", "预发布账本模型；暂不提供通用支付扣款"],
+      ["信任", "审核、事故、举报、下架"],
+      ["数据", "协议、运行、账务、通知记录"]
     ],
     sections: [
       {
-        title: "\u4e70\u5bb6\u548c\u5f00\u53d1\u8005\u4f7f\u7528",
-        body: "\u5f00\u53d1\u8005\u53ea\u80fd\u901a\u8fc7\u9879\u76ee\u548c\u9879\u76ee\u7ea7\u51ed\u636e\u6765\u53d1\u73b0\u3001\u4fdd\u5b58\u3001\u5b89\u88c5\u3001\u6d4b\u8bd5\u548c\u8c03\u7528\u6280\u80fd\u3002",
+        title: "买家和开发者使用",
+        body: "开发者只能通过项目和项目级凭据来发现、保存、安装、测试和调用技能。",
         bullets: [
-          "\u5b89\u88c5\u524d\u5e94\u68c0\u67e5 manifest schema\u3001\u6743\u9650\u3001\u4ef7\u683c\u3001\u7248\u672c\u3001\u5ba1\u6838\u72b6\u6001\u3001\u4e8b\u6545\u548c\u516c\u5f00\u53cd\u9988\u3002",
-          "\u9879\u76ee owner \u8d1f\u8d23\u5ba1\u6279\u9ad8\u98ce\u9669\u6743\u9650\u3001\u8bbe\u7f6e\u9884\u7b97\u3001\u8f6e\u6362 API key\uff0c\u5e76\u91c7\u7528\u5df2\u5ba1\u6838\u7684\u7248\u672c\u66f4\u65b0\u3002",
-          "\u63a7\u5236\u53f0\u8fd0\u884c\u6d4b\u8bd5\u9ed8\u8ba4\u4e0d\u8ba1\u8d39\uff0c\u9664\u975e\u4ea7\u54c1\u660e\u786e\u6807\u8bb0\u4e3a\u4ed8\u8d39\u63d0\u4f9b\u5546\u6267\u884c\u3002"
+          "安装前应检查 manifest schema、权限、价格、版本、审核状态、事故和公开反馈。",
+          "项目 owner 负责审批高风险权限、设置预算、轮换 API key，并采用已审核的版本更新。",
+          "控制台运行测试默认不计费，除非产品明确标记为付费提供商执行。"
         ]
       },
       {
-        title: "\u53d1\u5e03\u8005\u8d23\u4efb",
-        body: "\u53d1\u5e03\u8005\u5fc5\u987b\u63d0\u4f9b\u51c6\u786e\u7684\u6280\u80fd\u534f\u8bae\uff0c\u5e76\u628a\u516c\u5f00\u4e0a\u67b6\u5f53\u6210\u53ef\u8fd0\u8425\u4ea7\u54c1\uff0c\u800c\u4e0d\u662f\u4e00\u6b21\u6027\u4e0a\u4f20\u3002",
+        title: "发布者责任",
+        body: "发布者必须提供准确的技能协议，并把公开上架当成可运营产品，而不是一次性上传。",
         bullets: [
-          "\u6bcf\u4e2a listing \u5fc5\u987b\u5305\u542b\u540d\u79f0\u3001\u63cf\u8ff0\u3001\u7248\u672c\u3001\u8fd0\u884c\u65f6\u3001\u8f93\u5165\u8f93\u51fa schema\u3001\u6743\u9650\u3001\u793a\u4f8b\u3001\u53d8\u66f4\u8bb0\u5f55\u548c\u652f\u6301\u8def\u5f84\u3002",
-          "\u5df2\u9a8c\u8bc1\u6216\u5df2\u5b89\u88c5\u7248\u672c\u4e0d\u53ef\u5c31\u5730\u4fee\u6539\uff1b\u884c\u4e3a\u3001schema\u3001\u6743\u9650\u3001\u4ef7\u683c\u6216\u8fd0\u884c\u65f6\u53d8\u5316\u90fd\u8981\u521b\u5efa\u65b0\u8bed\u4e49\u7248\u672c\u3002",
-          "\u4ed8\u8d39\u53d1\u5e03\u4ecd\u5c5e\u4e8e\u9884\u53d1\u5e03\u72b6\u6001\uff1b\u516c\u5f00\u542f\u7528\u524d\u9700\u8981\u53d1\u5e03\u8005\u8d44\u6599\u6709\u6548\u3001\u8d22\u52a1\u590d\u6838\u4ed8\u8d39\u51c6\u5907\u72b6\u6001\u3001\u4ef7\u683c\u5df2\u6279\u51c6\uff0c\u5e76\u63a5\u53d7\u9000\u6b3e\u548c\u4e89\u8bae\u6761\u6b3e\u3002"
+          "每个 listing 必须包含名称、描述、版本、运行时、输入输出 schema、权限、示例、变更记录和支持路径。",
+          "已验证或已安装版本不可就地修改；行为、schema、权限、价格或运行时变化都要创建新语义版本。",
+          "付费发布仍属于预发布状态；公开启用前需要发布者资料有效、财务复核付费准备状态、价格已批准，并接受退款和争议条款。"
         ]
       },
       {
-        title: "\u5ba1\u6838\u3001\u5b89\u5168\u548c\u4e0b\u67b6",
-        body: "SkillHub \u53ef\u4ee5\u5ba1\u6838\u3001\u62d2\u7edd\u3001\u9650\u5236\u3001\u6682\u505c\u3001\u5e9f\u5f03\u6216\u79fb\u9664 listing\uff0c\u4ee5\u4fdd\u62a4\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u548c\u5e02\u573a\u3002",
+        title: "审核、安全和下架",
+        body: "SkillHub 可以审核、拒绝、限制、暂停、废弃或移除 listing，以保护开发者、发布者和市场。",
         bullets: [
-          "\u9a8c\u8bc1\u9700\u8981\u81ea\u52a8 manifest\u3001\u8fd0\u884c\u65f6\u3001\u793a\u4f8b\u548c\u5b89\u5168\u68c0\u67e5\uff0c\u518d\u52a0\u4e0a reviewer \u51b3\u7b56\u3002",
-          "\u6ee5\u7528\u4e3e\u62a5\u3001\u91cd\u5927\u4e8b\u6545\u3001\u672a\u58f0\u660e\u6743\u9650\u3001\u6076\u610f\u8fd0\u884c\u3001\u9690\u79c1\u95ee\u9898\u6216\u8d26\u52a1\u6ee5\u7528\u53ef\u89e6\u53d1\u9650\u5236\u6216\u6682\u505c\u3002",
-          "\u964d\u6743\u5206\u53d1\u662f\u6392\u540d\u52a8\u4f5c\uff0c\u4e0d\u7b49\u4e8e\u4e0b\u67b6\uff1b\u53d1\u5e03\u8005\u4fee\u590d\u8d28\u91cf\u7f3a\u53e3\u540e\u53ef\u7528\u5e02\u573a\u7533\u8bc9\u6d41\u7a0b\u590d\u6838\u3002"
+          "验证需要自动 manifest、运行时、示例和安全检查，再加上 reviewer 决策。",
+          "滥用举报、重大事故、未声明权限、恶意运行行为、隐私或计费滥用可触发限制或暂停。",
+          "压制分发是排名操作而非下架；修复质量问题后发布者可使用市场申诉流程。"
         ]
       },
       {
-        title: "\u4ef7\u683c\u3001\u5206\u4f63\u548c\u4ed8\u8d39\u5e02\u573a\u9884\u89c8",
-        body: "\u5728\u6700\u7ec8\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u6253\u6b3e\u63a5\u5165\u524d\uff0c\u5546\u4e1a\u8bb0\u5f55\u4f5c\u4e3a\u9884\u53d1\u5e03\u8fd0\u8425\u72b6\u6001\u5148\u5efa\u6a21\u3002",
+        title: "定价、佣金和付费市场预览",
+        body: "商业记录在最终支付扣款和提现提供商自动化接入前，以预发布运营状态建模。",
         bullets: [
-          "\u7528\u91cf\u65e5\u5fd7\u4e0d\u76f4\u63a5\u652f\u4ed8\u7ed9\u53d1\u5e03\u8005\uff1b\u4ed8\u8d39\u5e02\u573a\u95e8\u69db\u901a\u8fc7\u540e\uff0c\u53ef\u8ba1\u8d39\u7528\u91cf\u624d\u4f1a\u5148\u751f\u6210 transaction\u3001split \u548c publisher balance\u3002",
-          "\u9884\u89c8\u5206\u6210\u6a21\u578b\u662f\u5e73\u53f0 20%\u3001\u53d1\u5e03\u8005 80%\uff0c\u9664\u975e\u540e\u7eed\u751f\u6548\u7684 commission rule \u5bf9\u672a\u6765\u8bb0\u8d26\u751f\u6548\u3002",
-          "\u4f59\u989d\u6210\u719f\u3001\u4eba\u5de5\u8d22\u52a1\u590d\u6838\u548c PayPal/Alipay \u8f6c\u8d26\u51ed\u8bc1\u76ee\u524d\u53ea\u4f5c\u4e3a\u4ed8\u8d39\u5e02\u573a\u9884\u89c8\u5efa\u6a21\u3002\u901a\u7528\u652f\u4ed8\u6263\u6b3e\u548c\u81ea\u52a8\u6253\u6b3e\u4ecd\u672a\u5f00\u653e\u3002"
+          "用量日志不会直接向发布者付款；付费市场开启后，可计费用量会先记录交易、交易拆分和发布者余额行。",
+          "预览拆分模型为平台 20% 费用和发布者 80% 分成，除非更新的佣金规则适用于未来记账。",
+          "余额成熟、人工财务复核和 PayPal/Alipay 转账引用仅为付费市场预览建模。通用支付扣款和自动提现暂不可用。"
         ]
       },
       {
-        title: "\u9000\u6b3e\u548c\u4e89\u8bae",
-        body: "\u9000\u6b3e\u548c\u4e89\u8bae\u4ee5\u53ef\u5ba1\u8ba1\u8c03\u6574\u8bb0\u5f55\u5904\u7406\uff0c\u800c\u4e0d\u662f\u4fee\u6539\u5386\u53f2\u4ea4\u6613\u3002",
+        title: "退款和争议",
+        body: "退款和争议以可审计调整方式处理，而非修改历史交易。",
         bullets: [
-          "\u8d22\u52a1\u8fd0\u8425\u53ef\u4ee5\u5728\u5fc5\u586b reason \u540e approve\u3001reject\u3001post\u3001fail\u3001warn\u3001win \u6216 lose \u8c03\u6574\u8bb0\u5f55\u3002",
-          "\u5df2 post \u7684\u9000\u6b3e\u4f1a\u751f\u6210\u8d1f\u5411\u8c03\u6574 transaction\u3001\u8d1f\u5411 split \u548c\u53cd\u8f6c\u7684 publisher balance\u3002",
-          "\u4e89\u8bae\u5931\u8d25\u53ef\u81ea\u52a8 post \u9000\u6b3e\u8c03\u6574\uff0c\u53d1\u5e03\u8005\u548c\u9879\u76ee\u8fd0\u8425\u8005\u53ef\u67e5\u770b\u79df\u6237\u5185\u7684\u8c03\u6574\u5386\u53f2\u3002"
+          "财务操作员可批准、拒绝、记账、失败、警告、胜诉或败诉调整记录并附必需原因。",
+          "已记账退款会产生负向调整交易、负向拆分和反转的发布者余额条目。",
+          "争议败诉可自动发起退款调整，发布者和项目操作员可查看范围内的调整历史。"
         ]
       },
       {
-        title: "\u6570\u636e\u4fdd\u7559\u548c\u9690\u79c1\u59ff\u6001",
-        body: "SkillHub \u4fdd\u7559\u652f\u6491\u6ce8\u518c\u5e93\u4fe1\u4efb\u3001\u8fd0\u884c\u6cbb\u7406\u3001\u8d26\u52a1\u53ef\u8ffd\u6eaf\u548c\u8d26\u6237\u5b89\u5168\u7684\u8fd0\u8425\u8bb0\u5f55\u3002",
+        title: "数据保留和隐私态势",
+        body: "SkillHub 存储注册信任、运行治理、账务可追溯和账户安全所需的运营记录。",
         bullets: [
-          "\u5b58\u50a8\u8bb0\u5f55\u5305\u542b manifest\u3001\u7248\u672c\u3001\u5ba1\u6838\u51b3\u7b56\u3001\u8fd0\u884c\u68c0\u67e5\u3001\u5b89\u88c5\u3001policy\u3001invocation\u3001usage\u3001ledger\u3001notification \u548c audit log\u3002",
-          "\u539f\u59cb user token\u3001API key\u3001\u90ae\u4ef6\u9a8c\u8bc1\u7801\u3001OAuth secret\u3001webhook signing secret \u548c\u63d0\u4f9b\u5546 key \u4e0d\u5e94\u5728\u9996\u6b21\u663e\u793a\u540e\u6216\u540e\u53f0\u5217\u8868\u4e2d\u66b4\u9732\u3002",
-          "\u5f53\u6280\u80fd\u5904\u7406\u7528\u6237\u3001\u4e1a\u52a1\u3001\u5bc6\u94a5\u3001\u8d22\u52a1\u6216\u654f\u611f\u8fd0\u8425\u6570\u636e\u65f6\uff0c\u53d1\u5e03\u8005\u5fc5\u987b\u58f0\u660e\u6570\u636e\u4fdd\u7559\u8bf4\u660e\u3002"
+          "存储记录包括 manifest、版本、审核决策、运行检查、安装、策略、调用、用量、账本、通知和审计日志。",
+          "原始用户 token、API key、邮件验证码、OAuth secret、webhook signing secret 和 provider key 首次展示后不得再暴露，也不得通过管理列表泄露。",
+          "技能处理用户、商业、密钥、财务或敏感运营数据时，发布者必须声明数据保留说明。"
         ]
       },
       {
-        title: "\u4e8b\u6545\u3001\u5e9f\u5f03\u548c\u652f\u6301",
-        body: "\u8fd0\u8425\u6545\u969c\u5e94\u8be5\u7ed9\u5f00\u53d1\u8005\u3001\u53d1\u5e03\u8005\u548c\u4fe1\u4efb\u8fd0\u8425\u8005\u7559\u4e0b\u6301\u4e45\u4fe1\u53f7\u3002",
+        title: "事故、废弃和支持",
+        body: "运行故障应为开发者、发布者和信任操作员创建持久信号。",
         bullets: [
-          "\u8fd0\u884c\u4e8b\u6545\u53ef\u6309 open\u3001monitoring\u3001resolved\u3001postmortem \u6d41\u8f6c\uff0c\u5e76\u5e26\u4e25\u91cd\u7a0b\u5ea6\u548c\u51b3\u7b56 reason\u3002",
-          "\u5df2\u5b89\u88c5\u6280\u80fd\u7684\u66f4\u65b0 inbox \u5e94\u663e\u793a\u65b0\u7248\u672c\u3001\u5e9f\u5f03\u3001\u5b89\u5168\u901a\u77e5\u548c\u4e8b\u6545\u6062\u590d\u72b6\u6001\uff0c\u7136\u540e\u624d\u8ba9 agent \u8fc1\u79fb\u3002",
-          "\u7248\u672c\u5e9f\u5f03\u6216\u6280\u80fd\u6682\u505c\u65f6\uff0c\u53d1\u5e03\u8005\u5e94\u7ef4\u62a4\u652f\u6301\u8def\u5f84\u3001\u53d8\u66f4\u8bb0\u5f55\u548c\u66ff\u4ee3\u5efa\u8bae\u3002"
+          "运行事故可经历 open、monitoring、resolved 和 postmortem 状态，带严重级别和决策原因。",
+          "已安装技能更新收件箱应在迁移 agent 前显示新版本、废弃通知、安全说明和事故恢复状态。",
+          "版本废弃或技能暂停时，发布者应维护支持路径、变更记录和替代建议。"
         ]
       },
       {
-        title: "\u901a\u77e5\u548c Webhook",
-        body: "\u5728\u6700\u7ec8\u90ae\u4ef6\u63d0\u4f9b\u5546\u5b8c\u5168\u63a5\u5165\u524d\uff0c\u5df2\u5148\u5efa\u6a21 in-app\u3001email \u548c webhook \u901a\u77e5\u72b6\u6001\u3002",
+        title: "通知和 Webhook",
+        body: "在最终邮件提供商完全接入前，已先建模 in-app、email 和 webhook 通知状态。",
         bullets: [
-          "\u7528\u6237\u53ef\u7ba1\u7406 review\u3001update\u3001runtime\u3001billing\u3001payout\u3001buyer-request \u548c account-security \u7684\u901a\u77e5\u504f\u597d\u3002",
-          "\u5916\u90e8 email \u548c webhook \u961f\u5217\u66b4\u9732 attempts\u3001provider metadata\u3001retry schedule\u3001\u7b7e\u540d webhook delivery \u548c\u8131\u654f payload summary\u3002",
-          "\u90ae\u4ef6\u548c webhook \u7f51\u7edc\u6295\u9012\u4e0d\u5f97\u901a\u8fc7\u540e\u53f0\u89c6\u56fe\u66b4\u9732\u9a8c\u8bc1\u7801\u3001token\u3001secret \u6216\u654f\u611f payload \u5b57\u6bb5\u3002"
+          "用户可管理 review、update、runtime、billing、payout、buyer-request 和 account-security 的通知偏好。",
+          "外部 email 和 webhook 队列暴露 attempts、provider metadata、retry schedule、签名 webhook delivery 和脱敏 payload summary。",
+          "邮件和 webhook 网络投递不得通过后台视图暴露验证码、token、secret 或敏感 payload 字段。"
         ]
       },
       {
-        title: "\u5ef6\u540e\u7684\u6700\u7ec8\u63a5\u5165",
-        body: "\u90e8\u5206\u63d0\u4f9b\u5546\u63a5\u5165\u523b\u610f\u653e\u5230\u6700\u540e\uff0c\u786e\u4fdd\u5185\u90e8\u8fd0\u8425\u6a21\u578b\u5148\u7a33\u5b9a\u3002",
+        title: "延后的最终接入",
+        body: "部分提供商接入刻意放到最后，确保内部运营模型先稳定。",
         bullets: [
-          "\u652f\u4ed8\u6263\u6b3e\u3001\u652f\u4ed8\u63d0\u4f9b\u5546\u5ba2\u6237 session\u3001\u63d0\u73b0\u63d0\u4f9b\u5546\u81ea\u52a8\u5316\u548c\u7a0e\u52a1/KYC \u81ea\u52a8\u5316\u90fd\u662f\u5ef6\u540e\u9879\uff1b\u4ed8\u8d39\u5e02\u573a\u9884\u89c8\u4ec5\u5efa\u6a21 PayPal/Alipay \u4eba\u5de5\u8f6c\u8d26\u8bb0\u5f55\uff0c\u7528\u4e8e\u672a\u6765\u8d22\u52a1\u590d\u6838\u3002",
-          "\u90ae\u4ef6\u63d0\u4f9b\u5546\u6295\u9012\u901a\u8fc7\u5df2\u6392\u961f\u7684 notification event \u63a5\u5165\uff1b\u751f\u4ea7\u5c31\u7eea\u8981\u6c42\u63d0\u4f9b\u5546\u914d\u7f6e\u5b8c\u6210\u4e14\u5173\u95ed debug code preview\u3002",
-          "\u4ed8\u8d39\u5e02\u573a\u4e0a\u7ebf\u524d\uff0c\u53ef\u6839\u636e provider\u3001\u533a\u57df\u3001\u7a0e\u52a1\u3001\u9000\u6b3e\u7a97\u53e3\u3001KYC \u548c\u6700\u4f4e\u63d0\u73b0\u95e8\u69db\u51b3\u7b56\u66f4\u65b0\u6761\u6b3e\u3002"
+          "支付扣款、支付提供商客户 session、提现提供商自动化和税务/KYC 自动化都是延后项；付费市场预览仅建模 PayPal/Alipay 人工转账记录，用于未来财务复核。",
+          "邮件提供商投递通过已排队的 notification event 接入；生产就绪要求提供商配置完成且关闭 debug code preview。",
+          "付费市场上线前，可根据 provider、区域、税务、退款窗口、KYC 和最低提现门槛决策更新条款。"
         ]
       }
     ],
-    operatorTitle: "\u4e0a\u7ebf\u8fd0\u8425\u68c0\u67e5",
+    operatorTitle: "上线运营检查",
     operatorItems: [
-      "\u516c\u5f00\u4e0a\u7ebf\u524d\u8fd0\u884c launch readiness\uff0c\u5148\u89e3\u51b3 blocker\u3002",
-      "\u751f\u4ea7\u73af\u5883\u5173\u95ed demo fallback \u548c legacy direct-token signup\u3002",
-      "\u590d\u6838\u5df2\u542f\u7528\u901a\u77e5\u6a21\u677f\u548c\u5916\u90e8\u6295\u9012\u961f\u5217\u3002",
-      "\u53ef\u8ba1\u8d39\u7528\u91cf\u8bb0\u8d26\u524d\uff0c\u521b\u5efa\u6216\u786e\u8ba4\u751f\u6548\u4f63\u91d1\u89c4\u5219\u3002",
-      "\u4ed8\u8d39\u5e02\u573a\u4e0a\u7ebf\u524d\uff0c\u786e\u8ba4\u516c\u5f00\u6ce8\u518c\u7b56\u7565\u3001\u9000\u6b3e\u7a97\u53e3\u3001\u63d0\u73b0\u95e8\u69db\u548c\u5ba1\u6838 SLA\u3002"
+      "公开上线前运行 launch readiness，先解决 blocker。",
+      "生产环境关闭 demo fallback 和 legacy direct-token signup。",
+      "复核已启用通知模板和外部投递队列。",
+      "可计费用量记账前，创建或确认生效佣金规则。",
+      "付费市场上线前，确认公开注册策略、退款窗口、提现门槛和审核 SLA。"
     ],
-    noticeTitle: "\u6761\u6b3e\u72b6\u6001",
+    noticeTitle: "条款状态",
     notices: [
-      "\u672c\u9875\u662f\u5f53\u524d\u516c\u5f00\u8fd0\u8425\u653f\u7b56\uff0c\u652f\u4ed8\u3001\u81ea\u52a8\u6253\u6b3e\u7b49\u6700\u7ec8\u63d0\u4f9b\u5546\u63a5\u5165\u4fdd\u6301\u5ef6\u540e\u3002",
-      "\u6700\u7ec8\u6cd5\u52a1\u6761\u6b3e\u53ef\u5728\u4ed8\u8d39\u5e02\u573a\u4e0a\u7ebf\u524d\u66ff\u6362\u6216\u6269\u5c55\u672c\u9875\uff0c\u4e0d\u5f71\u54cd\u5df2\u5efa\u7acb\u7684\u72b6\u6001\u673a\u3002"
+      "本页是当前公开运营政策，支付、自动打款等最终提供商接入保持延后。",
+      "最终法务条款可在付费市场上线前替换或扩展本页，不影响已建立的状态机。"
     ]
   }
 } as const;
@@ -260,93 +260,110 @@ const pageCopy = {
 export default async function TermsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
 
   return (
-    <main className="product-shell terms-shell">
-      <SiteHeader active="docs" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/terms" />
-
-      <section className="page-hero terms-hero">
-        <div>
-          <div className="eyebrow">
-            <Scale size={16} aria-hidden="true" />
-            <span>{labels.eyebrow}</span>
+    <AppShell active="terms" locale={locale}>
+      {/* Hero */}
+      <section className="section pt-32 pb-16">
+        <div className="section-inner">
+          <div className="max-w-[720px]">
+            <div className="eyebrow">
+              <Scale size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1 className="heading-xl mt-4">{labels.title}</h1>
+            <p className="body-text mt-4 text-[#999]">{labels.description}</p>
+            <span className="inline-block mt-4 text-sm text-[#10b981] font-medium">{labels.effective}</span>
           </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.description}</p>
-          <span className="terms-effective">{labels.effective}</span>
-        </div>
-        <div className="hero-actions">
-          <a className="primary-button primary-button--large" href={localizedHref("/publish", locale)}>
-            <ClipboardCheck size={18} aria-hidden="true" />
-            <span>{labels.primary}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)}>
-            <Gavel size={18} aria-hidden="true" />
-            <span>{labels.secondary}</span>
-          </a>
+          <div className="flex flex-wrap gap-4 mt-8">
+            <a className="btn-primary" href={localizedHref("/publish", locale)}>
+              <ClipboardCheck size={18} aria-hidden="true" />
+              <span>{labels.primary}</span>
+            </a>
+            <a className="btn-secondary" href={localizedHref("/docs", locale)}>
+              <Gavel size={18} aria-hidden="true" />
+              <span>{labels.secondary}</span>
+            </a>
+          </div>
         </div>
       </section>
 
-      <section className="terms-summary-grid" aria-label={locale === "zh" ? "\u6761\u6b3e\u6458\u8981" : "Terms summary"}>
-        {labels.summary.map(([label, value]) => (
-          <div key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </section>
-
-      <section className="terms-layout">
-        <div className="terms-policy-stack">
-          {labels.sections.map((section, index) => {
-            const Icon = sectionIcons[index];
-
-            return (
-              <article className="terms-policy-card lift-card" id={`policy-${index + 1}`} key={section.title}>
-                <div className="card-kicker">
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                </div>
-                <h2>{section.title}</h2>
-                <p>{section.body}</p>
-                <ul>
-                  {section.bullets.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
-        </div>
-
-        <aside className="terms-ops-panel">
-          <div className="card-kicker">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>{labels.operatorTitle}</span>
-          </div>
-          <div className="terms-check-list">
-            {labels.operatorItems.map((item) => (
-              <div className="terms-check-item" key={item}>
-                <LockKeyhole size={15} aria-hidden="true" />
-                <span>{item}</span>
+      {/* Summary grid */}
+      <section className="section pb-12" aria-label={locale === "zh" ? "条款摘要" : "Terms summary"}>
+        <div className="section-inner">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {labels.summary.map(([label, value]) => (
+              <div key={label} className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6">
+                <span className="block text-sm text-[#666] mb-1">{label}</span>
+                <strong className="text-white text-sm">{value}</strong>
               </div>
             ))}
           </div>
-
-          <div className="terms-notice">
-            <div className="card-kicker">
-              <FileWarning size={16} aria-hidden="true" />
-              <span>{labels.noticeTitle}</span>
-            </div>
-            {labels.notices.map((item) => (
-              <p key={item}>{item}</p>
-            ))}
-          </div>
-        </aside>
+        </div>
       </section>
-    </main>
+
+      {/* Policy sections + operator aside */}
+      <section className="section pb-24">
+        <div className="section-inner">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Policy cards */}
+            <div className="flex-1 flex flex-col gap-6">
+              {labels.sections.map((section, index) => {
+                const Icon = sectionIcons[index];
+
+                return (
+                  <article
+                    key={section.title}
+                    id={`policy-${index + 1}`}
+                    className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 transition-transform hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                      <Icon size={16} aria-hidden="true" />
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                    </div>
+                    <h2 className="heading-md mb-2">{section.title}</h2>
+                    <p className="body-text-sm text-[#999] mb-4">{section.body}</p>
+                    <ul className="list-disc list-inside space-y-2">
+                      {section.bullets.map((item) => (
+                        <li key={item} className="body-text-sm text-[#999]">{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+
+            {/* Operator checklist aside */}
+            <aside className="lg:w-[340px] shrink-0">
+              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 sticky top-24">
+                <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-4">
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  <span>{labels.operatorTitle}</span>
+                </div>
+                <div className="space-y-3 mb-6">
+                  {labels.operatorItems.map((item) => (
+                    <div key={item} className="flex items-start gap-2">
+                      <LockKeyhole size={15} className="shrink-0 mt-0.5 text-[#525252]" aria-hidden="true" />
+                      <span className="body-text-sm text-[#999]">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
+                  <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                    <FileWarning size={16} aria-hidden="true" />
+                    <span>{labels.noticeTitle}</span>
+                  </div>
+                  {labels.notices.map((item) => (
+                    <p key={item} className="body-text-sm text-[#999] mb-2 last:mb-0">{item}</p>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </AppShell>
   );
 }

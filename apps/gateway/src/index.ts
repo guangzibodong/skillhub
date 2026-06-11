@@ -267,16 +267,32 @@ const trustOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer", "sup
 app.use(
   "*",
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://useskillhub.com",
-      "https://www.useskillhub.com",
-      "https://app.useskillhub.com"
-    ],
+    origin: (origin, c) => {
+      const allowed = [
+        "https://useskillhub.com",
+        "https://www.useskillhub.com",
+        "https://app.useskillhub.com"
+      ];
+      const env = c.env?.SKILLHUB_ENV ?? getProcessEnv("SKILLHUB_ENV") ?? "development";
+      if (env !== "production") {
+        allowed.push("http://localhost:3000");
+      }
+      return allowed.includes(origin) ? origin : allowed[0];
+    },
     allowHeaders: ["Authorization", "Content-Type"],
-    allowMethods: ["GET", "POST", "PUT", "OPTIONS"]
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   })
 );
+
+// Body size limit: reject requests > 1MB
+const MAX_BODY_BYTES = 1_048_576;
+app.use("*", async (c, next) => {
+  const contentLength = c.req.header("Content-Length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return c.json({ error: "Request body too large." }, 413);
+  }
+  await next();
+});
 
 app.get("/health", (c) =>
   c.json({
@@ -471,7 +487,7 @@ app.post("/v1/auth/bootstrap-token", async (c) => {
   try {
     return c.json(
       {
-        bootstrap: await createBootstrapUserToken((await c.req.json()) as Record<string, unknown>)
+        bootstrap: await createBootstrapUserToken((await c.req.json().catch(() => ({}))) as Record<string, unknown>)
       },
       201
     );
@@ -942,7 +958,7 @@ app.post("/v1/developer/buyer-requests", async (c) => {
       {
         request: await createBuyerRequest(
           authorization.subject.organizationId,
-          (await c.req.json()) as Record<string, unknown>
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>
         )
       },
       201
@@ -966,7 +982,7 @@ app.post("/v1/developer/buyer-requests/:requestId/decision", async (c) => {
       request: await decideBuyerRequest(
         authorization.subject.organizationId,
         c.req.param("requestId"),
-        (await c.req.json()) as Record<string, unknown>
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
       )
     });
   } catch (error) {
@@ -1025,7 +1041,7 @@ app.post("/v1/projects/:projectSlug/installed-skills", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json()) as { skillSlug?: string; version?: string };
+  const body = (await c.req.json().catch(() => ({}))) as { skillSlug?: string; version?: string };
 
   if (!body.skillSlug) {
     return c.json({ error: "Missing skillSlug." }, 400);
@@ -1108,7 +1124,7 @@ app.put("/v1/projects/:projectSlug/policies/:skillSlug", async (c) => {
     const policy = await upsertProjectPolicy(
       projectSlug,
       c.req.param("skillSlug"),
-      (await c.req.json()) as Record<string, unknown>,
+      (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
       authorization.subject.organizationId,
       authorization.subject.userId,
       canApproveOwnerReview(authorization.subject.roles)
@@ -1513,7 +1529,7 @@ app.post("/v1/skills/:slug/prices", async (c) => {
       {
         price: await setSkillPrice(
           c.req.param("slug"),
-          (await c.req.json()) as Record<string, unknown>,
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
           authorization.subject.organizationId
         )
       },
@@ -1556,7 +1572,7 @@ app.post("/v1/admin/finance/commission-rules", async (c) => {
   try {
     return c.json(
       {
-        rule: await createCommissionRule((await c.req.json()) as Record<string, unknown>, authorization.subject.userId)
+        rule: await createCommissionRule((await c.req.json().catch(() => ({}))) as Record<string, unknown>, authorization.subject.userId)
       },
       201
     );
@@ -1649,7 +1665,7 @@ app.post("/v1/admin/finance/refunds", async (c) => {
   }
 
   try {
-    return c.json({ refund: await createRefundRequest((await c.req.json()) as Record<string, unknown>) }, 201);
+    return c.json({ refund: await createRefundRequest((await c.req.json().catch(() => ({}))) as Record<string, unknown>) }, 201);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to request refund." }, 400);
   }
@@ -1664,7 +1680,7 @@ app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
 
   try {
     return c.json({
-      refund: await decideRefund(c.req.param("refundId"), (await c.req.json()) as Record<string, unknown>)
+      refund: await decideRefund(c.req.param("refundId"), (await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update refund." }, 400);
@@ -1691,7 +1707,7 @@ app.post("/v1/admin/finance/disputes", async (c) => {
   }
 
   try {
-    return c.json({ dispute: await createDispute((await c.req.json()) as Record<string, unknown>) }, 201);
+    return c.json({ dispute: await createDispute((await c.req.json().catch(() => ({}))) as Record<string, unknown>) }, 201);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to open dispute." }, 400);
   }
@@ -1706,7 +1722,7 @@ app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
 
   try {
     return c.json({
-      dispute: await decideDispute(c.req.param("disputeId"), (await c.req.json()) as Record<string, unknown>)
+      dispute: await decideDispute(c.req.param("disputeId"), (await c.req.json().catch(() => ({}))) as Record<string, unknown>)
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update dispute." }, 400);
@@ -2611,7 +2627,7 @@ app.put("/v1/publisher/profile", async (c) => {
     return c.json({
       publisherProfile: await upsertPublisherProfile(
         authorization.subject.organizationId,
-        (await c.req.json()) as Record<string, unknown>
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
       )
     });
   } catch (error) {
@@ -2678,7 +2694,7 @@ app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
     return c.json({
       publisher: await completePayoutAccountOnboarding(
         authorization.subject.organizationId,
-        (await c.req.json()) as Record<string, unknown>
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
       )
     });
   } catch (error) {
@@ -2709,7 +2725,7 @@ app.post("/v1/admin/payouts/:payoutId/decision", async (c) => {
     return c.json({
       payout: await decidePayout(
         c.req.param("payoutId"),
-        (await c.req.json()) as Record<string, unknown>,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
         authorization.subject.userId
       )
     });
@@ -2763,7 +2779,7 @@ app.post("/v1/admin/reviews/:reviewId/decision", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json()) as { status?: "approved" | "rejected" | "blocked"; notes?: string };
+  const body = (await c.req.json().catch(() => ({}))) as { status?: "approved" | "rejected" | "blocked"; notes?: string };
 
   if (!body.status || !["approved", "rejected", "blocked"].includes(body.status)) {
     return c.json({ error: "Decision status must be approved, rejected, or blocked." }, 400);
@@ -2800,7 +2816,7 @@ app.post("/v1/skills", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json()) as { manifest?: unknown };
+  const body = (await c.req.json().catch(() => ({}))) as { manifest?: unknown };
 
   if (!body.manifest) {
     return c.json({ error: "Missing manifest." }, 400);
@@ -2820,7 +2836,7 @@ app.post("/v1/skills", async (c) => {
 });
 
 app.post("/mcp", async (c) => {
-  const request = (await c.req.json()) as JsonRpcRequest;
+  const request = (await c.req.json().catch(() => ({}))) as JsonRpcRequest;
 
   if (request.method === "initialize") {
     return rpc(request.id, {

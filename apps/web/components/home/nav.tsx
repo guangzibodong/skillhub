@@ -4,26 +4,48 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
+export type NavPage =
+  | "home"
+  | "marketplace"
+  | "registry"
+  | "docs"
+  | "publish"
+  | "agents"
+  | "publishers"
+  | "developer"
+  | "publisher"
+  | "dashboard"
+  | "admin"
+  | "login"
+  | "account"
+  | "skills"
+  | "support"
+  | "terms"
+  | "security"
+  | "status"
+  | "report";
+
 type NavProps = {
+  active?: NavPage;
   locale: Locale;
 };
 
 const navLinks = {
   en: [
-    { href: "/marketplace", label: "Marketplace" },
-    { href: "/registry", label: "Registry" },
-    { href: "/docs", label: "Docs" },
-    { href: "/publish", label: "Publish" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "Marketplace" },
+    { href: "/registry", page: "registry" as NavPage, label: "Registry" },
+    { href: "/docs", page: "docs" as NavPage, label: "Docs" },
+    { href: "/publish", page: "publish" as NavPage, label: "Publish" },
   ],
   zh: [
-    { href: "/marketplace", label: "市场" },
-    { href: "/registry", label: "注册表" },
-    { href: "/docs", label: "文档" },
-    { href: "/publish", label: "发布" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "市场" },
+    { href: "/registry", page: "registry" as NavPage, label: "注册表" },
+    { href: "/docs", page: "docs" as NavPage, label: "文档" },
+    { href: "/publish", page: "publish" as NavPage, label: "发布" },
   ],
 };
 
-export function HomeNav({ locale }: NavProps) {
+export function HomeNav({ active, locale }: NavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const links = navLinks[locale];
@@ -60,7 +82,11 @@ export function HomeNav({ locale }: NavProps) {
             <a
               key={link.href}
               href={`${link.href}${langSuffix}`}
-              className="text-[14px] font-medium text-[#999] hover:text-white transition-colors px-3.5 py-2"
+              className={`text-[14px] font-medium transition-colors px-3.5 py-2 ${
+                active === link.page
+                  ? "text-white"
+                  : "text-[#999] hover:text-white"
+              }`}
             >
               {link.label}
             </a>
@@ -106,7 +132,9 @@ export function HomeNav({ locale }: NavProps) {
             <a
               key={link.href}
               href={`${link.href}${langSuffix}`}
-              className="block text-[14px] text-[#999] hover:text-white py-2.5"
+              className={`block text-[14px] py-2.5 ${
+                active === link.page ? "text-white" : "text-[#999] hover:text-white"
+              }`}
             >
               {link.label}
             </a>

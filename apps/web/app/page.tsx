@@ -8,7 +8,6 @@ import { SkillGridCard } from "@/components/home/skill-grid-card";
 import { IntegrationSection } from "@/components/home/integration-section";
 import { TeamSection } from "@/components/home/team-section";
 import { Reveal } from "@/components/home/reveal";
-import "./tailwind.css";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +23,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen">
-      <HomeNav locale={locale} />
+      <HomeNav active="home" locale={locale} />
 
       {/* ===== 1. HERO (matches Morphic: badge → eyebrow → headline → subline → 2 CTAs → 3 tabs → product preview) ===== */}
       <section className="pt-[120px] pb-0">

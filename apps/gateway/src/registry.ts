@@ -100,7 +100,10 @@ export type PublicSkillCategory =
   | "security"
   | "support";
 
-let sqlPromise: Promise<unknown> | undefined;
+/** Tagged-template SQL client (postgres.js). Deliberately broad to cover both Sql and TransactionSql usage. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Sql = any;
+let sqlPromise: Promise<Sql> | undefined;
 let seeded = false;
 
 const PUBLIC_REGISTRY_READ_TABLES = [
@@ -1460,7 +1463,7 @@ async function upsertDefaultOrganization(
   return rows[0];
 }
 
-export async function getSql(): Promise<any | undefined> {
+export async function getSql(): Promise<Sql | undefined> {
   const databaseUrl =
     typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
 

@@ -13,6 +13,7 @@ import {
   SearchCheck,
   ReceiptText
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 import { BuyerRequestManager } from "@/components/buyer-request-manager";
 import { JourneyRail } from "@/components/journey-rail";
 import { NotificationInboxManager } from "@/components/notification-inbox-manager";
@@ -23,10 +24,9 @@ import { OrganizationWebhookManager } from "@/components/organization-webhook-ma
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
-import { SiteHeader } from "@/components/site-header";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -79,11 +79,9 @@ const developerAccessRoles = ["developer", "owner", "admin", "super_admin"];
 
 const developerCommandCopy = {
   en: {
-    body:
-      "The developer workspace should behave like an operating queue: project setup, runtime keys, installs, approvals, updates, billing, notifications, team access, and webhooks all point to one next move.",
+    body: "The developer workspace should behave like an operating queue: project setup, runtime keys, installs, approvals, updates, billing, notifications, team access, and webhooks all point to one next move.",
     completeAction: "Review project operations",
-    completeDetail:
-      "Core developer controls are healthy. Keep watching runtime quality, version updates, invoices, notification topics, team access, and webhook delivery before scaling agent traffic.",
+    completeDetail: "Core developer controls are healthy. Keep watching runtime quality, version updates, invoices, notification topics, team access, and webhook delivery before scaling agent traffic.",
     completeTitle: "Developer runtime loop is healthy",
     eyebrow: "Developer operations queue",
     title: "What should the agent team handle next?",
@@ -148,11 +146,9 @@ const developerCommandCopy = {
     }
   },
   zh: {
-    body:
-      "开发者工作台不应该只是看项目列表，而是把项目创建、运行 Key、安装、审批、更新、账单、通知、团队和 webhook 都收束成一个下一步。",
+    body: "开发者工作台不应该只是看项目列表，而是把项目创建、运行 Key、安装、审批、更新、账单、通知、团队和 webhook 都收束成一个下一步。",
     completeAction: "查看项目运营",
-    completeDetail:
-      "核心开发者控制已经健康。接下来持续复查运行质量、版本更新、发票、通知主题、团队权限和 webhook 投递，再扩大智能体调用。",
+    completeDetail: "核心开发者控制已经健康。接下来持续复查运行质量、版本更新、发票、通知主题、团队权限和 webhook 投递，再扩大智能体调用。",
     completeTitle: "开发者运行闭环正常",
     eyebrow: "开发者运营队列",
     title: "智能体团队现在应该先处理什么？",
@@ -220,12 +216,10 @@ const developerCommandCopy = {
 
 const copy = {
   en: {
-    description:
-      "A focused workspace for teams that adopt verified skills inside agent projects after sign-in: create projects, inspect keys and budgets, and prepare runtime policy checks.",
+    description: "A focused workspace for teams that adopt verified skills inside agent projects after sign-in: create projects, inspect keys and budgets, and prepare runtime policy checks.",
     emptyProjects: "No developer projects yet. Create a project to start adopting and approving verified skills.",
     eyebrow: "Developer workspace",
-    lockedDescription:
-      "Sign in with a developer, owner, or admin role before creating projects, keys, budgets, buyer requests, webhooks, notifications, and governed runtime tests.",
+    lockedDescription: "Sign in with a developer, owner, or admin role before creating projects, keys, budgets, buyer requests, webhooks, notifications, and governed runtime tests.",
     lockedTitle: "Enter the developer workspace after sign-in.",
     metrics: {
       budget: "Monthly budget",
@@ -261,12 +255,10 @@ const copy = {
     title: "Manage the skills your agents use."
   },
   zh: {
-    description:
-      "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
+    description: "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
     emptyProjects: "还没有开发者项目。先创建一个项目，再开始采用、审批和测试已验证技能。",
     eyebrow: "开发者工作台",
-    lockedDescription:
-      "先使用开发者、owner 或 admin 角色登录，再创建项目、Key、预算、买家需求、webhook、通知和受治理的运行测试。",
+    lockedDescription: "先使用开发者、owner 或 admin 角色登录，再创建项目、Key、预算、买家需求、webhook、通知和受治理的运行测试。",
     lockedTitle: "登录后进入开发者工作台。",
     metrics: {
       budget: "月度预算",
@@ -306,9 +298,7 @@ const copy = {
 export default async function DeveloperPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const labels = copy[locale];
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const session = await getWorkspaceSession();
   const hasWorkspaceSession = Boolean(session.subject);
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
@@ -316,17 +306,15 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
 
   if (!hasDeveloperAccess) {
     return (
-      <main className="product-shell">
-        <SiteHeader active="developer" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/developer" />
-
-        <section className="page-hero page-hero--compact">
-          <div>
+      <AppShell active="developer" locale={locale}>
+        <section className="section">
+          <div className="section-inner">
             <div className="eyebrow">
               <BriefcaseBusiness size={16} aria-hidden="true" />
               <span>{labels.eyebrow}</span>
             </div>
-            <h1>{labels.lockedTitle}</h1>
-            <p>{labels.lockedDescription}</p>
+            <h1 className="heading-xl">{labels.lockedTitle}</h1>
+            <p className="body-text text-[#999]">{labels.lockedDescription}</p>
           </div>
         </section>
 
@@ -338,8 +326,10 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
           locale={locale}
         />
 
-        <section className="console-board developer-console-board">
-          <WorkspaceAccessPanel locale={locale} requiredRoles={developerAccessRoles} session={session} workspace="developer" />
+        <section className="section">
+          <div className="section-inner">
+            <WorkspaceAccessPanel locale={locale} requiredRoles={developerAccessRoles} session={session} workspace="developer" />
+          </div>
         </section>
 
         <WorkspaceLockedPanel
@@ -353,7 +343,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
           locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
-      </main>
+      </AppShell>
     );
   }
 
@@ -365,16 +355,15 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
     organizationWebhookEndpoints,
     userNotificationInbox,
     notificationPreferences
-  ] =
-    await Promise.all([
-      getDeveloperProjects(),
-      getDeveloperBuyerRequests(),
-      getOrganizationBillingSummary(),
-      getOrganizationTeamMembers(),
-      getOrganizationWebhookEndpoints(),
-      getUserNotificationInbox(),
-      getNotificationPreferences()
-    ]);
+  ] = await Promise.all([
+    getDeveloperProjects(),
+    getDeveloperBuyerRequests(),
+    getOrganizationBillingSummary(),
+    getOrganizationTeamMembers(),
+    getOrganizationWebhookEndpoints(),
+    getUserNotificationInbox(),
+    getNotificationPreferences()
+  ]);
   const currency = developerProjects[0]?.usage.currency ?? "usd";
   const totalInstalled = developerProjects.reduce((sum, project) => sum + project.installs.installedSkillCount, 0);
   const totalCalls = developerProjects.reduce((sum, project) => sum + project.runtime.callCount, 0);
@@ -411,17 +400,15 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   ];
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="developer" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/developer" />
-
-      <section className="page-hero page-hero--compact">
-        <div>
+    <AppShell active="developer" locale={locale}>
+      <section className="section">
+        <div className="section-inner">
           <div className="eyebrow">
             <BriefcaseBusiness size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
           </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.description}</p>
+          <h1 className="heading-xl">{labels.title}</h1>
+          <p className="body-text text-[#999]">{labels.description}</p>
         </div>
       </section>
 
@@ -438,206 +425,204 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         ]}
       />
 
-      <section className="console-board developer-console-board">
-        <SessionStatusPanel locale={locale} session={session} />
-        <WorkspaceAccessPanel
-          locale={locale}
-          requiredRoles={developerAccessRoles}
-          session={session}
-          workspace="developer"
-        />
+      <section className="section">
+        <div className="section-inner space-y-6">
+          <SessionStatusPanel locale={locale} session={session} />
+          <WorkspaceAccessPanel
+            locale={locale}
+            requiredRoles={developerAccessRoles}
+            session={session}
+            workspace="developer"
+          />
 
-        <div className="metric-strip metric-strip--four metric-strip--standalone">
-          {visibleMetrics.map(([label, value], index) => {
-            const Icon = index === 0 ? BriefcaseBusiness : index === 1 ? PackageCheck : index === 2 ? Activity : CreditCard;
-
-            return (
-              <div className="metric developer-metric" key={label}>
-                <Icon size={16} aria-hidden="true" />
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {hasDeveloperAccess ? (
-        <>
-      <section className="publisher-priority-board developer-priority-board" aria-labelledby="developer-priority-heading">
-        <article className="publisher-priority-card developer-priority-card">
-          <div className="publisher-priority-card__main">
-            <div className="card-kicker">
-              <ClipboardList size={16} aria-hidden="true" />
-              <span>{developerCommandLabels.eyebrow}</span>
-            </div>
-            <h2 id="developer-priority-heading">{developerCommandLabels.title}</h2>
-            <p>{developerCommandLabels.body}</p>
-
-            <div className="publisher-priority-list developer-priority-list" aria-label={developerCommandLabels.queue.title}>
-              {developerPriorityItems.map((item) => (
-                <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
-                  <span>
-                    {developerCommandLabels.queueTones[item.tone]} / {item.metric}
-                  </span>
-                  <strong>{item.title}</strong>
-                  <p>{item.detail}</p>
-                  <b>
-                    {item.actionLabel}
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </b>
-                </a>
-              ))}
-            </div>
-
-            <a className="primary-button publisher-priority-card__action" href={primaryDeveloperPriorityItem.href}>
-              <span>{primaryDeveloperPriorityItem.actionLabel}</span>
-              <ArrowRight size={16} aria-hidden="true" />
-            </a>
-          </div>
-
-          <div className="publisher-priority-metrics developer-priority-metrics">
-            {developerCommandMetrics.map(([label, value], index) => {
-              const Icon = index === 0 ? BriefcaseBusiness : index === 1 ? KeyRound : index === 2 ? PackageCheck : index === 3 ? Activity : BellRing;
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {visibleMetrics.map(([label, value], index) => {
+              const Icon = index === 0 ? BriefcaseBusiness : index === 1 ? PackageCheck : index === 2 ? Activity : CreditCard;
 
               return (
-                <div className="publisher-priority-metric developer-priority-metric" key={label}>
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{value}</strong>
+                <div className="stat-card" key={label}>
+                  <Icon size={16} aria-hidden="true" className="text-[#999]" />
+                  <span className="body-text-sm text-[#999]">{label}</span>
+                  <strong className="heading-md text-white">{value}</strong>
                 </div>
               );
             })}
           </div>
-        </article>
+        </div>
       </section>
 
-      <section className="developer-command-layout">
-        <div className="developer-command-main">
-          <article className="ops-panel work-table-panel" id="developer-projects">
-            <div className="card-kicker">
-              <LockKeyhole size={16} aria-hidden="true" />
-              <span>{labels.projectTitle}</span>
-            </div>
-            <ProjectCreateForm locale={locale} />
-            <div className="work-table developer-project-table">
-              <div className="work-table__row work-table__row--head developer-project-row">
-                {labels.projectHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
+      <section className="section" aria-labelledby="developer-priority-heading">
+        <div className="section-inner">
+          <article className="card p-8">
+            <div className="flex flex-col gap-8 lg:flex-row">
+              <div className="flex-1 space-y-4">
+                <div className="eyebrow">
+                  <ClipboardList size={16} aria-hidden="true" />
+                  <span>{developerCommandLabels.eyebrow}</span>
+                </div>
+                <h2 id="developer-priority-heading" className="heading-lg">{developerCommandLabels.title}</h2>
+                <p className="body-text text-[#999]">{developerCommandLabels.body}</p>
+
+                <div className="space-y-3 pt-2" aria-label={developerCommandLabels.queue.title}>
+                  {developerPriorityItems.map((item) => {
+                    const toneClass = item.tone === "danger" ? "border-red-500/40 bg-red-500/5" : item.tone === "warning" ? "border-yellow-500/40 bg-yellow-500/5" : "border-[#10b981]/40 bg-[#10b981]/5";
+
+                    return (
+                      <a className={`block rounded-[12px] border p-4 transition-colors hover:bg-[#212121] ${toneClass}`} href={item.href} key={item.id}>
+                        <span className="body-text-sm text-[#666]">
+                          {developerCommandLabels.queueTones[item.tone]} / {item.metric}
+                        </span>
+                        <strong className="block text-white mt-1">{item.title}</strong>
+                        <p className="body-text-sm text-[#999] mt-1">{item.detail}</p>
+                        <b className="inline-flex items-center gap-1 text-[#0075ff] text-sm mt-2">
+                          {item.actionLabel}
+                          <ArrowRight size={14} aria-hidden="true" />
+                        </b>
+                      </a>
+                    );
+                  })}
+                </div>
+
+                <a className="btn-primary inline-flex items-center gap-2 mt-4" href={primaryDeveloperPriorityItem.href}>
+                  <span>{primaryDeveloperPriorityItem.actionLabel}</span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </a>
               </div>
-              {developerProjects.length > 0 ? (
-                developerProjects.slice(0, 8).map((project) => {
-                  const nextStep = getDeveloperProjectNextStep(project, locale);
+
+              <div className="flex flex-col gap-3 lg:w-[220px]">
+                {developerCommandMetrics.map(([label, value], index) => {
+                  const Icon = index === 0 ? BriefcaseBusiness : index === 1 ? KeyRound : index === 2 ? PackageCheck : index === 3 ? Activity : BellRing;
 
                   return (
-                    <div className="work-table__row developer-project-row" key={project.slug}>
-                      <strong>
-                        <a className="table-link" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
-                          {project.name}
-                        </a>
-                      </strong>
-                      <span>
-                        {project.installs.installedSkillCount} {labels.projectRow.installed} / {project.installs.approvedSkillCount} {labels.projectRow.approved}
-                      </span>
-                      <span>
-                        {project.apiKeys.activeCount} {labels.projectRow.active} / {project.apiKeys.revokedCount} {labels.projectRow.revoked}
-                      </span>
-                      <span>{formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)}</span>
-                      <span>
-                        {formatCompactNumber(project.runtime.callCount)} {labels.projectRow.calls} / {projectPolicyStateLabel(project.policy.state, locale)}
-                        <small>{nextStep.title}</small>
-                      </span>
+                    <div className="stat-card" key={label}>
+                      <Icon size={16} aria-hidden="true" className="text-[#999]" />
+                      <span className="body-text-sm text-[#999]">{label}</span>
+                      <strong className="heading-sm text-white">{value}</strong>
                     </div>
                   );
-                })
-              ) : (
-                <div className="work-table__row developer-project-row developer-project-row--empty">
-                  <strong>{labels.emptyProjects}</strong>
-                </div>
-              )}
+                })}
+              </div>
             </div>
           </article>
+        </div>
+      </section>
 
-          <div id="developer-demand">
-            <BuyerRequestManager
-              developerRequests={developerBuyerRequests}
-              locale={locale}
-              mode="developer"
-              publisherRequests={[]}
-            />
+      <section className="section">
+        <div className="section-inner">
+          <div className="flex flex-col gap-8 lg:flex-row">
+            <div className="flex-1 min-w-0 space-y-8">
+              <article className="card p-6" id="developer-projects">
+                <div className="eyebrow mb-4">
+                  <LockKeyhole size={16} aria-hidden="true" />
+                  <span>{labels.projectTitle}</span>
+                </div>
+                <ProjectCreateForm locale={locale} />
+                <div className="data-table mt-4">
+                  <div className="grid grid-cols-5 gap-4 px-4 py-2 text-[#666] text-sm border-b border-[rgba(255,255,255,0.08)]">
+                    {labels.projectHeaders.map((header) => (
+                      <span key={header}>{header}</span>
+                    ))}
+                  </div>
+                  {developerProjects.length > 0 ? (
+                    developerProjects.slice(0, 8).map((project) => {
+                      const nextStep = getDeveloperProjectNextStep(project, locale);
+
+                      return (
+                        <div className="grid grid-cols-5 gap-4 px-4 py-3 border-b border-[rgba(255,255,255,0.04)] items-center" key={project.slug}>
+                          <strong>
+                            <a className="text-[#0075ff] hover:underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                              {project.name}
+                            </a>
+                          </strong>
+                          <span className="body-text-sm text-[#999]">
+                            {project.installs.installedSkillCount} {labels.projectRow.installed} / {project.installs.approvedSkillCount} {labels.projectRow.approved}
+                          </span>
+                          <span className="body-text-sm text-[#999]">
+                            {project.apiKeys.activeCount} {labels.projectRow.active} / {project.apiKeys.revokedCount} {labels.projectRow.revoked}
+                          </span>
+                          <span className="body-text-sm text-[#999]">{formatMoney(project.policy.monthlyBudgetCents, project.usage.currency)}</span>
+                          <span className="body-text-sm text-[#999]">
+                            {formatCompactNumber(project.runtime.callCount)} {labels.projectRow.calls} / {projectPolicyStateLabel(project.policy.state, locale)}
+                            <small className="block text-[#666] text-xs mt-0.5">{nextStep.title}</small>
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <strong className="body-text text-[#999]">{labels.emptyProjects}</strong>
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              <div id="developer-demand">
+                <BuyerRequestManager
+                  developerRequests={developerBuyerRequests}
+                  locale={locale}
+                  mode="developer"
+                  publisherRequests={[]}
+                />
+              </div>
+            </div>
+
+            <aside className="lg:w-[360px] space-y-6">
+              <div id="developer-team">
+                <OrganizationTeamManager locale={locale} members={organizationTeamMembers} />
+              </div>
+
+              <div id="developer-billing">
+                <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+              </div>
+
+              <div id="developer-webhooks">
+                <OrganizationWebhookManager endpoints={organizationWebhookEndpoints} locale={locale} />
+              </div>
+
+              <div id="developer-notifications">
+                <NotificationInboxManager
+                  locale={locale}
+                  notifications={userNotificationInbox.notifications}
+                  summary={userNotificationInbox.summary}
+                />
+              </div>
+
+              <div id="developer-preferences">
+                <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
+              </div>
+
+              <article className="card p-6">
+                <div className="eyebrow mb-3">
+                  <ReceiptText size={16} aria-hidden="true" />
+                  <span>{labels.nextActionsTitle}</span>
+                </div>
+                <p className="body-text-sm text-[#999] mb-4">{labels.nextActionsDescription}</p>
+                <div className="space-y-3">
+                  {projectNextSteps.length > 0 ? (
+                    projectNextSteps.map(({ project, step }) => (
+                      <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] p-4 space-y-2" key={project.slug}>
+                        <KeyRound size={16} aria-hidden="true" className="text-[#999]" />
+                        <strong className="block text-white text-sm">{step.title}</strong>
+                        <span className="block body-text-sm text-[#999]">{project.name}: {step.detail}</span>
+                        <a className="btn-text inline-flex items-center gap-1 text-sm" href={localizedHref(step.href, locale)}>
+                          {step.href === "/marketplace" ? labels.openMarketplace : labels.openProject}
+                        </a>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] p-4 space-y-2">
+                      <PackageCheck size={16} aria-hidden="true" className="text-[#999]" />
+                      <strong className="block text-white text-sm">{labels.nextActions.createProject[0]}</strong>
+                      <span className="block body-text-sm text-[#999]">{labels.nextActions.createProject[1]}</span>
+                    </div>
+                  )}
+                </div>
+              </article>
+            </aside>
           </div>
         </div>
-
-        <aside className="developer-command-side">
-          <div id="developer-team">
-            <OrganizationTeamManager locale={locale} members={organizationTeamMembers} />
-          </div>
-
-          <div id="developer-billing">
-            <OrganizationBillingManager billing={organizationBilling} locale={locale} />
-          </div>
-
-          <div id="developer-webhooks">
-            <OrganizationWebhookManager endpoints={organizationWebhookEndpoints} locale={locale} />
-          </div>
-
-          <div id="developer-notifications">
-            <NotificationInboxManager
-              locale={locale}
-              notifications={userNotificationInbox.notifications}
-              summary={userNotificationInbox.summary}
-            />
-          </div>
-
-          <div id="developer-preferences">
-            <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
-          </div>
-
-          <article className="ops-panel runtime-ops-panel">
-            <div className="card-kicker">
-              <ReceiptText size={16} aria-hidden="true" />
-              <span>{labels.nextActionsTitle}</span>
-            </div>
-            <p className="developer-next-action-intro">{labels.nextActionsDescription}</p>
-            <div className="trust-requirement-grid trust-requirement-grid--single">
-              {projectNextSteps.length > 0 ? (
-                projectNextSteps.map(({ project, step }) => (
-                  <div className="trust-requirement developer-next-action" key={project.slug}>
-                    <KeyRound size={16} aria-hidden="true" />
-                    <strong>{step.title}</strong>
-                    <span>{project.name}: {step.detail}</span>
-                    <a className="ghost-button ghost-button--inline" href={localizedHref(step.href, locale)}>
-                      {step.href === "/marketplace" ? labels.openMarketplace : labels.openProject}
-                    </a>
-                  </div>
-                ))
-              ) : (
-                <div className="trust-requirement developer-next-action">
-                  <PackageCheck size={16} aria-hidden="true" />
-                  <strong>{labels.nextActions.createProject[0]}</strong>
-                  <span>{labels.nextActions.createProject[1]}</span>
-                </div>
-              )}
-            </div>
-          </article>
-        </aside>
       </section>
-        </>
-      ) : (
-        <WorkspaceLockedPanel
-          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
-          body={
-            locale === "zh"
-              ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作已隐藏，但你仍然可以看到这里会承载的运营队列。"
-              : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, but the locked state still shows what the workspace governs."
-          }
-          locale={locale}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
-        />
-      )}
-    </main>
+    </AppShell>
   );
 }
 
@@ -657,36 +642,40 @@ function WorkspaceLockedPanel({
   const guide = getDeveloperLockedGuide(locale);
 
   return (
-    <section className="workspace-locked-panel">
-      <article className="ops-panel workspace-locked-panel__card">
-        <div className="workspace-locked-panel__main">
-          <div className="card-kicker">
-            <LockKeyhole size={16} aria-hidden="true" />
-            <span>{guide.eyebrow}</span>
-          </div>
-          <h2>{title}</h2>
-          <p>{body}</p>
-          <p className="visually-hidden">{guide.marker}</p>
-          <a className="primary-button" href={actionHref}>
-            <span>{actionLabel}</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </a>
-        </div>
-        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
-          {guide.actions.map((action, index) => {
-            const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
-
-            return (
-              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
-                <Icon size={16} aria-hidden="true" />
-                <span>{action.label}</span>
-                <strong>{action.title}</strong>
-                <small>{action.body}</small>
+    <section className="section">
+      <div className="section-inner">
+        <article className="card p-8">
+          <div className="flex flex-col gap-8 lg:flex-row">
+            <div className="flex-1 space-y-4">
+              <div className="eyebrow">
+                <LockKeyhole size={16} aria-hidden="true" />
+                <span>{guide.eyebrow}</span>
+              </div>
+              <h2 className="heading-lg">{title}</h2>
+              <p className="body-text text-[#999]">{body}</p>
+              <p className="sr-only">{guide.marker}</p>
+              <a className="btn-primary inline-flex items-center gap-2" href={actionHref}>
+                <span>{actionLabel}</span>
+                <ArrowRight size={16} aria-hidden="true" />
               </a>
-            );
-          })}
-        </div>
-      </article>
+            </div>
+            <div className="flex flex-col gap-3 lg:w-[320px]" aria-label={guide.ariaLabel}>
+              {guide.actions.map((action, index) => {
+                const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
+
+                return (
+                  <a className="block rounded-[12px] border border-[rgba(255,255,255,0.08)] p-4 space-y-1 transition-colors hover:bg-[#212121]" href={localizedHref(action.href, locale)} key={action.title}>
+                    <Icon size={16} aria-hidden="true" className="text-[#999]" />
+                    <span className="block body-text-sm text-[#666]">{action.label}</span>
+                    <strong className="block text-white text-sm">{action.title}</strong>
+                    <small className="block body-text-sm text-[#999]">{action.body}</small>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </article>
+      </div>
     </section>
   );
 }
@@ -757,20 +746,14 @@ function buildDeveloperOperationsSummary(input: {
 }): DeveloperOperationsSummary {
   const runtimeActions = input.projects.filter(hasRuntimeQualityIssue).length;
   const projectActions =
-    input.projects.filter((project) => project.apiKeys.activeCount === 0).length +
-    input.projects.filter((project) => project.installs.installedSkillCount === 0).length +
-    input.projects.filter(hasApprovalGap).length +
-    input.projects.filter(hasSuspendedRuntime).length +
-    input.projects.reduce((sum, project) => sum + project.updates.count, 0);
+    input.projects.filter((project) => hasApprovalGap(project) || hasSuspendedRuntime(project) || project.updates.count > 0).length +
+    (input.projects.length === 0 ? 1 : 0);
+  const keyGaps = input.projects.filter((project) => project.apiKeys.activeCount === 0).length;
+  const installGaps = input.projects.filter((project) => project.installs.installedSkillCount === 0).length;
+  const billingActions = hasBillingReadinessGap(input.billing, input.projects) ? 1 : 0;
+  const notificationActions = input.inbox.summary.unread;
 
-  return {
-    billingActions: hasBillingReadinessGap(input.billing, input.projects) ? 1 : 0,
-    installGaps: input.projects.filter((project) => project.installs.installedSkillCount === 0).length,
-    keyGaps: input.projects.filter((project) => project.apiKeys.activeCount === 0).length,
-    notificationActions: input.inbox.summary.unread,
-    projectActions,
-    runtimeActions
-  };
+  return { billingActions, installGaps, keyGaps, notificationActions, projectActions, runtimeActions };
 }
 
 function buildDeveloperPriorityItems(input: {
@@ -782,21 +765,20 @@ function buildDeveloperPriorityItems(input: {
   teamMembers: OrganizationTeamMember[];
   webhookEndpoints: OrganizationWebhookEndpoint[];
 }): DeveloperPriorityItem[] {
-  const labels = developerCommandCopy[input.locale];
   const items: DeveloperPriorityItem[] = [];
-  const firstProject = input.projects[0] ?? null;
-  const firstProjectHref = firstProject ? projectHref(firstProject, input.locale) : developerAnchor("developer-projects", input.locale);
+  const labels = developerCommandCopy[input.locale];
+  const firstProjectHref = input.projects[0] ? projectHref(input.projects[0], input.locale) : localizedHref("/marketplace", input.locale);
+  const keyGaps = input.projects.filter((project) => project.apiKeys.activeCount === 0).length;
   const keyGapProject = input.projects.find((project) => project.apiKeys.activeCount === 0);
+  const installGaps = input.projects.filter((project) => project.installs.installedSkillCount === 0).length;
   const installGapProject = input.projects.find((project) => project.installs.installedSkillCount === 0);
+  const approvalGaps = input.projects.filter(hasApprovalGap).length;
   const approvalGapProject = input.projects.find(hasApprovalGap);
+  const suspendedGaps = input.projects.filter(hasSuspendedRuntime).length;
   const suspendedProject = input.projects.find(hasSuspendedRuntime);
+  const updateCount = input.projects.reduce((sum, project) => sum + project.updates.count, 0);
   const updateProject = input.projects.find((project) => project.updates.count > 0);
   const runtimeProject = input.projects.find(hasRuntimeQualityIssue);
-  const keyGaps = input.projects.filter((project) => project.apiKeys.activeCount === 0).length;
-  const installGaps = input.projects.filter((project) => project.installs.installedSkillCount === 0).length;
-  const approvalGaps = input.projects.filter(hasApprovalGap).length;
-  const suspendedGaps = input.projects.filter(hasSuspendedRuntime).length;
-  const updateCount = input.projects.reduce((sum, project) => sum + project.updates.count, 0);
   const runtimeGaps = input.projects.filter(hasRuntimeQualityIssue).length;
   const runtimeDangerCount = input.projects.filter(
     (project) => project.runtime.blockedCount > 0 || project.runtime.errorCount > 0 || project.policy.state === "suspended"
@@ -984,10 +966,10 @@ function buildDeveloperPriorityItems(input: {
 
 function getDeveloperProjectNextStep(project: DeveloperProjectRecord, locale: DeveloperLocale) {
   const labels = copy[locale].nextActions;
-  const projectHref = `/dashboard/projects/${project.slug}`;
+  const href = `/dashboard/projects/${project.slug}`;
 
   if (project.apiKeys.activeCount === 0) {
-    return { detail: labels.createKey[1], href: projectHref, title: labels.createKey[0] };
+    return { detail: labels.createKey[1], href, title: labels.createKey[0] };
   }
 
   if (project.installs.installedSkillCount === 0) {
@@ -995,15 +977,15 @@ function getDeveloperProjectNextStep(project: DeveloperProjectRecord, locale: De
   }
 
   if (project.policy.state === "owner_review" || project.installs.ownerRequiredCount > 0 || project.policy.approvalRequiredCount > 0) {
-    return { detail: labels.ownerReview[1], href: projectHref, title: labels.ownerReview[0] };
+    return { detail: labels.ownerReview[1], href, title: labels.ownerReview[0] };
   }
 
   if (project.installs.suspendedInstallCount > 0 || project.policy.state === "suspended") {
-    return { detail: labels.runtime[1], href: projectHref, title: labels.runtime[0] };
+    return { detail: labels.runtime[1], href, title: labels.runtime[0] };
   }
 
   if (project.updates.count > 0) {
-    return { detail: labels.update[1], href: projectHref, title: labels.update[0] };
+    return { detail: labels.update[1], href, title: labels.update[0] };
   }
 
   if (
@@ -1011,14 +993,14 @@ function getDeveloperProjectNextStep(project: DeveloperProjectRecord, locale: De
     project.runtime.errorCount > 0 ||
     (project.runtime.successRate !== null && project.runtime.successRate < 0.95)
   ) {
-    return { detail: labels.runtime[1], href: projectHref, title: labels.runtime[0] };
+    return { detail: labels.runtime[1], href, title: labels.runtime[0] };
   }
 
   if (project.usage.grossCents > 0 && project.subscriptions.activeCount === 0) {
-    return { detail: labels.billing[1], href: projectHref, title: labels.billing[0] };
+    return { detail: labels.billing[1], href, title: labels.billing[0] };
   }
 
-  return { detail: labels.monitor[1], href: projectHref, title: labels.monitor[0] };
+  return { detail: labels.monitor[1], href, title: labels.monitor[0] };
 }
 
 function projectPolicyStateLabel(state: DeveloperProjectRecord["policy"]["state"], locale: DeveloperLocale) {

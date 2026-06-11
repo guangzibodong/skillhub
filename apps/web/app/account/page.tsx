@@ -17,10 +17,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { AccountLoginMethodManager } from "@/components/account-login-method-manager";
 import { AccountSessionManager } from "@/components/account-session-manager";
+import { AppShell } from "@/components/app-shell";
 import { ConsoleAccessPanel } from "@/components/console-access-panel";
 import { NotificationPreferenceManager } from "@/components/notification-preference-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
-import { SiteHeader } from "@/components/site-header";
 import {
   getAccountSessions,
   getAccountSummary,
@@ -28,7 +28,7 @@ import {
   type AccountSummary
 } from "@/lib/account-data";
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { getNotificationPreferences } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
@@ -209,9 +209,7 @@ type AccountLabels = (typeof copy)["en"] | (typeof copy)["zh"];
 export default async function AccountPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const labels = copy[locale];
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const [account, accountSessions, session, notificationPreferences] = await Promise.all([
     getAccountSummary(),
     getAccountSessions(),
@@ -233,23 +231,23 @@ export default async function AccountPage({ searchParams }: PageProps) {
   ] as const;
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="account" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/account" />
-
-      <section className="page-hero page-hero--compact">
-        <div>
+    <AppShell active="account" locale={locale}>
+      <section className="section">
+        <div className="section-inner flex flex-col gap-4">
           <div className="eyebrow">
             <UserCircle size={16} aria-hidden="true" />
             <span>{labels.heroEyebrow}</span>
           </div>
-          <h1>{labels.heroTitle}</h1>
-          <p>{labels.heroBody}</p>
+          <h1 className="heading-xl">{labels.heroTitle}</h1>
+          <p className="body-text text-[#999]">{labels.heroBody}</p>
         </div>
         {!signedIn ? (
-          <a className="primary-button primary-button--large" href={localizedHref("/login", locale)}>
-            <KeyRound size={17} aria-hidden="true" />
-            <span>{labels.signIn}</span>
-          </a>
+          <div className="section-inner mt-6">
+            <a className="btn-primary btn-primary--large inline-flex items-center gap-2" href={localizedHref("/login", locale)}>
+              <KeyRound size={17} aria-hidden="true" />
+              <span>{labels.signIn}</span>
+            </a>
+          </div>
         ) : null}
       </section>
 
@@ -261,137 +259,139 @@ export default async function AccountPage({ searchParams }: PageProps) {
         <>
       <ConsoleAccessPanel locale={locale} session={session} variant="compact" />
 
-      <section className="account-layout">
-        <div className="account-main">
-          <article className="ops-panel account-profile-panel">
-            <div className="account-profile-panel__head">
-              <div>
-                <div className="card-kicker">
-                  <UserCircle size={16} aria-hidden="true" />
-                  <span>{labels.profile}</span>
+      <section className="section">
+        <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
+          <div className="flex flex-col gap-6">
+            <article className="card p-6">
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="flex flex-col gap-2">
+                  <div className="eyebrow">
+                    <UserCircle size={16} aria-hidden="true" />
+                    <span>{labels.profile}</span>
+                  </div>
+                  <h2 className="heading-md">{account.profile.displayName ?? account.profile.email ?? labels.account}</h2>
+                  <p className="body-text-sm text-[#999]">{signedIn ? account.profile.email ?? labels.empty : labels.accountEmpty}</p>
                 </div>
-                <h2>{account.profile.displayName ?? account.profile.email ?? labels.account}</h2>
-                <p>{signedIn ? account.profile.email ?? labels.empty : labels.accountEmpty}</p>
+                <span className={signedIn ? "pill pill--success" : "pill pill--neutral"}>
+                  {signedIn ? account.profile.platformRole : labels.signInRequired}
+                </span>
               </div>
-              <span className={signedIn ? "status-chip status-chip--success" : "status-chip status-chip--neutral"}>
-                {signedIn ? account.profile.platformRole : labels.signInRequired}
-              </span>
-            </div>
-            <div className="account-meta-grid">
-              <MetaItem label={labels.email} value={account.profile.email ?? labels.empty} />
-              <MetaItem label={labels.organization} value={organizationLabel(account, labels.empty)} />
-              <MetaItem label={labels.role} value={account.membership?.role ?? labels.empty} />
-              <MetaItem label={labels.memberSince} value={formatDate(account.membership?.memberSince, locale)} />
-            </div>
-          </article>
-
-          <article className="ops-panel account-method-panel">
-            <div className="card-kicker">
-              <ShieldCheck size={16} aria-hidden="true" />
-              <span>{labels.connectedAccounts}</span>
-            </div>
-            <AccountLoginMethodManager locale={locale} methods={account.loginMethods} />
-          </article>
-
-          <article className="ops-panel account-workspace-panel">
-            <div className="card-kicker">
-              <Building2 size={16} aria-hidden="true" />
-              <span>{labels.workspace}</span>
-            </div>
-            <div className="account-stat-grid">
-              {workspaceStats.map(([label, value, Icon]) => (
-                <div className="account-stat" key={label}>
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{formatNumber(value, locale)}</strong>
-                </div>
-              ))}
-            </div>
-            <div className="account-readiness-grid">
-              {readiness.map(([label, value, Icon]) => (
-                <div className="account-readiness-item" key={label}>
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{String(value)}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="ops-panel account-shortcut-panel">
-            <div className="card-kicker">
-              <LayoutDashboard size={16} aria-hidden="true" />
-              <span>{labels.shortcuts}</span>
-            </div>
-            <div className="account-shortcut-grid account-shortcut-grid--cards">
-              <WorkspaceShortcutCard
-                body={labels.developerBody}
-                href="/developer"
-                icon={BriefcaseBusiness}
-                labels={labels}
-                locale={locale}
-                requiredRoles={["developer", "owner", "admin", "super_admin"]}
-                session={session}
-                title={labels.developer}
-              />
-              <WorkspaceShortcutCard
-                body={labels.publisherBody}
-                href="/publisher"
-                icon={UploadCloud}
-                labels={labels}
-                locale={locale}
-                requiredRoles={["publisher", "owner", "admin", "super_admin"]}
-                session={session}
-                title={labels.publisher}
-              />
-              <WorkspaceShortcutCard
-                body={labels.dashboardBody}
-                href="/dashboard"
-                icon={Building2}
-                labels={labels}
-                locale={locale}
-                requiredRoles={[]}
-                session={session}
-                title={labels.dashboard}
-              />
-              <WorkspaceShortcutCard
-                body={labels.adminBody}
-                href="/admin"
-                icon={ShieldCheck}
-                labels={labels}
-                locale={locale}
-                requiredRoles={["reviewer", "finance", "support", "admin", "super_admin"]}
-                session={session}
-                title={labels.admin}
-              />
-            </div>
-          </article>
-        </div>
-
-        <aside className="account-side">
-          <SessionStatusPanel locale={locale} session={session} />
-
-          <AccountSessionManager locale={locale} sessions={accountSessions} />
-
-          {signedIn ? (
-            <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
-          ) : (
-            <article className="ops-panel account-security-panel">
-              <div className="card-kicker">
-                <Bell size={16} aria-hidden="true" />
-                <span>{labels.notificationPreferences}</span>
-              </div>
-              <div className="auth-empty-state">
-                <strong>{labels.empty}</strong>
-                <span>{labels.accountEmpty}</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <MetaItem label={labels.email} value={account.profile.email ?? labels.empty} />
+                <MetaItem label={labels.organization} value={organizationLabel(account, labels.empty)} />
+                <MetaItem label={labels.role} value={account.membership?.role ?? labels.empty} />
+                <MetaItem label={labels.memberSince} value={formatDate(account.membership?.memberSince, locale)} />
               </div>
             </article>
-          )}
-        </aside>
+
+            <article className="card p-6">
+              <div className="eyebrow mb-4">
+                <ShieldCheck size={16} aria-hidden="true" />
+                <span>{labels.connectedAccounts}</span>
+              </div>
+              <AccountLoginMethodManager locale={locale} methods={account.loginMethods} />
+            </article>
+
+            <article className="card p-6">
+              <div className="eyebrow mb-4">
+                <Building2 size={16} aria-hidden="true" />
+                <span>{labels.workspace}</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {workspaceStats.map(([label, value, Icon]) => (
+                  <div className="stat-card" key={label}>
+                    <Icon size={16} aria-hidden="true" />
+                    <span className="body-text-sm text-[#999]">{label}</span>
+                    <strong className="heading-sm text-white">{formatNumber(value, locale)}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {readiness.map(([label, value, Icon]) => (
+                  <div className="stat-card" key={label}>
+                    <Icon size={16} aria-hidden="true" />
+                    <span className="body-text-sm text-[#999]">{label}</span>
+                    <strong className="heading-sm text-white">{String(value)}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="card p-6">
+              <div className="eyebrow mb-4">
+                <LayoutDashboard size={16} aria-hidden="true" />
+                <span>{labels.shortcuts}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <WorkspaceShortcutCard
+                  body={labels.developerBody}
+                  href="/developer"
+                  icon={BriefcaseBusiness}
+                  labels={labels}
+                  locale={locale}
+                  requiredRoles={["developer", "owner", "admin", "super_admin"]}
+                  session={session}
+                  title={labels.developer}
+                />
+                <WorkspaceShortcutCard
+                  body={labels.publisherBody}
+                  href="/publisher"
+                  icon={UploadCloud}
+                  labels={labels}
+                  locale={locale}
+                  requiredRoles={["publisher", "owner", "admin", "super_admin"]}
+                  session={session}
+                  title={labels.publisher}
+                />
+                <WorkspaceShortcutCard
+                  body={labels.dashboardBody}
+                  href="/dashboard"
+                  icon={Building2}
+                  labels={labels}
+                  locale={locale}
+                  requiredRoles={[]}
+                  session={session}
+                  title={labels.dashboard}
+                />
+                <WorkspaceShortcutCard
+                  body={labels.adminBody}
+                  href="/admin"
+                  icon={ShieldCheck}
+                  labels={labels}
+                  locale={locale}
+                  requiredRoles={["reviewer", "finance", "support", "admin", "super_admin"]}
+                  session={session}
+                  title={labels.admin}
+                />
+              </div>
+            </article>
+          </div>
+
+          <aside className="flex flex-col gap-6">
+            <SessionStatusPanel locale={locale} session={session} />
+
+            <AccountSessionManager locale={locale} sessions={accountSessions} />
+
+            {signedIn ? (
+              <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
+            ) : (
+              <article className="card p-6">
+                <div className="eyebrow mb-4">
+                  <Bell size={16} aria-hidden="true" />
+                  <span>{labels.notificationPreferences}</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 py-6 text-center">
+                  <strong className="text-white">{labels.empty}</strong>
+                  <span className="body-text-sm text-[#666]">{labels.accountEmpty}</span>
+                </div>
+              </article>
+            )}
+          </aside>
+        </div>
       </section>
         </>
       )}
-    </main>
+    </AppShell>
   );
 }
 
@@ -399,36 +399,42 @@ function AccountSignedOutGuide({ labels, locale }: { labels: AccountLabels; loca
   const guide = labels.signedOutGuide;
 
   return (
-    <section className="workspace-locked-panel">
-      <article className="ops-panel workspace-locked-panel__card">
-        <div className="workspace-locked-panel__main">
-          <div className="card-kicker">
-            <KeyRound size={16} aria-hidden="true" />
-            <span>{guide.eyebrow}</span>
-          </div>
-          <h2>{guide.title}</h2>
-          <p>{guide.body}</p>
-          <p className="visually-hidden">{guide.marker}</p>
-          <a className="primary-button" href={localizedHref("/login", locale)}>
-            <span>{labels.signIn}</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </a>
-        </div>
-        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
-          {guide.actions.map((action, index) => {
-            const Icon = [LogIn, UserCircle, FolderPlus][index] ?? LayoutDashboard;
-
-            return (
-              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
-                <Icon size={16} aria-hidden="true" />
-                <span>{action.label}</span>
-                <strong>{action.title}</strong>
-                <small>{action.body}</small>
+    <section className="section">
+      <div className="section-inner">
+        <article className="card p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-8">
+            <div className="flex flex-col gap-4">
+              <div className="eyebrow">
+                <KeyRound size={16} aria-hidden="true" />
+                <span>{guide.eyebrow}</span>
+              </div>
+              <h2 className="heading-lg">{guide.title}</h2>
+              <p className="body-text text-[#999]">{guide.body}</p>
+              <p className="sr-only">{guide.marker}</p>
+              <a className="btn-primary inline-flex items-center gap-2 w-fit mt-2" href={localizedHref("/login", locale)}>
+                <span>{labels.signIn}</span>
+                <ArrowRight size={16} aria-hidden="true" />
               </a>
-            );
-          })}
-        </div>
-      </article>
+            </div>
+            <div className="flex flex-col gap-4" aria-label={guide.ariaLabel}>
+              {guide.actions.map((action, index) => {
+                const Icon = [LogIn, UserCircle, FolderPlus][index] ?? LayoutDashboard;
+
+                return (
+                  <a className="card card--compact flex items-start gap-4 p-4 hover:border-[#0075ff] transition-colors" href={localizedHref(action.href, locale)} key={action.title}>
+                    <Icon size={16} aria-hidden="true" className="text-[#0075ff] mt-1 shrink-0" />
+                    <div className="flex flex-col gap-1">
+                      <span className="body-text-sm text-[#666]">{action.label}</span>
+                      <strong className="text-white">{action.title}</strong>
+                      <small className="body-text-sm text-[#999]">{action.body}</small>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </article>
+      </div>
     </section>
   );
 }
@@ -453,20 +459,22 @@ function AccountCommandStrip({
 
   if (!signedIn) {
     return (
-      <section className="account-command-strip account-command-strip--signed-out" aria-label={labels.workspace}>
-        <article className="account-command-tile account-command-tile--signin">
-          <div className="account-command-tile__head">
-            <KeyRound size={17} aria-hidden="true" />
-            <span>{labels.signInRequired}</span>
-          </div>
-          <strong>{labels.commandSignInTitle}</strong>
-          <small>{labels.accountEmpty}</small>
-          <p>{labels.commandSignInBody}</p>
-          <a className="primary-button account-command-tile__cta" href={localizedHref("/login", locale)}>
-            <KeyRound size={16} aria-hidden="true" />
-            <span>{labels.signIn}</span>
-          </a>
-        </article>
+      <section className="section" aria-label={labels.workspace}>
+        <div className="section-inner">
+          <article className="card p-6 border-[#0075ff]/30">
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound size={17} aria-hidden="true" className="text-[#0075ff]" />
+              <span className="pill pill--warning">{labels.signInRequired}</span>
+            </div>
+            <strong className="heading-sm text-white block mb-2">{labels.commandSignInTitle}</strong>
+            <small className="body-text-sm text-[#666] block mb-2">{labels.accountEmpty}</small>
+            <p className="body-text-sm text-[#999] mb-4">{labels.commandSignInBody}</p>
+            <a className="btn-primary inline-flex items-center gap-2" href={localizedHref("/login", locale)}>
+              <KeyRound size={16} aria-hidden="true" />
+              <span>{labels.signIn}</span>
+            </a>
+          </article>
+        </div>
       </section>
     );
   }
@@ -503,31 +511,33 @@ function AccountCommandStrip({
   ] as const;
 
   return (
-    <section className="account-command-strip" aria-label={labels.workspace}>
-      {tiles.map((tile) => {
-        const Icon = tile.icon;
+    <section className="section" aria-label={labels.workspace}>
+      <div className="section-inner grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {tiles.map((tile) => {
+          const Icon = tile.icon;
 
-        return (
-          <article className="account-command-tile" key={tile.label}>
-            <div className="account-command-tile__head">
-              <Icon size={17} aria-hidden="true" />
-              <span>{tile.label}</span>
-            </div>
-            <strong>{tile.value}</strong>
-            <small>{tile.status}</small>
-            <p>{tile.body}</p>
-          </article>
-        );
-      })}
+          return (
+            <article className="card card--compact p-5" key={tile.label}>
+              <div className="flex items-center gap-2 mb-3">
+                <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+                <span className="body-text-sm text-[#666]">{tile.label}</span>
+              </div>
+              <strong className="heading-sm text-white block mb-1">{tile.value}</strong>
+              <small className="body-text-sm text-[#525252] block mb-2">{tile.status}</small>
+              <p className="body-text-sm text-[#999]">{tile.body}</p>
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <span>{label}</span>
-      <strong>{value}</strong>
+    <div className="flex flex-col gap-1">
+      <span className="body-text-sm text-[#666]">{label}</span>
+      <strong className="text-white text-sm">{value}</strong>
     </div>
   );
 }
@@ -555,16 +565,16 @@ function WorkspaceShortcutCard({
   const targetHref = state.kind === "blocked" ? "/login" : state.kind === "forbidden" ? "/account" : href;
 
   return (
-    <a className={`account-shortcut-card account-shortcut-card--${state.kind}`} href={localizedHref(targetHref, locale)}>
-      <div className="account-shortcut-card__head">
-        <Icon size={17} aria-hidden="true" />
-        <span className={state.kind === "available" ? "status-chip status-chip--success" : "status-chip status-chip--warning"}>
+    <a className="card card--compact flex flex-col gap-3 p-5 hover:border-[#0075ff] transition-colors" href={localizedHref(targetHref, locale)}>
+      <div className="flex items-center justify-between">
+        <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+        <span className={state.kind === "available" ? "pill pill--success" : "pill pill--warning"}>
           {state.label}
         </span>
       </div>
-      <strong>{title}</strong>
-      <p>{body}</p>
-      <span className="account-shortcut-card__action">
+      <strong className="text-white">{title}</strong>
+      <p className="body-text-sm text-[#999]">{body}</p>
+      <span className="inline-flex items-center gap-1 text-[#0075ff] text-sm mt-auto">
         {state.action}
         <ArrowRight size={15} aria-hidden="true" />
       </span>

@@ -30,10 +30,10 @@ import { ProjectSkillPolicyManager } from "@/components/project-skill-policy-man
 import { ProjectSubscriptionManager } from "@/components/project-subscription-manager";
 import { ProjectUpdateInboxManager } from "@/components/project-update-inbox-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -408,7 +408,6 @@ const projectAdjustmentCopy = {
 export default async function ProjectDetailPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
   const locale = getLocaleFromSearchParams(search);
-  const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = copy[locale];
   const session = await getWorkspaceSession();
@@ -418,22 +417,14 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
   if (!hasProjectAccess) {
     return (
-      <main className="product-shell">
-        <SiteHeader
-          active="dashboard"
-          apiUrl={apiUrl}
-          dictionary={dictionary}
-          locale={locale}
-          pathname={`/dashboard/projects/${slug}`}
-        />
-
-        <section className="project-detail-hero project-detail-hero--locked">
-          <div>
-            <a className="breadcrumb-link" href={localizedHref("/dashboard", locale)}>
+      <AppShell active="dashboard" locale={locale}>
+        <section className="section">
+          <div className="section-inner">
+            <a className="inline-flex items-center gap-1 text-sm text-[#999] mb-4" href={localizedHref("/dashboard", locale)}>
               <ArrowLeft size={15} aria-hidden="true" />
               <span>{labels.back}</span>
             </a>
-            <div className="eyebrow">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <LockKeyhole size={16} aria-hidden="true" />
               <span>{labels.eyebrow}</span>
             </div>
@@ -444,7 +435,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
         <JourneyRail currentStep="project" journey="developer" locale={locale} />
 
-        <section className="console-board">
+        <section className="max-w-[1200px] mx-auto px-6 py-8">
           <WorkspaceAccessPanel
             locale={locale}
             requiredRoles={developerAccessRoles}
@@ -465,7 +456,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           projectSlug={slug}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
-      </main>
+      </AppShell>
     );
   }
 
@@ -506,22 +497,14 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   ] as const;
 
   return (
-    <main className="product-shell">
-      <SiteHeader
-        active="dashboard"
-        apiUrl={apiUrl}
-        dictionary={dictionary}
-        locale={locale}
-        pathname={`/dashboard/projects/${project.slug}`}
-      />
-
-      <section className="project-detail-hero">
-        <div>
-          <a className="breadcrumb-link" href={localizedHref("/dashboard", locale)}>
+    <AppShell active="dashboard" locale={locale}>
+      <section className="section">
+        <div className="section-inner">
+          <a className="inline-flex items-center gap-1 text-sm text-[#999] mb-4" href={localizedHref("/dashboard", locale)}>
             <ArrowLeft size={15} aria-hidden="true" />
             <span>{labels.back}</span>
           </a>
-          <div className="eyebrow">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
           </div>
@@ -529,30 +512,30 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           <p>{labels.description}</p>
         </div>
 
-        <aside className="ops-panel project-health-panel">
-          <div className="card-kicker">
+        <aside className="card mt-6 max-w-[1200px] mx-auto px-6">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <Activity size={16} aria-hidden="true" />
             <span>{labels.health}</span>
           </div>
-          <div className="project-health-grid">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {healthItems.map(([label, value, Icon]) => (
-              <div className="project-health-item" key={label}>
+              <div className="flex items-center gap-2" key={label}>
                 <Icon size={16} aria-hidden="true" />
-                <span>{label}</span>
+                <span className="text-xs text-[#999]">{label}</span>
                 <strong>{value}</strong>
               </div>
             ))}
           </div>
-          <div className="project-readiness-list" aria-label={labels.readiness.title}>
+          <div className="mt-4" aria-label={labels.readiness.title}>
             <strong>{labels.readiness.title}</strong>
             {readinessItems.map((item) => (
-              <div className="project-readiness-item" key={item.label}>
-                <span className={item.ready ? "status-chip" : "status-chip status-chip--warning"}>
+              <div className="flex items-center gap-2 mt-2" key={item.label}>
+                <span className={item.ready ? "pill" : "pill pill--warning"}>
                   {item.ready ? labels.readiness.ready : labels.readiness.needsAction}
                 </span>
                 <div>
                   <b>{item.label}</b>
-                  <small>{item.detail}</small>
+                  <small className="block text-xs text-[#999]">{item.detail}</small>
                 </div>
               </div>
             ))}
@@ -562,7 +545,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
       <JourneyRail currentStep="project" journey="developer" locale={locale} />
 
-      <section className="console-board">
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
         <SessionStatusPanel locale={locale} session={session} />
         <WorkspaceAccessPanel
           locale={locale}
@@ -570,11 +553,11 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           session={session}
           workspace="developer"
         />
-        <div className="metric-strip project-metric-strip metric-strip--standalone">
+        <div className="flex items-center gap-6 flex-wrap mt-4">
           {metrics.map(([label, value, Icon]) => (
-            <div className="metric project-metric" key={label}>
+            <div className="flex items-center gap-2" key={label}>
               <Icon size={17} aria-hidden="true" />
-              <span>{label}</span>
+              <span className="text-xs text-[#999]">{label}</span>
               <strong>{value}</strong>
             </div>
           ))}
@@ -583,25 +566,25 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
       {hasProjectAccess ? (
         <>
-      <section className="publisher-priority-board project-priority-board" aria-labelledby="project-priority-heading">
-        <article className="publisher-priority-card developer-priority-card project-priority-card">
-          <div className="publisher-priority-card__main">
-            <div className="card-kicker">
+      <section className="max-w-[1200px] mx-auto px-6 py-8" aria-labelledby="project-priority-heading">
+        <article className="card">
+          <div>
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <ClipboardList size={16} aria-hidden="true" />
               <span>{projectPriorityLabels.eyebrow}</span>
             </div>
             <h2 id="project-priority-heading">{projectPriorityLabels.title}</h2>
             <p>{projectPriorityLabels.body}</p>
 
-            <div className="publisher-priority-list project-priority-list" aria-label={projectPriorityLabels.queueLabel}>
+            <div className="flex flex-col gap-3 mt-4" aria-label={projectPriorityLabels.queueLabel}>
               {projectPriorityItems.map((item) => (
-                <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
-                  <span>
+                <a className="card card--compact" href={item.href} key={item.id}>
+                  <span className="text-xs text-[#999]">
                     {projectPriorityLabels.tones[item.tone]} / {item.metric}
                   </span>
-                  <strong>{item.title}</strong>
-                  <p>{item.detail}</p>
-                  <b>
+                  <strong className="block mt-1">{item.title}</strong>
+                  <p className="text-sm text-[#999] mt-1">{item.detail}</p>
+                  <b className="flex items-center gap-1 mt-2 text-sm">
                     {item.actionLabel}
                     <ArrowRight size={14} aria-hidden="true" />
                   </b>
@@ -609,17 +592,17 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
               ))}
             </div>
 
-            <a className="primary-button publisher-priority-card__action" href={primaryProjectPriorityItem.href}>
+            <a className="btn-primary mt-4 inline-flex items-center gap-2" href={primaryProjectPriorityItem.href}>
               <span>{projectPriorityLabels.action}</span>
               <ArrowRight size={16} aria-hidden="true" />
             </a>
           </div>
 
-          <div className="publisher-priority-metrics developer-priority-metrics project-priority-metrics">
+          <div className="flex items-center gap-6 flex-wrap mt-6 pt-4 border-t border-[rgba(255,255,255,0.08)]">
             {projectPriorityMetrics.map(([label, value, Icon]) => (
-              <div className="publisher-priority-metric developer-priority-metric project-priority-metric" key={label}>
+              <div className="flex items-center gap-2" key={label}>
                 <Icon size={16} aria-hidden="true" />
-                <span>{label}</span>
+                <span className="text-xs text-[#999]">{label}</span>
                 <strong>{value}</strong>
               </div>
             ))}
@@ -627,55 +610,56 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         </article>
       </section>
 
-      <section className="project-detail-layout">
-        <div className="project-detail-main">
-          <div id="project-policies">
-            <ProjectSkillPolicyManager
-              emptyLabel={labels.empty}
-              headers={labels.skillHeaders}
-              locale={locale}
-              noDateLabel={labels.noDate}
-              projectSlug={project.slug}
-              skills={detail.installedSkills}
-              titleLabel={labels.skillTitle}
-            />
-          </div>
-
-          <div id="project-runtime-test">
-            <ProjectRuntimeTestPanel locale={locale} projectSlug={project.slug} skills={detail.installedSkills} />
-          </div>
-
-          <article className="ops-panel project-table-panel" id="project-runtime-calls">
-            <div className="card-kicker">
-              <RadioTower size={16} aria-hidden="true" />
-              <span>{labels.callsTitle}</span>
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+          <div>
+            <div id="project-policies">
+              <ProjectSkillPolicyManager
+                emptyLabel={labels.empty}
+                headers={labels.skillHeaders}
+                locale={locale}
+                noDateLabel={labels.noDate}
+                projectSlug={project.slug}
+                skills={detail.installedSkills}
+                titleLabel={labels.skillTitle}
+              />
             </div>
-            <div className="project-table">
-              <div className="project-table__row project-table__row--head project-call-row">
-                {labels.callHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
+
+            <div id="project-runtime-test" className="mt-5">
+              <ProjectRuntimeTestPanel locale={locale} projectSlug={project.slug} skills={detail.installedSkills} />
+            </div>
+
+            <article className="card mt-5" id="project-runtime-calls">
+              <div className="eyebrow mb-4 flex items-center gap-2">
+                <RadioTower size={16} aria-hidden="true" />
+                <span>{labels.callsTitle}</span>
               </div>
-              {detail.recentInvocations.length > 0 ? (
-                detail.recentInvocations.map((call) => (
-                  <div className="project-table__row project-call-row" key={call.id}>
-                    <strong>
-                      {call.displayName ?? call.skillSlug ?? "unknown"}
-                      <small>{formatDateValue(call.createdAt, locale, labels.noDate)}</small>
-                    </strong>
-                    <span className={statusChipClass(call.status)}>{call.status}</span>
-                    <span>{formatLatency(call.latencyMs, labels.noDate)}</span>
-                    <span>{call.errorCode ?? labels.noDate}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="project-table__row project-table__row--empty">{labels.empty}</div>
-              )}
-            </div>
-          </article>
-        </div>
+              <div className="overflow-x-auto">
+                <div className="grid grid-cols-4 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
+                  {labels.callHeaders.map((header) => (
+                    <span key={header}>{header}</span>
+                  ))}
+                </div>
+                {detail.recentInvocations.length > 0 ? (
+                  detail.recentInvocations.map((call) => (
+                    <div className="grid grid-cols-4 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={call.id}>
+                      <strong>
+                        {call.displayName ?? call.skillSlug ?? "unknown"}
+                        <small className="block text-xs text-[#666]">{formatDateValue(call.createdAt, locale, labels.noDate)}</small>
+                      </strong>
+                      <span className={statusChipClass(call.status)}>{call.status}</span>
+                      <span>{formatLatency(call.latencyMs, labels.noDate)}</span>
+                      <span>{call.errorCode ?? labels.noDate}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-3 text-sm text-[#999]">{labels.empty}</div>
+                )}
+              </div>
+            </article>
+          </div>
 
-        <aside className="project-detail-side">
+          <aside className="flex flex-col gap-5">
           <div id="project-agent-connection">
             <ProjectAgentConnectionPanel
               activeKeyCount={project.apiKeys.activeCount}
@@ -752,6 +736,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             />
           </div>
         </aside>
+        </div>
       </section>
         </>
       ) : (
@@ -768,7 +753,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
-    </main>
+    </AppShell>
   );
 }
 
@@ -790,31 +775,31 @@ function WorkspaceLockedPanel({
   const guide = getProjectLockedGuide(locale, projectSlug);
 
   return (
-    <section className="workspace-locked-panel">
-      <article className="ops-panel workspace-locked-panel__card">
-        <div className="workspace-locked-panel__main">
-          <div className="card-kicker">
+    <section className="max-w-[1200px] mx-auto px-6 py-8">
+      <article className="card">
+        <div>
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{guide.eyebrow}</span>
           </div>
           <h2>{title}</h2>
           <p>{body}</p>
           <p className="visually-hidden">{guide.marker}</p>
-          <a className="primary-button" href={actionHref}>
+          <a className="btn-primary mt-4 inline-flex items-center gap-2" href={actionHref}>
             <span>{actionLabel}</span>
             <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
-        <div className="workspace-locked-panel__actions" aria-label={guide.ariaLabel}>
+        <div className="flex flex-col gap-3 mt-6" aria-label={guide.ariaLabel}>
           {guide.actions.map((action, index) => {
             const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
 
             return (
-              <a className="workspace-locked-panel__action" href={localizedHref(action.href, locale)} key={action.title}>
+              <a className="card card--compact" href={localizedHref(action.href, locale)} key={action.title}>
                 <Icon size={16} aria-hidden="true" />
-                <span>{action.label}</span>
-                <strong>{action.title}</strong>
-                <small>{action.body}</small>
+                <span className="text-xs text-[#999]">{action.label}</span>
+                <strong className="block mt-1">{action.title}</strong>
+                <small className="block text-sm text-[#999] mt-1">{action.body}</small>
               </a>
             );
           })}
@@ -895,54 +880,54 @@ function ProjectAdjustmentHistory({
   const rows = buildProjectAdjustmentRows(refunds, disputes, locale, noDateLabel);
 
   return (
-    <article className="ops-panel project-adjustment-panel">
-      <div className="card-kicker">
+    <article className="card">
+      <div className="eyebrow mb-4 flex items-center gap-2">
         <RotateCcw size={16} aria-hidden="true" />
         <span>{labels.title}</span>
       </div>
       <p>{labels.body}</p>
 
-      <div className="project-adjustment-summary">
-        <span>
+      <div className="flex items-center gap-4 mt-3">
+        <span className="flex items-center gap-1">
           <RotateCcw size={14} aria-hidden="true" />
           <b>{refunds.length}</b>
           {labels.refund}
         </span>
-        <span>
+        <span className="flex items-center gap-1">
           <ShieldAlert size={14} aria-hidden="true" />
           <b>{disputes.length}</b>
           {labels.dispute}
         </span>
       </div>
 
-      <div className="project-adjustment-list">
+      <div className="flex flex-col gap-3 mt-4">
         {rows.length > 0 ? (
           rows.map((row) => {
             const Icon = row.typeKey === "refund" ? RotateCcw : ShieldAlert;
 
             return (
-              <section className={`project-adjustment-card project-adjustment-card--${row.typeKey}`} key={row.id}>
-                <header>
-                  <div>
+              <section className="card card--compact" key={row.id}>
+                <header className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Icon size={15} aria-hidden="true" />
                     <span>{row.type}</span>
                     <strong>{row.skill}</strong>
                   </div>
                   <span className={statusChipClass(row.rawStatus)}>{row.status}</span>
                 </header>
-                <div className="project-adjustment-card__meta">
+                <div className="flex items-center gap-3 text-sm text-[#999] mt-1">
                   <span>{row.amount}</span>
                   <span>{row.date}</span>
                 </div>
-                <p>{row.reason}</p>
-                <small>
+                <p className="text-sm mt-1">{row.reason}</p>
+                <small className="text-xs text-[#666]">
                   {labels.reference}: {row.reference}
                 </small>
               </section>
             );
           })
         ) : (
-          <div className="project-adjustment-empty">{labels.empty}</div>
+          <div className="py-3 text-sm text-[#999]">{labels.empty}</div>
         )}
       </div>
     </article>
@@ -1307,14 +1292,14 @@ function policyStateLabel(state: "approved" | "owner_review" | "suspended", loca
 
 function statusChipClass(status: string) {
   if (["error", "failed", "suspended", "revoked", "rejected", "blocked"].includes(status)) {
-    return "status-chip status-chip--danger";
+    return "pill pill--danger";
   }
 
   if (["owner_review", "warning_needs_response", "pending", "trialing", "submitted"].includes(status)) {
-    return "status-chip status-chip--warning";
+    return "pill pill--warning";
   }
 
-  return "status-chip";
+  return "pill";
 }
 
 function formatLatency(ms: number | null | undefined, fallback: string) {

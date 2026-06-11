@@ -22,8 +22,8 @@ import {
   WalletCards
 } from "lucide-react";
 import { PublicAccessScope } from "@/components/public-access-scope";
-import { SiteHeader } from "@/components/site-header";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { AppShell } from "@/components/app-shell";
+import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -158,69 +158,69 @@ const copy: Record<Locale, DocsCopy> = {
           action: "Read operating reference",
           evidence: "Review queue -> trust action -> incident -> prelaunch paid-marketplace state -> launch readiness and audit",
           href: "/docs#operating-reference",
-          steps: ["Prioritize reviews", "Govern risk", "Review prelaunch paid state", "Deliver notifications", "Audit launch"],
+          steps: ["Triage review priority", "Govern risk", "Review prelaunch paid-state", "Deliver notifications", "Audit launch"],
           title: "Review, govern, and launch operations",
-          user: "Reviewer / Finance / Super Admin"
+          user: "Review / Finance / Superadmin"
         }
       ],
-      title: "Operating reference for the three P0 journeys"
+      title: "Three P0 journey operating references"
     },
     manifest: {
       badge: "Required before review",
       fields: [
         ["Identity", "name, displayName, version, category, tags, changelog, support path"],
-        ["Runtime", "http, mcp, or restricted local execution with entrypoint and transport posture"],
-        ["Schemas", "inputSchema, outputSchema, examples, required fields, and typed result shape"],
-        ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive or payment workflows"],
-        ["Paid preview", "pricing intent, paid-readiness blockers, publisher profile, terms acceptance, finance-review metadata"],
-        ["Trust", "review status, automated checks, incidents, feedback, deprecation, replacement guidance"]
+        ["Runtime", "HTTP, MCP, or sandboxed local execution with entrypoint and transport posture"],
+        ["Schema", "inputSchema, outputSchema, examples, required fields, and typed results"],
+        ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive, or payment flows"],
+        ["Paid preview", "pricing intent, paid blocker, publisher profile, terms acceptance, finance review metadata"],
+        ["Trust", "review status, automated checks, incidents, feedback, deprecation, replacement advisory"]
       ],
-      title: "Manifest quality bar"
+      title: "Manifest quality gate"
     },
     operator: {
       items: [
-        "Run launch readiness before customer demos and public launch.",
-        "Keep production demo fallback disabled unless a controlled demo explicitly enables it.",
-        "Use username/email password access first; Google and GitHub become live only after OAuth credentials and callback URLs are configured.",
-        "Resolve active notification-template, migration, runtime-key-salt, commission, and payout-state blockers before paid launch.",
-        "Never expose OAuth secrets, email provider keys, service tokens, API salts, webhook secrets, verification codes, user tokens, or passwords."
+        "Launch readiness must run before any customer demo or public go-live.",
+        "Demo fallback is off in production by default unless controlled demo is explicitly enabled.",
+        "Prefer username/password entry first; Google and GitHub become real login after OAuth credentials and callback URLs are configured.",
+        "Resolve notification templates, migrations, runtime key salt, commission rules, and payout state blockers before paid go-live.",
+        "Never expose OAuth secrets, email provider keys, service tokens, API salt, webhook secrets, verification codes, user tokens, or passwords."
       ],
       notice:
-        "Payment capture, provider-specific payout automation, tax/KYC automation, final legal terms, and final email provider operations are intentionally last integrations. Paid-marketplace money movement remains prelaunch operating reference material.",
-      title: "Launch and operator guardrails"
+        "Payment capture, payout provider automation, tax/KYC automation, final legal terms, and final email delivery provider are last-mile items; paid-marketplace money movement is currently a prelaunch operating reference only.",
+      title: "Launch and operating guardrails"
     },
     references: {
       body:
-        "Each domain exists because it creates a reason for users to return after the first visit: safer runtime use for developers, review repair and buyer-demand loops for publishers, and governable operations for admins.",
+        "Each domain must give the user a reason to come back: developers return to manage safer runtime, publishers return to fix reviews, address buyer demand, and prepare paid metadata, admins return to govern real operations.",
       items: [
         {
-          body: "SkillHub packages are versioned contracts. Public discovery should prefer approved versions and never silently replace installed behavior.",
-          bullets: ["draft -> submitted -> in_review -> verified/rejected", "Immutable verified and installed versions", "Similar and replacement skill paths"],
+          body: "SkillHub skills are versioned contracts. Public discovery should prioritize approved versions and never silently replace installed behavior.",
+          bullets: ["draft -> submitted -> in_review -> verified/rejected", "Verified and installed versions are immutable", "Similar and alternative skill paths"],
           title: "Registry and marketplace"
         },
         {
-          body: "Runtime calls go through the same governance path whether an agent uses REST, MCP, SDK, or the console test runner.",
-          bullets: ["Project API key", "Install and policy check", "Budget, rate limit, subscription, log, and metering"],
+          body: "Whether the agent uses REST, MCP, SDK, or the console test, runtime invocation follows the same governance path.",
+          bullets: ["Project API key", "Install and policy checks", "Budget, rate-limit, subscription, logs, and metering"],
           title: "Runtime gateway"
         },
         {
-          body: "Publishers need precise repair loops, not vague rejection notes. Automated checks must carry blocker, field, category, and next action.",
-          bullets: ["Manifest/runtime/example/security checks", "Three-business-day review SLA", "Reviewer notes and audit trail"],
+          body: "Publishers need a precise repair loop, not vague rejection reasons. Automated checks must carry blocker, field, category, and next step.",
+          bullets: ["Manifest/runtime/example/security checks", "3-business-day review SLA", "Review notes and audit trail"],
           title: "Review and trust"
         },
         {
-          body: "Usage does not pay publishers directly in Developer Preview. Billable usage and subscription periods first create immutable paid-preview records after paid-marketplace launch gates.",
-          bullets: ["Transactions -> splits -> balances", "Refunds and disputes create adjustments", "Future payout review reserves eligible balances"],
+          body: "In developer preview, usage does not directly pay publishers. Billable usage and subscription cycles only generate immutable commercial records after paid-marketplace launch gates pass.",
+          bullets: ["Transaction -> split -> balance", "Refunds and disputes generate adjustment records", "Future payout reviews will reserve qualifying balances"],
           title: "Future paid-marketplace ledger model"
         },
         {
-          body: "In-app notifications, email rows, and webhook outbox rows are separate so user preferences do not suppress organization webhook delivery.",
+          body: "In-app notifications, email rows, and webhook outbox must stay separate; personal preferences must not suppress org-level webhook delivery.",
           bullets: ["Template-rendered delivery", "Retry and provider metadata", "Signed webhook fan-out"],
           title: "Notifications and webhooks"
         },
         {
-          body: "Admin operators need secret-safe readiness, identity, review, risk, finance, payout, delivery, webhook, and audit surfaces from one console.",
-          bullets: ["Launch credibility thresholds", "Migration and schema visibility", "Reason-required privileged decisions"],
+          body: "Admins need one console view of non-leaking launch readiness, identity, review, risk, finance, payouts, delivery, webhooks, and audit.",
+          bullets: ["Launch confidence threshold", "Migration and schema visibility", "Privileged decisions require reason field"],
           title: "Operating reference"
         }
       ],
@@ -228,15 +228,15 @@ const copy: Record<Locale, DocsCopy> = {
     },
     runtime: {
       body:
-      "Runtime invocation requires a signed-in project key. MCP tools/call and REST runtime invocation must reuse the same governance path.",
-      steps: ["Authenticate project key", "Resolve installed skill and pinned version", "Check policy, approval, budget, rate limit, and subscription", "Invoke runtime and record invocation", "Post usage or subscription ledger state when billable"],
+        "MCP tools/call and REST runtime invoke must reuse the same governance path. The console test exists to prove this path works before an agent runs autonomously.",
+      steps: ["Validate project key", "Resolve installed skill and pinned version", "Check policy, approval, budget, rate-limit, and subscription", "Invoke runtime and log invocation", "When billable, write usage or subscription ledger state"],
       title: "Runtime governance path"
     },
     states: {
-      body: "These names must stay consistent across marketplace cards, skill detail, publish preflight, project policy, publisher workspace, admin review, finance, and launch readiness.",
+      body: "These names must stay consistent across marketplace cards, skill detail, publish prechecks, project policy, publisher workbench, admin review, finance, and launch readiness.",
       items: [
         {
-          body: "Publishing and review state for a skill version.",
+          body: "Skill version publication and review status.",
           title: "Skill lifecycle",
           values: ["draft", "submitted", "in_review", "verified", "rejected", "deprecated", "suspended"]
         },
@@ -489,13 +489,13 @@ const quickstartCopy = {
 
 function quickstartSnippet(locale: Locale) {
   if (locale === "zh") {
-    return `# 1. \u641c\u7d22\u516c\u5f00\u6280\u80fd
+    return `# 1. 搜索公开技能
 curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 
-# 2. \u67e5\u770b\u516c\u5f00 manifest
+# 2. 查看公开 manifest
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 
-# 3. \u8bfb\u53d6 MCP \u670d\u52a1\u5143\u6570\u636e
+# 3. 读取 MCP 服务元数据
 curl "https://api.useskillhub.com/mcp"`;
   }
 
@@ -510,7 +510,7 @@ curl "https://api.useskillhub.com/mcp"`;
 }
 
 function quickstartCodeLabel(locale: Locale) {
-  return locale === "zh" ? "\u65e0\u9700\u767b\u5f55\u67e5\u770b" : "no login inspect";
+  return locale === "zh" ? "无需登录查看" : "no login inspect";
 }
 
 const journeyIcons = [Code2, PackageCheck, ShieldCheck] as const;
@@ -520,310 +520,318 @@ const stateIcons = [GitBranch, CheckCircle2, WalletCards, BellRing] as const;
 export default async function DocsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = copy[locale];
   const quickstart = quickstartCopy[locale];
 
   return (
-    <main className="product-shell docs-shell">
-      <SiteHeader active="docs" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/docs" />
-
-      <section className="page-hero docs-hero">
-        <div>
+    <AppShell active="docs" locale={locale}>
+      {/* Hero */}
+      <section className="section pt-32 pb-16">
+        <div className="section-inner text-center flex flex-col items-center gap-6">
           <div className="eyebrow">
             <BookOpen size={16} aria-hidden="true" />
             <span>{labels.hero.eyebrow}</span>
           </div>
-          <h1>{labels.hero.title}</h1>
-          <p>{labels.hero.description}</p>
-        </div>
-        <div className="page-hero__actions">
-          <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
-            <SearchCode size={18} aria-hidden="true" />
-            <span>{labels.hero.primary}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/publish", locale)}>
-            <FileJson size={18} aria-hidden="true" />
-            <span>{labels.hero.secondary}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/docs#mcp", locale)}>
-            <Gauge size={18} aria-hidden="true" />
-            <span>{labels.hero.tertiary}</span>
-          </a>
+          <h1 className="heading-xl">{labels.hero.title}</h1>
+          <p className="body-text max-w-[640px] text-[#999]">{labels.hero.description}</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+            <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
+              <SearchCode size={18} aria-hidden="true" />
+              <span>{labels.hero.primary}</span>
+            </a>
+            <a className="btn-secondary btn-secondary--large" href={localizedHref("/publish", locale)}>
+              <FileJson size={18} aria-hidden="true" />
+              <span>{labels.hero.secondary}</span>
+            </a>
+            <a className="btn-secondary btn-secondary--large" href={localizedHref("/docs#mcp", locale)}>
+              <Gauge size={18} aria-hidden="true" />
+              <span>{labels.hero.tertiary}</span>
+            </a>
+          </div>
         </div>
       </section>
 
       <PublicAccessScope locale={locale} />
 
-      <section className="docs-quickstart-section" id="mcp" aria-labelledby="docs-quickstart-heading">
-        <div className="docs-section-head">
-          <div>
-            <div className="card-kicker">
+      {/* Quickstart */}
+      <section className="section" id="mcp" aria-labelledby="docs-quickstart-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="flex flex-col gap-3 max-w-[720px]">
+            <div className="eyebrow">
               <Terminal size={16} aria-hidden="true" />
               <span>{quickstart.apiBadge}</span>
             </div>
-            <h2 id="docs-quickstart-heading">{quickstart.title}</h2>
+            <h2 id="docs-quickstart-heading" className="heading-lg">{quickstart.title}</h2>
+            <p className="body-text text-[#999]">{quickstart.body}</p>
           </div>
-          <p>{quickstart.body}</p>
-        </div>
-        <div className="docs-quickstart-grid">
-          <div className="code-panel">
-            <div className="code-panel__bar">
-              <span>quickstart.sh</span>
-              <span>{quickstartCodeLabel(locale)}</span>
-            </div>
-            <pre>
-              <code>{quickstartSnippet(locale)}</code>
-            </pre>
-          </div>
-          <div className="docs-quickstart-status">
-            {quickstart.steps.map((step, index) => (
-              <div className="docs-runtime-step" key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="code-block">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
+                <span>quickstart.sh</span>
+                <span>{quickstartCodeLabel(locale)}</span>
               </div>
-            ))}
-            <div className="docs-quickstart-note">
-              <strong>{quickstart.mcpBadge}</strong>
-              <span>{quickstart.mcpBody}</span>
+              <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
+                <code>{quickstartSnippet(locale)}</code>
+              </pre>
             </div>
-            <div className="docs-quickstart-note">
-              <strong>{quickstart.cliBadge}</strong>
-              <span>{quickstart.cliBody}</span>
+            <div className="flex flex-col gap-4">
+              {quickstart.steps.map((step, index) => (
+                <div className="flex items-center gap-3" key={step}>
+                  <span className="text-xs font-mono text-[#525252]">{String(index + 1).padStart(2, "0")}</span>
+                  <strong className="text-sm text-white">{step}</strong>
+                </div>
+              ))}
+              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 mt-2 flex flex-col gap-1">
+                <strong className="text-xs text-[#0075ff]">{quickstart.mcpBadge}</strong>
+                <span className="body-text-sm text-[#999]">{quickstart.mcpBody}</span>
+              </div>
+              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1">
+                <strong className="text-xs text-[#0075ff]">{quickstart.cliBadge}</strong>
+                <span className="body-text-sm text-[#999]">{quickstart.cliBody}</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="docs-journey-board" aria-labelledby="docs-journeys-heading">
-        <div className="docs-section-head">
-          <div>
-            <div className="card-kicker">
+      {/* Journeys */}
+      <section className="section" aria-labelledby="docs-journeys-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="flex flex-col gap-3 max-w-[720px]">
+            <div className="eyebrow">
               <Route size={16} aria-hidden="true" />
               <span>P0</span>
             </div>
-            <h2 id="docs-journeys-heading">{labels.journeys.title}</h2>
+            <h2 id="docs-journeys-heading" className="heading-lg">{labels.journeys.title}</h2>
+            <p className="body-text text-[#999]">{labels.journeys.body}</p>
           </div>
-          <p>{labels.journeys.body}</p>
-        </div>
 
-        <div className="docs-journey-grid">
-          {labels.journeys.items.map((journey, index) => {
-            const Icon = journeyIcons[index] ?? Code2;
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {labels.journeys.items.map((journey, index) => {
+              const Icon = journeyIcons[index] ?? Code2;
 
-            return (
-              <article className="docs-journey-card lift-card" key={journey.title}>
-                <div className="docs-journey-card__head">
-                  <div className="workflow-card__icon" aria-hidden="true">
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <span>{journey.user}</span>
-                    <h3>{journey.title}</h3>
-                  </div>
-                </div>
-                <div className="docs-journey-steps">
-                  {journey.steps.map((step, stepIndex) => (
-                    <div className="docs-journey-step" key={step}>
-                      <span>{String(stepIndex + 1).padStart(2, "0")}</span>
-                      <strong>{step}</strong>
+              return (
+                <article className="card flex flex-col gap-4" key={journey.title}>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[rgba(0,117,255,0.1)] flex items-center justify-center shrink-0" aria-hidden="true">
+                      <Icon size={18} className="text-[#0075ff]" />
                     </div>
-                  ))}
-                </div>
-                <p>{journey.evidence}</p>
-                <a className="secondary-button secondary-button--compact" href={localizedHref(journey.href, locale)}>
-                  <span>{journey.action}</span>
-                  <ArrowRight size={15} aria-hidden="true" />
-                </a>
-              </article>
-            );
-          })}
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs text-[#666]">{journey.user}</span>
+                      <h3 className="heading-sm">{journey.title}</h3>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {journey.steps.map((step, stepIndex) => (
+                      <div className="flex items-center gap-3" key={step}>
+                        <span className="text-xs font-mono text-[#525252]">{String(stepIndex + 1).padStart(2, "0")}</span>
+                        <strong className="text-sm text-white">{step}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="body-text-sm text-[#666] mt-auto">{journey.evidence}</p>
+                  <a className="btn-secondary inline-flex items-center gap-2 w-fit text-sm" href={localizedHref(journey.href, locale)}>
+                    <span>{journey.action}</span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="docs-reference-section" id="operating-reference" aria-labelledby="docs-reference-heading">
-        <div className="docs-section-head">
-          <div>
-            <div className="card-kicker">
+      {/* References */}
+      <section className="section" id="operating-reference" aria-labelledby="docs-reference-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="flex flex-col gap-3 max-w-[720px]">
+            <div className="eyebrow">
               <Database size={16} aria-hidden="true" />
               <span>{labels.references.title}</span>
             </div>
-            <h2 id="docs-reference-heading">{labels.references.title}</h2>
+            <h2 id="docs-reference-heading" className="heading-lg">{labels.references.title}</h2>
+            <p className="body-text text-[#999]">{labels.references.body}</p>
           </div>
-          <p>{labels.references.body}</p>
-        </div>
 
-        <div className="docs-reference-grid">
-          {labels.references.items.map((item, index) => {
-            const Icon = referenceIcons[index] ?? BookOpen;
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {labels.references.items.map((item, index) => {
+              const Icon = referenceIcons[index] ?? BookOpen;
 
-            return (
-              <article className="docs-reference-card lift-card" key={item.title}>
-                <div className="docs-reference-card__head">
-                  <Icon size={18} aria-hidden="true" />
-                  <h3>{item.title}</h3>
-                </div>
-                <p>{item.body}</p>
-                <ul>
-                  {item.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
+              return (
+                <article className="card flex flex-col gap-3" key={item.title}>
+                  <div className="flex items-center gap-2">
+                    <Icon size={18} aria-hidden="true" className="text-[#0075ff]" />
+                    <h3 className="heading-sm">{item.title}</h3>
+                  </div>
+                  <p className="body-text-sm text-[#999]">{item.body}</p>
+                  <ul className="flex flex-col gap-1 mt-auto">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet} className="text-sm text-[#666] pl-3 relative before:content-[''] before:absolute before:left-0 before:top-[9px] before:w-1 before:h-1 before:rounded-full before:bg-[#525252]">{bullet}</li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <section className="docs-layout docs-layout--deep">
-        <div className="docs-contract-stack">
-          <article className="docs-manifest-panel">
-            <div className="docs-section-head docs-section-head--compact">
-              <div>
-                <div className="card-kicker">
+      {/* Manifest and Runtime */}
+      <section className="section">
+        <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
+          <div className="flex flex-col gap-6">
+            <article className="card flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
+                <div className="eyebrow">
                   <FileJson size={16} aria-hidden="true" />
                   <span>{labels.manifest.badge}</span>
                 </div>
-                <h2>{labels.manifest.title}</h2>
+                <h2 className="heading-lg">{labels.manifest.title}</h2>
               </div>
-            </div>
-            <div className="docs-manifest-grid">
-              {labels.manifest.fields.map(([label, value]) => (
-                <div className="docs-manifest-field" key={label}>
-                  <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <div className="code-panel" aria-label="SkillHub manifest example">
-            <div className="code-panel__bar">
-              <span>skillhub.json</span>
-              <span>schema v0.1</span>
-            </div>
-            <pre>
-              <code>{manifestSnippet}</code>
-            </pre>
-          </div>
-        </div>
-
-        <aside className="docs-runtime-panel lift-card" aria-label={labels.runtime.title}>
-          <div className="card-kicker">
-            <Network size={16} aria-hidden="true" />
-            <span>{labels.runtime.title}</span>
-          </div>
-          <p>{labels.runtime.body}</p>
-          <div className="docs-runtime-steps">
-            {labels.runtime.steps.map((step, index) => (
-              <div className="docs-runtime-step" key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
-              </div>
-            ))}
-          </div>
-          <div className="code-panel docs-runtime-code" aria-label="Runtime invocation example">
-            <div className="code-panel__bar">
-              <span>runtime.sh</span>
-              <span>governed invoke</span>
-            </div>
-            <pre>
-              <code>{runtimeSnippet}</code>
-            </pre>
-          </div>
-        </aside>
-      </section>
-
-      <section className="docs-api-section" aria-labelledby="docs-api-heading">
-        <div className="docs-section-head">
-          <div>
-            <div className="card-kicker">
-              <Terminal size={16} aria-hidden="true" />
-              <span>API</span>
-            </div>
-            <h2 id="docs-api-heading">{labels.api.title}</h2>
-          </div>
-          <p>{labels.api.body}</p>
-        </div>
-
-        <div className="docs-api-grid">
-          {labels.api.groups.map((group) => (
-            <article className="docs-api-card lift-card" key={group.title}>
-              <h3>{group.title}</h3>
-              <p>{group.body}</p>
-              <div className="endpoint-list">
-                {group.endpoints.map((endpoint) => (
-                  <code key={endpoint}>{endpoint}</code>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {labels.manifest.fields.map(([label, value]) => (
+                  <div className="flex flex-col gap-1 p-3 rounded-[8px] bg-[rgba(255,255,255,0.03)]" key={label}>
+                    <span className="text-xs text-[#666] uppercase tracking-wide">{label}</span>
+                    <strong className="text-sm text-white font-normal">{value}</strong>
+                  </div>
                 ))}
               </div>
             </article>
-          ))}
+
+            <div className="code-block" aria-label="SkillHub manifest example">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
+                <span>skillhub.json</span>
+                <span>schema v0.1</span>
+              </div>
+              <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
+                <code>{manifestSnippet}</code>
+              </pre>
+            </div>
+          </div>
+
+          <aside className="card flex flex-col gap-4" aria-label={labels.runtime.title}>
+            <div className="eyebrow">
+              <Network size={16} aria-hidden="true" />
+              <span>{labels.runtime.title}</span>
+            </div>
+            <p className="body-text-sm text-[#999]">{labels.runtime.body}</p>
+            <div className="flex flex-col gap-3">
+              {labels.runtime.steps.map((step, index) => (
+                <div className="flex items-center gap-3" key={step}>
+                  <span className="text-xs font-mono text-[#525252]">{String(index + 1).padStart(2, "0")}</span>
+                  <strong className="text-sm text-white">{step}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="code-block mt-auto" aria-label="Runtime invocation example">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
+                <span>runtime.sh</span>
+                <span>governed invoke</span>
+              </div>
+              <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
+                <code>{runtimeSnippet}</code>
+              </pre>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <section className="docs-state-section" aria-labelledby="docs-state-heading">
-        <div className="docs-section-head">
-          <div>
-            <div className="card-kicker">
-              <Braces size={16} aria-hidden="true" />
-              <span>{labels.states.title}</span>
+      {/* API */}
+      <section className="section" aria-labelledby="docs-api-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="flex flex-col gap-3 max-w-[720px]">
+            <div className="eyebrow">
+              <Terminal size={16} aria-hidden="true" />
+              <span>API</span>
             </div>
-            <h2 id="docs-state-heading">{labels.states.title}</h2>
+            <h2 id="docs-api-heading" className="heading-lg">{labels.api.title}</h2>
+            <p className="body-text text-[#999]">{labels.api.body}</p>
           </div>
-          <p>{labels.states.body}</p>
-        </div>
 
-        <div className="docs-state-grid">
-          {labels.states.items.map((state, index) => {
-            const Icon = stateIcons[index] ?? Braces;
-
-            return (
-              <article className="docs-state-card lift-card" key={state.title}>
-                <div className="docs-state-card__head">
-                  <Icon size={17} aria-hidden="true" />
-                  <h3>{state.title}</h3>
-                </div>
-                <p>{state.body}</p>
-                <div className="docs-state-values">
-                  {state.values.map((value) => (
-                    <code key={value}>{value}</code>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {labels.api.groups.map((group) => (
+              <article className="card flex flex-col gap-3" key={group.title}>
+                <h3 className="heading-sm">{group.title}</h3>
+                <p className="body-text-sm text-[#999]">{group.body}</p>
+                <div className="flex flex-col gap-1.5 mt-auto">
+                  {group.endpoints.map((endpoint) => (
+                    <code key={endpoint} className="text-xs font-mono text-[#0075ff] bg-[rgba(0,117,255,0.08)] rounded px-2 py-1 w-fit">{endpoint}</code>
                   ))}
                 </div>
               </article>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="docs-operator-panel" aria-labelledby="docs-operator-heading">
-        <div>
-          <div className="card-kicker">
-            <LockKeyhole size={16} aria-hidden="true" />
-            <span>{labels.operator.title}</span>
-          </div>
-          <h2 id="docs-operator-heading">{labels.operator.title}</h2>
-          <p>{labels.operator.notice}</p>
-          <div className="docs-operator-actions">
-            <a className="secondary-button" href={localizedHref("/terms", locale)}>
-              <Scale size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "运营条款" : "Operating terms"}</span>
-            </a>
-            <a className="secondary-button" href={localizedHref("/agents", locale)}>
-              <KeyRound size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "Agent 接入" : "Agent integration"}</span>
-            </a>
-          </div>
-        </div>
-        <div className="docs-operator-list">
-          {labels.operator.items.map((item) => (
-            <div className="docs-operator-item" key={item}>
-              <ShieldCheck size={16} aria-hidden="true" />
-              <span>{item}</span>
+      {/* States */}
+      <section className="section" aria-labelledby="docs-state-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="flex flex-col gap-3 max-w-[720px]">
+            <div className="eyebrow">
+              <Braces size={16} aria-hidden="true" />
+              <span>{labels.states.title}</span>
             </div>
-          ))}
+            <h2 id="docs-state-heading" className="heading-lg">{labels.states.title}</h2>
+            <p className="body-text text-[#999]">{labels.states.body}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {labels.states.items.map((state, index) => {
+              const Icon = stateIcons[index] ?? Braces;
+
+              return (
+                <article className="card flex flex-col gap-3" key={state.title}>
+                  <div className="flex items-center gap-2">
+                    <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+                    <h3 className="heading-sm">{state.title}</h3>
+                  </div>
+                  <p className="body-text-sm text-[#999]">{state.body}</p>
+                  <div className="flex flex-wrap gap-2 mt-auto">
+                    {state.values.map((value) => (
+                      <code key={value} className="pill">{value}</code>
+                    ))}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
-    </main>
+
+      {/* Operator */}
+      <section className="section pb-24" aria-labelledby="docs-operator-heading">
+        <div className="section-inner">
+          <div className="card flex flex-col lg:flex-row gap-8">
+            <div className="flex flex-col gap-4 flex-1">
+              <div className="eyebrow">
+                <LockKeyhole size={16} aria-hidden="true" />
+                <span>{labels.operator.title}</span>
+              </div>
+              <h2 id="docs-operator-heading" className="heading-lg">{labels.operator.title}</h2>
+              <p className="body-text text-[#999]">{labels.operator.notice}</p>
+              <div className="flex flex-wrap gap-3 mt-2">
+                <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/terms", locale)}>
+                  <Scale size={16} aria-hidden="true" />
+                  <span>{locale === "zh" ? "运营条款" : "Operating terms"}</span>
+                </a>
+                <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/agents", locale)}>
+                  <KeyRound size={16} aria-hidden="true" />
+                  <span>{locale === "zh" ? "Agent 接入" : "Agent integration"}</span>
+                </a>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 flex-1">
+              {labels.operator.items.map((item) => (
+                <div className="flex items-start gap-3" key={item}>
+                  <ShieldCheck size={16} aria-hidden="true" className="text-[#10b981] shrink-0 mt-0.5" />
+                  <span className="body-text-sm text-[#999]">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </AppShell>
   );
 }

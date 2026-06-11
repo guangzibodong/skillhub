@@ -1,6 +1,6 @@
 import { ExternalLink, LifeBuoy, ShieldCheck } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { AppShell } from "@/components/app-shell";
+import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -40,44 +40,47 @@ const copy = {
 export default async function SecurityPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const labels = copy[locale];
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="docs" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/security" />
-
-      <section className="page-hero page-hero--compact">
-        <div>
-          <div className="eyebrow">
+    <AppShell active="security" locale={locale}>
+      {/* Hero */}
+      <section className="section">
+        <div className="section-inner text-center">
+          <p className="eyebrow mb-4 flex items-center justify-center gap-2">
             <ShieldCheck size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
+          </p>
+          <h1 className="heading-xl mb-6">{labels.title}</h1>
+          <p className="body-text max-w-[640px] mx-auto mb-10">{labels.body}</p>
+
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <a className="btn-primary btn-primary--large" href={localizedHref("/support", locale)}>
+              <LifeBuoy size={18} aria-hidden="true" />
+              <span>{labels.support}</span>
+            </a>
+            <a className="btn-secondary btn-secondary--large" href={localizedHref("/status", locale)}>
+              <ExternalLink size={18} aria-hidden="true" />
+              <span>{labels.status}</span>
+            </a>
           </div>
-          <h1>{labels.title}</h1>
-          <p>{labels.body}</p>
-        </div>
-        <div className="hero-actions">
-          <a className="primary-button primary-button--large" href={localizedHref("/support", locale)}>
-            <LifeBuoy size={18} aria-hidden="true" />
-            <span>{labels.support}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/status", locale)}>
-            <ExternalLink size={18} aria-hidden="true" />
-            <span>{labels.status}</span>
-          </a>
         </div>
       </section>
 
-      <section className="trust-grid">
-        {labels.cards.map(([title, detail]) => (
-          <article className="trust-card lift-card" key={title}>
-            <ShieldCheck size={20} aria-hidden="true" />
-            <h2>{title}</h2>
-            <p>{detail}</p>
-          </article>
-        ))}
+      {/* Cards */}
+      <section className="section pt-0">
+        <div className="section-inner">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {labels.cards.map(([title, detail]) => (
+              <article className="card" key={title}>
+                <ShieldCheck size={20} className="text-[#0075ff] mb-4" aria-hidden="true" />
+                <h2 className="heading-sm mb-3">{title}</h2>
+                <p className="body-text-sm">{detail}</p>
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
-    </main>
+    </AppShell>
   );
 }
