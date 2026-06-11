@@ -90,25 +90,25 @@ const fallbackFeaturedSkills: SkillSummary[] = [
 const homeLandingCopy = {
   en: {
     banner: {
-      label: "Developer Preview",
-      body: "Discovery and manifest inspection are live. Runtime invocation requires a Project Key. Paid marketplace is in preview.",
-      action: "Learn more",
+      label: "Launch Preview",
+      body: "Public discovery and manifest inspection are live. Runtime calls require a signed-in project key. Paid marketplace flows remain labeled as preview.",
+      action: "View status",
     },
-    eyebrow: "Skill registry + runtime gateway",
-    title: "The skill registry and runtime gateway for AI agents.",
-    mobileTitle: "AI agent skills, governed from discovery to runtime.",
+    eyebrow: "Agent infrastructure / skill runtime",
+    title: "Run agent skills like production infrastructure.",
+    mobileTitle: "Production-grade skill infrastructure for AI agents.",
     description:
-      "Browse reusable skills, inspect manifests and permissions, then invoke them over REST or MCP with project-level controls.",
-    primaryCta: "Browse Skills",
-    quickstartCta: "Run Quickstart",
+      "SkillHub connects reusable agent skills to manifests, permission review, project keys, and runtime governance, so teams can adopt skills without guessing what runs underneath.",
+    primaryCta: "Explore registry",
+    quickstartCta: "Read runtime docs",
     publishCta: "Publish a skill",
     evidence: [
-      ["Verified manifests", "Schema and permission checks"],
-      ["Permission scopes", "Declared before adoption"],
-      ["Audit-ready runtime", "Status, latency, and logs"],
+      ["Contract-first registry", "Manifest, schema, and version checks"],
+      ["Project-scoped keys", "Policy gates before invocation"],
+      ["Operational proof", "Status, latency, logs, and audit trails"],
     ],
     control: {
-      title: "Runtime control plane",
+      title: "SkillHub runtime plane",
       marketplace: "Marketplace",
       skillName: "Browser Research",
       verified: "Verified",
@@ -131,47 +131,47 @@ const homeLandingCopy = {
     },
     capabilities: [
       {
-        title: "Public discovery",
+        title: "Public registry",
         badge: "Live",
-        body: "Search and explore verified skills.",
+        body: "Search public skills and compare safe marketplace metadata.",
         tone: "live",
       },
       {
         title: "Manifest inspection",
         badge: "Live",
-        body: "View schema, permissions, and runtime metadata.",
+        body: "Inspect schema, permissions, runtime target, and version state.",
         tone: "live",
       },
       {
         title: "Runtime invocation",
         badge: "Key required",
-        body: "Invoke skills over REST / MCP with your project key.",
+        body: "Run REST / MCP calls only after project setup and policy checks.",
         tone: "key",
       },
       {
         title: "Paid marketplace",
         badge: "Preview",
-        body: "Paid listings and billing are in preview.",
+        body: "Paid listings, billing, refunds, and payouts stay visibly gated.",
         tone: "preview",
       },
     ],
-    trustTitle: "Built for trust before invocation",
+    trustTitle: "Trust signals before any agent call",
     trustModules: [
       {
         title: "Permission review",
-        body: "Understand what a skill can do before you run it.",
+        body: "See declared capabilities and risk level before a skill enters your project.",
         status: "Scopes visible",
         rows: ["web.search", "web.fetch", "data.store"],
       },
       {
         title: "Runtime governance",
-        body: "Project keys, policies, and audit logs enforce safe usage.",
+        body: "Project keys, policies, logs, and limits keep runtime usage accountable.",
         status: "Policy checked",
         rows: ["Project Key required", "Rate limit: 60 / min", "Allowed: web.search, web.fetch"],
       },
       {
         title: "Publisher review",
-        body: "Human and automated checks ensure quality and safety.",
+        body: "Submission review separates ready skills from preview or blocked listings.",
         status: "Review queue",
         rows: ["Static analysis", "Permission review", "Security scan"],
       },
@@ -191,34 +191,34 @@ const homeLandingCopy = {
       ["Invoke", "Call the skill via REST API or MCP with your key."],
       ["Monitor", "Track usage, logs, and performance."],
     ],
-    finalTitle: "Inspect your first agent skill",
-    finalBody: "Start exploring the skill registry and runtime gateway.",
+    finalTitle: "Start from a real skill contract",
+    finalBody: "Explore the public registry first, then connect runtime only after project setup is ready.",
     readDocs: "Read Docs",
-    footerBody: "The skill registry and runtime gateway for AI agents. Trusted by builders.",
+    footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
     systemStatus: "Public web/API health OK",
     viewStatus: "View status",
   },
   zh: {
     banner: {
-      label: "开发者预览",
-      body: "公开发现和 manifest 检查已开放。运行调用需要 Project Key；付费市场仍为预览状态。",
-      action: "了解更多",
+      label: "上线预览",
+      body: "公开发现和 manifest 检查已开放。真实运行调用需要登录后的项目 Key；付费市场流程仍明确标记为预览。",
+      action: "查看状态",
     },
-    eyebrow: "技能注册中心 + 运行网关",
-    title: "AI Agent 的技能注册中心与运行网关。",
-    mobileTitle: "AI Agent 技能，从发现到运行都受治理。",
+    eyebrow: "Agent 基础设施 / Skill 运行时",
+    title: "把 Agent 技能作为生产基础设施运行。",
+    mobileTitle: "面向 AI Agent 的生产级 Skill 基础设施。",
     description:
-      "浏览可复用 Skill，检查 manifest 与权限，再通过 REST 或 MCP 在项目级治理下安全调用。",
-    primaryCta: "浏览 Skills",
-    quickstartCta: "快速开始",
+      "SkillHub 把可复用 Skill、manifest、权限复核、项目 Key 和运行治理连接起来，让团队在采用 Skill 前就知道它能做什么、怎么运行、由谁负责。",
+    primaryCta: "探索注册中心",
+    quickstartCta: "阅读运行文档",
     publishCta: "发布 Skill",
     evidence: [
-      ["已验证 manifest", "Schema 与权限检查"],
-      ["权限范围", "采用前先声明"],
-      ["可审计运行时", "状态、延迟和日志"],
+      ["契约优先注册", "Manifest、Schema 与版本检查"],
+      ["项目级 Key", "调用前先经过策略闸门"],
+      ["运营证据", "状态、延迟、日志和审计轨迹"],
     ],
     control: {
-      title: "运行控制平面",
+      title: "SkillHub 运行平面",
       marketplace: "市场",
       skillName: "Browser Research",
       verified: "已验证",
@@ -241,47 +241,47 @@ const homeLandingCopy = {
     },
     capabilities: [
       {
-        title: "公开发现",
+        title: "公开注册中心",
         badge: "已开放",
-        body: "搜索和浏览已验证 Skill。",
+        body: "搜索公开 Skill，并对比安全的市场元数据。",
         tone: "live",
       },
       {
         title: "Manifest 检查",
         badge: "已开放",
-        body: "查看 schema、权限和运行元数据。",
+        body: "查看 schema、权限、运行目标和版本状态。",
         tone: "live",
       },
       {
         title: "运行调用",
         badge: "需 Key",
-        body: "用项目 Key 通过 REST / MCP 调用。",
+        body: "只有完成项目设置和策略检查后，才能通过 REST / MCP 调用。",
         tone: "key",
       },
       {
         title: "付费市场",
         badge: "预览",
-        body: "付费 listing 和账单仍在预览。",
+        body: "付费上架、账单、退款和分账仍保持可见的预览闸门。",
         tone: "preview",
       },
     ],
-    trustTitle: "调用前先建立信任",
+    trustTitle: "每次 Agent 调用前先看清信任证据",
     trustModules: [
       {
         title: "权限检查",
-        body: "运行前先看清一个 Skill 能做什么。",
+        body: "在 Skill 进入项目之前，先看清声明能力和风险等级。",
         status: "权限可见",
         rows: ["web.search", "web.fetch", "data.store"],
       },
       {
         title: "运行治理",
-        body: "Project Key、策略和审计日志一起约束安全使用。",
+        body: "Project Key、策略、日志和限流一起约束真实运行。",
         status: "策略已检查",
         rows: ["需要 Project Key", "限流：60 / 分钟", "允许：web.search, web.fetch"],
       },
       {
         title: "发布审核",
-        body: "人工和自动化检查共同保证质量和安全。",
+        body: "提交审核把可上线 Skill、预览 Skill 和阻塞项清楚区分。",
         status: "审核队列",
         rows: ["静态分析", "权限复核", "安全扫描"],
       },
@@ -301,10 +301,10 @@ const homeLandingCopy = {
       ["调用", "用 REST API 或 MCP 调用 Skill。"],
       ["监控", "追踪用量、日志和性能。"],
     ],
-    finalTitle: "检查你的第一个 Agent Skill",
-    finalBody: "从 Skill 注册中心和运行网关开始探索。",
+    finalTitle: "从一个真实 Skill 契约开始",
+    finalBody: "先探索公开注册中心，再在项目设置就绪后接入真实运行调用。",
     readDocs: "阅读文档",
-    footerBody: "AI Agent 的技能注册中心与运行网关，给真实构建者使用。",
+    footerBody: "面向真实构建流程的 Agent Skill 注册中心、治理层和运行网关。",
     systemStatus: "公共 Web/API 健康正常",
     viewStatus: "查看状态",
   },
@@ -442,7 +442,7 @@ export default async function Home({ searchParams }: PageProps) {
     : landing.control.runtime;
 
   return (
-    <main className="product-shell home-shell">
+    <main className={`product-shell home-shell home-shell--${locale}`}>
       <section className="home-frame" aria-labelledby="home-heading">
         <SiteHeader
           active="home"
@@ -473,24 +473,29 @@ export default async function Home({ searchParams }: PageProps) {
               <span className="home-heading-desktop">
               {locale === "en" ? (
                 <>
-                  The skill registry and runtime gateway for{" "}
-                  <span>AI agents</span>
+                  Run agent skills like{" "}
+                  <span>production infrastructure.</span>
                 </>
               ) : (
                 <>
-                  AI Agent 的技能注册中心与<span>运行网关</span>
+                  把 Agent 技能作为
+                  <br />
+                  <span>生产基础设施</span>
+                  <br />
+                  运行。
                 </>
               )}
               </span>
               <span className="home-heading-mobile">
                 {locale === "en" ? (
                   <>
-                    AI agent skills, governed from{" "}
-                    <strong>discovery to runtime.</strong>
+                    Production-grade{" "}
+                    <strong>skill infrastructure</strong> for AI agents.
                   </>
                 ) : (
                   <>
-                    AI Agent 技能，<strong>从发现到运行</strong>都受治理。
+                    面向 AI Agent 的<br />
+                    <strong>生产级 Skill 基础设施。</strong>
                   </>
                 )}
               </span>
@@ -537,6 +542,15 @@ export default async function Home({ searchParams }: PageProps) {
           </div>
 
           <aside className="control-plane reveal-item reveal-item--delay" aria-label={landing.control.title}>
+            <div className="control-runtime-map" aria-hidden="true">
+              <span className="control-runtime-map__node control-runtime-map__node--registry" />
+              <span className="control-runtime-map__node control-runtime-map__node--policy" />
+              <span className="control-runtime-map__node control-runtime-map__node--runtime" />
+              <span className="control-runtime-map__rail control-runtime-map__rail--a" />
+              <span className="control-runtime-map__rail control-runtime-map__rail--b" />
+              <span className="control-runtime-map__pulse control-runtime-map__pulse--a" />
+              <span className="control-runtime-map__pulse control-runtime-map__pulse--b" />
+            </div>
             <div className="control-mobile-tabs" aria-hidden="true">
               <span className="control-mobile-tabs__item control-mobile-tabs__item--active">
                 Skill
