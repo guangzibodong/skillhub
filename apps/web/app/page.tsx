@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Eye,
   Activity,
-  ChevronRight,
 } from "lucide-react";
 import { getLocaleFromSearchParams } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
@@ -15,6 +14,7 @@ import { HomeNav } from "@/components/home/nav";
 import { HomeFooter } from "@/components/home/footer";
 import { SkillCard } from "@/components/home/skill-card";
 import { CodeAnimation } from "@/components/home/code-animation";
+import { IntegrationTabsClient } from "@/components/home/integration-tabs";
 import { Reveal } from "@/components/home/reveal";
 import "./tailwind.css";
 
@@ -26,164 +26,196 @@ type PageProps = {
 
 const copy = {
   en: {
-    badge: "Developer Preview",
-    headline1: "Universal skills",
-    headline2: "for AI agents",
+    badge: "New",
+    badgeText: "MCP protocol support on all plans",
+    eyebrow: "Trusted skill infrastructure",
+    headline: "For every AI agent",
     subline:
-      "A governed registry where agents discover, inspect, and invoke verified skills. One manifest powers search, trust review, and secure runtime.",
-    cta1: "Start building",
-    cta2: "View documentation",
-    stats: [
-      { key: "publicSkills", label: "Skills" },
-      { key: "verifiedSkills", label: "Verified" },
-      { key: "publicPublishers", label: "Publishers" },
-      { key: "recordedCalls", label: "API Calls" },
+      "Discover, verify, and invoke production-ready skills through a governed registry. One manifest powers search, trust governance, and secure runtime execution for any agent platform.",
+    cta1: "Start for free",
+    cta2: "Book a demo",
+    tabs: [
+      { title: "Browse the Registry", sub: "Where agents find skills" },
+      { title: "Inspect the Manifest", sub: "Your contract before integration" },
+      { title: "Invoke via Gateway", sub: "Secure runtime for every call" },
     ],
-    integrations: "Works with your stack",
-    agentLogos: ["Claude", "Cursor", "Windsurf", "ChatGPT", "MCP", "REST API"],
     features: [
       {
-        icon: "search",
-        title: "Discover",
-        titleMuted: "the right skill instantly",
-        desc: "Search by capability, runtime type, or permission profile. Semantic matching surfaces relevant skills in seconds.",
+        title: "Anything from a query",
+        desc: "Search skills by capability, runtime type, or permission profile. Semantic matching finds the right tool — whether it's web research, data enrichment, or code review.",
       },
       {
-        icon: "manifest",
-        title: "Inspect",
-        titleMuted: "before you integrate",
-        desc: "Review input/output schemas, permission scopes, version history, pricing, and trust signals — all from the manifest.",
+        title: "Inspect before you integrate",
+        desc: "Review input/output schemas, permission scopes, version history, and trust signals. Every skill publishes a machine-readable manifest.",
       },
       {
-        icon: "runtime",
-        title: "Invoke",
-        titleMuted: "with confidence",
-        desc: "Call skills via REST or MCP with project-scoped API keys. Built-in rate limiting, retries, and structured error handling.",
-      },
-      {
-        icon: "trust",
-        title: "Govern",
-        titleMuted: "every invocation",
-        desc: "Automated security scanning, human review, audit trails, and per-project permission policies.",
+        title: "Stay governed",
+        desc: "Project-scoped API keys, per-call audit trails, automated security scanning, and human review. Every invocation is traceable.",
       },
     ],
-    skillsTitle: "Featured skills",
-    skillsMuted: "Production-ready and verified",
-    skillsCta: "View all skills",
-    howTitle: "How it works",
-    howMuted: "From discovery to production",
-    howSteps: [
-      { num: "01", title: "Discover", desc: "Browse the registry or search by task. Filter by runtime, permissions, and verification status." },
-      { num: "02", title: "Inspect", desc: "Review the full manifest — schemas, permissions, changelog. Test in the sandbox." },
-      { num: "03", title: "Connect", desc: "Create a project, configure scopes, generate a production API key." },
-      { num: "04", title: "Invoke", desc: "Call via REST or MCP. Structured responses with built-in observability." },
-      { num: "05", title: "Monitor", desc: "Real-time dashboards for volume, latency, error rates, and cost." },
+    skillsEyebrow: "Skills",
+    skillsHeadline: "Built for speed",
+    skillsSeeMore: "See all skills",
+    workflowsEyebrow: "Integrations",
+    workflowsHeadline: "Seamless connections",
+    workflowsTabs: ["Claude", "Cursor", "Windsurf", "ChatGPT", "Custom Agent"],
+    workflowsDesc: "Connect SkillHub to any MCP-compatible agent with a single config block. REST API available for everything else.",
+    teamEyebrow: "Built for teams",
+    teamHeadline: "Ship together",
+    teamDesc: "Invite your team, share projects, manage API keys and budgets collaboratively. Role-based access keeps production safe.",
+    teamCta1: "Start for free",
+    teamCta2: "See pricing",
+    useCasesEyebrow: "Use cases",
+    useCasesTabs: ["Research", "Sales", "Engineering", "Operations"],
+    quote: "SkillHub is building the missing infrastructure layer between AI agents and the real world.",
+    quoteAttr: "— Early access developer",
+    showcaseEyebrow: "Showcase",
+    showcaseSkills: [
+      { name: "Browser Research Pro", desc: "Deep web research with structured output", slug: "browser-research-pro" },
+      { name: "CRM Enrichment", desc: "Auto-complete contact profiles from public data", slug: "crm-enrichment" },
+      { name: "Support Triage", desc: "Classify tickets by priority and route to teams", slug: "support-triage" },
+      { name: "Code Review Assistant", desc: "Security, performance, and best practices", slug: "code-review-assistant" },
     ],
-    ctaTitle: "Ready to build",
-    ctaMuted: "with verified skills?",
-    ctaDesc: "Join developers shipping AI products with production-grade skill infrastructure.",
-    ctaCta: "Get started free",
-    ctaSecondary: "Book a demo",
+    ctaHeadline: "Bring your agents to life",
+    ctaDesc: "No SDK lock-in. No vendor dependencies. Start invoking verified skills in minutes.",
+    ctaCta1: "Get started",
+    ctaCta2: "Book a demo",
   },
   zh: {
-    badge: "开发者预览",
-    headline1: "AI Agent 的",
-    headline2: "统一技能平台",
+    badge: "新",
+    badgeText: "所有方案均支持 MCP 协议",
+    eyebrow: "可信赖的技能基础设施",
+    headline: "为每一个 AI Agent",
     subline:
-      "一个受治理的注册中心，让 Agent 发现、检查并调用已验证的技能。一份 manifest 驱动搜索、信任审核和安全运行。",
-    cta1: "开始构建",
-    cta2: "查看文档",
-    stats: [
-      { key: "publicSkills", label: "技能" },
-      { key: "verifiedSkills", label: "已验证" },
-      { key: "publicPublishers", label: "发布者" },
-      { key: "recordedCalls", label: "API 调用" },
+      "通过受治理的注册中心发现、验证和调用生产级技能。一份 manifest 驱动搜索、信任治理和安全运行，支持任何 Agent 平台。",
+    cta1: "免费开始",
+    cta2: "预约演示",
+    tabs: [
+      { title: "浏览注册表", sub: "Agent 发现技能的地方" },
+      { title: "检查 Manifest", sub: "集成前的合约" },
+      { title: "通过网关调用", sub: "每次调用的安全运行时" },
     ],
-    integrations: "兼容你的技术栈",
-    agentLogos: ["Claude", "Cursor", "Windsurf", "ChatGPT", "MCP", "REST API"],
     features: [
       {
-        icon: "search",
-        title: "发现",
-        titleMuted: "即时找到合适的技能",
-        desc: "按能力、运行时类型或权限配置搜索。语义匹配在几秒内找到相关技能。",
+        title: "从查询到结果",
+        desc: "按能力、运行时类型或权限配置搜索技能。语义匹配找到合适的工具 — 无论是网络研究、数据补全还是代码审查。",
       },
       {
-        icon: "manifest",
-        title: "检查",
-        titleMuted: "集成前充分了解",
-        desc: "审查输入/输出 schema、权限范围、版本历史、定价和信任信号 — 全部来自 manifest。",
+        title: "集成前充分检查",
+        desc: "审查输入/输出 schema、权限范围、版本历史和信任信号。每个技能发布机器可读的 manifest。",
       },
       {
-        icon: "runtime",
-        title: "调用",
-        titleMuted: "安全可靠地执行",
-        desc: "通过项目级 API Key 以 REST 或 MCP 调用技能。内置限流、重试和结构化错误处理。",
-      },
-      {
-        icon: "trust",
-        title: "治理",
-        titleMuted: "每次调用都可追溯",
-        desc: "自动安全扫描、人工审核、审计追踪和项目级权限策略。",
+        title: "全程治理",
+        desc: "项目级 API Key、逐调用审计追踪、自动安全扫描和人工审核。每次调用都可追溯。",
       },
     ],
-    skillsTitle: "精选技能",
-    skillsMuted: "生产就绪，已验证",
-    skillsCta: "查看全部技能",
-    howTitle: "如何使用",
-    howMuted: "从发现到生产",
-    howSteps: [
-      { num: "01", title: "发现", desc: "浏览注册表或按任务搜索。按运行时、权限和验证状态筛选。" },
-      { num: "02", title: "检查", desc: "审查完整 manifest — schema、权限、变更日志。在沙箱中测试。" },
-      { num: "03", title: "连接", desc: "创建项目，配置 scope，生成生产 API Key。" },
-      { num: "04", title: "调用", desc: "通过 REST 或 MCP 调用。结构化响应，内置可观测性。" },
-      { num: "05", title: "监控", desc: "实时仪表盘：调用量、延迟、错误率和成本。" },
+    skillsEyebrow: "技能",
+    skillsHeadline: "为速度而建",
+    skillsSeeMore: "查看全部技能",
+    workflowsEyebrow: "集成",
+    workflowsHeadline: "无缝连接",
+    workflowsTabs: ["Claude", "Cursor", "Windsurf", "ChatGPT", "自定义 Agent"],
+    workflowsDesc: "通过单个配置块将 SkillHub 连接到任何 MCP 兼容 Agent。REST API 覆盖所有其他场景。",
+    teamEyebrow: "团队协作",
+    teamHeadline: "一起交付",
+    teamDesc: "邀请团队成员，共享项目，协作管理 API Key 和预算。基于角色的访问控制保护生产环境安全。",
+    teamCta1: "免费开始",
+    teamCta2: "查看定价",
+    useCasesEyebrow: "使用场景",
+    useCasesTabs: ["研究", "销售", "工程", "运营"],
+    quote: "SkillHub 正在构建 AI Agent 与现实世界之间缺失的基础设施层。",
+    quoteAttr: "— 早期体验开发者",
+    showcaseEyebrow: "展示",
+    showcaseSkills: [
+      { name: "Browser Research Pro", desc: "深度网络研究，结构化输出", slug: "browser-research-pro" },
+      { name: "CRM Enrichment", desc: "从公开数据自动补全联系人资料", slug: "crm-enrichment" },
+      { name: "Support Triage", desc: "按优先级分类工单并路由到团队", slug: "support-triage" },
+      { name: "Code Review Assistant", desc: "安全、性能和最佳实践审查", slug: "code-review-assistant" },
     ],
-    ctaTitle: "准备好",
-    ctaMuted: "用已验证的技能构建了吗？",
-    ctaDesc: "加入开发者行列，用生产级技能基础设施交付 AI 产品。",
-    ctaCta: "免费开始",
-    ctaSecondary: "预约演示",
+    ctaHeadline: "让你的 Agent 活起来",
+    ctaDesc: "无 SDK 锁定。无供应商依赖。几分钟内开始调用已验证的技能。",
+    ctaCta1: "开始使用",
+    ctaCta2: "预约演示",
   },
 } as const;
 
-const zhSkillMeta: Record<string, { desc: string; tags: string[] }> = {
-  "browser-research-pro": {
-    desc: "深度网络研究 — 多源抓取、结构化摘要、事实核查。",
-    tags: ["研究", "浏览器", "摘要"],
-  },
-  "crm-enrichment": {
-    desc: "自动补全 CRM 数据 — 社交主页、公司信息、职位验证。",
-    tags: ["CRM", "数据", "销售"],
-  },
-  "support-triage": {
-    desc: "AI 工单分类 — 优先级识别、团队分配、关键信息提取。",
-    tags: ["支持", "分类", "工单"],
-  },
-  "code-review-assistant": {
-    desc: "智能代码审查 — 安全漏洞、性能问题、最佳实践。",
-    tags: ["代码", "审查", "安全"],
-  },
-  "data-pipeline-orchestrator": {
-    desc: "数据管道编排 — ETL 调度、依赖管理、失败重试。",
-    tags: ["数据", "ETL", "编排"],
-  },
-  "financial-report-analyzer": {
-    desc: "财报分析 — 关键指标提取、趋势分析、异常检测。",
-    tags: ["金融", "分析", "报告"],
-  },
+const iconMap: Record<string, React.ReactNode> = {
+  search: <Search size={18} className="text-[var(--color-text-secondary)]" />,
+  manifest: <FileJson size={18} className="text-[var(--color-text-secondary)]" />,
+  runtime: <Zap size={18} className="text-[var(--color-text-secondary)]" />,
+  trust: <ShieldCheck size={18} className="text-[var(--color-text-secondary)]" />,
 };
 
-const featureIcons: Record<string, typeof Search> = {
-  search: Search,
-  manifest: FileJson,
-  runtime: Zap,
-  trust: ShieldCheck,
+// MCP config code for each agent platform
+const agentConfigs: Record<string, string> = {
+  Claude: `// claude_desktop_config.json
+{
+  "mcpServers": {
+    "skillhub": {
+      "command": "npx",
+      "args": ["@useskillhub/mcp-server"],
+      "env": {
+        "SKILLHUB_API_KEY": "sk_live_..."
+      }
+    }
+  }
+}`,
+  Cursor: `// .cursor/mcp.json
+{
+  "mcpServers": {
+    "skillhub": {
+      "command": "npx",
+      "args": ["@useskillhub/mcp-server"],
+      "env": {
+        "SKILLHUB_API_KEY": "sk_live_..."
+      }
+    }
+  }
+}`,
+  Windsurf: `// ~/.windsurf/mcp_config.json
+{
+  "mcpServers": {
+    "skillhub": {
+      "command": "npx",
+      "args": ["@useskillhub/mcp-server"],
+      "env": {
+        "SKILLHUB_API_KEY": "sk_live_..."
+      }
+    }
+  }
+}`,
+  ChatGPT: `// REST API — any HTTP client
+const response = await fetch(
+  "https://api.useskillhub.com/v1/invoke",
+  {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer sk_live_...",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      skill: "browser-research-pro",
+      input: { query: "..." }
+    })
+  }
+);`,
+  "Custom Agent": `import { SkillHub } from "@useskillhub/sdk";
+
+const hub = new SkillHub({
+  apiKey: process.env.SKILLHUB_KEY
+});
+
+const result = await hub.invoke({
+  skill: "browser-research-pro",
+  input: { query: "AI frameworks 2026" }
+});
+
+console.log(result.output);`,
 };
 
 export default async function HomePage({ searchParams }: PageProps) {
-  const resolvedParams = await searchParams;
-  const locale = getLocaleFromSearchParams(resolvedParams);
+  const params = await searchParams;
+  const locale = getLocaleFromSearchParams(params);
   const langSuffix = locale === "zh" ? "?lang=zh" : "";
   const t = copy[locale];
 
@@ -194,196 +226,225 @@ export default async function HomePage({ searchParams }: PageProps) {
   const skills = allSkills.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface-0)]">
+    <div className="min-h-screen bg-[var(--color-surface-0)] text-[var(--color-text-primary)]">
       <HomeNav locale={locale} />
 
       {/* === HERO === */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-28">
-        <div className="max-w-[1280px] mx-auto px-6">
-          {/* Two-column hero like Morphic */}
-          <div className="grid md:grid-cols-2 gap-16 items-start">
-            {/* Left: headline */}
-            <div>
-              {/* Badge */}
-              <div className="mb-8">
-                <span className="badge-accent">
-                  {t.badge}
-                </span>
-              </div>
+      <section className="max-w-[1280px] mx-auto px-6 pt-28 pb-20 md:pt-36 md:pb-28">
+        {/* Announcement badge */}
+        <Reveal>
+          <div className="flex justify-center mb-8">
+            <a
+              href={`/docs${langSuffix}`}
+              className="pill hover:border-[var(--color-border-hover)] transition-colors"
+            >
+              <span className="badge-accent">{t.badge}</span>
+              <span>{t.badgeText}</span>
+            </a>
+          </div>
+        </Reveal>
 
-              {/* Two-tone headline */}
-              <h1 className="text-display mb-6">
-                <span className="heading-primary block">{t.headline1}</span>
-                <span className="heading-secondary block">{t.headline2}</span>
-              </h1>
+        {/* Hero text — centered */}
+        <Reveal delay={100}>
+          <div className="text-center max-w-3xl mx-auto">
+            <p className="text-body-lg text-[var(--color-text-secondary)] mb-3">
+              {t.eyebrow}
+            </p>
+            <h1 className="text-display text-[var(--color-text-primary)] mb-6">
+              {t.headline}
+            </h1>
+            <p className="text-body-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-10">
+              {t.subline}
+            </p>
 
-              {/* Subline */}
-              <p className="text-body-lg text-[var(--color-text-secondary)] max-w-md mb-8">
-                {t.subline}
-              </p>
-
-              {/* CTAs */}
-              <div className="flex items-center gap-3">
-                <a href={`/developer${langSuffix}`} className="btn-primary">
-                  {t.cta1}
-                  <ArrowRight size={14} />
-                </a>
-                <a href={`/docs${langSuffix}`} className="btn-secondary">
-                  {t.cta2}
-                </a>
-              </div>
-            </div>
-
-            {/* Right: code demo */}
-            <div className="hidden md:block">
-              <CodeAnimation />
+            {/* CTAs */}
+            <div className="flex items-center justify-center gap-3">
+              <a href={`/developer${langSuffix}`} className="btn-primary">
+                {t.cta1}
+              </a>
+              <a href={`/support${langSuffix}`} className="btn-secondary">
+                {t.cta2}
+              </a>
             </div>
           </div>
-        </div>
-      </section>
+        </Reveal>
 
-      {/* === STATS === */}
-      <section className="py-12 border-y border-[var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {t.stats.map((stat) => {
-              const value = stats[stat.key as keyof typeof stats];
-              const numValue = typeof value === "number" ? value : 0;
-              return (
-                <div key={stat.key}>
-                  <div className="text-heading heading-primary mb-1">
-                    {numValue.toLocaleString()}
-                  </div>
-                  <div className="text-body-sm text-[var(--color-text-secondary)]">
-                    {stat.label}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* === INTEGRATIONS / LOGO BAR === */}
-      <section className="py-16">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <p className="text-body-sm text-[var(--color-text-muted)] mb-8 text-center">
-            {t.integrations}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8">
-            {t.agentLogos.map((name) => (
+        {/* Three tabs below hero */}
+        <Reveal delay={200}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 max-w-3xl mx-auto">
+            {t.tabs.map((tab, i) => (
               <div
-                key={name}
-                className="px-4 py-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] text-body-sm text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)] transition-all"
+                key={i}
+                className="text-center py-4 px-3"
               >
-                {name}
+                <p className="text-body-sm text-[var(--color-text-primary)] mb-1">
+                  {tab.title}
+                </p>
+                <p className="text-caption text-[var(--color-text-muted)]">
+                  {tab.sub}
+                </p>
               </div>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* Product preview — Code Animation as the "screenshot" */}
+        <Reveal delay={300}>
+          <div className="mt-12 max-w-4xl mx-auto">
+            <CodeAnimation />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* === FEATURES (3 bullets) === */}
+      <section className="section-gap border-t border-[var(--color-border)]">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {t.features.map((feature, i) => (
+              <Reveal key={i} delay={i * 100}>
+                <div>
+                  <h3 className="text-heading-sm text-[var(--color-text-primary)] mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-body text-[var(--color-text-secondary)]">
+                    {feature.desc}
+                  </p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* === FEATURES (Bento-style 2x2) === */}
-      <section className="section-gap">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            {t.features.map((feature) => {
-              const Icon = featureIcons[feature.icon];
-              return (
-                <Reveal key={feature.title}>
-                  <div className="card-lg p-8 h-full">
-                    <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] flex items-center justify-center mb-5">
-                      <Icon size={18} className="text-[var(--color-text-secondary)]" />
-                    </div>
-                    <h3 className="text-heading-sm mb-1">
-                      <span className="text-[var(--color-text-primary)]">{feature.title}</span>
-                      <span className="text-[var(--color-text-secondary)]"> {feature.titleMuted}</span>
-                    </h3>
-                    <p className="text-body text-[var(--color-text-secondary)] mt-3">
-                      {feature.desc}
-                    </p>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* === FEATURED SKILLS === */}
+      {/* === SKILLS GALLERY === */}
       <section className="section-gap border-t border-[var(--color-border)]">
         <div className="max-w-[1280px] mx-auto px-6">
-          {/* Section header: two-tone */}
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <h2 className="text-heading">
-                <span className="heading-primary block">{t.skillsTitle}</span>
-                <span className="heading-secondary block">{t.skillsMuted}</span>
-              </h2>
+          {/* Two-tone header */}
+          <Reveal>
+            <div className="flex items-end justify-between mb-10">
+              <div>
+                <p className="text-label text-[var(--color-text-muted)] mb-2 uppercase tracking-wider">
+                  {t.skillsEyebrow}
+                </p>
+                <h2 className="text-heading text-[var(--color-text-primary)]">
+                  {t.skillsHeadline}
+                </h2>
+              </div>
+              <a
+                href={`/marketplace${langSuffix}`}
+                className="text-body-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors flex items-center gap-1"
+              >
+                {t.skillsSeeMore}
+                <ArrowRight size={14} />
+              </a>
             </div>
-            <a
-              href={`/marketplace${langSuffix}`}
-              className="hidden md:inline-flex items-center gap-1 text-body-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              {t.skillsCta}
-              <ChevronRight size={14} />
-            </a>
-          </div>
+          </Reveal>
 
           {/* Skills grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {skills.map((skill) => {
-              const zhMeta = zhSkillMeta[skill.slug];
-              return (
-                <Reveal key={skill.id} delay={0}>
-                  <SkillCard
-                    skill={skill}
-                    locale={locale}
-                    zhDescription={zhMeta?.desc}
-                    zhTags={zhMeta?.tags}
-                  />
-                </Reveal>
-              );
-            })}
-          </div>
-
-          {/* Mobile CTA */}
-          <div className="mt-8 md:hidden text-center">
-            <a
-              href={`/marketplace${langSuffix}`}
-              className="btn-outline"
-            >
-              {t.skillsCta}
-              <ChevronRight size={14} />
-            </a>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {skills.map((skill, i) => (
+              <Reveal key={skill.slug} delay={i * 60}>
+                <SkillCard
+                  skill={skill}
+                  locale={locale}
+                />
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* === HOW IT WORKS === */}
+      {/* === INTEGRATIONS (Agent configs) === */}
       <section className="section-gap border-t border-[var(--color-border)]">
         <div className="max-w-[1280px] mx-auto px-6">
-          <div className="mb-12">
-            <h2 className="text-heading">
-              <span className="heading-primary block">{t.howTitle}</span>
-              <span className="heading-secondary block">{t.howMuted}</span>
-            </h2>
-          </div>
+          <Reveal>
+            <div className="mb-10">
+              <p className="text-label text-[var(--color-text-muted)] mb-2 uppercase tracking-wider">
+                {t.workflowsEyebrow}
+              </p>
+              <h2 className="text-heading text-[var(--color-text-primary)]">
+                {t.workflowsHeadline}
+              </h2>
+            </div>
+          </Reveal>
 
-          <div className="grid md:grid-cols-5 gap-4">
-            {t.howSteps.map((step) => (
-              <Reveal key={step.num}>
-                <div className="card p-5 h-full">
-                  <span className="text-label text-[var(--color-accent)] block mb-3">
-                    {step.num}
-                  </span>
-                  <h3 className="text-body-sm text-[var(--color-text-primary)] mb-2">
-                    {step.title}
+          <Reveal delay={100}>
+            <IntegrationTabs
+              tabs={t.workflowsTabs as unknown as string[]}
+              configs={agentConfigs}
+              desc={t.workflowsDesc}
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* === TEAM SECTION === */}
+      <section className="section-gap border-t border-[var(--color-border)]">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <Reveal>
+            <div className="max-w-xl">
+              <p className="text-label text-[var(--color-text-muted)] mb-2 uppercase tracking-wider">
+                {t.teamEyebrow}
+              </p>
+              <h2 className="text-heading text-[var(--color-text-primary)] mb-4">
+                {t.teamHeadline}
+              </h2>
+              <p className="text-body-lg text-[var(--color-text-secondary)] mb-8">
+                {t.teamDesc}
+              </p>
+              <div className="flex items-center gap-3">
+                <a href={`/developer${langSuffix}`} className="btn-primary">
+                  {t.teamCta1}
+                </a>
+                <a href={`/docs${langSuffix}`} className="btn-outline">
+                  {t.teamCta2}
+                </a>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* === SOCIAL PROOF QUOTE === */}
+      <section className="section-gap border-t border-[var(--color-border)]">
+        <div className="max-w-[1280px] mx-auto px-6 text-center">
+          <Reveal>
+            <blockquote className="text-heading text-[var(--color-text-primary)] max-w-3xl mx-auto mb-4">
+              &ldquo;{t.quote}&rdquo;
+            </blockquote>
+            <p className="text-body text-[var(--color-text-muted)]">
+              {t.quoteAttr}
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* === SHOWCASE === */}
+      <section className="section-gap border-t border-[var(--color-border)]">
+        <div className="max-w-[1280px] mx-auto px-6">
+          <Reveal>
+            <p className="text-label text-[var(--color-text-muted)] mb-6 uppercase tracking-wider">
+              {t.showcaseEyebrow}
+            </p>
+          </Reveal>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {t.showcaseSkills.map((item, i) => (
+              <Reveal key={item.slug} delay={i * 80}>
+                <a
+                  href={`/skills/${item.slug}${langSuffix}`}
+                  className="card-lg group block"
+                >
+                  {/* Visual area */}
+                  <div className="bg-[var(--color-surface-2)] rounded-[var(--radius-sm)] aspect-[4/3] mb-3 flex items-center justify-center">
+                    <Zap size={28} className="text-[var(--color-text-icon)] group-hover:text-[var(--color-text-muted)] transition-colors" />
+                  </div>
+                  <h3 className="text-body-sm text-[var(--color-text-primary)] mb-1">
+                    {item.name}
                   </h3>
-                  <p className="text-body-sm text-[var(--color-text-muted)]">
-                    {step.desc}
+                  <p className="text-caption text-[var(--color-text-muted)]">
+                    {item.desc}
                   </p>
-                </div>
+                </a>
               </Reveal>
             ))}
           </div>
@@ -393,27 +454,39 @@ export default async function HomePage({ searchParams }: PageProps) {
       {/* === FINAL CTA === */}
       <section className="section-gap border-t border-[var(--color-border)]">
         <div className="max-w-[1280px] mx-auto px-6 text-center">
-          <h2 className="text-heading mb-4">
-            <span className="heading-primary">{t.ctaTitle}</span>
-            <br />
-            <span className="heading-secondary">{t.ctaMuted}</span>
-          </h2>
-          <p className="text-body-lg text-[var(--color-text-secondary)] max-w-lg mx-auto mb-8">
-            {t.ctaDesc}
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <a href={`/developer${langSuffix}`} className="btn-primary">
-              {t.ctaCta}
-              <ArrowRight size={14} />
-            </a>
-            <a href={`/support${langSuffix}`} className="btn-outline">
-              {t.ctaSecondary}
-            </a>
-          </div>
+          <Reveal>
+            <h2 className="text-heading text-[var(--color-text-primary)] mb-4">
+              {t.ctaHeadline}
+            </h2>
+            <p className="text-body-lg text-[var(--color-text-secondary)] max-w-xl mx-auto mb-8">
+              {t.ctaDesc}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <a href={`/developer${langSuffix}`} className="btn-primary">
+                {t.ctaCta1}
+              </a>
+              <a href={`/support${langSuffix}`} className="btn-secondary">
+                {t.ctaCta2}
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <HomeFooter locale={locale} />
     </div>
   );
+}
+
+/* === Integration Tabs (Client Component) === */
+function IntegrationTabs({
+  tabs,
+  configs,
+  desc,
+}: {
+  tabs: string[];
+  configs: Record<string, string>;
+  desc: string;
+}) {
+  return <IntegrationTabsClient tabs={tabs} configs={configs} desc={desc} />;
 }
