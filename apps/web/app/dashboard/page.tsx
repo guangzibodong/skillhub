@@ -32,7 +32,7 @@ import { PublisherAccountManager } from "@/components/publisher-account-manager"
 import { PublisherPayoutManager } from "@/components/publisher-payout-manager";
 import { PublisherSkillManager } from "@/components/publisher-skill-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import {
@@ -451,7 +451,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://useskillhub.com";
   const dashboardReturnUrl = `${appUrl.replace(/\/$/, "")}${localizedHref("/dashboard", locale)}`;
   const labels = dictionary.dashboardPage;
@@ -462,12 +461,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   if (!session.subject) {
     return (
-      <main className="product-shell">
-        <SiteHeader active="dashboard" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/dashboard" />
-
-        <section className="page-hero page-hero--compact">
-          <div>
-            <div className="eyebrow">
+      <AppShell active="dashboard" locale={locale}>
+        <section className="section">
+          <div className="section-inner">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <LockKeyhole size={16} aria-hidden="true" />
               <span>{locale === "zh" ? "\u9700\u8981\u5148\u767b\u5f55" : "Sign-in required"}</span>
             </div>
@@ -478,18 +475,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 : "Sign in with Google, GitHub, username/email password, or an invite/recovery token. Until then, SkillHub shows only this safe entry state and does not load workspace operation panels."}
             </p>
           </div>
-          <div className="page-hero__actions">
-            <a className="primary-button primary-button--large" href={localizedHref("/login", locale)}>
+          <div className="section-inner mt-6 flex items-center gap-3 flex-wrap">
+            <a className="btn-primary" href={localizedHref("/login", locale)}>
               <UserCircle size={18} aria-hidden="true" />
               <span>{locale === "zh" ? "\u53bb\u767b\u5f55" : "Sign in"}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/registry", locale)}>
+            <a className="btn-secondary" href={localizedHref("/registry", locale)}>
               <PackageCheck size={18} aria-hidden="true" />
               <span>{locale === "zh" ? "\u6d4f\u89c8\u6280\u80fd\u5e93" : "Browse registry"}</span>
             </a>
           </div>
         </section>
-      </main>
+      </AppShell>
     );
   }
 
@@ -811,12 +808,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const demoChainBottleneck = demoChainSteps.find((step) => step.status !== "ready") ?? null;
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="dashboard" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/dashboard" />
-
-      <section className="page-hero page-hero--compact">
-        <div>
-          <div className="eyebrow">
+    <AppShell active="dashboard" locale={locale}>
+      <section className="section">
+        <div className="section-inner">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <WalletCards size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
           </div>
@@ -825,17 +820,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="dashboard-command-center" id="workspace-command-center">
-        <div className="dashboard-command-center__intro">
+      <section className="max-w-[1200px] mx-auto px-6 py-8" id="workspace-command-center">
+        <div className="mb-8">
           <div>
-            <div className="eyebrow">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <GitBranch size={16} aria-hidden="true" />
               <span>{commandLabels.eyebrow}</span>
             </div>
             <h2>{commandLabels.title}</h2>
             <p>{commandLabels.body}</p>
           </div>
-          <div className="dashboard-command-center__proof" aria-label={commandLabels.eyebrow}>
+          <div className="flex items-center gap-6 flex-wrap mt-4" aria-label={commandLabels.eyebrow}>
             <div>
               <BadgeCheck size={16} aria-hidden="true" />
               <span>{commandLabels.proof.journeys}</span>
@@ -876,7 +871,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           ]}
         />
 
-        <div className="dashboard-command-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
           {dashboardCommandCards.map((card) => {
             const Icon = card.icon;
             const access = getDashboardCommandState(card.requiredRoles, session, commandLabels);
@@ -887,86 +882,82 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
             return (
               <article
-                className={[
-                  "dashboard-command-card",
-                  `dashboard-command-card--${access.kind}`,
-                  needsAttention ? "dashboard-command-card--attention" : ""
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
+                className="card"
                 key={card.key}
               >
-                <div className="dashboard-command-card__head">
-                  <span className="dashboard-command-card__icon">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[rgba(255,255,255,0.06)]">
                     <Icon size={18} aria-hidden="true" />
                   </span>
-                  <span className={access.kind === "available" ? "status-chip" : "status-chip status-chip--warning"}>
+                  <span className={access.kind === "available" ? "pill" : "pill pill--warning"}>
                     {needsAttention && access.kind === "available" ? commandLabels.status.needsWork : access.label}
                   </span>
                 </div>
-                <div className="dashboard-command-card__body">
-                  <span>{card.role}</span>
-                  <strong>{card.title}</strong>
-                  <p>{card.description}</p>
+                <div className="mb-3">
+                  <span className="text-xs text-[#999]">{card.role}</span>
+                  <strong className="block text-base mt-1">{card.title}</strong>
+                  <p className="text-sm text-[#999] mt-1">{card.description}</p>
                 </div>
-                <div className="dashboard-command-card__metric">
-                  <span>{card.metricLabel}</span>
+                <div className="flex items-center gap-4 mb-3">
+                  <span className="text-xs text-[#999]">{card.metricLabel}</span>
                   <strong>{card.metricValue}</strong>
-                  <small>{card.signal}</small>
+                  <small className="text-xs text-[#666]">{card.signal}</small>
                 </div>
-                <a className="secondary-button secondary-button--compact" href={localizedHref(href, locale)}>
+                <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref(href, locale)}>
                   {commandLabels.actionOpen}
                   <ArrowRight size={15} aria-hidden="true" />
                 </a>
-                <div className="dashboard-command-card__next">{card.nextAction}</div>
+                <div className="text-xs text-[#999] mt-2">{card.nextAction}</div>
               </article>
             );
           })}
         </div>
       </section>
 
-      <section className="p0-demo-chain" id="p0-demo-chain">
-        <div className="p0-demo-chain__head">
+      <section className="max-w-[1200px] mx-auto px-6 py-8" id="p0-demo-chain">
+        <div className="mb-6">
           <div>
-            <div className="eyebrow">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <ClipboardCheck size={16} aria-hidden="true" />
               <span>{demoChainLabels.eyebrow}</span>
             </div>
             <h2>{demoChainLabels.title}</h2>
             <p>{demoChainLabels.body}</p>
           </div>
-          <div className="p0-demo-chain__summary" aria-label={demoChainLabels.eyebrow}>
-            <div className="p0-demo-chain__summary-card p0-demo-chain__summary-card--ready">
+          <div className="flex items-center gap-4 flex-wrap mt-4" aria-label={demoChainLabels.eyebrow}>
+            <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] px-4 py-2">
               <span>{demoChainLabels.summary.ready}</span>
-              <strong>{demoChainSummary.ready}/8</strong>
+              <strong className="ml-2">{demoChainSummary.ready}/8</strong>
             </div>
-            <div className="p0-demo-chain__summary-card p0-demo-chain__summary-card--attention">
+            <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] px-4 py-2">
               <span>{demoChainLabels.summary.attention}</span>
-              <strong>{demoChainSummary.attention}</strong>
+              <strong className="ml-2">{demoChainSummary.attention}</strong>
             </div>
-            <div className="p0-demo-chain__summary-card">
+            <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] px-4 py-2">
               <span>{demoChainLabels.summary.waiting}</span>
-              <strong>{demoChainSummary.waiting}</strong>
+              <strong className="ml-2">{demoChainSummary.waiting}</strong>
             </div>
           </div>
         </div>
 
-        <ol className="p0-demo-chain__steps">
+        <ol className="grid grid-cols-1 gap-3">
           {demoChainSteps.map((step, index) => {
             const Icon = step.icon;
 
             return (
-              <li className={`p0-demo-step p0-demo-step--${step.status}`} key={step.id}>
-                <a href={localizedHref(step.href, locale)}>
-                  <span className="p0-demo-step__index">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="p0-demo-step__icon" aria-hidden="true">
+              <li className="card card--compact" key={step.id}>
+                <a href={localizedHref(step.href, locale)} className="flex items-start gap-4">
+                  <span className="text-xs text-[#666] font-mono">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[rgba(255,255,255,0.06)]" aria-hidden="true">
                     <Icon size={17} />
                   </span>
-                  <span className="status-chip">{demoChainLabels.status[step.status]}</span>
-                  <strong>{step.title}</strong>
-                  <small>{step.detail}</small>
-                  <em>{step.evidence}</em>
-                  <span className="p0-demo-step__action">
+                  <div className="flex-1">
+                    <span className="pill">{demoChainLabels.status[step.status]}</span>
+                    <strong className="block mt-1">{step.title}</strong>
+                    <small className="block text-sm text-[#999] mt-1">{step.detail}</small>
+                    <em className="block text-xs text-[#666] mt-1">{step.evidence}</em>
+                  </div>
+                  <span className="flex items-center gap-1 text-sm">
                     {demoChainLabels.action}
                     <ArrowRight size={14} aria-hidden="true" />
                   </span>
@@ -976,38 +967,38 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           })}
         </ol>
 
-        <div className="p0-demo-chain__bottleneck">
+        <div className="flex items-center gap-3 mt-4 py-3 border-t border-[rgba(255,255,255,0.08)]">
           <span>{demoChainLabels.bottleneck}</span>
           <strong>{demoChainBottleneck ? demoChainBottleneck.title : demoChainLabels.allClear}</strong>
           {demoChainBottleneck ? <small>{demoChainBottleneck.next}</small> : null}
         </div>
       </section>
 
-      <section className="console-board">
-        <div className="metric-strip metric-strip--four metric-strip--standalone">
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
+        <div className="flex items-center gap-6 flex-wrap mb-6">
           {visibleMetrics.map(([label, value]) => (
-            <div className="metric" key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
+            <div className="flex flex-col" key={label}>
+              <span className="text-xs text-[#999]">{label}</span>
+              <strong className="text-lg">{value}</strong>
             </div>
           ))}
         </div>
 
-        <div className="console-grid">
-          <article className="ops-panel lift-card">
-            <div className="card-kicker">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <article className="card">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <PackageCheck size={16} aria-hidden="true" />
               <span>{labels.publisher}</span>
             </div>
-            <div className="ops-list">
+            <div className="flex flex-col gap-3">
               {labels.publisherCards.map(([title, detail], index) => {
                 const Icon = publisherIcons[index];
                 return (
-                  <div className="ops-row" key={title}>
+                  <div className="flex items-start gap-3" key={title}>
                     <Icon size={18} aria-hidden="true" />
                     <div>
                       <strong>{title}</strong>
-                      <span>{detail}</span>
+                      <span className="block text-sm text-[#999]">{detail}</span>
                     </div>
                   </div>
                 );
@@ -1015,20 +1006,20 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </div>
           </article>
 
-          <article className="ops-panel lift-card">
-            <div className="card-kicker">
+          <article className="card">
+            <div className="eyebrow mb-4 flex items-center gap-2">
               <KeyRound size={16} aria-hidden="true" />
               <span>{labels.buyer}</span>
             </div>
-            <div className="ops-list">
+            <div className="flex flex-col gap-3">
               {labels.buyerCards.map(([title, detail], index) => {
                 const Icon = buyerIcons[index];
                 return (
-                  <div className="ops-row" key={title}>
+                  <div className="flex items-start gap-3" key={title}>
                     <Icon size={18} aria-hidden="true" />
                     <div>
                       <strong>{title}</strong>
-                      <span>{detail}</span>
+                      <span className="block text-sm text-[#999]">{detail}</span>
                     </div>
                   </div>
                 );
@@ -1038,25 +1029,25 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="workspace-ops-layout">
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
         <PublisherSkillManager locale={locale} skills={publisherSkills} />
 
-        <article className="ops-panel work-table-panel">
-          <div className="card-kicker">
+        <article className="card mt-5">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{ops.projectTitle}</span>
           </div>
           <ProjectCreateForm locale={locale} />
-          <div className="work-table">
-            <div className="work-table__row work-table__row--head">
+          <div className="mt-4 overflow-x-auto">
+            <div className="grid grid-cols-4 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
               {ops.projectHeaders.map((header) => (
                 <span key={header}>{header}</span>
               ))}
             </div>
             {developerProjectRows.map((project) => (
-              <div className="work-table__row" key={project.slug}>
+              <div className="grid grid-cols-4 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={project.slug}>
                 <strong>
-                  <a className="table-link" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                  <a className="underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
                     {project.name}
                   </a>
                 </strong>
@@ -1066,7 +1057,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </div>
             ))}
             {developerProjectRows.length === 0 ? (
-              <div className="work-table__empty">{locale === "zh" ? "暂无开发者项目。" : "No developer projects yet."}</div>
+              <div className="py-3 text-sm text-[#999]">{locale === "zh" ? "暂无开发者项目。" : "No developer projects yet."}</div>
             ) : null}
           </div>
         </article>
@@ -1079,61 +1070,63 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         />
       </section>
 
-      <section className="finance-layout">
-        <article className="ops-panel finance-panel">
-          <div className="card-kicker">
-            <CircleDollarSign size={16} aria-hidden="true" />
-            <span>{labels.ledgerTitle}</span>
-          </div>
-          <div className="ledger-table">
-            <div className="ledger-row ledger-row--head">
-              {labels.ledgerHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5">
+          <article className="card">
+            <div className="eyebrow mb-4 flex items-center gap-2">
+              <CircleDollarSign size={16} aria-hidden="true" />
+              <span>{labels.ledgerTitle}</span>
             </div>
-            {ledgerRows.length > 0 ? (
-              ledgerRows.map(([skill, gross, fee, net, status]) => (
-                <div className="ledger-row" key={skill}>
-                  <strong>{skill}</strong>
-                  <span>{gross}</span>
-                  <span>{fee}</span>
-                  <span>{net}</span>
-                  <span className="status-chip">{status}</span>
-                </div>
-              ))
-            ) : (
-              <div className="ledger-row ledger-row--empty">
-                <strong>{locale === "zh" ? "暂无已入账发布者收入。" : "No posted publisher revenue yet"}</strong>
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
+                {labels.ledgerHeaders.map((header) => (
+                  <span key={header}>{header}</span>
+                ))}
               </div>
-            )}
-          </div>
-        </article>
+              {ledgerRows.length > 0 ? (
+                ledgerRows.map(([skill, gross, fee, net, status]) => (
+                  <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={skill}>
+                    <strong>{skill}</strong>
+                    <span>{gross}</span>
+                    <span>{fee}</span>
+                    <span>{net}</span>
+                    <span className="pill">{status}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-3 text-sm text-[#999]">
+                  <strong>{locale === "zh" ? "暂无已入账发布者收入。" : "No posted publisher revenue yet"}</strong>
+                </div>
+              )}
+            </div>
+          </article>
 
-        <aside className="finance-side">
-          <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
+          <aside className="flex flex-col gap-5">
+            <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
 
-          <PublisherPayoutManager locale={locale} summary={payoutSummary} />
+            <PublisherPayoutManager locale={locale} summary={payoutSummary} />
 
-          <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+            <OrganizationBillingManager billing={organizationBilling} locale={locale} />
 
-          <NotificationInboxManager
-            locale={locale}
-            notifications={userNotificationInbox.notifications}
-            summary={userNotificationInbox.summary}
-          />
+            <NotificationInboxManager
+              locale={locale}
+              notifications={userNotificationInbox.notifications}
+              summary={userNotificationInbox.summary}
+            />
 
-          <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
-        </aside>
+            <NotificationPreferenceManager locale={locale} preferences={notificationPreferences} />
+          </aside>
+        </div>
       </section>
 
-      <section className="workspace-ops-layout workspace-ops-layout--bottom workspace-ops-layout--adjustments">
-        <article className="ops-panel work-table-panel">
-          <div className="card-kicker">
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
+        <article className="card">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <RotateCcw size={16} aria-hidden="true" />
             <span>{ops.adjustmentTitle}</span>
           </div>
-          <div className="work-table work-table--adjustments">
-            <div className="work-table__row work-table__row--head adjustment-row">
+          <div className="overflow-x-auto">
+            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
               {ops.adjustmentHeaders.map((header) => (
                 <span key={header}>{header}</span>
               ))}
@@ -1143,22 +1136,22 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 const Icon = adjustment.typeKey === "refund" ? RotateCcw : ShieldAlert;
 
                 return (
-                  <div className="work-table__row adjustment-row" key={`${adjustment.type}-${adjustment.id}`}>
-                    <strong className="adjustment-kind">
+                  <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={`${adjustment.type}-${adjustment.id}`}>
+                    <strong className="flex items-center gap-1">
                       <Icon size={15} aria-hidden="true" />
                       <span>{adjustment.type}</span>
                     </strong>
                     <span>{adjustment.skill}</span>
                     <span>{adjustment.project}</span>
                     <span>{adjustment.amount}</span>
-                    <span className="status-chip" title={adjustment.reason}>
+                    <span className="pill" title={adjustment.reason}>
                       {adjustment.status}
                     </span>
                   </div>
                 );
               })
             ) : (
-              <div className="work-table__row adjustment-row adjustment-row--empty">
+              <div className="py-3 text-sm text-[#999]">
                 <strong>{ops.adjustmentEmpty}</strong>
               </div>
             )}
@@ -1166,23 +1159,23 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </article>
       </section>
 
-      <section className="workspace-ops-layout workspace-ops-layout--bottom">
-        <article className="ops-panel runtime-ops-panel">
-          <div className="card-kicker">
+      <section className="max-w-[1200px] mx-auto px-6 py-8">
+        <article className="card">
+          <div className="eyebrow mb-4 flex items-center gap-2">
             <RadioTower size={16} aria-hidden="true" />
             <span>{ops.apiTitle}</span>
           </div>
-          <div className="trust-requirement-grid">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {ops.apiRows.map(([title, detail]) => (
-              <div className="trust-requirement" key={title}>
+              <div className="flex flex-col gap-1" key={title}>
                 <strong>{title}</strong>
-                <span>{detail}</span>
+                <span className="text-sm text-[#999]">{detail}</span>
               </div>
             ))}
           </div>
         </article>
       </section>
-    </main>
+    </AppShell>
   );
 }
 

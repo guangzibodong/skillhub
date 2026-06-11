@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Code2,
   FileText,
-  Globe2,
   Info,
   KeyRound,
   LogOut,
@@ -20,14 +19,13 @@ import {
   XCircle,
 } from "lucide-react";
 import { AuthProviderPanel } from "@/components/auth-provider-panel";
+import { AppShell } from "@/components/app-shell";
 import { SessionLoginForm } from "@/components/session-login-form";
-import { SiteHeader } from "@/components/site-header";
 import { WorkspaceSignupForm } from "@/components/workspace-signup-form";
 import { getAuthProviders } from "@/lib/account-data";
 import { signOutAction } from "@/lib/auth-actions";
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
 import {
-  getDictionary,
   getLocaleFromSearchParams,
   localizedHref,
   type Locale,
@@ -79,13 +77,13 @@ const copy = {
     runtimeAria: "SkillHub runtime flow",
     sessionActive: "Browser session connected",
     sessionBody:
-      "Your browser session is connected. Continue to your workspace to manage projects, adopted skills, Project Keys, and REST / MCP runtime calls.",
+      "Your browser session is connected — continue to your workspace to manage projects, adopted skills, Project Keys, and REST / MCP runtime calls.",
     sessionStatus: "Session status",
     sessionTitle: "Current session",
-    signedInEyebrow: "Signed in",
-    signOut: "Switch account / Sign out",
+    signedInEyebrow: "Signed-in account",
+    signOut: "Switch account / sign out",
     switchAccountBody:
-      "Signing out clears this browser session and returns you to the login flow.",
+      "Signing out clears the current browser session and returns to the sign-in flow.",
     workspace: "Workspace",
     workspaceAction: "Enter workspace",
     flowNodes: ["Verified Skill", "Project Key", "SkillHub Gateway", "REST / MCP Runtime"],
@@ -230,7 +228,6 @@ const flowIcons = [Box, KeyRound, ShieldCheck, Code2] as const;
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const labels = copy[locale];
   const returnTo = getSafeReturnTo(params.returnTo, locale);
   const apiUrl =
@@ -249,53 +246,38 @@ export default async function LoginPage({ searchParams }: PageProps) {
   }
 
   return (
-    <main className="product-shell login-product-shell">
-      <SiteHeader
-        active="dashboard"
-        apiUrl={apiUrl}
-        consoleHref={isSignedIn ? returnTo : localizedHref("/login", locale)}
-        consoleLabel={isSignedIn ? labels.headerWorkspace : undefined}
-        dictionary={dictionary}
-        locale={locale}
-        pathname="/login"
-      />
+    <AppShell active="login" locale={locale}>
       <LoginPreviewNotice labels={labels} locale={locale} />
 
-      <section
-        className={
-          isSignedIn
-            ? "login-workspace login-workspace--signed-in"
-            : "login-workspace"
-        }
-      >
-        <LoginWorkspaceHero isSignedIn={isSignedIn} labels={labels} />
+      <section className="max-w-[1200px] mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-16 items-center min-h-[calc(100vh-160px)]">
+          <LoginWorkspaceHero isSignedIn={isSignedIn} labels={labels} />
 
-        <div className="login-panel-stack">
-          {isSignedIn ? (
-            <div className="login-signed-in-stack">
-              {notice ? <LoginNotice notice={notice} /> : null}
-              <LoginSessionCard
+          <div className="flex flex-col gap-6">
+            {isSignedIn ? (
+              <div className="flex flex-col gap-4">
+                {notice ? <LoginNotice notice={notice} /> : null}
+                <LoginSessionCard
+                  labels={labels}
+                  locale={locale}
+                  returnTo={returnTo}
+                  session={session}
+                />
+              </div>
+            ) : (
+              <LoginAuthCard
+                apiUrl={apiUrl}
                 labels={labels}
                 locale={locale}
+                notice={notice}
+                providers={providers}
                 returnTo={returnTo}
-                session={session}
               />
-            </div>
-          ) : (
-            <LoginAuthCard
-              apiUrl={apiUrl}
-              labels={labels}
-              locale={locale}
-              notice={notice}
-              providers={providers}
-              returnTo={returnTo}
-            />
-          )}
+            )}
+          </div>
         </div>
       </section>
-
-      <LoginFooter labels={labels} locale={locale} />
-    </main>
+    </AppShell>
   );
 }
 
@@ -307,14 +289,20 @@ function LoginPreviewNotice({
   locale: Locale;
 }) {
   return (
-    <div className="login-preview-bar" role="status">
-      <div className="login-preview-bar__inner">
-        <Info size={15} aria-hidden="true" />
-        <p>
-          <strong>{labels.noticeLabel}: </strong>
+    <div
+      className="bg-[#1a1a1a] border-b border-[rgba(255,255,255,0.06)] py-3"
+      role="status"
+    >
+      <div className="max-w-[1200px] mx-auto px-6 flex items-center gap-3 text-[13px] text-[#999]">
+        <Info size={15} aria-hidden="true" className="text-[#0075ff] shrink-0" />
+        <p className="flex-1">
+          <strong className="text-white">{labels.noticeLabel}: </strong>
           <span>{labels.noticeBody}</span>
         </p>
-        <a href={localizedHref("/status", locale)}>
+        <a
+          href={localizedHref("/status", locale)}
+          className="flex items-center gap-1 text-[#0075ff] hover:text-[#0066e0] whitespace-nowrap"
+        >
           <span>{labels.noticeLink}</span>
           <ArrowRight size={14} aria-hidden="true" />
         </a>
@@ -333,54 +321,49 @@ function LoginWorkspaceHero({
   const valueCards = isSignedIn ? labels.signedInValueCards : labels.valueCards;
 
   return (
-    <div className="login-workspace-hero">
-      <div className="login-ambient-routing" aria-hidden="true">
-        <span className="login-ambient-routing__scan login-ambient-routing__scan--a" />
-        <span className="login-ambient-routing__scan login-ambient-routing__scan--b" />
-        <span className="login-ambient-routing__path login-ambient-routing__path--a" />
-        <span className="login-ambient-routing__path login-ambient-routing__path--b" />
-        <span className="login-ambient-routing__path login-ambient-routing__path--c" />
-        <span className="login-ambient-routing__node login-ambient-routing__node--a" />
-        <span className="login-ambient-routing__node login-ambient-routing__node--b" />
-        <span className="login-ambient-routing__node login-ambient-routing__node--c" />
-      </div>
-      <div className="login-workspace-hero__content">
-        <div className="eyebrow login-workspace-hero__eyebrow">
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-[#0075ff]">
           <BadgeCheck size={16} aria-hidden="true" />
           <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
         </div>
-        <h1 id="login-title">
+        <h1 id="login-title" className="text-[36px] lg:text-[48px] font-bold leading-[1.1] text-white">
           <span>{isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}</span>{" "}
-          <span className="login-title-brand">{labels.heroBrand}</span>{" "}
-          <span className="login-title-tail">
+          <span className="text-[#0075ff]">{labels.heroBrand}</span>{" "}
+          <span className="text-[#999]">
             {isSignedIn ? labels.heroSignedInAfter : labels.heroTitleAfter}
           </span>
         </h1>
-        <p>{isSignedIn ? labels.sessionBody : labels.body}</p>
+        <p className="text-[16px] leading-relaxed text-[#999] max-w-[520px]">
+          {isSignedIn ? labels.sessionBody : labels.body}
+        </p>
+      </div>
 
-        <div className="login-value-grid">
-          {valueCards.map((item, index) => {
-            const Icon = valueIcons[index] ?? ShieldCheck;
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {valueCards.map((item, index) => {
+          const Icon = valueIcons[index] ?? ShieldCheck;
 
-            return (
-              <ValueCard
-                body={item.body}
-                icon={Icon}
-                key={item.title}
-                title={item.title}
-              />
-            );
-          })}
-        </div>
+          return (
+            <ValueCard
+              body={item.body}
+              icon={Icon}
+              key={item.title}
+              title={item.title}
+            />
+          );
+        })}
       </div>
 
       <RuntimeFlowVisual labels={labels} />
 
-      <div className="login-metric-strip" aria-label="SkillHub preview state">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+        aria-label="SkillHub preview state"
+      >
         {labels.metrics.map(([value, label]) => (
-          <div className="login-metric" key={label}>
-            <strong>{value}</strong>
-            <span>{label}</span>
+          <div className="flex flex-col gap-1" key={label}>
+            <strong className="text-[14px] font-semibold text-white">{value}</strong>
+            <span className="text-[12px] text-[#666]">{label}</span>
           </div>
         ))}
       </div>
@@ -398,41 +381,37 @@ function ValueCard({
   title: string;
 }) {
   return (
-    <article className="login-value-card">
-      <Icon size={22} aria-hidden="true" />
-      <strong>{title}</strong>
-      <span>{body}</span>
+    <article className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4 flex flex-col gap-2">
+      <Icon size={22} aria-hidden="true" className="text-[#0075ff]" />
+      <strong className="text-[14px] font-medium text-white">{title}</strong>
+      <span className="text-[13px] text-[#666] leading-relaxed">{body}</span>
     </article>
   );
 }
 
 function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
   return (
-    <div className="login-runtime-flow" aria-label={labels.runtimeAria}>
-      <div className="login-runtime-flow__grid" aria-hidden="true" />
-      <div className="login-runtime-flow__line" aria-hidden="true" />
-      <span className="login-runtime-packet login-runtime-packet--a" aria-hidden="true" />
-      <span className="login-runtime-packet login-runtime-packet--b" aria-hidden="true" />
-      <span className="login-runtime-packet login-runtime-packet--c" aria-hidden="true" />
-      <span className="login-runtime-particle login-runtime-particle--a" />
-      <span className="login-runtime-particle login-runtime-particle--b" />
-      <span className="login-runtime-particle login-runtime-particle--c" />
-      <span className="login-runtime-particle login-runtime-particle--d" />
+    <div
+      className="relative bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-6 flex items-center justify-between gap-4 overflow-hidden"
+      aria-label={labels.runtimeAria}
+    >
+      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(90deg,transparent_49%,rgba(255,255,255,0.5)_50%,transparent_51%)] bg-[length:20px_20px]" aria-hidden="true" />
+      <div className="absolute top-1/2 left-0 right-0 h-px bg-[rgba(255,255,255,0.08)]" aria-hidden="true" />
       {labels.flowNodes.map((label, index) => {
         const Icon = flowIcons[index] ?? ShieldCheck;
         const isGateway = index === 2;
 
         return (
           <div
-            className={
-              isGateway
-                ? "login-runtime-node login-runtime-node--gateway"
-                : "login-runtime-node"
-            }
+            className={`relative z-10 flex flex-col items-center gap-2 ${
+              isGateway ? "text-[#0075ff]" : "text-[#666]"
+            }`}
             key={label}
           >
             <Icon size={isGateway ? 30 : 24} aria-hidden="true" />
-            <strong>{label}</strong>
+            <strong className="text-[11px] font-medium text-center whitespace-nowrap">
+              {label}
+            </strong>
           </div>
         );
       })}
@@ -456,11 +435,16 @@ function LoginAuthCard({
   returnTo: string;
 }) {
   return (
-    <section className="ops-panel login-auth-card" aria-labelledby="login-card-title">
+    <section
+      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-8 flex flex-col gap-6"
+      aria-labelledby="login-card-title"
+    >
       {notice ? <LoginNotice notice={notice} /> : null}
-      <div className="login-auth-card__head">
-        <h2 id="login-card-title">{labels.authTitle}</h2>
-        <p>{labels.authSubtitle}</p>
+      <div className="flex flex-col gap-2">
+        <h2 id="login-card-title" className="text-[22px] font-semibold text-white">
+          {labels.authTitle}
+        </h2>
+        <p className="text-[14px] text-[#999]">{labels.authSubtitle}</p>
       </div>
       <AuthProviderPanel
         apiUrl={apiUrl}
@@ -469,8 +453,12 @@ function LoginAuthCard({
         returnTo={returnTo}
         surface="embedded"
       />
-      <div className="login-divider" role="separator">
-        <span>{locale === "zh" ? "或" : "or"}</span>
+      <div className="flex items-center gap-3" role="separator">
+        <span className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
+        <span className="text-[13px] text-[#525252]">
+          {locale === "zh" ? "或" : "or"}
+        </span>
+        <span className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
       </div>
       <LoginEmailCard labels={labels} locale={locale} returnTo={returnTo} />
       <LoginRecoveryBlock labels={labels} locale={locale} returnTo={returnTo} />
@@ -485,19 +473,23 @@ function LoginNotice({
 }) {
   return (
     <section
-      className={`auth-callback-notice auth-callback-notice--${notice.kind}`}
+      className={`flex items-start gap-3 rounded-[10px] p-4 text-[13px] ${
+        notice.kind === "success"
+          ? "bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.2)] text-[#10b981]"
+          : "bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] text-[#ef4444]"
+      }`}
       aria-atomic="true"
       aria-live={notice.kind === "error" ? "assertive" : "polite"}
       role={notice.kind === "error" ? "alert" : "status"}
     >
       {notice.kind === "success" ? (
-        <CheckCircle2 size={18} aria-hidden="true" />
+        <CheckCircle2 size={18} aria-hidden="true" className="shrink-0 mt-0.5" />
       ) : (
-        <XCircle size={18} aria-hidden="true" />
+        <XCircle size={18} aria-hidden="true" className="shrink-0 mt-0.5" />
       )}
-      <div>
-        <strong>{notice.title}</strong>
-        <span>{notice.message}</span>
+      <div className="flex flex-col gap-1">
+        <strong className="font-medium">{notice.title}</strong>
+        <span className="text-[#999]">{notice.message}</span>
       </div>
     </section>
   );
@@ -560,39 +552,49 @@ function LoginSessionCard({
   ];
 
   return (
-    <article className="ops-panel login-session-card">
-      <div className="login-session-card__head">
-        <div className="card-kicker">
-          <ShieldCheck size={16} aria-hidden="true" />
+    <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-8 flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-[13px] text-[#999]">
+          <ShieldCheck size={16} aria-hidden="true" className="text-[#0075ff]" />
           <span>{labels.sessionTitle}</span>
         </div>
-        <span className="status-chip status-chip--success">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(16,185,129,0.1)] text-[12px] font-medium text-[#10b981]">
           {labels.sessionActive}
         </span>
       </div>
 
-      <div className="login-session-grid">
+      <div className="flex flex-col gap-3">
         {fields.map((field) => {
           const Icon = field.icon;
 
           return (
-            <div key={field.label}>
-              <span>{field.label}</span>
-              <strong>{field.value}</strong>
-              <small>{field.meta}</small>
-              <Icon size={19} aria-hidden="true" />
+            <div
+              key={field.label}
+              className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.06)] last:border-0"
+            >
+              <Icon size={19} aria-hidden="true" className="text-[#525252] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-[12px] text-[#666] block">{field.label}</span>
+                <strong className="text-[14px] font-medium text-white block truncate">
+                  {field.value}
+                </strong>
+              </div>
+              <small className="text-[11px] text-[#525252] shrink-0">{field.meta}</small>
             </div>
           );
         })}
       </div>
 
-      <div className="login-session-actions">
-        <a className="primary-button auth-primary-button" href={returnTo}>
+      <div className="flex flex-col gap-3">
+        <a
+          className="bg-[#0075ff] hover:bg-[#0066e0] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] inline-flex items-center justify-center gap-2 transition-colors"
+          href={returnTo}
+        >
           <UserCircle size={17} aria-hidden="true" />
           <span>{labels.workspaceAction}</span>
         </a>
         <a
-          className="secondary-button"
+          className="bg-transparent border border-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.2)] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] inline-flex items-center justify-center gap-2 transition-colors"
           href={localizedHref("/account", locale)}
         >
           <UserRound size={17} aria-hidden="true" />
@@ -600,7 +602,7 @@ function LoginSessionCard({
         </a>
         <form action={signOutAction.bind(null, locale)}>
           <button
-            className="ghost-button ghost-button--inline login-switch-account-button"
+            className="w-full text-[#666] hover:text-white text-[13px] font-medium px-4 py-2 inline-flex items-center justify-center gap-2 transition-colors"
             type="submit"
           >
             <LogOut size={15} aria-hidden="true" />
@@ -608,7 +610,7 @@ function LoginSessionCard({
           </button>
         </form>
       </div>
-      <p className="login-session-card__note">{labels.switchAccountBody}</p>
+      <p className="text-[12px] text-[#525252] text-center">{labels.switchAccountBody}</p>
     </article>
   );
 }
@@ -640,43 +642,20 @@ function LoginRecoveryBlock({
   returnTo: string;
 }) {
   return (
-    <details className="login-recovery-details login-recovery-details--workspace">
-      <summary>
+    <details className="group border border-[rgba(255,255,255,0.06)] rounded-[10px] overflow-hidden">
+      <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer text-[13px] text-[#666] hover:text-[#999] transition-colors">
         <KeyRound size={17} aria-hidden="true" />
-        <span>{labels.recoveryTitle}</span>
-        <ChevronDown size={16} aria-hidden="true" />
+        <span className="flex-1">{labels.recoveryTitle}</span>
+        <ChevronDown size={16} aria-hidden="true" className="transition-transform group-open:rotate-180" />
       </summary>
-      <SessionLoginForm
-        locale={locale}
-        returnTo={returnTo}
-        surface="embedded"
-      />
+      <div className="px-4 pb-4">
+        <SessionLoginForm
+          locale={locale}
+          returnTo={returnTo}
+          surface="embedded"
+        />
+      </div>
     </details>
-  );
-}
-
-function LoginFooter({ labels, locale }: { labels: LoginCopy; locale: Locale }) {
-  const links = [
-    { href: localizedHref("/terms", locale), label: labels.footerPrivacy },
-    { href: localizedHref("/terms", locale), label: labels.footerTerms },
-    { href: localizedHref("/security", locale), label: labels.footerSecurity },
-    { href: localizedHref("/status", locale), label: labels.footerStatus },
-  ];
-
-  return (
-    <footer className="login-footer">
-      <span>{labels.footerCopyright}</span>
-      <nav aria-label="Login footer">
-        {links.map((link) => (
-          <a href={link.href} key={link.label}>
-            {link.label === labels.footerStatus ? (
-              <Globe2 size={14} aria-hidden="true" />
-            ) : null}
-            <span>{link.label}</span>
-          </a>
-        ))}
-      </nav>
-    </footer>
   );
 }
 

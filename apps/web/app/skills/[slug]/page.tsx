@@ -19,15 +19,15 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 import { JourneyRail } from "@/components/journey-rail";
 import { PublicAccessScope } from "@/components/public-access-scope";
-import { SiteHeader } from "@/components/site-header";
 import { SkillInstallCommandPanel } from "@/components/skill-install-command-panel";
 import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
@@ -117,12 +117,12 @@ const copy = {
     security: "Security review",
     success: "Success rate",
     support: "Support and operations",
-    supportItems: ["Version pinning supported", "Deprecation notice required", "Runtime incident reporting requires signed-in verified runtime use"],
+    supportItems: ["Version pinning supported", "Deprecation requires advance notice", "Runtime incident reporting requires sign-in and uses verified runtime path"],
     trustLevels: {
-      active: "active",
-      blocked: "blocked",
-      limited: "limited",
-      verified: "verified"
+      active: "Active",
+      blocked: "Blocked",
+      limited: "Limited",
+      verified: "Verified"
     },
     useCases: "Use cases",
     verifiedSkills: "verified skills",
@@ -133,43 +133,43 @@ const copy = {
     approval: "审核状态",
     averageRating: "平均评分",
     back: "返回市场",
-    changelog: "更新记录",
+    changelog: "更新日志",
     cli: "CLI",
     cliPreview: "CLI / SDK 预览",
-    cliPreviewStatus: "暂未作为公开的一键运行安装命令发布。",
-    contract: "运行协议",
+    cliPreviewStatus: "尚未发布为公开的复制即运行安装。",
+    contract: "运行时合约",
     feedback: "用户反馈",
-    feedbackBody: "\u5df2\u767b\u5f55\u7528\u6237\u7684\u8bc4\u4f30\u901a\u8fc7\u5ba1\u6838\u540e\u4f1a\u5728\u8fd9\u91cc\u516c\u5f00\u5c55\u793a\u3002\u5df2\u63d0\u4ea4\u4f46\u672a\u9a8c\u8bc1\u7684\u6280\u80fd\u4e0d\u53ef\u5b89\u88c5\u3002",
-    feedbackEmpty: "暂时还没有公开反馈。",
+    feedbackBody: "已发布的反馈来自经过审核的登录评估。提交的技能在验证通过前不可安装。",
+    feedbackEmpty: "暂无已发布反馈。",
     feedbackProject: "项目",
     feedbackUseCase: "使用场景",
     developerPacket: {
       billing: {
         free: "无订阅门槛",
-        per_call: "按量计费门槛",
+        per_call: "按调用计费门槛",
         subscription: "试用或订阅门槛"
       },
       body:
-        "\u8fd9\u4e2a\u5df2\u9a8c\u8bc1 listing \u53ea\u4f1a\u5728\u767b\u5f55\u540e\u8fdb\u5165\u9879\u76ee\u72b6\u6001\uff1a\u7248\u672c\u56fa\u5b9a\u3001\u7b56\u7565\u7f51\u5173\u3001\u4e00\u6b21\u53ef\u89c1\u8fd0\u884c Key\u3001\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5\uff0c\u4ee5\u53ca\u9884\u53d1\u5e03\u7684\u8ba1\u8d39\u6216\u8d26\u672c\u8bc1\u636e\u3002",
-      keyValue: "一次性展示 Key",
-      latest: "最新版本",
+        "此已验证列表只能在登录后成为项目状态，包含版本固定、策略门槛、一次性运行密钥、需登录的运行测试，以及预发布计费或账本证据（如适用）。",
+      keyValue: "一次性密钥",
+      latest: "最新",
       policy: {
-        detailHigh: "高风险能力会先停在负责人审批，批准后 agent 才能调用。",
-        detailNormal: "项目策略会记录审批、预算和运行限制，再交给 agent 使用。",
-        high: "运行前需要负责人批准",
-        label: "策略网关",
-        normal: "项目策略网关"
+        detailHigh: "高风险能力在代理调用前暂停，等待所有者审批。",
+        detailNormal: "项目策略在代理使用前记录审批、预算和运行限制。",
+        high: "运行前需所有者审批",
+        label: "策略门槛",
+        normal: "项目策略门槛"
       },
-      projectMissing: "需要先创建项目",
-      projectReady: "已有可用项目",
+      projectMissing: "需要项目",
+      projectReady: "项目可用",
       rows: {
-        contract: ["合约固定", "Schema、权限和运行时保持可检查。"],
-        key: ["运行 Key", "由项目命令中心管理。"],
-        ledger: ["\u8fd0\u884c\u8bc1\u636e\u6a21\u578b", "\u8fd0\u884c\u8bc1\u636e\u53ef\u4ee5\u8fdb\u5165\u672a\u6765\u53d1\u7968\u3001\u5ba1\u8ba1\u548c\u4ed8\u8d39\u5e02\u573a\u590d\u6838\u3002"],
-        project: ["项目状态", "保存或安装都归属到一个组织。"],
-        test: ["\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u63a7\u5236\u53f0\u6d4b\u8bd5\u9700\u8981\u767b\u5f55\uff0c\u5e76\u4f7f\u7528\u4e0e agent \u8c03\u7528\u76f8\u540c\u7684\u7f51\u5173\u8def\u5f84\u3002"]
+        contract: ["合约固定", "Schema、权限和运行时保持可查看。"],
+        key: ["运行密钥", "从项目命令中心管理。"],
+        ledger: ["运行证据模型", "运行证据可用于未来发票、审计和付费市场审核。"],
+        project: ["项目状态", "保存或安装在一个组织下。"],
+        test: ["需登录的运行测试", "控制台测试需要登录且使用与代理调用相同的网关路径。"]
       },
-      title: "\u5df2\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84\u9884\u89c8"
+      title: "已认证项目路径预览"
     },
     input: "输入示例",
     install: "安装",
@@ -181,26 +181,26 @@ const copy = {
     output: "输出示例",
     overview: "概览",
     payout: "付费市场预览",
-    payoutBody: "付费用量目前仅建模为预发布账本状态；支付扣款和自动打款启用前不会形成公开打款动作。",
+    payoutBody: "付费使用仅作为预发布账本状态建模，直到支付捕获和分成自动化启用。",
     permissions: "权限",
-    pricing: "价格",
-    publishedFeedback: "公开反馈",
+    pricing: "定价",
+    publishedFeedback: "已发布反馈",
     publisher: "发布者",
     publisherResponse: "发布者回复",
     publisherTrust: "发布者信任",
-    previewMetric: "预览中",
-    related: "替代和相似技能",
-    relatedBody: "采用到登录后的项目之前，先比较同类技能；当技能弃用、暂停或风险过高时，也能保留更安全的替换路径。",
-    relatedDetails: "打开详情",
-    relatedReasons: "推荐原因",
-    reviews: "运营备注",
+    previewMetric: "预览",
+    related: "替代方案与替换",
+    relatedBody: "在将类似技能采用到登录项目前进行比较，或为已弃用、暂停或高风险能力准备更安全的替换路径。",
+    relatedDetails: "查看详情",
+    relatedReasons: "匹配原因",
+    reviews: "运营笔记",
     runtime: "运行时",
     sdk: "SDK",
     apiInspect: "API 查看",
     security: "安全审核",
     success: "成功率",
     support: "支持和运营",
-    supportItems: ["\u652f\u6301\u7248\u672c\u56fa\u5b9a", "\u5e9f\u5f03\u5fc5\u987b\u63d0\u524d\u901a\u77e5", "\u8fd0\u884c\u4e8b\u6545\u4e3e\u62a5\u9700\u8981\u767b\u5f55\u4e14\u4f7f\u7528\u5df2\u9a8c\u8bc1\u8fd0\u884c\u8def\u5f84"],
+    supportItems: ["支持版本固定", "废弃必须提前通知", "运行事故举报需要登录且使用已验证运行路径"],
     trustLevels: {
       active: "活跃",
       blocked: "已阻断",
@@ -220,8 +220,6 @@ export function generateStaticParams() {
 export default async function SkillDetailPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
   const locale = getLocaleFromSearchParams(search);
-  const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const [skill, projects, relatedSkills, feedbackData, session] = await Promise.all([
     getPublicMarketplaceSkill(slug),
     getDeveloperProjects(),
@@ -291,56 +289,54 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const availableCommandRows = skillActionState.canShowProjectHandoff ? installRows : publicInspectRows;
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="marketplace" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname={`/skills/${skill.slug}`} />
-
-      <section className="skill-detail-hero">
-        <div>
-          <a className="breadcrumb-link" href={localizedHref("/marketplace", locale)}>
+    <AppShell active="skills" locale={locale}>
+      <section className="section pt-16 pb-12">
+        <div className="section-inner">
+          <a className="btn-text text-[#999] hover:text-white text-sm mb-4 inline-block" href={localizedHref("/marketplace", locale)}>
             {labels.back}
           </a>
           <div className="eyebrow">
             <PackageCheck size={16} aria-hidden="true" />
             <span>{localizeText(skill.category, locale)}</span>
           </div>
-          <h1>{localizeText(skill.name, locale)}</h1>
-          <p>{localizeText(skill.summary, locale)}</p>
-          <div className="hero-actions">
-            <a className="primary-button primary-button--large" href="#install">
+          <h1 className="heading-xl mt-2">{localizeText(skill.name, locale)}</h1>
+          <p className="body-text text-[#999] mt-3 max-w-[720px]">{localizeText(skill.summary, locale)}</p>
+          <div className="flex items-center gap-3 mt-6 flex-wrap">
+            <a className="btn-primary btn-primary--large" href="#install">
               <Terminal size={18} aria-hidden="true" />
               <span>{skillActionState.sectionTitle[locale]}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref(developerAccessHref, locale)}>
+            <a className="btn-secondary btn-secondary--large" href={localizedHref(developerAccessHref, locale)}>
               <DeveloperAccessIcon size={18} aria-hidden="true" />
               <span>{developerAccessLabel}</span>
             </a>
           </div>
         </div>
 
-        <aside className="skill-status-panel">
-          <div className="skill-status-panel__top">
-            <BadgeCheck size={20} aria-hidden="true" />
+        <aside className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 mt-8 max-w-[1200px] mx-auto px-6">
+          <div className="flex items-center gap-3 mb-4">
+            <BadgeCheck size={20} aria-hidden="true" className="text-[#10b981]" />
             <div>
-              <span>{labels.approval}</span>
-              <strong>{localizeText(skill.verification, locale)}</strong>
+              <span className="body-text-sm text-[#999]">{labels.approval}</span>
+              <strong className="block text-white">{localizeText(skill.verification, locale)}</strong>
             </div>
           </div>
-          <div className="skill-status-grid">
-            <div>
-              <span>{labels.success}</span>
-              <strong>{formatMetricValue(skill.successRate, locale)}</strong>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="stat-card">
+              <span className="text-[#999] text-xs">{labels.success}</span>
+              <strong className="text-white">{formatMetricValue(skill.successRate, locale)}</strong>
             </div>
-            <div>
-              <span>{labels.latency}</span>
-              <strong>{formatMetricValue(skill.latency, locale)}</strong>
+            <div className="stat-card">
+              <span className="text-[#999] text-xs">{labels.latency}</span>
+              <strong className="text-white">{formatMetricValue(skill.latency, locale)}</strong>
             </div>
-            <div>
-              <span>{labels.installs}</span>
-              <strong>{skill.installs}</strong>
+            <div className="stat-card">
+              <span className="text-[#999] text-xs">{labels.installs}</span>
+              <strong className="text-white">{skill.installs}</strong>
             </div>
-            <div>
-              <span>{labels.runtime}</span>
-              <strong>{skill.runtime}</strong>
+            <div className="stat-card">
+              <span className="text-[#999] text-xs">{labels.runtime}</span>
+              <strong className="text-white">{skill.runtime}</strong>
             </div>
           </div>
         </aside>
@@ -357,361 +353,363 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         locale={locale}
       />
 
-      <section className="skill-detail-layout">
-        <div className="skill-detail-main">
-          <article className="skill-detail-panel" id="install">
-            <div className="card-kicker">
-              <Terminal size={16} aria-hidden="true" />
-              <span>{skillActionState.sectionTitle[locale]}</span>
-            </div>
-            <SkillInstallCommandPanel
-              availabilityMessage={skillActionState.summary[locale]}
-              billingModel={skill.billing}
-              commands={availableCommandRows}
-              installable={isSkillInstallable}
-              installLockedReason={skillAvailability.reason[locale]}
-              lastReviewed={skill.lastReviewed}
-              latestVersion={latestVersion}
-              locale={locale}
-              projectCount={developerProjects.length}
-              readinessTitle={skillActionState.readinessTitle[locale]}
-              risk={skill.risk}
-              runtime={skill.runtime}
-              showCommands={skillActionState.canInspectPublicly}
-              verificationLabel={localizeText(skill.verification, locale)}
-              verificationLabelEn={skill.verification.en}
-            />
-            {skillActionState.canShowProjectHandoff ? (
-              <>
-                <DeveloperHandoffPacket
-                  billingModel={skill.billing}
-                  latestVersion={latestVersion}
-                  locale={locale}
-                  projectCount={developerProjects.length}
-                  risk={skill.risk}
-                  runtime={skill.runtime}
-                />
-                <SkillProjectActionPanel
-                  billingModel={skill.billing}
-                  canOperate={hasDeveloperAccess && isSkillInstallable}
-                  dashboardHref={localizedHref("/developer", locale)}
-                  inputExample={skill.inputExample}
-                  latestVersion={latestVersion}
-                  locale={locale}
-                  lockedBody={
-                    locale === "zh"
-                      ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
-                      : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
-                  }
-                  lockedCtaHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
-                  lockedCtaLabel={
-                    hasWorkspaceSession
-                      ? locale === "zh"
-                        ? "查看账号角色"
-                        : "Check account roles"
-                      : locale === "zh"
-                        ? "先登录"
-                        : "Sign in"
-                  }
-                  lockedTitle={
-                    hasWorkspaceSession
-                      ? locale === "zh"
-                        ? "需要开发者角色"
-                        : "Developer role required"
-                      : locale === "zh"
-                        ? "需要先登录"
-                        : "Sign-in required"
-                  }
-                  projects={developerProjects}
-                  showHandoff={skillActionState.canShowProjectHandoff}
-                  skillName={localizeText(skill.name, locale)}
-                  skillSlug={skill.slug}
-                />
-              </>
-            ) : (
-              <SkillInspectionOnlyNotice locale={locale} />
-            )}
-          </article>
-
-          <article className="skill-detail-panel">
-            <div className="card-kicker">
-              <BookOpenCheck size={16} aria-hidden="true" />
-              <span>{labels.useCases}</span>
-            </div>
-            <div className="use-case-list">
-              {skill.useCases.map((item) => (
-                <div className="use-case-row" key={localizeText(item, locale)}>
-                  <CheckCircle2 size={16} aria-hidden="true" />
-                  <span>{localizeText(item, locale)}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="skill-detail-panel">
-            <div className="card-kicker">
-              <FileJson size={16} aria-hidden="true" />
-              <span>{labels.contract}</span>
-            </div>
-            <div className="schema-grid">
-              <div className="code-panel">
-                <div className="code-panel__bar">
-                  <span>{labels.input}</span>
-                  <span>JSON</span>
-                </div>
-                <pre>
-                  <code>{skill.inputExample}</code>
-                </pre>
+      <section className="section py-12">
+        <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+          <div className="flex flex-col gap-8">
+            <article className="card" id="install">
+              <div className="eyebrow">
+                <Terminal size={16} aria-hidden="true" />
+                <span>{skillActionState.sectionTitle[locale]}</span>
               </div>
-              <div className="code-panel">
-                <div className="code-panel__bar">
-                  <span>{labels.output}</span>
-                  <span>JSON</span>
-                </div>
-                <pre>
-                  <code>{skill.outputExample}</code>
-                </pre>
-              </div>
-            </div>
-          </article>
-
-          <article className="skill-detail-panel">
-            <div className="card-kicker">
-              <ShieldCheck size={16} aria-hidden="true" />
-              <span>{labels.security}</span>
-            </div>
-            <div className="security-grid">
-              {skill.securityReport.map((item) => (
-                <div className="security-row" key={localizeText(item.label, locale)}>
-                  <strong>{localizeText(item.label, locale)}</strong>
-                  <span>{localizeText(item.value, locale)}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="skill-detail-panel">
-            <div className="card-kicker">
-              <MessageSquareText size={16} aria-hidden="true" />
-              <span>{labels.feedback}</span>
-            </div>
-            <p className="skill-feedback-intro">{labels.feedbackBody}</p>
-            <div className="skill-feedback-summary-grid">
-              <div>
-                <strong>{feedbackData.summary.averageRating ? `${feedbackData.summary.averageRating}/5` : "n/a"}</strong>
-                <span>{labels.averageRating}</span>
-              </div>
-              <div>
-                <strong>{feedbackData.summary.publishedCount}</strong>
-                <span>{labels.publishedFeedback}</span>
-              </div>
-            </div>
-            <div className="skill-feedback-list">
-              {feedbackData.feedback.length > 0 ? (
-                feedbackData.feedback.map((feedback) => (
-                  <section className="skill-feedback-row" key={feedback.id}>
-                    <header>
-                      <div>
-                        <strong>{feedback.title}</strong>
-                        <span>
-                          {feedback.reviewerOrganizationName ?? feedback.reviewerDisplayName ?? labels.anonymousReviewer}
-                        </span>
-                      </div>
-                      <div className="skill-feedback-stars" aria-label={`${feedback.rating} / 5`}>
-                        {Array.from({ length: 5 }, (_, index) => (
-                          <Star
-                            key={index}
-                            size={15}
-                            aria-hidden="true"
-                            fill={index < feedback.rating ? "currentColor" : "none"}
-                          />
-                        ))}
-                      </div>
-                    </header>
-                    <p>{feedback.body}</p>
-                    {feedback.publisherResponseBody ? (
-                      <div className="skill-feedback-publisher-response">
-                        <strong>{labels.publisherResponse}</strong>
-                        <p>{feedback.publisherResponseBody}</p>
-                        {feedback.publisherRespondedAt ? <small>{formatDate(feedback.publisherRespondedAt, locale)}</small> : null}
-                      </div>
-                    ) : null}
-                    <div className="skill-feedback-meta">
-                      <span>
-                        <strong>{labels.feedbackUseCase}</strong>
-                        {feedback.useCase ?? "n/a"}
-                      </span>
-                      {feedback.projectSlug ? (
-                        <span>
-                          <strong>{labels.feedbackProject}</strong>
-                          {feedback.projectSlug}
-                        </span>
-                      ) : null}
-                    </div>
-                  </section>
-                ))
+              <SkillInstallCommandPanel
+                availabilityMessage={skillActionState.summary[locale]}
+                billingModel={skill.billing}
+                commands={availableCommandRows}
+                installable={isSkillInstallable}
+                installLockedReason={skillAvailability.reason[locale]}
+                lastReviewed={skill.lastReviewed}
+                latestVersion={latestVersion}
+                locale={locale}
+                projectCount={developerProjects.length}
+                readinessTitle={skillActionState.readinessTitle[locale]}
+                risk={skill.risk}
+                runtime={skill.runtime}
+                showCommands={skillActionState.canInspectPublicly}
+                verificationLabel={localizeText(skill.verification, locale)}
+                verificationLabelEn={skill.verification.en}
+              />
+              {skillActionState.canShowProjectHandoff ? (
+                <>
+                  <DeveloperHandoffPacket
+                    billingModel={skill.billing}
+                    latestVersion={latestVersion}
+                    locale={locale}
+                    projectCount={developerProjects.length}
+                    risk={skill.risk}
+                    runtime={skill.runtime}
+                  />
+                  <SkillProjectActionPanel
+                    billingModel={skill.billing}
+                    canOperate={hasDeveloperAccess && isSkillInstallable}
+                    dashboardHref={localizedHref("/developer", locale)}
+                    inputExample={skill.inputExample}
+                    latestVersion={latestVersion}
+                    locale={locale}
+                    lockedBody={
+                      locale === "zh"
+                        ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
+                        : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
+                    }
+                    lockedCtaHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+                    lockedCtaLabel={
+                      hasWorkspaceSession
+                        ? locale === "zh"
+                          ? "查看账号角色"
+                          : "Check account roles"
+                        : locale === "zh"
+                          ? "先登录"
+                          : "Sign in"
+                    }
+                    lockedTitle={
+                      hasWorkspaceSession
+                        ? locale === "zh"
+                          ? "需要开发者角色"
+                          : "Developer role required"
+                        : locale === "zh"
+                          ? "需要先登录"
+                          : "Sign-in required"
+                    }
+                    projects={developerProjects}
+                    showHandoff={skillActionState.canShowProjectHandoff}
+                    skillName={localizeText(skill.name, locale)}
+                    skillSlug={skill.slug}
+                  />
+                </>
               ) : (
-                <p className="skill-feedback-empty">{labels.feedbackEmpty}</p>
+                <SkillInspectionOnlyNotice locale={locale} />
               )}
-            </div>
-          </article>
+            </article>
 
-          <SkillFeedbackForm
-            canSubmit={Boolean(session.subject)}
-            locale={locale}
-            skillName={localizeText(skill.name, locale)}
-            skillSlug={skill.slug}
-          />
-
-          {relatedSkills.length > 0 ? (
-            <article className="skill-detail-panel">
-              <div className="card-kicker">
-                <PackageSearch size={16} aria-hidden="true" />
-                <span>{labels.related}</span>
+            <article className="card">
+              <div className="eyebrow">
+                <BookOpenCheck size={16} aria-hidden="true" />
+                <span>{labels.useCases}</span>
               </div>
-              <p className="related-skill-intro">{labels.relatedBody}</p>
-              <div className="related-skill-list">
-                {relatedSkills.map((suggestion) => {
-                  const relatedInstallState = getSkillInstallState(suggestion.skill.verification.en);
-
-                  return (
-                    <section className="related-skill-row" key={suggestion.skill.slug}>
-                      <header className="related-skill-row__head">
-                        <div>
-                          <strong>{localizeText(suggestion.skill.name, locale)}</strong>
-                          <span>{localizeText(suggestion.skill.summary, locale)}</span>
-                        </div>
-                        <span className={`risk-badge risk-badge--${suggestion.skill.risk}`}>{suggestion.skill.risk}</span>
-                      </header>
-
-                      <div className="related-skill-meta">
-                        <span>{localizeText(suggestion.skill.category, locale)}</span>
-                        <span>{suggestion.skill.runtime}</span>
-                        <span>{suggestion.skill.price[locale]}</span>
-                        <span>{localizeText(suggestion.skill.verification, locale)}</span>
-                      </div>
-
-                      <div className="related-skill-reasons" aria-label={labels.relatedReasons}>
-                        {suggestion.reasons[locale].map((reason) => (
-                          <span key={reason}>
-                            <BadgeCheck size={13} aria-hidden="true" />
-                            {reason}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="related-skill-command">
-                        <code>{relatedInstallState.installable ? suggestion.skill.installsCommand.cli : relatedInstallState.reason[locale]}</code>
-                        <a className="secondary-button secondary-button--compact" href={localizedHref(`/skills/${suggestion.skill.slug}`, locale)}>
-                          <ShieldCheck size={15} aria-hidden="true" />
-                          <span>{labels.relatedDetails}</span>
-                        </a>
-                      </div>
-                    </section>
-                  );
-                })}
+              <div className="flex flex-col gap-3 mt-4">
+                {skill.useCases.map((item) => (
+                  <div className="flex items-start gap-2 text-[#999]" key={localizeText(item, locale)}>
+                    <CheckCircle2 size={16} aria-hidden="true" className="text-[#10b981] mt-0.5 shrink-0" />
+                    <span className="body-text-sm">{localizeText(item, locale)}</span>
+                  </div>
+                ))}
               </div>
             </article>
-          ) : null}
 
-          <SkillAbuseReportForm
-            canSubmit={Boolean(session.subject)}
-            locale={locale}
-            skillName={localizeText(skill.name, locale)}
-            skillSlug={skill.slug}
-          />
-        </div>
-
-        <aside className="skill-detail-side">
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <Building2 size={16} aria-hidden="true" />
-              <span>{labels.publisher}</span>
-            </div>
-            <div className="skill-publisher-card">
-              <strong>{publisherProfile?.displayName ?? skill.author}</strong>
-              <span>{labels.publisherTrust}</span>
-              <div className="skill-publisher-card__badges">
-                {publisherProfile ? <span className={publisherTrustClass(publisherProfile.trustLevel)}>{labels.trustLevels[publisherProfile.trustLevel]}</span> : null}
-                {publisherProfile ? <span className="status-chip status-chip--neutral">{publisherProfile.metrics.verifiedSkillCount} {labels.verifiedSkills}</span> : null}
+            <article className="card">
+              <div className="eyebrow">
+                <FileJson size={16} aria-hidden="true" />
+                <span>{labels.contract}</span>
               </div>
-              {publisherProfile ? (
-                <a className="ghost-button ghost-button--inline" href={localizedHref(`/publishers/${publisherProfile.slug}`, locale)}>
-                  <Building2 size={15} aria-hidden="true" />
-                  <span>{labels.viewPublisher}</span>
-                </a>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <WalletCards size={16} aria-hidden="true" />
-              <span>{labels.pricing}</span>
-            </div>
-            <div className="price-block">
-              <strong>{skill.price[locale]}</strong>
-              <span>{pricingPreviewBody(skill.billing, skillAvailability.kind, locale)}</span>
-            </div>
-          </section>
-
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <KeyRound size={16} aria-hidden="true" />
-              <span>{labels.permissions}</span>
-            </div>
-            <div className="permission-list">
-              {skill.permissions.map((permission) => (
-                <div className="permission-row" key={permission.key}>
-                  <strong>{localizeText(permission.label, locale)}</strong>
-                  <span>{localizeText(permission.value, locale)}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="code-block">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)]">
+                    <span className="text-xs text-[#999]">{labels.input}</span>
+                    <span className="text-xs text-[#525252]">JSON</span>
+                  </div>
+                  <pre className="p-4 text-sm overflow-x-auto">
+                    <code>{skill.inputExample}</code>
+                  </pre>
                 </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <History size={16} aria-hidden="true" />
-              <span>{labels.changelog}</span>
-            </div>
-            <div className="changelog-list">
-              {skill.changelog.map((item) => (
-                <div className="changelog-row" key={item.version}>
-                  <strong>{item.version}</strong>
-                  <span>{localizeText(item.note, locale)}</span>
+                <div className="code-block">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)]">
+                    <span className="text-xs text-[#999]">{labels.output}</span>
+                    <span className="text-xs text-[#525252]">JSON</span>
+                  </div>
+                  <pre className="p-4 text-sm overflow-x-auto">
+                    <code>{skill.outputExample}</code>
+                  </pre>
                 </div>
-              ))}
-            </div>
-          </section>
+              </div>
+            </article>
 
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <Star size={16} aria-hidden="true" />
-              <span>{labels.reviews}</span>
-            </div>
-            {skill.reviews.map((review) => (
-              <blockquote className="operator-note" key={review.author}>
-                <p>{localizeText(review.quote, locale)}</p>
-                <cite>{review.author}</cite>
-              </blockquote>
-            ))}
-          </section>
+            <article className="card">
+              <div className="eyebrow">
+                <ShieldCheck size={16} aria-hidden="true" />
+                <span>{labels.security}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                {skill.securityReport.map((item) => (
+                  <div className="flex flex-col gap-1" key={localizeText(item.label, locale)}>
+                    <strong className="text-sm text-white">{localizeText(item.label, locale)}</strong>
+                    <span className="text-sm text-[#999]">{localizeText(item.value, locale)}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
 
-          <section className="skill-detail-panel">
-            <div className="card-kicker">
-              <Code2 size={16} aria-hidden="true" />
-              <span>{labels.support}</span>
-            </div>
-            <div className="support-list">
-              {labels.supportItems.map((item) => (
-                <span key={item}>{item}</span>
+            <article className="card">
+              <div className="eyebrow">
+                <MessageSquareText size={16} aria-hidden="true" />
+                <span>{labels.feedback}</span>
+              </div>
+              <p className="body-text-sm text-[#999] mt-3">{labels.feedbackBody}</p>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="stat-card">
+                  <strong className="text-white text-lg">{feedbackData.summary.averageRating ? `${feedbackData.summary.averageRating}/5` : "n/a"}</strong>
+                  <span className="text-[#999] text-xs">{labels.averageRating}</span>
+                </div>
+                <div className="stat-card">
+                  <strong className="text-white text-lg">{feedbackData.summary.publishedCount}</strong>
+                  <span className="text-[#999] text-xs">{labels.publishedFeedback}</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 mt-6">
+                {feedbackData.feedback.length > 0 ? (
+                  feedbackData.feedback.map((feedback) => (
+                    <section className="bg-black border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4" key={feedback.id}>
+                      <header className="flex items-start justify-between gap-4">
+                        <div>
+                          <strong className="text-white text-sm">{feedback.title}</strong>
+                          <span className="block text-[#666] text-xs mt-0.5">
+                            {feedback.reviewerOrganizationName ?? feedback.reviewerDisplayName ?? labels.anonymousReviewer}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-0.5 text-[#0075ff]" aria-label={`${feedback.rating} / 5`}>
+                          {Array.from({ length: 5 }, (_, index) => (
+                            <Star
+                              key={index}
+                              size={15}
+                              aria-hidden="true"
+                              fill={index < feedback.rating ? "currentColor" : "none"}
+                            />
+                          ))}
+                        </div>
+                      </header>
+                      <p className="body-text-sm text-[#999] mt-3">{feedback.body}</p>
+                      {feedback.publisherResponseBody ? (
+                        <div className="mt-3 pl-3 border-l-2 border-[rgba(255,255,255,0.08)]">
+                          <strong className="text-xs text-[#666]">{labels.publisherResponse}</strong>
+                          <p className="body-text-sm text-[#999] mt-1">{feedback.publisherResponseBody}</p>
+                          {feedback.publisherRespondedAt ? <small className="text-xs text-[#525252] mt-1 block">{formatDate(feedback.publisherRespondedAt, locale)}</small> : null}
+                        </div>
+                      ) : null}
+                      <div className="flex flex-wrap gap-4 mt-3 text-xs text-[#666]">
+                        <span>
+                          <strong className="text-[#999]">{labels.feedbackUseCase}</strong>{" "}
+                          {feedback.useCase ?? "n/a"}
+                        </span>
+                        {feedback.projectSlug ? (
+                          <span>
+                            <strong className="text-[#999]">{labels.feedbackProject}</strong>{" "}
+                            {feedback.projectSlug}
+                          </span>
+                        ) : null}
+                      </div>
+                    </section>
+                  ))
+                ) : (
+                  <p className="body-text-sm text-[#525252]">{labels.feedbackEmpty}</p>
+                )}
+              </div>
+            </article>
+
+            <SkillFeedbackForm
+              canSubmit={Boolean(session.subject)}
+              locale={locale}
+              skillName={localizeText(skill.name, locale)}
+              skillSlug={skill.slug}
+            />
+
+            {relatedSkills.length > 0 ? (
+              <article className="card">
+                <div className="eyebrow">
+                  <PackageSearch size={16} aria-hidden="true" />
+                  <span>{labels.related}</span>
+                </div>
+                <p className="body-text-sm text-[#999] mt-3">{labels.relatedBody}</p>
+                <div className="flex flex-col gap-4 mt-4">
+                  {relatedSkills.map((suggestion) => {
+                    const relatedInstallState = getSkillInstallState(suggestion.skill.verification.en);
+
+                    return (
+                      <section className="bg-black border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4" key={suggestion.skill.slug}>
+                        <header className="flex items-start justify-between gap-3">
+                          <div>
+                            <strong className="text-white text-sm">{localizeText(suggestion.skill.name, locale)}</strong>
+                            <span className="block text-[#666] text-xs mt-0.5">{localizeText(suggestion.skill.summary, locale)}</span>
+                          </div>
+                          <span className={`pill ${suggestion.skill.risk === "high" ? "pill--danger" : suggestion.skill.risk === "medium" ? "pill--warning" : "pill--success"}`}>{suggestion.skill.risk}</span>
+                        </header>
+
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          <span className="pill pill--neutral">{localizeText(suggestion.skill.category, locale)}</span>
+                          <span className="pill pill--neutral">{suggestion.skill.runtime}</span>
+                          <span className="pill pill--neutral">{suggestion.skill.price[locale]}</span>
+                          <span className="pill pill--neutral">{localizeText(suggestion.skill.verification, locale)}</span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mt-3" aria-label={labels.relatedReasons}>
+                          {suggestion.reasons[locale].map((reason) => (
+                            <span className="flex items-center gap-1 text-xs text-[#10b981]" key={reason}>
+                              <BadgeCheck size={13} aria-hidden="true" />
+                              {reason}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-[rgba(255,255,255,0.08)]">
+                          <code className="text-xs text-[#999] truncate">{relatedInstallState.installable ? suggestion.skill.installsCommand.cli : relatedInstallState.reason[locale]}</code>
+                          <a className="btn-secondary shrink-0 text-xs" href={localizedHref(`/skills/${suggestion.skill.slug}`, locale)}>
+                            <ShieldCheck size={15} aria-hidden="true" />
+                            <span>{labels.relatedDetails}</span>
+                          </a>
+                        </div>
+                      </section>
+                    );
+                  })}
+                </div>
+              </article>
+            ) : null}
+
+            <SkillAbuseReportForm
+              canSubmit={Boolean(session.subject)}
+              locale={locale}
+              skillName={localizeText(skill.name, locale)}
+              skillSlug={skill.slug}
+            />
+          </div>
+
+          <aside className="flex flex-col gap-6">
+            <section className="card">
+              <div className="eyebrow">
+                <Building2 size={16} aria-hidden="true" />
+                <span>{labels.publisher}</span>
+              </div>
+              <div className="mt-4">
+                <strong className="text-white block">{publisherProfile?.displayName ?? skill.author}</strong>
+                <span className="text-xs text-[#666] block mt-1">{labels.publisherTrust}</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {publisherProfile ? <span className={`pill ${publisherProfile.trustLevel === "verified" ? "pill--success" : publisherProfile.trustLevel === "blocked" ? "pill--danger" : publisherProfile.trustLevel === "limited" ? "pill--warning" : "pill--neutral"}`}>{labels.trustLevels[publisherProfile.trustLevel]}</span> : null}
+                  {publisherProfile ? <span className="pill pill--neutral">{publisherProfile.metrics.verifiedSkillCount} {labels.verifiedSkills}</span> : null}
+                </div>
+                {publisherProfile ? (
+                  <a className="btn-text text-sm mt-3 inline-flex items-center gap-1.5" href={localizedHref(`/publishers/${publisherProfile.slug}`, locale)}>
+                    <Building2 size={15} aria-hidden="true" />
+                    <span>{labels.viewPublisher}</span>
+                  </a>
+                ) : null}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="eyebrow">
+                <WalletCards size={16} aria-hidden="true" />
+                <span>{labels.pricing}</span>
+              </div>
+              <div className="mt-4">
+                <strong className="text-white text-lg block">{skill.price[locale]}</strong>
+                <span className="text-sm text-[#999] block mt-1">{pricingPreviewBody(skill.billing, skillAvailability.kind, locale)}</span>
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="eyebrow">
+                <KeyRound size={16} aria-hidden="true" />
+                <span>{labels.permissions}</span>
+              </div>
+              <div className="flex flex-col gap-3 mt-4">
+                {skill.permissions.map((permission) => (
+                  <div className="flex flex-col gap-0.5" key={permission.key}>
+                    <strong className="text-sm text-white">{localizeText(permission.label, locale)}</strong>
+                    <span className="text-xs text-[#999]">{localizeText(permission.value, locale)}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="eyebrow">
+                <History size={16} aria-hidden="true" />
+                <span>{labels.changelog}</span>
+              </div>
+              <div className="flex flex-col gap-3 mt-4">
+                {skill.changelog.map((item) => (
+                  <div className="flex flex-col gap-0.5" key={item.version}>
+                    <strong className="text-sm text-white">{item.version}</strong>
+                    <span className="text-xs text-[#999]">{localizeText(item.note, locale)}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card">
+              <div className="eyebrow">
+                <Star size={16} aria-hidden="true" />
+                <span>{labels.reviews}</span>
+              </div>
+              {skill.reviews.map((review) => (
+                <blockquote className="mt-4 pl-3 border-l-2 border-[rgba(255,255,255,0.08)]" key={review.author}>
+                  <p className="body-text-sm text-[#999] italic">{localizeText(review.quote, locale)}</p>
+                  <cite className="block text-xs text-[#525252] mt-1 not-italic">{review.author}</cite>
+                </blockquote>
               ))}
-            </div>
-          </section>
-        </aside>
+            </section>
+
+            <section className="card">
+              <div className="eyebrow">
+                <Code2 size={16} aria-hidden="true" />
+                <span>{labels.support}</span>
+              </div>
+              <div className="flex flex-col gap-2 mt-4">
+                {labels.supportItems.map((item) => (
+                  <span className="body-text-sm text-[#999]" key={item}>{item}</span>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </div>
       </section>
-    </main>
+    </AppShell>
   );
 }
 
@@ -773,20 +771,18 @@ function DeveloperHandoffPacket({
   ];
 
   return (
-    <div className="skill-developer-handoff-packet">
-      <div className="skill-developer-handoff-packet__head">
-        <div>
-          <strong>{labels.title}</strong>
-          <p>{labels.body}</p>
-        </div>
+    <div className="mt-6 border border-[rgba(255,255,255,0.08)] rounded-[12px] overflow-hidden">
+      <div className="p-4 border-b border-[rgba(255,255,255,0.08)]">
+        <strong className="text-white text-sm block">{labels.title}</strong>
+        <p className="body-text-sm text-[#999] mt-1">{labels.body}</p>
       </div>
-      <div className="skill-developer-handoff-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[rgba(255,255,255,0.08)]">
         {rows.map((row) => (
-          <div className="skill-developer-handoff-row" key={row.label}>
-            <span className="skill-developer-handoff-row__icon">{row.icon}</span>
-            <span className={row.tone === "warning" ? "status-chip status-chip--warning" : "status-chip"}>{row.label}</span>
-            <strong>{row.value}</strong>
-            <small>{row.detail}</small>
+          <div className="bg-[#212121] p-4 flex flex-col gap-1" key={row.label}>
+            <span className="text-[#0075ff]">{row.icon}</span>
+            <span className={`pill ${row.tone === "warning" ? "pill--warning" : "pill--success"} w-fit`}>{row.label}</span>
+            <strong className="text-white text-sm">{row.value}</strong>
+            <small className="text-xs text-[#525252]">{row.detail}</small>
           </div>
         ))}
       </div>
@@ -796,10 +792,10 @@ function DeveloperHandoffPacket({
 
 function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
   return (
-    <div className="skill-action-locked">
-      <ShieldCheck size={18} aria-hidden="true" />
-      <strong>{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
-      <p>
+    <div className="mt-4 p-4 border border-[rgba(255,255,255,0.08)] rounded-[12px] flex flex-col gap-2">
+      <ShieldCheck size={18} aria-hidden="true" className="text-[#999]" />
+      <strong className="text-white text-sm">{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
+      <p className="body-text-sm text-[#999]">
         {locale === "zh"
           ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目采用、运行测试、订阅、计费和账本动作只会在 verified 审核通过后开放。"
           : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Project adoption, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
@@ -831,9 +827,11 @@ function pricingPreviewBody(
 }
 
 function formatMetricValue(value: string | null | undefined, locale: Locale) {
-  const normalized = value?.trim().toLowerCase();
+  if (!value) {
+    return "n/a";
+  }
 
-  if (!normalized || normalized === "n/a" || normalized === "--") {
+  if (value === "preview") {
     return copy[locale].previewMetric;
   }
 
@@ -860,16 +858,16 @@ function formatDate(value: string, locale: "en" | "zh") {
 
 function publisherTrustClass(trustLevel: "verified" | "active" | "limited" | "blocked") {
   if (trustLevel === "verified") {
-    return "status-chip";
+    return "pill pill--success";
   }
 
   if (trustLevel === "blocked") {
-    return "status-chip status-chip--danger";
+    return "pill pill--danger";
   }
 
   if (trustLevel === "limited") {
-    return "status-chip status-chip--warning";
+    return "pill pill--warning";
   }
 
-  return "status-chip status-chip--neutral";
+  return "pill pill--neutral";
 }

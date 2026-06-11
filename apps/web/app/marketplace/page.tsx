@@ -17,11 +17,11 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { PublicAccessScope } from "@/components/public-access-scope";
-import { SiteHeader } from "@/components/site-header";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
@@ -217,13 +217,13 @@ const pageCopy = {
         "这些预览信号来自 platform overview API，用来解释从发现到运行的架构；付费市场运营仍处于预发布阶段。",
       metrics: {
         activeSubscriptions: "活跃订阅",
-        paidPreview: "\u4ed8\u8d39\u9884\u89c8",
+        paidPreview: "付费预览",
         failedChecks: "失败检查",
         installedSkills: "已采用技能",
         openBuyerRequests: "买方需求",
-        payoutGovernance: "\u8d22\u52a1\u590d\u6838\u6cbb\u7406",
+        payoutGovernance: "财务复核治理",
         projects: "项目",
-        notificationGovernance: "\u901a\u77e5\u6cbb\u7406",
+        notificationGovernance: "通知治理",
         reviewQueue: "审核队列",
         savedSkills: "收藏技能",
         submittedVersions: "提交版本",
@@ -293,7 +293,7 @@ const pageCopy = {
       callable: "可调用技能",
       calls: "已记录调用",
       feedback: "反馈信号",
-      submitted: "\u5df2\u63d0\u4ea4\u6280\u80fd"
+      submitted: "已提交技能"
     },
     loopLedgerTitle: "团队可回访的信息",
     loopLedgerRows: [
@@ -327,15 +327,20 @@ function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
     "Hold for finance transfer review": "暂停并做财务转账复核",
     "Improve listing quality": "提升上架质量",
     "Medium risk approved": "中风险已批准",
-    "Owner approval required": "需要负责人批准",
-    "Pricing approval": "价格批准",
-    "Require owner approval": "要求负责人批准",
-    "Restricted launch": "受限上线",
-    "Review CRM token scope": "审核 CRM token 范围",
-    "Runtime error spike": "运行错误激增",
+    "Network access flagged": "网络访问已标记",
+    "New payout threshold": "新提现门槛",
+    "Pending buyer approval": "待买方批准",
+    "Pending publisher update": "待发布者更新",
+    "Prepare pricing metadata": "准备价格元数据",
+    "Resubmit with changes": "修改后重新提交",
+    "Review pending": "审核中",
+    "Review runtime checks": "审核运行检查",
+    "Runtime evidence": "运行证据",
     "Submit for review": "提交审核",
-    "Throttle and notify publisher": "限流并通知发布者",
-    "Unusual payout request": "付费预览财务复核",
+    approved: "已批准",
+    critical: "严重",
+    draft: "草稿",
+    global: "全局",
     high: "高",
     info: "信息",
     medium: "中",
@@ -355,7 +360,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = pageCopy[locale];
   const initialFilters: MarketplaceInitialFilterState = {
     category: firstSearchParam(params, "category"),
@@ -409,7 +413,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       metrics: [
         [labels.overview.metrics.submittedVersions, getOverviewMetric(overview.publisher.metrics, "Submitted versions", "0")],
         [labels.overview.metrics.failedChecks, getOverviewMetric(overview.publisher.metrics, "Runtime checks failed", "0")],
-        [labels.overview.metrics.paidPreview, locale === "zh" ? "\u9884\u53d1\u5e03" : "Prelaunch"]
+        [labels.overview.metrics.paidPreview, locale === "zh" ? "预发布" : "Prelaunch"]
       ],
       rows: overview.publisher.reviewPipeline.slice(0, 3).map((row) => ({
         detail: `${labels.overview.queueLabels.stage}: ${formatQueueValue(row.stage, locale)}`,
@@ -422,9 +426,9 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     {
       empty: labels.overview.roles.admin.empty,
       metrics: [
-        [labels.overview.metrics.reviewQueue, locale === "zh" ? "\u540e\u53f0\u95e8\u63a7" : "Admin gated"],
-        [labels.overview.metrics.payoutGovernance, locale === "zh" ? "\u9884\u53d1\u5e03" : "Prelaunch"],
-        [labels.overview.metrics.notificationGovernance, locale === "zh" ? "\u540e\u53f0\u95e8\u63a7" : "Admin gated"]
+        [labels.overview.metrics.reviewQueue, locale === "zh" ? "后台门控" : "Admin gated"],
+        [labels.overview.metrics.payoutGovernance, locale === "zh" ? "预发布" : "Prelaunch"],
+        [labels.overview.metrics.notificationGovernance, locale === "zh" ? "后台门控" : "Admin gated"]
       ],
       rows: overview.admin.riskQueue.slice(0, 3).map((row) => ({
         detail: `${labels.overview.queueLabels.scope}: ${formatQueueValue(row.scope, locale)}`,
@@ -437,67 +441,73 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   ];
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="marketplace" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/marketplace" />
-
-      <section className="market-hero" aria-labelledby="marketplace-heading">
-        <div className="market-hero__copy">
+    <AppShell active="marketplace" locale={locale}>
+      {/* Hero */}
+      <section className="section" aria-labelledby="marketplace-heading">
+        <div className="section-inner text-center flex flex-col items-center gap-6 py-20">
           <div className="eyebrow">
             <Store size={16} aria-hidden="true" />
             <span>{labels.eyebrow}</span>
           </div>
-          <h1 id="marketplace-heading">{labels.title}</h1>
-          <p>{labels.description}</p>
-          <div className="hero-actions">
-            <a className="primary-button primary-button--large" href="#catalog">
+          <h1 id="marketplace-heading" className="heading-xl max-w-[800px]">{labels.title}</h1>
+          <p className="body-text text-[#999] max-w-[640px]">{labels.description}</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+            <a className="btn-primary--large" href="#catalog">
               <PackageSearch size={18} aria-hidden="true" />
               <span>{labels.primary}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/publishers", locale)}>
+            <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
               <Building2 size={18} aria-hidden="true" />
               <span>{labels.directory}</span>
             </a>
-            <a className="ghost-button" href={localizedHref("/login", locale)}>
+            <a className="btn-text" href={localizedHref("/login", locale)}>
               <WalletCards size={17} aria-hidden="true" />
               <span>{labels.console}</span>
             </a>
           </div>
         </div>
 
-        <aside className="install-console">
-          <div className="install-console__bar">
-            <Terminal size={16} aria-hidden="true" />
-            <span>{labels.consoleTitle}</span>
-          </div>
-          <p>{labels.consoleSubtitle}</p>
-          <pre className="install-console__public-command">
-            <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+        {/* Install console aside */}
+        <aside className="section-inner max-w-[720px] mx-auto">
+          <div className="card p-6 flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-white text-sm font-medium">
+              <Terminal size={16} aria-hidden="true" />
+              <span>{labels.consoleTitle}</span>
+            </div>
+            <p className="body-text-sm text-[#999]">{labels.consoleSubtitle}</p>
+            <pre className="code-block">
+              <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 # ${labels.mcpMetadataNote}
 curl "https://api.useskillhub.com/mcp"`}</code>
-          </pre>
-          <div className="proof-grid">
-            {labels.proof.map((item) => (
-              <span key={item}>
-                <BadgeCheck size={14} aria-hidden="true" />
-                {item}
-              </span>
-            ))}
+            </pre>
+            <div className="flex flex-wrap gap-3">
+              {labels.proof.map((item) => (
+                <span key={item} className="flex items-center gap-1.5 text-xs text-[#10b981]">
+                  <BadgeCheck size={14} aria-hidden="true" />
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
         </aside>
       </section>
 
       <PublicAccessScope locale={locale} />
 
-      <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
-        {metrics.map(([label, value]) => (
-          <div key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
+      {/* Metrics strip */}
+      <section className="section" aria-label="Marketplace operating metrics">
+        <div className="section-inner flex flex-wrap gap-4 py-6">
+          {metrics.map(([label, value]) => (
+            <div key={label} className="stat-card flex-1 min-w-[160px]">
+              <span className="text-xs text-[#999]">{label}</span>
+              <strong className="text-white text-lg font-semibold">{value}</strong>
+            </div>
+          ))}
+        </div>
       </section>
 
+      {/* Catalog */}
       <div id="catalog">
         <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
       </div>
@@ -515,256 +525,272 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         ]}
       />
 
-      <section className="market-overview-section" aria-labelledby="market-overview-heading">
-        <div className="market-overview-head">
-          <div>
-            <div className="card-kicker">
+      {/* Overview section */}
+      <section className="section py-16" aria-labelledby="market-overview-heading">
+        <div className="section-inner flex flex-col gap-10">
+          <div className="flex flex-col gap-4 max-w-[800px]">
+            <div className="eyebrow">
               <Gauge size={16} aria-hidden="true" />
               <span>{labels.overview.eyebrow}</span>
             </div>
-            <h2 id="market-overview-heading">{labels.overview.title}</h2>
-          </div>
-          <p>{labels.overview.body}</p>
-        </div>
-
-        <div className="market-overview-grid">
-          {overviewCards.map((card, index) => {
-            const Icon = overviewRoleIcons[index];
-
-            return (
-              <article className="market-overview-card" key={card.title}>
-                <header>
-                  <span className="market-overview-card__icon">
-                    <Icon size={17} aria-hidden="true" />
-                  </span>
-                  <div>
-                    <h3>{card.title}</h3>
-                    <p>{card.subtitle}</p>
-                  </div>
-                </header>
-
-                <div className="market-overview-metrics">
-                  {card.metrics.map(([label, value]) => (
-                    <div key={label}>
-                      <span>{label}</span>
-                      <strong>{value}</strong>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="market-overview-queue">
-                  {card.rows.length > 0 ? (
-                    card.rows.map((row) => (
-                      <div className="market-overview-row" key={`${card.title}-${row.title}-${row.detail}`}>
-                        <strong>{row.title}</strong>
-                        <span>{row.detail}</span>
-                        <small>{row.meta}</small>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="market-overview-empty">{card.empty}</div>
-                  )}
-                </div>
-
-                {card.href ? (
-                  <a className="ghost-button ghost-button--inline" href={card.href}>
-                    <span>{card.title}</span>
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </a>
-                ) : (
-                  <span className="market-overview-card__operator-only">
-                    <ShieldCheck size={14} aria-hidden="true" />
-                    <span>{locale === "zh" ? "\u8fd0\u8425\u4e13\u7528" : "Operator only"}</span>
-                  </span>
-                )}
-              </article>
-            );
-          })}
-        </div>
-
-        <div className="market-retention-card" aria-label={labels.overview.retentionTitle}>
-          <strong>{labels.overview.retentionTitle}</strong>
-          <div>
-            {[...labels.overview.retention.developer, ...labels.overview.retention.publisher].map((reason) => (
-              <span key={reason}>
-                <BadgeCheck size={14} aria-hidden="true" />
-                {reason}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="market-publisher-callout" aria-label={labels.publisherDirectoryTitle}>
-        <div>
-          <div className="card-kicker">
-            <Building2 size={16} aria-hidden="true" />
-            <span>{labels.publisherDirectoryTitle}</span>
-          </div>
-          <p>{labels.publisherDirectoryBody}</p>
-        </div>
-        <a className="secondary-button secondary-button--compact" href={localizedHref("/publishers", locale)}>
-          <ShieldCheck size={15} aria-hidden="true" />
-          <span>{labels.publisherDirectoryCta}</span>
-          <ArrowRight size={14} aria-hidden="true" />
-        </a>
-      </section>
-
-      <section className="market-operating-loop" aria-labelledby="market-loop-heading">
-        <div className="market-loop-copy">
-          <div className="card-kicker">
-            <Activity size={16} aria-hidden="true" />
-            <span>{labels.loopEyebrow}</span>
-          </div>
-          <div className="market-loop-copy__head">
-            <div>
-              <h2 id="market-loop-heading">{labels.loopTitle}</h2>
-              <p>{labels.loopBody}</p>
-            </div>
-            <span className="market-loop-live">
-              <span />
-              {labels.reviewMetricValue}
-            </span>
+            <h2 id="market-overview-heading" className="heading-lg">{labels.overview.title}</h2>
+            <p className="body-text text-[#999]">{labels.overview.body}</p>
           </div>
 
-          <div className="market-loop-metric-grid" aria-label={labels.loopEyebrow}>
-            {loopMetrics.map(([label, value]) => (
-              <div className="market-loop-metric" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
-
-          <div className="market-loop-steps">
-            {labels.loopSteps.map(([title, detail, meta], index) => {
-              const Icon = loopStepIcons[index];
+          {/* Overview grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {overviewCards.map((card, index) => {
+              const Icon = overviewRoleIcons[index];
 
               return (
-                <article className="market-loop-step" key={title}>
-                  <div className="market-loop-step__top">
-                    <span className="market-loop-step__icon">
+                <article key={card.title} className="card p-6 flex flex-col gap-5">
+                  <header className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-[rgba(255,255,255,0.06)]">
                       <Icon size={17} aria-hidden="true" />
                     </span>
-                    <small>{meta}</small>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="heading-sm">{card.title}</h3>
+                      <p className="body-text-sm text-[#666]">{card.subtitle}</p>
+                    </div>
+                  </header>
+
+                  <div className="flex flex-wrap gap-4">
+                    {card.metrics.map(([label, value]) => (
+                      <div key={label} className="flex flex-col gap-1">
+                        <span className="text-xs text-[#666]">{label}</span>
+                        <strong className="text-sm text-white font-medium">{value}</strong>
+                      </div>
+                    ))}
                   </div>
-                  <strong>{title}</strong>
-                  <p>{detail}</p>
+
+                  <div className="flex flex-col gap-2">
+                    {card.rows.length > 0 ? (
+                      card.rows.map((row) => (
+                        <div key={`${card.title}-${row.title}-${row.detail}`} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
+                          <strong className="text-sm text-white">{row.title}</strong>
+                          <span className="text-xs text-[#666]">{row.detail}</span>
+                          <small className="text-xs text-[#525252]">{row.meta}</small>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-[#525252] py-2">{card.empty}</div>
+                    )}
+                  </div>
+
+                  {card.href ? (
+                    <a className="btn-text mt-auto" href={card.href}>
+                      <span>{card.title}</span>
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </a>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-xs text-[#525252] mt-auto">
+                      <ShieldCheck size={14} aria-hidden="true" />
+                      <span>{locale === "zh" ? "运营专用" : "Operator only"}</span>
+                    </span>
+                  )}
                 </article>
               );
             })}
           </div>
-        </div>
 
-        <aside className="market-loop-ledger" aria-label={labels.loopLedgerTitle}>
-          <div className="market-loop-ledger__head">
-            <div className="card-kicker">
-              <CircleDollarSign size={16} aria-hidden="true" />
-              <span>{labels.loopLedgerTitle}</span>
+          {/* Retention card */}
+          <div className="card p-6 flex flex-col gap-4" aria-label={labels.overview.retentionTitle}>
+            <strong className="heading-sm">{labels.overview.retentionTitle}</strong>
+            <div className="flex flex-wrap gap-3">
+              {[...labels.overview.retention.developer, ...labels.overview.retention.publisher].map((reason) => (
+                <span key={reason} className="flex items-center gap-1.5 text-xs text-[#999]">
+                  <BadgeCheck size={14} aria-hidden="true" />
+                  {reason}
+                </span>
+              ))}
             </div>
-            <span>{labels.moneyMetricValue}</span>
           </div>
-          <div className="market-loop-log">
-            {labels.loopLedgerRows.map(([phase, signal, detail]) => (
-              <div className="market-loop-log-row" key={phase}>
-                <span>{phase}</span>
-                <div>
-                  <strong>{signal}</strong>
-                  <p>{detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </aside>
+        </div>
       </section>
 
-      <section className="market-operations-layout">
-        <article className="market-ops-panel">
-          <div className="card-kicker">
-            <ClipboardList size={16} aria-hidden="true" />
-            <span>{labels.requests}</span>
+      {/* Publisher directory callout */}
+      <section className="section py-10" aria-label={labels.publisherDirectoryTitle}>
+        <div className="section-inner card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <div className="eyebrow">
+              <Building2 size={16} aria-hidden="true" />
+              <span>{labels.publisherDirectoryTitle}</span>
+            </div>
+            <p className="body-text-sm text-[#999] max-w-[560px]">{labels.publisherDirectoryBody}</p>
           </div>
-          <p>{labels.requestsBody}</p>
-          <div className="request-board">
-            {marketplaceRequests.map((request) => (
-              <div className="request-row" key={localizeText(request.title, locale)}>
-                <div>
-                  <strong>
-                    {localizeText(request.title, locale)}
-                    {request.state === "example" ? (
-                      <span className="request-row__badge">{labels.requestTag}</span>
-                    ) : null}
-                  </strong>
-                  <span>
-                    {request.state === "example"
-                      ? `${labels.requestState}: ${localizeText(request.status, locale)}`
-                      : localizeText(request.status, locale)}
-                    {" | "}
-                    {localizeText(request.due, locale)}
-                  </span>
-                </div>
-                <b>
-                  <small>{labels.requestBudget}</small>
-                  {request.bounty}
-                </b>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="market-ops-panel">
-          <div className="card-kicker">
-            <BookOpenCheck size={16} aria-hidden="true" />
-            <span>{labels.publishTitle}</span>
-          </div>
-          <div className="publish-flow-list">
-            {labels.publishSteps.map((step, index) => (
-              <div className="publish-flow-step" key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
-                {index < labels.publishSteps.length - 1 && <ArrowRight size={14} aria-hidden="true" />}
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-
-      <section className="market-operations-layout market-operations-layout--bottom">
-        <article className="market-ops-panel">
-          <div className="card-kicker">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>{labels.trustTitle}</span>
-          </div>
-          <div className="trust-requirement-grid">
-            {labels.trustItems.map(([title, detail]) => (
-              <div className="trust-requirement" key={title}>
-                <strong>{title}</strong>
-                <span>{detail}</span>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <aside className="market-ops-panel">
-          <div className="card-kicker">
-            <HandCoins size={16} aria-hidden="true" />
-            <span>{labels.moneyTitle}</span>
-          </div>
-          <div className="commission-list">
-            {labels.moneyRows.map(([label, value]) => (
-              <div className="commission-row" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </div>
-            ))}
-          </div>
-          <a className="ghost-button ghost-button--inline" href={localizedHref("/docs", locale)}>
-            <Code2 size={16} aria-hidden="true" />
-            <span>{dictionary.nav.docs}</span>
+          <a className="btn-secondary flex items-center gap-2 whitespace-nowrap" href={localizedHref("/publishers", locale)}>
+            <ShieldCheck size={15} aria-hidden="true" />
+            <span>{labels.publisherDirectoryCta}</span>
+            <ArrowRight size={14} aria-hidden="true" />
           </a>
-        </aside>
+        </div>
       </section>
-    </main>
+
+      {/* Operating loop section */}
+      <section className="section py-16" aria-labelledby="market-loop-heading">
+        <div className="section-inner flex flex-col lg:flex-row gap-10">
+          <div className="flex flex-col gap-6 flex-1">
+            <div className="eyebrow">
+              <Activity size={16} aria-hidden="true" />
+              <span>{labels.loopEyebrow}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex flex-col gap-2 max-w-[560px]">
+                <h2 id="market-loop-heading" className="heading-lg">{labels.loopTitle}</h2>
+                <p className="body-text text-[#999]">{labels.loopBody}</p>
+              </div>
+              <span className="pill pill--success flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+                {labels.reviewMetricValue}
+              </span>
+            </div>
+
+            {/* Loop metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" aria-label={labels.loopEyebrow}>
+              {loopMetrics.map(([label, value]) => (
+                <div key={label} className="stat-card">
+                  <span className="text-xs text-[#666]">{label}</span>
+                  <strong className="text-white text-lg font-semibold">{value}</strong>
+                </div>
+              ))}
+            </div>
+
+            {/* Loop steps */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {labels.loopSteps.map(([title, detail, meta], index) => {
+                const Icon = loopStepIcons[index];
+
+                return (
+                  <article key={title} className="card--compact p-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.06)]">
+                        <Icon size={17} aria-hidden="true" />
+                      </span>
+                      <small className="text-xs text-[#525252]">{meta}</small>
+                    </div>
+                    <strong className="text-sm text-white">{title}</strong>
+                    <p className="body-text-sm text-[#666]">{detail}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Loop ledger aside */}
+          <aside className="card p-6 flex flex-col gap-5 lg:w-[360px]" aria-label={labels.loopLedgerTitle}>
+            <div className="flex items-center justify-between">
+              <div className="eyebrow">
+                <CircleDollarSign size={16} aria-hidden="true" />
+                <span>{labels.loopLedgerTitle}</span>
+              </div>
+              <span className="text-xs text-[#525252]">{labels.moneyMetricValue}</span>
+            </div>
+            <div className="flex flex-col gap-3">
+              {labels.loopLedgerRows.map(([phase, signal, detail]) => (
+                <div key={phase} className="flex flex-col gap-1 py-2 border-t border-[rgba(255,255,255,0.06)]">
+                  <span className="text-xs text-[#525252]">{phase}</span>
+                  <strong className="text-sm text-white">{signal}</strong>
+                  <p className="body-text-sm text-[#666]">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* Operations layout: Requests + Publish steps */}
+      <section className="section py-10">
+        <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
+          <article className="card p-6 flex flex-col gap-4">
+            <div className="eyebrow">
+              <ClipboardList size={16} aria-hidden="true" />
+              <span>{labels.requests}</span>
+            </div>
+            <p className="body-text-sm text-[#666]">{labels.requestsBody}</p>
+            <div className="flex flex-col gap-3">
+              {marketplaceRequests.map((request) => (
+                <div key={localizeText(request.title, locale)} className="flex items-center justify-between py-2 border-t border-[rgba(255,255,255,0.06)]">
+                  <div className="flex flex-col gap-0.5">
+                    <strong className="text-sm text-white flex items-center gap-2">
+                      {localizeText(request.title, locale)}
+                      {request.state === "example" ? (
+                        <span className="pill pill--neutral text-[10px]">{labels.requestTag}</span>
+                      ) : null}
+                    </strong>
+                    <span className="text-xs text-[#525252]">
+                      {request.state === "example"
+                        ? `${labels.requestState}: ${localizeText(request.status, locale)}`
+                        : localizeText(request.status, locale)}
+                      {" | "}
+                      {localizeText(request.due, locale)}
+                    </span>
+                  </div>
+                  <b className="flex flex-col items-end text-sm text-white">
+                    <small className="text-[10px] text-[#525252] font-normal">{labels.requestBudget}</small>
+                    {request.bounty}
+                  </b>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="card p-6 flex flex-col gap-4">
+            <div className="eyebrow">
+              <BookOpenCheck size={16} aria-hidden="true" />
+              <span>{labels.publishTitle}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {labels.publishSteps.map((step, index) => (
+                <div key={step} className="flex items-center gap-3 text-sm text-white">
+                  <span className="text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
+                  <strong className="font-medium">{step}</strong>
+                  {index < labels.publishSteps.length - 1 && <ArrowRight size={14} aria-hidden="true" className="text-[#525252]" />}
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* Trust + Money bottom row */}
+      <section className="section py-10">
+        <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
+          <article className="card p-6 flex flex-col gap-4">
+            <div className="eyebrow">
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{labels.trustTitle}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {labels.trustItems.map(([title, detail]) => (
+                <div key={title} className="flex flex-col gap-1">
+                  <strong className="text-sm text-white">{title}</strong>
+                  <span className="text-xs text-[#666]">{detail}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <aside className="card p-6 flex flex-col gap-4">
+            <div className="eyebrow">
+              <HandCoins size={16} aria-hidden="true" />
+              <span>{labels.moneyTitle}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {labels.moneyRows.map(([label, value]) => (
+                <div key={label} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
+                  <span className="text-xs text-[#525252]">{label}</span>
+                  <strong className="text-sm text-white">{value}</strong>
+                </div>
+              ))}
+            </div>
+            <a className="btn-text" href={localizedHref("/docs", locale)}>
+              <Code2 size={16} aria-hidden="true" />
+              <span>{dictionary.nav.docs}</span>
+            </a>
+          </aside>
+        </div>
+      </section>
+    </AppShell>
   );
 }
 

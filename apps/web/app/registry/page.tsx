@@ -12,8 +12,8 @@ import {
   ShieldCheck,
   Terminal
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
-import { SiteHeader } from "@/components/site-header";
 import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
@@ -172,51 +172,53 @@ export default async function RegistryPage({ searchParams }: PageProps) {
   ];
 
   return (
-    <main className="product-shell">
-      <SiteHeader active="registry" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/registry" />
-
-      <section className="page-hero page-hero--compact">
-        <div>
-          <div className="eyebrow">
-            <Boxes size={16} aria-hidden="true" />
-            <span>{dictionary.registryPage.eyebrow}</span>
+    <AppShell active="registry" locale={locale}>
+      <section className="section">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-20">
+          <div>
+            <div className="eyebrow">
+              <Boxes size={16} aria-hidden="true" />
+              <span>{dictionary.registryPage.eyebrow}</span>
+            </div>
+            <h1 className="heading-xl mt-4">{dictionary.registryPage.title}</h1>
+            <p className="body-text mt-4 max-w-[640px]">{dictionary.registryPage.description}</p>
           </div>
-          <h1>{dictionary.registryPage.title}</h1>
-          <p>{dictionary.registryPage.description}</p>
-        </div>
-        <div className="page-hero__actions">
-          <a className="primary-button primary-button--large" href={localizedHref("/publish", locale)}>
-            <Plus size={18} aria-hidden="true" />
-            <span>{labels.actions.submit}</span>
-          </a>
-          <a className="secondary-button secondary-button--large" href={localizedHref("/marketplace", locale)}>
-            <ArrowRight size={18} aria-hidden="true" />
-            <span>{labels.actions.marketplace}</span>
-          </a>
+          <div className="flex gap-4 mt-8">
+            <a className="btn-primary btn-primary--large" href={localizedHref("/publish", locale)}>
+              <Plus size={18} aria-hidden="true" />
+              <span>{labels.actions.submit}</span>
+            </a>
+            <a className="btn-secondary btn-secondary--large" href={localizedHref("/marketplace", locale)}>
+              <ArrowRight size={18} aria-hidden="true" />
+              <span>{labels.actions.marketplace}</span>
+            </a>
+          </div>
         </div>
       </section>
 
-      <section className="registry-protocol-board" aria-labelledby="registry-protocol-heading">
-        <div className="registry-protocol-copy">
-          <div className="card-kicker">
-            <Database size={16} aria-hidden="true" />
-            <span>{labels.protocolEyebrow}</span>
+      <section className="section" aria-labelledby="registry-protocol-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+          <div className="mb-10">
+            <div className="eyebrow">
+              <Database size={16} aria-hidden="true" />
+              <span>{labels.protocolEyebrow}</span>
+            </div>
+            <h2 id="registry-protocol-heading" className="heading-lg mt-4">{labels.protocolTitle}</h2>
+            <p className="body-text mt-4 max-w-[640px]">{labels.protocolBody}</p>
           </div>
-          <h2 id="registry-protocol-heading">{labels.protocolTitle}</h2>
-          <p>{labels.protocolBody}</p>
-        </div>
-        <div className="registry-proof-grid">
-          {labels.heroProof.map(([title, body], index) => {
-            const Icon = index === 0 ? FileJson : index === 1 ? Network : ShieldCheck;
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {labels.heroProof.map(([title, body], index) => {
+              const Icon = index === 0 ? FileJson : index === 1 ? Network : ShieldCheck;
 
-            return (
-              <article className="registry-proof-card" key={title}>
-                <Icon size={17} aria-hidden="true" />
-                <strong>{title}</strong>
-                <span>{body}</span>
-              </article>
-            );
-          })}
+              return (
+                <article className="card" key={title}>
+                  <Icon size={17} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                  <strong className="heading-sm">{title}</strong>
+                  <span className="body-text-sm mt-2 block">{body}</span>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -231,105 +233,109 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         ]}
       />
 
-      <section className="registry-contract-section" aria-labelledby="registry-contract-heading">
-        <article className="registry-contract-panel">
-          <div className="card-kicker">
-            <Braces size={16} aria-hidden="true" />
-            <span>{labels.contractTitle}</span>
-          </div>
-          <h2 id="registry-contract-heading">{labels.manifestTitle}</h2>
-          <div className="registry-manifest-grid">
-            {labels.manifestFields.map(([title, body]) => (
-              <div className="registry-manifest-field" key={title}>
-                <span>{title}</span>
-                <strong>{body}</strong>
+      <section className="section" aria-labelledby="registry-contract-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+            <article className="card">
+              <div className="eyebrow">
+                <Braces size={16} aria-hidden="true" />
+                <span>{labels.contractTitle}</span>
               </div>
-            ))}
-          </div>
-          <div className="registry-note-list">
-            {labels.notes.map((note) => (
-              <div className="registry-note" key={note}>
-                <ShieldCheck size={15} aria-hidden="true" />
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <aside className="registry-runtime-panel">
-          <div className="info-panel lift-card">
-            <RadioTower size={20} aria-hidden="true" />
-            <h2>{dictionary.registryPage.endpointTitle}</h2>
-            <p>{dictionary.registryPage.endpointBody}</p>
-            <code>{apiUrl}/v1/skills/search</code>
-            <a className="secondary-button secondary-button--compact" href={localizedHref("/docs", locale)}>
-              <Terminal size={15} aria-hidden="true" />
-              <span>{labels.actions.api}</span>
-            </a>
-          </div>
-
-          <div className="info-panel lift-card">
-            <GitBranch size={20} aria-hidden="true" />
-            <h2>{labels.lifecycleTitle}</h2>
-            <div className="registry-lifecycle-list">
-              {labels.lifecycle.map(([title, body], index) => (
-                <div className="registry-lifecycle-step" key={title}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <strong>{title}</strong>
-                    <small>{body}</small>
+              <h2 id="registry-contract-heading" className="heading-lg mt-4">{labels.manifestTitle}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                {labels.manifestFields.map(([title, body]) => (
+                  <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4" key={title}>
+                    <span className="text-[#0075ff] text-sm font-medium">{title}</span>
+                    <strong className="block text-white/80 text-sm mt-1 font-normal">{body}</strong>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+              <div className="mt-6 space-y-3">
+                {labels.notes.map((note) => (
+                  <div className="flex items-start gap-3 text-[#999] text-sm" key={note}>
+                    <ShieldCheck size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-[#10b981]" />
+                    <span>{note}</span>
+                  </div>
+                ))}
+              </div>
+            </article>
 
-          <div className="code-panel registry-manifest-snippet">
-            <div className="code-panel__bar">
-              <span>skillhub.json</span>
-              <span>contract</span>
-            </div>
-            <pre>
-              <code>{manifestSnippet}</code>
-            </pre>
+            <aside className="flex flex-col gap-6">
+              <div className="card">
+                <RadioTower size={20} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                <h2 className="heading-sm">{dictionary.registryPage.endpointTitle}</h2>
+                <p className="body-text-sm mt-2">{dictionary.registryPage.endpointBody}</p>
+                <code className="code-block mt-4 block text-sm">{apiUrl}/v1/skills/search</code>
+                <a className="btn-secondary mt-4 inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
+                  <Terminal size={15} aria-hidden="true" />
+                  <span>{labels.actions.api}</span>
+                </a>
+              </div>
+
+              <div className="card">
+                <GitBranch size={20} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                <h2 className="heading-sm">{labels.lifecycleTitle}</h2>
+                <div className="mt-4 space-y-3">
+                  {labels.lifecycle.map(([title, body], index) => (
+                    <div className="flex items-start gap-3" key={title}>
+                      <span className="text-[#525252] text-xs font-mono mt-0.5">{String(index + 1).padStart(2, "0")}</span>
+                      <div>
+                        <strong className="text-white text-sm">{title}</strong>
+                        <small className="block text-[#666] text-xs mt-0.5">{body}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
+                  <span>skillhub.json</span>
+                  <span>contract</span>
+                </div>
+                <pre className="p-4 overflow-x-auto text-sm text-[#999]">
+                  <code>{manifestSnippet}</code>
+                </pre>
+              </div>
+            </aside>
           </div>
-        </aside>
+        </div>
       </section>
 
-      <section className="registry-layout">
-        <section className="registry-workbench registry-workbench--page" aria-labelledby="registry-page-heading">
-          <div className="workbench-top">
+      <section className="section" aria-labelledby="registry-page-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <Boxes size={16} aria-hidden="true" />
                 <span>{labels.tableEyebrow}</span>
               </div>
-              <h2 id="registry-page-heading">{labels.tableTitle}</h2>
+              <h2 id="registry-page-heading" className="heading-lg mt-2">{labels.tableTitle}</h2>
             </div>
-            <div className="workbench-actions">
-              <a className="secondary-button" href={`${apiUrl}/v1/skills/search?limit=50`}>
+            <div className="flex gap-3">
+              <a className="btn-secondary inline-flex items-center gap-2" href={`${apiUrl}/v1/skills/search?limit=50`}>
                 <Code2 size={17} aria-hidden="true" />
                 <span>{dictionary.registryPage.endpointTitle}</span>
               </a>
-              <a className="secondary-button" href={localizedHref("/docs", locale)}>
+              <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
                 <Code2 size={17} aria-hidden="true" />
                 <span>{dictionary.nav.docs}</span>
               </a>
             </div>
           </div>
 
-          <div className="metric-strip metric-strip--four">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {visibleMetrics.map((item) => (
-              <div className="metric" key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
+              <div className="stat-card" key={item.label}>
+                <span className="body-text-sm">{item.label}</span>
+                <strong className="heading-md mt-1 block">{item.value}</strong>
               </div>
             ))}
           </div>
 
           <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} locale={locale} skills={skills} />
-        </section>
+        </div>
       </section>
-    </main>
+    </AppShell>
   );
 }

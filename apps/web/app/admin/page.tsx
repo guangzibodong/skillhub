@@ -36,7 +36,7 @@ import { NotificationDeliveryManager } from "@/components/notification-delivery-
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { signOutAction } from "@/lib/auth-actions";
@@ -114,8 +114,7 @@ type AdminPriorityInput = {
 
 const adminCommandCopy = {
   en: {
-    body:
-      "The admin command center ranks launch, review, trust, finance, delivery, identity, and audit signals from live operational records so the console starts with work, not decoration.",
+    body: "The admin command center ranks launch, review, trust, finance, delivery, identity, and audit signals from live operational records so the console starts with work, not decoration.",
     eyebrow: "Admin operations queue",
     ready: "Ready",
     title: "What must operators process first today?",
@@ -127,8 +126,7 @@ const adminCommandCopy = {
       risk: "Risk queue"
     },
     queue: {
-      readyDetail:
-        "No urgent admin blockers are visible. Keep monitoring launch readiness, review evidence, risk, money movement, delivery retries, identity health, and audit records.",
+      readyDetail: "No urgent admin blockers are visible. Keep monitoring launch readiness, review evidence, risk, money movement, delivery retries, identity health, and audit records.",
       readyMetric: "Healthy",
       readyTitle: "Operations loop is healthy",
       title: "Priority queue"
@@ -146,47 +144,46 @@ const adminCommandCopy = {
       webhooks: "Open webhook outbox"
     },
     queueItems: {
-      abuse: "Trust reports need triage, restriction, suspension, or resolution before listings keep moving.",
-      adjustments: "Refunds or disputes need finance/trust decisions without rewriting historical ledger splits.",
-      commission: "No active commission rule is visible, so paid marketplace ledger posting needs operator setup.",
-      curation: "Marketplace curation appeals need a reviewer decision, reason, and publisher-visible outcome.",
-      deliveries: "External notification delivery has failed, skipped, or queued rows that need retry or provider action.",
-      feedback: "Buyer feedback is waiting for moderation before it can become a public trust signal.",
-      identity: "Identity directory has users but no admin user signal; inspect access before launch operations.",
-      incidents: "Runtime incidents need severity handling, recovery state, and publisher/developer notifications.",
-      launchBlocker: "Public launch has blocker checks that must be cleared before customer-facing rollout.",
-      launchWarning: "Launch readiness has warnings or deferred work that should be tracked before demos.",
-      payouts: "Payouts are requested, in review, failed, or blocked and need a finance decision path.",
-      reviewsDanger: "Skill reviews have overdue, blocking, or high-risk evidence that should be processed first.",
-      reviewsWarning: "Skill reviews have due-soon, warning, or decision-ready rows waiting for operators.",
-      webhooks: "Webhook outbox rows are failed, pending, or retry-ready and need delivery processing."
+      abuse: "Trust reports show open, triaged, or high-severity abuse signals requiring triage or restriction.",
+      adjustments: "Refund or dispute items are open, failed, or lost and require finance decision path.",
+      commission: "No active commission rule is configured. Revenue splitting will not work until one is active.",
+      curation: "Marketplace curation has open or under-review appeals awaiting moderation decision.",
+      deliveries: "Notification outbox contains failed or retry-ready deliveries requiring action.",
+      feedback: "Skill feedback includes pending reviews awaiting publish, hide, or reject decision.",
+      incidents: "Runtime incidents are active or being monitored and may need escalation or resolution.",
+      identity: "Identity directory has users but no admin accounts. Role assignment should be reviewed.",
+      launchBlocker: "Launch readiness has blocking items. These must be resolved before the platform can go live.",
+      launchWarning: "Launch readiness has warnings or deferred checks that should be reviewed soon.",
+      payouts: "Payouts are in requested, review, failed, or blocked state requiring finance decision path.",
+      reviewsDanger: "Skill reviews have overdue SLAs, blocking checks, or high-risk evidence that should be prioritized.",
+      reviewsWarning: "Skill reviews have due-soon SLAs, warnings, or decision-ready items awaiting operator action.",
+      webhooks: "Webhook outbox has failed, pending, or retry-ready records requiring delivery action."
     },
     queueTitles: {
       abuse: "Trust reports",
-      adjustments: "Refund/dispute operations",
-      commission: "Commission setup",
-      curation: "Curation appeals",
+      adjustments: "Refund/dispute ops",
+      commission: "Commission config",
+      curation: "Marketplace appeals",
       deliveries: "Notification delivery",
       feedback: "Feedback moderation",
       identity: "Identity health",
       incidents: "Runtime incidents",
       launch: "Launch readiness",
       payouts: "Payout review",
-      reviews: "Skill review operations",
+      reviews: "Skill review ops",
       webhooks: "Webhook outbox"
     },
     queueTones: {
       danger: "Urgent",
       ready: "Ready",
-      warning: "Needs work"
+      warning: "Pending"
     }
   },
   zh: {
-    body:
-      "管理员控制台要先告诉运营今天处理什么：上线、审核、信任、财务、通知、身份和审计都从真实运营记录里汇总，而不是只展示装饰性指标。",
+    body: "管理员指挥台从运营记录中排列上线、审核、信任、财务、投递、身份和审计信号，让后台打开就是工作，而不是装饰。",
     eyebrow: "管理员运营队列",
-    ready: "已就绪",
-    title: "运营今天必须先处理什么？",
+    ready: "就绪",
+    title: "今天运营人员最先处理什么？",
     metrics: {
       delivery: "投递队列",
       finance: "财务队列",
@@ -195,35 +192,34 @@ const adminCommandCopy = {
       risk: "风险队列"
     },
     queue: {
-      readyDetail:
-        "当前没有紧急后台阻塞。继续监控上线就绪、审核证据、风险、资金流、投递重试、身份健康和审计记录。",
+      readyDetail: "当前没有紧急管理员阻断项。继续监控上线就绪、审核证据、风险、资金流动、投递重试、身份健康和审计记录。",
       readyMetric: "健康",
-      readyTitle: "运营闭环正常",
-      title: "优先级队列"
+      readyTitle: "运营循环正常",
+      title: "优先队列"
     },
     queueActions: {
       audit: "打开审计流",
-      curation: "打开市场申诉",
-      deliveries: "打开通知投递",
+      curation: "打开分发申诉",
+      deliveries: "打开投递",
       finance: "打开财务控制",
       identity: "打开身份目录",
-      launch: "打开上线检查",
+      launch: "打开上线就绪",
       payouts: "打开提现审核",
       reviews: "打开审核队列",
       risk: "打开风险队列",
       webhooks: "打开 Webhook outbox"
     },
     queueItems: {
-      abuse: "信任报告需要分诊、限制、暂停或关闭，避免问题列表继续流转。",
-      adjustments: "退款或争议需要财务/信任决策，并且不能改写历史分账。",
-      commission: "当前没有可见的有效佣金规则，付费市场账本入账需要运营配置。",
-      curation: "市场分发申诉需要审核决定、原因和发布者可见的结果。",
-      deliveries: "外部通知投递存在失败、跳过或排队记录，需要重试或处理服务商配置。",
-      feedback: "买家反馈正在等待审核，审核后才能成为公开信任信号。",
-      identity: "身份目录已有用户但没有管理员信号，上线运营前需要检查访问权限。",
-      incidents: "运行事故需要处理严重级别、恢复状态，以及发布者/开发者通知。",
-      launchBlocker: "公开上线存在阻断项，必须先清掉再做客户可见发布。",
-      launchWarning: "上线就绪存在提醒或延后项，客户演示前需要持续跟踪。",
+      abuse: "信任报告存在 open、已分诊或高严重性的滥用信号，需要分诊或限制。",
+      adjustments: "退款或争议条目处于 open、失败或输掉状态，需要财务决策路径。",
+      commission: "没有激活的佣金规则。在激活一条之前，分账不会生效。",
+      curation: "市场分发存在 open 或正在审核的申诉等待审核决策。",
+      deliveries: "通知 outbox 包含失败或可重试的投递，需要处理。",
+      feedback: "技能反馈包含待审核的评论等待发布、隐藏或拒绝决策。",
+      incidents: "运行事故处于活跃或监控状态，可能需要升级或解决。",
+      identity: "身份目录有用户但没有管理员账号。应该检查角色分配。",
+      launchBlocker: "上线就绪有阻断项。平台上线前必须解决。",
+      launchWarning: "上线就绪有提醒或延后检查，应该尽快审核。",
       payouts: "提现处于申请、审核、失败或阻塞状态，需要财务决策路径。",
       reviewsDanger: "技能审核存在超时、阻塞检查或高风险证据，应该优先处理。",
       reviewsWarning: "技能审核存在即将到期、警告或可决策条目，等待运营处理。",
@@ -860,8 +856,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
   if (!hasAdminAccess) {
     return (
-      <main className="product-shell">
-        <SiteHeader active="admin" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/admin" />
+      <AppShell active="admin" locale={locale} flushTop>
 
         <section className="page-hero page-hero--compact">
           <div>
@@ -897,7 +892,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           locale={locale}
           title={hasWorkspaceSession ? (locale === "zh" ? "需要管理员角色" : "Admin role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
-      </main>
+      </AppShell>
     );
   }
 
@@ -1162,8 +1157,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     tone === "danger" ? "admin-state-pill--red" : tone === "warning" ? "admin-state-pill--amber" : "admin-state-pill--green";
 
   return (
-    <main className="product-shell admin-console-page">
-      <SiteHeader active="admin" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/admin" />
+    <AppShell active="admin" locale={locale} flushTop>
+      <div className="admin-console-page">
 
       <section className="admin-console-shell admin-console-shell--v2" id="admin-overview" aria-labelledby="admin-console-title">
         <aside className="admin-sidebar" aria-label={locale === "zh" ? "管理员后台导航" : "Admin console navigation"}>
@@ -2022,7 +2017,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </section>
         </div>
       </section>
-    </main>
+      </div>
+    </AppShell>
   );
 }
 

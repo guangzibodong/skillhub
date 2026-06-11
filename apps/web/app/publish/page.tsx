@@ -8,17 +8,13 @@ import {
   ShieldCheck,
   UploadCloud,
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 import { JourneyRail } from "@/components/journey-rail";
 import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
-import { SiteHeader } from "@/components/site-header";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import {
-  getDictionary,
-  getLocaleFromSearchParams,
-  localizedHref,
-} from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getPublishCopy } from "@/lib/publish-copy";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +28,6 @@ const publisherRoles = ["publisher", "owner", "admin", "super_admin"];
 export default async function PublishPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const publishCopy = getPublishCopy(locale);
   const labels = publishCopy.page;
   const apiUrl =
@@ -68,45 +63,48 @@ export default async function PublishPage({ searchParams }: PageProps) {
   ];
 
   return (
-    <main className="publish-shell">
-      <SiteHeader
-        active="publish"
-        apiUrl={apiUrl}
-        dictionary={dictionary}
-        locale={locale}
-        pathname="/publish"
-        subtitle={labels.consoleSubtitle}
-      />
-
-      <section className="publish-hero" aria-labelledby="publish-heading">
-        <div>
-          <div className="eyebrow">
-            <UploadCloud size={16} aria-hidden="true" />
-            <span>{labels.eyebrow}</span>
+    <AppShell active="publish" locale={locale}>
+      <section
+        className="section pt-16 pb-12"
+        aria-labelledby="publish-heading"
+      >
+        <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
+          <div className="flex-1">
+            <div className="eyebrow">
+              <UploadCloud size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1 id="publish-heading" className="heading-xl mt-4">
+              {labels.title}
+            </h1>
+            <p className="body-text mt-4 max-w-[600px]">
+              {labels.description}
+            </p>
           </div>
-          <h1 id="publish-heading">{labels.title}</h1>
-          <p>{labels.description}</p>
-        </div>
-        <div className="publish-hero__side">
-          <div className="publish-hero__badge">
-            <FileJson size={18} aria-hidden="true" />
-            <span>{labels.badge}</span>
-          </div>
-          <div
-            className="publish-hero__signals"
-            aria-label={labels.signalLabel}
-          >
-            {labels.signals.map(([label, value], index) => {
-              const Icon = signalIcons[index] ?? ClipboardCheck;
+          <div className="flex flex-col gap-4 items-start">
+            <div className="pill">
+              <FileJson size={18} aria-hidden="true" />
+              <span>{labels.badge}</span>
+            </div>
+            <div
+              className="grid grid-cols-2 gap-3"
+              aria-label={labels.signalLabel}
+            >
+              {labels.signals.map(([label, value], index) => {
+                const Icon = signalIcons[index] ?? ClipboardCheck;
 
-              return (
-                <div key={label}>
-                  <Icon size={16} aria-hidden="true" />
-                  <span>{label}</span>
-                  <strong>{value}</strong>
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    key={label}
+                    className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
+                  >
+                    <Icon size={16} aria-hidden="true" />
+                    <span className="body-text-sm text-[#999]">{label}</span>
+                    <strong className="text-white text-sm">{value}</strong>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -119,13 +117,15 @@ export default async function PublishPage({ searchParams }: PageProps) {
         locale={locale}
       />
 
-      <section className="publish-access-board">
-        <WorkspaceAccessPanel
-          locale={locale}
-          requiredRoles={publisherRoles}
-          session={session}
-          workspace="publisher"
-        />
+      <section className="section py-8">
+        <div className="section-inner">
+          <WorkspaceAccessPanel
+            locale={locale}
+            requiredRoles={publisherRoles}
+            session={session}
+            workspace="publisher"
+          />
+        </div>
       </section>
 
       <PublishForm
@@ -135,42 +135,50 @@ export default async function PublishPage({ searchParams }: PageProps) {
         locale={locale}
       />
 
-      <section
-        className="publish-pipeline"
-        aria-labelledby="publish-pipeline-heading"
-      >
-        <div className="publish-pipeline__head">
-          <div>
-            <div className="card-kicker">
-              <BookOpenCheck size={16} aria-hidden="true" />
-              <span>{labels.pipelineEyebrow}</span>
+      <section className="section py-16" aria-labelledby="publish-pipeline-heading">
+        <div className="section-inner">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+            <div>
+              <div className="eyebrow">
+                <BookOpenCheck size={16} aria-hidden="true" />
+                <span>{labels.pipelineEyebrow}</span>
+              </div>
+              <h2
+                id="publish-pipeline-heading"
+                className="heading-lg mt-3"
+              >
+                {labels.pipelineTitle}
+              </h2>
+              <p className="body-text mt-3 max-w-[560px]">
+                {labels.pipelineBody}
+              </p>
             </div>
-            <h2 id="publish-pipeline-heading">{labels.pipelineTitle}</h2>
-            <p>{labels.pipelineBody}</p>
+            <a
+              className="btn-secondary"
+              href={localizedHref("/publisher", locale)}
+            >
+              <Gauge size={16} aria-hidden="true" />
+              <span>{labels.publisherWorkspace}</span>
+            </a>
           </div>
-          <a
-            className="secondary-button"
-            href={localizedHref("/publisher", locale)}
-          >
-            <Gauge size={16} aria-hidden="true" />
-            <span>{labels.publisherWorkspace}</span>
-          </a>
-        </div>
-        <FlowStepList
-          ariaLabel={labels.pipelineTitle}
-          steps={labels.pipelineSteps.map((step, index) => {
-            const Icon = stepIcons[index] ?? ListChecks;
+          <FlowStepList
+            ariaLabel={labels.pipelineTitle}
+            steps={labels.pipelineSteps.map((step, index) => {
+              const Icon = stepIcons[index] ?? ListChecks;
 
-            return {
-              body: step.body,
-              icon: <Icon size={16} aria-hidden="true" />,
-              title: step.title,
-            };
-          })}
-        />
-        <StatusChip tone="neutral">{labels.badge}</StatusChip>
+              return {
+                body: step.body,
+                icon: <Icon size={16} aria-hidden="true" />,
+                title: step.title,
+              };
+            })}
+          />
+          <div className="mt-6">
+            <StatusChip tone="neutral">{labels.badge}</StatusChip>
+          </div>
+        </div>
       </section>
-    </main>
+    </AppShell>
   );
 }
 

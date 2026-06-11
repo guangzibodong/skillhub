@@ -21,11 +21,7 @@ async function main() {
     const manifest = await readManifest(args[0]);
     assertSkillManifest(manifest);
 
-    const client = new SkillHubClient({
-      apiKey: process.env.SKILLHUB_API_KEY,
-      baseUrl: process.env.SKILLHUB_API_URL
-    });
-
+    const client = requireClient();
     const result = await client.publishSkill(manifest);
     console.log(`Published ${result.slug} (${result.id}).`);
     return;
@@ -33,11 +29,7 @@ async function main() {
 
   if (command === "search") {
     const query = args.join(" ");
-    const client = new SkillHubClient({
-      apiKey: process.env.SKILLHUB_API_KEY,
-      baseUrl: process.env.SKILLHUB_API_URL
-    });
-
+    const client = requireClient();
     const skills = await client.searchSkills({ query });
     for (const skill of skills) {
       console.log(`${skill.slug}\t${skill.displayName}\t${skill.verificationStatus}`);
@@ -52,16 +44,26 @@ async function main() {
       throw new Error("Usage: skillhub run <skill> [json-input]");
     }
 
-    const client = new SkillHubClient({
-      apiKey: process.env.SKILLHUB_API_KEY,
-      baseUrl: process.env.SKILLHUB_API_URL
-    });
+    const client = requireClient();
     const result = await client.run(skillSlug, JSON.parse(rawInput));
     console.log(JSON.stringify(result, null, 2));
     return;
   }
 
   printHelp();
+}
+
+function requireClient(): SkillHubClient {
+  const apiKey = process.env.SKILLHUB_API_KEY;
+  if (!apiKey) {
+    console.error("Error: SKILLHUB_API_KEY environment variable is not set.");
+    console.error("Set it with: export SKILLHUB_API_KEY=sk_proj_...");
+    process.exit(1);
+  }
+  return new SkillHubClient({
+    apiKey,
+    baseUrl: process.env.SKILLHUB_API_URL
+  });
 }
 
 async function readManifest(path = "skillhub.json") {

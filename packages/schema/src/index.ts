@@ -203,7 +203,76 @@ export function assertSkillManifest(value: unknown): asserts value is SkillManif
     throw new Error("Unsupported schemaVersion. Expected 0.1.");
   }
 
+  // Type validations
+  if (typeof manifest.name !== "string" || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(manifest.name)) {
+    throw new Error("Manifest name must be a lowercase slug (a-z, 0-9, hyphens, no leading/trailing hyphen).");
+  }
+
+  if (typeof manifest.displayName !== "string" || manifest.displayName.trim().length === 0) {
+    throw new Error("Manifest displayName must be a non-empty string.");
+  }
+
+  if (typeof manifest.version !== "string" || !/^\d+\.\d+\.\d+/.test(manifest.version)) {
+    throw new Error("Manifest version must follow semver (e.g. 1.0.0).");
+  }
+
+  if (typeof manifest.description !== "string" || manifest.description.trim().length === 0) {
+    throw new Error("Manifest description must be a non-empty string.");
+  }
+
   if (!Array.isArray(manifest.tags) || manifest.tags.length === 0) {
     throw new Error("Manifest tags must contain at least one tag.");
+  }
+
+  for (const tag of manifest.tags) {
+    if (typeof tag !== "string") {
+      throw new Error("Each manifest tag must be a string.");
+    }
+  }
+
+  // Runtime validation
+  const runtime = manifest.runtime as Record<string, unknown> | undefined;
+  if (!runtime || typeof runtime !== "object") {
+    throw new Error("Manifest runtime must be an object.");
+  }
+  const validRuntimeTypes = ["http", "mcp", "local"];
+  if (!validRuntimeTypes.includes(runtime.type as string)) {
+    throw new Error(`Manifest runtime.type must be one of: ${validRuntimeTypes.join(", ")}.`);
+  }
+  if (runtime.type === "http" && typeof runtime.entrypoint !== "string") {
+    throw new Error("HTTP runtime requires a string entrypoint.");
+  }
+  if (runtime.type === "mcp" && typeof runtime.serverUrl !== "string") {
+    throw new Error("MCP runtime requires a string serverUrl.");
+  }
+  if (runtime.type === "local" && typeof runtime.command !== "string") {
+    throw new Error("Local runtime requires a string command.");
+  }
+
+  // Permissions validation
+  const permissions = manifest.permissions as Record<string, unknown> | undefined;
+  if (!permissions || typeof permissions !== "object") {
+    throw new Error("Manifest permissions must be an object.");
+  }
+  if (typeof permissions.network !== "boolean") {
+    throw new Error("Manifest permissions.network must be a boolean.");
+  }
+  if (typeof permissions.browser !== "boolean") {
+    throw new Error("Manifest permissions.browser must be a boolean.");
+  }
+  const validFs = ["none", "read", "write"];
+  if (!validFs.includes(permissions.filesystem as string)) {
+    throw new Error(`Manifest permissions.filesystem must be one of: ${validFs.join(", ")}.`);
+  }
+  if (!Array.isArray(permissions.secrets)) {
+    throw new Error("Manifest permissions.secrets must be an array.");
+  }
+
+  // Schema validations
+  if (!manifest.inputSchema || typeof manifest.inputSchema !== "object") {
+    throw new Error("Manifest inputSchema must be a JSON Schema object.");
+  }
+  if (!manifest.outputSchema || typeof manifest.outputSchema !== "object") {
+    throw new Error("Manifest outputSchema must be a JSON Schema object.");
   }
 }
