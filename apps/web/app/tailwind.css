@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #0075ff;
+  --color-accent-hover: #0066e0;
+  --color-verified: #10b981;
+  --color-border: rgba(255, 255, 255, 0.08);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #000000;
+  color: #ffffff;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #0075ff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 7px;
+  transition: background 0.15s;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background: #0066e0;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #212121;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: #292929;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #999999;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s;
+  text-decoration: none;
+}
+
+.btn-text:hover {
+  color: #ffffff;
+}
+
+/* Badge */
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #999;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.badge-new:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.badge-new span {
+  background: #0075ff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+/* Horizontal scroll */
+.scroll-x {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.scroll-x::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-x::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
+}
