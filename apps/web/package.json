@@ -19,11 +19,19 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.5.0",
+    "clsx": "^2.1.1",
     "eslint": "8.57.1",
     "eslint-config-next": "15.1.2",
+    "postcss": "^8.5.15",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.0",
     "typescript": "^5.7.2"
   }
 }
