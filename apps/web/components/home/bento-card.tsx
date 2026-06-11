@@ -5,32 +5,25 @@ type BentoCardProps = {
   description: string;
   icon: ReactNode;
   className?: string;
-  gradient?: string;
 };
 
-export function BentoCard({ title, description, icon, className = "", gradient }: BentoCardProps) {
+export function BentoCard({ title, description, icon, className = "" }: BentoCardProps) {
   return (
     <div
-      className={`glow-card group rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-card)] p-7 flex flex-col justify-between ${className}`}
+      className={`group glass-card glass-card-hover rounded-2xl p-7 transition-all duration-500 cursor-default ${className}`}
     >
       {/* Icon */}
-      <div
-        className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 border border-[var(--color-border-default)] ${
-          gradient || "bg-[var(--color-glow-purple)]"
-        }`}
-      >
+      <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 bg-gradient-to-br from-[rgba(139,92,246,0.15)] to-[rgba(6,182,212,0.1)] border border-[rgba(255,255,255,0.08)] group-hover:border-[rgba(139,92,246,0.3)] transition-colors duration-500">
         {icon}
       </div>
 
       {/* Content */}
-      <div>
-        <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2 group-hover:text-[var(--color-accent-purple)] transition-colors">
-          {title}
-        </h3>
-        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-          {description}
-        </p>
-      </div>
+      <h3 className="text-[15px] font-semibold text-[var(--color-text-primary)] mb-2.5 group-hover:text-[#a78bfa] transition-colors duration-300">
+        {title}
+      </h3>
+      <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
+        {description}
+      </p>
     </div>
   );
 }

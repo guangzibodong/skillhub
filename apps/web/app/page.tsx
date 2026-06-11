@@ -5,10 +5,11 @@ import {
   FileJson,
   Zap,
   ShieldCheck,
-  Sparkles,
   Globe,
   Lock,
   Activity,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import { getLocaleFromSearchParams } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
@@ -30,189 +31,192 @@ type PageProps = {
 
 const copy = {
   en: {
-    badge: "Now in Public Beta",
-    headline: "The skill registry\nfor AI agents",
+    badge: "Public Beta — Join the waitlist",
+    headline: "The skill registry",
+    headlineGradient: "for AI agents",
     subline:
-      "Discover, verify, and invoke production-ready skills through a governed API. One manifest powers search, trust review, and secure runtime execution.",
+      "Discover, verify, and invoke production-ready skills through a secure API. One manifest powers search, trust governance, and runtime execution.",
     cta1: "Explore Registry",
-    cta2: "Read Documentation",
-    trustedBy: "Powering the next generation of AI agents",
+    cta2: "Documentation",
+    trustedBy: "Powering the next generation of intelligent agents",
     stats: {
       skills: "Skills",
       verified: "Verified",
       publishers: "Publishers",
-      calls: "API Calls/mo",
+      calls: "API Calls",
     },
     features: [
       {
         icon: "search",
         title: "Intelligent Discovery",
-        desc: "Search skills by task, capability, permission profile, and runtime type. Find the right tool in seconds.",
+        desc: "Search skills by task, capability, permission profile, and runtime type. Semantic matching surfaces the right tool instantly.",
       },
       {
         icon: "manifest",
-        title: "Schema & Manifest",
-        desc: "Inspect input/output schemas, permission requirements, version history, and runtime metadata before integration.",
+        title: "Schema Inspection",
+        desc: "Review input/output schemas, permission scopes, version history, and runtime metadata before you integrate.",
       },
       {
         icon: "runtime",
-        title: "Secure Invocation",
-        desc: "Call skills via REST or MCP with project-scoped API keys. Built-in rate limiting, retries, and observability.",
+        title: "Secure Runtime",
+        desc: "Invoke skills via REST or MCP with project-scoped keys. Built-in rate limiting, automatic retries, and full observability.",
       },
       {
         icon: "trust",
         title: "Trust & Governance",
-        desc: "Automated security checks, human review, permission scoping, and full audit trails for every invocation.",
+        desc: "Automated security scanning, human review, granular permission scoping, and immutable audit trails.",
       },
     ],
-    showcaseTitle: "Built for developers",
-    showcaseDesc: "A complete platform from discovery to production",
+    showcaseTitle: "Built for production",
+    showcaseDesc: "Everything you need from discovery to deployment",
     featuredTitle: "Featured Skills",
-    featuredDesc: "Production-ready, verified, and battle-tested",
+    featuredDesc: "Verified, production-ready, and battle-tested",
     featuredAction: "View all skills",
-    howTitle: "How it works",
-    howDesc: "From discovery to production in minutes",
+    howTitle: "From discovery to production",
+    howDesc: "Five steps to integrate any skill into your agent",
     howSteps: [
       {
         step: "01",
         title: "Discover",
-        desc: "Browse the registry or search by capability. Filter by runtime type, permission level, and verification status.",
+        desc: "Browse the registry or search by capability. Filter by runtime, permissions, and trust level.",
       },
       {
         step: "02",
         title: "Inspect",
-        desc: "Review the full manifest — schemas, permissions, pricing, and version history. Test in the playground.",
+        desc: "Review the complete manifest — schemas, permissions, pricing, and changelog. Test in the playground.",
       },
       {
         step: "03",
         title: "Connect",
-        desc: "Create a project, configure scopes, and generate a production API key in your developer console.",
+        desc: "Create a project, configure permission scopes, generate a production API key.",
       },
       {
         step: "04",
         title: "Invoke",
-        desc: "Call the skill via REST API or MCP transport. Get structured responses with built-in error handling.",
+        desc: "Call the skill via REST or MCP. Structured responses with built-in error handling and retries.",
       },
       {
         step: "05",
         title: "Monitor",
-        desc: "Track invocations, latency percentiles, error rates, and costs in real-time dashboards.",
+        desc: "Real-time dashboards for invocation volume, latency percentiles, error rates, and cost tracking.",
       },
     ],
     ctaTitle: "Ready to build with verified skills?",
     ctaDesc:
-      "Join hundreds of developers building the next generation of AI-powered applications.",
+      "Join hundreds of developers shipping AI-powered products with production-grade skill infrastructure.",
     ctaCta: "Get Started Free",
-    ctaSecondary: "Talk to Sales",
+    ctaSecondary: "Talk to Us",
   },
   zh: {
-    badge: "公开测试中",
-    headline: "AI Agent 的\n技能注册中心",
+    badge: "公测中 — 加入等待列表",
+    headline: "AI Agent 的",
+    headlineGradient: "技能注册中心",
     subline:
-      "通过统一治理 API 发现、验证和调用生产级技能。一份 manifest 驱动搜索、信任审核和安全运行。",
+      "通过安全 API 发现、验证和调用生产级技能。一份 manifest 驱动搜索、信任治理和安全运行。",
     cta1: "探索注册表",
-    cta2: "阅读文档",
-    trustedBy: "驱动下一代 AI Agent",
+    cta2: "文档",
+    trustedBy: "驱动下一代智能 Agent",
     stats: {
       skills: "技能",
       verified: "已验证",
       publishers: "发布者",
-      calls: "月 API 调用",
+      calls: "API 调用",
     },
     features: [
       {
         icon: "search",
         title: "智能发现",
-        desc: "按任务、能力、权限配置和运行类型搜索技能。几秒内找到合适工具。",
+        desc: "按任务、能力、权限和运行时类型搜索技能。语义匹配即时找到最佳工具。",
       },
       {
         icon: "manifest",
-        title: "Schema 与 Manifest",
-        desc: "集成前检查输入/输出 schema、权限要求、版本历史和运行时元数据。",
+        title: "Schema 检查",
+        desc: "集成前审查输入/输出 schema、权限范围、版本历史和运行时元数据。",
       },
       {
         icon: "runtime",
-        title: "安全调用",
-        desc: "通过项目级 API Key 以 REST 或 MCP 调用技能。内置限流、重试和可观测性。",
+        title: "安全运行时",
+        desc: "通过项目级 Key 以 REST 或 MCP 调用技能。内置限流、自动重试和完整可观测性。",
       },
       {
         icon: "trust",
         title: "信任与治理",
-        desc: "自动安全检查、人工审核、权限范围控制和每次调用的完整审计追踪。",
+        desc: "自动安全扫描、人工审核、细粒度权限范围和不可变审计追踪。",
       },
     ],
-    showcaseTitle: "为开发者而建",
-    showcaseDesc: "从发现到生产的完整平台",
+    showcaseTitle: "为生产而建",
+    showcaseDesc: "从发现到部署的一切所需",
     featuredTitle: "精选 Skills",
-    featuredDesc: "生产就绪，已验证，经过实战检验",
+    featuredDesc: "已验证，生产就绪，久经考验",
     featuredAction: "查看全部技能",
-    howTitle: "如何使用",
-    howDesc: "从发现到生产只需几分钟",
+    howTitle: "从发现到生产",
+    howDesc: "五步将任何技能集成到你的 Agent",
     howSteps: [
       {
         step: "01",
         title: "发现",
-        desc: "浏览注册表或按能力搜索。按运行类型、权限级别和验证状态筛选。",
+        desc: "浏览注册表或按能力搜索。按运行时、权限和信任等级筛选。",
       },
       {
         step: "02",
         title: "检查",
-        desc: "审查完整 manifest — schema、权限、定价和版本历史。在 Playground 测试。",
+        desc: "审查完整 manifest — schema、权限、定价和变更日志。在 Playground 测试。",
       },
       {
         step: "03",
         title: "连接",
-        desc: "创建项目，配置 scope，在开发者控制台生成生产 API Key。",
+        desc: "创建项目，配置权限 scope，生成生产 API Key。",
       },
       {
         step: "04",
         title: "调用",
-        desc: "通过 REST API 或 MCP 传输调用技能。获得结构化响应和内置错误处理。",
+        desc: "通过 REST 或 MCP 调用技能。结构化响应，内置错误处理和自动重试。",
       },
       {
         step: "05",
         title: "监控",
-        desc: "在实时仪表盘中追踪调用量、延迟百分位、错误率和成本。",
+        desc: "实时仪表盘：调用量、延迟百分位、错误率和成本追踪。",
       },
     ],
     ctaTitle: "准备好用已验证的技能构建了吗？",
-    ctaDesc: "加入数百位开发者，构建下一代 AI 驱动的应用。",
+    ctaDesc: "加入数百位开发者，用生产级技能基础设施交付 AI 驱动的产品。",
     ctaCta: "免费开始",
-    ctaSecondary: "联系销售",
+    ctaSecondary: "联系我们",
   },
 } as const;
 
 const zhSkillMeta: Record<string, { desc: string; tags: string[] }> = {
   "browser-research-pro": {
-    desc: "深度网络研究 — 多源抓取、结构化摘要、事实核查一体化。",
+    desc: "深度网络研究 — 多源抓取、结构化摘要、事实核查。",
     tags: ["研究", "浏览器", "摘要"],
   },
   "crm-enrichment": {
-    desc: "自动补全 CRM 联系人数据 — 社交主页、公司信息、职位验证。",
+    desc: "自动补全 CRM 数据 — 社交主页、公司信息、职位验证。",
     tags: ["CRM", "数据", "销售"],
   },
   "support-triage": {
-    desc: "AI 工单分类 — 自动识别优先级、分配团队、提取关键信息。",
+    desc: "AI 工单分类 — 优先级识别、团队分配、关键信息提取。",
     tags: ["支持", "分类", "工单"],
   },
   "code-review-assistant": {
-    desc: "智能代码审查 — 安全漏洞检测、性能建议、代码风格统一。",
+    desc: "智能代码审查 — 安全漏洞检测、性能建议、最佳实践。",
     tags: ["代码", "审查", "安全"],
+  },
+  "data-pipeline-monitor": {
+    desc: "数据管道监控 — 异常检测、自动告警、根因分析。",
+    tags: ["数据", "监控", "告警"],
+  },
+  "content-generator": {
+    desc: "AI 内容生成 — SEO 优化文章、社交媒体文案、多语言翻译。",
+    tags: ["内容", "生成", "SEO"],
   },
 };
 
-function formatNumber(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return n.toString();
+function formatStatNumber(num: number): string {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+  return String(num);
 }
-
-const featureIcons: Record<string, typeof Search> = {
-  search: Search,
-  manifest: FileJson,
-  runtime: Zap,
-  trust: ShieldCheck,
-};
 
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -226,39 +230,57 @@ export default async function HomePage({ searchParams }: PageProps) {
   ]);
   const skills = allSkills.slice(0, 6);
 
+  const featureIcons: Record<string, React.ReactNode> = {
+    search: <Search size={22} className="text-[var(--color-accent-cyan)]" />,
+    manifest: <FileJson size={22} className="text-[var(--color-accent-purple)]" />,
+    runtime: <Zap size={22} className="text-[var(--color-accent-green)]" />,
+    trust: <ShieldCheck size={22} className="text-[var(--color-accent-pink)]" />,
+  };
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] overflow-x-hidden">
       <HomeNav locale={locale} />
 
-      {/* === HERO === */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16">
-        {/* Background effects */}
-        <div className="hero-glow" />
-        <div className="grid-pattern absolute inset-0 pointer-events-none" />
+      {/* =========================================
+          HERO SECTION
+          ========================================= */}
+      <section className="relative min-h-[100vh] flex flex-col items-center justify-center pt-20 pb-16">
+        {/* Ambient glow orbs */}
+        <div className="ambient-glow">
+          <div className="glow-orb glow-orb-1" />
+          <div className="glow-orb glow-orb-2" />
+          <div className="glow-orb glow-orb-3" />
+        </div>
+
+        {/* Particle network */}
         <ParticleField />
 
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 grid-pattern opacity-40" />
+
+        {/* Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           {/* Badge */}
           <Reveal>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--color-border-default)] bg-[rgba(255,255,255,0.03)] mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent-green)] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-accent-green)]" />
+              <Sparkles size={14} className="text-[var(--color-accent-purple)]" />
+              <span className="text-xs text-[var(--color-text-secondary)] font-medium tracking-wide">
+                {t.badge}
               </span>
-              <span className="text-sm text-[var(--color-text-secondary)]">{t.badge}</span>
             </div>
           </Reveal>
 
           {/* Headline */}
           <Reveal delay={100}>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 whitespace-pre-line gradient-text-hero">
-              {t.headline}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-8">
+              <span className="block text-[var(--color-text-primary)]">{t.headline}</span>
+              <span className="block gradient-text-hero">{t.headlineGradient}</span>
             </h1>
           </Reveal>
 
           {/* Subline */}
           <Reveal delay={200}>
-            <p className="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto leading-relaxed mb-10">
+            <p className="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto leading-relaxed mb-12">
               {t.subline}
             </p>
           </Reveal>
@@ -268,164 +290,146 @@ export default async function HomePage({ searchParams }: PageProps) {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
                 href={`/registry${langSuffix}`}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-[var(--color-accent-purple)] to-[var(--color-accent-indigo)] text-white font-medium text-[15px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all hover:-translate-y-0.5"
+                className="glow-button inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-medium text-[15px]"
               >
-                {t.cta1}
-                <ArrowRight size={16} />
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  {t.cta1}
+                  <ArrowRight size={16} />
+                </span>
               </a>
               <a
                 href={`/docs${langSuffix}`}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-medium text-[15px] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] hover:bg-[rgba(255,255,255,0.03)] transition-all"
+                className="ghost-button inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-[var(--color-text-secondary)] font-medium text-[15px] hover:text-[var(--color-text-primary)]"
               >
                 {t.cta2}
+                <ChevronRight size={15} />
               </a>
             </div>
           </Reveal>
+        </div>
 
-          {/* Hero Code Block */}
-          <Reveal delay={500}>
-            <div className="mt-16 max-w-2xl mx-auto">
-              <div className="rotating-border">
+        {/* Stats bar at bottom of hero */}
+        <Reveal delay={500} className="relative z-10 mt-auto pt-20 w-full">
+          <div className="max-w-4xl mx-auto px-6">
+            <p className="text-center text-xs text-[var(--color-text-muted)] uppercase tracking-widest mb-8 font-medium">
+              {t.trustedBy}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { value: stats.publicSkills, label: t.stats.skills },
+                { value: stats.verifiedSkills, label: t.stats.verified },
+                { value: stats.publicPublishers, label: t.stats.publishers },
+                { value: stats.recordedCalls, label: t.stats.calls },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-3xl sm:text-4xl font-bold tracking-tight gradient-text mb-1">
+                    {formatStatNumber(stat.value)}
+                  </div>
+                  <div className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* =========================================
+          PRODUCT SHOWCASE (Code Demo)
+          ========================================= */}
+      <section className="relative py-24 sm:py-32">
+        <div className="max-w-6xl mx-auto px-6">
+          <Reveal>
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                {t.showcaseTitle}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] text-lg max-w-xl mx-auto">
+                {t.showcaseDesc}
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={200} direction="scale">
+            <div className="rotating-border rounded-2xl">
+              <div className="relative rounded-2xl overflow-hidden border border-[var(--color-border-default)] bg-[var(--color-bg-card-solid)]">
+                {/* Top bar mockup */}
+                <div className="flex items-center gap-3 px-5 py-3 border-b border-[var(--color-border-default)] bg-[rgba(255,255,255,0.02)]">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+                    <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+                    <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+                  </div>
+                  <div className="flex-1 text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-1 rounded-md bg-[rgba(255,255,255,0.04)] text-xs text-[var(--color-text-muted)]">
+                      <Lock size={10} />
+                      api.useskillhub.com/v1/invoke
+                    </div>
+                  </div>
+                  <div className="w-16" />
+                </div>
                 <CodeAnimation />
               </div>
             </div>
           </Reveal>
         </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[var(--color-text-muted)] animate-bounce-slow">
-          <div className="w-5 h-8 rounded-full border border-[var(--color-border-default)] flex items-start justify-center p-1">
-            <div className="w-1 h-2 rounded-full bg-[var(--color-accent-purple)] animate-pulse" />
-          </div>
-        </div>
       </section>
 
-      {/* === STATS === */}
-      <section className="relative py-20 border-y border-[var(--color-border-default)]">
-        <div className="max-w-7xl mx-auto px-6">
-          <Reveal>
-            <p className="text-center text-sm text-[var(--color-text-muted)] mb-10 uppercase tracking-widest">
-              {t.trustedBy}
-            </p>
-          </Reveal>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { value: stats.publicSkills, label: t.stats.skills },
-              { value: stats.verifiedSkills, label: t.stats.verified },
-              { value: stats.publicPublishers, label: t.stats.publishers },
-              { value: stats.recordedCalls, label: t.stats.calls },
-            ].map((stat, i) => (
-              <Reveal key={stat.label} delay={i * 100}>
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-bold gradient-text mb-2">
-                    {formatNumber(stat.value)}
-                  </div>
-                  <div className="text-sm text-[var(--color-text-muted)]">{stat.label}</div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* =========================================
+          BENTO GRID FEATURES
+          ========================================= */}
+      <section className="relative py-24 sm:py-32">
+        {/* Subtle section glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-[radial-gradient(ellipse,rgba(99,102,241,0.06)_0%,transparent_70%)] pointer-events-none" />
 
-      {/* === FEATURES BENTO === */}
-      <section className="py-24 sm:py-32">
-        <div className="max-w-7xl mx-auto px-6">
-          <Reveal>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t.showcaseTitle}</h2>
-              <p className="text-[var(--color-text-secondary)] text-lg">{t.showcaseDesc}</p>
-            </div>
-          </Reveal>
-
+        <div className="relative max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {t.features.map((feature, i) => {
-              const Icon = featureIcons[feature.icon];
-              return (
-                <Reveal key={feature.title} delay={i * 100}>
-                  <BentoCard
-                    title={feature.title}
-                    description={feature.desc}
-                    icon={<Icon size={20} className="text-[var(--color-accent-purple)]" />}
-                    className="h-full min-h-[180px]"
-                  />
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* === FEATURED SKILLS === */}
-      <section className="py-24 sm:py-32 bg-[var(--color-bg-elevated)]">
-        <div className="max-w-7xl mx-auto px-6">
-          <Reveal>
-            <div className="flex items-end justify-between mb-12">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-2">{t.featuredTitle}</h2>
-                <p className="text-[var(--color-text-secondary)]">{t.featuredDesc}</p>
-              </div>
-              <a
-                href={`/registry${langSuffix}`}
-                className="hidden sm:inline-flex items-center gap-1.5 text-sm text-[var(--color-accent-purple)] hover:text-[var(--color-accent-cyan)] transition-colors font-medium"
-              >
-                {t.featuredAction}
-                <ArrowRight size={14} />
-              </a>
-            </div>
-          </Reveal>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {skills.slice(0, 6).map((skill: SkillSummary, i: number) => (
-              <Reveal key={skill.slug} delay={i * 80}>
-                <SkillCard
-                  skill={skill}
-                  locale={locale}
-                  zhDescription={zhSkillMeta[skill.slug]?.desc}
-                  zhTags={zhSkillMeta[skill.slug]?.tags}
+            {t.features.map((feature, i) => (
+              <Reveal key={feature.icon} delay={i * 100}>
+                <BentoCard
+                  title={feature.title}
+                  description={feature.desc}
+                  icon={featureIcons[feature.icon]}
+                  className="h-full min-h-[200px]"
                 />
               </Reveal>
             ))}
           </div>
-
-          {/* Mobile link */}
-          <div className="sm:hidden mt-8 text-center">
-            <a
-              href={`/registry${langSuffix}`}
-              className="inline-flex items-center gap-1.5 text-sm text-[var(--color-accent-purple)] font-medium"
-            >
-              {t.featuredAction}
-              <ArrowRight size={14} />
-            </a>
-          </div>
         </div>
       </section>
 
-      {/* === HOW IT WORKS === */}
-      <section className="py-24 sm:py-32">
-        <div className="max-w-4xl mx-auto px-6">
+      {/* =========================================
+          HOW IT WORKS — TIMELINE
+          ========================================= */}
+      <section className="relative py-24 sm:py-32">
+        <div className="max-w-3xl mx-auto px-6">
           <Reveal>
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t.howTitle}</h2>
-              <p className="text-[var(--color-text-secondary)] text-lg">{t.howDesc}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                {t.howTitle}
+              </h2>
+              <p className="text-[var(--color-text-secondary)] text-lg">
+                {t.howDesc}
+              </p>
             </div>
           </Reveal>
 
-          <div className="flow-line relative pl-10">
+          <div className="relative flow-line pl-10">
             {t.howSteps.map((step, i) => (
-              <Reveal key={step.step} delay={i * 100}>
+              <Reveal key={step.step} delay={i * 80}>
                 <div className="relative pb-10 last:pb-0">
-                  {/* Step number circle */}
-                  <div className="absolute -left-10 top-0 w-[30px] h-[30px] rounded-full bg-[var(--color-bg-primary)] border border-[var(--color-border-default)] flex items-center justify-center z-10">
-                    <span className="text-xs font-mono font-bold text-[var(--color-accent-purple)]">
-                      {step.step}
-                    </span>
-                  </div>
-
-                  <div className="pt-0.5">
-                    <h3 className="text-base font-semibold text-[var(--color-text-primary)] mb-1.5">
-                      {step.title}
-                    </h3>
+                  {/* Node dot */}
+                  <div className="absolute left-[-25px] top-1 w-[11px] h-[11px] rounded-full border-2 border-[var(--color-accent-purple)] bg-[var(--color-bg-primary)]" />
+                  <div className="glass-card glass-card-hover rounded-xl p-5 ml-2 transition-all duration-300 cursor-default">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xs font-mono text-[var(--color-accent-cyan)] bg-[rgba(6,182,212,0.1)] px-2 py-0.5 rounded">
+                        {step.step}
+                      </span>
+                      <h3 className="text-[15px] font-semibold text-[var(--color-text-primary)]">
+                        {step.title}
+                      </h3>
+                    </div>
                     <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
                       {step.desc}
                     </p>
@@ -437,35 +441,96 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      {/* === FINAL CTA === */}
-      <section className="relative py-24 sm:py-32 overflow-hidden">
+      {/* =========================================
+          FEATURED SKILLS
+          ========================================= */}
+      <section className="relative py-24 sm:py-32">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-[radial-gradient(ellipse,rgba(139,92,246,0.05)_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto px-6">
+          <Reveal>
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+                  {t.featuredTitle}
+                </h2>
+                <p className="text-[var(--color-text-secondary)]">
+                  {t.featuredDesc}
+                </p>
+              </div>
+              <a
+                href={`/registry${langSuffix}`}
+                className="hidden sm:inline-flex items-center gap-1 text-sm text-[var(--color-accent-purple)] hover:text-[var(--color-accent-cyan)] transition-colors font-medium"
+              >
+                {t.featuredAction}
+                <ArrowRight size={14} />
+              </a>
+            </div>
+          </Reveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {skills.map((skill: SkillSummary, i: number) => {
+              const meta = zhSkillMeta[skill.slug];
+              return (
+                <Reveal key={skill.id} delay={i * 80}>
+                  <SkillCard
+                    skill={skill}
+                    locale={locale}
+                    zhDescription={meta?.desc}
+                    zhTags={meta?.tags}
+                  />
+                </Reveal>
+              );
+            })}
+          </div>
+
+          {/* Mobile link */}
+          <div className="sm:hidden mt-8 text-center">
+            <a
+              href={`/registry${langSuffix}`}
+              className="inline-flex items-center gap-1 text-sm text-[var(--color-accent-purple)] font-medium"
+            >
+              {t.featuredAction}
+              <ArrowRight size={14} />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================
+          FINAL CTA
+          ========================================= */}
+      <section className="relative py-28 sm:py-36">
         {/* Background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.1)_0%,transparent_70%)]" />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-[radial-gradient(ellipse,rgba(139,92,246,0.1)_0%,rgba(99,102,241,0.05)_40%,transparent_70%)]" />
         </div>
 
-        <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
+        <div className="relative max-w-3xl mx-auto px-6 text-center">
           <Reveal>
-            <div className="inline-flex items-center gap-2 mb-6">
-              <Sparkles size={20} className="text-[var(--color-accent-purple)]" />
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5 leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6">
               {t.ctaTitle}
             </h2>
-            <p className="text-lg text-[var(--color-text-secondary)] mb-10 max-w-xl mx-auto">
+          </Reveal>
+          <Reveal delay={100}>
+            <p className="text-lg text-[var(--color-text-secondary)] mb-10 max-w-xl mx-auto leading-relaxed">
               {t.ctaDesc}
             </p>
+          </Reveal>
+          <Reveal delay={200}>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
                 href={`/developer${langSuffix}`}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-[var(--color-accent-purple)] to-[var(--color-accent-indigo)] text-white font-medium text-[15px] shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all hover:-translate-y-0.5"
+                className="glow-button inline-flex items-center gap-2 px-8 py-4 rounded-xl text-white font-medium text-[15px]"
               >
-                {t.ctaCta}
-                <ArrowRight size={16} />
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  {t.ctaCta}
+                  <ArrowRight size={16} />
+                </span>
               </a>
               <a
                 href={`/support${langSuffix}`}
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-[var(--color-border-default)] text-[var(--color-text-secondary)] font-medium text-[15px] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-hover)] transition-all"
+                className="ghost-button inline-flex items-center gap-2 px-8 py-4 rounded-xl text-[var(--color-text-secondary)] font-medium text-[15px] hover:text-[var(--color-text-primary)]"
               >
                 {t.ctaSecondary}
               </a>
