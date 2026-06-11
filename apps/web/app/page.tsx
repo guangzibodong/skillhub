@@ -6,6 +6,7 @@ import { HomeFooter } from "@/components/home/footer";
 import { PlatformPreview } from "@/components/home/platform-preview";
 import { SkillGridCard } from "@/components/home/skill-grid-card";
 import { IntegrationSection } from "@/components/home/integration-section";
+import { TeamSection } from "@/components/home/team-section";
 import { Reveal } from "@/components/home/reveal";
 import "./tailwind.css";
 
@@ -25,48 +26,55 @@ export default async function HomePage({ searchParams }: PageProps) {
     <div className="min-h-screen">
       <HomeNav locale={locale} />
 
-      {/* ========== HERO ========== */}
-      <section className="pt-[140px] pb-[80px]">
-        <div className="max-w-[1280px] mx-auto px-6 text-center">
-          {/* Announcement pill */}
-          <a href={`/docs${langSuffix}`} className="badge-new inline-flex mb-8">
+      {/* ===== 1. HERO (matches Morphic: badge → eyebrow → headline → subline → 2 CTAs → 3 tabs → product preview) ===== */}
+      <section className="pt-[120px] pb-0">
+        <div className="max-w-[1200px] mx-auto px-6 text-center">
+          {/* Announcement badge */}
+          <a href={`/docs${langSuffix}`} className="badge-new inline-flex mb-6">
             <span>{t.badge}</span>
             {t.badgeText}
           </a>
 
           {/* Eyebrow */}
-          <p className="text-body-lg text-[var(--color-text-secondary)] mb-3">
+          <p className="text-[16px] font-medium text-[#999] tracking-[-0.01em] mb-2">
             {t.eyebrow}
           </p>
 
-          {/* Headline */}
-          <h1 className="text-display text-[var(--color-text-primary)] mb-6">
+          {/* Headline (display) */}
+          <h1 className="text-[56px] md:text-[72px] font-bold leading-[1.05] tracking-[-0.04em] text-white mb-6">
             {t.headline}
           </h1>
 
           {/* Subline */}
-          <p className="text-body-lg text-[var(--color-text-secondary)] max-w-[640px] mx-auto mb-10">
+          <p className="text-[18px] font-normal text-[#999] leading-[1.5] tracking-[-0.01em] max-w-[580px] mx-auto mb-10">
             {t.subline}
           </p>
 
-          {/* CTAs */}
-          <div className="flex items-center justify-center gap-3 mb-16">
+          {/* 2 CTAs */}
+          <div className="flex items-center justify-center gap-3 mb-14">
             <a href={`/developer${langSuffix}`} className="btn-primary">
               {t.cta1}
             </a>
-            <a href={`/support${langSuffix}`} className="btn-text">
+            <a href={`/support${langSuffix}`} className="btn-secondary">
               {t.cta2}
             </a>
           </div>
 
-          {/* Three tabs (like Canvas / Copilot / Compose) */}
-          <div className="flex justify-center gap-8 md:gap-16 mb-10">
+          {/* 3 Tabs (like Canvas / Copilot / Compose) */}
+          <div className="flex justify-center gap-0 mb-10">
             {t.tabs.map((tab, i) => (
-              <div key={i} className="text-center">
-                <p className="text-body-sm text-[var(--color-text-primary)] mb-1">
+              <div
+                key={i}
+                className={`px-6 md:px-10 py-4 text-center border-b-2 ${
+                  i === 0
+                    ? "border-white"
+                    : "border-transparent hover:border-[#333]"
+                } cursor-pointer transition-colors`}
+              >
+                <p className="text-[14px] font-medium text-white mb-0.5">
                   {tab.title}
                 </p>
-                <p className="text-caption text-[var(--color-text-muted)]">
+                <p className="text-[12px] text-[#666]">
                   {tab.sub}
                 </p>
               </div>
@@ -74,22 +82,22 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Platform Preview (large product mockup - this is the visual weight) */}
+        {/* Product preview — FULL WIDTH card (like Morphic's app frame) */}
         <div className="max-w-[1100px] mx-auto px-6">
           <PlatformPreview locale={locale} />
         </div>
       </section>
 
-      {/* ========== FEATURE BULLETS (3 items) ========== */}
-      <section className="section-gap">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-10">
+      {/* ===== 2. THREE FEATURE BULLETS (matches Morphic: 3-col grid, heading + description each) ===== */}
+      <section className="py-[96px]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-12">
             {t.features.map((f, i) => (
-              <Reveal key={i} delay={i * 100}>
-                <h3 className="text-heading-sm text-[var(--color-text-primary)] mb-3">
+              <Reveal key={i} delay={i * 80}>
+                <h3 className="text-[20px] font-semibold text-white tracking-[-0.02em] mb-3">
                   {f.title}
                 </h3>
-                <p className="text-body text-[var(--color-text-secondary)]">
+                <p className="text-[15px] text-[#999] leading-[1.6]">
                   {f.desc}
                 </p>
               </Reveal>
@@ -98,16 +106,16 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      {/* ========== SKILLS (Workflows equivalent) ========== */}
-      <section className="section-gap border-t border-[var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6">
-          {/* Header */}
-          <div className="flex items-end justify-between mb-10">
+      {/* ===== 3. SKILLS / WORKFLOWS (matches Morphic: eyebrow + heading + "See more" link → horizontal card scroll) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          {/* Header row */}
+          <div className="flex items-end justify-between mb-8">
             <div>
-              <p className="text-label text-[var(--color-text-muted)] mb-2">
+              <p className="text-[12px] font-medium text-[#666] tracking-[0.05em] uppercase mb-2">
                 {t.skillsEyebrow}
               </p>
-              <h2 className="text-heading text-[var(--color-text-primary)]">
+              <h2 className="text-[40px] font-bold text-white tracking-[-0.04em]">
                 {t.skillsHeadline}
               </h2>
             </div>
@@ -119,124 +127,143 @@ export default async function HomePage({ searchParams }: PageProps) {
             </a>
           </div>
 
-          {/* Horizontal scroll of skill cards */}
+          {/* Horizontal scroll cards */}
           <div className="scroll-x">
             {skills.map((skill) => (
-              <SkillGridCard
-                key={skill.slug}
-                skill={skill}
-                locale={locale}
-              />
+              <SkillGridCard key={skill.slug} skill={skill} locale={locale} />
             ))}
           </div>
-
-          <a
-            href={`/marketplace${langSuffix}`}
-            className="btn-text md:hidden mt-6 inline-flex"
-          >
-            {t.skillsSeeMore} <ArrowRight size={14} />
-          </a>
         </div>
       </section>
 
-      {/* ========== INTEGRATIONS (Seamless Workflows equivalent) ========== */}
-      <section className="section-gap border-t border-[var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-label text-[var(--color-text-muted)] mb-2">
-                {t.integrationsEyebrow}
-              </p>
-              <h2 className="text-heading text-[var(--color-text-primary)]">
-                {t.integrationsHeadline}
-              </h2>
-            </div>
+      {/* ===== 4. INTEGRATIONS / SEAMLESS WORKFLOWS (matches Morphic: eyebrow + heading → vertical tabs left, preview right) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="mb-10">
+            <p className="text-[12px] font-medium text-[#666] tracking-[0.05em] uppercase mb-2">
+              {t.integrationsEyebrow}
+            </p>
+            <h2 className="text-[40px] font-bold text-white tracking-[-0.04em]">
+              {t.integrationsHeadline}
+            </h2>
           </div>
 
           <IntegrationSection locale={locale} />
         </div>
       </section>
 
-      {/* ========== BUILT FOR TEAMS ========== */}
-      <section className="section-gap border-t border-[var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="text-label text-[var(--color-text-muted)] mb-2">
-                {t.teamEyebrow}
-              </p>
-              <h2 className="text-heading text-[var(--color-text-primary)] mb-4">
-                {t.teamHeadline}
-              </h2>
-              <p className="text-body-lg text-[var(--color-text-secondary)] mb-8">
-                {t.teamDesc}
-              </p>
-              <div className="flex items-center gap-3">
-                <a href={`/developer${langSuffix}`} className="btn-primary">
-                  {t.teamCta1}
-                </a>
-                <a href={`/docs${langSuffix}`} className="btn-text">
-                  {t.teamCta2}
-                </a>
-              </div>
-            </div>
-            {/* Team visual — mock of dashboard */}
-            <div className="card-lg p-4">
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[var(--color-border)]">
-                {/* Avatar stack */}
-                <div className="flex -space-x-2">
-                  {["K", "M", "J"].map((letter, i) => (
-                    <div
-                      key={i}
-                      className="w-7 h-7 rounded-full bg-[var(--color-surface-3)] border-2 border-[var(--color-surface-1)] flex items-center justify-center"
-                    >
-                      <span className="text-caption text-[var(--color-text-secondary)]">{letter}</span>
-                    </div>
-                  ))}
-                </div>
-                <span className="text-body-sm text-[var(--color-text-muted)]">3 members</span>
-              </div>
-              {/* Mock project rows */}
-              {[
-                { name: "Research Agent", calls: "12.4k", status: "active" },
-                { name: "Sales Bot", calls: "8.2k", status: "active" },
-                { name: "Internal Tools", calls: "3.1k", status: "paused" },
-              ].map((proj, i) => (
-                <div key={i} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
-                  <div>
-                    <p className="text-body-sm text-[var(--color-text-primary)]">{proj.name}</p>
-                    <p className="text-caption text-[var(--color-text-muted)]">{proj.calls} calls this month</p>
+      {/* ===== 5. BUILT FOR TEAMS (matches Morphic: text left + visual right, 2 CTAs) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <TeamSection locale={locale} />
+        </div>
+      </section>
+
+      {/* ===== 6. USE CASES / ACROSS INDUSTRIES (matches Morphic: eyebrow + tabs for different verticals) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <p className="text-[12px] font-medium text-[#666] tracking-[0.05em] uppercase mb-2">
+            {t.useCasesEyebrow}
+          </p>
+          <h2 className="text-[40px] font-bold text-white tracking-[-0.04em] mb-8">
+            {t.useCasesHeadline}
+          </h2>
+
+          {/* Use case cards */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {t.useCases.map((uc, i) => (
+              <Reveal key={i} delay={i * 80}>
+                <div className="card-lg p-6">
+                  <div className="w-10 h-10 rounded-[8px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] flex items-center justify-center mb-4">
+                    <span className="text-[18px]">{uc.icon}</span>
                   </div>
-                  <div className={`w-2 h-2 rounded-full ${proj.status === "active" ? "bg-[var(--color-verified)]" : "bg-[var(--color-text-icon)]"}`} />
+                  <h3 className="text-[16px] font-medium text-white mb-2">{uc.title}</h3>
+                  <p className="text-[14px] text-[#999] leading-[1.5]">{uc.desc}</p>
                 </div>
-              ))}
-            </div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ========== SOCIAL PROOF QUOTE ========== */}
-      <section className="section-gap border-t border-[var(--color-border)]">
-        <div className="max-w-[800px] mx-auto px-6 text-center">
+      {/* ===== 7. TESTIMONIAL QUOTE (matches Morphic: large centered quote) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[900px] mx-auto px-6 text-center">
           <Reveal>
-            <blockquote className="text-heading text-[var(--color-text-primary)] mb-6">
+            <blockquote className="text-[32px] md:text-[40px] font-bold text-white tracking-[-0.03em] leading-[1.2] mb-6">
               &ldquo;{t.quote}&rdquo;
             </blockquote>
-            <p className="text-body text-[var(--color-text-muted)]">
+            <p className="text-[14px] text-[#666]">
               {t.quoteAttr}
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* ========== FINAL CTA ========== */}
-      <section className="section-gap border-t border-[var(--color-border)]">
-        <div className="max-w-[1280px] mx-auto px-6 text-center">
+      {/* ===== 8. LOGOS / AS SEEN IN (matches Morphic: row of partner logos) ===== */}
+      <section className="py-[48px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <p className="text-[12px] text-[#666] text-center mb-6">
+            {t.logosLabel}
+          </p>
+          <div className="flex items-center justify-center gap-10 flex-wrap">
+            {t.logos.map((logo, i) => (
+              <span
+                key={i}
+                className="text-[14px] font-medium text-[#444] tracking-[-0.01em]"
+              >
+                {logo}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 9. SHOWCASE / ORIGINALS (matches Morphic: eyebrow + 2-line heading + 4 showcase cards) ===== */}
+      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-6">
+          <p className="text-[12px] font-medium text-[#666] tracking-[0.05em] uppercase mb-2">
+            {t.showcaseEyebrow}
+          </p>
+          <h2 className="text-[40px] font-bold tracking-[-0.04em] mb-1">
+            <span className="text-white">{t.showcaseHeadline1}</span>
+          </h2>
+          <h2 className="text-[40px] font-bold tracking-[-0.04em] text-[#999] mb-10">
+            {t.showcaseHeadline2}
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {t.showcase.map((item, i) => (
+              <a
+                key={i}
+                href={`/skills/${item.slug}`}
+                className="skill-grid-card group"
+              >
+                <div className="skill-grid-card-image">
+                  <div className="w-10 h-10 rounded-[8px] bg-[var(--color-surface-3)] flex items-center justify-center">
+                    <span className="text-[18px]">{item.icon}</span>
+                  </div>
+                </div>
+                <div className="skill-grid-card-body">
+                  <h3 className="text-[14px] font-medium text-white mb-1 group-hover:text-[#0075ff] transition-colors">
+                    {item.name}
+                  </h3>
+                  <p className="text-[12px] text-[#666] line-clamp-2">{item.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== 10. FINAL CTA (matches Morphic: heading + paragraph + 2 CTAs, centered) ===== */}
+      <section className="py-[120px] border-t border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[680px] mx-auto px-6 text-center">
           <Reveal>
-            <h2 className="text-heading text-[var(--color-text-primary)] mb-4">
+            <h2 className="text-[48px] font-bold text-white tracking-[-0.04em] leading-[1.1] mb-5">
               {t.ctaHeadline}
             </h2>
-            <p className="text-body-lg text-[var(--color-text-secondary)] max-w-xl mx-auto mb-8">
+            <p className="text-[16px] text-[#999] leading-[1.5] mb-8">
               {t.ctaDesc}
             </p>
             <div className="flex items-center justify-center gap-3">
@@ -256,7 +283,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   );
 }
 
-/* ===== Copy ===== */
+/* ===== COPY ===== */
 
 const en = {
   badge: "New",
@@ -279,15 +306,33 @@ const en = {
   skillsEyebrow: "Skills",
   skillsHeadline: "Built for speed",
   skillsSeeMore: "See more",
-  integrationsEyebrow: "Integrations",
+  integrationsEyebrow: "Endless possibilities",
   integrationsHeadline: "Seamless connections",
   teamEyebrow: "Built for teams",
   teamHeadline: "Ship together",
   teamDesc: "Invite your team, share projects, manage API keys and budgets collaboratively. Role-based access keeps production safe.",
   teamCta1: "Start for free",
   teamCta2: "See pricing",
-  quote: "SkillHub is building the missing infrastructure layer between AI agents and the real world.",
+  useCasesEyebrow: "Use cases",
+  useCasesHeadline: "Across industries",
+  useCases: [
+    { icon: "🔍", title: "Research & Analysis", desc: "Deep web research, document analysis, competitive intelligence — all through verified skills." },
+    { icon: "💰", title: "Sales & Marketing", desc: "CRM enrichment, lead scoring, content generation with structured, auditable outputs." },
+    { icon: "⚙️", title: "Engineering", desc: "Code review, data pipeline orchestration, infrastructure monitoring through governed APIs." },
+  ],
+  quote: "SkillHub is pioneering the missing infrastructure layer between AI agents and the real world.",
   quoteAttr: "— Early access developer",
+  logosLabel: "Integrates with",
+  logos: ["Claude", "Cursor", "Windsurf", "ChatGPT", "VS Code", "MCP Protocol"],
+  showcaseEyebrow: "Showcase",
+  showcaseHeadline1: "Made by the community",
+  showcaseHeadline2: "Built to inspire you",
+  showcase: [
+    { icon: "🌐", name: "Browser Research Pro", desc: "Deep web research with structured output", slug: "browser-research-pro" },
+    { icon: "📊", name: "CRM Enrichment", desc: "Auto-complete contact profiles from public data", slug: "crm-enrichment" },
+    { icon: "🎯", name: "Support Triage", desc: "Classify tickets by priority and route", slug: "support-triage" },
+    { icon: "🔒", name: "Code Review Assistant", desc: "Security, performance, and best practices", slug: "code-review-assistant" },
+  ],
   ctaHeadline: "Bring your agents to life",
   ctaDesc: "No SDK lock-in. No vendor dependencies. Start invoking verified skills in minutes.",
   ctaCta1: "Get started",
@@ -315,15 +360,33 @@ const zh = {
   skillsEyebrow: "技能",
   skillsHeadline: "为速度而建",
   skillsSeeMore: "查看更多",
-  integrationsEyebrow: "集成",
+  integrationsEyebrow: "无限可能",
   integrationsHeadline: "无缝连接",
   teamEyebrow: "团队协作",
   teamHeadline: "一起交付",
   teamDesc: "邀请团队成员，共享项目，协作管理 API Key 和预算。基于角色的访问控制保护生产环境。",
   teamCta1: "免费开始",
   teamCta2: "查看定价",
+  useCasesEyebrow: "使用场景",
+  useCasesHeadline: "跨行业应用",
+  useCases: [
+    { icon: "🔍", title: "研究与分析", desc: "深度网络研究、文档分析、竞争情报 — 全部通过已验证的技能完成。" },
+    { icon: "💰", title: "销售与营销", desc: "CRM 数据补全、线索评分、内容生成，结构化且可审计的输出。" },
+    { icon: "⚙️", title: "工程", desc: "代码审查、数据管道编排、基础设施监控，通过受治理的 API 完成。" },
+  ],
   quote: "SkillHub 正在构建 AI Agent 与现实世界之间缺失的基础设施层。",
   quoteAttr: "— 早期体验开发者",
+  logosLabel: "集成平台",
+  logos: ["Claude", "Cursor", "Windsurf", "ChatGPT", "VS Code", "MCP 协议"],
+  showcaseEyebrow: "展示",
+  showcaseHeadline1: "社区出品",
+  showcaseHeadline2: "激发你的灵感",
+  showcase: [
+    { icon: "🌐", name: "Browser Research Pro", desc: "深度网络研究，结构化输出", slug: "browser-research-pro" },
+    { icon: "📊", name: "CRM Enrichment", desc: "从公开数据自动补全联系人资料", slug: "crm-enrichment" },
+    { icon: "🎯", name: "Support Triage", desc: "按优先级分类工单并路由到团队", slug: "support-triage" },
+    { icon: "🔒", name: "Code Review Assistant", desc: "安全、性能和最佳实践审查", slug: "code-review-assistant" },
+  ],
   ctaHeadline: "让你的 Agent 活起来",
   ctaDesc: "无 SDK 锁定。无供应商依赖。几分钟内开始调用已验证的技能。",
   ctaCta1: "开始使用",
