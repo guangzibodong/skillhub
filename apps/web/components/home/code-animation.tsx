@@ -3,38 +3,39 @@
 import { useState, useEffect, useRef } from "react";
 
 const codeLines = [
-  { text: "const skill = await skillhub.invoke({", color: "white" },
-  { text: '  name: "browser-research-pro",', color: "purple" },
-  { text: '  version: "1.2.0",', color: "cyan" },
+  { text: "import { SkillHub } from '@useskillhub/sdk';", color: "muted" },
+  { text: "", color: "white" },
+  { text: "const hub = new SkillHub({", color: "white" },
+  { text: "  apiKey: process.env.SKILLHUB_KEY,", color: "purple" },
+  { text: "});", color: "white" },
+  { text: "", color: "white" },
+  { text: "const result = await hub.invoke({", color: "white" },
+  { text: '  skill: "browser-research-pro",', color: "cyan" },
   { text: "  input: {", color: "white" },
-  { text: '    query: "Latest AI agent frameworks 2026",', color: "green" },
-  { text: "    depth: 3,", color: "cyan" },
-  { text: "    format: \"structured\"", color: "cyan" },
+  { text: '    query: "AI agent frameworks 2026",', color: "green" },
+  { text: "    depth: 3,", color: "purple" },
+  { text: '    format: "structured"', color: "purple" },
   { text: "  }", color: "white" },
   { text: "});", color: "white" },
   { text: "", color: "white" },
-  { text: "// Response", color: "muted" },
-  { text: "// ✓ 12 sources analyzed in 2.3s", color: "green" },
-  { text: "// ✓ Verification: passed", color: "green" },
-  { text: "// ✓ Permission scope: web.search, web.fetch", color: "green" },
+  { text: "console.log(result.summary);", color: "white" },
+  { text: "// ✓ 12 sources · 2.1s · verified", color: "green" },
 ];
 
 const colorMap: Record<string, string> = {
-  white: "text-[var(--color-text-primary)]",
-  purple: "text-[var(--color-accent-purple)]",
-  cyan: "text-[var(--color-accent-cyan)]",
-  green: "text-[var(--color-accent-green)]",
-  muted: "text-[var(--color-text-muted)]",
+  white: "text-[#e2e8f0]",
+  purple: "text-[#a78bfa]",
+  cyan: "text-[#67e8f9]",
+  green: "text-[#6ee7b7]",
+  muted: "text-[#4a5568]",
 };
 
 export function CodeAnimation() {
   const [visibleChars, setVisibleChars] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const totalChars = codeLines.reduce((sum, line) => sum + line.text.length + 1, 0);
 
   useEffect(() => {
-    // Check reduced motion preference
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
       setVisibleChars(totalChars);
@@ -52,25 +53,24 @@ export function CodeAnimation() {
       } else {
         setVisibleChars(charCount);
       }
-    }, 30);
+    }, 25);
 
     return () => clearInterval(timer);
   }, [totalChars]);
 
-  // Build visible text from character count
   const getVisibleContent = () => {
     let remaining = visibleChars;
-    const result: Array<{ text: string; color: string; full: boolean }> = [];
+    const result: Array<{ text: string; color: string }> = [];
 
     for (const line of codeLines) {
-      const lineLength = line.text.length + 1; // +1 for newline
+      const lineLength = line.text.length + 1;
       if (remaining <= 0) break;
 
       if (remaining >= lineLength) {
-        result.push({ text: line.text, color: line.color, full: true });
+        result.push({ text: line.text, color: line.color });
         remaining -= lineLength;
       } else {
-        result.push({ text: line.text.slice(0, remaining), color: line.color, full: false });
+        result.push({ text: line.text.slice(0, remaining), color: line.color });
         remaining = 0;
       }
     }
@@ -80,25 +80,27 @@ export function CodeAnimation() {
   const content = getVisibleContent();
 
   return (
-    <div
-      ref={containerRef}
-      className="relative rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-card-solid)] overflow-hidden"
-    >
+    <div className="relative glass-card rounded-2xl overflow-hidden">
       {/* Terminal chrome */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--color-border-default)] bg-[rgba(255,255,255,0.02)]">
-        <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-        <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-        <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="ml-auto text-[11px] font-mono text-[var(--color-text-muted)]">
-          skillhub-demo.ts
-        </span>
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-[#ff5f57]/80" />
+          <div className="w-3 h-3 rounded-full bg-[#febc2e]/80" />
+          <div className="w-3 h-3 rounded-full bg-[#28c840]/80" />
+        </div>
+        <div className="flex-1 text-center">
+          <span className="text-[11px] font-mono text-[var(--color-text-muted)]">
+            agent.ts
+          </span>
+        </div>
+        <div className="w-[54px]" /> {/* Balance spacing */}
       </div>
 
       {/* Code content */}
-      <div className="p-5 font-mono text-[13px] leading-relaxed min-h-[320px]">
+      <div className="p-6 font-mono text-[13px] leading-[1.8] min-h-[380px]">
         {content.map((line, i) => (
           <div key={i} className="flex">
-            <span className="select-none text-[var(--color-text-muted)] w-8 text-right mr-4 text-[11px] leading-relaxed">
+            <span className="select-none text-[var(--color-text-muted)] w-7 text-right mr-5 text-[11px] leading-[1.8] opacity-50">
               {i + 1}
             </span>
             <span className={colorMap[line.color]}>
@@ -108,14 +110,11 @@ export function CodeAnimation() {
         ))}
         {!isComplete && (
           <div className="flex">
-            <span className="select-none text-[var(--color-text-muted)] w-8 text-right mr-4 text-[11px]" />
-            <span className="inline-block w-[2px] h-[18px] bg-[var(--color-accent-purple)] animate-pulse" />
+            <span className="select-none w-7 mr-5" />
+            <span className="inline-block w-[2px] h-[18px] bg-[var(--color-accent-purple)] animate-pulse rounded-full" />
           </div>
         )}
       </div>
-
-      {/* Glow overlay at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--color-bg-card-solid)] to-transparent pointer-events-none" />
     </div>
   );
 }
