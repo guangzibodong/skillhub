@@ -13,6 +13,7 @@ import {
   Terminal
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
@@ -174,30 +175,32 @@ export default async function RegistryPage({ searchParams }: PageProps) {
   return (
     <AppShell active="registry" locale={locale}>
       <section className="section">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-20">
-          <div>
-            <div className="eyebrow">
-              <Boxes size={16} aria-hidden="true" />
-              <span>{dictionary.registryPage.eyebrow}</span>
+        <div className="section-inner hero-glow max-w-[1200px] mx-auto px-6 py-20">
+          <Reveal>
+            <div>
+              <div className="eyebrow">
+                <Boxes size={16} aria-hidden="true" />
+                <span>{dictionary.registryPage.eyebrow}</span>
+              </div>
+              <h1 className="heading-xl mt-4">{dictionary.registryPage.title}</h1>
+              <p className="body-text mt-4 max-w-[640px]">{dictionary.registryPage.description}</p>
             </div>
-            <h1 className="heading-xl mt-4">{dictionary.registryPage.title}</h1>
-            <p className="body-text mt-4 max-w-[640px]">{dictionary.registryPage.description}</p>
-          </div>
-          <div className="flex gap-4 mt-8">
-            <a className="btn-primary btn-primary--large" href={localizedHref("/publish", locale)}>
-              <Plus size={18} aria-hidden="true" />
-              <span>{labels.actions.submit}</span>
-            </a>
-            <a className="btn-secondary btn-secondary--large" href={localizedHref("/marketplace", locale)}>
-              <ArrowRight size={18} aria-hidden="true" />
-              <span>{labels.actions.marketplace}</span>
-            </a>
-          </div>
+            <div className="flex gap-4 mt-8">
+              <a className="btn-primary btn-primary--large" href={localizedHref("/publish", locale)}>
+                <Plus size={18} aria-hidden="true" />
+                <span>{labels.actions.submit}</span>
+              </a>
+              <a className="btn-secondary btn-secondary--large" href={localizedHref("/marketplace", locale)}>
+                <ArrowRight size={18} aria-hidden="true" />
+                <span>{labels.actions.marketplace}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="section" aria-labelledby="registry-protocol-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+      <section className="section section-divider" aria-labelledby="registry-protocol-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
           <div className="mb-10">
             <div className="eyebrow">
               <Database size={16} aria-hidden="true" />
@@ -233,8 +236,8 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         ]}
       />
 
-      <section className="section" aria-labelledby="registry-contract-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+      <section className="section section-divider" aria-labelledby="registry-contract-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
             <article className="card">
               <div className="eyebrow">
@@ -243,21 +246,25 @@ export default async function RegistryPage({ searchParams }: PageProps) {
               </div>
               <h2 id="registry-contract-heading" className="heading-lg mt-4">{labels.manifestTitle}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                {labels.manifestFields.map(([title, body]) => (
-                  <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4" key={title}>
-                    <span className="text-[#0075ff] text-sm font-medium">{title}</span>
-                    <strong className="block text-white/80 text-sm mt-1 font-normal">{body}</strong>
-                  </div>
+                {labels.manifestFields.map(([title, body], i) => (
+                  <Reveal delay={i * 60} key={title}>
+                    <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4">
+                      <span className="text-[#0075ff] text-sm font-medium">{title}</span>
+                      <strong className="block text-white/80 text-sm mt-1 font-normal">{body}</strong>
+                    </div>
+                  </Reveal>
                 ))}
               </div>
-              <div className="mt-6 space-y-3">
-                {labels.notes.map((note) => (
-                  <div className="flex items-start gap-3 text-[#999] text-sm" key={note}>
-                    <ShieldCheck size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-[#10b981]" />
-                    <span>{note}</span>
-                  </div>
-                ))}
-              </div>
+              <Reveal>
+                <div className="mt-6 space-y-3">
+                  {labels.notes.map((note) => (
+                    <div className="flex items-start gap-3 text-[#999] text-sm" key={note}>
+                      <ShieldCheck size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-[#10b981]" />
+                      <span>{note}</span>
+                    </div>
+                  ))}
+                </div>
+              </Reveal>
             </article>
 
             <aside className="flex flex-col gap-6">
@@ -277,13 +284,15 @@ export default async function RegistryPage({ searchParams }: PageProps) {
                 <h2 className="heading-sm">{labels.lifecycleTitle}</h2>
                 <div className="mt-4 space-y-3">
                   {labels.lifecycle.map(([title, body], index) => (
-                    <div className="flex items-start gap-3" key={title}>
-                      <span className="text-[#525252] text-xs font-mono mt-0.5">{String(index + 1).padStart(2, "0")}</span>
-                      <div>
-                        <strong className="text-white text-sm">{title}</strong>
-                        <small className="block text-[#666] text-xs mt-0.5">{body}</small>
+                    <Reveal delay={index * 60} key={title}>
+                      <div className="flex items-start gap-3">
+                        <span className="text-[#525252] text-xs font-mono mt-0.5">{String(index + 1).padStart(2, "0")}</span>
+                        <div>
+                          <strong className="text-white text-sm">{title}</strong>
+                          <small className="block text-[#666] text-xs mt-0.5">{body}</small>
+                        </div>
                       </div>
-                    </div>
+                    </Reveal>
                   ))}
                 </div>
               </div>
@@ -302,8 +311,8 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="registry-page-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-16">
+      <section className="section section-divider" aria-labelledby="registry-page-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
               <div className="eyebrow">
@@ -334,6 +343,25 @@ export default async function RegistryPage({ searchParams }: PageProps) {
           </div>
 
           <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} locale={locale} skills={skills} />
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="closing-cta">
+        <div className="section-inner">
+          <Reveal>
+            <h2 className="heading-lg mb-4">{locale === "zh" ? "开始构建" : "Start building"}</h2>
+            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "浏览技能市场或发布你自己的技能。" : "Explore the marketplace or publish your own skill."}</p>
+            <div className="flex items-center justify-center gap-3">
+              <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
+                <span>{locale === "zh" ? "市场" : "Marketplace"}</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </a>
+              <a className="btn-secondary" href={localizedHref("/publish", locale)}>
+                <span>{locale === "zh" ? "发布技能" : "Publish a skill"}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
     </AppShell>

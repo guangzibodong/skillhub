@@ -12,6 +12,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
@@ -104,40 +105,46 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
 
   return (
     <AppShell active="publishers" locale={locale}>
-      <section className="section pt-20 pb-12">
+      <section className="section py-[96px]">
         <div className="section-inner">
-          <a className="btn-text text-sm mb-4 inline-block" href={localizedHref("/marketplace", locale)}>{labels.back}</a>
-          <div className="eyebrow mb-3">
-            <Building2 size={16} aria-hidden="true" />
-            <span>{labels.profile}</span>
-          </div>
-          <h1 className="heading-xl mb-4">{publisher.displayName}</h1>
-          <p className="body-text text-[#999] mb-6 max-w-[600px]">{labels.trustBody}</p>
-          <div className="flex flex-wrap gap-2">
-            <span className={trustClass(publisher.trustLevel)}>
-              <BadgeCheck size={14} aria-hidden="true" />
-              {labels.trustLevels[publisher.trustLevel]}
-            </span>
-            <span className={publisher.status === "active" ? "pill pill--success" : "pill pill--warning"}>{labels.status}: {labels.publisherStatuses[publisher.status]}</span>
-            <span className={publisher.payoutStatus === "verified" ? "pill pill--success" : "pill pill--neutral"}>{labels.payout}: {labels.payoutStatuses[publisher.payoutStatus]}</span>
-          </div>
+          <Reveal>
+            <a className="btn-text text-sm mb-4 inline-block" href={localizedHref("/marketplace", locale)}>{labels.back}</a>
+            <div className="eyebrow mb-3">
+              <Building2 size={16} aria-hidden="true" />
+              <span>{labels.profile}</span>
+            </div>
+            <h1 className="heading-xl mb-4">{publisher.displayName}</h1>
+            <p className="body-text text-[#999] mb-6 max-w-[600px]">{labels.trustBody}</p>
+            <div className="flex flex-wrap gap-2">
+              <span className={trustClass(publisher.trustLevel)}>
+                <BadgeCheck size={14} aria-hidden="true" />
+                {labels.trustLevels[publisher.trustLevel]}
+              </span>
+              <span className={publisher.status === "active" ? "pill pill--success" : "pill pill--warning"}>{labels.status}: {labels.publisherStatuses[publisher.status]}</span>
+              <span className={publisher.payoutStatus === "verified" ? "pill pill--success" : "pill pill--neutral"}>{labels.payout}: {labels.payoutStatuses[publisher.payoutStatus]}</span>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="section py-8">
+      <div className="section-divider" />
+      <section className="section py-[96px]">
         <div className="section-inner">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {metricRows.map(([label, value]) => (
-              <div className="stat-card" key={label}>
-                <span className="text-sm text-[#999]">{label}</span>
-                <strong className="text-xl text-white">{value}</strong>
-              </div>
-            ))}
-          </div>
+          <Reveal>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {metricRows.map(([label, value]) => (
+                <div className="stat-card" key={label}>
+                  <span className="text-sm text-[#999]">{label}</span>
+                  <strong className="text-xl text-white">{value}</strong>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="section py-8">
+      <div className="section-divider" />
+      <section className="section py-[96px]">
         <div className="section-inner flex flex-col lg:flex-row gap-8">
           <div className="flex-1">
             <article className="card">
@@ -147,64 +154,68 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
               </div>
               <p className="body-text-sm text-[#999] mb-6">{labels.skillBody}</p>
               <div className="flex flex-col gap-4">
-                {publisher.skills.map((skill) => {
+                {publisher.skills.map((skill, i) => {
                   const installState = getSkillInstallState(skill.verificationStatus);
                   return (
-                    <section className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-5 flex flex-col gap-3" key={skill.slug}>
-                      <header className="flex items-start justify-between gap-3">
-                        <div>
-                          <strong className="text-white">{localizeText(skill.displayName, locale)}</strong>
-                          <span className="block text-sm text-[#999] mt-0.5">{localizeText(skill.description, locale)}</span>
+                    <Reveal delay={i * 60} key={skill.slug}>
+                      <section className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-5 flex flex-col gap-3">
+                        <header className="flex items-start justify-between gap-3">
+                          <div>
+                            <strong className="text-white">{localizeText(skill.displayName, locale)}</strong>
+                            <span className="block text-sm text-[#999] mt-0.5">{localizeText(skill.description, locale)}</span>
+                          </div>
+                          <span className={verificationClass(skill.verificationStatus)}>{labels.verificationStatuses[skill.verificationStatus]}</span>
+                        </header>
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`pill pill--${skill.permissionLevel === "low" ? "neutral" : "warning"}`}>{labels.permissionLevels[skill.permissionLevel]}</span>
+                          <span className="text-sm text-[#999]">{formatPublicSkillPrice(skill, labels, locale)}</span>
+                          <span className="text-sm text-[#999]">{formatVersion(skill.version, labels.latest)}</span>
                         </div>
-                        <span className={verificationClass(skill.verificationStatus)}>{labels.verificationStatuses[skill.verificationStatus]}</span>
-                      </header>
-                      <div className="flex flex-wrap gap-2">
-                        <span className={`pill pill--${skill.permissionLevel === "low" ? "neutral" : "warning"}`}>{labels.permissionLevels[skill.permissionLevel]}</span>
-                        <span className="text-sm text-[#999]">{formatPublicSkillPrice(skill, labels, locale)}</span>
-                        <span className="text-sm text-[#999]">{formatVersion(skill.version, labels.latest)}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-[#999]">
-                        <span className="flex items-center gap-1.5">
-                          <Star size={14} aria-hidden="true" />
-                          {labels.installs}: {formatCompactNumber(skill.installCount)}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <WalletCards size={14} aria-hidden="true" />
-                          {labels.calls}: {formatCompactNumber(skill.callCount)}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <ShieldCheck size={14} aria-hidden="true" />
-                          {labels.success}: {formatPercent(skill.successRate)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 pt-2 border-t border-[rgba(255,255,255,0.08)]">
-                        <code className="text-xs text-[#666] break-all">{publisherSkillAvailability(installState, locale)}</code>
-                        <a className="btn-secondary flex-shrink-0" href={localizedHref(`/skills/${skill.slug}`, locale)}>
-                          <ShieldCheck size={15} aria-hidden="true" />
-                          <span>{labels.details}</span>
-                          <ArrowRight size={14} aria-hidden="true" />
-                        </a>
-                      </div>
-                    </section>
+                        <div className="flex flex-wrap gap-4 text-sm text-[#999]">
+                          <span className="flex items-center gap-1.5">
+                            <Star size={14} aria-hidden="true" />
+                            {labels.installs}: {formatCompactNumber(skill.installCount)}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <WalletCards size={14} aria-hidden="true" />
+                            {labels.calls}: {formatCompactNumber(skill.callCount)}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <ShieldCheck size={14} aria-hidden="true" />
+                            {labels.success}: {formatPercent(skill.successRate)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-[rgba(255,255,255,0.08)]">
+                          <code className="text-xs text-[#666] break-all">{publisherSkillAvailability(installState, locale)}</code>
+                          <a className="btn-secondary flex-shrink-0" href={localizedHref(`/skills/${skill.slug}`, locale)}>
+                            <ShieldCheck size={15} aria-hidden="true" />
+                            <span>{labels.details}</span>
+                            <ArrowRight size={14} aria-hidden="true" />
+                          </a>
+                        </div>
+                      </section>
+                    </Reveal>
                   );
                 })}
               </div>
             </article>
           </div>
           <aside className="w-full lg:w-[320px] flex-shrink-0">
-            <section className="card">
-              <div className="flex items-center gap-2 text-sm text-[#999] mb-3">
-                <ShieldCheck size={16} aria-hidden="true" />
-                <span className="font-medium text-white">{labels.trust}</span>
-              </div>
-              <div className="flex flex-col gap-3">
-                <TrustRow icon={<BadgeCheck size={15} aria-hidden="true" />} label={labels.status} value={labels.publisherStatuses[publisher.status]} />
-                <TrustRow icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.payout} value={labels.payoutStatuses[publisher.payoutStatus]} />
-                <TrustRow icon={<PackageCheck size={15} aria-hidden="true" />} label={labels.metricVerified} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
-                <TrustRow icon={<Star size={15} aria-hidden="true" />} label={labels.success} value={formatPercent(publisher.metrics.avgSuccessRate)} />
-                <TrustRow icon={<Terminal size={15} aria-hidden="true" />} label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />
-              </div>
-            </section>
+            <Reveal>
+              <section className="card">
+                <div className="flex items-center gap-2 text-sm text-[#999] mb-3">
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  <span className="font-medium text-white">{labels.trust}</span>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <TrustRow icon={<BadgeCheck size={15} aria-hidden="true" />} label={labels.status} value={labels.publisherStatuses[publisher.status]} />
+                  <TrustRow icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.payout} value={labels.payoutStatuses[publisher.payoutStatus]} />
+                  <TrustRow icon={<PackageCheck size={15} aria-hidden="true" />} label={labels.metricVerified} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
+                  <TrustRow icon={<Star size={15} aria-hidden="true" />} label={labels.success} value={formatPercent(publisher.metrics.avgSuccessRate)} />
+                  <TrustRow icon={<Terminal size={15} aria-hidden="true" />} label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />
+                </div>
+              </section>
+            </Reveal>
           </aside>
         </div>
       </section>

@@ -12,6 +12,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -265,46 +266,50 @@ export default async function TermsPage({ searchParams }: PageProps) {
   return (
     <AppShell active="terms" locale={locale}>
       {/* Hero */}
-      <section className="section pt-32 pb-16">
+      <section className="py-[96px] pt-32">
         <div className="section-inner">
-          <div className="max-w-[720px]">
-            <div className="eyebrow">
-              <Scale size={16} aria-hidden="true" />
-              <span>{labels.eyebrow}</span>
+          <Reveal>
+            <div className="max-w-[720px]">
+              <div className="eyebrow">
+                <Scale size={16} aria-hidden="true" />
+                <span>{labels.eyebrow}</span>
+              </div>
+              <h1 className="heading-xl mt-4">{labels.title}</h1>
+              <p className="body-text mt-4 text-[#999]">{labels.description}</p>
+              <span className="inline-block mt-4 text-sm text-[#10b981] font-medium">{labels.effective}</span>
             </div>
-            <h1 className="heading-xl mt-4">{labels.title}</h1>
-            <p className="body-text mt-4 text-[#999]">{labels.description}</p>
-            <span className="inline-block mt-4 text-sm text-[#10b981] font-medium">{labels.effective}</span>
-          </div>
-          <div className="flex flex-wrap gap-4 mt-8">
-            <a className="btn-primary" href={localizedHref("/publish", locale)}>
-              <ClipboardCheck size={18} aria-hidden="true" />
-              <span>{labels.primary}</span>
-            </a>
+            <div className="flex flex-wrap gap-4 mt-8">
+              <a className="btn-primary" href={localizedHref("/publish", locale)}>
+                <ClipboardCheck size={18} aria-hidden="true" />
+                <span>{labels.primary}</span>
+              </a>
             <a className="btn-secondary" href={localizedHref("/docs", locale)}>
               <Gavel size={18} aria-hidden="true" />
               <span>{labels.secondary}</span>
             </a>
           </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Summary grid */}
-      <section className="section pb-12" aria-label={locale === "zh" ? "条款摘要" : "Terms summary"}>
+      <section className="py-[96px] section-divider" aria-label={locale === "zh" ? "条款摘要" : "Terms summary"}>
         <div className="section-inner">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {labels.summary.map(([label, value]) => (
-              <div key={label} className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6">
-                <span className="block text-sm text-[#666] mb-1">{label}</span>
-                <strong className="text-white text-sm">{value}</strong>
-              </div>
+            {labels.summary.map(([label, value], i) => (
+              <Reveal key={label} delay={i * 60}>
+                <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6">
+                  <span className="block text-sm text-[#666] mb-1">{label}</span>
+                  <strong className="text-white text-sm">{value}</strong>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Policy sections + operator aside */}
-      <section className="section pb-24">
+      <section className="py-[96px] section-divider">
         <div className="section-inner">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Policy cards */}
@@ -313,53 +318,56 @@ export default async function TermsPage({ searchParams }: PageProps) {
                 const Icon = sectionIcons[index];
 
                 return (
-                  <article
-                    key={section.title}
-                    id={`policy-${index + 1}`}
-                    className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 transition-transform hover:-translate-y-0.5"
-                  >
-                    <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
-                      <Icon size={16} aria-hidden="true" />
-                      <span>{String(index + 1).padStart(2, "0")}</span>
-                    </div>
-                    <h2 className="heading-md mb-2">{section.title}</h2>
-                    <p className="body-text-sm text-[#999] mb-4">{section.body}</p>
-                    <ul className="list-disc list-inside space-y-2">
-                      {section.bullets.map((item) => (
-                        <li key={item} className="body-text-sm text-[#999]">{item}</li>
-                      ))}
-                    </ul>
-                  </article>
+                  <Reveal key={section.title} delay={index * 60}>
+                    <article
+                      id={`policy-${index + 1}`}
+                      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 transition-transform hover:-translate-y-0.5"
+                    >
+                      <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                        <Icon size={16} aria-hidden="true" />
+                        <span>{String(index + 1).padStart(2, "0")}</span>
+                      </div>
+                      <h2 className="heading-md mb-2">{section.title}</h2>
+                      <p className="body-text-sm text-[#999] mb-4">{section.body}</p>
+                      <ul className="list-disc list-inside space-y-2">
+                        {section.bullets.map((item) => (
+                          <li key={item} className="body-text-sm text-[#999]">{item}</li>
+                        ))}
+                      </ul>
+                    </article>
+                  </Reveal>
                 );
               })}
             </div>
 
             {/* Operator checklist aside */}
             <aside className="lg:w-[340px] shrink-0">
-              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 sticky top-24">
-                <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-4">
-                  <ShieldCheck size={16} aria-hidden="true" />
-                  <span>{labels.operatorTitle}</span>
-                </div>
-                <div className="space-y-3 mb-6">
-                  {labels.operatorItems.map((item) => (
-                    <div key={item} className="flex items-start gap-2">
-                      <LockKeyhole size={15} className="shrink-0 mt-0.5 text-[#525252]" aria-hidden="true" />
-                      <span className="body-text-sm text-[#999]">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
-                  <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
-                    <FileWarning size={16} aria-hidden="true" />
-                    <span>{labels.noticeTitle}</span>
+              <Reveal delay={100}>
+                <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 sticky top-24">
+                  <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-4">
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <span>{labels.operatorTitle}</span>
                   </div>
-                  {labels.notices.map((item) => (
-                    <p key={item} className="body-text-sm text-[#999] mb-2 last:mb-0">{item}</p>
-                  ))}
+                  <div className="space-y-3 mb-6">
+                    {labels.operatorItems.map((item) => (
+                      <div key={item} className="flex items-start gap-2">
+                        <LockKeyhole size={15} className="shrink-0 mt-0.5 text-[#525252]" aria-hidden="true" />
+                        <span className="body-text-sm text-[#999]">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
+                    <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                      <FileWarning size={16} aria-hidden="true" />
+                      <span>{labels.noticeTitle}</span>
+                    </div>
+                    {labels.notices.map((item) => (
+                      <p key={item} className="body-text-sm text-[#999] mb-2 last:mb-0">{item}</p>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </Reveal>
             </aside>
           </div>
         </div>

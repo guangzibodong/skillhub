@@ -14,6 +14,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { PUBLIC_PACKAGE_STATUS, publicRestSearchCommand } from "@/lib/public-package-status";
 
@@ -79,28 +80,30 @@ export default async function AgentsPage({ searchParams }: PageProps) {
     <AppShell active="agents" locale={locale}>
       {/* Hero */}
       <section className="section pt-32 pb-20 text-center">
-        <div className="section-inner flex flex-col items-center gap-6">
-          <div className="eyebrow">
-            <BrainCircuit size={16} aria-hidden="true" />
-            <span>{dictionary.agentsPage.eyebrow}</span>
-          </div>
-          <h1 className="heading-xl">{dictionary.agentsPage.title}</h1>
-          <p className="body-text max-w-[640px] text-[#999]">{dictionary.agentsPage.description}</p>
-          <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-            <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
-              <Network size={18} aria-hidden="true" />
-              <span>{dictionary.agentsPage.ctaPrimary}</span>
-            </a>
-            <a className="btn-secondary btn-secondary--large" href={localizedHref("/developer", locale)}>
-              <Terminal size={18} aria-hidden="true" />
-              <span>{dictionary.agentsPage.ctaSecondary}</span>
-            </a>
-          </div>
+        <div className="section-inner hero-glow flex flex-col items-center gap-6">
+          <Reveal>
+            <div className="eyebrow">
+              <BrainCircuit size={16} aria-hidden="true" />
+              <span>{dictionary.agentsPage.eyebrow}</span>
+            </div>
+            <h1 className="heading-xl">{dictionary.agentsPage.title}</h1>
+            <p className="body-text max-w-[640px] text-[#999]">{dictionary.agentsPage.description}</p>
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+              <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
+                <Network size={18} aria-hidden="true" />
+                <span>{dictionary.agentsPage.ctaPrimary}</span>
+              </a>
+              <a className="btn-secondary btn-secondary--large" href={localizedHref("/developer", locale)}>
+                <Terminal size={18} aria-hidden="true" />
+                <span>{dictionary.agentsPage.ctaSecondary}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Feature cards */}
-      <section className="section py-16">
+      <section className="section py-[96px] section-divider">
         <div className="section-inner grid grid-cols-1 md:grid-cols-3 gap-6">
           {dictionary.agentsPage.cards.map((item, index) => {
             const Icon = cardIcons[index];
@@ -118,7 +121,7 @@ export default async function AgentsPage({ searchParams }: PageProps) {
       </section>
 
       {/* Integration layout */}
-      <section className="section py-16" aria-labelledby="agent-integration-heading">
+      <section className="section py-[96px] section-divider" aria-labelledby="agent-integration-heading">
         <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 items-start">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
@@ -161,7 +164,7 @@ export default async function AgentsPage({ searchParams }: PageProps) {
       </section>
 
       {/* Flow / timeline */}
-      <section className="section py-16">
+      <section className="section py-[96px] section-divider">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-4">
             <div className="eyebrow">
@@ -183,7 +186,7 @@ export default async function AgentsPage({ searchParams }: PageProps) {
       </section>
 
       {/* Code snippets */}
-      <section className="section py-16" aria-labelledby="agent-snippets-heading">
+      <section className="section py-[96px] section-divider" aria-labelledby="agent-snippets-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-4">
             <div className="eyebrow">
@@ -195,23 +198,25 @@ export default async function AgentsPage({ searchParams }: PageProps) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {runtimeSnippets.map((snippet) => (
-              <div className="card p-0 overflow-hidden flex flex-col" aria-label={snippet.title} key={snippet.title}>
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.08)] text-xs">
-                  <span className="text-[#999] font-mono">{snippet.file}</span>
-                  <span className="text-[#666]">{snippet.title}</span>
+            {runtimeSnippets.map((snippet, i) => (
+              <Reveal delay={i * 80} key={snippet.title}>
+                <div className="card p-0 overflow-hidden flex flex-col" aria-label={snippet.title}>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.08)] text-xs">
+                    <span className="text-[#999] font-mono">{snippet.file}</span>
+                    <span className="text-[#666]">{snippet.title}</span>
+                  </div>
+                  <pre className="code-block p-4 text-xs overflow-x-auto flex-1">
+                    <code>{snippet.body}</code>
+                  </pre>
                 </div>
-                <pre className="code-block p-4 text-xs overflow-x-auto flex-1">
-                  <code>{snippet.body}</code>
-                </pre>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Governance */}
-      <section className="section py-16" aria-labelledby="agent-governance-heading">
+      <section className="section py-[96px] section-divider" aria-labelledby="agent-governance-heading">
         <div className="section-inner grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="flex flex-col gap-6">
             <div className="eyebrow">
@@ -220,34 +225,57 @@ export default async function AgentsPage({ searchParams }: PageProps) {
             </div>
             <h2 id="agent-governance-heading" className="heading-lg">{dictionary.agentsPage.governanceTitle}</h2>
             <p className="body-text text-[#999]">{dictionary.agentsPage.governanceBody}</p>
-            <div className="flex flex-col gap-3 mt-2">
-              {dictionary.agentsPage.governanceItems.map((item, index) => {
-                const Icon = governanceIcons[index];
+            <Reveal>
+              <div className="flex flex-col gap-3 mt-2">
+                {dictionary.agentsPage.governanceItems.map((item, index) => {
+                  const Icon = governanceIcons[index];
 
-                return (
-                  <div className="flex items-center gap-3 text-[#999]" key={item}>
-                    <Icon size={15} className="text-[#0075ff]" aria-hidden="true" />
-                    <span className="body-text-sm">{item}</span>
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div className="flex items-center gap-3 text-[#999]" key={item}>
+                      <Icon size={15} className="text-[#0075ff]" aria-hidden="true" />
+                      <span className="body-text-sm">{item}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Reveal>
           </div>
 
-          <aside className="card p-6 flex flex-col gap-4" aria-label={dictionary.agentsPage.checklistTitle}>
-            <div className="eyebrow">
-              <CheckCircle2 size={16} aria-hidden="true" />
-              <span>{dictionary.agentsPage.checklistTitle}</span>
+          <Reveal>
+            <aside className="card p-6 flex flex-col gap-4" aria-label={dictionary.agentsPage.checklistTitle}>
+              <div className="eyebrow">
+                <CheckCircle2 size={16} aria-hidden="true" />
+                <span>{dictionary.agentsPage.checklistTitle}</span>
+              </div>
+              <div className="flex flex-col gap-3">
+                {dictionary.agentsPage.checklist.map((item, index) => (
+                  <div className="flex items-center gap-3" key={item}>
+                    <span className="text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
+                    <strong className="body-text-sm text-white">{item}</strong>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="closing-cta">
+        <div className="section-inner">
+          <Reveal>
+            <h2 className="heading-lg mb-4">{locale === "zh" ? "准备好接入了吗？" : "Ready to integrate?"}</h2>
+            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "浏览市场中的技能或阅读完整 API 文档。" : "Browse skills in the marketplace or read the full API docs."}</p>
+            <div className="flex items-center justify-center gap-3">
+              <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
+                <span>{locale === "zh" ? "市场" : "Marketplace"}</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </a>
+              <a className="btn-secondary" href={localizedHref("/docs", locale)}>
+                <span>{locale === "zh" ? "API 文档" : "API docs"}</span>
+              </a>
             </div>
-            <div className="flex flex-col gap-3">
-              {dictionary.agentsPage.checklist.map((item, index) => (
-                <div className="flex items-center gap-3" key={item}>
-                  <span className="text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
-                  <strong className="body-text-sm text-white">{item}</strong>
-                </div>
-              ))}
-            </div>
-          </aside>
+          </Reveal>
         </div>
       </section>
     </AppShell>

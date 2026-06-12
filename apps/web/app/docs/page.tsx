@@ -22,6 +22,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { PublicAccessScope } from "@/components/public-access-scope";
+import { Reveal } from "@/components/home/reveal";
 import { AppShell } from "@/components/app-shell";
 import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 
@@ -527,34 +528,38 @@ export default async function DocsPage({ searchParams }: PageProps) {
     <AppShell active="docs" locale={locale}>
       {/* Hero */}
       <section className="section pt-32 pb-16">
-        <div className="section-inner text-center flex flex-col items-center gap-6">
-          <div className="eyebrow">
-            <BookOpen size={16} aria-hidden="true" />
-            <span>{labels.hero.eyebrow}</span>
-          </div>
-          <h1 className="heading-xl">{labels.hero.title}</h1>
-          <p className="body-text max-w-[640px] text-[#999]">{labels.hero.description}</p>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-            <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
-              <SearchCode size={18} aria-hidden="true" />
-              <span>{labels.hero.primary}</span>
-            </a>
-            <a className="btn-secondary btn-secondary--large" href={localizedHref("/publish", locale)}>
-              <FileJson size={18} aria-hidden="true" />
-              <span>{labels.hero.secondary}</span>
-            </a>
-            <a className="btn-secondary btn-secondary--large" href={localizedHref("/docs#mcp", locale)}>
-              <Gauge size={18} aria-hidden="true" />
-              <span>{labels.hero.tertiary}</span>
-            </a>
-          </div>
+        <div className="section-inner hero-glow text-center flex flex-col items-center gap-6">
+          <Reveal>
+            <div className="eyebrow">
+              <BookOpen size={16} aria-hidden="true" />
+              <span>{labels.hero.eyebrow}</span>
+            </div>
+            <h1 className="heading-xl">{labels.hero.title}</h1>
+            <p className="body-text max-w-[640px] text-[#999]">{labels.hero.description}</p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+              <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
+                <SearchCode size={18} aria-hidden="true" />
+                <span>{labels.hero.primary}</span>
+              </a>
+              <a className="btn-secondary btn-secondary--large" href={localizedHref("/publish", locale)}>
+                <FileJson size={18} aria-hidden="true" />
+                <span>{labels.hero.secondary}</span>
+              </a>
+              <a className="btn-secondary btn-secondary--large" href={localizedHref("/docs#mcp", locale)}>
+                <Gauge size={18} aria-hidden="true" />
+                <span>{labels.hero.tertiary}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <PublicAccessScope locale={locale} />
 
+      <div className="section-divider" />
+
       {/* Quickstart */}
-      <section className="section" id="mcp" aria-labelledby="docs-quickstart-heading">
+      <section className="py-[96px] section" id="mcp" aria-labelledby="docs-quickstart-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -594,8 +599,10 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Journeys */}
-      <section className="section" aria-labelledby="docs-journeys-heading">
+      <section className="py-[96px] section" aria-labelledby="docs-journeys-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -611,38 +618,42 @@ export default async function DocsPage({ searchParams }: PageProps) {
               const Icon = journeyIcons[index] ?? Code2;
 
               return (
-                <article className="card flex flex-col gap-4" key={journey.title}>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[rgba(0,117,255,0.1)] flex items-center justify-center shrink-0" aria-hidden="true">
-                      <Icon size={18} className="text-[#0075ff]" />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs text-[#666]">{journey.user}</span>
-                      <h3 className="heading-sm">{journey.title}</h3>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {journey.steps.map((step, stepIndex) => (
-                      <div className="flex items-center gap-3" key={step}>
-                        <span className="text-xs font-mono text-[#525252]">{String(stepIndex + 1).padStart(2, "0")}</span>
-                        <strong className="text-sm text-white">{step}</strong>
+                <Reveal delay={index * 60} key={journey.title}>
+                  <article className="card flex flex-col gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[rgba(0,117,255,0.1)] flex items-center justify-center shrink-0" aria-hidden="true">
+                        <Icon size={18} className="text-[#0075ff]" />
                       </div>
-                    ))}
-                  </div>
-                  <p className="body-text-sm text-[#666] mt-auto">{journey.evidence}</p>
-                  <a className="btn-secondary inline-flex items-center gap-2 w-fit text-sm" href={localizedHref(journey.href, locale)}>
-                    <span>{journey.action}</span>
-                    <ArrowRight size={15} aria-hidden="true" />
-                  </a>
-                </article>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-[#666]">{journey.user}</span>
+                        <h3 className="heading-sm">{journey.title}</h3>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {journey.steps.map((step, stepIndex) => (
+                        <div className="flex items-center gap-3" key={step}>
+                          <span className="text-xs font-mono text-[#525252]">{String(stepIndex + 1).padStart(2, "0")}</span>
+                          <strong className="text-sm text-white">{step}</strong>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="body-text-sm text-[#666] mt-auto">{journey.evidence}</p>
+                    <a className="btn-secondary inline-flex items-center gap-2 w-fit text-sm" href={localizedHref(journey.href, locale)}>
+                      <span>{journey.action}</span>
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </a>
+                  </article>
+                </Reveal>
               );
             })}
           </div>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* References */}
-      <section className="section" id="operating-reference" aria-labelledby="docs-reference-heading">
+      <section className="py-[96px] section" id="operating-reference" aria-labelledby="docs-reference-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -658,26 +669,30 @@ export default async function DocsPage({ searchParams }: PageProps) {
               const Icon = referenceIcons[index] ?? BookOpen;
 
               return (
-                <article className="card flex flex-col gap-3" key={item.title}>
-                  <div className="flex items-center gap-2">
-                    <Icon size={18} aria-hidden="true" className="text-[#0075ff]" />
-                    <h3 className="heading-sm">{item.title}</h3>
-                  </div>
-                  <p className="body-text-sm text-[#999]">{item.body}</p>
-                  <ul className="flex flex-col gap-1 mt-auto">
-                    {item.bullets.map((bullet) => (
-                      <li key={bullet} className="text-sm text-[#666] pl-3 relative before:content-[''] before:absolute before:left-0 before:top-[9px] before:w-1 before:h-1 before:rounded-full before:bg-[#525252]">{bullet}</li>
-                    ))}
-                  </ul>
-                </article>
+                <Reveal key={item.title}>
+                  <article className="card flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <Icon size={18} aria-hidden="true" className="text-[#0075ff]" />
+                      <h3 className="heading-sm">{item.title}</h3>
+                    </div>
+                    <p className="body-text-sm text-[#999]">{item.body}</p>
+                    <ul className="flex flex-col gap-1 mt-auto">
+                      {item.bullets.map((bullet) => (
+                        <li key={bullet} className="text-sm text-[#666] pl-3 relative before:content-[''] before:absolute before:left-0 before:top-[9px] before:w-1 before:h-1 before:rounded-full before:bg-[#525252]">{bullet}</li>
+                      ))}
+                    </ul>
+                  </article>
+                </Reveal>
               );
             })}
           </div>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Manifest and Runtime */}
-      <section className="section">
+      <section className="py-[96px] section">
         <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
           <div className="flex flex-col gap-6">
             <article className="card flex flex-col gap-4">
@@ -690,10 +705,12 @@ export default async function DocsPage({ searchParams }: PageProps) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {labels.manifest.fields.map(([label, value]) => (
-                  <div className="flex flex-col gap-1 p-3 rounded-[8px] bg-[rgba(255,255,255,0.03)]" key={label}>
-                    <span className="text-xs text-[#666] uppercase tracking-wide">{label}</span>
-                    <strong className="text-sm text-white font-normal">{value}</strong>
-                  </div>
+                  <Reveal key={label}>
+                    <div className="flex flex-col gap-1 p-3 rounded-[8px] bg-[rgba(255,255,255,0.03)]">
+                      <span className="text-xs text-[#666] uppercase tracking-wide">{label}</span>
+                      <strong className="text-sm text-white font-normal">{value}</strong>
+                    </div>
+                  </Reveal>
                 ))}
               </div>
             </article>
@@ -736,8 +753,10 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* API */}
-      <section className="section" aria-labelledby="docs-api-heading">
+      <section className="py-[96px] section" aria-labelledby="docs-api-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -749,23 +768,27 @@ export default async function DocsPage({ searchParams }: PageProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {labels.api.groups.map((group) => (
-              <article className="card flex flex-col gap-3" key={group.title}>
-                <h3 className="heading-sm">{group.title}</h3>
-                <p className="body-text-sm text-[#999]">{group.body}</p>
-                <div className="flex flex-col gap-1.5 mt-auto">
-                  {group.endpoints.map((endpoint) => (
-                    <code key={endpoint} className="text-xs font-mono text-[#0075ff] bg-[rgba(0,117,255,0.08)] rounded px-2 py-1 w-fit">{endpoint}</code>
-                  ))}
-                </div>
-              </article>
+            {labels.api.groups.map((group, i) => (
+              <Reveal delay={i * 60} key={group.title}>
+                <article className="card flex flex-col gap-3">
+                  <h3 className="heading-sm">{group.title}</h3>
+                  <p className="body-text-sm text-[#999]">{group.body}</p>
+                  <div className="flex flex-col gap-1.5 mt-auto">
+                    {group.endpoints.map((endpoint) => (
+                      <code key={endpoint} className="text-xs font-mono text-[#0075ff] bg-[rgba(0,117,255,0.08)] rounded px-2 py-1 w-fit">{endpoint}</code>
+                    ))}
+                  </div>
+                </article>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* States */}
-      <section className="section" aria-labelledby="docs-state-heading">
+      <section className="py-[96px] section" aria-labelledby="docs-state-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -799,8 +822,10 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Operator */}
-      <section className="section pb-24" aria-labelledby="docs-operator-heading">
+      <section className="py-[96px] section" aria-labelledby="docs-operator-heading">
         <div className="section-inner">
           <div className="card flex flex-col lg:flex-row gap-8">
             <div className="flex flex-col gap-4 flex-1">
@@ -830,6 +855,24 @@ export default async function DocsPage({ searchParams }: PageProps) {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="closing-cta">
+        <div className="section-inner">
+          <Reveal>
+            <h2 className="heading-lg mb-4">{locale === "zh" ? "准备好开始了吗？" : "Ready to get started?"}</h2>
+            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "在注册表中浏览可用技能或发布你自己的技能。" : "Browse available skills in the registry or publish your own."}</p>
+            <div className="flex items-center justify-center gap-3">
+              <a className="btn-primary" href={localizedHref("/registry", locale)}>
+                <span>{locale === "zh" ? "浏览注册表" : "Browse registry"}</span>
+              </a>
+              <a className="btn-secondary" href={localizedHref("/publish", locale)}>
+                <span>{locale === "zh" ? "发布技能" : "Publish a skill"}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
     </AppShell>

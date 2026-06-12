@@ -1205,9 +1205,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </nav>
 
           <div className="admin-sidebar__actions">
-            <a className="secondary-button" href={localizedHref("/", locale)}>{adminV2Labels.publicSite}</a>
+            <a className="btn-secondary" href={localizedHref("/", locale)}>{adminV2Labels.publicSite}</a>
             <form action={signOutAction.bind(null, locale)}>
-              <button className="secondary-button secondary-button--danger" type="submit">
+              <button className="btn-secondary btn-secondary--danger" type="submit">
                 <LogOut size={15} aria-hidden="true" />
                 <span>{adminV2Labels.signOut}</span>
               </button>
@@ -1242,20 +1242,20 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <section className="admin-command-grid">
             <article className="admin-command-hero">
               <div>
-                <div className="card-kicker">
+                <div className="eyebrow">
                   <Activity size={16} aria-hidden="true" />
                   <span>{adminV2Labels.hero.eyebrow}</span>
                 </div>
                 <h1 id="admin-console-title">{adminV2Labels.hero.title}</h1>
                 <p>{adminV2Labels.hero.body}</p>
                 <div className="admin-command-actions">
-                  <a className="primary-button" href={primaryPriorityItem.href}>
+                  <a className="btn-primary" href={primaryPriorityItem.href}>
                     <span>{adminV2Labels.hero.primary}</span>
                     <ArrowRight size={16} aria-hidden="true" />
                   </a>
-                  <a className="secondary-button" href={localizedHref("/admin#admin-orders", locale)}>{adminV2Labels.openOrders}</a>
-                  <a className="secondary-button" href={localizedHref("/admin#admin-finance", locale)}>{adminV2Labels.openPayments}</a>
-                  <a className="secondary-button" href={localizedHref("/admin#admin-audit", locale)}>{adminV2Labels.exportDaily}</a>
+                  <a className="btn-secondary" href={localizedHref("/admin#admin-orders", locale)}>{adminV2Labels.openOrders}</a>
+                  <a className="btn-secondary" href={localizedHref("/admin#admin-finance", locale)}>{adminV2Labels.openPayments}</a>
+                  <a className="btn-secondary" href={localizedHref("/admin#admin-audit", locale)}>{adminV2Labels.exportDaily}</a>
                 </div>
               </div>
               <div className="admin-command-sla" aria-label={locale === "zh" ? "今日重点状态" : "Today priority state"}>
@@ -1301,7 +1301,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
           <header className="admin-console-topbar admin-console-topbar--legacy">
             <div>
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <Activity size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.shell.subtitle}</span>
               </div>
@@ -1324,7 +1324,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <span>{adminConsoleLabels.shell.searchPlaceholder}</span>
                 </div>
               </div>
-              <a className="primary-button" href={primaryPriorityItem.href}>
+              <a className="btn-primary" href={primaryPriorityItem.href}>
                 <span>{adminConsoleLabels.shell.primaryAction}</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </a>
@@ -1345,7 +1345,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <article className="admin-analytics-panel admin-analytics-panel--v2" aria-labelledby="admin-analytics-v2-title">
               <div className="admin-panel-head">
                 <div>
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <BarChart3 size={16} aria-hidden="true" />
                     <span>{adminConsoleLabels.analytics.title}</span>
                   </div>
@@ -1386,7 +1386,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <aside className="admin-priority-panel admin-priority-panel--v2" id="admin-priority" aria-labelledby="admin-priority-heading">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <ListChecks size={16} aria-hidden="true" />
                 <span>{adminCommandLabels.eyebrow}</span>
               </div>
@@ -1412,7 +1412,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
           <div className="admin-dashboard-grid admin-dashboard-grid--legacy">
             <article className="admin-priority-panel" id="admin-priority-legacy" aria-labelledby="admin-priority-heading-legacy">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <ListChecks size={16} aria-hidden="true" />
                 <span>{adminCommandLabels.eyebrow}</span>
               </div>
@@ -1438,7 +1438,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
             <aside className="admin-spotlight">
               <article className="admin-spotlight-card">
-                <div className="card-kicker">
+                <div className="eyebrow">
                   <ShieldCheck size={16} aria-hidden="true" />
                   <span>{adminConsoleLabels.spotlight.readiness}</span>
                 </div>
@@ -1458,7 +1458,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               </article>
 
               <article className="admin-spotlight-card">
-                <div className="card-kicker">
+                <div className="eyebrow">
                   <ReceiptText size={16} aria-hidden="true" />
                   <span>{adminConsoleLabels.spotlight.audit}</span>
                 </div>
@@ -1479,7 +1479,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <article className="admin-order-panel admin-order-panel--v2" id="admin-orders">
               <div className="admin-panel-head">
                 <div>
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <CreditCard size={16} aria-hidden="true" />
                     <span>{adminConsoleLabels.order.title}</span>
                   </div>
@@ -1513,7 +1513,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <article className="admin-payment-panel admin-payment-panel--v2">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <WalletCards size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.payment.title}</span>
               </div>
@@ -1535,14 +1535,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <article className="admin-traffic-panel admin-traffic-panel--v2" id="admin-traffic" aria-labelledby="admin-traffic-title">
               <div className="admin-traffic-panel__head">
                 <div>
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <Activity size={16} aria-hidden="true" />
                     <span>{adminConsoleLabels.traffic.title}</span>
                   </div>
                   <h2 id="admin-traffic-title">{adminV2Labels.traffic.title}</h2>
                   <p>{adminConsoleLabels.traffic.description}</p>
                 </div>
-                <a className="secondary-button" href={localizedHref("/admin#admin-templates", locale)}>{adminV2Labels.configureDataSource}</a>
+                <a className="btn-secondary" href={localizedHref("/admin#admin-templates", locale)}>{adminV2Labels.configureDataSource}</a>
               </div>
 
               <div className="admin-traffic-body">
@@ -1576,7 +1576,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <aside className="admin-selected-order">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <ReceiptText size={16} aria-hidden="true" />
                 <span>{adminV2Labels.selectedOrder.label}</span>
               </div>
@@ -1591,7 +1591,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     <span>{selectedOrder.balanceState ?? adminConsoleLabels.kpis.money}</span>
                   </div>
                   <div className="admin-selected-order__actions">
-                    <a className="primary-button" href={localizedHref("/admin#admin-ledger", locale)}>
+                    <a className="btn-primary" href={localizedHref("/admin#admin-ledger", locale)}>
                       {adminV2Labels.selectedOrder.ledgerAction}
                     </a>
                   </div>
@@ -1609,7 +1609,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
           <section className="admin-insight-grid admin-insight-grid--legacy" aria-labelledby="admin-analytics-title">
             <article className="admin-analytics-panel">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <BarChart3 size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.analytics.title}</span>
               </div>
@@ -1626,7 +1626,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <article className="admin-order-panel" id="admin-orders-legacy">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <CreditCard size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.order.title}</span>
               </div>
@@ -1657,7 +1657,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </article>
 
             <article className="admin-payment-panel">
-              <div className="card-kicker">
+              <div className="eyebrow">
                 <WalletCards size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.payment.title}</span>
               </div>
@@ -1676,7 +1676,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <section className="admin-traffic-panel admin-traffic-panel--legacy" id="admin-traffic-legacy" aria-labelledby="admin-traffic-title-legacy">
             <div className="admin-traffic-panel__head">
               <div>
-                <div className="card-kicker">
+                <div className="eyebrow">
                   <Activity size={16} aria-hidden="true" />
                   <span>{adminConsoleLabels.traffic.title}</span>
                 </div>
@@ -1721,14 +1721,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <section className="admin-detail-workbench" aria-labelledby="admin-detail-workbench-title">
             <div className="admin-detail-workbench__intro">
               <div>
-                <div className="card-kicker">
+                <div className="eyebrow">
                   <ListChecks size={16} aria-hidden="true" />
                   <span>{adminV2Labels.workbench.eyebrow}</span>
                 </div>
                 <h2 id="admin-detail-workbench-title">{adminV2Labels.workbench.title}</h2>
                 <p>{adminV2Labels.workbench.body}</p>
               </div>
-              <a className="secondary-button" href={primaryPriorityItem.href}>
+              <a className="btn-secondary" href={primaryPriorityItem.href}>
                 <span>{adminV2Labels.hero.primary}</span>
                 <ArrowRight size={16} aria-hidden="true" />
               </a>
@@ -1891,7 +1891,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
                   <section className="admin-layout">
                 <article className="ops-panel work-table-panel">
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <Siren size={16} aria-hidden="true" />
                     <span>{ops.riskTitle}</span>
                   </div>
@@ -1916,7 +1916,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 </article>
 
                 <aside className="ops-panel">
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <Gavel size={16} aria-hidden="true" />
                     <span>{ops.actionTitle}</span>
                   </div>
@@ -1954,7 +1954,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <div className="admin-module-group__body">
                   <section className="workspace-ops-layout" id="admin-finance">
                     <article className="ops-panel work-table-panel">
-                  <div className="card-kicker">
+                  <div className="eyebrow">
                     <ReceiptText size={16} aria-hidden="true" />
                     <span>{ops.moneyTitle}</span>
                   </div>
@@ -2041,14 +2041,14 @@ function WorkspaceLockedPanel({
     <section className="workspace-locked-panel">
       <article className="ops-panel workspace-locked-panel__card">
         <div className="workspace-locked-panel__main">
-          <div className="card-kicker">
+          <div className="eyebrow">
             <LockKeyhole size={16} aria-hidden="true" />
             <span>{guide.eyebrow}</span>
           </div>
           <h2>{title}</h2>
           <p>{body}</p>
           <p className="visually-hidden">{guide.marker}</p>
-          <a className="primary-button" href={actionHref}>
+          <a className="btn-primary" href={actionHref}>
             <span>{actionLabel}</span>
             <ArrowRight size={16} aria-hidden="true" />
           </a>

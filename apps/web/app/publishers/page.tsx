@@ -10,6 +10,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
@@ -112,7 +113,8 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
     <AppShell active="publishers" locale={locale}>
       <section className="section pt-20 pb-12" aria-labelledby="publisher-directory-heading">
         <div className="section-inner flex flex-col lg:flex-row gap-12">
-          <div className="flex-1">
+          <Reveal>
+          <div className="flex-1 hero-glow">
             <a className="btn-text text-sm mb-4 inline-block" href={localizedHref("/marketplace", locale)}>{labels.back}</a>
             <div className="eyebrow mb-3">
               <Building2 size={16} aria-hidden="true" />
@@ -131,6 +133,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
               </a>
             </div>
           </div>
+          </Reveal>
           <aside className="card w-full lg:w-[360px] flex-shrink-0">
             <div className="flex items-center gap-2 text-sm text-[#999] mb-3">
               <ShieldCheck size={16} aria-hidden="true" />
@@ -149,20 +152,24 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
         </div>
       </section>
 
-      <section className="section py-8">
+      <section className="section py-[96px] section-divider">
         <div className="section-inner">
+          <Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {metrics.map(([label, value]) => (
-              <div className="stat-card" key={label}>
+            {metrics.map(([label, value], i) => (
+              <Reveal delay={i * 60} key={label}>
+              <div className="stat-card">
                 <span className="text-sm text-[#999]">{label}</span>
                 <strong className="text-xl text-white">{value}</strong>
               </div>
+              </Reveal>
             ))}
           </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="section py-8">
+      <section className="section py-[96px] section-divider">
         <div className="section-inner flex flex-col lg:flex-row gap-8">
           <article className="card flex-1">
             <div className="flex items-center gap-2 text-sm text-[#999] mb-4">
@@ -171,8 +178,9 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
             </div>
             {rankedPublishers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rankedPublishers.map((publisher) => (
-                  <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 flex flex-col gap-4" key={publisher.slug}>
+                {rankedPublishers.map((publisher, i) => (
+                  <Reveal delay={i * 60} key={publisher.slug}>
+                  <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 flex flex-col gap-4">
                     <header className="flex items-start justify-between gap-3">
                       <div>
                         <span className="text-xs text-[#666]">{labels.trust}</span>
@@ -209,6 +217,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                       </a>
                     </footer>
                   </article>
+                  </Reveal>
                 ))}
               </div>
             ) : (
@@ -224,6 +233,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
             )}
           </article>
           <aside className="w-full lg:w-[320px] flex-shrink-0">
+            <Reveal delay={100}>
             <section className="card">
               <div className="flex items-center gap-2 text-sm text-[#999] mb-3">
                 <Terminal size={16} aria-hidden="true" />
@@ -242,6 +252,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                 <span>{labels.docs}</span>
               </a>
             </section>
+            </Reveal>
           </aside>
         </div>
       </section>

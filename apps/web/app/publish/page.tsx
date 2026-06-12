@@ -9,6 +9,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
 import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
@@ -65,59 +66,67 @@ export default async function PublishPage({ searchParams }: PageProps) {
   return (
     <AppShell active="publish" locale={locale}>
       <section
-        className="section pt-16 pb-12"
+        className="section py-[96px]"
         aria-labelledby="publish-heading"
       >
-        <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
-          <div className="flex-1">
-            <div className="eyebrow">
-              <UploadCloud size={16} aria-hidden="true" />
-              <span>{labels.eyebrow}</span>
+        <Reveal>
+          <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
+            <div className="flex-1 hero-glow">
+              <div className="eyebrow">
+                <UploadCloud size={16} aria-hidden="true" />
+                <span>{labels.eyebrow}</span>
+              </div>
+              <h1 id="publish-heading" className="heading-xl mt-4">
+                {labels.title}
+              </h1>
+              <p className="body-text mt-4 max-w-[600px]">
+                {labels.description}
+              </p>
             </div>
-            <h1 id="publish-heading" className="heading-xl mt-4">
-              {labels.title}
-            </h1>
-            <p className="body-text mt-4 max-w-[600px]">
-              {labels.description}
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 items-start">
-            <div className="pill">
-              <FileJson size={18} aria-hidden="true" />
-              <span>{labels.badge}</span>
-            </div>
-            <div
-              className="grid grid-cols-2 gap-3"
-              aria-label={labels.signalLabel}
-            >
-              {labels.signals.map(([label, value], index) => {
-                const Icon = signalIcons[index] ?? ClipboardCheck;
+            <div className="flex flex-col gap-4 items-start">
+              <div className="pill">
+                <FileJson size={18} aria-hidden="true" />
+                <span>{labels.badge}</span>
+              </div>
+              <div
+                className="grid grid-cols-2 gap-3"
+                aria-label={labels.signalLabel}
+              >
+                {labels.signals.map(([label, value], index) => {
+                  const Icon = signalIcons[index] ?? ClipboardCheck;
 
-                return (
-                  <div
-                    key={label}
-                    className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
-                  >
-                    <Icon size={16} aria-hidden="true" />
-                    <span className="body-text-sm text-[#999]">{label}</span>
-                    <strong className="text-white text-sm">{value}</strong>
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={label}
+                      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
+                    >
+                      <Icon size={16} aria-hidden="true" />
+                      <span className="body-text-sm text-[#999]">{label}</span>
+                      <strong className="text-white text-sm">{value}</strong>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <JourneyRail
-        actionHrefOverride={journeyActionHref}
-        actionLabelOverride={accessNotice.actionLabel}
-        currentStep="publish"
-        journey="publisher"
-        locale={locale}
-      />
+      <div className="section-divider" />
 
-      <section className="section py-8">
+      <Reveal delay={100}>
+        <JourneyRail
+          actionHrefOverride={journeyActionHref}
+          actionLabelOverride={accessNotice.actionLabel}
+          currentStep="publish"
+          journey="publisher"
+          locale={locale}
+        />
+      </Reveal>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]">
         <div className="section-inner">
           <WorkspaceAccessPanel
             locale={locale}
@@ -128,14 +137,20 @@ export default async function PublishPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <PublishForm
-        access={accessNotice}
-        apiUrl={apiUrl}
-        labels={publishCopy.form}
-        locale={locale}
-      />
+      <div className="section-divider" />
 
-      <section className="section py-16" aria-labelledby="publish-pipeline-heading">
+      <Reveal delay={200}>
+        <PublishForm
+          access={accessNotice}
+          apiUrl={apiUrl}
+          labels={publishCopy.form}
+          locale={locale}
+        />
+      </Reveal>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="publish-pipeline-heading">
         <div className="section-inner">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
             <div>

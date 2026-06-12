@@ -18,6 +18,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
@@ -444,27 +445,29 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     <AppShell active="marketplace" locale={locale}>
       {/* Hero */}
       <section className="section" aria-labelledby="marketplace-heading">
-        <div className="section-inner text-center flex flex-col items-center gap-6 py-20">
-          <div className="eyebrow">
-            <Store size={16} aria-hidden="true" />
-            <span>{labels.eyebrow}</span>
-          </div>
-          <h1 id="marketplace-heading" className="heading-xl max-w-[800px]">{labels.title}</h1>
-          <p className="body-text text-[#999] max-w-[640px]">{labels.description}</p>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-            <a className="btn-primary--large" href="#catalog">
-              <PackageSearch size={18} aria-hidden="true" />
-              <span>{labels.primary}</span>
-            </a>
-            <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
-              <Building2 size={18} aria-hidden="true" />
-              <span>{labels.directory}</span>
-            </a>
-            <a className="btn-text" href={localizedHref("/login", locale)}>
-              <WalletCards size={17} aria-hidden="true" />
-              <span>{labels.console}</span>
-            </a>
-          </div>
+        <div className="section-inner hero-glow text-center flex flex-col items-center gap-6 py-20">
+          <Reveal>
+            <div className="eyebrow">
+              <Store size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
+            </div>
+            <h1 id="marketplace-heading" className="heading-xl max-w-[800px]">{labels.title}</h1>
+            <p className="body-text text-[#999] max-w-[640px]">{labels.description}</p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+              <a className="btn-primary--large" href="#catalog">
+                <PackageSearch size={18} aria-hidden="true" />
+                <span>{labels.primary}</span>
+              </a>
+              <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
+                <Building2 size={18} aria-hidden="true" />
+                <span>{labels.directory}</span>
+              </a>
+              <a className="btn-text" href={localizedHref("/login", locale)}>
+                <WalletCards size={17} aria-hidden="true" />
+                <span>{labels.console}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
 
         {/* Install console aside */}
@@ -493,26 +496,38 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         </aside>
       </section>
 
+      <div className="section-divider" />
+
       <PublicAccessScope locale={locale} />
+
+      <div className="section-divider" />
 
       {/* Metrics strip */}
       <section className="section" aria-label="Marketplace operating metrics">
         <div className="section-inner flex flex-wrap gap-4 py-6">
-          {metrics.map(([label, value]) => (
-            <div key={label} className="stat-card flex-1 min-w-[160px]">
-              <span className="text-xs text-[#999]">{label}</span>
-              <strong className="text-white text-lg font-semibold">{value}</strong>
-            </div>
+          {metrics.map(([label, value], index) => (
+            <Reveal key={label} delay={index * 100}>
+              <div className="stat-card flex-1 min-w-[160px]">
+                <span className="text-xs text-[#999]">{label}</span>
+                <strong className="text-white text-lg font-semibold">{value}</strong>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
+
+      <div className="section-divider" />
 
       {/* Catalog */}
       <div id="catalog">
         <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
       </div>
 
+      <div className="section-divider" />
+
       <JourneyRail currentStep="marketplace" journey="developer" locale={locale} />
+
+      <div className="section-divider" />
 
       <OperatingEvidenceChain
         focus="marketplace"
@@ -524,6 +539,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
           { label: labels.loopMetrics.submitted, tone: publicStats.submittedSkills > 0 ? "attention" : "neutral", value: String(publicStats.submittedSkills) }
         ]}
       />
+
+      <div className="section-divider" />
 
       {/* Overview section */}
       <section className="section py-16" aria-labelledby="market-overview-heading">
@@ -543,52 +560,54 @@ curl "https://api.useskillhub.com/mcp"`}</code>
               const Icon = overviewRoleIcons[index];
 
               return (
-                <article key={card.title} className="card p-6 flex flex-col gap-5">
-                  <header className="flex items-start gap-3">
-                    <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-[rgba(255,255,255,0.06)]">
-                      <Icon size={17} aria-hidden="true" />
-                    </span>
-                    <div className="flex flex-col gap-1">
-                      <h3 className="heading-sm">{card.title}</h3>
-                      <p className="body-text-sm text-[#666]">{card.subtitle}</p>
-                    </div>
-                  </header>
-
-                  <div className="flex flex-wrap gap-4">
-                    {card.metrics.map(([label, value]) => (
-                      <div key={label} className="flex flex-col gap-1">
-                        <span className="text-xs text-[#666]">{label}</span>
-                        <strong className="text-sm text-white font-medium">{value}</strong>
+                <Reveal key={card.title} delay={index * 120}>
+                  <article className="card p-6 flex flex-col gap-5">
+                    <header className="flex items-start gap-3">
+                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-[rgba(255,255,255,0.06)]">
+                        <Icon size={17} aria-hidden="true" />
+                      </span>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="heading-sm">{card.title}</h3>
+                        <p className="body-text-sm text-[#666]">{card.subtitle}</p>
                       </div>
-                    ))}
-                  </div>
+                    </header>
 
-                  <div className="flex flex-col gap-2">
-                    {card.rows.length > 0 ? (
-                      card.rows.map((row) => (
-                        <div key={`${card.title}-${row.title}-${row.detail}`} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
-                          <strong className="text-sm text-white">{row.title}</strong>
-                          <span className="text-xs text-[#666]">{row.detail}</span>
-                          <small className="text-xs text-[#525252]">{row.meta}</small>
+                    <div className="flex flex-wrap gap-4">
+                      {card.metrics.map(([label, value]) => (
+                        <div key={label} className="flex flex-col gap-1">
+                          <span className="text-xs text-[#666]">{label}</span>
+                          <strong className="text-sm text-white font-medium">{value}</strong>
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-xs text-[#525252] py-2">{card.empty}</div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
 
-                  {card.href ? (
-                    <a className="btn-text mt-auto" href={card.href}>
-                      <span>{card.title}</span>
-                      <ArrowRight size={14} aria-hidden="true" />
-                    </a>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-xs text-[#525252] mt-auto">
-                      <ShieldCheck size={14} aria-hidden="true" />
-                      <span>{locale === "zh" ? "运营专用" : "Operator only"}</span>
-                    </span>
-                  )}
-                </article>
+                    <div className="flex flex-col gap-2">
+                      {card.rows.length > 0 ? (
+                        card.rows.map((row) => (
+                          <div key={`${card.title}-${row.title}-${row.detail}`} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
+                            <strong className="text-sm text-white">{row.title}</strong>
+                            <span className="text-xs text-[#666]">{row.detail}</span>
+                            <small className="text-xs text-[#525252]">{row.meta}</small>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-xs text-[#525252] py-2">{card.empty}</div>
+                      )}
+                    </div>
+
+                    {card.href ? (
+                      <a className="btn-text mt-auto" href={card.href}>
+                        <span>{card.title}</span>
+                        <ArrowRight size={14} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-xs text-[#525252] mt-auto">
+                        <ShieldCheck size={14} aria-hidden="true" />
+                        <span>{locale === "zh" ? "运营专用" : "Operator only"}</span>
+                      </span>
+                    )}
+                  </article>
+                </Reveal>
               );
             })}
           </div>
@@ -608,6 +627,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Publisher directory callout */}
       <section className="section py-10" aria-label={labels.publisherDirectoryTitle}>
         <div className="section-inner card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -625,6 +646,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
           </a>
         </div>
       </section>
+
+      <div className="section-divider" />
 
       {/* Operating loop section */}
       <section className="section py-16" aria-labelledby="market-loop-heading">
@@ -698,6 +721,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Operations layout: Requests + Publish steps */}
       <section className="section py-10">
         <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -752,6 +777,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
         </div>
       </section>
 
+      <div className="section-divider" />
+
       {/* Trust + Money bottom row */}
       <section className="section py-10">
         <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -788,6 +815,24 @@ curl "https://api.useskillhub.com/mcp"`}</code>
               <span>{dictionary.nav.docs}</span>
             </a>
           </aside>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="closing-cta">
+        <div className="section-inner">
+          <Reveal>
+            <h2 className="heading-lg mb-4">{locale === "zh" ? "找到合适的技能了吗？" : "Found the right skill?"}</h2>
+            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "注册开发者账号开始集成，或浏览发布者目录。" : "Sign up for a developer account to start integrating, or browse the publisher directory."}</p>
+            <div className="flex items-center justify-center gap-3">
+              <a className="btn-primary" href={localizedHref("/developer", locale)}>
+                <span>{locale === "zh" ? "开发者工作台" : "Developer workspace"}</span>
+              </a>
+              <a className="btn-secondary" href={localizedHref("/publishers", locale)}>
+                <span>{locale === "zh" ? "发布者目录" : "Publisher directory"}</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
     </AppShell>

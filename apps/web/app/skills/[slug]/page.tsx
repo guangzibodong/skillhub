@@ -20,6 +20,7 @@ import {
   WalletCards
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
 import { PublicAccessScope } from "@/components/public-access-scope";
 import { SkillInstallCommandPanel } from "@/components/skill-install-command-panel";
@@ -290,6 +291,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
   return (
     <AppShell active="skills" locale={locale}>
+      <Reveal>
       <section className="section pt-16 pb-12">
         <div className="section-inner">
           <a className="btn-text text-[#999] hover:text-white text-sm mb-4 inline-block" href={localizedHref("/marketplace", locale)}>
@@ -341,6 +343,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           </div>
         </aside>
       </section>
+      </Reveal>
+
+      <div className="section-divider" />
 
       <PublicAccessScope locale={locale} />
 
@@ -353,9 +358,12 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
         locale={locale}
       />
 
-      <section className="section py-12">
+      <div className="section-divider" />
+
+      <section className="section py-[96px]">
         <div className="section-inner grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
           <div className="flex flex-col gap-8">
+            <Reveal>
             <article className="card" id="install">
               <div className="eyebrow">
                 <Terminal size={16} aria-hidden="true" />
@@ -429,7 +437,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 <SkillInspectionOnlyNotice locale={locale} />
               )}
             </article>
+            </Reveal>
 
+            <Reveal delay={100}>
             <article className="card">
               <div className="eyebrow">
                 <BookOpenCheck size={16} aria-hidden="true" />
@@ -444,7 +454,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 ))}
               </div>
             </article>
+            </Reveal>
 
+            <Reveal delay={200}>
             <article className="card">
               <div className="eyebrow">
                 <FileJson size={16} aria-hidden="true" />
@@ -471,7 +483,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 </div>
               </div>
             </article>
+            </Reveal>
 
+            <Reveal delay={300}>
             <article className="card">
               <div className="eyebrow">
                 <ShieldCheck size={16} aria-hidden="true" />
@@ -486,7 +500,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 ))}
               </div>
             </article>
+            </Reveal>
 
+            <Reveal delay={400}>
             <article className="card">
               <div className="eyebrow">
                 <MessageSquareText size={16} aria-hidden="true" />
@@ -552,14 +568,18 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 )}
               </div>
             </article>
+            </Reveal>
 
+            <Reveal delay={500}>
             <SkillFeedbackForm
               canSubmit={Boolean(session.subject)}
               locale={locale}
               skillName={localizeText(skill.name, locale)}
               skillSlug={skill.slug}
             />
+            </Reveal>
 
+            <Reveal delay={600}>
             {relatedSkills.length > 0 ? (
               <article className="card">
                 <div className="eyebrow">
@@ -617,8 +637,10 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               skillName={localizeText(skill.name, locale)}
               skillSlug={skill.slug}
             />
+            </Reveal>
           </div>
 
+          <Reveal delay={100}>
           <aside className="flex flex-col gap-6">
             <section className="card">
               <div className="eyebrow">
@@ -707,6 +729,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               </div>
             </section>
           </aside>
+          </Reveal>
         </div>
       </section>
     </AppShell>
