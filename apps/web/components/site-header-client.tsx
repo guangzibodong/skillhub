@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { KeyRound, LogIn, Menu, X } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { getProductStageCopy } from "@/lib/product-stage";
+import { trackPublicEvent } from "@/lib/public-analytics";
 import { LanguageSwitcher } from "./language-switcher";
 
 export type SiteHeaderDictionary = {
@@ -110,6 +111,7 @@ export function SiteHeaderClient({
           className="brand brand--link"
           href={localizedHref("/", locale)}
           aria-label="SkillHub home"
+          onClick={() => trackPublicEvent("home_nav_click", { target: "home" })}
         >
           <div className="brand__mark" aria-hidden="true">
             <span />
@@ -131,6 +133,7 @@ export function SiteHeaderClient({
               }
               href={localizedHref(item.href, locale)}
               key={item.id}
+              onClick={() => trackPublicEvent("home_nav_click", { target: item.id })}
             >
               {item.label}
               {item.id === "pricing" ? (
@@ -149,6 +152,7 @@ export function SiteHeaderClient({
           <a
             className="secondary-button site-action-secondary"
             href={consoleHref ?? localizedHref("/login", locale)}
+            onClick={() => trackPublicEvent("sign_in_click", { target: "login" })}
           >
             <LogIn size={17} aria-hidden="true" />
             <span>{consoleLabel ?? labels.console}</span>
@@ -156,6 +160,7 @@ export function SiteHeaderClient({
           <a
             className="primary-button site-action-publish"
             href={localizedHref("/developer", locale)}
+            onClick={() => trackPublicEvent("open_workspace_click", { target: "developer" })}
           >
             <KeyRound size={17} aria-hidden="true" />
             <span>{labels.getProjectKey}</span>
@@ -200,6 +205,7 @@ export function SiteHeaderClient({
                 }
                 href={localizedHref(item.href, locale)}
                 key={item.id}
+                onClick={() => trackPublicEvent("home_nav_click", { target: item.id, surface: "mobile" })}
               >
                 {item.label}
                 {item.id === "pricing" ? (
@@ -209,11 +215,19 @@ export function SiteHeaderClient({
             ))}
           </nav>
           <div className="site-mobile-panel__actions">
-            <a className="ghost-button" href={consoleHref ?? localizedHref("/login", locale)}>
+            <a
+              className="ghost-button"
+              href={consoleHref ?? localizedHref("/login", locale)}
+              onClick={() => trackPublicEvent("sign_in_click", { target: "login", surface: "mobile" })}
+            >
               <LogIn size={17} aria-hidden="true" />
               <span>{consoleLabel ?? labels.console}</span>
             </a>
-            <a className="primary-button" href={localizedHref("/developer", locale)}>
+            <a
+              className="primary-button"
+              href={localizedHref("/developer", locale)}
+              onClick={() => trackPublicEvent("open_workspace_click", { target: "developer", surface: "mobile" })}
+            >
               <KeyRound size={17} aria-hidden="true" />
               <span>{labels.getProjectKey}</span>
             </a>
@@ -261,7 +275,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
   return {
     closeNavigation: "Close navigation",
     console: "Sign in",
-    getProjectKey: "Developer workspace",
+    getProjectKey: "Open workspace",
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",

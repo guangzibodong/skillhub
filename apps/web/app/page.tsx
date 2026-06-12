@@ -22,6 +22,7 @@ import {
   getLocaleFromSearchParams,
   localizedHref,
 } from "@/lib/i18n";
+import { PublicEventLink } from "@/components/public-event-link";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
 
@@ -40,7 +41,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const description = isZh
     ? "浏览可复用 AI Agent Skill，检查 manifest 与权限，并通过 Project Key、API 或 MCP 安全调用已批准的 Skill。"
     : "Discover reusable AI agent Skills, inspect manifests and permissions, and run approved Skills through controlled APIs or MCP with Project Keys, logs, and governance.";
-  const url = `https://www.useskillhub.com/?lang=${locale}`;
+  const url = `https://useskillhub.com/?lang=${locale}`;
 
   return {
     title,
@@ -48,8 +49,9 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     alternates: {
       canonical: url,
       languages: {
-        en: "https://www.useskillhub.com/?lang=en",
-        "zh-CN": "https://www.useskillhub.com/?lang=zh",
+        en: "https://useskillhub.com/?lang=en",
+        "zh-CN": "https://useskillhub.com/?lang=zh",
+        "x-default": "https://useskillhub.com/",
       },
     },
     openGraph: {
@@ -280,7 +282,10 @@ const homeLandingCopy = {
       },
       {
         title: "Legal",
-        links: [["Terms", "/terms"]],
+        links: [
+          ["Terms", "/terms"],
+          ["Privacy", "/privacy"],
+        ],
       },
     ],
     systemStatus: "Public web/API health OK",
@@ -409,7 +414,7 @@ const homeLandingCopy = {
       ["监控", "追踪用量、日志和性能。"],
     ],
     finalTitle: "从一个真实 Skill 契约开始",
-    finalBody: "先探索公开注册中心，再在项目设置就绪后接入真实运行调用。",
+    finalBody: "先浏览公开 Skills，再在工作台项目设置就绪后接入真实运行调用。",
     readDocs: "阅读文档",
     footerBody: "面向真实构建流程的 Agent Skill 注册中心、治理层和运行网关。",
     footerGroups: [
@@ -446,7 +451,10 @@ const homeLandingCopy = {
       },
       {
         title: "法律",
-        links: [["服务条款", "/terms"]],
+        links: [
+          ["服务条款", "/terms"],
+          ["隐私政策", "/privacy"],
+        ],
       },
     ],
     systemStatus: "公共 Web/API 健康正常",
@@ -607,10 +615,10 @@ export default async function Home({ searchParams }: PageProps) {
             <span className="home-preview-banner__dot" aria-hidden="true" />
             <strong>{landing.banner.label}</strong>
             <p>{landing.banner.body}</p>
-            <a href={localizedHref("/status", locale)}>
+            <PublicEventLink href={localizedHref("/status", locale)} eventName="view_status_click" eventProperties={{ surface: "hero_banner" }}>
               {landing.banner.action}
               <ArrowRight size={14} aria-hidden="true" />
-            </a>
+            </PublicEventLink>
           </div>
         </div>
 
@@ -620,61 +628,52 @@ export default async function Home({ searchParams }: PageProps) {
               <span>{landing.eyebrow}</span>
             </div>
             <h1 id="home-heading">
-              <span className="home-heading-desktop">
-                {locale === "en" ? (
-                  <>
-                    Run agent skills like{" "}
-                    <span>production infrastructure.</span>
-                  </>
-                ) : (
-                  <>
-                    把 Agent Skills 作为
-                    <br />
-                    <span>生产基础设施</span>
-                    <br />
-                    运行。
-                  </>
-                )}
-              </span>
-              <span className="home-heading-mobile">
-                {locale === "en" ? (
-                  <>
-                    Production-grade{" "}
-                    <strong>skill infrastructure</strong> for AI agents.
-                  </>
-                ) : (
-                  <>
-                    面向 AI Agent 的<br />
-                    <strong>生产级 Skill 基础设施。</strong>
-                  </>
-                )}
-              </span>
+              {locale === "en" ? (
+                <>
+                  Run agent skills like{" "}
+                  <span>production infrastructure.</span>
+                </>
+              ) : (
+                <>
+                  把 Agent Skills 作为
+                  <br />
+                  <span>生产基础设施</span>
+                  <br />
+                  运行。
+                </>
+              )}
             </h1>
             <p>{landing.description}</p>
             <p className="home-preview-note">{landing.previewNote}</p>
             <div className="hero-actions">
-              <a
+              <PublicEventLink
                 className="primary-button primary-button--large"
+                eventName="browse_skills_cta_click"
+                eventProperties={{ surface: "hero" }}
                 href={localizedHref("/marketplace", locale)}
               >
                 <Search size={18} aria-hidden="true" />
                 <span>{landing.primaryCta}</span>
                 <ArrowRight size={16} aria-hidden="true" />
-              </a>
-              <a
+              </PublicEventLink>
+              <PublicEventLink
                 className="secondary-button secondary-button--large"
+                eventName="docs_cta_click"
+                eventProperties={{ surface: "hero" }}
                 href={localizedHref("/docs#mcp", locale)}
               >
                 <Terminal size={18} aria-hidden="true" />
                 <span>{landing.quickstartCta}</span>
-              </a>
-              <a
+              </PublicEventLink>
+              <PublicEventLink
                 className="ghost-button ghost-button--large"
+                eventName="publish_skill_cta_click"
+                eventProperties={{ surface: "hero" }}
                 href={localizedHref("/publish", locale)}
               >
                 <span>{landing.publishCta}</span>
                 <ArrowRight size={15} aria-hidden="true" />
-              </a>
+              </PublicEventLink>
             </div>
 
             <div className="home-evidence-row" aria-label={landing.eyebrow}>
@@ -747,9 +746,9 @@ export default async function Home({ searchParams }: PageProps) {
                   <dd>{riskLabel(leadSkill.permissionLevel, locale)}</dd>
                 </div>
               </dl>
-              <a className="control-pane__button" href={homeSkillHref(leadSkill, locale)}>
+              <PublicEventLink className="control-pane__button" eventName="skill_card_click" eventProperties={{ surface: "hero_mockup", skill: leadSkill.slug }} href={homeSkillHref(leadSkill, locale)}>
                 {landing.control.viewSkill}
-              </a>
+              </PublicEventLink>
             </article>
 
             <div className="control-flow-line" aria-hidden="true" />
@@ -894,10 +893,10 @@ export default async function Home({ searchParams }: PageProps) {
         <section className="home-section home-featured-section" aria-labelledby="home-featured-heading">
           <div className="home-section__head">
             <h2 id="home-featured-heading">{landing.featuredTitle}</h2>
-            <a href={localizedHref("/marketplace", locale)}>
+            <PublicEventLink href={localizedHref("/marketplace", locale)} eventName="browse_skills_cta_click" eventProperties={{ surface: "featured_header" }}>
               {landing.featuredAction}
               <ArrowRight size={15} aria-hidden="true" />
-            </a>
+            </PublicEventLink>
           </div>
 
           <div className="home-featured-grid">
@@ -935,9 +934,9 @@ export default async function Home({ searchParams }: PageProps) {
                       <dd>{riskLabel(skill.permissionLevel, locale)}</dd>
                     </div>
                   </dl>
-                  <a className="secondary-button" href={homeSkillHref(skill, locale)}>
+                  <PublicEventLink className="secondary-button" href={homeSkillHref(skill, locale)} eventName="skill_card_click" eventProperties={{ surface: "featured", skill: skill.slug }}>
                     {landing.inspect}
-                  </a>
+                  </PublicEventLink>
                 </article>
               );
             })}
@@ -970,14 +969,14 @@ export default async function Home({ searchParams }: PageProps) {
             <p>{landing.finalBody}</p>
           </div>
           <div className="hero-actions">
-            <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
+            <PublicEventLink className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)} eventName="browse_skills_cta_click" eventProperties={{ surface: "final_cta" }}>
               {landing.primaryCta}
               <ArrowRight size={16} aria-hidden="true" />
-            </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)}>
+            </PublicEventLink>
+            <PublicEventLink className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)} eventName="docs_cta_click" eventProperties={{ surface: "final_cta" }}>
               <FileJson size={17} aria-hidden="true" />
               {landing.readDocs}
-            </a>
+            </PublicEventLink>
           </div>
         </section>
 
@@ -985,18 +984,23 @@ export default async function Home({ searchParams }: PageProps) {
           <div className="home-footer__brand">
             <strong>SkillHub</strong>
             <span>{landing.footerBody}</span>
-            <a href={localizedHref("/status", locale)}>
+            <PublicEventLink href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
               {landing.systemStatus} · {publicStats.publicSkills} skills
-            </a>
+            </PublicEventLink>
           </div>
           <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
             {landing.footerGroups.map((group) => (
               <section className="home-footer__group" key={group.title}>
                 <h2>{group.title}</h2>
                 {group.links.map(([label, href]) => (
-                  <a href={localizedHref(href, locale)} key={`${group.title}-${label}`}>
+                  <PublicEventLink
+                    href={localizedHref(href, locale)}
+                    eventName="footer_link_click"
+                    eventProperties={{ target: href }}
+                    key={`${group.title}-${label}`}
+                  >
                     {label}
-                  </a>
+                  </PublicEventLink>
                 ))}
               </section>
             ))}

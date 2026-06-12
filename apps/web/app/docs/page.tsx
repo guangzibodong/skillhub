@@ -21,6 +21,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import type { Metadata } from "next";
 import { PublicAccessScope } from "@/components/public-access-scope";
 import { Reveal } from "@/components/home/reveal";
 import { AppShell } from "@/components/app-shell";
@@ -31,6 +32,43 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+  const isZh = locale === "zh";
+  const title = isZh
+    ? "SkillHub Docs - REST / MCP 调用与治理文档"
+    : "SkillHub Docs - REST, MCP, and Governance";
+  const description = isZh
+    ? "了解 SkillHub 的 Skill manifest、REST / MCP 调用路径、Project Key、权限治理、发布审核与公开预览状态。"
+    : "Learn SkillHub manifests, REST and MCP invocation paths, Project Keys, permission governance, publisher review, and current Launch Preview boundaries.";
+  const url = `https://useskillhub.com/docs?lang=${locale}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: "https://useskillhub.com/docs?lang=en",
+        "zh-CN": "https://useskillhub.com/docs?lang=zh",
+        "x-default": "https://useskillhub.com/docs",
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url,
+      siteName: "SkillHub",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 type DocsCopy = {
   api: {

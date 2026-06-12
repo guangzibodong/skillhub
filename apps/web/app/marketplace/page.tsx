@@ -17,6 +17,7 @@ import {
   Terminal,
   WalletCards
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
@@ -38,6 +39,43 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+  const isZh = locale === "zh";
+  const title = isZh
+    ? "SkillHub Marketplace - 浏览可治理的 Agent Skills"
+    : "SkillHub Marketplace - Governed AI Agent Skills";
+  const description = isZh
+    ? "浏览公开 Skill 目录，检查 manifest、权限、发布者与预览状态；运行调用需登录工作台并使用 Project Key。"
+    : "Browse public Skills, inspect manifests, permissions, publisher trust, and preview status. Runtime use requires a signed-in workspace and Project Key.";
+  const url = `https://useskillhub.com/marketplace?lang=${locale}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: "https://useskillhub.com/marketplace?lang=en",
+        "zh-CN": "https://useskillhub.com/marketplace?lang=zh",
+        "x-default": "https://useskillhub.com/marketplace",
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url,
+      siteName: "SkillHub",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 type SearchParamRecord = Record<string, string | string[] | undefined>;
 

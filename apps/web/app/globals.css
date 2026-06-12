@@ -25321,13 +25321,7 @@ a {
   display: none;
 }
 
-.home-hero-copy h1 .home-heading-desktop,
-.home-hero-copy h1 .home-heading-mobile {
-  color: inherit;
-}
-
-.home-hero-copy h1 .home-heading-desktop > span,
-.home-hero-copy h1 .home-heading-mobile strong {
+.home-hero-copy h1 > span {
   color: var(--signal);
 }
 
@@ -25857,6 +25851,84 @@ a {
 }
 
 @media (max-width: 880px) {
+  main {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  main pre,
+  main code {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  main pre,
+  .code-block,
+  .code-panel,
+  .endpoint-list code,
+  .runtime-console,
+  .docs-runtime-code,
+  .agent-snippet,
+  .agent-runtime-snippet {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .code-block {
+    padding: 16px;
+  }
+
+  .code-block pre {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .code-panel pre,
+  .code-panel code,
+  .endpoint-list code,
+  .docs-shell .code-panel pre,
+  .docs-shell .code-panel code,
+  .marketplace-shell .code-panel pre,
+  .marketplace-shell .code-panel code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  main code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .docs-shell .card code,
+  .marketplace-shell .card code,
+  .docs-state-values code,
+  .docs-api-card .endpoint-list code {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: break-word;
+  }
+
   .home-frame,
   .home-footer {
     width: min(100% - 24px, 720px);
@@ -26009,15 +26081,6 @@ a {
     max-width: 340px;
     font-size: 34px;
     line-height: 1.08;
-  }
-
-  .home-heading-desktop {
-    display: none;
-  }
-
-  .home-heading-mobile {
-    display: inline;
-    color: inherit;
   }
 
   .home-hero-copy p {
@@ -26286,8 +26349,7 @@ a {
 .home-frame .home-preview-banner__inner strong,
 .home-frame .home-preview-banner__inner a,
 .home-frame .eyebrow,
-.home-frame .home-hero-copy h1 .home-heading-desktop > span,
-.home-frame .home-hero-copy h1 .home-heading-mobile strong,
+.home-frame .home-hero-copy h1 > span,
 .home-frame .home-section__head a,
 .home-frame .home-how-step > span,
 .home-frame .home-trust-module__rows strong {

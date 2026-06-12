@@ -379,6 +379,7 @@ body {
 /* ===== Hero glow ===== */
 .hero-glow {
   position: relative;
+  overflow: hidden;
 }
 
 .hero-glow::before {
@@ -397,6 +398,13 @@ body {
 .hero-glow > * {
   position: relative;
   z-index: 1;
+}
+
+@media (max-width: 880px) {
+  .hero-glow::before {
+    left: 50%;
+    width: min(520px, calc(100vw - 24px));
+  }
 }
 
 /* ===== Section divider ===== */
