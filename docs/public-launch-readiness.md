@@ -9,6 +9,8 @@ This checklist optimizes for being launch-ready, not looking launch-ready. If a 
 - Public discovery: live.
 - Public inspection: live.
 - Public registry and skill detail pages: live.
+- Public SEO/GEO trust pages: live.
+- `/robots.txt`, `/sitemap.xml`, and `/llms.txt`: live.
 - Authenticated runtime architecture: live behind project keys and policy checks.
 - Paid marketplace operations: prelaunch.
 - Payment capture: prelaunch.
@@ -39,16 +41,36 @@ Verify these routes before deployment:
 - `/registry?lang=zh`
 - `/docs?lang=en`
 - `/docs?lang=zh`
-- `/skills/browser-research?lang=en`
-- `/skills/browser-research?lang=zh`
-- `/skills/dataset-summarizer?lang=en`
-- `/skills/dataset-summarizer?lang=zh`
+- `/what-is-a-skill?lang=en`
+- `/what-is-a-skill?lang=zh`
+- `/api?lang=en`
+- `/api?lang=zh`
+- `/mcp?lang=en`
+- `/mcp?lang=zh`
+- `/pricing?lang=en`
+- `/pricing?lang=zh`
+- `/publisher-review?lang=en`
+- `/publisher-review?lang=zh`
+- `/data-handling?lang=en`
+- `/data-handling?lang=zh`
+- `/about?lang=en`
+- `/about?lang=zh`
+- `/contact?lang=en`
+- `/contact?lang=zh`
+- `/changelog?lang=en`
+- `/changelog?lang=zh`
+- `/roadmap?lang=en`
+- `/roadmap?lang=zh`
+- `/skills/browser-research-pro?lang=en`
+- `/skills/browser-research-pro?lang=zh`
+- `/skills/crm-enrichment?lang=en`
+- `/skills/crm-enrichment?lang=zh`
 - `/publish?lang=en`
 - `/publish?lang=zh`
 - `/publishers?lang=en`
 - `/publishers?lang=zh`
-- `/publishers/skillhub?lang=en`
-- `/publishers/skillhub?lang=zh`
+- `/publishers/skillhub-labs?lang=en`
+- `/publishers/skillhub-labs?lang=zh`
 - `/login?lang=en`
 - `/login?lang=zh`
 - `/account?lang=en`
@@ -68,12 +90,15 @@ Verify these routes before deployment:
 - `/security?lang=zh`
 - `/status?lang=en`
 - `/status?lang=zh`
+- `/robots.txt`
+- `/sitemap.xml`
+- `/llms.txt`
 
 ## Acceptance Checks
 
 - Developer Preview stage is visible.
-- Anonymous top nav is Home, Registry, Marketplace, Docs, Publish, Sign in.
-- Anonymous top nav does not expose Publishers, Agents, API health, Account center, Dashboard, Developer, Publisher workspace, Admin, or Open workspace.
+- Anonymous top nav is Marketplace, Registry, Docs, Pricing, Publish, language, login, and workspace entry.
+- Anonymous top nav does not expose Account center, Dashboard, Publisher workspace, Admin operations, or API health as public destinations.
 - Public pages explain what works without login and what requires login.
 - Anonymous verified skill detail uses Availability, not a top-level Install section.
 - Submitted skill detail uses Availability and inspection-only copy.
@@ -84,6 +109,9 @@ Verify these routes before deployment:
 - Publisher pages do not make payout readiness a headline trust factor.
 - Login token fallback is secondary, collapsed, and labeled as invite/recovery only.
 - Public support, report, security, and status paths exist.
+- Contact, pricing, API, MCP, Skill explainer, data handling, publisher review, changelog, about, and roadmap paths exist and use localized metadata.
+- Sitemap indexes public pages and skill/publisher detail pages; robots disallows login, account, dashboard, developer workspace, publisher workspace, admin, report, and role-routing paths.
+- `llms.txt` clearly states Launch Preview boundaries for AI search and answer engines.
 - Security and support paths warn not to include secrets, API keys, passwords, or private user data in public reports.
 - Chinese public pages do not show basic English user-facing descriptions, labels, status text, or quickstart comments except stable technical identifiers.
 - Terms, docs, README, and public page copy agree on Developer Preview state.
@@ -95,6 +123,8 @@ pnpm test:skill-availability
 pnpm --filter @useskillhub/web typecheck
 pnpm --filter @useskillhub/gateway typecheck
 pnpm --filter @useskillhub/web build
+pnpm qa:full-site
+pnpm qa:public
 pnpm smoke -- --skip-api --skip-app
 pnpm qa:anonymous -- --app-url http://127.0.0.1:3101 --timeout-ms 30000
 ```

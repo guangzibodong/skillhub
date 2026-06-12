@@ -1,8 +1,10 @@
 import { LifeBuoy, LogIn, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Report");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

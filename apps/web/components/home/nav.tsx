@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/i18n";
 
 export type NavPage =
   | "home"
@@ -35,12 +35,14 @@ const navLinks = {
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Marketplace" },
     { href: "/registry", page: "registry" as NavPage, label: "Registry" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs" },
+    { href: "/pricing", page: "marketplace" as NavPage, label: "Pricing" },
     { href: "/publish", page: "publish" as NavPage, label: "Publish" },
   ],
   zh: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "市场" },
     { href: "/registry", page: "registry" as NavPage, label: "注册表" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
+    { href: "/pricing", page: "marketplace" as NavPage, label: "价格" },
     { href: "/publish", page: "publish" as NavPage, label: "发布" },
   ],
 };
@@ -49,39 +51,52 @@ export function HomeNav({ active, locale }: NavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const links = navLinks[locale];
-  const langSuffix = locale === "zh" ? "?lang=zh" : "";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mobileOpen]);
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-[rgba(3,5,3,0.86)] backdrop-blur-[16px] border-b border-[rgba(221,255,220,0.1)]"
+        scrolled || mobileOpen
+          ? "bg-[rgba(3,5,3,0.88)] backdrop-blur-[16px] border-b border-[rgba(221,255,220,0.1)]"
           : ""
       }`}
     >
       <nav className="max-w-[1200px] mx-auto px-6 h-[64px] flex items-center justify-between">
-        {/* Left: Logo */}
-        <a href={`/${langSuffix}`} className="flex items-center gap-2.5">
+        <a href={localizedHref("/", locale)} className="flex items-center gap-2.5" aria-label="SkillHub home">
           <div className="w-7 h-7 rounded-[6px] bg-[#7fee64] border border-[rgba(167,255,140,0.72)] flex items-center justify-center shadow-[0_0_28px_rgba(127,238,100,0.18)]">
             <span className="text-[11px] font-bold text-[#071207]">S</span>
           </div>
-          <span className="text-[15px] font-semibold text-white tracking-[-0.02em]">
+          <span className="text-[15px] font-semibold text-white tracking-[0]">
             SkillHub
           </span>
         </a>
 
-        {/* Center: nav links */}
         <div className="hidden md:flex items-center gap-1">
           {links.map((link) => (
             <a
               key={link.href}
-              href={`${link.href}${langSuffix}`}
+              href={localizedHref(link.href, locale)}
               className={`text-[14px] font-medium transition-colors px-3.5 py-2 ${
                 active === link.page
                   ? "text-white"
@@ -93,61 +108,65 @@ export function HomeNav({ active, locale }: NavProps) {
           ))}
         </div>
 
-        {/* Right: auth */}
         <div className="hidden md:flex items-center gap-4">
           <a
-            href={locale === "zh" ? "/?lang=en" : "/?lang=zh"}
-            className="text-[12px] text-[#525252] hover:text-[#999] transition-colors"
+            href={locale === "zh" ? localizedHref("/", "en") : localizedHref("/", "zh")}
+            className="text-[12px] text-[#a9b3a3] hover:text-white transition-colors"
           >
             {locale === "zh" ? "EN" : "中文"}
           </a>
           <a
-            href={`/login${langSuffix}`}
-            className="text-[14px] font-medium text-[#999] hover:text-white transition-colors"
+            href={localizedHref("/login", locale)}
+            className="text-[14px] font-medium text-[#a9b3a3] hover:text-white transition-colors"
           >
             {locale === "zh" ? "登录" : "Log in"}
           </a>
           <a
-            href={`/developer${langSuffix}`}
+            href={localizedHref("/developer", locale)}
             className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
           >
-            {locale === "zh" ? "开始创建" : "Start creating"}
+            {locale === "zh" ? "打开工作区" : "Open workspace"}
           </a>
         </div>
 
-        {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-[#999]"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
+          aria-controls="home-mobile-menu"
+          aria-expanded={mobileOpen}
+          aria-label={mobileOpen ? (locale === "zh" ? "关闭导航" : "Close menu") : (locale === "zh" ? "打开导航" : "Open menu")}
+          className="md:hidden p-2 text-[#dce8d8]"
+          onClick={() => setMobileOpen((current) => !current)}
+          type="button"
         >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          {mobileOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#030503] border-t border-[rgba(221,255,220,0.1)] px-6 py-4 space-y-1">
+        <div
+          className="md:hidden bg-[#030503] border-t border-[rgba(221,255,220,0.1)] px-6 py-4 space-y-1"
+          id="home-mobile-menu"
+        >
           {links.map((link) => (
             <a
               key={link.href}
-              href={`${link.href}${langSuffix}`}
+              href={localizedHref(link.href, locale)}
+              onClick={() => setMobileOpen(false)}
               className={`block text-[14px] py-2.5 ${
-                active === link.page ? "text-white" : "text-[#999] hover:text-white"
+                active === link.page ? "text-white" : "text-[#a9b3a3] hover:text-white"
               }`}
             >
               {link.label}
             </a>
           ))}
-          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] flex items-center gap-3">
-            <a href={`/login${langSuffix}`} className="text-[14px] text-[#999]">
+          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-3">
+            <a href={localizedHref("/login", locale)} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
               {locale === "zh" ? "登录" : "Log in"}
             </a>
             <a
-              href={`/developer${langSuffix}`}
-              className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)]"
+              href={localizedHref("/developer", locale)}
+              className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-3 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] text-center"
             >
-              {locale === "zh" ? "开始创建" : "Start creating"}
+              {locale === "zh" ? "工作区" : "Workspace"}
             </a>
           </div>
         </div>

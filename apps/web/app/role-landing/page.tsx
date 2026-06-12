@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getLocaleFromSearchParams } from "@/lib/i18n";
 import { roleLandingPath } from "@/lib/role-landing";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Workspace Routing");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

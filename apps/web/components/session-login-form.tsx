@@ -15,12 +15,12 @@ type SessionLoginFormProps = {
 const copy = {
   en: {
     helper:
-      "Use this only when a SkillHub administrator or invite flow gave you a one-time token. Most users should use a provider or email/password.",
-    label: "Invite or recovery token",
+      "Use this only when a SkillHub administrator or invite flow gave you a one-time token. Most users should use OAuth or email/password.",
+    label: "Invite/recovery token",
     placeholder: "Paste invite or recovery token",
     submit: "Continue with token",
     submitting: "Verifying",
-    title: "Invite or recovery token",
+    title: "Invite or recovery token only",
     workspace: "Open dashboard",
   },
   zh: {

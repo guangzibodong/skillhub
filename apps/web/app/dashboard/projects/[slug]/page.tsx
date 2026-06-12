@@ -45,8 +45,10 @@ import {
   type DisputeRecord,
   type RefundRecord
 } from "@/lib/ops-data";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Project");
 
 type PageProps = {
   params: Promise<{ slug: string }>;

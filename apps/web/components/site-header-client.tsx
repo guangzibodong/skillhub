@@ -70,7 +70,7 @@ export function SiteHeaderClient({
     { id: "docs", label: labels.nav.docs, href: "/docs" },
     { id: "publish", label: labels.nav.publish, href: "/publish" },
     { id: "security", label: labels.nav.security, href: "/security" },
-    { id: "pricing", label: labels.nav.pricing, href: "/marketplace#pricing" },
+    { id: "pricing", label: labels.nav.pricing, href: "/pricing" },
   ] as const;
 
   useEffect(() => {

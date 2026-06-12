@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import { getLocaleFromSearchParams } from "@/lib/i18n";
+import { buildNoIndexMetadata } from "@/lib/seo";
+
+export const metadata = buildNoIndexMetadata("SkillHub Admin Login");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

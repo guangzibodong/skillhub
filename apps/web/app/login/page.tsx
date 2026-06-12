@@ -31,8 +31,10 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Login");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

@@ -42,6 +42,7 @@ import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { signOutAction } from "@/lib/auth-actions";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { buildNoIndexMetadata } from "@/lib/seo";
 import {
   formatCompactNumber,
   formatMoney,
@@ -65,6 +66,7 @@ import {
 } from "@/lib/ops-data";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Admin");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -1758,7 +1760,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[0].tone} ${defaultWorkbenchGroup === "launch" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-launch"
-                open={defaultWorkbenchGroup === "launch"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">01</span>
@@ -1781,7 +1782,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[1].tone} ${defaultWorkbenchGroup === "review" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-review"
-                open={defaultWorkbenchGroup === "review"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">02</span>
@@ -1808,7 +1808,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[2].tone} ${defaultWorkbenchGroup === "identity" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-identity"
-                open={defaultWorkbenchGroup === "identity"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">03</span>
@@ -1841,7 +1840,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[3].tone} ${defaultWorkbenchGroup === "delivery" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-delivery"
-                open={defaultWorkbenchGroup === "delivery"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">04</span>
@@ -1872,7 +1870,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[4].tone} ${defaultWorkbenchGroup === "risk" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-risk"
-                open={defaultWorkbenchGroup === "risk"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">05</span>
@@ -1945,7 +1942,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[5].tone} ${defaultWorkbenchGroup === "finance" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-finance"
-                open={defaultWorkbenchGroup === "finance"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">06</span>

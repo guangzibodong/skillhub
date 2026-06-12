@@ -52,8 +52,10 @@ import {
   getPublisherRefunds,
   getPublisherSkills,
 } from "@/lib/ops-data";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Dashboard");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

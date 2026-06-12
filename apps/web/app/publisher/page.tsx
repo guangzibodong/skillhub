@@ -43,8 +43,10 @@ import {
   type PublisherSkillRecord
 } from "@/lib/ops-data";
 import { getPublisherPageCopy, type PublisherPageCopy } from "@/lib/publisher-page-copy";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Publisher Workspace");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

@@ -30,8 +30,10 @@ import {
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
 import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
 import { getNotificationPreferences } from "@/lib/ops-data";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Account");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

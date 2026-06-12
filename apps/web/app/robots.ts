@@ -1,25 +1,21 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = "https://useskillhub.com";
+import { indexablePublicPaths, privateNoIndexPaths } from "@/lib/public-pages";
+import { siteUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
-        allow: [
-          "/",
-          "/marketplace",
-          "/docs",
-          "/publish",
-          "/security",
-          "/status",
-          "/support",
-          "/terms",
-          "/privacy",
-          "/skills/",
+        allow: [...indexablePublicPaths, "/skills/", "/publishers/"],
+        disallow: [
+          ...privateNoIndexPaths,
+          "/dashboard/",
+          "/api/auth/",
+          "/api/admin/",
+          "/api/internal/",
+          "/_next/",
         ],
-        disallow: ["/admin", "/admin-login", "/account", "/dashboard", "/publisher", "/report"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

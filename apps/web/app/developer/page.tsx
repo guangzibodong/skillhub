@@ -44,8 +44,10 @@ import {
   type OrganizationWebhookEndpoint,
   type UserNotificationInbox
 } from "@/lib/ops-data";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Developer Workspace");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

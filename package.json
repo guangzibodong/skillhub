@@ -18,6 +18,7 @@
     "smoke:p0:publish": "node scripts/qa-p0-publish-handoff-smoke.mjs",
     "smoke:prod": "node scripts/qa-p0-release-suite.mjs --prod --skip-admin --timeout-ms 30000",
     "qa:public": "node scripts/public-launch-readiness.mjs",
+    "qa:full-site": "node scripts/full-site-readiness.mjs",
     "qa:anonymous": "node scripts/qa-public-anonymous.mjs",
     "qa:acceptance-team": "node scripts/qa-acceptance-team.mjs",
     "acceptance:team": "node scripts/create-acceptance-team.mjs",

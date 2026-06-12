@@ -1,90 +1,156 @@
-import type { Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/i18n";
 
 type Props = {
   locale: Locale;
 };
 
-export function HomeFooter({ locale }: Props) {
-  const langSuffix = locale === "zh" ? "?lang=zh" : "";
+type FooterLink = {
+  href: string;
+  label: string;
+};
 
-  const col1 = locale === "zh"
-    ? [
-        { href: "/marketplace", label: "技能市场" },
-        { href: "/registry", label: "注册表" },
-        { href: "/publish", label: "发布技能" },
-        { href: "/docs", label: "文档" },
-        { href: "/agents", label: "Agent 集成" },
-      ]
-    : [
+type FooterColumn = {
+  title: string;
+  links: FooterLink[];
+};
+
+const footerColumns: Record<Locale, FooterColumn[]> = {
+  en: [
+    {
+      title: "Product",
+      links: [
         { href: "/marketplace", label: "Marketplace" },
         { href: "/registry", label: "Registry" },
-        { href: "/publish", label: "Publish" },
+        { href: "/pricing", label: "Pricing preview" },
+        { href: "/what-is-a-skill", label: "What is a Skill?" },
+      ],
+    },
+    {
+      title: "Developers",
+      links: [
         { href: "/docs", label: "Docs" },
-        { href: "/agents", label: "Agents" },
-      ];
+        { href: "/api", label: "API" },
+        { href: "/mcp", label: "MCP" },
+        { href: "/developer", label: "Developer workspace" },
+      ],
+    },
+    {
+      title: "Publishers",
+      links: [
+        { href: "/publish", label: "Publish" },
+        { href: "/publisher-review", label: "Publisher review" },
+        { href: "/publishers", label: "Publisher directory" },
+        { href: "/roadmap", label: "Roadmap" },
+      ],
+    },
+    {
+      title: "Trust",
+      links: [
+        { href: "/security", label: "Security" },
+        { href: "/data-handling", label: "Data handling" },
+        { href: "/privacy", label: "Privacy" },
+        { href: "/terms", label: "Terms" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { href: "/about", label: "About" },
+        { href: "/contact", label: "Contact" },
+        { href: "/support", label: "Support" },
+        { href: "/changelog", label: "Changelog" },
+      ],
+    },
+  ],
+  zh: [
+    {
+      title: "产品",
+      links: [
+        { href: "/marketplace", label: "技能市场" },
+        { href: "/registry", label: "注册表" },
+        { href: "/pricing", label: "价格预览" },
+        { href: "/what-is-a-skill", label: "什么是 Skill" },
+      ],
+    },
+    {
+      title: "开发者",
+      links: [
+        { href: "/docs", label: "文档" },
+        { href: "/api", label: "API" },
+        { href: "/mcp", label: "MCP" },
+        { href: "/developer", label: "开发者工作区" },
+      ],
+    },
+    {
+      title: "发布者",
+      links: [
+        { href: "/publish", label: "发布技能" },
+        { href: "/publisher-review", label: "发布审核" },
+        { href: "/publishers", label: "发布者目录" },
+        { href: "/roadmap", label: "路线图" },
+      ],
+    },
+    {
+      title: "信任",
+      links: [
+        { href: "/security", label: "安全" },
+        { href: "/data-handling", label: "数据处理" },
+        { href: "/privacy", label: "隐私政策" },
+        { href: "/terms", label: "服务条款" },
+      ],
+    },
+    {
+      title: "公司",
+      links: [
+        { href: "/about", label: "关于我们" },
+        { href: "/contact", label: "联系我们" },
+        { href: "/support", label: "支持中心" },
+        { href: "/changelog", label: "更新日志" },
+      ],
+    },
+  ],
+};
 
-  const col2 = locale === "zh"
-    ? [
-        { href: "/support", label: "帮助中心" },
-        { href: "mailto:support@skillhub.dev", label: "联系我们" },
-        { href: "/terms", label: "使用条款" },
-        { href: "/security", label: "隐私政策" },
-      ]
-    : [
-        { href: "/support", label: "Help Center" },
-        { href: "mailto:support@skillhub.dev", label: "Contact us" },
-        { href: "/terms", label: "Terms of Use" },
-        { href: "/security", label: "Privacy Policy" },
-      ];
+export function HomeFooter({ locale }: Props) {
+  const columns = footerColumns[locale];
 
   return (
-    <footer className="border-t border-[rgba(255,255,255,0.08)]">
-      <div className="max-w-[1200px] mx-auto px-6 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
-          {/* Col 1: links */}
-          <div>
-            {col1.map((link) => (
-              <a
-                key={link.href}
-                href={`${link.href}${langSuffix}`}
-                className="block text-[14px] text-[#666] hover:text-[#999] transition-colors py-1.5"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Col 2: support/legal */}
-          <div>
-            {col2.map((link) => (
-              <a
-                key={link.href}
-                href={link.href.startsWith("mailto") ? link.href : `${link.href}${langSuffix}`}
-                className="block text-[14px] text-[#666] hover:text-[#999] transition-colors py-1.5"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Spacer for alignment */}
-          <div className="hidden md:block" />
-          <div className="hidden md:block" />
+    <footer className="home-footer" aria-label={locale === "zh" ? "站点页脚" : "Site footer"}>
+      <div className="home-footer__inner">
+        <div className="home-footer__brand">
+          <a href={localizedHref("/", locale)} className="home-footer__logo" aria-label="SkillHub home">
+            <span aria-hidden="true">S</span>
+            <strong>SkillHub</strong>
+          </a>
+          <p>
+            {locale === "zh"
+              ? "面向 AI Agent 的 Skill 注册、审核、运行治理和市场预览基础设施。"
+              : "Registry, review, runtime governance, and marketplace preview infrastructure for AI Agent Skills."}
+          </p>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-16 pt-6 border-t border-[rgba(255,255,255,0.08)] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[12px] text-[#525252]">
-            © {new Date().getFullYear()} SkillHub, Inc.{" "}
-            {locale === "zh" ? "保留所有权利" : "All rights reserved"}
-          </p>
+        <nav className="home-footer__links" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
+          {columns.map((column) => (
+            <div className="home-footer__column" key={column.title}>
+              <h2>{column.title}</h2>
+              {column.links.map((link) => (
+                <a href={localizedHref(link.href, locale)} key={link.href}>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          ))}
+        </nav>
 
-          <div className="flex items-center gap-4">
-            {/* Language */}
-            <a
-              href={locale === "zh" ? "/?lang=en" : "/?lang=zh"}
-              className="text-[12px] text-[#525252] hover:text-[#999] transition-colors"
-            >
+        <div className="home-footer__bottom">
+          <p>
+            © {new Date().getFullYear()} SkillHub.{" "}
+            {locale === "zh" ? "所有公开能力以预览状态和实际配置为准。" : "Public capabilities depend on preview state and live configuration."}
+          </p>
+          <div>
+            <a href={localizedHref("/status", locale)}>{locale === "zh" ? "状态" : "Status"}</a>
+            <a href={localizedHref("/contact", locale)}>{locale === "zh" ? "联系" : "Contact"}</a>
+            <a href={locale === "zh" ? localizedHref("/", "en") : localizedHref("/", "zh")}>
               {locale === "zh" ? "EN" : "中文"}
             </a>
           </div>
