@@ -1159,8 +1159,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
   return (
     <AppShell active="admin" locale={locale} flushTop>
       <div className="admin-console-page">
+        <AdminConsoleBackdrop />
 
-      <section className="admin-console-shell admin-console-shell--v2" id="admin-overview" aria-labelledby="admin-console-title">
+        <section className="admin-console-shell admin-console-shell--v2" id="admin-overview" aria-labelledby="admin-console-title">
         <aside className="admin-sidebar" aria-label={locale === "zh" ? "管理员后台导航" : "Admin console navigation"}>
           <div className="admin-sidebar__brand">
             <span aria-hidden="true">SH</span>
@@ -1757,6 +1758,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[0].tone} ${defaultWorkbenchGroup === "launch" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-launch"
+                open={defaultWorkbenchGroup === "launch"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">01</span>
@@ -1779,6 +1781,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[1].tone} ${defaultWorkbenchGroup === "review" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-review"
+                open={defaultWorkbenchGroup === "review"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">02</span>
@@ -1805,6 +1808,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[2].tone} ${defaultWorkbenchGroup === "identity" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-identity"
+                open={defaultWorkbenchGroup === "identity"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">03</span>
@@ -1837,6 +1841,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[3].tone} ${defaultWorkbenchGroup === "delivery" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-delivery"
+                open={defaultWorkbenchGroup === "delivery"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">04</span>
@@ -1867,6 +1872,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[4].tone} ${defaultWorkbenchGroup === "risk" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-risk"
+                open={defaultWorkbenchGroup === "risk"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">05</span>
@@ -1939,6 +1945,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <details
                 className={`admin-module-group admin-module-group--${workbenchCards[5].tone} ${defaultWorkbenchGroup === "finance" ? "admin-module-group--priority" : ""}`}
                 id="admin-group-finance"
+                open={defaultWorkbenchGroup === "finance"}
               >
                 <summary className="admin-module-group__summary">
                   <span className="admin-module-group__number">06</span>
@@ -2019,6 +2026,22 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
       </div>
     </AppShell>
+  );
+}
+
+function AdminConsoleBackdrop() {
+  return (
+    <div className="admin-control-backdrop" aria-hidden="true">
+      <span className="admin-control-backdrop__scan admin-control-backdrop__scan--a" />
+      <span className="admin-control-backdrop__scan admin-control-backdrop__scan--b" />
+      <span className="admin-control-backdrop__rail admin-control-backdrop__rail--a" />
+      <span className="admin-control-backdrop__rail admin-control-backdrop__rail--b" />
+      <span className="admin-control-backdrop__rail admin-control-backdrop__rail--c" />
+      <span className="admin-control-backdrop__node admin-control-backdrop__node--a" />
+      <span className="admin-control-backdrop__node admin-control-backdrop__node--b" />
+      <span className="admin-control-backdrop__node admin-control-backdrop__node--c" />
+      <span className="admin-control-backdrop__node admin-control-backdrop__node--d" />
+    </div>
   );
 }
 
