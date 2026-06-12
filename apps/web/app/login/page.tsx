@@ -246,38 +246,59 @@ export default async function LoginPage({ searchParams }: PageProps) {
   }
 
   return (
-    <AppShell active="login" locale={locale}>
-      <LoginPreviewNotice labels={labels} locale={locale} />
+    <AppShell active="login" locale={locale} flushTop>
+      <div className={`login-page-shell login-page-shell--${locale}`}>
+        <LoginPreviewNotice labels={labels} locale={locale} />
 
-      <section className="max-w-[1200px] mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_480px] gap-16 items-center min-h-[calc(100vh-160px)]">
-          <LoginWorkspaceHero isSignedIn={isSignedIn} labels={labels} />
+        <section className="login-stage" aria-labelledby="login-title">
+          <LoginTechBackdrop />
+          <div className="login-stage__grid">
+            <div className="login-stage__hero">
+              <LoginWorkspaceHero isSignedIn={isSignedIn} labels={labels} />
+            </div>
 
-          <div className="flex flex-col gap-6">
-            {isSignedIn ? (
-              <div className="flex flex-col gap-4">
-                {notice ? <LoginNotice notice={notice} /> : null}
-                <LoginSessionCard
+            <div className="login-stage__auth">
+              {isSignedIn ? (
+                <div className="login-signed-in-stack">
+                  {notice ? <LoginNotice notice={notice} /> : null}
+                  <LoginSessionCard
+                    labels={labels}
+                    locale={locale}
+                    returnTo={returnTo}
+                    session={session}
+                  />
+                </div>
+              ) : (
+                <LoginAuthCard
+                  apiUrl={apiUrl}
                   labels={labels}
                   locale={locale}
+                  notice={notice}
+                  providers={providers}
                   returnTo={returnTo}
-                  session={session}
                 />
-              </div>
-            ) : (
-              <LoginAuthCard
-                apiUrl={apiUrl}
-                labels={labels}
-                locale={locale}
-                notice={notice}
-                providers={providers}
-                returnTo={returnTo}
-              />
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </AppShell>
+  );
+}
+
+function LoginTechBackdrop() {
+  return (
+    <div className="login-tech-backdrop" aria-hidden="true">
+      <span className="login-tech-backdrop__scan login-tech-backdrop__scan--a" />
+      <span className="login-tech-backdrop__scan login-tech-backdrop__scan--b" />
+      <span className="login-tech-backdrop__rail login-tech-backdrop__rail--a" />
+      <span className="login-tech-backdrop__rail login-tech-backdrop__rail--b" />
+      <span className="login-tech-backdrop__rail login-tech-backdrop__rail--c" />
+      <span className="login-tech-backdrop__node login-tech-backdrop__node--a" />
+      <span className="login-tech-backdrop__node login-tech-backdrop__node--b" />
+      <span className="login-tech-backdrop__node login-tech-backdrop__node--c" />
+      <span className="login-tech-backdrop__node login-tech-backdrop__node--d" />
+    </div>
   );
 }
 
@@ -290,18 +311,17 @@ function LoginPreviewNotice({
 }) {
   return (
     <div
-      className="bg-[#1a1a1a] border-b border-[rgba(255,255,255,0.06)] py-3"
+      className="login-preview-notice"
       role="status"
     >
-      <div className="max-w-[1200px] mx-auto px-6 flex items-center gap-3 text-[13px] text-[#999]">
-        <Info size={15} aria-hidden="true" className="text-[#7fee64] shrink-0" />
-        <p className="flex-1">
-          <strong className="text-white">{labels.noticeLabel}: </strong>
+      <div className="login-preview-notice__inner">
+        <Info size={15} aria-hidden="true" />
+        <p>
+          <strong>{labels.noticeLabel}: </strong>
           <span>{labels.noticeBody}</span>
         </p>
         <a
           href={localizedHref("/status", locale)}
-          className="flex items-center gap-1 text-[#7fee64] hover:text-[#a7ff8c] whitespace-nowrap"
         >
           <span>{labels.noticeLink}</span>
           <ArrowRight size={14} aria-hidden="true" />
@@ -321,25 +341,25 @@ function LoginWorkspaceHero({
   const valueCards = isSignedIn ? labels.signedInValueCards : labels.valueCards;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-[#7fee64]">
+    <div className="login-workspace-hero-v2">
+      <div className="login-workspace-hero-v2__copy">
+        <div className="login-workspace-hero-v2__eyebrow">
           <BadgeCheck size={16} aria-hidden="true" />
           <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
         </div>
-        <h1 id="login-title" className="text-[36px] lg:text-[48px] font-bold leading-[1.1] text-white">
+        <h1 id="login-title">
           <span>{isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}</span>{" "}
-          <span className="text-[#7fee64]">{labels.heroBrand}</span>{" "}
-          <span className="text-[#999]">
+          <span className="login-workspace-hero-v2__brand">{labels.heroBrand}</span>{" "}
+          <span className="login-workspace-hero-v2__tail">
             {isSignedIn ? labels.heroSignedInAfter : labels.heroTitleAfter}
           </span>
         </h1>
-        <p className="text-[16px] leading-relaxed text-[#999] max-w-[520px]">
+        <p>
           {isSignedIn ? labels.sessionBody : labels.body}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="login-value-grid-v2">
         {valueCards.map((item, index) => {
           const Icon = valueIcons[index] ?? ShieldCheck;
 
@@ -357,13 +377,13 @@ function LoginWorkspaceHero({
       <RuntimeFlowVisual labels={labels} />
 
       <div
-        className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+        className="login-metric-strip-v2"
         aria-label="SkillHub preview state"
       >
         {labels.metrics.map(([value, label]) => (
-          <div className="flex flex-col gap-1" key={label}>
-            <strong className="text-[14px] font-semibold text-white">{value}</strong>
-            <span className="text-[12px] text-[#666]">{label}</span>
+          <div className="login-metric-v2" key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
           </div>
         ))}
       </div>
@@ -381,10 +401,10 @@ function ValueCard({
   title: string;
 }) {
   return (
-    <article className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4 flex flex-col gap-2">
-      <Icon size={22} aria-hidden="true" className="text-[#7fee64]" />
-      <strong className="text-[14px] font-medium text-white">{title}</strong>
-      <span className="text-[13px] text-[#666] leading-relaxed">{body}</span>
+    <article className="login-value-card-v2">
+      <Icon size={22} aria-hidden="true" />
+      <strong>{title}</strong>
+      <span>{body}</span>
     </article>
   );
 }
@@ -392,26 +412,24 @@ function ValueCard({
 function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
   return (
     <div
-      className="relative bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-6 flex items-center justify-between gap-4 overflow-hidden"
+      className="login-runtime-flow-v2"
       aria-label={labels.runtimeAria}
     >
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(90deg,transparent_49%,rgba(255,255,255,0.5)_50%,transparent_51%)] bg-[length:20px_20px]" aria-hidden="true" />
-      <div className="absolute top-1/2 left-0 right-0 h-px bg-[rgba(255,255,255,0.08)]" aria-hidden="true" />
+      <div className="login-runtime-flow-v2__grid" aria-hidden="true" />
+      <div className="login-runtime-flow-v2__line" aria-hidden="true" />
+      <span className="login-runtime-flow-v2__packet login-runtime-flow-v2__packet--a" />
+      <span className="login-runtime-flow-v2__packet login-runtime-flow-v2__packet--b" />
       {labels.flowNodes.map((label, index) => {
         const Icon = flowIcons[index] ?? ShieldCheck;
         const isGateway = index === 2;
 
         return (
           <div
-            className={`relative z-10 flex flex-col items-center gap-2 ${
-              isGateway ? "text-[#7fee64]" : "text-[#666]"
-            }`}
+            className={isGateway ? "login-runtime-node-v2 login-runtime-node-v2--gateway" : "login-runtime-node-v2"}
             key={label}
           >
             <Icon size={isGateway ? 30 : 24} aria-hidden="true" />
-            <strong className="text-[11px] font-medium text-center whitespace-nowrap">
-              {label}
-            </strong>
+            <strong>{label}</strong>
           </div>
         );
       })}
@@ -435,16 +453,13 @@ function LoginAuthCard({
   returnTo: string;
 }) {
   return (
-    <section
-      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-8 flex flex-col gap-6"
-      aria-labelledby="login-card-title"
-    >
+    <section className="login-auth-card-v2" aria-labelledby="login-card-title">
       {notice ? <LoginNotice notice={notice} /> : null}
-      <div className="flex flex-col gap-2">
-        <h2 id="login-card-title" className="text-[22px] font-semibold text-white">
+      <div className="login-auth-card-v2__head">
+        <h2 id="login-card-title">
           {labels.authTitle}
         </h2>
-        <p className="text-[14px] text-[#999]">{labels.authSubtitle}</p>
+        <p>{labels.authSubtitle}</p>
       </div>
       <AuthProviderPanel
         apiUrl={apiUrl}
@@ -453,12 +468,12 @@ function LoginAuthCard({
         returnTo={returnTo}
         surface="embedded"
       />
-      <div className="flex items-center gap-3" role="separator">
-        <span className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
-        <span className="text-[13px] text-[#525252]">
+      <div className="login-divider-v2" role="separator">
+        <span />
+        <small>
           {locale === "zh" ? "或" : "or"}
-        </span>
-        <span className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
+        </small>
+        <span />
       </div>
       <LoginEmailCard labels={labels} locale={locale} returnTo={returnTo} />
       <LoginRecoveryBlock labels={labels} locale={locale} returnTo={returnTo} />
@@ -552,49 +567,47 @@ function LoginSessionCard({
   ];
 
   return (
-    <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-8 flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[13px] text-[#999]">
-          <ShieldCheck size={16} aria-hidden="true" className="text-[#7fee64]" />
+    <article className="login-session-card-v2">
+      <div className="login-session-card-v2__head">
+        <div>
+          <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.sessionTitle}</span>
         </div>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(16,185,129,0.1)] text-[12px] font-medium text-[#10b981]">
+        <span>
           {labels.sessionActive}
         </span>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="login-session-fields-v2">
         {fields.map((field) => {
           const Icon = field.icon;
 
           return (
             <div
               key={field.label}
-              className="flex items-center gap-3 py-2 border-b border-[rgba(255,255,255,0.06)] last:border-0"
+              className="login-session-field-v2"
             >
-              <Icon size={19} aria-hidden="true" className="text-[#525252] shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="text-[12px] text-[#666] block">{field.label}</span>
-                <strong className="text-[14px] font-medium text-white block truncate">
-                  {field.value}
-                </strong>
+              <Icon size={19} aria-hidden="true" />
+              <div>
+                <span>{field.label}</span>
+                <strong>{field.value}</strong>
               </div>
-              <small className="text-[11px] text-[#525252] shrink-0">{field.meta}</small>
+              <small>{field.meta}</small>
             </div>
           );
         })}
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="login-session-actions-v2">
         <a
-          className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] inline-flex items-center justify-center gap-2 transition-colors"
+          className="login-session-primary-v2"
           href={returnTo}
         >
           <UserCircle size={17} aria-hidden="true" />
           <span>{labels.workspaceAction}</span>
         </a>
         <a
-          className="bg-transparent border border-[rgba(255,255,255,0.12)] hover:border-[rgba(255,255,255,0.2)] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] inline-flex items-center justify-center gap-2 transition-colors"
+          className="login-session-secondary-v2"
           href={localizedHref("/account", locale)}
         >
           <UserRound size={17} aria-hidden="true" />
@@ -602,7 +615,7 @@ function LoginSessionCard({
         </a>
         <form action={signOutAction.bind(null, locale)}>
           <button
-            className="w-full text-[#666] hover:text-white text-[13px] font-medium px-4 py-2 inline-flex items-center justify-center gap-2 transition-colors"
+            className="login-session-text-v2"
             type="submit"
           >
             <LogOut size={15} aria-hidden="true" />
@@ -610,7 +623,7 @@ function LoginSessionCard({
           </button>
         </form>
       </div>
-      <p className="text-[12px] text-[#525252] text-center">{labels.switchAccountBody}</p>
+      <p className="login-session-note-v2">{labels.switchAccountBody}</p>
     </article>
   );
 }
@@ -642,13 +655,13 @@ function LoginRecoveryBlock({
   returnTo: string;
 }) {
   return (
-    <details className="group border border-[rgba(255,255,255,0.06)] rounded-[10px] overflow-hidden">
-      <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer text-[13px] text-[#666] hover:text-[#999] transition-colors">
+    <details className="login-recovery-v2">
+      <summary>
         <KeyRound size={17} aria-hidden="true" />
-        <span className="flex-1">{labels.recoveryTitle}</span>
-        <ChevronDown size={16} aria-hidden="true" className="transition-transform group-open:rotate-180" />
+        <span>{labels.recoveryTitle}</span>
+        <ChevronDown size={16} aria-hidden="true" />
       </summary>
-      <div className="px-4 pb-4">
+      <div className="login-recovery-v2__body">
         <SessionLoginForm
           locale={locale}
           returnTo={returnTo}
