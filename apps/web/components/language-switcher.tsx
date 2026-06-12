@@ -13,12 +13,16 @@ export function LanguageSwitcher({ label, locale, pathname }: LanguageSwitcherPr
   return (
     <div className="language-switcher" aria-label={label}>
       <a
+        aria-current={locale === "en" ? "true" : undefined}
+        aria-label="Switch language to English"
         className={locale === "en" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"}
         href={localizedHrefWithCurrentSearch(pathname, "en", searchParams)}
       >
         EN
       </a>
       <a
+        aria-current={locale === "zh" ? "true" : undefined}
+        aria-label="切换语言为中文"
         className={locale === "zh" ? "language-switcher__item language-switcher__item--active" : "language-switcher__item"}
         href={localizedHrefWithCurrentSearch(pathname, "zh", searchParams)}
       >

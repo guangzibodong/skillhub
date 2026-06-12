@@ -106,6 +106,7 @@ export function SiteHeaderClient({
     <>
       <header className="site-header" ref={headerRef}>
         <a
+          aria-current={active === "home" ? "page" : undefined}
           className="brand brand--link"
           href={localizedHref("/", locale)}
           aria-label="SkillHub home"
@@ -122,6 +123,7 @@ export function SiteHeaderClient({
         <nav className="site-nav" aria-label={labels.primaryNavigation}>
           {navItems.map((item) => (
             <a
+              aria-current={active === item.id ? "page" : undefined}
               className={
                 active === item.id
                   ? "site-nav__link site-nav__link--active"
@@ -190,6 +192,7 @@ export function SiteHeaderClient({
           <nav aria-label={labels.mobileNavigation}>
             {navItems.map((item) => (
               <a
+                aria-current={active === item.id ? "page" : undefined}
                 className={
                   active === item.id
                     ? "site-mobile-panel__link site-mobile-panel__link--active"
@@ -229,8 +232,8 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
   if (locale === "zh") {
     return {
       closeNavigation: "关闭导航",
-      console: "登录入口",
-      getProjectKey: "开发者工作台",
+      console: "登录",
+      getProjectKey: "打开工作台",
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
