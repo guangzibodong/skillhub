@@ -625,11 +625,11 @@ export default async function DocsPage({ searchParams }: PageProps) {
                 </div>
               ))}
               <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 mt-2 flex flex-col gap-1">
-                <strong className="text-xs text-[#0075ff]">{quickstart.mcpBadge}</strong>
+                <strong className="text-xs text-[#7fee64]">{quickstart.mcpBadge}</strong>
                 <span className="body-text-sm text-[#999]">{quickstart.mcpBody}</span>
               </div>
               <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1">
-                <strong className="text-xs text-[#0075ff]">{quickstart.cliBadge}</strong>
+                <strong className="text-xs text-[#7fee64]">{quickstart.cliBadge}</strong>
                 <span className="body-text-sm text-[#999]">{quickstart.cliBody}</span>
               </div>
             </div>
@@ -659,8 +659,8 @@ export default async function DocsPage({ searchParams }: PageProps) {
                 <Reveal delay={index * 60} key={journey.title}>
                   <article className="card flex flex-col gap-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[rgba(0,117,255,0.1)] flex items-center justify-center shrink-0" aria-hidden="true">
-                        <Icon size={18} className="text-[#0075ff]" />
+                      <div className="w-8 h-8 rounded-full bg-[rgba(127,238,100,0.1)] flex items-center justify-center shrink-0" aria-hidden="true">
+                        <Icon size={18} className="text-[#7fee64]" />
                       </div>
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-[#666]">{journey.user}</span>
@@ -710,7 +710,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
                 <Reveal key={item.title}>
                   <article className="card flex flex-col gap-3">
                     <div className="flex items-center gap-2">
-                      <Icon size={18} aria-hidden="true" className="text-[#0075ff]" />
+                      <Icon size={18} aria-hidden="true" className="text-[#7fee64]" />
                       <h3 className="heading-sm">{item.title}</h3>
                     </div>
                     <p className="body-text-sm text-[#999]">{item.body}</p>
@@ -813,7 +813,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
                   <p className="body-text-sm text-[#999]">{group.body}</p>
                   <div className="flex flex-col gap-1.5 mt-auto">
                     {group.endpoints.map((endpoint) => (
-                      <code key={endpoint} className="text-xs font-mono text-[#0075ff] bg-[rgba(0,117,255,0.08)] rounded px-2 py-1 w-fit">{endpoint}</code>
+                      <code key={endpoint} className="text-xs font-mono text-[#7fee64] bg-[rgba(127,238,100,0.08)] rounded px-2 py-1 w-fit">{endpoint}</code>
                     ))}
                   </div>
                 </article>
@@ -844,7 +844,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
               return (
                 <article className="card flex flex-col gap-3" key={state.title}>
                   <div className="flex items-center gap-2">
-                    <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+                    <Icon size={17} aria-hidden="true" className="text-[#7fee64]" />
                     <h3 className="heading-sm">{state.title}</h3>
                   </div>
                   <p className="body-text-sm text-[#999]">{state.body}</p>

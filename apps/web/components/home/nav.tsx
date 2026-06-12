@@ -61,15 +61,15 @@ export function HomeNav({ active, locale }: NavProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-[rgba(0,0,0,0.85)] backdrop-blur-[16px] border-b border-[rgba(255,255,255,0.08)]"
+          ? "bg-[rgba(3,5,3,0.86)] backdrop-blur-[16px] border-b border-[rgba(221,255,220,0.1)]"
           : ""
       }`}
     >
       <nav className="max-w-[1200px] mx-auto px-6 h-[64px] flex items-center justify-between">
         {/* Left: Logo */}
         <a href={`/${langSuffix}`} className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-[7px] bg-[#0075ff] flex items-center justify-center">
-            <span className="text-[11px] font-bold text-white">S</span>
+          <div className="w-7 h-7 rounded-[6px] bg-[#7fee64] border border-[rgba(167,255,140,0.72)] flex items-center justify-center shadow-[0_0_28px_rgba(127,238,100,0.18)]">
+            <span className="text-[11px] font-bold text-[#071207]">S</span>
           </div>
           <span className="text-[15px] font-semibold text-white tracking-[-0.02em]">
             SkillHub
@@ -109,7 +109,7 @@ export function HomeNav({ active, locale }: NavProps) {
           </a>
           <a
             href={`/developer${langSuffix}`}
-            className="bg-[#0075ff] hover:bg-[#0066e0] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] transition-colors"
+            className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
           >
             {locale === "zh" ? "开始创建" : "Start creating"}
           </a>
@@ -127,7 +127,7 @@ export function HomeNav({ active, locale }: NavProps) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-black border-t border-[rgba(255,255,255,0.08)] px-6 py-4 space-y-1">
+        <div className="md:hidden bg-[#030503] border-t border-[rgba(221,255,220,0.1)] px-6 py-4 space-y-1">
           {links.map((link) => (
             <a
               key={link.href}
@@ -145,7 +145,7 @@ export function HomeNav({ active, locale }: NavProps) {
             </a>
             <a
               href={`/developer${langSuffix}`}
-              className="bg-[#0075ff] text-white text-[14px] font-medium px-4 py-2 rounded-[7px]"
+              className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)]"
             >
               {locale === "zh" ? "开始创建" : "Start creating"}
             </a>

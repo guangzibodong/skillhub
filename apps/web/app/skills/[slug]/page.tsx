@@ -530,7 +530,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                             {feedback.reviewerOrganizationName ?? feedback.reviewerDisplayName ?? labels.anonymousReviewer}
                           </span>
                         </div>
-                        <div className="flex items-center gap-0.5 text-[#0075ff]" aria-label={`${feedback.rating} / 5`}>
+                        <div className="flex items-center gap-0.5 text-[#7fee64]" aria-label={`${feedback.rating} / 5`}>
                           {Array.from({ length: 5 }, (_, index) => (
                             <Star
                               key={index}
@@ -802,7 +802,7 @@ function DeveloperHandoffPacket({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[rgba(255,255,255,0.08)]">
         {rows.map((row) => (
           <div className="bg-[#212121] p-4 flex flex-col gap-1" key={row.label}>
-            <span className="text-[#0075ff]">{row.icon}</span>
+            <span className="text-[#7fee64]">{row.icon}</span>
             <span className={`pill ${row.tone === "warning" ? "pill--warning" : "pill--success"} w-fit`}>{row.label}</span>
             <strong className="text-white text-sm">{row.value}</strong>
             <small className="text-xs text-[#525252]">{row.detail}</small>

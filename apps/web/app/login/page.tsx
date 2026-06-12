@@ -294,14 +294,14 @@ function LoginPreviewNotice({
       role="status"
     >
       <div className="max-w-[1200px] mx-auto px-6 flex items-center gap-3 text-[13px] text-[#999]">
-        <Info size={15} aria-hidden="true" className="text-[#0075ff] shrink-0" />
+        <Info size={15} aria-hidden="true" className="text-[#7fee64] shrink-0" />
         <p className="flex-1">
           <strong className="text-white">{labels.noticeLabel}: </strong>
           <span>{labels.noticeBody}</span>
         </p>
         <a
           href={localizedHref("/status", locale)}
-          className="flex items-center gap-1 text-[#0075ff] hover:text-[#0066e0] whitespace-nowrap"
+          className="flex items-center gap-1 text-[#7fee64] hover:text-[#a7ff8c] whitespace-nowrap"
         >
           <span>{labels.noticeLink}</span>
           <ArrowRight size={14} aria-hidden="true" />
@@ -323,13 +323,13 @@ function LoginWorkspaceHero({
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-5">
-        <div className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-[#0075ff]">
+        <div className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-wider text-[#7fee64]">
           <BadgeCheck size={16} aria-hidden="true" />
           <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
         </div>
         <h1 id="login-title" className="text-[36px] lg:text-[48px] font-bold leading-[1.1] text-white">
           <span>{isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}</span>{" "}
-          <span className="text-[#0075ff]">{labels.heroBrand}</span>{" "}
+          <span className="text-[#7fee64]">{labels.heroBrand}</span>{" "}
           <span className="text-[#999]">
             {isSignedIn ? labels.heroSignedInAfter : labels.heroTitleAfter}
           </span>
@@ -382,7 +382,7 @@ function ValueCard({
 }) {
   return (
     <article className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4 flex flex-col gap-2">
-      <Icon size={22} aria-hidden="true" className="text-[#0075ff]" />
+      <Icon size={22} aria-hidden="true" className="text-[#7fee64]" />
       <strong className="text-[14px] font-medium text-white">{title}</strong>
       <span className="text-[13px] text-[#666] leading-relaxed">{body}</span>
     </article>
@@ -404,7 +404,7 @@ function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
         return (
           <div
             className={`relative z-10 flex flex-col items-center gap-2 ${
-              isGateway ? "text-[#0075ff]" : "text-[#666]"
+              isGateway ? "text-[#7fee64]" : "text-[#666]"
             }`}
             key={label}
           >
@@ -555,7 +555,7 @@ function LoginSessionCard({
     <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-[13px] text-[#999]">
-          <ShieldCheck size={16} aria-hidden="true" className="text-[#0075ff]" />
+          <ShieldCheck size={16} aria-hidden="true" className="text-[#7fee64]" />
           <span>{labels.sessionTitle}</span>
         </div>
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(16,185,129,0.1)] text-[12px] font-medium text-[#10b981]">
@@ -587,7 +587,7 @@ function LoginSessionCard({
 
       <div className="flex flex-col gap-3">
         <a
-          className="bg-[#0075ff] hover:bg-[#0066e0] text-white text-[14px] font-medium px-4 py-2 rounded-[7px] inline-flex items-center justify-center gap-2 transition-colors"
+          className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] inline-flex items-center justify-center gap-2 transition-colors"
           href={returnTo}
         >
           <UserCircle size={17} aria-hidden="true" />

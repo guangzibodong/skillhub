@@ -7,12 +7,12 @@ type Props = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  "browser-research-pro": <Globe size={24} className="text-[#0075ff]" />,
-  "crm-enrichment": <Database size={24} className="text-[#0075ff]" />,
-  "support-triage": <Activity size={24} className="text-[#0075ff]" />,
-  "code-review-assistant": <FileJson size={24} className="text-[#0075ff]" />,
-  "data-pipeline-orchestrator": <Zap size={24} className="text-[#0075ff]" />,
-  "financial-report-analyzer": <ShieldCheck size={24} className="text-[#0075ff]" />,
+  "browser-research-pro": <Globe size={24} className="text-[#7fee64]" />,
+  "crm-enrichment": <Database size={24} className="text-[#7fee64]" />,
+  "support-triage": <Activity size={24} className="text-[#7fee64]" />,
+  "code-review-assistant": <FileJson size={24} className="text-[#7fee64]" />,
+  "data-pipeline-orchestrator": <Zap size={24} className="text-[#7fee64]" />,
+  "financial-report-analyzer": <ShieldCheck size={24} className="text-[#7fee64]" />,
 };
 
 const zhDesc: Record<string, string> = {
@@ -25,7 +25,7 @@ const zhDesc: Record<string, string> = {
 };
 
 export function SkillGridCard({ skill, locale }: Props) {
-  const icon = iconMap[skill.slug] || <Zap size={24} className="text-[#0075ff]" />;
+  const icon = iconMap[skill.slug] || <Zap size={24} className="text-[#7fee64]" />;
   const desc = locale === "zh" ? zhDesc[skill.slug] || skill.description : skill.description;
   const isVerified = skill.verificationStatus === "verified";
 
@@ -53,13 +53,13 @@ export function SkillGridCard({ skill, locale }: Props) {
 
       {/* Body */}
       <div className="p-3.5">
-        <h3 className="text-[14px] font-medium text-white mb-1 truncate group-hover:text-[#0075ff] transition-colors">
+        <h3 className="text-[14px] font-medium text-white mb-1 truncate group-hover:text-[#7fee64] transition-colors">
           {skill.displayName}
         </h3>
         <p className="text-[12px] text-[#666] leading-[1.5] line-clamp-2 mb-2.5">
           {desc}
         </p>
-        <span className="text-[12px] text-[#0075ff] font-medium">
+        <span className="text-[12px] text-[#7fee64] font-medium">
           {locale === "zh" ? "调用技能 →" : "Run skill →"}
         </span>
       </div>

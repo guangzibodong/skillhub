@@ -474,7 +474,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
                         </span>
                         <strong className="block text-white mt-1">{item.title}</strong>
                         <p className="body-text-sm text-[#999] mt-1">{item.detail}</p>
-                        <b className="inline-flex items-center gap-1 text-[#0075ff] text-sm mt-2">
+                        <b className="inline-flex items-center gap-1 text-[#7fee64] text-sm mt-2">
                           {item.actionLabel}
                           <ArrowRight size={14} aria-hidden="true" />
                         </b>
@@ -530,7 +530,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
                       return (
                         <div className="grid grid-cols-5 gap-4 px-4 py-3 border-b border-[rgba(255,255,255,0.04)] items-center" key={project.slug}>
                           <strong>
-                            <a className="text-[#0075ff] hover:underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                            <a className="text-[#7fee64] hover:underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
                               {project.name}
                             </a>
                           </strong>

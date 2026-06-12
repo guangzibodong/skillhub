@@ -188,13 +188,13 @@ export default async function SupportPage({ searchParams }: PageProps) {
                     className="block bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 hover:border-[rgba(255,255,255,0.15)] hover:-translate-y-0.5 transition-all group"
                   >
                     <div className="w-10 h-10 rounded-[8px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] flex items-center justify-center mb-4">
-                      <Icon size={20} className="text-[#0075ff]" aria-hidden="true" />
+                      <Icon size={20} className="text-[#7fee64]" aria-hidden="true" />
                     </div>
-                    <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-[#0075ff] transition-colors">
+                    <h3 className="text-[16px] font-medium text-white mb-2 group-hover:text-[#7fee64] transition-colors">
                       {channel.title}
                     </h3>
                     <p className="text-[14px] text-[#999] leading-[1.5] mb-4">{channel.desc}</p>
-                    <span className="text-[13px] text-[#0075ff] font-medium inline-flex items-center gap-1">
+                    <span className="text-[13px] text-[#7fee64] font-medium inline-flex items-center gap-1">
                       {channel.action} <ArrowRight size={12} />
                     </span>
                   </a>
@@ -257,7 +257,7 @@ export default async function SupportPage({ searchParams }: PageProps) {
               return (
                 <Reveal key={item.label} delay={i * 80}>
                   <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-5">
-                    <Icon size={18} className="text-[#0075ff] mb-3" aria-hidden="true" />
+                    <Icon size={18} className="text-[#7fee64] mb-3" aria-hidden="true" />
                     <span className="block text-[24px] font-bold text-white tracking-[-0.02em] mb-1">
                       {item.value}
                     </span>

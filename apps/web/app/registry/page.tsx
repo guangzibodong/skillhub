@@ -215,7 +215,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
 
               return (
                 <article className="card" key={title}>
-                  <Icon size={17} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                  <Icon size={17} aria-hidden="true" className="text-[#7fee64] mb-3" />
                   <strong className="heading-sm">{title}</strong>
                   <span className="body-text-sm mt-2 block">{body}</span>
                 </article>
@@ -249,7 +249,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
                 {labels.manifestFields.map(([title, body], i) => (
                   <Reveal delay={i * 60} key={title}>
                     <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4">
-                      <span className="text-[#0075ff] text-sm font-medium">{title}</span>
+                      <span className="text-[#7fee64] text-sm font-medium">{title}</span>
                       <strong className="block text-white/80 text-sm mt-1 font-normal">{body}</strong>
                     </div>
                   </Reveal>
@@ -269,7 +269,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
 
             <aside className="flex flex-col gap-6">
               <div className="card">
-                <RadioTower size={20} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                <RadioTower size={20} aria-hidden="true" className="text-[#7fee64] mb-3" />
                 <h2 className="heading-sm">{dictionary.registryPage.endpointTitle}</h2>
                 <p className="body-text-sm mt-2">{dictionary.registryPage.endpointBody}</p>
                 <code className="code-block mt-4 block text-sm">{apiUrl}/v1/skills/search</code>
@@ -280,7 +280,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
               </div>
 
               <div className="card">
-                <GitBranch size={20} aria-hidden="true" className="text-[#0075ff] mb-3" />
+                <GitBranch size={20} aria-hidden="true" className="text-[#7fee64] mb-3" />
                 <h2 className="heading-sm">{labels.lifecycleTitle}</h2>
                 <div className="mt-4 space-y-3">
                   {labels.lifecycle.map(([title, body], index) => (

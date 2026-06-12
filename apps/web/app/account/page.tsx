@@ -421,8 +421,8 @@ function AccountSignedOutGuide({ labels, locale }: { labels: AccountLabels; loca
                 const Icon = [LogIn, UserCircle, FolderPlus][index] ?? LayoutDashboard;
 
                 return (
-                  <a className="card card--compact flex items-start gap-4 p-4 hover:border-[#0075ff] transition-colors" href={localizedHref(action.href, locale)} key={action.title}>
-                    <Icon size={16} aria-hidden="true" className="text-[#0075ff] mt-1 shrink-0" />
+                  <a className="card card--compact flex items-start gap-4 p-4 hover:border-[#7fee64] transition-colors" href={localizedHref(action.href, locale)} key={action.title}>
+                    <Icon size={16} aria-hidden="true" className="text-[#7fee64] mt-1 shrink-0" />
                     <div className="flex flex-col gap-1">
                       <span className="body-text-sm text-[#666]">{action.label}</span>
                       <strong className="text-white">{action.title}</strong>
@@ -461,9 +461,9 @@ function AccountCommandStrip({
     return (
       <section className="section" aria-label={labels.workspace}>
         <div className="section-inner">
-          <article className="card p-6 border-[#0075ff]/30">
+          <article className="card p-6 border-[#7fee64]/30">
             <div className="flex items-center gap-2 mb-3">
-              <KeyRound size={17} aria-hidden="true" className="text-[#0075ff]" />
+              <KeyRound size={17} aria-hidden="true" className="text-[#7fee64]" />
               <span className="pill pill--warning">{labels.signInRequired}</span>
             </div>
             <strong className="heading-sm text-white block mb-2">{labels.commandSignInTitle}</strong>
@@ -519,7 +519,7 @@ function AccountCommandStrip({
           return (
             <article className="card card--compact p-5" key={tile.label}>
               <div className="flex items-center gap-2 mb-3">
-                <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+                <Icon size={17} aria-hidden="true" className="text-[#7fee64]" />
                 <span className="body-text-sm text-[#666]">{tile.label}</span>
               </div>
               <strong className="heading-sm text-white block mb-1">{tile.value}</strong>
@@ -565,16 +565,16 @@ function WorkspaceShortcutCard({
   const targetHref = state.kind === "blocked" ? "/login" : state.kind === "forbidden" ? "/account" : href;
 
   return (
-    <a className="card card--compact flex flex-col gap-3 p-5 hover:border-[#0075ff] transition-colors" href={localizedHref(targetHref, locale)}>
+    <a className="card card--compact flex flex-col gap-3 p-5 hover:border-[#7fee64] transition-colors" href={localizedHref(targetHref, locale)}>
       <div className="flex items-center justify-between">
-        <Icon size={17} aria-hidden="true" className="text-[#0075ff]" />
+        <Icon size={17} aria-hidden="true" className="text-[#7fee64]" />
         <span className={state.kind === "available" ? "pill pill--success" : "pill pill--warning"}>
           {state.label}
         </span>
       </div>
       <strong className="text-white">{title}</strong>
       <p className="body-text-sm text-[#999]">{body}</p>
-      <span className="inline-flex items-center gap-1 text-[#0075ff] text-sm mt-auto">
+      <span className="inline-flex items-center gap-1 text-[#7fee64] text-sm mt-auto">
         {state.action}
         <ArrowRight size={15} aria-hidden="true" />
       </span>

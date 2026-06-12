@@ -27034,3 +27034,559 @@ a {
     animation: none !important;
   }
 }
+
+/* SkillHub premium surface alignment for post-homepage launch pages. */
+.app-shell--premium {
+  --premium-bg: #030503;
+  --premium-ink: #ddffdc;
+  --premium-muted: rgba(221, 255, 220, 0.66);
+  --premium-soft: rgba(221, 255, 220, 0.42);
+  --premium-line: rgba(221, 255, 220, 0.12);
+  --premium-line-strong: rgba(127, 238, 100, 0.34);
+  --premium-panel: rgba(17, 22, 16, 0.84);
+  --premium-panel-strong: rgba(8, 11, 8, 0.92);
+  --premium-green: #7fee64;
+  --premium-green-strong: #a7ff8c;
+  --premium-amber: #d7a84c;
+  --premium-cyan: #7cc7d8;
+  position: relative;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 80% 10%, rgba(127, 238, 100, 0.08), transparent 24%),
+    radial-gradient(circle at 12% 18%, rgba(221, 255, 220, 0.06), transparent 22%),
+    linear-gradient(180deg, #010201 0%, #030503 46%, #060806 100%);
+  color: var(--premium-ink);
+}
+
+.app-shell--premium::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(rgba(127, 238, 100, 0.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 238, 100, 0.022) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, transparent 0 28%, rgba(0, 0, 0, 0.42) 72%);
+  background-size: 56px 56px, 56px 56px, 100% 100%;
+  mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 88%, transparent 100%);
+}
+
+.app-shell--premium > header,
+.app-shell--premium > main,
+.app-shell--premium > footer {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell--premium > header.fixed {
+  background: linear-gradient(180deg, rgba(3, 5, 3, 0.86), rgba(3, 5, 3, 0.62));
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(221, 255, 220, 0.08);
+}
+
+.app-shell--premium > header.fixed a {
+  text-decoration: none;
+}
+
+.app-shell--premium > header.fixed nav {
+  max-width: 1220px;
+}
+
+.app-shell--premium > header.fixed span,
+.app-shell--premium > footer p,
+.app-shell--premium > footer a {
+  letter-spacing: 0;
+}
+
+.app-shell--premium > footer {
+  border-top: 1px solid rgba(221, 255, 220, 0.1) !important;
+  background:
+    linear-gradient(180deg, rgba(3, 5, 3, 0.42), rgba(3, 5, 3, 0.82)),
+    rgba(3, 5, 3, 0.9);
+}
+
+.app-shell--premium > footer a {
+  color: rgba(221, 255, 220, 0.5) !important;
+}
+
+.app-shell--premium > footer a:hover,
+.app-shell--premium > footer a:focus-visible {
+  color: var(--premium-green) !important;
+}
+
+.site-header {
+  border-bottom-color: rgba(221, 255, 220, 0.1);
+  background: rgba(3, 5, 3, 0.78);
+  backdrop-filter: blur(18px);
+}
+
+.brand__mark {
+  border-color: rgba(167, 255, 140, 0.72);
+  border-radius: 6px;
+  background: var(--premium-green, #7fee64);
+  box-shadow: 0 0 28px rgba(127, 238, 100, 0.16);
+}
+
+.brand__mark span {
+  background: #071207;
+}
+
+.brand strong,
+.site-nav__link--active,
+.site-mobile-panel__link--active {
+  color: var(--premium-ink, #ddffdc);
+}
+
+.brand small,
+.site-nav a,
+.site-mobile-panel__link {
+  color: var(--premium-muted, rgba(221, 255, 220, 0.66));
+}
+
+.site-nav a:hover,
+.site-mobile-panel__link:hover {
+  color: var(--premium-green, #7fee64);
+}
+
+.site-nav__badge,
+.state-badge--preview,
+.status-chip--preview {
+  border-color: rgba(221, 255, 220, 0.13);
+  background: rgba(221, 255, 220, 0.055);
+  color: rgba(221, 255, 220, 0.72);
+}
+
+.site-mobile-menu-button {
+  border-color: rgba(221, 255, 220, 0.12);
+  background: rgba(221, 255, 220, 0.045);
+  color: var(--premium-ink, #ddffdc);
+}
+
+.site-mobile-panel {
+  border-color: rgba(221, 255, 220, 0.1);
+  background: rgba(3, 5, 3, 0.98);
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button {
+  border-radius: 6px;
+  letter-spacing: 0;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.primary-button {
+  border-color: rgba(167, 255, 140, 0.72);
+  background: linear-gradient(180deg, #a7ff8c, #7fee64);
+  color: #071207;
+  box-shadow: 0 0 0 1px rgba(127, 238, 100, 0.12), 0 18px 50px rgba(127, 238, 100, 0.12);
+}
+
+.primary-button:hover {
+  border-color: rgba(167, 255, 140, 0.96);
+  background: linear-gradient(180deg, #c3ffb2, #8df879);
+  color: #071207;
+  box-shadow: 0 0 0 1px rgba(127, 238, 100, 0.18), 0 20px 58px rgba(127, 238, 100, 0.18);
+  transform: translateY(-1px);
+}
+
+.secondary-button,
+.ghost-button {
+  border-color: rgba(221, 255, 220, 0.14);
+  background: rgba(221, 255, 220, 0.045);
+  color: rgba(221, 255, 220, 0.9);
+}
+
+.secondary-button:hover,
+.ghost-button:hover {
+  border-color: rgba(127, 238, 100, 0.36);
+  background: rgba(127, 238, 100, 0.08);
+  color: var(--premium-ink, #ddffdc);
+  transform: translateY(-1px);
+}
+
+.secondary-button--danger,
+.ghost-button--danger {
+  border-color: rgba(255, 115, 115, 0.28);
+  color: #ffd8d8;
+}
+
+.secondary-button--warning {
+  border-color: rgba(215, 168, 76, 0.32);
+  color: #ffe4a6;
+}
+
+.ops-panel,
+.market-signal-card,
+.marketplace-panel--compact,
+.finance-rule,
+.pricing-card,
+.public-access-scope__panel,
+.marketplace-ops-strip,
+.market-overview-section,
+.market-overview-card,
+.publisher-directory-card,
+.market-skill-card,
+.skill-detail-card,
+.skill-project-handoff,
+.skill-developer-handoff-packet,
+.console-board,
+.auth-layout,
+.auth-card,
+.workspace-locked-panel,
+.account-command-tile,
+.account-command-strip,
+.developer-priority-card,
+.publisher-priority-card,
+.admin-command-hero,
+.admin-health-panel,
+.admin-selected-order,
+.admin-analytics-panel--v2,
+.admin-payment-panel--v2,
+.admin-review-panel,
+.admin-trust-panel,
+.admin-finance-section,
+.admin-console-shell--v2 .admin-sidebar,
+.publisher-skill-marketplace,
+.project-detail-main > div > .ops-panel,
+.project-detail-side > div > .ops-panel {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(221, 255, 220, 0.12);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(221, 255, 220, 0.045), rgba(221, 255, 220, 0.012)),
+    rgba(17, 22, 16, 0.84);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+}
+
+.ops-panel::before,
+.market-overview-section::before,
+.console-board::before,
+.admin-command-hero::before,
+.admin-analytics-panel--v2::before,
+.publisher-command-main::before,
+.developer-command-main::before,
+.account-command-strip::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(120deg, transparent 0 38%, rgba(127, 238, 100, 0.06) 48%, transparent 58% 100%),
+    linear-gradient(rgba(127, 238, 100, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 238, 100, 0.022) 1px, transparent 1px);
+  background-size: 180% 100%, 38px 38px, 38px 38px;
+  opacity: 0.62;
+  animation: premium-surface-scan 12s ease-in-out infinite;
+}
+
+.ops-panel > *,
+.market-overview-section > *,
+.console-board > *,
+.admin-command-hero > *,
+.admin-analytics-panel--v2 > *,
+.publisher-command-main > *,
+.developer-command-main > *,
+.account-command-strip > * {
+  position: relative;
+  z-index: 1;
+}
+
+.marketplace-ops-strip div,
+.market-overview-card,
+.market-overview-row,
+.market-overview-empty,
+.admin-health-row,
+.admin-command-sla a,
+.admin-insight-card,
+.account-command-tile,
+.developer-priority-card,
+.publisher-priority-card,
+.proof-grid span,
+.public-access-scope__panel,
+.login-value-card {
+  border-color: rgba(221, 255, 220, 0.12);
+  background: rgba(3, 5, 3, 0.42);
+}
+
+.marketplace-ops-strip strong,
+.market-overview-card h3,
+.market-overview-row strong,
+.admin-panel-head h2,
+.admin-command-hero h1,
+.developer-priority-card h2,
+.publisher-priority-card h2,
+.account-command-tile strong,
+.pricing-card h3,
+.finance-rule h2,
+.skill-developer-handoff-row strong,
+.publisher-skill-marketplace__head strong {
+  color: var(--premium-ink, #ddffdc);
+  letter-spacing: 0;
+}
+
+.marketplace-ops-strip span,
+.market-overview-card p,
+.market-overview-row span,
+.market-overview-row small,
+.admin-panel-head p,
+.admin-command-hero p,
+.admin-health-row span,
+.developer-priority-card p,
+.publisher-priority-card p,
+.account-command-tile p,
+.pricing-card p,
+.finance-rule p,
+.skill-developer-handoff-row small,
+.publisher-skill-marketplace p {
+  color: var(--premium-muted, rgba(221, 255, 220, 0.66));
+}
+
+.market-overview-card__icon,
+.market-signal-card__icon,
+.developer-metric svg,
+.developer-priority-metric svg,
+.home-skill-card__icon,
+.publisher-skill-marketplace__head svg,
+.skill-developer-handoff-row__icon {
+  border-color: rgba(127, 238, 100, 0.22);
+  background: rgba(127, 238, 100, 0.08);
+  color: var(--premium-green, #7fee64);
+}
+
+.code-panel pre,
+.install-console pre,
+.runtime-console,
+.control-code,
+.code-block {
+  border-color: rgba(221, 255, 220, 0.1);
+  border-radius: 10px;
+  background:
+    linear-gradient(rgba(127, 238, 100, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 238, 100, 0.032) 1px, transparent 1px),
+    #050805;
+  background-size: 34px 34px, 34px 34px, auto;
+  color: rgba(221, 255, 220, 0.74);
+}
+
+.data-table th,
+.work-table__head,
+.admin-table th {
+  color: rgba(221, 255, 220, 0.42);
+  border-bottom-color: rgba(221, 255, 220, 0.1);
+}
+
+.data-table td,
+.work-table__row,
+.admin-table td {
+  color: rgba(221, 255, 220, 0.68);
+  border-bottom-color: rgba(221, 255, 220, 0.07);
+}
+
+.work-table__row:hover,
+.data-table tr:hover td,
+.admin-table tr:hover td {
+  background: rgba(127, 238, 100, 0.035);
+}
+
+.state-badge--live,
+.status-chip--ready,
+.status-chip--verified,
+.admin-state-pill--green,
+.pill--success {
+  border-color: rgba(127, 238, 100, 0.3);
+  background: rgba(127, 238, 100, 0.1);
+  color: var(--premium-green, #7fee64);
+}
+
+.admin-state-pill--amber,
+.pill--warning {
+  border-color: rgba(215, 168, 76, 0.32);
+  background: rgba(215, 168, 76, 0.1);
+  color: #ffe4a6;
+}
+
+.marketplace-layout,
+.auth-layout,
+.console-board,
+.finance-layout,
+.admin-layout,
+.admin-finance-section,
+.public-access-scope,
+.marketplace-ops-strip,
+.market-overview-section {
+  width: min(1220px, calc(100% - 40px));
+}
+
+.developer-command-layout,
+.publisher-command-layout {
+  width: min(1220px, calc(100% - 40px));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.developer-command-main,
+.developer-command-side,
+.publisher-command-main,
+.publisher-command-side {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(221, 255, 220, 0.12);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(221, 255, 220, 0.045), rgba(221, 255, 220, 0.012)),
+    rgba(17, 22, 16, 0.84);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+}
+
+.admin-console-shell--v2 {
+  border-color: rgba(221, 255, 220, 0.12);
+  background:
+    radial-gradient(circle at 78% 8%, rgba(127, 238, 100, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(221, 255, 220, 0.035), rgba(221, 255, 220, 0.01)),
+    rgba(3, 5, 3, 0.72);
+}
+
+.admin-command-hero::after {
+  background: radial-gradient(circle, rgba(127, 238, 100, 0.16), transparent 70%);
+}
+
+.admin-motion-chart {
+  border-color: rgba(221, 255, 220, 0.12);
+  border-radius: 10px;
+  background:
+    linear-gradient(rgba(127, 238, 100, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 238, 100, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 24% 42%, rgba(127, 238, 100, 0.12), transparent 22rem),
+    rgba(4, 9, 6, 0.86);
+  background-size: 56px 56px, 72px 100%, auto, auto;
+}
+
+.admin-motion-chart::before {
+  background: linear-gradient(90deg, transparent, rgba(127, 238, 100, 0.16), transparent);
+}
+
+.admin-chart-line--gmv,
+.admin-chart-line--calls {
+  filter: drop-shadow(0 0 10px rgba(127, 238, 100, 0.22));
+}
+
+.admin-chart-line--orders {
+  filter: drop-shadow(0 0 10px rgba(124, 199, 216, 0.18));
+}
+
+.login-product-shell {
+  background:
+    radial-gradient(circle at 28% 48%, rgba(127, 238, 100, 0.1), transparent 32%),
+    radial-gradient(circle at 78% 22%, rgba(221, 255, 220, 0.05), transparent 28%),
+    linear-gradient(180deg, #010201, #030503 42%, #020302);
+}
+
+.login-auth-card,
+.login-session-card {
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(221, 255, 220, 0.045), rgba(221, 255, 220, 0.012)),
+    rgba(12, 18, 14, 0.88);
+}
+
+.login-runtime-flow,
+.login-value-card {
+  border-radius: 12px;
+}
+
+.login-runtime-flow__line {
+  opacity: 0.82;
+}
+
+.login-auth-card .oauth-provider-button,
+.login-auth-card .auth-form input,
+.login-auth-card .auth-form select,
+.input,
+input,
+select,
+textarea {
+  border-color: rgba(221, 255, 220, 0.12);
+  background-color: rgba(3, 5, 3, 0.62);
+}
+
+.login-auth-card .oauth-provider-button:hover,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(127, 238, 100, 0.42);
+  box-shadow: 0 0 0 3px rgba(127, 238, 100, 0.08);
+}
+
+@keyframes premium-surface-scan {
+  0%,
+  62%,
+  100% {
+    background-position: -90% 0, 0 0, 0 0;
+    opacity: 0.42;
+  }
+
+  78% {
+    background-position: 90% 0, 0 0, 0 0;
+    opacity: 0.72;
+  }
+}
+
+@media (max-width: 880px) {
+  .marketplace-layout,
+  .auth-layout,
+  .console-board,
+  .finance-layout,
+  .admin-layout,
+  .admin-finance-section,
+  .public-access-scope,
+  .marketplace-ops-strip,
+  .market-overview-section,
+  .developer-command-layout,
+  .publisher-command-layout {
+    width: min(100% - 24px, 720px);
+  }
+
+  .ops-panel,
+  .marketplace-panel--compact,
+  .console-board,
+  .auth-layout,
+  .admin-command-hero,
+  .admin-health-panel,
+  .admin-selected-order,
+  .developer-command-main,
+  .developer-command-side,
+  .publisher-command-main,
+  .publisher-command-side,
+  .account-command-tile {
+    border-radius: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ops-panel::before,
+  .market-overview-section::before,
+  .console-board::before,
+  .admin-command-hero::before,
+  .admin-analytics-panel--v2::before,
+  .publisher-command-main::before,
+  .developer-command-main::before,
+  .account-command-strip::before {
+    animation: none !important;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .btn-primary,
+  .btn-secondary {
+    transition: none !important;
+  }
+}

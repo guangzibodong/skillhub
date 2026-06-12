@@ -186,7 +186,7 @@ export default async function SecurityPage({ searchParams }: PageProps) {
                 <Reveal key={p.title} delay={i * 80}>
                   <article className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 h-full hover:border-[rgba(255,255,255,0.15)] transition-all hover:-translate-y-0.5">
                     <div className="w-10 h-10 rounded-[10px] bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] flex items-center justify-center mb-4">
-                      <Icon size={20} className="text-[#0075ff]" aria-hidden="true" />
+                      <Icon size={20} className="text-[#7fee64]" aria-hidden="true" />
                     </div>
                     <h3 className="text-[18px] font-semibold text-white tracking-[-0.01em] mb-2">{p.title}</h3>
                     <p className="text-[14px] text-[#999] leading-[1.6]">{p.desc}</p>
@@ -261,14 +261,14 @@ export default async function SecurityPage({ searchParams }: PageProps) {
                 </div>
                 {/* Mock report content */}
                 <div className="p-5 font-mono text-[13px] leading-[1.8] text-[#999]">
-                  <p><span className="text-[#0075ff]">##</span> <span className="text-white">Security Report</span></p>
+                  <p><span className="text-[#7fee64]">##</span> <span className="text-white">Security Report</span></p>
                   <p className="mt-3"><span className="text-[#666]">affected:</span> <span className="text-[#10b981]">/skills/browser-research</span></p>
                   <p><span className="text-[#666]">severity:</span> <span className="text-[#f59e0b]">medium</span></p>
                   <p><span className="text-[#666]">type:</span> <span className="text-white">permission-escalation</span></p>
                   <p className="mt-3"><span className="text-[#666]">description:</span></p>
                   <p className="text-[#999] ml-2">{locale === "zh" ? "技能在 manifest 中声明只读权限，" : "Skill declares read-only in manifest,"}</p>
                   <p className="text-[#999] ml-2">{locale === "zh" ? "但运行时尝试写入文件系统。" : "but runtime attempts filesystem writes."}</p>
-                  <p className="mt-3"><span className="text-[#666]">contact:</span> <span className="text-[#0075ff]">researcher@example.com</span></p>
+                  <p className="mt-3"><span className="text-[#666]">contact:</span> <span className="text-[#7fee64]">researcher@example.com</span></p>
                   <p className="mt-4 text-[#525252]">---</p>
                   <p className="text-[#525252]">{locale === "zh" ? "# 不含任何真实 token 或密钥" : "# No real tokens or secrets included"}</p>
                 </div>
@@ -301,8 +301,8 @@ export default async function SecurityPage({ searchParams }: PageProps) {
                     <div className="hidden md:block absolute top-6 left-[calc(100%+2px)] w-[calc(100%-4px)] h-[1px] bg-[rgba(255,255,255,0.08)]" style={{ left: "calc(50% + 24px)", width: "calc(100% - 48px)" }} />
                   )}
                   <div className="text-center">
-                    <div className="w-12 h-12 rounded-full bg-[#0075ff]/10 border border-[#0075ff]/20 flex items-center justify-center mx-auto mb-4">
-                      <span className="text-[14px] font-bold text-[#0075ff]">{item.step}</span>
+                    <div className="w-12 h-12 rounded-full bg-[#7fee64]/10 border border-[#7fee64]/20 flex items-center justify-center mx-auto mb-4">
+                      <span className="text-[14px] font-bold text-[#7fee64]">{item.step}</span>
                     </div>
                     <h3 className="text-[16px] font-semibold text-white mb-2">{item.title}</h3>
                     <p className="text-[13px] text-[#999] leading-[1.5] mb-2">{item.desc}</p>

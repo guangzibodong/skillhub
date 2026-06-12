@@ -73,7 +73,7 @@ export default async function ReportPage({ searchParams }: PageProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {labels.steps.map(([title, detail], i) => (
               <article className="card" key={title}>
-                <div className="w-8 h-8 rounded-full bg-[rgba(0,117,255,0.1)] text-[#0075ff] text-[14px] font-bold flex items-center justify-center mb-4">
+                <div className="w-8 h-8 rounded-full bg-[rgba(127,238,100,0.1)] text-[#7fee64] text-[14px] font-bold flex items-center justify-center mb-4">
                   {i + 1}
                 </div>
                 <h2 className="heading-sm mb-3">{title}</h2>

@@ -53,7 +53,7 @@ export function TeamSection({ locale }: Props) {
         {/* Project header */}
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-[rgba(255,255,255,0.08)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-[8px] bg-[#0075ff] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[8px] bg-[#7fee64] flex items-center justify-center">
               <span className="text-[11px] font-bold text-white">S</span>
             </div>
             <div>
@@ -72,7 +72,7 @@ export function TeamSection({ locale }: Props) {
               <span className="text-[11px] text-[#666]">12,482 / 50,000</span>
             </div>
             <div className="h-1.5 bg-[#292929] rounded-full overflow-hidden">
-              <div className="h-full bg-[#0075ff] rounded-full" style={{ width: "25%" }} />
+              <div className="h-full bg-[#7fee64] rounded-full" style={{ width: "25%" }} />
             </div>
           </div>
           <div>

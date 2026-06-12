@@ -17,11 +17,11 @@ export function PlatformPreview({ locale }: Props) {
   const tabs = tabLabels[locale];
 
   return (
-    <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] overflow-hidden shadow-[0_0_80px_rgba(0,117,255,0.04)]">
+    <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] overflow-hidden shadow-[0_0_80px_rgba(127,238,100,0.04)]">
       {/* App header bar (like Morphic's "Project / Untitled" bar) */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(255,255,255,0.06)]">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-[6px] bg-[#0075ff] flex items-center justify-center">
+          <div className="w-6 h-6 rounded-[6px] bg-[#7fee64] flex items-center justify-center">
             <span className="text-[9px] font-bold text-white">S</span>
           </div>
           <span className="text-[13px] text-[#999]">SkillHub</span>
@@ -191,7 +191,7 @@ function GatewayContent({ locale }: Props) {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-medium text-[#525252] uppercase tracking-[0.05em]">Request</span>
-          <span className="text-[10px] text-[#0075ff] bg-[rgba(0,117,255,0.1)] px-2 py-0.5 rounded-[4px]">POST</span>
+          <span className="text-[10px] text-[#7fee64] bg-[rgba(127,238,100,0.1)] px-2 py-0.5 rounded-[4px]">POST</span>
         </div>
         <div className="bg-[#1a1a1a] rounded-[10px] p-4 font-mono text-[12px] leading-[1.7]">
           <p className="text-[#999]">POST /v1/invoke/browser-research-pro</p>

@@ -109,7 +109,7 @@ export default async function AgentsPage({ searchParams }: PageProps) {
             const Icon = cardIcons[index];
             return (
               <article className="card p-6 flex flex-col gap-4" key={item.title}>
-                <div className="w-9 h-9 rounded-[10px] bg-[rgba(0,117,255,0.1)] flex items-center justify-center text-[#0075ff]" aria-hidden="true">
+                <div className="w-9 h-9 rounded-[10px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center text-[#7fee64]" aria-hidden="true">
                   <Icon size={18} />
                 </div>
                 <h2 className="heading-sm">{item.title}</h2>
@@ -232,7 +232,7 @@ export default async function AgentsPage({ searchParams }: PageProps) {
 
                   return (
                     <div className="flex items-center gap-3 text-[#999]" key={item}>
-                      <Icon size={15} className="text-[#0075ff]" aria-hidden="true" />
+                      <Icon size={15} className="text-[#7fee64]" aria-hidden="true" />
                       <span className="body-text-sm">{item}</span>
                     </div>
                   );

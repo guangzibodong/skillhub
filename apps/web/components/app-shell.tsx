@@ -12,9 +12,9 @@ type AppShellProps = {
 
 export function AppShell({ active, children, locale, flushTop }: AppShellProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="app-shell app-shell--premium min-h-screen flex flex-col">
       <HomeNav active={active} locale={locale} />
-      <main className={`flex-1 ${flushTop ? "" : "pt-[88px]"}`}>
+      <main className={`app-shell__main flex-1 ${flushTop ? "" : "pt-[88px]"}`}>
         {children}
       </main>
       <HomeFooter locale={locale} />

@@ -136,7 +136,7 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
 
               return (
                 <article className="feature-card" key={section.title}>
-                  <div className="w-10 h-10 rounded-[7px] bg-[#0075ff]/10 text-[#0075ff] flex items-center justify-center mb-4">
+                  <div className="w-10 h-10 rounded-[7px] bg-[#7fee64]/10 text-[#7fee64] flex items-center justify-center mb-4">
                     <Icon size={20} aria-hidden="true" />
                   </div>
                   <h2 className="text-[18px] font-semibold text-white mb-2">{section.title}</h2>

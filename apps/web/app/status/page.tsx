@@ -313,7 +313,7 @@ export default async function StatusPage({ searchParams }: PageProps) {
             <Reveal delay={0}>
               <div className="card h-full">
                 <div className="flex items-center gap-2 mb-4">
-                  <Globe size={18} className="text-[#0075ff]" aria-hidden="true" />
+                  <Globe size={18} className="text-[#7fee64]" aria-hidden="true" />
                   <h3 className="heading-sm">{labels.scopePublic}</h3>
                 </div>
                 <ul className="space-y-3">
