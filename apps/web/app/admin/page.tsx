@@ -1086,7 +1086,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
       : pendingDataLabel;
   const cloudflareRequestValue = cloudflareAnalytics.connected ? formatCompactNumber(cloudflareAnalytics.totals.requests) : pendingDataLabel;
   const topCountry = cloudflareAnalytics.countries[0];
-  const topCountryLabel = topCountry ? formatAdminRegionName(topCountry.code, locale) : pendingDataLabel;
+  const topCountryLabel = topCountry
+    ? formatAdminRegionName(topCountry.code, locale)
+    : cloudflareAnalytics.connected
+      ? (locale === "zh" ? "暂无地区数据" : "No country data")
+      : pendingDataLabel;
   const trafficSourceState = cloudflareAnalytics.connected
     ? (locale === "zh" ? "Cloudflare 已接入" : "Cloudflare connected")
     : accessLogAnalytics.connected
