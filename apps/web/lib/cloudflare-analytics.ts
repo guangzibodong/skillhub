@@ -20,31 +20,54 @@ export type CloudflareAnalytics = {
   };
 };
 
-type CloudflareDashboardResponse = {
-  errors?: Array<{ message?: string }>;
-  messages?: Array<{ message?: string }>;
-  result?: {
-    totals?: {
-      pageviews?: {
-        all?: number;
-      };
-      requests?: {
-        all?: number;
-        cached?: number;
-        country?: Record<string, number>;
-      };
-      threats?: {
-        all?: number;
-      };
-      uniques?: {
-        all?: number;
-      };
-    };
+type CloudflareGraphqlGroup = {
+  count?: number;
+  dimensions?: {
+    clientCountryName?: string;
   };
-  success?: boolean;
+  sum?: {
+    edgeResponseBytes?: number;
+    visits?: number;
+  };
 };
 
-const CLOUDFLARE_ENDPOINT = "https://api.cloudflare.com/client/v4";
+type CloudflareGraphqlResponse = {
+  data?: {
+    viewer?: {
+      zones?: Array<{
+        countries?: CloudflareGraphqlGroup[];
+        totals?: CloudflareGraphqlGroup[];
+      }>;
+    };
+  };
+  errors?: Array<{ message?: string }>;
+};
+
+const CLOUDFLARE_GRAPHQL_ENDPOINT = "https://api.cloudflare.com/client/v4/graphql";
+const CLOUDFLARE_ZONE_ANALYTICS_QUERY = `
+  query SkillHubZoneTraffic($zoneTag: string, $filter: filter) {
+    viewer {
+      zones(filter: { zoneTag: $zoneTag }) {
+        totals: httpRequestsAdaptiveGroups(limit: 1, filter: $filter) {
+          count
+          sum {
+            visits
+            edgeResponseBytes
+          }
+        }
+        countries: httpRequestsAdaptiveGroups(limit: 8, filter: $filter, orderBy: [count_DESC]) {
+          count
+          dimensions {
+            clientCountryName
+          }
+          sum {
+            visits
+          }
+        }
+      }
+    }
+  }
+`;
 const DEFAULT_TIME_ZONE = "Asia/Shanghai";
 
 export async function getCloudflareAnalytics(now = new Date()): Promise<CloudflareAnalytics> {
@@ -57,40 +80,56 @@ export async function getCloudflareAnalytics(now = new Date()): Promise<Cloudfla
 
   try {
     const { since, until } = buildTodayRange(now);
-    const response = await fetch(
-      `${CLOUDFLARE_ENDPOINT}/zones/${encodeURIComponent(zoneId)}/analytics/dashboard?since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}&continuous=false`,
-      {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          "Content-Type": "application/json"
-        },
-        next: { revalidate: 300 },
-        signal: AbortSignal.timeout(8000)
-      }
-    );
+    const response = await fetch(CLOUDFLARE_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({
+        query: CLOUDFLARE_ZONE_ANALYTICS_QUERY,
+        variables: {
+          filter: {
+            datetime_geq: since,
+            datetime_lt: until,
+            requestSource: "eyeball"
+          },
+          zoneTag: zoneId
+        }
+      }),
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      next: { revalidate: 300 },
+      signal: AbortSignal.timeout(8000)
+    });
 
-    const payload = (await response.json().catch(() => null)) as CloudflareDashboardResponse | null;
+    const payload = (await response.json().catch(() => null)) as CloudflareGraphqlResponse | null;
 
-    if (!response.ok || !payload?.success) {
-      const message = payload?.errors?.[0]?.message ?? payload?.messages?.[0]?.message ?? `Cloudflare analytics request failed (${response.status})`;
+    if (!response.ok || payload?.errors?.length) {
+      const message = payload?.errors?.[0]?.message ?? `Cloudflare analytics request failed (${response.status})`;
       return buildUnavailableAnalytics(message);
     }
 
-    const totals = payload.result?.totals;
-    const requests = toSafeNumber(totals?.requests?.all);
-    const countries = buildCountries(totals?.requests?.country, requests);
+    const zoneAnalytics = payload?.data?.viewer?.zones?.[0];
+    if (!zoneAnalytics) {
+      return buildUnavailableAnalytics("Cloudflare zone analytics were not returned");
+    }
+
+    const totals = zoneAnalytics.totals?.[0];
+    const requests = toSafeNumber(totals?.count);
+    const visits = toSafeNumber(totals?.sum?.visits);
+    const countries = buildCountries(zoneAnalytics.countries, requests);
 
     return {
       connected: true,
       countries,
-      message: "Cloudflare Analytics connected",
-      sourceLabel: "Cloudflare Analytics",
+      message: "Cloudflare GraphQL Analytics connected",
+      sourceLabel: "Cloudflare GraphQL Analytics",
       totals: {
-        cachedRequests: toSafeNumber(totals?.requests?.cached),
-        pageViews: toSafeNumber(totals?.pageviews?.all),
+        cachedRequests: 0,
+        pageViews: visits,
         requests,
-        threats: toSafeNumber(totals?.threats?.all),
-        visits: toSafeNumber(totals?.uniques?.all)
+        threats: 0,
+        visits
       }
     };
   } catch (error) {
@@ -103,7 +142,7 @@ function buildUnavailableAnalytics(message: string): CloudflareAnalytics {
     connected: false,
     countries: [],
     message,
-    sourceLabel: "Cloudflare Analytics pending",
+    sourceLabel: "Cloudflare GraphQL Analytics pending",
     totals: {
       cachedRequests: 0,
       pageViews: 0,
@@ -114,26 +153,25 @@ function buildUnavailableAnalytics(message: string): CloudflareAnalytics {
   };
 }
 
-function buildCountries(countryCounts: Record<string, number> | undefined, totalRequests: number): CloudflareCountryInsight[] {
-  if (!countryCounts) {
+function buildCountries(groups: CloudflareGraphqlGroup[] | undefined, totalRequests: number): CloudflareCountryInsight[] {
+  if (!groups) {
     return [];
   }
 
-  return Object.entries(countryCounts)
-    .filter(([, count]) => toSafeNumber(count) > 0)
-    .sort((a, b) => toSafeNumber(b[1]) - toSafeNumber(a[1]))
-    .slice(0, 8)
-    .map(([code, count]) => {
-      const requests = toSafeNumber(count);
+  return groups
+    .map((group) => {
+      const requests = toSafeNumber(group.count);
+      const countryName = group.dimensions?.clientCountryName?.trim() || "Unknown";
 
       return {
-        code: code.toUpperCase(),
-        label: code.toUpperCase(),
+        code: countryName.toUpperCase(),
+        label: countryName,
         requests,
         share: totalRequests > 0 ? Math.round((requests / totalRequests) * 100) : 0,
-        visits: 0
+        visits: toSafeNumber(group.sum?.visits)
       };
-    });
+    })
+    .filter((country) => country.requests > 0);
 }
 
 function buildTodayRange(now: Date) {
