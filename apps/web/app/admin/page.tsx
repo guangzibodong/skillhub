@@ -1038,9 +1038,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
     [locale === "zh" ? "提现结算" : "Payout settlement", adminV2Labels.payments.payout, adminConsoleLabels.payment.items[3][1], "green"]
   ] as const;
   const pendingDataLabel = adminV2Labels.dataSourcePending;
+  const pendingShortLabel = locale === "zh" ? "待接入" : "Pending";
   const overviewKpis: Array<{
     detail: string;
     href: string;
+    Icon: typeof Activity;
     label: string;
     tone: AdminKpiTone;
     trend: string;
@@ -1049,22 +1051,25 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected.",
       href: localizedHref("/admin#admin-traffic", locale),
+      Icon: Users,
       label: locale === "zh" ? "今日 UV" : "Today UV",
       tone: "warning",
       trend: locale === "zh" ? "Analytics 待接入" : "Analytics pending",
-      value: pendingDataLabel
+      value: pendingShortLabel
     },
     {
       detail: locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source.",
       href: localizedHref("/admin#admin-traffic", locale),
+      Icon: ShieldCheck,
       label: locale === "zh" ? "独立 IP" : "Unique IP",
       tone: "warning",
       trend: locale === "zh" ? "日志待接入" : "Logs pending",
-      value: pendingDataLabel
+      value: pendingShortLabel
     },
     {
       detail: locale === "zh" ? "当前身份目录用户总数，今日新增待接入事件流。" : "Current identity directory; daily signup events pending.",
       href: localizedHref("/admin#admin-identity", locale),
+      Icon: Users,
       label: locale === "zh" ? "注册用户" : "Users",
       tone: identityDirectory.summary.userCount > 0 ? "ready" : "warning",
       trend: locale === "zh" ? "今日事件待接入" : "Daily events pending",
@@ -1073,6 +1078,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "技能安装和调用来自账本/运行时事件。" : "Install and call events from ledger/runtime signals.",
       href: localizedHref("/admin#admin-analytics", locale),
+      Icon: ShieldCheck,
       label: locale === "zh" ? "技能安装" : "Installs",
       tone: "ready",
       trend: locale === "zh" ? "运行时事件" : "Runtime events",
@@ -1081,6 +1087,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "待处理订单、续费、退款和争议。" : "Orders, renewals, refunds, and disputes needing action.",
       href: localizedHref("/admin#admin-orders", locale),
+      Icon: ReceiptText,
       label: locale === "zh" ? "订单数" : "Orders",
       tone: orderActionCount > 0 ? "warning" : "ready",
       trend: orderActionCount > 0 ? (locale === "zh" ? "待处理" : "Needs action") : (locale === "zh" ? "无阻塞" : "No blocker"),
@@ -1089,6 +1096,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "已入账 GMV，不含未完成支付。" : "Posted GMV only; pending payment is excluded.",
       href: localizedHref("/admin#admin-finance", locale),
+      Icon: Banknote,
       label: "GMV",
       tone: "neutral",
       trend: locale === "zh" ? "账本口径" : "Ledger source",
@@ -1097,6 +1105,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "待审核技能、证据、权限和定价。" : "Pending skill review, evidence, permissions, and pricing.",
       href: localizedHref("/admin#admin-reviews", locale),
+      Icon: Gavel,
       label: locale === "zh" ? "待审核" : "Reviews",
       tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready",
       trend: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)}`,
@@ -1105,6 +1114,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       detail: locale === "zh" ? "作者提现、退款和争议的财务队列。" : "Publisher payouts, refunds, and disputes queue.",
       href: localizedHref("/admin#admin-payouts", locale),
+      Icon: WalletCards,
       label: locale === "zh" ? "待提现" : "Payouts",
       tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
       trend: locale === "zh" ? "人工审核" : "Manual review",
@@ -1335,7 +1345,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     tone === "danger" ? "admin-state-pill--red" : tone === "warning" ? "admin-state-pill--amber" : "admin-state-pill--green";
 
   return (
-    <AppShell active="admin" locale={locale} flushTop>
+    <main className="admin-console-app" aria-label={locale === "zh" ? "SkillHub 管理员后台" : "SkillHub admin console"}>
       <div className="admin-console-page">
         <AdminConsoleBackdrop />
 
@@ -1373,7 +1383,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   const Icon = getAdminNavIcon(anchor);
 
                   return (
-                    <a href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
+                    <a className={anchor === "#admin-overview" ? "is-active" : undefined} href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
                       <Icon size={15} aria-hidden="true" />
                       <span>{label}</span>
                     </a>
@@ -1458,14 +1468,21 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </header>
 
           <div className="admin-kpi-grid admin-kpi-grid--v2 admin-kpi-grid--ops" aria-label={locale === "zh" ? "后台关键指标" : "Admin key metrics"}>
-            {overviewKpis.map((metric) => (
-              <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.label}>
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-                <small>{metric.detail}</small>
-                <em>{metric.trend}</em>
-              </a>
-            ))}
+            {overviewKpis.map((metric) => {
+              const Icon = metric.Icon;
+
+              return (
+                <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.label}>
+                  <span className="admin-kpi-card__top">
+                    <span>{metric.label}</span>
+                    <Icon size={18} aria-hidden="true" />
+                  </span>
+                  <strong>{metric.value}</strong>
+                  <small>{metric.detail}</small>
+                  <em>{metric.trend}</em>
+                </a>
+              );
+            })}
           </div>
 
           <div className="admin-dashboard-grid admin-dashboard-grid--v2">
@@ -2317,7 +2334,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
       </section>
       </div>
-    </AppShell>
+    </main>
   );
 }
 

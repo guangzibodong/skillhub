@@ -31006,3 +31006,512 @@ textarea:focus {
     display: none;
   }
 }
+
+/* Admin Ops Console V4: dedicated production cockpit */
+.admin-console-app {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(52, 132, 183, 0.14), transparent 34%),
+    radial-gradient(circle at 72% 0%, rgba(127, 238, 100, 0.09), transparent 32%),
+    linear-gradient(180deg, #090d12 0%, #070a0d 48%, #060807 100%);
+  color: #edf4ef;
+}
+
+.admin-console-app .admin-console-page {
+  --admin-ink: #edf4ef;
+  --admin-muted: rgba(224, 237, 226, 0.64);
+  --admin-soft: rgba(224, 237, 226, 0.42);
+  --admin-green: #86f36f;
+  --admin-green-strong: #a8ff8e;
+  --admin-cyan: #6fc7ff;
+  --admin-gold: #e5b84d;
+  --admin-line: rgba(224, 237, 226, 0.105);
+  --admin-panel: rgba(15, 21, 25, 0.88);
+  min-height: 100vh;
+  overflow-x: clip;
+  padding: 20px;
+  background:
+    linear-gradient(rgba(127, 238, 100, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 199, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(110deg, transparent 0 48%, rgba(127, 238, 100, 0.035) 48% 48.25%, transparent 48.25%),
+    transparent;
+  background-size: 48px 48px, 48px 48px, 100% 520px, auto;
+}
+
+.admin-console-app .admin-console-page::before,
+.admin-console-app .admin-console-page::after,
+.admin-console-app .admin-control-backdrop {
+  inset: 0;
+}
+
+.admin-console-app .admin-console-page::before {
+  opacity: 0.45;
+  mask-image: linear-gradient(180deg, #000 0, #000 78%, transparent 100%);
+}
+
+.admin-console-app .admin-console-page::after {
+  background:
+    radial-gradient(circle at 12% 82%, rgba(127, 238, 100, 0.08), transparent 26%),
+    radial-gradient(circle at 86% 24%, rgba(111, 199, 255, 0.07), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent 28%, rgba(0, 0, 0, 0.2));
+  opacity: 0.72;
+}
+
+.admin-console-app .admin-control-backdrop {
+  opacity: 0.5;
+}
+
+.admin-console-app .admin-console-shell--v2 {
+  grid-template-columns: 252px minmax(0, 1fr);
+  gap: 18px;
+  width: min(1880px, 100%);
+  min-height: calc(100vh - 40px);
+  margin: 0 auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.admin-console-app .admin-console-shell--v2 .admin-sidebar {
+  top: 20px;
+  height: calc(100vh - 40px);
+  border-color: rgba(224, 237, 226, 0.11);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.014)),
+    linear-gradient(135deg, rgba(111, 199, 255, 0.06), transparent 42%),
+    rgba(13, 18, 22, 0.92);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.05),
+    18px 0 70px rgba(0, 0, 0, 0.24);
+  padding: 20px;
+}
+
+.admin-console-app .admin-sidebar__brand {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+.admin-console-app .admin-sidebar__brand > span,
+.admin-console-app .admin-avatar {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #a8ff8e, #78eb62);
+  color: #071207;
+  box-shadow: 0 12px 32px rgba(127, 238, 100, 0.16);
+}
+
+.admin-console-app .admin-sidebar__env-card {
+  border-color: rgba(224, 237, 226, 0.1);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(5, 8, 10, 0.42);
+}
+
+.admin-console-app .admin-sidebar-nav {
+  gap: 10px;
+}
+
+.admin-console-app .admin-sidebar-nav__group {
+  gap: 5px;
+  padding-top: 2px;
+}
+
+.admin-console-app .admin-sidebar-nav__group a {
+  min-height: 38px;
+  border-radius: 10px;
+  color: rgba(224, 237, 226, 0.68);
+}
+
+.admin-console-app .admin-sidebar-nav__group a.is-active,
+.admin-console-app .admin-sidebar-nav__group a:hover,
+.admin-console-app .admin-sidebar-nav__group a:focus-visible {
+  border-color: rgba(134, 243, 111, 0.22);
+  background:
+    linear-gradient(90deg, rgba(134, 243, 111, 0.13), rgba(134, 243, 111, 0.04)),
+    rgba(255, 255, 255, 0.02);
+  color: #f4fbf4;
+}
+
+.admin-console-app .admin-sidebar-nav__group a.is-active {
+  box-shadow: inset 3px 0 0 rgba(134, 243, 111, 0.9);
+}
+
+.admin-console-app .admin-sidebar-nav__group svg {
+  color: rgba(134, 243, 111, 0.9);
+}
+
+.admin-console-app .admin-console-main {
+  gap: 12px;
+}
+
+.admin-console-app .admin-operator-topbar--v3 {
+  position: sticky;
+  top: 20px;
+  z-index: 8;
+  grid-template-columns: minmax(340px, 1fr) minmax(510px, 640px) auto;
+  min-height: 58px;
+  border: 1px solid rgba(224, 237, 226, 0.11);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(12, 17, 21, 0.88);
+  box-shadow:
+    0 18px 54px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  padding: 10px;
+}
+
+.admin-console-app .admin-console-topbar--legacy,
+.admin-console-app .admin-dashboard-grid--legacy {
+  display: none;
+}
+
+.admin-console-app .admin-global-search,
+.admin-console-app .admin-toolbar-button,
+.admin-console-app .admin-time-range {
+  border-color: rgba(224, 237, 226, 0.1);
+  border-radius: 10px;
+  background: rgba(5, 8, 10, 0.48);
+}
+
+.admin-console-app .admin-global-search svg {
+  color: var(--admin-cyan);
+}
+
+.admin-console-app .admin-time-range--top {
+  min-width: 0;
+}
+
+.admin-console-app .admin-time-range span.is-active {
+  background: rgba(134, 243, 111, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(134, 243, 111, 0.5);
+  color: #f4fbf4;
+}
+
+.admin-console-app .admin-kpi-grid--ops {
+  grid-template-columns: repeat(8, minmax(126px, 1fr));
+  gap: 12px;
+}
+
+.admin-console-app .admin-kpi-grid--ops .admin-kpi-card {
+  min-height: 104px;
+  border-color: rgba(224, 237, 226, 0.105);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+    radial-gradient(circle at 18% 18%, rgba(111, 199, 255, 0.1), transparent 38%),
+    rgba(12, 17, 21, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 16px 46px rgba(0, 0, 0, 0.18);
+  padding: 13px;
+}
+
+.admin-console-app .admin-kpi-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-console-app .admin-kpi-card__top > span {
+  color: rgba(224, 237, 226, 0.62);
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: 0;
+}
+
+.admin-console-app .admin-kpi-card__top > svg {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(111, 199, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(111, 199, 255, 0.08);
+  color: var(--admin-cyan);
+  padding: 7px;
+}
+
+.admin-console-app .admin-kpi-grid--ops .admin-kpi-card strong {
+  color: #f5f8f2;
+  font-size: clamp(21px, 1.35vw, 30px);
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.admin-console-app .admin-kpi-grid--ops .admin-kpi-card small {
+  min-height: 30px;
+  color: rgba(224, 237, 226, 0.52);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.admin-console-app .admin-kpi-card--warning .admin-kpi-card__top > svg {
+  border-color: rgba(229, 184, 77, 0.24);
+  background: rgba(229, 184, 77, 0.1);
+  color: var(--admin-gold);
+}
+
+.admin-console-app .admin-kpi-card--ready .admin-kpi-card__top > svg {
+  border-color: rgba(134, 243, 111, 0.22);
+  background: rgba(134, 243, 111, 0.1);
+  color: var(--admin-green);
+}
+
+.admin-console-app .admin-kpi-card--danger .admin-kpi-card__top > svg {
+  border-color: rgba(255, 99, 99, 0.22);
+  background: rgba(255, 99, 99, 0.1);
+  color: #ff7474;
+}
+
+.admin-console-app .admin-dashboard-grid--v2 {
+  grid-template-columns: minmax(0, 1.55fr) minmax(410px, 0.72fr);
+  gap: 12px;
+}
+
+.admin-console-app .admin-analytics-panel--ops,
+.admin-console-app .admin-work-queue-panel,
+.admin-console-app .admin-funnel-card,
+.admin-console-app .admin-source-card,
+.admin-console-app .admin-system-health-strip,
+.admin-console-app .admin-order-panel--v2,
+.admin-console-app .admin-payment-panel--v2,
+.admin-console-app .admin-traffic-panel--v2,
+.admin-console-app .admin-detail-workbench__intro,
+.admin-console-app .admin-module-group {
+  border-color: rgba(224, 237, 226, 0.105);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)),
+    radial-gradient(circle at 92% 10%, rgba(134, 243, 111, 0.055), transparent 30%),
+    rgba(11, 16, 19, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 58px rgba(0, 0, 0, 0.2);
+}
+
+.admin-console-app .admin-analytics-panel--ops::before,
+.admin-console-app .admin-funnel-card::before,
+.admin-console-app .admin-source-card::before,
+.admin-console-app .admin-module-group::before {
+  opacity: 0.12;
+}
+
+.admin-console-app .admin-panel-head h2,
+.admin-console-app .admin-work-queue-panel h2,
+.admin-console-app .admin-source-card h2 {
+  color: #f3f7ef;
+  font-size: clamp(20px, 1.55vw, 28px);
+  letter-spacing: 0;
+}
+
+.admin-console-app .admin-analytics-workspace {
+  grid-template-columns: 1fr;
+}
+
+.admin-console-app .admin-insight-stack--ops {
+  display: none;
+}
+
+.admin-console-app .admin-ops-chart {
+  min-height: 360px;
+  border-color: rgba(224, 237, 226, 0.095);
+  border-radius: 13px;
+  background:
+    linear-gradient(rgba(224, 237, 226, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 199, 255, 0.026) 1px, transparent 1px),
+    radial-gradient(circle at 28% 52%, rgba(111, 199, 255, 0.08), transparent 30%),
+    rgba(4, 8, 9, 0.88);
+  background-size: 58px 58px, 80px 100%, auto, auto;
+}
+
+.admin-console-app .admin-ops-chart::before {
+  opacity: 0.16;
+}
+
+.admin-console-app .admin-ops-chart__plot {
+  min-height: 262px;
+  border-color: rgba(224, 237, 226, 0.075);
+  background:
+    linear-gradient(rgba(224, 237, 226, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 237, 226, 0.022) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.2);
+}
+
+.admin-console-app .admin-ops-chart__plot svg {
+  min-height: 222px;
+}
+
+.admin-console-app .admin-ops-chart__line {
+  filter: none;
+  stroke-width: 2.15;
+}
+
+.admin-console-app .admin-ops-chart__line--gmv {
+  stroke: #5fa8ff;
+}
+
+.admin-console-app .admin-ops-chart__line--orders {
+  stroke: #67d3d0;
+}
+
+.admin-console-app .admin-ops-chart__line--calls {
+  stroke: #9df175;
+}
+
+.admin-console-app .admin-ops-chart__legend-item--gmv::before {
+  background: #5fa8ff;
+}
+
+.admin-console-app .admin-ops-chart__legend-item--orders::before {
+  background: #67d3d0;
+}
+
+.admin-console-app .admin-ops-chart__legend-item--calls::before {
+  background: #9df175;
+}
+
+.admin-console-app .admin-ops-chart__tooltip {
+  right: 6%;
+  top: 76px;
+  border-color: rgba(224, 237, 226, 0.12);
+  border-radius: 10px;
+  background: rgba(8, 13, 16, 0.92);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+}
+
+.admin-console-app .admin-ops-chart__events span {
+  border-color: rgba(224, 237, 226, 0.085);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.admin-console-app .admin-work-queue-panel {
+  padding: 18px;
+}
+
+.admin-console-app .admin-work-queue-row {
+  min-height: 55px;
+  border-color: rgba(224, 237, 226, 0.095);
+  background: rgba(5, 8, 10, 0.45);
+}
+
+.admin-console-app .admin-work-queue-row > em {
+  min-width: 64px;
+  border-color: rgba(134, 243, 111, 0.18);
+}
+
+.admin-console-app .admin-funnel-steps {
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+}
+
+.admin-console-app .admin-funnel-step {
+  min-height: 108px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 10px 50%);
+  border-color: rgba(224, 237, 226, 0.09);
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(111, 199, 255, 0.065), rgba(134, 243, 111, 0.05)),
+    rgba(5, 8, 10, 0.42);
+  padding-left: 22px;
+}
+
+.admin-console-app .admin-funnel-step:not(:last-child)::after {
+  display: none;
+}
+
+.admin-console-app .admin-source-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(420px, 0.95fr);
+}
+
+.admin-console-app .admin-channel-row b {
+  background: linear-gradient(90deg, #5fa8ff, #67d3d0);
+}
+
+.admin-console-app .admin-channel-row--green b,
+.admin-console-app .admin-channel-row--ai b {
+  background: linear-gradient(90deg, #67d3d0, #9df175);
+}
+
+.admin-console-app .admin-system-health-strip {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.admin-console-app .admin-detail-workbench {
+  gap: 12px;
+}
+
+.admin-console-app .admin-detail-workbench__intro {
+  padding: 18px;
+}
+
+.admin-console-app .admin-workbench-card {
+  min-height: 106px;
+}
+
+@media (max-width: 1540px) {
+  .admin-console-app .admin-kpi-grid--ops {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .admin-console-app .admin-dashboard-grid--v2,
+  .admin-console-app .admin-source-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1180px) {
+  .admin-console-app .admin-console-page {
+    padding: 14px;
+  }
+
+  .admin-console-app .admin-console-shell--v2 {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .admin-console-app .admin-console-shell--v2 .admin-sidebar,
+  .admin-console-app .admin-operator-topbar--v3 {
+    position: static;
+    height: auto;
+  }
+
+  .admin-console-app .admin-operator-topbar--v3 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-console-app .admin-kpi-grid--ops {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-console-app .admin-funnel-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-console-app .admin-console-page {
+    padding: 10px;
+  }
+
+  .admin-console-app .admin-kpi-grid--ops,
+  .admin-console-app .admin-funnel-steps,
+  .admin-console-app .admin-system-health-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-console-app .admin-funnel-step {
+    clip-path: none;
+    border-radius: 12px;
+    padding-left: 14px;
+  }
+}
