@@ -1015,56 +1015,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const alternateLocale = locale === "zh" ? "en" : "zh";
   const operatorName = session.subject?.displayName ?? session.subject?.email ?? adminConsoleLabels.shell.eyebrow;
   const operatorInitials = getAdminInitials(operatorName);
-  const adminKpis: Array<{
-    detail: string;
-    href: string;
-    label: string;
-    tone: AdminKpiTone;
-    value: string;
-  }> = [
-    {
-      detail: adminConsoleLabels.kpis.revenueDetail,
-      href: localizedHref("/admin#admin-finance", locale),
-      label: adminConsoleLabels.kpis.revenue,
-      tone: "neutral",
-      value: formatMoney(financeLedger.summary.grossCents)
-    },
-    {
-      detail: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)} ${adminConsoleLabels.kpis.reviewsDetail}`,
-      href: localizedHref("/admin#admin-reviews", locale),
-      label: adminConsoleLabels.kpis.reviews,
-      tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.warning > 0 ? "warning" : reviewMetrics.actionable > 0 ? "ready" : "neutral",
-      value: formatCompactNumber(reviewMetrics.actionable)
-    },
-    {
-      detail: adminConsoleLabels.kpis.ordersDetail,
-      href: localizedHref("/admin#admin-orders", locale),
-      label: adminConsoleLabels.kpis.orders,
-      tone: orderActionCount > 0 ? "warning" : "ready",
-      value: formatCompactNumber(orderActionCount)
-    },
-    {
-      detail: adminConsoleLabels.kpis.moneyDetail,
-      href: localizedHref("/admin#admin-payouts", locale),
-      label: adminConsoleLabels.kpis.money,
-      tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
-      value: formatCompactNumber(payoutActionCount + adjustmentActionCount)
-    },
-    {
-      detail: adminConsoleLabels.kpis.riskDetail,
-      href: localizedHref("/admin#admin-risk", locale),
-      label: adminConsoleLabels.kpis.risk,
-      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : pendingFeedbackCount + deliveryActionCount > 0 ? "warning" : "ready",
-      value: formatCompactNumber(activeIncidentCount + openAbuseReportCount + pendingFeedbackCount + deliveryActionCount)
-    },
-    {
-      detail: adminConsoleLabels.kpis.trafficDetail,
-      href: localizedHref("/admin#admin-traffic", locale),
-      label: adminConsoleLabels.kpis.traffic,
-      tone: "warning",
-      value: adminConsoleLabels.kpis.trafficValue
-    }
-  ];
   const adminAnalytics = [
     [adminConsoleLabels.analytics.cards.gmv, formatMoney(financeLedger.summary.grossCents)],
     [adminConsoleLabels.analytics.cards.platformRevenue, formatMoney(financeLedger.summary.platformFeeCents)],
@@ -1075,13 +1025,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ];
   const recentOrderRows = financeLedger.recentTransactions.slice(0, 4);
   const selectedOrder = recentOrderRows[0];
-  const adminHealthRows = [
-    ["API Gateway", adminV2Labels.health.api, adminV2Labels.apiHealthy, "green"],
-    ["Stripe", adminV2Labels.health.stripe, adminConsoleLabels.payment.items[0][1], "amber"],
-    ["Alipay", adminV2Labels.health.alipay, adminConsoleLabels.payment.items[1][1], "amber"],
-    ["Analytics", adminV2Labels.health.analytics, adminConsoleLabels.kpis.trafficValue, "amber"],
-    ["Webhook", adminV2Labels.health.webhook, adminConsoleLabels.payment.items[2][1], "red"]
-  ] as const;
   const analyticsInsights = [
     [adminV2Labels.analytics.signup, financeLedger.summary.subscriptionTransactionCount > 0 ? "18.6%" : adminV2Labels.dataSourcePending, adminV2Labels.kpiDetail.conversion],
     [adminV2Labels.analytics.install, formatCompactNumber(reviewMetrics.ready + financeLedger.summary.usageTransactionCount), adminV2Labels.kpiDetail.installs],
@@ -1093,6 +1036,239 @@ export default async function AdminPage({ searchParams }: PageProps) {
     ["Alipay", adminV2Labels.payments.alipay, adminConsoleLabels.payment.items[1][1], "amber"],
     ["Webhook", adminV2Labels.payments.webhook, adminConsoleLabels.payment.items[2][1], "red"],
     [locale === "zh" ? "提现结算" : "Payout settlement", adminV2Labels.payments.payout, adminConsoleLabels.payment.items[3][1], "green"]
+  ] as const;
+  const pendingDataLabel = adminV2Labels.dataSourcePending;
+  const overviewKpis: Array<{
+    detail: string;
+    href: string;
+    label: string;
+    tone: AdminKpiTone;
+    trend: string;
+    value: string;
+  }> = [
+    {
+      detail: locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected.",
+      href: localizedHref("/admin#admin-traffic", locale),
+      label: locale === "zh" ? "今日 UV" : "Today UV",
+      tone: "warning",
+      trend: locale === "zh" ? "Analytics 待接入" : "Analytics pending",
+      value: pendingDataLabel
+    },
+    {
+      detail: locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source.",
+      href: localizedHref("/admin#admin-traffic", locale),
+      label: locale === "zh" ? "独立 IP" : "Unique IP",
+      tone: "warning",
+      trend: locale === "zh" ? "日志待接入" : "Logs pending",
+      value: pendingDataLabel
+    },
+    {
+      detail: locale === "zh" ? "当前身份目录用户总数，今日新增待接入事件流。" : "Current identity directory; daily signup events pending.",
+      href: localizedHref("/admin#admin-identity", locale),
+      label: locale === "zh" ? "注册用户" : "Users",
+      tone: identityDirectory.summary.userCount > 0 ? "ready" : "warning",
+      trend: locale === "zh" ? "今日事件待接入" : "Daily events pending",
+      value: formatCompactNumber(identityDirectory.summary.userCount)
+    },
+    {
+      detail: locale === "zh" ? "技能安装和调用来自账本/运行时事件。" : "Install and call events from ledger/runtime signals.",
+      href: localizedHref("/admin#admin-analytics", locale),
+      label: locale === "zh" ? "技能安装" : "Installs",
+      tone: "ready",
+      trend: locale === "zh" ? "运行时事件" : "Runtime events",
+      value: formatCompactNumber(reviewMetrics.ready + financeLedger.summary.usageTransactionCount)
+    },
+    {
+      detail: locale === "zh" ? "待处理订单、续费、退款和争议。" : "Orders, renewals, refunds, and disputes needing action.",
+      href: localizedHref("/admin#admin-orders", locale),
+      label: locale === "zh" ? "订单数" : "Orders",
+      tone: orderActionCount > 0 ? "warning" : "ready",
+      trend: orderActionCount > 0 ? (locale === "zh" ? "待处理" : "Needs action") : (locale === "zh" ? "无阻塞" : "No blocker"),
+      value: formatCompactNumber(orderActionCount)
+    },
+    {
+      detail: locale === "zh" ? "已入账 GMV，不含未完成支付。" : "Posted GMV only; pending payment is excluded.",
+      href: localizedHref("/admin#admin-finance", locale),
+      label: "GMV",
+      tone: "neutral",
+      trend: locale === "zh" ? "账本口径" : "Ledger source",
+      value: formatMoney(financeLedger.summary.grossCents)
+    },
+    {
+      detail: locale === "zh" ? "待审核技能、证据、权限和定价。" : "Pending skill review, evidence, permissions, and pricing.",
+      href: localizedHref("/admin#admin-reviews", locale),
+      label: locale === "zh" ? "待审核" : "Reviews",
+      tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready",
+      trend: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)}`,
+      value: formatCompactNumber(reviewMetrics.actionable)
+    },
+    {
+      detail: locale === "zh" ? "作者提现、退款和争议的财务队列。" : "Publisher payouts, refunds, and disputes queue.",
+      href: localizedHref("/admin#admin-payouts", locale),
+      label: locale === "zh" ? "待提现" : "Payouts",
+      tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
+      trend: locale === "zh" ? "人工审核" : "Manual review",
+      value: formatCompactNumber(payoutActionCount)
+    }
+  ];
+  const adminSidebarGroups = locale === "zh"
+    ? [
+        {
+          label: "总览",
+          items: [
+            ["总览", "#admin-overview"],
+            ["数据分析", "#admin-analytics"],
+            ["流量来源", "#admin-traffic"],
+            ["AI 推荐", "#admin-ai-referrals"],
+            ["转化漏斗", "#admin-funnel"]
+          ]
+        },
+        {
+          label: "运营",
+          items: [
+            ["技能审核", "#admin-reviews"],
+            ["作者管理", "#admin-curation"],
+            ["用户角色", "#admin-identity"],
+            ["通知", "#admin-deliveries"]
+          ]
+        },
+        {
+          label: "资金与风控",
+          items: [
+            ["订单支付", "#admin-orders"],
+            ["提现分账", "#admin-payouts"],
+            ["风控告警", "#admin-risk"],
+            ["系统健康", "#admin-system-health"],
+            ["审计日志", "#admin-audit"],
+            ["设置", "#admin-templates"]
+          ]
+        }
+      ]
+    : [
+        {
+          label: "Overview",
+          items: [
+            ["Overview", "#admin-overview"],
+            ["Analytics", "#admin-analytics"],
+            ["Traffic sources", "#admin-traffic"],
+            ["AI referrals", "#admin-ai-referrals"],
+            ["Conversion funnel", "#admin-funnel"]
+          ]
+        },
+        {
+          label: "Operations",
+          items: [
+            ["Skill reviews", "#admin-reviews"],
+            ["Publisher ops", "#admin-curation"],
+            ["Users and roles", "#admin-identity"],
+            ["Notifications", "#admin-deliveries"]
+          ]
+        },
+        {
+          label: "Money and risk",
+          items: [
+            ["Orders and payments", "#admin-orders"],
+            ["Payouts and splits", "#admin-payouts"],
+            ["Risk alerts", "#admin-risk"],
+            ["System health", "#admin-system-health"],
+            ["Audit log", "#admin-audit"],
+            ["Settings", "#admin-templates"]
+          ]
+        }
+      ];
+  const workQueueRows = [
+    {
+      action: locale === "zh" ? "去审核" : "Review",
+      count: reviewMetrics.actionable,
+      href: localizedHref("/admin#admin-reviews", locale),
+      module: locale === "zh" ? "技能审核" : "Reviews",
+      priority: reviewMetrics.danger > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "中" : "Med"),
+      title: locale === "zh" ? "技能待审核" : "Skill reviews",
+      tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready"
+    },
+    {
+      action: locale === "zh" ? "查订单" : "Open",
+      count: orderActionCount,
+      href: localizedHref("/admin#admin-orders", locale),
+      module: locale === "zh" ? "订单支付" : "Orders",
+      priority: orderActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
+      title: locale === "zh" ? "支付失败订单" : "Payment failures",
+      tone: orderActionCount > 0 ? "warning" : "ready"
+    },
+    {
+      action: locale === "zh" ? "处理" : "Resolve",
+      count: adjustmentActionCount,
+      href: localizedHref("/admin#admin-adjustments", locale),
+      module: locale === "zh" ? "退款争议" : "Refunds",
+      priority: adjustmentActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
+      title: locale === "zh" ? "退款 / 争议" : "Refunds / disputes",
+      tone: adjustmentActionCount > 0 ? "warning" : "ready"
+    },
+    {
+      action: locale === "zh" ? "审核" : "Review",
+      count: payoutActionCount,
+      href: localizedHref("/admin#admin-payouts", locale),
+      module: locale === "zh" ? "提现分账" : "Payouts",
+      priority: payoutActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
+      title: locale === "zh" ? "作者提现审核" : "Publisher payouts",
+      tone: payoutActionCount > 0 ? "warning" : "ready"
+    },
+    {
+      action: locale === "zh" ? "看风险" : "Inspect",
+      count: activeIncidentCount + openAbuseReportCount,
+      href: localizedHref("/admin#admin-risk", locale),
+      module: locale === "zh" ? "风控告警" : "Risk",
+      priority: activeIncidentCount + openAbuseReportCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
+      title: locale === "zh" ? "异常 IP / 举报" : "Abnormal IP / reports",
+      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : "ready"
+    },
+    {
+      action: locale === "zh" ? "重试" : "Retry",
+      count: webhookActionCount,
+      href: localizedHref("/admin#admin-webhooks", locale),
+      module: "Webhook",
+      priority: webhookActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
+      title: locale === "zh" ? "Webhook 失败" : "Webhook failures",
+      tone: webhookActionCount > 0 ? "warning" : "ready"
+    }
+  ] as const;
+  const sourceChannels = [
+    ["Google", pendingDataLabel, 0, "cyan"],
+    ["GitHub", pendingDataLabel, 0, "green"],
+    ["Direct", pendingDataLabel, 0, "neutral"],
+    ["Bing", pendingDataLabel, 0, "cyan"]
+  ] as const;
+  const aiReferralChannels = [
+    ["ChatGPT", pendingDataLabel, 0],
+    ["Perplexity", pendingDataLabel, 0],
+    ["Claude", pendingDataLabel, 0],
+    ["Gemini", pendingDataLabel, 0],
+    ["Copilot", pendingDataLabel, 0]
+  ] as const;
+  const conversionFunnel = [
+    [locale === "zh" ? "访问网站" : "Visit site", pendingDataLabel, locale === "zh" ? "入口待接入" : "Source pending"],
+    [locale === "zh" ? "注册/登录" : "Sign in", formatCompactNumber(identityDirectory.summary.userCount), locale === "zh" ? "身份目录" : "Identity"],
+    ["Project Key", pendingDataLabel, locale === "zh" ? "事件待接入" : "Event pending"],
+    [locale === "zh" ? "浏览技能" : "Browse skills", pendingDataLabel, locale === "zh" ? "Analytics 待接入" : "Analytics pending"],
+    [locale === "zh" ? "安装技能" : "Install skill", formatCompactNumber(reviewMetrics.ready + financeLedger.summary.usageTransactionCount), locale === "zh" ? "运行时口径" : "Runtime source"],
+    [locale === "zh" ? "调用技能" : "Invoke skill", formatCompactNumber(financeLedger.summary.usageTransactionCount), locale === "zh" ? "账本口径" : "Ledger source"],
+    [locale === "zh" ? "下单" : "Order", formatCompactNumber(financeLedger.summary.usageTransactionCount + financeLedger.summary.subscriptionTransactionCount), locale === "zh" ? "支付口径" : "Payment source"]
+  ] as const;
+  const financeSummaryCards = [
+    ["GMV", formatMoney(financeLedger.summary.grossCents), locale === "zh" ? "已入账交易" : "Posted ledger"],
+    [locale === "zh" ? "平台佣金" : "Platform fee", formatMoney(financeLedger.summary.platformFeeCents), locale === "zh" ? "佣金口径" : "Commission"],
+    [locale === "zh" ? "作者分成" : "Publisher share", formatMoney(financeLedger.summary.publisherShareCents), locale === "zh" ? "待结算来源" : "Settlement source"],
+    [locale === "zh" ? "退款/争议" : "Refunds/disputes", formatCompactNumber(adjustmentActionCount), locale === "zh" ? "人工处理" : "Manual review"],
+    [locale === "zh" ? "可结算" : "Available", formatMoney(financeLedger.summary.availableBalanceCents), locale === "zh" ? "账本余额" : "Ledger balance"],
+    [locale === "zh" ? "待提现" : "Payout queue", formatCompactNumber(payoutActionCount), locale === "zh" ? "作者申请" : "Publisher requests"]
+  ] as const;
+  const systemHealthStrip = [
+    ["API", adminV2Labels.apiHealthy, "green"],
+    ["DB", adminV2Labels.apiHealthy, "green"],
+    ["Webhook", adminConsoleLabels.payment.items[2][1], webhookActionCount > 0 ? "red" : "amber"],
+    ["Email", deliveryActionCount > 0 ? (locale === "zh" ? "待处理" : "Pending") : adminV2Labels.apiHealthy, deliveryActionCount > 0 ? "amber" : "green"],
+    ["Analytics", adminConsoleLabels.kpis.trafficValue, "amber"],
+    [locale === "zh" ? "支付回调" : "Payment callback", adminConsoleLabels.payment.items[2][1], "amber"]
   ] as const;
   const trafficBars = [74, 56, 42, 68, 28, 38];
   const workbenchCounts = [
@@ -1190,7 +1366,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
 
           <nav className="admin-sidebar-nav">
-            {adminConsoleLabels.nav.map((group) => (
+            {adminSidebarGroups.map((group) => (
               <div className="admin-sidebar-nav__group" key={group.label}>
                 <span>{group.label}</span>
                 {group.items.map(([label, anchor]) => {
@@ -1219,11 +1395,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </aside>
 
         <div className="admin-console-main">
-          <header className="admin-operator-topbar" aria-label={locale === "zh" ? "管理员工具栏" : "Admin toolbar"}>
+          <header className="admin-operator-topbar admin-operator-topbar--v3" aria-label={locale === "zh" ? "管理员工具栏" : "Admin toolbar"}>
+            <h1 id="admin-console-title" className="visually-hidden">SkillHub Admin Ops Console</h1>
             <div className="admin-global-search admin-global-search--status" aria-label={adminConsoleLabels.shell.searchPreview}>
               <Search size={16} aria-hidden="true" />
               <span>{adminConsoleLabels.shell.searchPlaceholder}</span>
-              <em>{adminConsoleLabels.shell.searchPreview}</em>
+              <em>{adminV2Labels.keyboardHint}</em>
+            </div>
+            <div className="admin-time-range admin-time-range--top" aria-label={locale === "zh" ? "数据时间范围" : "Data time range"}>
+              {(locale === "zh" ? ["今天", "昨天", "近7天", "近15天", "近30天", "自定义"] : ["Today", "Yesterday", "7d", "15d", "30d", "Custom"]).map((range, index) => (
+                <span className={index === 0 ? "is-active" : undefined} key={range}>
+                  {range}
+                </span>
+              ))}
             </div>
             <div className="admin-top-actions">
               <a className="admin-toolbar-button" href={localizedHref("/admin", alternateLocale)}>{adminV2Labels.language}</a>
@@ -1231,7 +1415,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 {adminV2Labels.notifications}
                 <span>{formatCompactNumber(deliveryActionCount)}</span>
               </a>
-              <a className="admin-toolbar-button" href={localizedHref("/admin#launch-readiness", locale)}>{adminV2Labels.help}</a>
               <div className="admin-avatar" aria-label={operatorName}>{operatorInitials}</div>
               <form action={signOutAction.bind(null, locale)}>
                 <button className="admin-toolbar-button admin-toolbar-button--danger" type="submit">
@@ -1242,73 +1425,13 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
           </header>
 
-          <section className="admin-command-grid">
-            <article className="admin-command-hero">
-              <div>
-                <div className="eyebrow">
-                  <Activity size={16} aria-hidden="true" />
-                  <span>{adminV2Labels.hero.eyebrow}</span>
-                </div>
-                <h1 id="admin-console-title">{adminV2Labels.hero.title}</h1>
-                <p>{adminV2Labels.hero.body}</p>
-                <div className="admin-command-actions">
-                  <a className="btn-primary" href={primaryPriorityItem.href}>
-                    <span>{adminV2Labels.hero.primary}</span>
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </a>
-                  <a className="btn-secondary" href={localizedHref("/admin#admin-orders", locale)}>{adminV2Labels.openOrders}</a>
-                  <a className="btn-secondary" href={localizedHref("/admin#admin-finance", locale)}>{adminV2Labels.openPayments}</a>
-                  <a className="btn-secondary" href={localizedHref("/admin#admin-audit", locale)}>{adminV2Labels.exportDaily}</a>
-                </div>
-              </div>
-              <div className="admin-command-sla" aria-label={locale === "zh" ? "今日重点状态" : "Today priority state"}>
-                <a href={localizedHref("/admin#launch-readiness", locale)}>
-                  <strong>{locale === "zh" ? "上线阻断" : "Launch blockers"}</strong>
-                  <span>{locale === "zh" ? "技能终审、权限、定价" : "Review, permissions, pricing"}</span>
-                  <b>{formatCompactNumber(launchReadiness.summary.blocker)}</b>
-                </a>
-                <a href={localizedHref("/admin#admin-payouts", locale)}>
-                  <strong>{locale === "zh" ? "资金风险" : "Money risk"}</strong>
-                  <span>{locale === "zh" ? "退款、争议、提现" : "Refunds, disputes, payouts"}</span>
-                  <b>{formatCompactNumber(payoutActionCount + adjustmentActionCount)}</b>
-                </a>
-                <a href={localizedHref("/admin#admin-risk", locale)}>
-                  <strong>{locale === "zh" ? "访问异常" : "Access anomalies"}</strong>
-                  <span>{locale === "zh" ? "登录失败、接口探测" : "Login failures, API probes"}</span>
-                  <b>{formatCompactNumber(activeIncidentCount + openAbuseReportCount)}</b>
-                </a>
-              </div>
-            </article>
-
-            <aside className="admin-health-panel">
-              <div className="admin-time-range admin-time-range--status" aria-label={locale === "zh" ? "数据时间范围" : "Data time range"}>
-                {adminConsoleLabels.shell.timeRanges.map((range, index) => (
-                  <span className={index === 0 ? "is-active" : undefined} key={range}>
-                    {range}
-                  </span>
-                ))}
-              </div>
-              <div className="admin-health-list">
-                {adminHealthRows.map(([title, detail, state, tone]) => (
-                  <div className="admin-health-row" key={title}>
-                    <div>
-                      <strong>{title}</strong>
-                      <span>{detail}</span>
-                    </div>
-                    <b className={`admin-state-pill admin-state-pill--${tone}`}>{state}</b>
-                  </div>
-                ))}
-              </div>
-            </aside>
-          </section>
-
           <header className="admin-console-topbar admin-console-topbar--legacy">
             <div>
               <div className="eyebrow">
                 <Activity size={16} aria-hidden="true" />
                 <span>{adminConsoleLabels.shell.subtitle}</span>
               </div>
-              <h1 id="admin-console-title">{adminConsoleLabels.shell.title}</h1>
+              <h1>{adminConsoleLabels.shell.title}</h1>
               <p>{labels.description}</p>
             </div>
 
@@ -1334,18 +1457,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
           </header>
 
-          <div className="admin-kpi-grid admin-kpi-grid--v2" aria-label={locale === "zh" ? "后台关键指标" : "Admin key metrics"}>
-            {adminKpis.map((metric) => (
+          <div className="admin-kpi-grid admin-kpi-grid--v2 admin-kpi-grid--ops" aria-label={locale === "zh" ? "后台关键指标" : "Admin key metrics"}>
+            {overviewKpis.map((metric) => (
               <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.label}>
                 <span>{metric.label}</span>
                 <strong>{metric.value}</strong>
                 <small>{metric.detail}</small>
+                <em>{metric.trend}</em>
               </a>
             ))}
           </div>
 
           <div className="admin-dashboard-grid admin-dashboard-grid--v2">
-            <article className="admin-analytics-panel admin-analytics-panel--v2" aria-labelledby="admin-analytics-v2-title">
+            <article className="admin-analytics-panel admin-analytics-panel--v2 admin-analytics-panel--ops" id="admin-analytics" aria-labelledby="admin-analytics-v2-title">
               <div className="admin-panel-head">
                 <div>
                   <div className="eyebrow">
@@ -1464,30 +1588,126 @@ export default async function AdminPage({ searchParams }: PageProps) {
               </div>
             </article>
 
-            <aside className="admin-priority-panel admin-priority-panel--v2" id="admin-priority" aria-labelledby="admin-priority-heading">
+            <aside className="admin-priority-panel admin-priority-panel--v2 admin-work-queue-panel" id="admin-priority" aria-labelledby="admin-priority-heading">
               <div className="eyebrow">
                 <ListChecks size={16} aria-hidden="true" />
-                <span>{adminCommandLabels.eyebrow}</span>
+                <span>{locale === "zh" ? "今日待办" : "Today work queue"}</span>
               </div>
-              <h2 id="admin-priority-heading">{adminV2Labels.priority.title}</h2>
-              <p>{adminV2Labels.priority.subtitle}</p>
-              <div className="admin-priority-list" aria-label={adminCommandLabels.queue.title}>
-                {adminPriorityItems.slice(0, 4).map((item) => (
-                  <a className={`publisher-priority-task publisher-priority-task--${item.tone}`} href={item.href} key={item.id}>
-                    <span>
-                      {adminCommandLabels.queueTones[item.tone]} / {item.metric}
+              <h2 id="admin-priority-heading">{locale === "zh" ? "今天必须处理的运营事项" : "What operators should process today"}</h2>
+              <p>{locale === "zh" ? "按审核、资金、风控和投递影响排序，所有入口都打开真实模块。" : "Sorted by review, money, risk, and delivery impact. Every action opens a real module."}</p>
+              <div className="admin-work-queue-list" aria-label={locale === "zh" ? "今日待办队列" : "Today work queue"}>
+                {workQueueRows.map((item) => (
+                  <a className={`admin-work-queue-row admin-work-queue-row--${item.tone}`} href={item.href} key={item.title}>
+                    <span className="admin-work-queue-row__priority">{item.priority}</span>
+                    <span className="admin-work-queue-row__copy">
+                      <strong>{item.title}</strong>
+                      <small>{item.module}</small>
                     </span>
-                    <strong>{item.title}</strong>
-                    <p>{item.detail}</p>
-                    <b>
-                      {item.actionLabel}
-                      <ArrowRight size={14} aria-hidden="true" />
-                    </b>
+                    <b>{formatCompactNumber(item.count)}</b>
+                    <em>
+                      {item.action}
+                      <ArrowRight size={13} aria-hidden="true" />
+                    </em>
                   </a>
                 ))}
               </div>
             </aside>
           </div>
+
+          <section className="admin-funnel-card" id="admin-funnel" aria-labelledby="admin-funnel-title">
+            <div className="admin-panel-head admin-panel-head--compact">
+              <div>
+                <div className="eyebrow">
+                  <Activity size={16} aria-hidden="true" />
+                  <span>{locale === "zh" ? "转化漏斗" : "Conversion funnel"}</span>
+                </div>
+                <h2 id="admin-funnel-title">{locale === "zh" ? "访问到下单的产品主链路" : "Main product path from visit to order"}</h2>
+              </div>
+              <b className="admin-state-pill admin-state-pill--amber">
+                {locale === "zh" ? "部分事件待接入" : "Some events pending"}
+              </b>
+            </div>
+            <div className="admin-funnel-steps">
+              {conversionFunnel.map(([label, value, detail], index) => (
+                <div className="admin-funnel-step" key={label}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{label}</strong>
+                  <b>{value}</b>
+                  <small>{detail}</small>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="admin-source-grid" aria-label={locale === "zh" ? "来源与财务分析" : "Source and finance analytics"}>
+            <article className="admin-source-card" id="admin-traffic">
+              <div className="eyebrow">
+                <Activity size={16} aria-hidden="true" />
+                <span>{locale === "zh" ? "来源分析" : "Source analysis"}</span>
+              </div>
+              <h2>{locale === "zh" ? "普通来源" : "Standard channels"}</h2>
+              <p>{locale === "zh" ? "Google、GitHub、Direct、Bing 等入口接入分析后显示真实占比。" : "Google, GitHub, Direct, and Bing share will appear after analytics is connected."}</p>
+              <div className="admin-channel-list">
+                {sourceChannels.map(([label, value, width, tone]) => (
+                  <div className={`admin-channel-row admin-channel-row--${tone}`} key={label}>
+                    <span>{label}</span>
+                    <i><b style={{ width: `${width}%` }} /></i>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="admin-source-card admin-source-card--ai" id="admin-ai-referrals">
+              <div className="eyebrow">
+                <Search size={16} aria-hidden="true" />
+                <span>{locale === "zh" ? "AI 推荐来源" : "AI referral sources"}</span>
+              </div>
+              <h2>{locale === "zh" ? "AI 推荐来源" : "AI referrals"}</h2>
+              <p>{locale === "zh" ? "单独跟踪 ChatGPT、Perplexity、Claude、Gemini、Copilot，服务后续 GEO 增长。" : "Tracks ChatGPT, Perplexity, Claude, Gemini, and Copilot for GEO growth."}</p>
+              <div className="admin-channel-list">
+                {aiReferralChannels.map(([label, value, width]) => (
+                  <div className="admin-channel-row admin-channel-row--ai" key={label}>
+                    <span>{label}</span>
+                    <i><b style={{ width: `${width}%` }} /></i>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="admin-source-card admin-source-card--money" id="admin-finance">
+              <div className="eyebrow">
+                <WalletCards size={16} aria-hidden="true" />
+                <span>{locale === "zh" ? "支付与分账" : "Payments and splits"}</span>
+              </div>
+              <h2>{locale === "zh" ? "支付与分账" : "Payments and splits"}</h2>
+              <p>{locale === "zh" ? "财务只展示已入账或明确待接入状态，避免误导运营判断。" : "Finance displays posted ledger data or explicit pending states only."}</p>
+              <div className="admin-finance-mini-grid">
+                {financeSummaryCards.map(([label, value, detail]) => (
+                  <div key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                    <small>{detail}</small>
+                  </div>
+                ))}
+              </div>
+              <div className="admin-payment-status-row">
+                {paymentCards.slice(0, 2).map(([title, , state, tone]) => (
+                  <b className={`admin-state-pill admin-state-pill--${tone}`} key={title}>{title}: {state}</b>
+                ))}
+              </div>
+            </article>
+          </section>
+
+          <section className="admin-system-health-strip" id="admin-system-health" aria-label={locale === "zh" ? "系统健康" : "System health"}>
+            {systemHealthStrip.map(([label, state, tone]) => (
+              <span className={`admin-system-health-strip__item admin-system-health-strip__item--${tone}`} key={label}>
+                <strong>{label}</strong>
+                <small>{state}</small>
+              </span>
+            ))}
+          </section>
 
           <div className="admin-dashboard-grid admin-dashboard-grid--legacy">
             <article className="admin-priority-panel" id="admin-priority-legacy" aria-labelledby="admin-priority-heading-legacy">
@@ -1611,7 +1831,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </section>
 
           <section className="admin-traffic-workspace">
-            <article className="admin-traffic-panel admin-traffic-panel--v2" id="admin-traffic" aria-labelledby="admin-traffic-title">
+            <article className="admin-traffic-panel admin-traffic-panel--v2" id="admin-traffic-details" aria-labelledby="admin-traffic-title">
               <div className="admin-traffic-panel__head">
                 <div>
                   <div className="eyebrow">
@@ -2031,7 +2251,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <em>{workbenchGroupLabels.action}</em>
                 </summary>
                 <div className="admin-module-group__body">
-                  <section className="workspace-ops-layout" id="admin-finance">
+                  <section className="workspace-ops-layout" id="admin-finance-details">
                     <article className="ops-panel work-table-panel">
                   <div className="eyebrow">
                     <ReceiptText size={16} aria-hidden="true" />
@@ -2578,7 +2798,11 @@ function adminAnchor(anchor: string, locale: Locale) {
 function getAdminNavIcon(anchor: string) {
   switch (anchor) {
     case "#admin-overview":
+    case "#admin-analytics":
       return BarChart3;
+    case "#admin-ai-referrals":
+    case "#admin-funnel":
+      return Activity;
     case "#admin-priority":
       return ListChecks;
     case "#launch-readiness":
@@ -2606,6 +2830,7 @@ function getAdminNavIcon(anchor: string) {
     case "#admin-audit":
       return ReceiptText;
     case "#admin-templates":
+    case "#admin-system-health":
       return Settings;
     default:
       return ListChecks;
