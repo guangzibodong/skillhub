@@ -6,6 +6,16 @@ type AccessLogChannel = {
   share: number;
 };
 
+export type AccessLogIpInsight = {
+  ip: string;
+  lastPath: string;
+  lastSeen: string;
+  requests: number;
+  status: number;
+  suspicious: boolean;
+  userAgent: string;
+};
+
 export type AccessLogAnalytics = {
   aiReferrals: AccessLogChannel[];
   channels: AccessLogChannel[];
@@ -13,6 +23,7 @@ export type AccessLogAnalytics = {
   files: string[];
   message: string;
   paths: AccessLogChannel[];
+  recentIps: AccessLogIpInsight[];
   sourceLabel: string;
   suspiciousIpCount: number;
   todayPageViews: number;
@@ -24,10 +35,12 @@ export type AccessLogAnalytics = {
 
 type ParsedAccessLine = {
   ip: string;
+  lastSeen: string;
   method: string;
   path: string;
   referrer: string;
   status: number;
+  timestampMs: number;
   userAgent: string;
   ymd: string;
 };
@@ -73,6 +86,7 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
       files: [],
       message: "Access log not mounted",
       paths: buildEmptyChannels(["/"]),
+      recentIps: [],
       sourceLabel: "Access log pending",
       suspiciousIpCount: 0,
       todayPageViews: 0,
@@ -90,6 +104,7 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
   const aiCounts = new Map<string, number>();
   const pathCounts = new Map<string, number>();
   const referrerCounts = new Map<string, number>();
+  const ipInsights = new Map<string, AccessLogIpInsight & { timestampMs: number }>();
 
   for (const line of parsedLines) {
     uniqueIps.add(line.ip);
@@ -113,6 +128,34 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
     if (line.status >= 400 || isSensitiveProbePath(line.path)) {
       suspiciousIps.add(line.ip);
     }
+
+    const existingIp = ipInsights.get(line.ip);
+    const normalizedPath = normalizePath(line.path);
+    const suspicious = line.status >= 400 || isSensitiveProbePath(line.path);
+
+    if (!existingIp) {
+      ipInsights.set(line.ip, {
+        ip: line.ip,
+        lastPath: normalizedPath,
+        lastSeen: line.lastSeen,
+        requests: 1,
+        status: line.status,
+        suspicious,
+        timestampMs: line.timestampMs,
+        userAgent: normalizeUserAgent(line.userAgent)
+      });
+    } else {
+      existingIp.requests += 1;
+      existingIp.suspicious = existingIp.suspicious || suspicious;
+
+      if (line.timestampMs >= existingIp.timestampMs) {
+        existingIp.lastPath = normalizedPath;
+        existingIp.lastSeen = line.lastSeen;
+        existingIp.status = line.status;
+        existingIp.timestampMs = line.timestampMs;
+        existingIp.userAgent = normalizeUserAgent(line.userAgent);
+      }
+    }
   }
 
   return {
@@ -122,6 +165,10 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
     files: connectedFiles,
     message: parsedLines.length > 0 ? "Access log connected" : "Access log mounted; no public page hits today",
     paths: buildTopChannels(pathCounts, parsedLines.length, 6),
+    recentIps: Array.from(ipInsights.values())
+      .sort((a, b) => b.timestampMs - a.timestampMs)
+      .slice(0, 8)
+      .map(({ timestampMs: _timestampMs, ...insight }) => insight),
     sourceLabel: "Nginx / 1Panel access.log",
     suspiciousIpCount: suspiciousIps.size,
     todayPageViews: parsedLines.length,
@@ -174,7 +221,7 @@ function parseAccessLine(line: string): ParsedAccessLine | null {
     return null;
   }
 
-  const dateMatch = line.match(/\[(\d{2})\/([A-Za-z]{3})\/(\d{4}):/);
+  const dateMatch = line.match(/\[(\d{2})\/([A-Za-z]{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2})\s+([+-]\d{4})\]/);
   const requestParts = Array.from(line.matchAll(/"([^"]*)"/g)).map((match) => match[1]);
   const request = requestParts[0] ?? "";
   const requestMatch = request.match(/^([A-Z]+)\s+(\S+)\s+HTTP\/\d(?:\.\d)?$/);
@@ -185,14 +232,23 @@ function parseAccessLine(line: string): ParsedAccessLine | null {
     return null;
   }
 
+  const month = String(monthToNumber(dateMatch[2])).padStart(2, "0");
+  const ymd = `${dateMatch[3]}-${month}-${dateMatch[1]}`;
+  const offset = dateMatch[7];
+  const offsetIso = `${offset.slice(0, 3)}:${offset.slice(3)}`;
+  const isoTime = `${ymd}T${dateMatch[4]}:${dateMatch[5]}:${dateMatch[6]}${offsetIso}`;
+  const timestampMs = Date.parse(isoTime);
+
   return {
     ip,
+    lastSeen: `${ymd} ${dateMatch[4]}:${dateMatch[5]}`,
     method: requestMatch[1],
     path: requestMatch[2],
     referrer: requestParts[1] ?? "-",
     status: Number(statusMatch[1]),
+    timestampMs: Number.isFinite(timestampMs) ? timestampMs : 0,
     userAgent: requestParts[2] ?? "",
-    ymd: `${dateMatch[3]}-${String(monthToNumber(dateMatch[2])).padStart(2, "0")}-${dateMatch[1]}`
+    ymd
   };
 }
 
@@ -289,6 +345,16 @@ function normalizeReferrer(referrer: string) {
   } catch {
     return referrer;
   }
+}
+
+function normalizeUserAgent(userAgent: string) {
+  if (!userAgent) {
+    return "unknown";
+  }
+
+  const normalized = userAgent.replace(/\s+/g, " ").trim();
+
+  return normalized.length > 72 ? `${normalized.slice(0, 69)}...` : normalized;
 }
 
 function isSensitiveProbePath(path: string) {

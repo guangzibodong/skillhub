@@ -39,6 +39,7 @@ import { AppShell } from "@/components/app-shell";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getAccessLogAnalytics } from "@/lib/access-log-analytics";
+import { getCloudflareAnalytics } from "@/lib/cloudflare-analytics";
 import { signOutAction } from "@/lib/auth-actions";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
@@ -938,7 +939,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     incidents,
     skillFeedback,
     reviews,
-    accessLogAnalytics
+    accessLogAnalytics,
+    cloudflareAnalytics
   ] = await Promise.all([
     getFinanceLedger(),
     getAdminLaunchReadiness(),
@@ -956,7 +958,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminIncidents(),
     getAdminSkillFeedback(),
     getAdminReviews(),
-    getAccessLogAnalytics()
+    getAccessLogAnalytics(),
+    getCloudflareAnalytics()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -1064,16 +1067,36 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ] as const;
   const pendingDataLabel = adminV2Labels.dataSourcePending;
   const pendingShortLabel = locale === "zh" ? "待接入" : "Pending";
+  const cloudflareSourceLabel = cloudflareAnalytics.connected
+    ? cloudflareAnalytics.sourceLabel
+    : (locale === "zh" ? "Cloudflare 未连接" : "Cloudflare not connected");
   const accessLogSourceLabel = accessLogAnalytics.connected
     ? accessLogAnalytics.sourceLabel
     : (locale === "zh" ? "日志未挂载" : "Log not mounted");
-  const todayUvValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayUv) : pendingShortLabel;
+  const todayUvValue = cloudflareAnalytics.connected && cloudflareAnalytics.totals.visits > 0
+    ? formatCompactNumber(cloudflareAnalytics.totals.visits)
+    : accessLogAnalytics.connected
+      ? formatCompactNumber(accessLogAnalytics.todayUv)
+      : pendingShortLabel;
   const uniqueIpValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayUniqueIps) : pendingShortLabel;
-  const todayPageViewValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayPageViews) : pendingDataLabel;
-  const trafficSourceState = accessLogAnalytics.connected
-    ? (locale === "zh" ? "访问日志已接入" : "Access log connected")
-    : pendingDataLabel;
-  const trafficSourceTone = accessLogAnalytics.connected ? "green" : "amber";
+  const todayPageViewValue = cloudflareAnalytics.connected && cloudflareAnalytics.totals.pageViews > 0
+    ? formatCompactNumber(cloudflareAnalytics.totals.pageViews)
+    : accessLogAnalytics.connected
+      ? formatCompactNumber(accessLogAnalytics.todayPageViews)
+      : pendingDataLabel;
+  const cloudflareRequestValue = cloudflareAnalytics.connected ? formatCompactNumber(cloudflareAnalytics.totals.requests) : pendingDataLabel;
+  const topCountry = cloudflareAnalytics.countries[0];
+  const topCountryLabel = topCountry ? formatAdminRegionName(topCountry.code, locale) : pendingDataLabel;
+  const trafficSourceState = cloudflareAnalytics.connected
+    ? (locale === "zh" ? "Cloudflare 已接入" : "Cloudflare connected")
+    : accessLogAnalytics.connected
+      ? (locale === "zh" ? "访问日志已接入" : "Access log connected")
+      : pendingDataLabel;
+  const trafficSourceTone = cloudflareAnalytics.connected || accessLogAnalytics.connected ? "green" : "amber";
+  const countryRows = cloudflareAnalytics.countries.map((country) => ({
+    ...country,
+    label: formatAdminRegionName(country.code, locale)
+  }));
   const overviewKpis: Array<{
     detail: string;
     href: string;
@@ -1084,14 +1107,16 @@ export default async function AdminPage({ searchParams }: PageProps) {
     value: string;
   }> = [
     {
-      detail: accessLogAnalytics.connected
-        ? (locale === "zh" ? "按访问日志 IP + UA 去重统计。" : "Deduplicated by IP + user agent from access logs.")
-        : (locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected."),
+      detail: cloudflareAnalytics.connected
+        ? (locale === "zh" ? "来自 Cloudflare Analytics 的今日唯一访问者。" : "Unique visitors from Cloudflare Analytics.")
+        : accessLogAnalytics.connected
+          ? (locale === "zh" ? "按访问日志 IP + UA 去重统计。" : "Deduplicated by IP + user agent from access logs.")
+          : (locale === "zh" ? "接入 Cloudflare 或访问日志后显示今日 UV。" : "Shown after Cloudflare or traffic logs are connected."),
       href: adminViewHref("traffic", locale),
       Icon: Users,
       label: locale === "zh" ? "今日 UV" : "Today UV",
-      tone: accessLogAnalytics.connected ? "ready" : "warning",
-      trend: accessLogSourceLabel,
+      tone: cloudflareAnalytics.connected || accessLogAnalytics.connected ? "ready" : "warning",
+      trend: cloudflareAnalytics.connected ? cloudflareSourceLabel : accessLogSourceLabel,
       value: todayUvValue
     },
     {
@@ -1293,7 +1318,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
     channel.share
   ] as const);
   const conversionFunnel = [
-    [locale === "zh" ? "访问网站" : "Visit site", todayPageViewValue, accessLogAnalytics.connected ? accessLogSourceLabel : (locale === "zh" ? "入口待接入" : "Source pending")],
+    [
+      locale === "zh" ? "访问网站" : "Visit site",
+      todayPageViewValue,
+      cloudflareAnalytics.connected ? cloudflareSourceLabel : accessLogAnalytics.connected ? accessLogSourceLabel : (locale === "zh" ? "入口待接入" : "Source pending")
+    ],
     [locale === "zh" ? "注册/登录" : "Sign in", formatCompactNumber(identityDirectory.summary.userCount), locale === "zh" ? "身份目录" : "Identity"],
     ["Project Key", pendingDataLabel, locale === "zh" ? "事件待接入" : "Event pending"],
     [locale === "zh" ? "浏览技能" : "Browse skills", pendingDataLabel, locale === "zh" ? "Analytics 待接入" : "Analytics pending"],
@@ -1321,12 +1350,21 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       label: "PV",
       value: todayPageViewValue,
-      width: accessLogAnalytics.connected ? 100 : 0
+      width: cloudflareAnalytics.connected || accessLogAnalytics.connected ? 100 : 0
+    },
+    {
+      label: locale === "zh" ? "Cloudflare 请求" : "Cloudflare requests",
+      value: cloudflareRequestValue,
+      width: cloudflareAnalytics.connected ? 100 : 0
     },
     {
       label: "UV",
       value: todayUvValue,
-      width: accessLogAnalytics.todayPageViews > 0 ? Math.round((accessLogAnalytics.todayUv / accessLogAnalytics.todayPageViews) * 100) : 0
+      width: cloudflareAnalytics.totals.requests > 0
+        ? Math.round((cloudflareAnalytics.totals.visits / cloudflareAnalytics.totals.requests) * 100)
+        : accessLogAnalytics.todayPageViews > 0
+          ? Math.round((accessLogAnalytics.todayUv / accessLogAnalytics.todayPageViews) * 100)
+          : 0
     },
     {
       label: locale === "zh" ? "独立 IP" : "Unique IP",
@@ -1342,9 +1380,20 @@ export default async function AdminPage({ searchParams }: PageProps) {
       label: locale === "zh" ? "热门路径" : "Top path",
       value: accessLogAnalytics.connected ? accessLogAnalytics.topPath : pendingDataLabel,
       width: accessLogAnalytics.paths[0]?.share ?? 0
+    },
+    {
+      label: locale === "zh" ? "Top 国家/地区" : "Top country/region",
+      value: topCountryLabel,
+      width: topCountry?.share ?? 0
     }
   ];
   const trafficDataSources = [
+    [
+      "Cloudflare Analytics",
+      cloudflareAnalytics.connected
+        ? (locale === "zh" ? "已连接" : "Connected")
+        : cloudflareAnalytics.message
+    ],
     [
       "1Panel access.log",
       accessLogAnalytics.connected
@@ -1976,6 +2025,48 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <i className="admin-risk-point admin-risk-point--one" />
                   <i className="admin-risk-point admin-risk-point--two" />
                   <i className="admin-risk-point admin-risk-point--three" />
+                </div>
+              </div>
+
+              <div className="admin-traffic-detail-grid">
+                <div className="admin-traffic-detail-card admin-traffic-detail-card--countries">
+                  <strong>{locale === "zh" ? "国家 / 地区" : "Countries / regions"}</strong>
+                  <p>
+                    {cloudflareAnalytics.connected
+                      ? (locale === "zh" ? "来自 Cloudflare Analytics 的今日请求分布。" : "Today request distribution from Cloudflare Analytics.")
+                      : (locale === "zh" ? "配置 Cloudflare Token 后显示国家和地区。" : "Countries and regions appear after Cloudflare is configured.")}
+                  </p>
+                  <div className="admin-traffic-detail-list">
+                    {countryRows.length > 0 ? countryRows.map((country) => (
+                      <span key={country.code}>
+                        <b>{country.label}</b>
+                        <i><em style={{ width: `${Math.max(4, country.share)}%` }} /></i>
+                        <strong>{formatCompactNumber(country.requests)} / {country.share}%</strong>
+                      </span>
+                    )) : (
+                      <small>{cloudflareAnalytics.connected ? (locale === "zh" ? "今天暂无地区数据。" : "No country data today.") : cloudflareAnalytics.message}</small>
+                    )}
+                  </div>
+                </div>
+
+                <div className="admin-traffic-detail-card admin-traffic-detail-card--ips">
+                  <strong>{locale === "zh" ? "最近访问 IP" : "Recent visitor IPs"}</strong>
+                  <p>
+                    {accessLogAnalytics.connected
+                      ? (locale === "zh" ? "来自 1Panel / Nginx access.log，用于排查异常访问。" : "From 1Panel / Nginx access.log for abnormal-access review.")
+                      : (locale === "zh" ? "挂载 access.log 后显示最近 IP。" : "Recent IPs appear after access.log is mounted.")}
+                  </p>
+                  <div className="admin-ip-table">
+                    {accessLogAnalytics.recentIps.length > 0 ? accessLogAnalytics.recentIps.map((entry) => (
+                      <span className={entry.suspicious ? "is-suspicious" : undefined} key={`${entry.ip}-${entry.lastSeen}`}>
+                        <b>{entry.ip}</b>
+                        <em>{entry.lastPath}</em>
+                        <strong>{formatCompactNumber(entry.requests)}x · {entry.status}</strong>
+                      </span>
+                    )) : (
+                      <small>{accessLogAnalytics.connected ? (locale === "zh" ? "今天暂无可展示 IP。" : "No visitor IPs today.") : accessLogAnalytics.message}</small>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -3140,6 +3231,21 @@ function getAdminInitials(value: string) {
     .filter(Boolean);
 
   return (words[0]?.[0] ?? "A").concat(words[1]?.[0] ?? "D").slice(0, 2).toUpperCase();
+}
+
+function formatAdminRegionName(code: string, locale: Locale) {
+  const normalizedCode = code.trim().toUpperCase();
+
+  if (!/^[A-Z]{2}$/.test(normalizedCode)) {
+    return normalizedCode || (locale === "zh" ? "未知地区" : "Unknown");
+  }
+
+  try {
+    const displayNames = new Intl.DisplayNames([locale === "zh" ? "zh-CN" : "en"], { type: "region" });
+    return displayNames.of(normalizedCode) ?? normalizedCode;
+  } catch {
+    return normalizedCode;
+  }
 }
 
 function formatAdminOrderNext(transaction: FinanceLedgerTransaction, locale: Locale) {

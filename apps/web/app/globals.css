@@ -9562,6 +9562,123 @@ a {
   animation: admin-bar-rise 900ms ease both;
 }
 
+.admin-traffic-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-traffic-detail-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.09);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012)),
+    rgba(5, 8, 10, 0.5);
+  padding: 13px;
+}
+
+.admin-traffic-detail-card > strong {
+  color: rgba(243, 247, 239, 0.9);
+  font-size: 14px;
+}
+
+.admin-traffic-detail-card > p,
+.admin-traffic-detail-card small {
+  margin: 0;
+  color: rgba(224, 237, 226, 0.52);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-traffic-detail-list,
+.admin-ip-table {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-traffic-detail-list span {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.34fr) minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.admin-traffic-detail-list b,
+.admin-traffic-detail-list strong {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(224, 237, 226, 0.68);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-traffic-detail-list strong {
+  color: rgba(224, 237, 226, 0.5);
+}
+
+.admin-traffic-detail-list i {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(224, 237, 226, 0.07);
+}
+
+.admin-traffic-detail-list em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #67d3d0, #9df175);
+}
+
+.admin-ip-table span {
+  display: grid;
+  grid-template-columns: minmax(118px, 0.46fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.075);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 8px 9px;
+}
+
+.admin-ip-table span.is-suspicious {
+  border-color: rgba(255, 115, 115, 0.2);
+  background: rgba(255, 115, 115, 0.055);
+}
+
+.admin-ip-table b,
+.admin-ip-table em,
+.admin-ip-table strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-ip-table b {
+  color: rgba(243, 247, 239, 0.88);
+}
+
+.admin-ip-table em {
+  color: rgba(224, 237, 226, 0.48);
+  font-style: normal;
+}
+
+.admin-ip-table strong {
+  color: rgba(224, 237, 226, 0.58);
+}
+
 .admin-risk-map {
   position: relative;
   min-height: 220px;
@@ -30979,6 +31096,10 @@ textarea:focus {
   .admin-system-health-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .admin-traffic-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -31000,6 +31121,11 @@ textarea:focus {
 
   .admin-time-range--top {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-traffic-detail-list span,
+  .admin-ip-table span {
+    grid-template-columns: 1fr;
   }
 
   .admin-funnel-step:not(:last-child)::after {
