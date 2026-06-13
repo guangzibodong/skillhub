@@ -31741,3 +31741,432 @@ textarea:focus {
     padding-left: 14px;
   }
 }
+
+/* Admin ops command center v3 */
+.admin-console-app .admin-ops-data-meta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid rgba(224, 237, 226, 0.09);
+  border-radius: 999px;
+  background: rgba(4, 8, 9, 0.58);
+  color: rgba(224, 237, 226, 0.58);
+  font-size: 12px;
+  font-weight: 720;
+  white-space: nowrap;
+  padding: 0 12px;
+}
+
+.admin-console-app .admin-ops-status-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.26fr) minmax(360px, 0.74fr);
+  gap: 12px;
+}
+
+.admin-console-app .admin-business-health,
+.admin-console-app .admin-readiness-card--ops {
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.11);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.014)),
+    radial-gradient(circle at 100% 0%, rgba(134, 243, 111, 0.07), transparent 30%),
+    rgba(8, 13, 15, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 48px rgba(0, 0, 0, 0.22);
+  padding: 18px;
+}
+
+.admin-console-app .admin-business-health--critical {
+  border-color: rgba(255, 119, 119, 0.24);
+}
+
+.admin-console-app .admin-business-health--prelaunch,
+.admin-console-app .admin-business-health--warning {
+  border-color: rgba(215, 168, 76, 0.28);
+}
+
+.admin-console-app .admin-business-health h2 {
+  max-width: 780px;
+  margin: 8px 0 8px;
+  color: #f3f7ef;
+  font-size: clamp(24px, 2vw, 34px);
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.admin-console-app .admin-business-health p {
+  max-width: 850px;
+  margin: 0;
+  color: rgba(224, 237, 226, 0.68);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.admin-console-app .admin-business-health__lists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.admin-console-app .admin-business-health__lists div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.085);
+  border-radius: 12px;
+  background: rgba(2, 5, 5, 0.34);
+  padding: 12px;
+}
+
+.admin-console-app .admin-business-health__lists strong,
+.admin-console-app .admin-readiness-card__score span {
+  color: rgba(224, 237, 226, 0.56);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.admin-console-app .admin-business-health__lists span {
+  color: rgba(243, 247, 239, 0.86);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.admin-console-app .admin-business-health__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.admin-console-app .admin-readiness-card--ops {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-console-app .admin-readiness-card__score {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-console-app .admin-readiness-card__score strong {
+  color: #f3f7ef;
+  font-size: clamp(38px, 3.2vw, 54px);
+  letter-spacing: 0;
+  line-height: 0.95;
+}
+
+.admin-console-app .admin-readiness-card__score small {
+  color: rgba(224, 237, 226, 0.48);
+  font-size: 18px;
+}
+
+.admin-console-app .admin-readiness-card__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-console-app .admin-readiness-card__summary span,
+.admin-console-app .admin-readiness-check {
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.085);
+  border-radius: 10px;
+  background: rgba(2, 5, 5, 0.35);
+  color: rgba(224, 237, 226, 0.62);
+  text-decoration: none;
+  padding: 10px;
+}
+
+.admin-console-app .admin-readiness-card__summary strong {
+  display: block;
+  color: #f3f7ef;
+  font-size: 18px;
+}
+
+.admin-console-app .admin-readiness-card__checks {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-console-app .admin-readiness-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+}
+
+.admin-console-app .admin-readiness-check span {
+  color: rgba(243, 247, 239, 0.9);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.admin-console-app .admin-readiness-check strong {
+  border-radius: 999px;
+  background: rgba(215, 168, 76, 0.14);
+  color: #ffd47d;
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.admin-console-app .admin-readiness-check small {
+  grid-column: 1 / -1;
+  color: rgba(224, 237, 226, 0.56);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.admin-console-app .admin-readiness-check--pass strong {
+  background: rgba(134, 243, 111, 0.12);
+  color: #9df175;
+}
+
+.admin-console-app .admin-readiness-check--not_configured strong,
+.admin-console-app .admin-readiness-check--fail strong {
+  background: rgba(255, 119, 119, 0.13);
+  color: #ff9d9d;
+}
+
+.admin-console-app .admin-kpi-card__meta,
+.admin-console-app .admin-kpi-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+}
+
+.admin-console-app .admin-kpi-card__meta em,
+.admin-console-app .admin-kpi-card__foot em,
+.admin-console-app .admin-kpi-card__foot b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: rgba(224, 237, 226, 0.52);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.admin-console-app .admin-kpi-card__foot b {
+  color: #ffd47d;
+  font-weight: 760;
+}
+
+.admin-console-app .admin-state-pill--gray {
+  border-color: rgba(224, 237, 226, 0.14);
+  background: rgba(224, 237, 226, 0.08);
+  color: rgba(224, 237, 226, 0.72);
+}
+
+.admin-console-app .admin-state-pill--blue {
+  border-color: rgba(111, 199, 255, 0.24);
+  background: rgba(111, 199, 255, 0.1);
+  color: #92d7ff;
+}
+
+.admin-console-app .admin-state-pill--purple {
+  border-color: rgba(178, 145, 255, 0.25);
+  background: rgba(178, 145, 255, 0.1);
+  color: #c7b6ff;
+}
+
+.admin-console-app .admin-ops-chart__empty {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+  min-height: 286px;
+  border: 1px dashed rgba(224, 237, 226, 0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(224, 237, 226, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 237, 226, 0.022) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.2);
+  background-size: 72px 72px, 72px 72px, auto;
+  padding: 22px;
+}
+
+.admin-console-app .admin-ops-chart__empty strong {
+  color: #f3f7ef;
+  font-size: 22px;
+}
+
+.admin-console-app .admin-ops-chart__empty p {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(224, 237, 226, 0.64);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-console-app .admin-ops-chart__empty div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-console-app .admin-ops-chart__empty span {
+  border: 1px solid rgba(224, 237, 226, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(224, 237, 226, 0.68);
+  font-family: var(--font-mono, "SFMono-Regular", Consolas, monospace);
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+.admin-console-app .admin-work-queue-row--high {
+  border-color: rgba(255, 119, 119, 0.2);
+}
+
+.admin-console-app .admin-work-queue-row--medium {
+  border-color: rgba(215, 168, 76, 0.22);
+}
+
+.admin-console-app .admin-work-queue-empty {
+  display: grid;
+  gap: 10px;
+  border: 1px dashed rgba(224, 237, 226, 0.14);
+  border-radius: 12px;
+  background: rgba(2, 5, 5, 0.38);
+  padding: 16px;
+}
+
+.admin-console-app .admin-work-queue-empty strong {
+  color: #f3f7ef;
+  font-size: 16px;
+}
+
+.admin-console-app .admin-work-queue-empty p {
+  margin: 0;
+  color: rgba(224, 237, 226, 0.6);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.admin-console-app .admin-work-queue-empty div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-console-app .admin-work-queue-empty a,
+.admin-console-app .admin-funnel-step a {
+  color: #9df175;
+  font-size: 12px;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.admin-console-app .admin-funnel-step {
+  gap: 5px;
+}
+
+.admin-console-app .admin-funnel-step em {
+  color: rgba(224, 237, 226, 0.55);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.admin-console-app .admin-funnel-step--amber {
+  border-color: rgba(215, 168, 76, 0.2);
+  background:
+    linear-gradient(90deg, rgba(215, 168, 76, 0.07), rgba(134, 243, 111, 0.035)),
+    rgba(5, 8, 10, 0.42);
+}
+
+.admin-console-app .admin-funnel-step--gray {
+  border-color: rgba(224, 237, 226, 0.08);
+  background: rgba(5, 8, 10, 0.42);
+}
+
+.admin-console-app .admin-channel-warning {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  border: 1px solid rgba(215, 168, 76, 0.18);
+  border-radius: 10px;
+  background: rgba(215, 168, 76, 0.075);
+  padding: 10px;
+}
+
+.admin-console-app .admin-channel-warning strong {
+  color: #ffd47d;
+  font-size: 13px;
+}
+
+.admin-console-app .admin-channel-warning span,
+.admin-console-app .admin-ai-source-split small {
+  color: rgba(224, 237, 226, 0.58);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-console-app .admin-ai-source-split {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-console-app .admin-ai-source-split > div {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-console-app .admin-ai-source-split > div > strong {
+  color: rgba(243, 247, 239, 0.9);
+  font-size: 13px;
+}
+
+.admin-console-app .admin-channel-row--ai-bot b {
+  background: linear-gradient(90deg, #9d8cff, #5fa8ff);
+}
+
+.admin-console-app .admin-ip-table span small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  grid-column: 1 / -1;
+}
+
+.admin-console-app .admin-ip-table span small i {
+  border: 1px solid rgba(224, 237, 226, 0.1);
+  border-radius: 999px;
+  background: rgba(224, 237, 226, 0.06);
+  color: rgba(224, 237, 226, 0.68);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 760;
+  padding: 2px 6px;
+}
+
+.admin-console-app .admin-console-main--overview .admin-ops-status-grid {
+  display: grid;
+}
+
+.admin-console-app .admin-console-main:not(.admin-console-main--overview) .admin-ops-status-grid {
+  display: none;
+}
+
+@media (max-width: 1540px) {
+  .admin-console-app .admin-ops-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1180px) {
+  .admin-console-app .admin-ops-data-meta {
+    justify-content: center;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-console-app .admin-business-health__lists,
+  .admin-console-app .admin-readiness-card__summary,
+  .admin-console-app .admin-readiness-check {
+    grid-template-columns: 1fr;
+  }
+}

@@ -11,12 +11,14 @@ export type AccessLogIpInsight = {
   lastPath: string;
   lastSeen: string;
   requests: number;
+  riskTags: string[];
   status: number;
   suspicious: boolean;
   userAgent: string;
 };
 
 export type AccessLogAnalytics = {
+  aiBots: AccessLogChannel[];
   aiReferrals: AccessLogChannel[];
   channels: AccessLogChannel[];
   connected: boolean;
@@ -52,12 +54,14 @@ const DEFAULT_LOG_PATHS = [
 ];
 const DEFAULT_MAX_BYTES = 16 * 1024 * 1024;
 const STATIC_PATH_PATTERN = /\.(?:avif|css|gif|ico|jpeg|jpg|js|map|png|svg|txt|webmanifest|woff2?)$/i;
+const AI_BOT_LABELS = ["GPTBot", "ChatGPT-User", "ClaudeBot", "PerplexityBot", "Google-Extended", "Bytespider", "Applebot", "CCBot"];
 
 export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLogAnalytics> {
   const logPaths = getConfiguredLogPaths();
   const maxBytes = getMaxBytes();
   const todayKey = getDateKey(now);
-  const parsedLines: ParsedAccessLine[] = [];
+  const operationalLines: ParsedAccessLine[] = [];
+  const todayLines: ParsedAccessLine[] = [];
   const connectedFiles: string[] = [];
 
   for (const logPath of logPaths) {
@@ -72,16 +76,21 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
     for (const rawLine of text.split(/\r?\n/)) {
       const parsed = parseAccessLine(rawLine);
 
-      if (parsed?.ymd === todayKey && isPublicPageRequest(parsed)) {
-        parsedLines.push(parsed);
+      if (parsed?.ymd === todayKey) {
+        todayLines.push(parsed);
+
+        if (isOperationalTraffic(parsed)) {
+          operationalLines.push(parsed);
+        }
       }
     }
   }
 
   if (connectedFiles.length === 0) {
     return {
+      aiBots: buildEmptyChannels(AI_BOT_LABELS),
       aiReferrals: buildEmptyChannels(["ChatGPT", "Perplexity", "Claude", "Gemini", "Copilot"]),
-      channels: buildEmptyChannels(["Google", "GitHub", "Direct", "Bing"]),
+      channels: buildEmptyChannels(["Google", "GitHub", "Direct", "Bing", "AI", "Other"]),
       connected: false,
       files: [],
       message: "Access log not mounted",
@@ -100,13 +109,14 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
   const uniqueVisitors = new Set<string>();
   const uniqueIps = new Set<string>();
   const suspiciousIps = new Set<string>();
+  const aiBotCounts = new Map<string, number>();
   const channelCounts = new Map<string, number>();
   const aiCounts = new Map<string, number>();
   const pathCounts = new Map<string, number>();
   const referrerCounts = new Map<string, number>();
   const ipInsights = new Map<string, AccessLogIpInsight & { timestampMs: number }>();
 
-  for (const line of parsedLines) {
+  for (const line of operationalLines) {
     uniqueIps.add(line.ip);
     uniqueVisitors.add(`${line.ip}|${line.userAgent || "unknown"}`);
     increment(pathCounts, normalizePath(line.path));
@@ -117,21 +127,30 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
       increment(referrerCounts, referrer);
     }
 
-    increment(channelCounts, classifyChannel(line.referrer));
+    increment(channelCounts, classifyChannel(line.referrer, line.path));
 
     const aiSource = classifyAiReferral(line.referrer);
 
     if (aiSource) {
       increment(aiCounts, aiSource);
     }
+  }
 
-    if (line.status >= 400 || isSensitiveProbePath(line.path)) {
+  for (const line of todayLines) {
+    const aiBot = classifyAiBot(line.userAgent);
+
+    if (aiBot) {
+      increment(aiBotCounts, aiBot);
+    }
+
+    if (isRiskyAccess(line)) {
       suspiciousIps.add(line.ip);
     }
 
     const existingIp = ipInsights.get(line.ip);
     const normalizedPath = normalizePath(line.path);
-    const suspicious = line.status >= 400 || isSensitiveProbePath(line.path);
+    const riskTags = buildRiskTags(line);
+    const suspicious = riskTags.length > 0;
 
     if (!existingIp) {
       ipInsights.set(line.ip, {
@@ -139,6 +158,7 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
         lastPath: normalizedPath,
         lastSeen: line.lastSeen,
         requests: 1,
+        riskTags,
         status: line.status,
         suspicious,
         timestampMs: line.timestampMs,
@@ -147,6 +167,7 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
     } else {
       existingIp.requests += 1;
       existingIp.suspicious = existingIp.suspicious || suspicious;
+      existingIp.riskTags = Array.from(new Set([...existingIp.riskTags, ...riskTags]));
 
       if (line.timestampMs >= existingIp.timestampMs) {
         existingIp.lastPath = normalizedPath;
@@ -159,22 +180,23 @@ export async function getAccessLogAnalytics(now = new Date()): Promise<AccessLog
   }
 
   return {
+    aiBots: buildChannels(AI_BOT_LABELS, aiBotCounts),
     aiReferrals: buildChannels(["ChatGPT", "Perplexity", "Claude", "Gemini", "Copilot"], aiCounts),
-    channels: buildChannels(["Google", "GitHub", "Direct", "Bing"], channelCounts),
+    channels: buildChannels(["Google", "GitHub", "Direct", "Bing", "AI", "Other"], channelCounts),
     connected: true,
     files: connectedFiles,
-    message: parsedLines.length > 0 ? "Access log connected" : "Access log mounted; no public page hits today",
-    paths: buildTopChannels(pathCounts, parsedLines.length, 6),
+    message: operationalLines.length > 0 ? "Access log connected" : "Access log mounted; no operational public page hits today",
+    paths: buildTopChannels(pathCounts, operationalLines.length, 6),
     recentIps: Array.from(ipInsights.values())
       .sort((a, b) => b.timestampMs - a.timestampMs)
       .slice(0, 8)
       .map(({ timestampMs: _timestampMs, ...insight }) => insight),
     sourceLabel: "Nginx / 1Panel access.log",
     suspiciousIpCount: suspiciousIps.size,
-    todayPageViews: parsedLines.length,
+    todayPageViews: operationalLines.length,
     todayUniqueIps: uniqueIps.size,
     todayUv: uniqueVisitors.size,
-    topPath: getTopEntry(pathCounts) ?? "No page view today",
+    topPath: getTopEntry(pathCounts) ?? "No operational page views today",
     topReferrer: getTopEntry(referrerCounts) ?? "Direct"
   };
 }
@@ -264,7 +286,7 @@ function extractClientIp(line: string) {
   return firstToken && firstToken !== "-" ? firstToken : null;
 }
 
-function isPublicPageRequest(line: ParsedAccessLine) {
+function isOperationalTraffic(line: ParsedAccessLine) {
   if (!["GET", "HEAD"].includes(line.method) || line.status >= 500) {
     return false;
   }
@@ -272,8 +294,16 @@ function isPublicPageRequest(line: ParsedAccessLine) {
   const path = line.path.split("?")[0] ?? "/";
 
   return (
+    !isInternalIp(line.ip) &&
+    !isBotUserAgent(line.userAgent) &&
+    !isSensitiveProbePath(path) &&
+    !path.startsWith("/admin") &&
+    !path.startsWith("/admin-login") &&
     !path.startsWith("/_next/") &&
     !path.startsWith("/api/") &&
+    !path.startsWith("/health") &&
+    !path.startsWith("/static/") &&
+    !path.startsWith("/assets/") &&
     !path.startsWith("/icon") &&
     !path.startsWith("/favicon") &&
     path !== "/robots.txt" &&
@@ -282,10 +312,16 @@ function isPublicPageRequest(line: ParsedAccessLine) {
   );
 }
 
-function classifyChannel(referrer: string) {
+function classifyChannel(referrer: string, path = "") {
+  const utmSource = extractUtmSource(path);
+
+  if (utmSource) {
+    return utmSource;
+  }
+
   const value = referrer.toLowerCase();
 
-  if (!value || value === "-") {
+  if (!value || value === "-" || value.includes("useskillhub.com")) {
     return "Direct";
   }
 
@@ -302,6 +338,49 @@ function classifyChannel(referrer: string) {
   }
 
   return "Other";
+}
+
+function extractUtmSource(path: string) {
+  const query = path.split("?")[1];
+
+  if (!query) {
+    return null;
+  }
+
+  try {
+    const source = new URLSearchParams(query).get("utm_source")?.toLowerCase().trim();
+
+    if (!source) {
+      return null;
+    }
+
+    if (source.includes("google")) {
+      return "Google";
+    }
+
+    if (source.includes("github")) {
+      return "GitHub";
+    }
+
+    if (source.includes("bing")) {
+      return "Bing";
+    }
+
+    if (
+      source.includes("chatgpt") ||
+      source.includes("openai") ||
+      source.includes("perplexity") ||
+      source.includes("claude") ||
+      source.includes("gemini") ||
+      source.includes("copilot")
+    ) {
+      return "AI";
+    }
+
+    return "Other";
+  } catch {
+    return null;
+  }
 }
 
 function classifyAiReferral(referrer: string) {
@@ -325,6 +404,44 @@ function classifyAiReferral(referrer: string) {
 
   if (value.includes("copilot.") || value.includes("bing.com/chat")) {
     return "Copilot";
+  }
+
+  return null;
+}
+
+function classifyAiBot(userAgent: string) {
+  const value = userAgent.toLowerCase();
+
+  if (value.includes("chatgpt-user")) {
+    return "ChatGPT-User";
+  }
+
+  if (value.includes("gptbot") || value.includes("oai-searchbot")) {
+    return "GPTBot";
+  }
+
+  if (value.includes("claudebot") || value.includes("anthropic-ai")) {
+    return "ClaudeBot";
+  }
+
+  if (value.includes("perplexitybot")) {
+    return "PerplexityBot";
+  }
+
+  if (value.includes("google-extended")) {
+    return "Google-Extended";
+  }
+
+  if (value.includes("bytespider")) {
+    return "Bytespider";
+  }
+
+  if (value.includes("applebot")) {
+    return "Applebot";
+  }
+
+  if (value.includes("ccbot")) {
+    return "CCBot";
   }
 
   return null;
@@ -360,6 +477,75 @@ function normalizeUserAgent(userAgent: string) {
 function isSensitiveProbePath(path: string) {
   const value = path.toLowerCase();
   return value.includes("/wp-") || value.includes("/.env") || value.includes("/phpmyadmin") || value.includes("/admin");
+}
+
+function isBotUserAgent(userAgent: string) {
+  const value = userAgent.toLowerCase();
+
+  return (
+    classifyAiBot(userAgent) != null ||
+    value.includes("bot") ||
+    value.includes("spider") ||
+    value.includes("crawler") ||
+    value.includes("curl") ||
+    value.includes("wget") ||
+    value.includes("monitor") ||
+    value.includes("uptime") ||
+    value.includes("headless")
+  );
+}
+
+function isInternalIp(ip: string) {
+  if (ip === "::1" || ip === "127.0.0.1" || ip.startsWith("127.")) {
+    return true;
+  }
+
+  const parts = ip.split(".").map((part) => Number(part));
+
+  if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) {
+    return false;
+  }
+
+  const [first, second] = parts;
+
+  return first === 10 || (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168);
+}
+
+function isRiskyAccess(line: ParsedAccessLine) {
+  return line.status >= 400 || isSensitiveProbePath(line.path) || isInternalIp(line.ip) || isBotUserAgent(line.userAgent);
+}
+
+function buildRiskTags(line: ParsedAccessLine) {
+  const tags: string[] = [];
+  const path = line.path.toLowerCase();
+
+  if (isInternalIp(line.ip)) {
+    tags.push("Internal IP");
+  }
+
+  if (path.startsWith("/admin")) {
+    tags.push("Admin path");
+  }
+
+  if (path.includes("login") || path.includes("password") || path.includes("wp-login")) {
+    tags.push("Login probe");
+  }
+
+  if (isSensitiveProbePath(line.path) && !path.startsWith("/admin")) {
+    tags.push("Suspicious scan");
+  }
+
+  if (classifyAiBot(line.userAgent)) {
+    tags.push("AI Bot");
+  } else if (isBotUserAgent(line.userAgent)) {
+    tags.push("Bot");
+  }
+
+  if (line.status >= 400) {
+    tags.push(`${line.status} error`);
+  }
+
+  return tags;
 }
 
 function buildChannels(labels: string[], counts: Map<string, number>): AccessLogChannel[] {

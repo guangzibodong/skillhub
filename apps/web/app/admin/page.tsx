@@ -39,6 +39,21 @@ import { AppShell } from "@/components/app-shell";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getAccessLogAnalytics } from "@/lib/access-log-analytics";
+import {
+  calculateDropoff,
+  calculateReadinessScore,
+  calculateStepConversion,
+  deriveBusinessHealth,
+  deriveLaunchRecommendation,
+  formatPercent,
+  getDataStatusLabel,
+  getDataStatusTone,
+  isMetricActionable,
+  type DataStatus,
+  type FunnelStep,
+  type OpsMetric,
+  type ReadinessCheck
+} from "@/lib/admin-ops";
 import { getCloudflareAnalytics } from "@/lib/cloudflare-analytics";
 import { signOutAction } from "@/lib/auth-actions";
 import { getWorkspaceSession } from "@/lib/auth-session";
@@ -118,6 +133,21 @@ type AdminPriorityItem = {
   priority: number;
   title: string;
   tone: AdminPriorityTone;
+};
+
+type OpsTaskQueueItem = {
+  actionLabel: string;
+  category: string;
+  count: number;
+  href: string;
+  highPriorityCount: number;
+  id: string;
+  label: string;
+  lastUpdated?: string | null;
+  overdueCount: number;
+  owner: string;
+  priority: "high" | "low" | "medium";
+  slaLabel: string;
 };
 
 type AdminPriorityInput = {
@@ -1067,24 +1097,201 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ] as const;
   const pendingDataLabel = adminV2Labels.dataSourcePending;
   const pendingShortLabel = locale === "zh" ? "待接入" : "Pending";
+  const notReliableLabel = locale === "zh" ? "不可判断" : "Not reliable";
+  const notComputableLabel = locale === "zh" ? "无法计算" : "Not computable";
+  const lastUpdatedLabel = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Shanghai"
+  }).format(new Date());
   const cloudflareSourceLabel = cloudflareAnalytics.connected
     ? cloudflareAnalytics.sourceLabel
-    : (locale === "zh" ? "Cloudflare 未连接" : "Cloudflare not connected");
+    : (locale === "zh" ? "Cloudflare GraphQL 未连接" : "Cloudflare GraphQL not connected");
   const accessLogSourceLabel = accessLogAnalytics.connected
     ? accessLogAnalytics.sourceLabel
     : (locale === "zh" ? "日志未挂载" : "Log not mounted");
-  const todayUvValue = cloudflareAnalytics.connected && cloudflareAnalytics.totals.visits > 0
-    ? formatCompactNumber(cloudflareAnalytics.totals.visits)
+  const accessLogStatus: DataStatus = accessLogAnalytics.connected
+    ? accessLogAnalytics.todayPageViews > 0
+      ? "connected_has_data"
+      : "connected_no_data"
+    : "not_connected";
+  const cloudflareStatus: DataStatus = cloudflareAnalytics.connected
+    ? cloudflareAnalytics.countries.length > 0
+      ? "connected_has_data"
+      : "connected_no_data"
+    : "not_connected";
+  const projectKeyEventStatus: DataStatus = "not_connected";
+  const skillViewEventStatus: DataStatus = "not_connected";
+  const skillInstallEventStatus: DataStatus = "not_connected";
+  const skillInvokeEventStatus: DataStatus = "not_connected";
+  const paymentMode = "prelaunch" as "disabled" | "prelaunch" | "production" | "test";
+  const paymentWebhookStatus: DataStatus = "not_connected";
+  const webhookStatus: DataStatus = webhookActionCount > 0 ? "error" : "not_connected";
+  const hasCriticalAlerts = activeIncidentCount > 0 || openAbuseReportCount > 0;
+  const operationalTrafficHasData = accessLogAnalytics.connected && accessLogAnalytics.todayPageViews > 0;
+  const todayUvValue = operationalTrafficHasData
+    ? formatCompactNumber(accessLogAnalytics.todayUv)
     : accessLogAnalytics.connected
-      ? formatCompactNumber(accessLogAnalytics.todayUv)
+      ? "0"
       : pendingShortLabel;
   const uniqueIpValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayUniqueIps) : pendingShortLabel;
-  const todayPageViewValue = cloudflareAnalytics.connected && cloudflareAnalytics.totals.pageViews > 0
-    ? formatCompactNumber(cloudflareAnalytics.totals.pageViews)
+  const todayPageViewValue = operationalTrafficHasData
+    ? formatCompactNumber(accessLogAnalytics.todayPageViews)
     : accessLogAnalytics.connected
-      ? formatCompactNumber(accessLogAnalytics.todayPageViews)
+      ? "0"
       : pendingDataLabel;
   const cloudflareRequestValue = cloudflareAnalytics.connected ? formatCompactNumber(cloudflareAnalytics.totals.requests) : pendingDataLabel;
+  const businessHealth = deriveBusinessHealth(
+    {
+      apiHealthy: true,
+      cloudflareStatus,
+      hasCriticalAlerts,
+      paymentMode,
+      paymentWebhookStatus,
+      projectKeyEventStatus,
+      skillViewEventStatus,
+      webhookStatus
+    },
+    locale
+  );
+  const readinessChecks: ReadinessCheck[] = [
+    {
+      blocking: false,
+      href: adminViewHref("traffic", locale),
+      id: "access_log",
+      impact: locale === "zh" ? "影响 UV、PV、独立 IP 和来源分析" : "Affects UV, PV, unique IP, and source analysis",
+      label: "Nginx / 1Panel access.log",
+      maxScore: 8,
+      nextAction: locale === "zh" ? "继续校验路径过滤、Bot 过滤和日志延迟" : "Keep validating path filters, bot filters, and log delay",
+      owner: locale === "zh" ? "平台后端" : "Platform",
+      score: accessLogAnalytics.connected ? 8 : 0,
+      status: accessLogAnalytics.connected ? "pass" : "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("identity", locale),
+      id: "identity",
+      impact: locale === "zh" ? "影响注册、登录和用户归因" : "Affects registration, sign-in, and user attribution",
+      label: locale === "zh" ? "用户身份 / 注册登录" : "Identity / sign-in",
+      maxScore: 10,
+      nextAction: locale === "zh" ? "验证今日新增、登录成功和用户 ID 归因事件" : "Verify daily signup, sign-in success, and user ID attribution events",
+      owner: locale === "zh" ? "平台后端" : "Platform",
+      score: identityDirectory.summary.userCount > 0 ? 7 : 0,
+      status: identityDirectory.summary.userCount > 0 ? "warning" : "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("analytics", locale),
+      id: "project_key_events",
+      impact: locale === "zh" ? "影响开发者激活漏斗" : "Affects developer activation funnel",
+      label: "Project Key",
+      maxScore: 10,
+      nextAction: "project_key_create_success / failed",
+      owner: locale === "zh" ? "平台后端" : "Platform",
+      score: 0,
+      status: "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("funnel", locale),
+      id: "skill_view_events",
+      impact: locale === "zh" ? "影响技能市场转化分析" : "Affects marketplace conversion analysis",
+      label: locale === "zh" ? "技能浏览事件" : "Skill browsing events",
+      maxScore: 10,
+      nextAction: "skill_market_view / skill_detail_view",
+      owner: locale === "zh" ? "产品分析" : "Product analytics",
+      score: 0,
+      status: "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("funnel", locale),
+      id: "skill_install_events",
+      impact: locale === "zh" ? "影响安装转化和产品使用判断" : "Affects install conversion and product usage judgment",
+      label: locale === "zh" ? "技能安装事件" : "Skill install events",
+      maxScore: 10,
+      nextAction: "install_click / install_success / install_failed",
+      owner: locale === "zh" ? "运行时后端" : "Runtime",
+      score: 0,
+      status: "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("analytics", locale),
+      id: "skill_invoke_events",
+      impact: locale === "zh" ? "影响真实使用、留存和调用成功率" : "Affects real usage, retention, and invoke success",
+      label: locale === "zh" ? "技能调用事件" : "Skill invoke events",
+      maxScore: 10,
+      nextAction: "api_call_attempt / api_call_success / api_call_failed",
+      owner: locale === "zh" ? "运行时后端" : "Runtime",
+      score: 0,
+      status: "not_configured"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("orders", locale),
+      id: "payment_webhook",
+      impact: locale === "zh" ? "影响订单状态、GMV、退款、分账" : "Affects order state, GMV, refunds, and splits",
+      label: locale === "zh" ? "支付成功回调" : "Payment success webhook",
+      maxScore: 10,
+      nextAction: locale === "zh" ? "配置支付 webhook 并跑通测试订单" : "Configure payment webhook and run a test order",
+      owner: locale === "zh" ? "财务 / 平台" : "Finance / Platform",
+      score: 0,
+      status: "not_configured"
+    },
+    {
+      blocking: false,
+      href: adminViewHref("traffic", locale),
+      id: "cloudflare_graphql",
+      impact: locale === "zh" ? "影响国家地区、边缘请求、安全事件" : "Affects countries, edge requests, and security events",
+      label: "Cloudflare GraphQL",
+      maxScore: 8,
+      nextAction: locale === "zh" ? "确认 Analytics 读取权限、Zone ID 和今日同步结果" : "Confirm Analytics read permission, zone ID, and today's sync result",
+      owner: locale === "zh" ? "运维" : "Ops",
+      score: cloudflareAnalytics.connected ? (cloudflareAnalytics.countries.length > 0 ? 8 : 5) : 0,
+      status: cloudflareAnalytics.connected ? (cloudflareAnalytics.countries.length > 0 ? "pass" : "warning") : "not_configured"
+    },
+    {
+      blocking: false,
+      href: adminViewHref("traffic", locale),
+      id: "utm_attribution",
+      impact: locale === "zh" ? "影响渠道效果判断" : "Affects channel performance judgment",
+      label: "UTM / Referrer",
+      maxScore: 8,
+      nextAction: locale === "zh" ? "接入 UTM 解析并排除自有域名来源" : "Connect UTM parsing and exclude owned-domain referrers",
+      owner: locale === "zh" ? "增长运营" : "Growth",
+      score: accessLogAnalytics.connected ? 3 : 0,
+      status: "warning"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("health", locale),
+      id: "alerts",
+      impact: locale === "zh" ? "影响上线后异常响应" : "Affects post-launch incident response",
+      label: locale === "zh" ? "告警接收人与规则" : "Alert owners and rules",
+      maxScore: 8,
+      nextAction: locale === "zh" ? "配置 P0/P1 告警接收人与处理流程" : "Configure P0/P1 owners and response flow",
+      owner: locale === "zh" ? "运维" : "Ops",
+      score: deliveryActionCount > 0 ? 3 : 4,
+      status: "warning"
+    },
+    {
+      blocking: true,
+      href: adminViewHref("audit", locale),
+      id: "audit_logs",
+      impact: locale === "zh" ? "影响后台权限和高危操作追踪" : "Affects admin permission and high-risk action traceability",
+      label: locale === "zh" ? "审计日志" : "Audit logs",
+      maxScore: 8,
+      nextAction: locale === "zh" ? "验证管理员操作、配置变更和支付变更审计" : "Verify admin action, config change, and payment-change audit trails",
+      owner: locale === "zh" ? "平台后端" : "Platform",
+      score: auditLogs.length > 0 ? 8 : 4,
+      status: auditLogs.length > 0 ? "pass" : "warning"
+    }
+  ];
+  const readinessScore = calculateReadinessScore(readinessChecks);
+  const readinessRecommendation = deriveLaunchRecommendation(readinessChecks, locale);
+  const readinessBlockingChecks = readinessChecks.filter((check) => check.blocking && (check.status === "fail" || check.status === "not_configured"));
+  const readinessWarningChecks = readinessChecks.filter((check) => check.status === "warning");
   const topCountry = cloudflareAnalytics.countries[0];
   const topCountryLabel = topCountry
     ? formatAdminRegionName(topCountry.code, locale)
@@ -1101,92 +1308,184 @@ export default async function AdminPage({ searchParams }: PageProps) {
     ...country,
     label: formatAdminRegionName(country.code, locale)
   }));
-  const overviewKpis: Array<{
-    detail: string;
+  const overviewKpis: Array<OpsMetric & {
     href: string;
     Icon: typeof Activity;
-    label: string;
     tone: AdminKpiTone;
-    trend: string;
-    value: string;
   }> = [
     {
-      detail: cloudflareAnalytics.connected
-        ? (locale === "zh" ? "来自 Cloudflare Analytics 的今日唯一访问者。" : "Unique visitors from Cloudflare Analytics.")
-        : accessLogAnalytics.connected
-          ? (locale === "zh" ? "按访问日志 IP + UA 去重统计。" : "Deduplicated by IP + user agent from access logs.")
-          : (locale === "zh" ? "接入 Cloudflare 或访问日志后显示今日 UV。" : "Shown after Cloudflare or traffic logs are connected."),
+      description: accessLogAnalytics.connected
+        ? (locale === "zh" ? "按 IP + UA 去重，已排除后台、API、内网和 Bot 流量。" : "Deduplicated by IP + UA, excluding admin, API, private IP, and bot traffic.")
+        : (locale === "zh" ? "接入访问日志后显示今日 UV。" : "Shown after access logs are connected."),
+      displayValue: todayUvValue,
       href: adminViewHref("traffic", locale),
       Icon: Users,
+      id: "today_uv",
+      impact: locale === "zh" ? "判断今天是否有真实访客进入公开站点。" : "Judges whether real visitors reached the public site today.",
       label: locale === "zh" ? "今日 UV" : "Today UV",
-      tone: cloudflareAnalytics.connected || accessLogAnalytics.connected ? "ready" : "warning",
-      trend: cloudflareAnalytics.connected ? cloudflareSourceLabel : accessLogSourceLabel,
-      value: todayUvValue
+      lastUpdated: lastUpdatedLabel,
+      nextAction: accessLogAnalytics.connected ? undefined : (locale === "zh" ? "挂载 Nginx / 1Panel access.log" : "Mount Nginx / 1Panel access.log"),
+      severity: accessLogAnalytics.connected ? "healthy" : "warning",
+      source: accessLogSourceLabel,
+      status: accessLogStatus,
+      tone: accessLogAnalytics.connected ? "ready" : "warning",
+      trend: { direction: "unknown", label: locale === "zh" ? "今天 · 运营口径" : "Today · operational scope" },
+      unit: locale === "zh" ? "人" : "visitors",
+      value: accessLogAnalytics.connected ? accessLogAnalytics.todayUv : null
     },
     {
-      detail: accessLogAnalytics.connected
-        ? (locale === "zh" ? "从 1Panel / Nginx access.log 统计唯一访问 IP。" : "Unique IPs counted from 1Panel / Nginx access.log.")
-        : (locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source."),
+      description: locale === "zh" ? "统计唯一访问 IP，不等同于真实用户。" : "Unique IP count; not equal to real users.",
+      displayValue: uniqueIpValue,
       href: adminViewHref("traffic", locale),
       Icon: ShieldCheck,
+      id: "unique_ip",
+      impact: locale === "zh" ? "帮助发现异常访问、扫描和渠道质量。" : "Helps detect abnormal access, scans, and channel quality.",
       label: locale === "zh" ? "独立 IP" : "Unique IP",
+      lastUpdated: lastUpdatedLabel,
+      nextAction: accessLogAnalytics.connected ? undefined : (locale === "zh" ? "接入访问日志" : "Connect access logs"),
+      severity: accessLogAnalytics.connected ? "healthy" : "warning",
+      source: accessLogSourceLabel,
+      status: accessLogStatus,
       tone: accessLogAnalytics.connected ? "ready" : "warning",
-      trend: accessLogSourceLabel,
-      value: uniqueIpValue
+      trend: { direction: "unknown", label: locale === "zh" ? "过滤后台与 Bot 后" : "After admin and bot filters" },
+      unit: "IP",
+      value: accessLogAnalytics.connected ? accessLogAnalytics.todayUniqueIps : null
     },
     {
-      detail: locale === "zh" ? "当前身份目录用户总数，今日新增待接入事件流。" : "Current identity directory; daily signup events pending.",
+      description: locale === "zh" ? "当前身份目录用户总数，今日新增事件待接入。" : "Current identity directory total; daily signup events are pending.",
+      displayValue: formatCompactNumber(identityDirectory.summary.userCount),
       href: adminViewHref("identity", locale),
       Icon: Users,
+      id: "registered_users",
+      impact: locale === "zh" ? "可确认身份目录规模，但不能直接代表今日注册。" : "Confirms identity directory size but not today's signups.",
       label: locale === "zh" ? "注册用户" : "Users",
+      lastUpdated: lastUpdatedLabel,
+      nextAction: locale === "zh" ? "接入今日新增注册事件" : "Connect daily signup events",
+      severity: identityDirectory.summary.userCount > 0 ? "info" : "warning",
+      source: locale === "zh" ? "身份目录 · 累计口径" : "Identity directory · cumulative",
+      status: identityDirectory.summary.userCount > 0 ? "partial" : "connected_no_data",
       tone: identityDirectory.summary.userCount > 0 ? "ready" : "warning",
-      trend: locale === "zh" ? "今日事件待接入" : "Daily events pending",
-      value: formatCompactNumber(identityDirectory.summary.userCount)
+      trend: { direction: "unknown", label: locale === "zh" ? "今日事件待接入" : "Daily events pending" },
+      value: identityDirectory.summary.userCount
     },
     {
-      detail: locale === "zh" ? "技能安装和调用来自账本/运行时事件。" : "Install and call events from ledger/runtime signals.",
+      description: locale === "zh" ? "注册后的 Project Key 创建事件未接入，无法判断开发者激活。" : "Project Key creation event is not connected, so developer activation cannot be judged.",
       href: adminViewHref("analytics", locale),
       Icon: ShieldCheck,
+      id: "project_key",
+      displayValue: pendingDataLabel,
+      impact: locale === "zh" ? "阻塞注册到激活的转化分析。" : "Blocks signup-to-activation analysis.",
+      label: "Project Key",
+      lastUpdated: null,
+      nextAction: "project_key_create_success / failed",
+      severity: "critical",
+      source: locale === "zh" ? "事件待接入" : "Event pending",
+      status: projectKeyEventStatus,
+      tone: "warning",
+      trend: { direction: "unknown", label: locale === "zh" ? "阻塞激活漏斗" : "Blocks activation funnel" },
+      value: null
+    },
+    {
+      description: locale === "zh" ? "技能市场浏览事件未接入，无法判断浏览到安装的转化。" : "Marketplace browse events are not connected, so view-to-install conversion cannot be judged.",
+      displayValue: pendingDataLabel,
+      href: adminViewHref("funnel", locale),
+      Icon: BarChart3,
+      id: "skill_views",
+      impact: locale === "zh" ? "阻塞市场转化分析。" : "Blocks marketplace conversion analysis.",
+      label: locale === "zh" ? "技能浏览" : "Skill views",
+      lastUpdated: null,
+      nextAction: "skill_market_view / skill_detail_view",
+      severity: "critical",
+      source: locale === "zh" ? "Analytics 待接入" : "Analytics pending",
+      status: skillViewEventStatus,
+      tone: "warning",
+      trend: { direction: "unknown", label: locale === "zh" ? "阻塞市场漏斗" : "Blocks marketplace funnel" },
+      value: null
+    },
+    {
+      description: locale === "zh" ? "运行时安装事件未确认，不能把 0 当作真实无安装。" : "Runtime install event is not confirmed, so zero cannot be treated as true zero.",
+      displayValue: pendingDataLabel,
+      href: adminViewHref("funnel", locale),
+      Icon: ShieldCheck,
+      id: "skill_installs",
+      impact: locale === "zh" ? "无法判断市场到真实使用的转化。" : "Cannot judge marketplace-to-usage conversion.",
       label: locale === "zh" ? "技能安装" : "Installs",
-      tone: "ready",
-      trend: locale === "zh" ? "运行时事件" : "Runtime events",
-      value: formatCompactNumber(reviewMetrics.ready + financeLedger.summary.usageTransactionCount)
+      lastUpdated: null,
+      nextAction: "install_click / install_success / install_failed",
+      severity: "critical",
+      source: locale === "zh" ? "运行时事件待接入" : "Runtime event pending",
+      status: skillInstallEventStatus,
+      tone: "warning",
+      trend: { direction: "unknown", label: locale === "zh" ? "不能当作真实 0" : "Not a true zero" },
+      value: null
     },
     {
-      detail: locale === "zh" ? "待处理订单、续费、退款和争议。" : "Orders, renewals, refunds, and disputes needing action.",
+      description: locale === "zh" ? "支付通道或回调未完成配置，GMV 和订单不可作为经营结果。" : "Payment provider or callback is not complete, so orders and GMV are not reliable.",
+      displayValue: notReliableLabel,
       href: adminViewHref("orders", locale),
-      Icon: ReceiptText,
-      label: locale === "zh" ? "订单数" : "Orders",
-      tone: orderActionCount > 0 ? "warning" : "ready",
-      trend: orderActionCount > 0 ? (locale === "zh" ? "待处理" : "Needs action") : (locale === "zh" ? "无阻塞" : "No blocker"),
-      value: formatCompactNumber(orderActionCount)
-    },
-    {
-      detail: locale === "zh" ? "已入账 GMV，不含未完成支付。" : "Posted GMV only; pending payment is excluded.",
-      href: adminViewHref("finance", locale),
       Icon: Banknote,
-      label: "GMV",
-      tone: "neutral",
-      trend: locale === "zh" ? "账本口径" : "Ledger source",
-      value: formatMoney(financeLedger.summary.grossCents)
+      id: "orders_gmv",
+      impact: locale === "zh" ? "影响订单、GMV、退款和分账。" : "Affects orders, GMV, refunds, and splits.",
+      label: locale === "zh" ? "订单 / GMV" : "Orders / GMV",
+      lastUpdated: null,
+      nextAction: locale === "zh" ? "接入 Stripe / Alipay 与支付回调" : "Connect Stripe / Alipay and payment callbacks",
+      severity: "critical",
+      source: locale === "zh" ? "支付链路 Prelaunch" : "Payment flow prelaunch",
+      status: paymentWebhookStatus,
+      tone: "warning",
+      trend: { direction: "unknown", label: locale === "zh" ? "金额不参与经营判断" : "Amount excluded from business judgment" },
+      value: null
     },
     {
-      detail: locale === "zh" ? "待审核技能、证据、权限和定价。" : "Pending skill review, evidence, permissions, and pricing.",
+      description: locale === "zh" ? "待审核技能、证据、权限和定价：高 / 中 / 就绪。" : "Pending skill review, evidence, permissions, and pricing: high / medium / ready.",
+      displayValue: formatCompactNumber(reviewMetrics.actionable),
       href: adminViewHref("reviews", locale),
       Icon: Gavel,
+      id: "review_queue",
+      impact: locale === "zh" ? "影响技能上架和供给质量。" : "Affects skill publishing and marketplace supply quality.",
       label: locale === "zh" ? "待审核" : "Reviews",
+      lastUpdated: lastUpdatedLabel,
+      nextAction: reviewMetrics.actionable > 0 ? (locale === "zh" ? "处理审核队列" : "Process review queue") : undefined,
+      severity: reviewMetrics.danger > 0 ? "critical" : reviewMetrics.actionable > 0 ? "warning" : "healthy",
+      source: locale === "zh" ? "审核队列" : "Review queue",
+      status: reviewMetrics.actionable > 0 ? "connected_has_data" : "connected_no_data",
       tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready",
-      trend: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)}`,
-      value: formatCompactNumber(reviewMetrics.actionable)
+      trend: { direction: "unknown", label: `${formatCompactNumber(reviewMetrics.danger)} / ${formatCompactNumber(reviewMetrics.warning)} / ${formatCompactNumber(reviewMetrics.ready)}` },
+      value: reviewMetrics.actionable
     },
     {
-      detail: locale === "zh" ? "作者提现、退款和争议的财务队列。" : "Publisher payouts, refunds, and disputes queue.",
+      description: locale === "zh" ? "作者提现、退款和争议的财务队列。" : "Publisher payout, refund, and dispute finance queue.",
+      displayValue: formatCompactNumber(payoutActionCount + adjustmentActionCount),
       href: adminViewHref("payouts", locale),
       Icon: WalletCards,
-      label: locale === "zh" ? "待提现" : "Payouts",
+      id: "payouts",
+      impact: locale === "zh" ? "影响作者结算和财务闭环。" : "Affects publisher settlement and finance loop.",
+      label: locale === "zh" ? "待提现/退款" : "Payouts/refunds",
+      lastUpdated: lastUpdatedLabel,
+      nextAction: payoutActionCount + adjustmentActionCount > 0 ? (locale === "zh" ? "进入财务审核" : "Open finance review") : undefined,
+      severity: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "healthy",
+      source: locale === "zh" ? "财务队列" : "Finance queue",
+      status: payoutActionCount + adjustmentActionCount > 0 ? "connected_has_data" : "connected_no_data",
       tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
-      trend: locale === "zh" ? "人工审核" : "Manual review",
-      value: formatCompactNumber(payoutActionCount)
+      trend: { direction: "unknown", label: locale === "zh" ? "人工审核" : "Manual review" },
+      value: payoutActionCount + adjustmentActionCount
+    },
+    {
+      description: locale === "zh" ? "活跃事故、信任举报和高频异常访问。" : "Active incidents, trust reports, and abnormal access.",
+      displayValue: formatCompactNumber(activeIncidentCount + openAbuseReportCount + accessLogAnalytics.suspiciousIpCount),
+      href: adminViewHref("risk", locale),
+      Icon: Siren,
+      id: "risk_queue",
+      impact: locale === "zh" ? "影响上线安全和异常响应。" : "Affects launch safety and abnormal-access response.",
+      label: locale === "zh" ? "待处理风险" : "Risks",
+      lastUpdated: lastUpdatedLabel,
+      nextAction: activeIncidentCount + openAbuseReportCount + accessLogAnalytics.suspiciousIpCount > 0 ? (locale === "zh" ? "查看风险访问与举报" : "Inspect risk access and reports") : undefined,
+      severity: activeIncidentCount + openAbuseReportCount > 0 ? "critical" : accessLogAnalytics.suspiciousIpCount > 0 ? "warning" : "healthy",
+      source: locale === "zh" ? "风控 / 访问日志" : "Risk / access log",
+      status: activeIncidentCount + openAbuseReportCount + accessLogAnalytics.suspiciousIpCount > 0 ? "connected_has_data" : "connected_no_data",
+      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : accessLogAnalytics.suspiciousIpCount > 0 ? "warning" : "ready",
+      trend: { direction: "unknown", label: locale === "zh" ? "不计入运营流量" : "Excluded from operational traffic" },
+      value: activeIncidentCount + openAbuseReportCount + accessLogAnalytics.suspiciousIpCount
     }
   ];
   const adminSidebarGroups = locale === "zh"
@@ -1254,62 +1553,92 @@ export default async function AdminPage({ searchParams }: PageProps) {
           ]
         }
       ];
-  const workQueueRows = [
+  const workQueueRows: OpsTaskQueueItem[] = [
     {
-      action: locale === "zh" ? "去审核" : "Review",
+      actionLabel: locale === "zh" ? "去审核技能" : "Review skills",
+      category: locale === "zh" ? "技能审核" : "Reviews",
       count: reviewMetrics.actionable,
       href: adminViewHref("reviews", locale),
-      module: locale === "zh" ? "技能审核" : "Reviews",
-      priority: reviewMetrics.danger > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "中" : "Med"),
-      title: locale === "zh" ? "技能待审核" : "Skill reviews",
-      tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready"
+      highPriorityCount: reviewMetrics.danger,
+      id: "skill_reviews",
+      label: locale === "zh" ? "技能待审核" : "Skill reviews",
+      overdueCount: reviewMetrics.danger,
+      owner: locale === "zh" ? "内容运营组" : "Content ops",
+      priority: reviewMetrics.danger > 0 ? "high" : reviewMetrics.actionable > 0 ? "medium" : "low",
+      slaLabel: locale === "zh" ? "24 小时" : "24h"
     },
     {
-      action: locale === "zh" ? "查订单" : "Open",
       count: orderActionCount,
+      actionLabel: locale === "zh" ? "查订单" : "Open orders",
+      category: locale === "zh" ? "订单支付" : "Orders",
       href: adminViewHref("orders", locale),
-      module: locale === "zh" ? "订单支付" : "Orders",
-      priority: orderActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
-      title: locale === "zh" ? "支付失败订单" : "Payment failures",
-      tone: orderActionCount > 0 ? "warning" : "ready"
+      highPriorityCount: orderActionCount,
+      id: "payment_orders",
+      label: locale === "zh" ? "支付失败订单" : "Payment failures",
+      overdueCount: 0,
+      owner: locale === "zh" ? "财务 / 平台" : "Finance / Platform",
+      priority: orderActionCount > 0 ? "high" : "low",
+      slaLabel: locale === "zh" ? "15 分钟" : "15m"
     },
     {
-      action: locale === "zh" ? "处理" : "Resolve",
       count: adjustmentActionCount,
+      actionLabel: locale === "zh" ? "处理" : "Resolve",
+      category: locale === "zh" ? "退款争议" : "Refunds",
       href: adminViewHref("risk", locale),
-      module: locale === "zh" ? "退款争议" : "Refunds",
-      priority: adjustmentActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
-      title: locale === "zh" ? "退款 / 争议" : "Refunds / disputes",
-      tone: adjustmentActionCount > 0 ? "warning" : "ready"
+      highPriorityCount: adjustmentActionCount,
+      id: "refund_dispute",
+      label: locale === "zh" ? "退款 / 争议" : "Refunds / disputes",
+      overdueCount: 0,
+      owner: locale === "zh" ? "财务" : "Finance",
+      priority: adjustmentActionCount > 0 ? "high" : "low",
+      slaLabel: locale === "zh" ? "1 个工作日" : "1 business day"
     },
     {
-      action: locale === "zh" ? "审核" : "Review",
       count: payoutActionCount,
+      actionLabel: locale === "zh" ? "审核提现" : "Review payout",
+      category: locale === "zh" ? "提现分账" : "Payouts",
       href: adminViewHref("payouts", locale),
-      module: locale === "zh" ? "提现分账" : "Payouts",
-      priority: payoutActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
-      title: locale === "zh" ? "作者提现审核" : "Publisher payouts",
-      tone: payoutActionCount > 0 ? "warning" : "ready"
+      highPriorityCount: payoutActionCount,
+      id: "publisher_payout",
+      label: locale === "zh" ? "作者提现审核" : "Publisher payouts",
+      overdueCount: 0,
+      owner: locale === "zh" ? "财务" : "Finance",
+      priority: payoutActionCount > 0 ? "medium" : "low",
+      slaLabel: locale === "zh" ? "1 个工作日" : "1 business day"
     },
     {
-      action: locale === "zh" ? "看风险" : "Inspect",
-      count: activeIncidentCount + openAbuseReportCount,
+      actionLabel: locale === "zh" ? "看风险" : "Inspect risk",
+      category: locale === "zh" ? "风控告警" : "Risk",
+      count: activeIncidentCount + openAbuseReportCount + accessLogAnalytics.suspiciousIpCount,
       href: adminViewHref("risk", locale),
-      module: locale === "zh" ? "风控告警" : "Risk",
-      priority: activeIncidentCount + openAbuseReportCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
-      title: locale === "zh" ? "异常 IP / 举报" : "Abnormal IP / reports",
-      tone: activeIncidentCount + openAbuseReportCount > 0 ? "danger" : "ready"
+      highPriorityCount: activeIncidentCount + openAbuseReportCount,
+      id: "risk_access",
+      label: locale === "zh" ? "异常 IP / 举报" : "Abnormal IP / reports",
+      overdueCount: activeIncidentCount,
+      owner: locale === "zh" ? "信任安全" : "Trust",
+      priority: activeIncidentCount + openAbuseReportCount > 0 ? "high" : accessLogAnalytics.suspiciousIpCount > 0 ? "medium" : "low",
+      slaLabel: locale === "zh" ? "30 分钟" : "30m"
     },
     {
-      action: locale === "zh" ? "重试" : "Retry",
       count: webhookActionCount,
+      actionLabel: locale === "zh" ? "重试失败 Webhook" : "Retry webhook",
+      category: "Webhook",
       href: adminViewHref("deliveries", locale),
-      module: "Webhook",
-      priority: webhookActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
-      title: locale === "zh" ? "Webhook 失败" : "Webhook failures",
-      tone: webhookActionCount > 0 ? "warning" : "ready"
+      highPriorityCount: webhookActionCount,
+      id: "webhook_failures",
+      label: locale === "zh" ? "Webhook 失败" : "Webhook failures",
+      overdueCount: 0,
+      owner: locale === "zh" ? "平台后端" : "Platform",
+      priority: webhookActionCount > 0 ? "medium" : "low",
+      slaLabel: locale === "zh" ? "15 分钟" : "15m"
     }
-  ] as const;
+  ];
+  const visibleWorkQueueRows = workQueueRows
+    .filter((item) => item.count > 0)
+    .sort((a, b) => {
+      const rank = { high: 0, medium: 1, low: 2 };
+      return rank[a.priority] - rank[b.priority] || b.count - a.count;
+    });
   const sourceChannels = accessLogAnalytics.channels.map((channel) => [
     channel.label,
     accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
@@ -1321,23 +1650,113 @@ export default async function AdminPage({ searchParams }: PageProps) {
     accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
     channel.share
   ] as const);
-  const conversionFunnel = [
-    [
-      locale === "zh" ? "访问网站" : "Visit site",
-      todayPageViewValue,
-      cloudflareAnalytics.connected ? cloudflareSourceLabel : accessLogAnalytics.connected ? accessLogSourceLabel : (locale === "zh" ? "入口待接入" : "Source pending")
-    ],
-    [locale === "zh" ? "注册/登录" : "Sign in", formatCompactNumber(identityDirectory.summary.userCount), locale === "zh" ? "身份目录" : "Identity"],
-    ["Project Key", pendingDataLabel, locale === "zh" ? "事件待接入" : "Event pending"],
-    [locale === "zh" ? "浏览技能" : "Browse skills", pendingDataLabel, locale === "zh" ? "Analytics 待接入" : "Analytics pending"],
-    [locale === "zh" ? "安装技能" : "Install skill", formatCompactNumber(reviewMetrics.ready + financeLedger.summary.usageTransactionCount), locale === "zh" ? "运行时口径" : "Runtime source"],
-    [locale === "zh" ? "调用技能" : "Invoke skill", formatCompactNumber(financeLedger.summary.usageTransactionCount), locale === "zh" ? "账本口径" : "Ledger source"],
-    [locale === "zh" ? "下单" : "Order", formatCompactNumber(financeLedger.summary.usageTransactionCount + financeLedger.summary.subscriptionTransactionCount), locale === "zh" ? "支付口径" : "Payment source"]
-  ] as const;
+  const aiBotChannels = accessLogAnalytics.aiBots.map((channel) => [
+    channel.label,
+    accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
+    channel.share
+  ] as const);
+  const directChannel = accessLogAnalytics.channels.find((channel) => channel.label === "Direct");
+  const directWarning = accessLogAnalytics.connected && (directChannel?.share ?? 0) > 70;
+  const funnelRawSteps: Array<Pick<FunnelStep, "confidence" | "href" | "id" | "label" | "nextAction" | "order" | "source" | "status" | "unit" | "value">> = [
+    {
+      confidence: accessLogAnalytics.connected ? "medium" : "none",
+      href: adminViewHref("traffic", locale),
+      id: "visit",
+      label: locale === "zh" ? "访问网站" : "Visit site",
+      order: 1,
+      source: accessLogAnalytics.connected ? accessLogSourceLabel : (locale === "zh" ? "入口待接入" : "Source pending"),
+      status: accessLogStatus,
+      unit: "sessions",
+      value: accessLogAnalytics.connected ? accessLogAnalytics.todayPageViews : null
+    },
+    {
+      confidence: identityDirectory.summary.userCount > 0 ? "low" : "none",
+      href: adminViewHref("identity", locale),
+      id: "identity",
+      label: locale === "zh" ? "注册/登录" : "Sign in",
+      nextAction: locale === "zh" ? "接入今日注册/登录事件" : "Connect daily signup/sign-in events",
+      order: 2,
+      source: locale === "zh" ? "身份目录 · 累计口径" : "Identity · cumulative",
+      status: identityDirectory.summary.userCount > 0 ? "partial" : "connected_no_data",
+      unit: "users",
+      value: identityDirectory.summary.userCount
+    },
+    {
+      confidence: "none",
+      href: adminViewHref("analytics", locale),
+      id: "project_key",
+      label: "Project Key",
+      nextAction: "project_key_create_success / failed",
+      order: 3,
+      source: locale === "zh" ? "事件待接入" : "Event pending",
+      status: projectKeyEventStatus,
+      unit: "events",
+      value: null
+    },
+    {
+      confidence: "none",
+      href: adminViewHref("funnel", locale),
+      id: "skill_view",
+      label: locale === "zh" ? "浏览技能" : "Browse skills",
+      nextAction: "skill_market_view / skill_detail_view",
+      order: 4,
+      source: locale === "zh" ? "Analytics 待接入" : "Analytics pending",
+      status: skillViewEventStatus,
+      unit: "events",
+      value: null
+    },
+    {
+      confidence: "none",
+      href: adminViewHref("funnel", locale),
+      id: "skill_install",
+      label: locale === "zh" ? "安装技能" : "Install skill",
+      nextAction: "install_click / install_success / install_failed",
+      order: 5,
+      source: locale === "zh" ? "运行时事件待接入" : "Runtime event pending",
+      status: skillInstallEventStatus,
+      unit: "events",
+      value: null
+    },
+    {
+      confidence: "none",
+      href: adminViewHref("analytics", locale),
+      id: "skill_invoke",
+      label: locale === "zh" ? "调用技能" : "Invoke skill",
+      nextAction: "api_call_attempt / api_call_success / api_call_failed",
+      order: 6,
+      source: locale === "zh" ? "运行时/账本事件待确认" : "Runtime / ledger event pending",
+      status: skillInvokeEventStatus,
+      unit: "events",
+      value: null
+    },
+    {
+      confidence: "none",
+      href: adminViewHref("orders", locale),
+      id: "order",
+      label: locale === "zh" ? "下单" : "Order",
+      nextAction: locale === "zh" ? "接入支付通道和回调" : "Connect payment provider and callback",
+      order: 7,
+      source: locale === "zh" ? "支付链路 Prelaunch" : "Payment flow prelaunch",
+      status: paymentWebhookStatus,
+      unit: "orders",
+      value: null
+    }
+  ];
+  const conversionFunnel: FunnelStep[] = funnelRawSteps.map((step, index) => {
+    const previousValue = funnelRawSteps[index - 1]?.value ?? null;
+    const startValue = funnelRawSteps[0]?.value ?? null;
+
+    return {
+      ...step,
+      conversionFromPrevious: index === 0 ? null : calculateStepConversion(step.value, previousValue),
+      conversionFromStart: index === 0 ? null : calculateStepConversion(step.value, startValue),
+      dropoffFromPrevious: index === 0 ? null : calculateDropoff(step.value, previousValue)
+    };
+  });
   const financeSummaryCards = [
-    ["GMV", formatMoney(financeLedger.summary.grossCents), locale === "zh" ? "已入账交易" : "Posted ledger"],
-    [locale === "zh" ? "平台佣金" : "Platform fee", formatMoney(financeLedger.summary.platformFeeCents), locale === "zh" ? "佣金口径" : "Commission"],
-    [locale === "zh" ? "作者分成" : "Publisher share", formatMoney(financeLedger.summary.publisherShareCents), locale === "zh" ? "待结算来源" : "Settlement source"],
+    ["GMV", paymentMode === "production" ? formatMoney(financeLedger.summary.grossCents) : notReliableLabel, locale === "zh" ? "支付回调未连接" : "Payment callback pending"],
+    [locale === "zh" ? "平台佣金" : "Platform fee", paymentMode === "production" ? formatMoney(financeLedger.summary.platformFeeCents) : notReliableLabel, locale === "zh" ? "佣金口径待支付闭环" : "Commission needs payment loop"],
+    [locale === "zh" ? "作者分成" : "Publisher share", paymentMode === "production" ? formatMoney(financeLedger.summary.publisherShareCents) : notReliableLabel, locale === "zh" ? "待支付和分账接入" : "Payment and split pending"],
     [locale === "zh" ? "退款/争议" : "Refunds/disputes", formatCompactNumber(adjustmentActionCount), locale === "zh" ? "人工处理" : "Manual review"],
     [locale === "zh" ? "可结算" : "Available", formatMoney(financeLedger.summary.availableBalanceCents), locale === "zh" ? "账本余额" : "Ledger balance"],
     [locale === "zh" ? "待提现" : "Payout queue", formatCompactNumber(payoutActionCount), locale === "zh" ? "作者申请" : "Publisher requests"]
@@ -1350,6 +1769,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     ["Analytics", trafficSourceState, trafficSourceTone],
     [locale === "zh" ? "支付回调" : "Payment callback", adminConsoleLabels.payment.items[2][1], "amber"]
   ] as const;
+  const chartHasTrustedSignal = paymentMode === "production" && financeLedger.recentTransactions.length > 0;
   const trafficRows = [
     {
       label: "PV",
@@ -1393,9 +1813,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ];
   const trafficDataSources = [
     [
+      locale === "zh" ? "Cloudflare Zone ID" : "Cloudflare Zone ID",
+      process.env.CLOUDFLARE_ZONE_ID?.trim() ? (locale === "zh" ? "已配置" : "Configured") : (locale === "zh" ? "未配置" : "Not configured")
+    ],
+    [
+      locale === "zh" ? "Cloudflare API Token" : "Cloudflare API Token",
+      process.env.CLOUDFLARE_API_TOKEN?.trim() ? (locale === "zh" ? "已配置" : "Configured") : (locale === "zh" ? "未配置" : "Not configured")
+    ],
+    [
       "Cloudflare Analytics",
       cloudflareAnalytics.connected
-        ? (locale === "zh" ? "已连接" : "Connected")
+        ? countryRows.length > 0
+          ? (locale === "zh" ? "GraphQL 成功，有地区数据" : "GraphQL connected with country data")
+          : (locale === "zh" ? "GraphQL 成功，今日暂无地区数据" : "GraphQL connected, no country data today")
         : cloudflareAnalytics.message
     ],
     [
@@ -1559,6 +1989,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 </span>
               ))}
             </div>
+            <div className="admin-ops-data-meta" aria-label={locale === "zh" ? "数据更新时间" : "Data freshness"}>
+              {locale === "zh"
+                ? `今天 · UTC+8 · 最近更新 ${lastUpdatedLabel} · 访问日志延迟约 2 分钟`
+                : `Today · UTC+8 · Updated ${lastUpdatedLabel} · access logs delayed about 2 min`}
+            </div>
             <div className="admin-top-actions">
               <a className="admin-toolbar-button" href={localizedHref("/admin", alternateLocale)}>{adminV2Labels.language}</a>
               <a className="admin-toolbar-button" href={adminViewHref("deliveries", locale)}>
@@ -1607,19 +2042,92 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
           </header>
 
+          <section className="admin-ops-status-grid" aria-label={locale === "zh" ? "经营状态和上线准备度" : "Business status and launch readiness"}>
+            <article className={`admin-business-health admin-business-health--${businessHealth.status}`}>
+              <div className="eyebrow">
+                <ShieldCheck size={16} aria-hidden="true" />
+                <span>{locale === "zh" ? "今日经营状态" : "Business status"}</span>
+              </div>
+              <h2>{businessHealth.title}</h2>
+              <p>{businessHealth.summary}</p>
+              <div className="admin-business-health__lists">
+                <div>
+                  <strong>{locale === "zh" ? "阻塞项" : "Blockers"}</strong>
+                  {businessHealth.blockers.length > 0 ? businessHealth.blockers.slice(0, 4).map((item) => (
+                    <span key={item}>{item}</span>
+                  )) : <span>{locale === "zh" ? "暂无阻塞项" : "No blocker visible"}</span>}
+                </div>
+                <div>
+                  <strong>{locale === "zh" ? "影响范围" : "Impact"}</strong>
+                  {businessHealth.impacts.slice(0, 4).map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="admin-business-health__actions">
+                <a className="btn-primary" href={adminViewHref("health", locale, "launch-readiness")}>
+                  {locale === "zh" ? "查看接入清单" : "View integration checklist"}
+                  <ArrowRight size={15} aria-hidden="true" />
+                </a>
+                <a className="btn-secondary" href={adminViewHref("traffic", locale)}>
+                  {locale === "zh" ? "查看流量口径" : "Review traffic scope"}
+                </a>
+              </div>
+            </article>
+
+            <article className="admin-readiness-card admin-readiness-card--ops">
+              <div className="admin-readiness-card__score">
+                <span>{locale === "zh" ? "上线准备度" : "Launch readiness"}</span>
+                <strong>{readinessScore}<small>/100</small></strong>
+                <b className="admin-state-pill admin-state-pill--amber">{readinessRecommendation}</b>
+              </div>
+              <div className="admin-readiness-card__summary">
+                <span>
+                  <strong>{readinessBlockingChecks.length}</strong>
+                  {locale === "zh" ? "阻塞项" : " blockers"}
+                </span>
+                <span>
+                  <strong>{readinessWarningChecks.length}</strong>
+                  {locale === "zh" ? "风险项" : " warnings"}
+                </span>
+                <span>
+                  <strong>{readinessChecks.filter((check) => check.status === "pass").length}</strong>
+                  {locale === "zh" ? "已通过" : " passed"}
+                </span>
+              </div>
+              <div className="admin-readiness-card__checks">
+                {readinessChecks.slice(0, 5).map((check) => (
+                  <a className={`admin-readiness-check admin-readiness-check--${check.status}`} href={check.href} key={check.id}>
+                    <span>{check.label}</span>
+                    <strong>{check.status === "pass" ? (locale === "zh" ? "通过" : "Pass") : check.status === "warning" ? (locale === "zh" ? "预警" : "Warning") : (locale === "zh" ? "未配置" : "Not configured")}</strong>
+                    <small>{check.impact}</small>
+                  </a>
+                ))}
+              </div>
+            </article>
+          </section>
+
           <div className="admin-kpi-grid admin-kpi-grid--v2 admin-kpi-grid--ops" aria-label={locale === "zh" ? "后台关键指标" : "Admin key metrics"}>
             {overviewKpis.map((metric) => {
               const Icon = metric.Icon;
+              const statusTone = getDataStatusTone(metric.status);
 
               return (
-                <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.label}>
+                <a className={`admin-kpi-card admin-kpi-card--${metric.tone}`} href={metric.href} key={metric.id}>
                   <span className="admin-kpi-card__top">
                     <span>{metric.label}</span>
                     <Icon size={18} aria-hidden="true" />
                   </span>
-                  <strong>{metric.value}</strong>
-                  <small>{metric.detail}</small>
-                  <em>{metric.trend}</em>
+                  <strong>{metric.displayValue}</strong>
+                  <small>{metric.description}</small>
+                  <span className="admin-kpi-card__meta">
+                    <b className={`admin-state-pill admin-state-pill--${statusTone}`}>{getDataStatusLabel(metric.status, locale)}</b>
+                    <em>{metric.source}</em>
+                  </span>
+                  <span className="admin-kpi-card__foot">
+                    <em>{metric.trend?.label}</em>
+                    {isMetricActionable(metric) && metric.nextAction ? <b>{metric.nextAction}</b> : null}
+                  </span>
                 </a>
               );
             })}
@@ -1675,6 +2183,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     </span>
                   </div>
 
+                  {chartHasTrustedSignal ? (
                   <div className="admin-ops-chart__plot">
                     <div className="admin-ops-chart__axis admin-ops-chart__axis--y" aria-hidden="true">
                       {["100", "75", "50", "25", "0"].map((tick) => (
@@ -1708,6 +2217,24 @@ export default async function AdminPage({ searchParams }: PageProps) {
                       ))}
                     </div>
                   </div>
+                  ) : (
+                    <div className="admin-ops-chart__empty">
+                      <strong>{locale === "zh" ? "真实趋势数据待接入" : "Real trend data pending"}</strong>
+                      <p>
+                        {locale === "zh"
+                          ? "接入 order_created、payment_succeeded、skill_install_success、skill_invoke_success 后，才展示 GMV、订单、安装和调用趋势。当前不画模拟曲线，不参与经营判断。"
+                          : "Connect order_created, payment_succeeded, skill_install_success, and skill_invoke_success before plotting GMV, orders, installs, and invokes. No simulated trend is shown here."}
+                      </p>
+                      <div>
+                        {["order_created", "payment_succeeded", "skill_install_success", "skill_invoke_success"].map((eventName) => (
+                          <span key={eventName}>{eventName}</span>
+                        ))}
+                      </div>
+                      <a className="btn-secondary" href={adminViewHref("health", locale, "launch-readiness")}>
+                        {locale === "zh" ? "查看接入清单" : "View integration checklist"}
+                      </a>
+                    </div>
+                  )}
 
                   <div className="admin-ops-chart__events" aria-label={locale === "zh" ? "运营事件轨道" : "Operational event track"}>
                     {[
@@ -1753,20 +2280,29 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <h2 id="admin-priority-heading">{locale === "zh" ? "今天必须处理的运营事项" : "What operators should process today"}</h2>
               <p>{locale === "zh" ? "按审核、资金、风控和投递影响排序，所有入口都打开真实模块。" : "Sorted by review, money, risk, and delivery impact. Every action opens a real module."}</p>
               <div className="admin-work-queue-list" aria-label={locale === "zh" ? "今日待办队列" : "Today work queue"}>
-                {workQueueRows.map((item) => (
-                  <a className={`admin-work-queue-row admin-work-queue-row--${item.tone}`} href={item.href} key={item.title}>
-                    <span className="admin-work-queue-row__priority">{item.priority}</span>
+                {visibleWorkQueueRows.length > 0 ? visibleWorkQueueRows.map((item) => (
+                  <a className={`admin-work-queue-row admin-work-queue-row--${item.priority}`} href={item.href} key={item.id}>
+                    <span className="admin-work-queue-row__priority">{item.priority === "high" ? (locale === "zh" ? "高" : "High") : item.priority === "medium" ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low")}</span>
                     <span className="admin-work-queue-row__copy">
-                      <strong>{item.title}</strong>
-                      <small>{item.module}</small>
+                      <strong>{item.label}</strong>
+                      <small>{item.category} · SLA {item.slaLabel} · {item.owner}</small>
                     </span>
                     <b>{formatCompactNumber(item.count)}</b>
                     <em>
-                      {item.action}
+                      {item.actionLabel}
                       <ArrowRight size={13} aria-hidden="true" />
                     </em>
                   </a>
-                ))}
+                )) : (
+                  <div className="admin-work-queue-empty">
+                    <strong>{locale === "zh" ? "今日暂无待处理事项" : "No work queue items today"}</strong>
+                    <p>{locale === "zh" ? "审核、支付、提现、Webhook 与风控队列当前为空；上线阻塞项仍在准备度面板追踪。" : "Review, payment, payout, webhook, and risk queues are empty; launch blockers remain tracked in readiness."}</p>
+                    <div>
+                      <a href={adminViewHref("audit", locale)}>{locale === "zh" ? "查看历史异常" : "View history"}</a>
+                      <a href={adminViewHref("health", locale)}>{locale === "zh" ? "配置告警规则" : "Configure alerts"}</a>
+                    </div>
+                  </div>
+                )}
               </div>
             </aside>
           </div>
@@ -1785,12 +2321,18 @@ export default async function AdminPage({ searchParams }: PageProps) {
               </b>
             </div>
             <div className="admin-funnel-steps">
-              {conversionFunnel.map(([label, value, detail], index) => (
-                <div className="admin-funnel-step" key={label}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{label}</strong>
-                  <b>{value}</b>
-                  <small>{detail}</small>
+              {conversionFunnel.map((step) => (
+                <div className={`admin-funnel-step admin-funnel-step--${getDataStatusTone(step.status)}`} key={step.id}>
+                  <span>{String(step.order).padStart(2, "0")}</span>
+                  <strong>{step.label}</strong>
+                  <b>{step.value == null ? (step.status === "not_connected" ? pendingDataLabel : notComputableLabel) : `${formatCompactNumber(step.value)}${step.order === 1 && locale === "zh" ? " 次访问记录" : ""}`}</b>
+                  <small>{getDataStatusLabel(step.status, locale)} · {step.source}</small>
+                  <em>
+                    {step.order === 1
+                      ? (locale === "zh" ? "入口基准" : "Entry baseline")
+                      : `${locale === "zh" ? "上一步" : "Previous"} ${formatPercent(step.conversionFromPrevious, locale)} · ${locale === "zh" ? "流失" : "Dropoff"} ${step.dropoffFromPrevious == null ? notComputableLabel : formatCompactNumber(step.dropoffFromPrevious)}`}
+                  </em>
+                  {step.nextAction ? <a href={step.href}>{step.nextAction}</a> : null}
                 </div>
               ))}
             </div>
@@ -1817,6 +2359,12 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   </div>
                 ))}
               </div>
+              {directWarning ? (
+                <div className="admin-channel-warning">
+                  <strong>{locale === "zh" ? "Direct 占比过高" : "Direct share is high"}</strong>
+                  <span>{locale === "zh" ? "可能是 UTM 未接入、Referrer 丢失、自有域名未排除，或后台/内网/Bot 流量混入。" : "Possible causes: missing UTM, lost referrers, owned domains not excluded, or admin/private/bot traffic mixed in."}</span>
+                </div>
+              ) : null}
             </article>
 
             <article className="admin-source-card admin-source-card--ai" id="admin-ai-referrals">
@@ -1824,20 +2372,43 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <Search size={16} aria-hidden="true" />
                 <span>{locale === "zh" ? "AI 推荐来源" : "AI referral sources"}</span>
               </div>
-              <h2>{locale === "zh" ? "AI 推荐来源" : "AI referrals"}</h2>
+              <h2>{locale === "zh" ? "AI 可见性与推荐访问" : "AI visibility and referrals"}</h2>
               <p>
                 {accessLogAnalytics.connected
-                  ? (locale === "zh" ? "从 referrer 中识别 ChatGPT、Perplexity、Claude、Gemini、Copilot 等 AI 推荐来源。" : "AI referrals are detected from referrers such as ChatGPT, Perplexity, Claude, Gemini, and Copilot.")
-                  : (locale === "zh" ? "单独跟踪 ChatGPT、Perplexity、Claude、Gemini、Copilot，服务后续 GEO 增长。" : "Tracks ChatGPT, Perplexity, Claude, Gemini, and Copilot for GEO growth.")}
+                  ? (locale === "zh" ? "AI Bot 抓取代表内容可能被读取；AI Referral 才代表真实用户从 AI 产品点击访问。" : "AI bot crawling means content may be read; AI referral means a real user clicked from an AI product.")
+                  : (locale === "zh" ? "接入访问日志后，AI Bot 和 AI Referral 会分开统计。" : "AI bot and AI referral metrics appear separately after access logs are connected.")}
               </p>
-              <div className="admin-channel-list">
-                {aiReferralChannels.map(([label, value, width]) => (
-                  <div className="admin-channel-row admin-channel-row--ai" key={label}>
-                    <span>{label}</span>
-                    <i><b style={{ width: `${width}%` }} /></i>
-                    <strong>{value}</strong>
+              <div className="admin-ai-source-split">
+                <div>
+                  <strong>{locale === "zh" ? "AI Bot 抓取" : "AI bot crawling"}</strong>
+                  <div className="admin-channel-list">
+                    {aiBotChannels.map(([label, value, width]) => (
+                      <div className="admin-channel-row admin-channel-row--ai-bot" key={label}>
+                        <span>{label}</span>
+                        <i><b style={{ width: `${width}%` }} /></i>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                  {accessLogAnalytics.connected && aiBotChannels.every(([, , width]) => width === 0) ? (
+                    <small>{locale === "zh" ? "未识别到 AI Bot 抓取，请确认访问日志包含 User-Agent。" : "No AI bot crawling detected. Confirm access logs include User-Agent."}</small>
+                  ) : null}
+                </div>
+                <div>
+                  <strong>{locale === "zh" ? "AI Referral 用户访问" : "AI referral visits"}</strong>
+                  <div className="admin-channel-list">
+                    {aiReferralChannels.map(([label, value, width]) => (
+                      <div className="admin-channel-row admin-channel-row--ai" key={label}>
+                        <span>{label}</span>
+                        <i><b style={{ width: `${width}%` }} /></i>
+                        <strong>{value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  {accessLogAnalytics.connected && aiReferralChannels.every(([, , width]) => width === 0) ? (
+                    <small>{locale === "zh" ? "未识别到 AI 推荐访问，也可能是 Referer、UTM 或识别规则尚未完整。" : "No AI referral visits detected; referrer, UTM, or detection rules may still be incomplete."}</small>
+                  ) : null}
+                </div>
               </div>
             </article>
 
@@ -2066,6 +2637,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
                         <b>{entry.ip}</b>
                         <em>{entry.lastPath}</em>
                         <strong>{formatCompactNumber(entry.requests)}x · {entry.status}</strong>
+                        <small>
+                          {entry.riskTags.length > 0
+                            ? entry.riskTags.slice(0, 3).map((tag) => <i key={tag}>{tag}</i>)
+                            : <i>{locale === "zh" ? "常规访问" : "Normal"}</i>}
+                        </small>
                       </span>
                     )) : (
                       <small>{accessLogAnalytics.connected ? (locale === "zh" ? "今天暂无可展示 IP。" : "No visitor IPs today.") : accessLogAnalytics.message}</small>
