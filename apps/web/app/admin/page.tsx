@@ -34,7 +34,6 @@ import { AdminReviewManager } from "@/components/admin-review-manager";
 import { JourneyRail } from "@/components/journey-rail";
 import { NotificationDeliveryManager } from "@/components/notification-delivery-manager";
 import { NotificationTemplateManager } from "@/components/notification-template-manager";
-import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { AppShell } from "@/components/app-shell";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
@@ -69,8 +68,10 @@ export const dynamic = "force-dynamic";
 export const metadata = buildNoIndexMetadata("SkillHub Admin");
 
 type PageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Promise<AdminSearchParams>;
 };
+
+type AdminSearchParams = Record<string, string | string[] | undefined>;
 
 const financeIcons = [Scale, Banknote, AlertTriangle] as const;
 const adminWorkbenchAnchors = [
@@ -83,6 +84,26 @@ const adminWorkbenchAnchors = [
 ] as const;
 const adminWorkbenchIcons = [ShieldCheck, Gavel, Users, Bell, Siren, ReceiptText] as const;
 const adminAccessRoles = ["reviewer", "finance", "support", "admin", "super_admin"];
+const adminConsoleViews = [
+  "overview",
+  "analytics",
+  "traffic",
+  "ai-referrals",
+  "funnel",
+  "reviews",
+  "curation",
+  "identity",
+  "deliveries",
+  "orders",
+  "finance",
+  "payouts",
+  "risk",
+  "health",
+  "audit",
+  "settings"
+] as const;
+
+type AdminConsoleView = (typeof adminConsoleViews)[number];
 
 type AdminPriorityTone = "danger" | "ready" | "warning";
 
@@ -847,6 +868,7 @@ type AdminKpiTone = "danger" | "neutral" | "ready" | "warning";
 export default async function AdminPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
+  const adminView = getAdminViewFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const labels = dictionary.adminPage;
@@ -1050,7 +1072,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
   }> = [
     {
       detail: locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected.",
-      href: localizedHref("/admin#admin-traffic", locale),
+      href: adminViewHref("traffic", locale),
       Icon: Users,
       label: locale === "zh" ? "今日 UV" : "Today UV",
       tone: "warning",
@@ -1059,7 +1081,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source.",
-      href: localizedHref("/admin#admin-traffic", locale),
+      href: adminViewHref("traffic", locale),
       Icon: ShieldCheck,
       label: locale === "zh" ? "独立 IP" : "Unique IP",
       tone: "warning",
@@ -1068,7 +1090,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "当前身份目录用户总数，今日新增待接入事件流。" : "Current identity directory; daily signup events pending.",
-      href: localizedHref("/admin#admin-identity", locale),
+      href: adminViewHref("identity", locale),
       Icon: Users,
       label: locale === "zh" ? "注册用户" : "Users",
       tone: identityDirectory.summary.userCount > 0 ? "ready" : "warning",
@@ -1077,7 +1099,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "技能安装和调用来自账本/运行时事件。" : "Install and call events from ledger/runtime signals.",
-      href: localizedHref("/admin#admin-analytics", locale),
+      href: adminViewHref("analytics", locale),
       Icon: ShieldCheck,
       label: locale === "zh" ? "技能安装" : "Installs",
       tone: "ready",
@@ -1086,7 +1108,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "待处理订单、续费、退款和争议。" : "Orders, renewals, refunds, and disputes needing action.",
-      href: localizedHref("/admin#admin-orders", locale),
+      href: adminViewHref("orders", locale),
       Icon: ReceiptText,
       label: locale === "zh" ? "订单数" : "Orders",
       tone: orderActionCount > 0 ? "warning" : "ready",
@@ -1095,7 +1117,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "已入账 GMV，不含未完成支付。" : "Posted GMV only; pending payment is excluded.",
-      href: localizedHref("/admin#admin-finance", locale),
+      href: adminViewHref("finance", locale),
       Icon: Banknote,
       label: "GMV",
       tone: "neutral",
@@ -1104,7 +1126,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "待审核技能、证据、权限和定价。" : "Pending skill review, evidence, permissions, and pricing.",
-      href: localizedHref("/admin#admin-reviews", locale),
+      href: adminViewHref("reviews", locale),
       Icon: Gavel,
       label: locale === "zh" ? "待审核" : "Reviews",
       tone: reviewMetrics.danger > 0 ? "danger" : reviewMetrics.actionable > 0 ? "warning" : "ready",
@@ -1113,7 +1135,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     },
     {
       detail: locale === "zh" ? "作者提现、退款和争议的财务队列。" : "Publisher payouts, refunds, and disputes queue.",
-      href: localizedHref("/admin#admin-payouts", locale),
+      href: adminViewHref("payouts", locale),
       Icon: WalletCards,
       label: locale === "zh" ? "待提现" : "Payouts",
       tone: payoutActionCount + adjustmentActionCount > 0 ? "warning" : "ready",
@@ -1126,31 +1148,31 @@ export default async function AdminPage({ searchParams }: PageProps) {
         {
           label: "总览",
           items: [
-            ["总览", "#admin-overview"],
-            ["数据分析", "#admin-analytics"],
-            ["流量来源", "#admin-traffic"],
-            ["AI 推荐", "#admin-ai-referrals"],
-            ["转化漏斗", "#admin-funnel"]
+            { label: "总览", view: "overview", anchor: "#admin-overview" },
+            { label: "数据分析", view: "analytics", anchor: "#admin-analytics" },
+            { label: "流量来源", view: "traffic", anchor: "#admin-traffic" },
+            { label: "AI 推荐", view: "ai-referrals", anchor: "#admin-ai-referrals" },
+            { label: "转化漏斗", view: "funnel", anchor: "#admin-funnel" }
           ]
         },
         {
           label: "运营",
           items: [
-            ["技能审核", "#admin-reviews"],
-            ["作者管理", "#admin-curation"],
-            ["用户角色", "#admin-identity"],
-            ["通知", "#admin-deliveries"]
+            { label: "技能审核", view: "reviews", anchor: "#admin-reviews" },
+            { label: "作者管理", view: "curation", anchor: "#admin-curation" },
+            { label: "用户角色", view: "identity", anchor: "#admin-identity" },
+            { label: "通知", view: "deliveries", anchor: "#admin-deliveries" }
           ]
         },
         {
           label: "资金与风控",
           items: [
-            ["订单支付", "#admin-orders"],
-            ["提现分账", "#admin-payouts"],
-            ["风控告警", "#admin-risk"],
-            ["系统健康", "#admin-system-health"],
-            ["审计日志", "#admin-audit"],
-            ["设置", "#admin-templates"]
+            { label: "订单支付", view: "orders", anchor: "#admin-orders" },
+            { label: "提现分账", view: "payouts", anchor: "#admin-payouts" },
+            { label: "风控告警", view: "risk", anchor: "#admin-risk" },
+            { label: "系统健康", view: "health", anchor: "#admin-system-health" },
+            { label: "审计日志", view: "audit", anchor: "#admin-audit" },
+            { label: "设置", view: "settings", anchor: "#admin-templates" }
           ]
         }
       ]
@@ -1158,31 +1180,31 @@ export default async function AdminPage({ searchParams }: PageProps) {
         {
           label: "Overview",
           items: [
-            ["Overview", "#admin-overview"],
-            ["Analytics", "#admin-analytics"],
-            ["Traffic sources", "#admin-traffic"],
-            ["AI referrals", "#admin-ai-referrals"],
-            ["Conversion funnel", "#admin-funnel"]
+            { label: "Overview", view: "overview", anchor: "#admin-overview" },
+            { label: "Analytics", view: "analytics", anchor: "#admin-analytics" },
+            { label: "Traffic sources", view: "traffic", anchor: "#admin-traffic" },
+            { label: "AI referrals", view: "ai-referrals", anchor: "#admin-ai-referrals" },
+            { label: "Conversion funnel", view: "funnel", anchor: "#admin-funnel" }
           ]
         },
         {
           label: "Operations",
           items: [
-            ["Skill reviews", "#admin-reviews"],
-            ["Publisher ops", "#admin-curation"],
-            ["Users and roles", "#admin-identity"],
-            ["Notifications", "#admin-deliveries"]
+            { label: "Skill reviews", view: "reviews", anchor: "#admin-reviews" },
+            { label: "Publisher ops", view: "curation", anchor: "#admin-curation" },
+            { label: "Users and roles", view: "identity", anchor: "#admin-identity" },
+            { label: "Notifications", view: "deliveries", anchor: "#admin-deliveries" }
           ]
         },
         {
           label: "Money and risk",
           items: [
-            ["Orders and payments", "#admin-orders"],
-            ["Payouts and splits", "#admin-payouts"],
-            ["Risk alerts", "#admin-risk"],
-            ["System health", "#admin-system-health"],
-            ["Audit log", "#admin-audit"],
-            ["Settings", "#admin-templates"]
+            { label: "Orders and payments", view: "orders", anchor: "#admin-orders" },
+            { label: "Payouts and splits", view: "payouts", anchor: "#admin-payouts" },
+            { label: "Risk alerts", view: "risk", anchor: "#admin-risk" },
+            { label: "System health", view: "health", anchor: "#admin-system-health" },
+            { label: "Audit log", view: "audit", anchor: "#admin-audit" },
+            { label: "Settings", view: "settings", anchor: "#admin-templates" }
           ]
         }
       ];
@@ -1190,7 +1212,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "去审核" : "Review",
       count: reviewMetrics.actionable,
-      href: localizedHref("/admin#admin-reviews", locale),
+      href: adminViewHref("reviews", locale),
       module: locale === "zh" ? "技能审核" : "Reviews",
       priority: reviewMetrics.danger > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "中" : "Med"),
       title: locale === "zh" ? "技能待审核" : "Skill reviews",
@@ -1199,7 +1221,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "查订单" : "Open",
       count: orderActionCount,
-      href: localizedHref("/admin#admin-orders", locale),
+      href: adminViewHref("orders", locale),
       module: locale === "zh" ? "订单支付" : "Orders",
       priority: orderActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
       title: locale === "zh" ? "支付失败订单" : "Payment failures",
@@ -1208,7 +1230,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "处理" : "Resolve",
       count: adjustmentActionCount,
-      href: localizedHref("/admin#admin-adjustments", locale),
+      href: adminViewHref("risk", locale),
       module: locale === "zh" ? "退款争议" : "Refunds",
       priority: adjustmentActionCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
       title: locale === "zh" ? "退款 / 争议" : "Refunds / disputes",
@@ -1217,7 +1239,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "审核" : "Review",
       count: payoutActionCount,
-      href: localizedHref("/admin#admin-payouts", locale),
+      href: adminViewHref("payouts", locale),
       module: locale === "zh" ? "提现分账" : "Payouts",
       priority: payoutActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
       title: locale === "zh" ? "作者提现审核" : "Publisher payouts",
@@ -1226,7 +1248,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "看风险" : "Inspect",
       count: activeIncidentCount + openAbuseReportCount,
-      href: localizedHref("/admin#admin-risk", locale),
+      href: adminViewHref("risk", locale),
       module: locale === "zh" ? "风控告警" : "Risk",
       priority: activeIncidentCount + openAbuseReportCount > 0 ? (locale === "zh" ? "高" : "High") : (locale === "zh" ? "低" : "Low"),
       title: locale === "zh" ? "异常 IP / 举报" : "Abnormal IP / reports",
@@ -1235,7 +1257,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     {
       action: locale === "zh" ? "重试" : "Retry",
       count: webhookActionCount,
-      href: localizedHref("/admin#admin-webhooks", locale),
+      href: adminViewHref("deliveries", locale),
       module: "Webhook",
       priority: webhookActionCount > 0 ? (locale === "zh" ? "中" : "Med") : (locale === "zh" ? "低" : "Low"),
       title: locale === "zh" ? "Webhook 失败" : "Webhook failures",
@@ -1379,13 +1401,17 @@ export default async function AdminPage({ searchParams }: PageProps) {
             {adminSidebarGroups.map((group) => (
               <div className="admin-sidebar-nav__group" key={group.label}>
                 <span>{group.label}</span>
-                {group.items.map(([label, anchor]) => {
-                  const Icon = getAdminNavIcon(anchor);
+                {group.items.map((item) => {
+                  const Icon = getAdminNavIcon(item.anchor);
 
                   return (
-                    <a className={anchor === "#admin-overview" ? "is-active" : undefined} href={localizedHref(`/admin${anchor}`, locale)} key={anchor}>
+                    <a
+                      className={item.view === adminView ? "is-active" : undefined}
+                      href={adminViewHref(item.view as AdminConsoleView, locale)}
+                      key={item.anchor}
+                    >
                       <Icon size={15} aria-hidden="true" />
-                      <span>{label}</span>
+                      <span>{item.label}</span>
                     </a>
                   );
                 })}
@@ -1404,7 +1430,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </aside>
 
-        <div className="admin-console-main">
+        <div className={`admin-console-main admin-console-main--${adminView}`}>
           <header className="admin-operator-topbar admin-operator-topbar--v3" aria-label={locale === "zh" ? "管理员工具栏" : "Admin toolbar"}>
             <h1 id="admin-console-title" className="visually-hidden">SkillHub Admin Ops Console</h1>
             <div className="admin-global-search admin-global-search--status" aria-label={adminConsoleLabels.shell.searchPreview}>
@@ -1421,7 +1447,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
             <div className="admin-top-actions">
               <a className="admin-toolbar-button" href={localizedHref("/admin", alternateLocale)}>{adminV2Labels.language}</a>
-              <a className="admin-toolbar-button" href={localizedHref("/admin#admin-deliveries", locale)}>
+              <a className="admin-toolbar-button" href={adminViewHref("deliveries", locale)}>
                 {adminV2Labels.notifications}
                 <span>{formatCompactNumber(deliveryActionCount)}</span>
               </a>
@@ -1765,7 +1791,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     ["deferred", launchReadiness.summary.deferred],
                     ["ready", launchReadiness.summary.ready]
                   ].map(([status, count]) => (
-                    <a className={`admin-readiness-mini__item admin-readiness-mini__item--${status}`} href={localizedHref("/admin#launch-readiness", locale)} key={status}>
+                    <a className={`admin-readiness-mini__item admin-readiness-mini__item--${status}`} href={adminViewHref("health", locale, "launch-readiness")} key={status}>
                       <span>{status}</span>
                       <strong>{formatCompactNumber(Number(count))}</strong>
                     </a>
@@ -1780,7 +1806,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 </div>
                 <div className="admin-audit-mini">
                   {auditLogs.slice(0, 3).map((log) => (
-                    <a href={localizedHref("/admin#admin-audit", locale)} key={log.id}>
+                    <a href={adminViewHref("audit", locale, "admin-audit")} key={log.id}>
                       <strong>{log.action}</strong>
                       <span>{log.reason ?? log.entityType}</span>
                     </a>
@@ -1815,7 +1841,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   ))}
                 </div>
                 {recentOrderRows.map((transaction) => (
-                  <a className="admin-order-table__row" href={localizedHref("/admin#admin-ledger", locale)} key={transaction.id}>
+                  <a className="admin-order-table__row" href={adminViewHref("finance", locale, "admin-ledger")} key={transaction.id}>
                     <strong>{transaction.sourceReference ?? transaction.id}</strong>
                     <span>{transaction.skillName ?? transaction.skillSlug ?? "-"}</span>
                     <span>{transaction.sourceType ?? transaction.status}</span>
@@ -1858,7 +1884,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <h2 id="admin-traffic-title">{adminV2Labels.traffic.title}</h2>
                   <p>{adminConsoleLabels.traffic.description}</p>
                 </div>
-                <a className="btn-secondary" href={localizedHref("/admin#admin-templates", locale)}>{adminV2Labels.configureDataSource}</a>
+                <a className="btn-secondary" href={adminViewHref("settings", locale)}>{adminV2Labels.configureDataSource}</a>
               </div>
 
               <div className="admin-traffic-body">
@@ -1907,7 +1933,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     <span>{selectedOrder.balanceState ?? adminConsoleLabels.kpis.money}</span>
                   </div>
                   <div className="admin-selected-order__actions">
-                    <a className="btn-primary" href={localizedHref("/admin#admin-ledger", locale)}>
+                    <a className="btn-primary" href={adminViewHref("finance", locale, "admin-ledger")}>
                       {adminV2Labels.selectedOrder.ledgerAction}
                     </a>
                   </div>
@@ -1922,6 +1948,267 @@ export default async function AdminPage({ searchParams }: PageProps) {
               )}
             </aside>
           </section>
+
+          {adminView === "reviews" ? (
+            <section className="admin-module-page" id="admin-reviews" aria-labelledby="admin-reviews-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Gavel size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "审核模块" : "Review module"}</span>
+                  </div>
+                  <h2 id="admin-reviews-title">{locale === "zh" ? "技能审核与证据追踪" : "Skill reviews and evidence trail"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "只保留真实审核队列和审计入口；审核、驳回、证据与权限检查都在这里处理。"
+                      : "Only real review queues and audit entry points are shown here: approval, rejection, evidence, and permission checks."}
+                  </p>
+                </div>
+                <a className="btn-secondary" href={adminViewHref("audit", locale, "admin-audit")}>
+                  {locale === "zh" ? "查看审计日志" : "Open audit log"}
+                </a>
+              </div>
+              <section className="admin-layout">
+                <AdminReviewManager locale={locale} reviews={reviews} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "curation" ? (
+            <section className="admin-module-page" id="admin-curation" aria-labelledby="admin-curation-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Settings size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "作者与市场" : "Publisher ops"}</span>
+                  </div>
+                  <h2 id="admin-curation-title">{locale === "zh" ? "作者准入、申诉与市场分发" : "Publisher access, appeals, and marketplace curation"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "这里处理第三方作者提交、申诉和上架治理；未接入项保持状态标签，不做假按钮。"
+                      : "This module handles publisher submissions, appeals, and listing governance. Unconnected items stay status-labeled."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom">
+                <AdminMarketplaceCurationManager
+                  appeals={marketplaceCuration.appeals}
+                  connectionMessage={marketplaceCuration.message}
+                  connectionMode={marketplaceCuration.mode}
+                  curation={marketplaceCuration.curation}
+                  locale={locale}
+                />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "identity" ? (
+            <section className="admin-module-page" id="admin-identity" aria-labelledby="admin-identity-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Users size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "身份目录" : "Identity directory"}</span>
+                  </div>
+                  <h2 id="admin-identity-title">{locale === "zh" ? "用户、组织、角色与管理员准入" : "Users, organizations, roles, and admin access"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "管理员在这里看角色归属、组织状态和准入风险，不再绕到账户页。"
+                      : "Operators review role ownership, organization state, and access risks here without a personal-center detour."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom">
+                <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "deliveries" ? (
+            <section className="admin-module-page" id="admin-deliveries" aria-labelledby="admin-deliveries-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Bell size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "通知与 Webhook" : "Notifications and webhooks"}</span>
+                  </div>
+                  <h2 id="admin-deliveries-title">{locale === "zh" ? "通知投递、Webhook 回调与模板" : "Notification delivery, webhook callbacks, and templates"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "失败重试、回调状态和通知模板集中到一个模块，减少首页长度。"
+                      : "Delivery retries, callback state, and notification templates are grouped into one focused module."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom">
+                <NotificationDeliveryManager deliveries={notificationDeliveries} locale={locale} />
+              </section>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-webhooks">
+                <WebhookDeliveryManager deliveries={webhookDeliveries} locale={locale} />
+              </section>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-templates">
+                <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "finance" ? (
+            <section className="admin-module-page" id="admin-finance" aria-labelledby="admin-finance-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Landmark size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "财务模块" : "Finance module"}</span>
+                  </div>
+                  <h2 id="admin-finance-title">{locale === "zh" ? "账本、佣金规则与支付状态" : "Ledger, commission rules, and payment state"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "账本是订单金额、佣金和作者分成的来源；Stripe 和 Alipay 未接入时只显示真实状态。"
+                      : "The ledger is the source for order amount, commission, and publisher share. Stripe and Alipay stay explicitly gated until connected."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="admin-ledger">
+                <AdminLedgerProcessor ledger={financeLedger} locale={locale} />
+                <AdminCommissionRuleManager locale={locale} rules={commissionRules} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "payouts" ? (
+            <section className="admin-module-page" id="admin-payouts" aria-labelledby="admin-payouts-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <WalletCards size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "提现分账" : "Payouts and splits"}</span>
+                  </div>
+                  <h2 id="admin-payouts-title">{locale === "zh" ? "第三方作者提现审核与分账" : "Publisher payout review and revenue splits"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "处理作者提现、佣金口径和人工付款审核；未自动化支付的动作保留人工状态。"
+                      : "Review publisher payouts, commission basis, and manual settlement while automated payout actions remain clearly labeled."}
+                  </p>
+                </div>
+                <a className="btn-secondary" href={adminViewHref("finance", locale, "admin-ledger")}>
+                  {locale === "zh" ? "查看账本" : "Open ledger"}
+                </a>
+              </div>
+              <section className="workspace-ops-layout">
+                <AdminPayoutManager locale={locale} payouts={payouts} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "risk" ? (
+            <section className="admin-module-page" id="admin-risk" aria-labelledby="admin-risk-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Siren size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "风控模块" : "Risk module"}</span>
+                  </div>
+                  <h2 id="admin-risk-title">{locale === "zh" ? "举报、事故、反馈、退款与争议" : "Reports, incidents, feedback, refunds, and disputes"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "这里是真正需要运营处理的风险队列，不把风险卡片塞进总览底部。"
+                      : "This is the actionable risk queue, separated from the overview instead of being stacked at the bottom."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom">
+                <SkillFeedbackManager feedback={skillFeedback} locale={locale} />
+                <AdminIncidentManager incidents={incidents} locale={locale} />
+                <AbuseReportManager locale={locale} reports={abuseReports} />
+                <div id="admin-adjustments">
+                  <AdminAdjustmentManager disputes={disputes} locale={locale} refunds={refunds} />
+                </div>
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "health" ? (
+            <section className="admin-module-page" id="admin-health-module" aria-labelledby="admin-health-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "系统健康" : "System health"}</span>
+                  </div>
+                  <h2 id="admin-health-title">{locale === "zh" ? "上线就绪与生产健康检查" : "Launch readiness and production health"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "上线阻断、提醒项、延后检查和运行健康状态集中到这里。"
+                      : "Launch blockers, warnings, deferred checks, and operating health are kept in one module."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom" id="launch-readiness">
+                <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "audit" ? (
+            <section className="admin-module-page" id="admin-audit" aria-labelledby="admin-audit-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <ReceiptText size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "审计日志" : "Audit log"}</span>
+                  </div>
+                  <h2 id="admin-audit-title">{locale === "zh" ? "后台操作审计" : "Admin operation audit"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "所有审核、身份、财务、通知和风险操作都应能追踪来源与原因。"
+                      : "Review, identity, finance, delivery, and risk operations should remain traceable with source and reason."}
+                  </p>
+                </div>
+              </div>
+              <section className="admin-layout">
+                <AdminAuditLogPanel locale={locale} logs={auditLogs} />
+              </section>
+            </section>
+          ) : null}
+
+          {adminView === "settings" ? (
+            <section className="admin-module-page" id="admin-templates" aria-labelledby="admin-settings-title">
+              <div className="admin-module-page__head">
+                <div>
+                  <div className="eyebrow">
+                    <Settings size={16} aria-hidden="true" />
+                    <span>{locale === "zh" ? "设置" : "Settings"}</span>
+                  </div>
+                  <h2 id="admin-settings-title">{locale === "zh" ? "通知模板、支付接入状态和后台配置" : "Notification templates, payment state, and admin configuration"}</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "这里放真实可维护的后台配置；还没接入的 Stripe、Alipay、Analytics 只展示接入状态。"
+                      : "This module keeps real maintainable settings. Stripe, Alipay, and analytics stay as integration states until connected."}
+                  </p>
+                </div>
+              </div>
+              <section className="workspace-ops-layout workspace-ops-layout--bottom">
+                <NotificationTemplateManager locale={locale} templates={notificationTemplates} />
+              </section>
+              <article className="admin-payment-panel admin-payment-panel--v2">
+                <div className="eyebrow">
+                  <WalletCards size={16} aria-hidden="true" />
+                  <span>{adminConsoleLabels.payment.title}</span>
+                </div>
+                <h2>{adminConsoleLabels.payment.title}</h2>
+                <p>{adminConsoleLabels.payment.description}</p>
+                <div className="admin-payment-card-grid">
+                  {paymentCards.map(([title, detail, state, tone]) => (
+                    <div className="admin-payment-card" key={title}>
+                      <strong>{title}</strong>
+                      <span>{detail}</span>
+                      <b className={`admin-state-pill admin-state-pill--${tone}`}>{state}</b>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </section>
+          ) : null}
 
           <section className="admin-insight-grid admin-insight-grid--legacy" aria-labelledby="admin-analytics-title">
             <article className="admin-analytics-panel">
@@ -1961,7 +2248,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   ))}
                 </div>
                 {recentOrderRows.map((transaction) => (
-                  <a className="admin-order-row" href={localizedHref("/admin#admin-ledger", locale)} key={transaction.id}>
+                  <a className="admin-order-row" href={adminViewHref("finance", locale, "admin-ledger")} key={transaction.id}>
                     <strong>{transaction.sourceReference ?? transaction.id}</strong>
                     <span>{transaction.sourceType ?? transaction.status}</span>
                     <span>{formatMoney(transaction.grossCents, transaction.currency)}</span>
@@ -2022,16 +2309,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 ))}
               </div>
             </div>
-          </section>
-
-          <section className="console-board admin-access-strip">
-            <SessionStatusPanel locale={locale} session={session} />
-            <WorkspaceAccessPanel
-              locale={locale}
-              requiredRoles={adminAccessRoles}
-              session={session}
-              workspace="admin"
-            />
           </section>
 
           <section className="admin-detail-workbench" aria-labelledby="admin-detail-workbench-title">
@@ -2419,14 +2696,14 @@ function getAdminLockedGuide(locale: Locale) {
           title: "登录账号"
         },
         {
-          body: "在个人中心确认 reviewer、finance、support、admin 或 super_admin 角色。",
+          body: "在账号角色页确认 reviewer、finance、support、admin 或 super_admin 角色。",
           href: "/account",
           label: "02",
           title: "确认运营角色"
         },
         {
           body: "具备角色后直接打开后台，处理审核、上线就绪、提现、投递和审计。",
-          href: "/admin#launch-readiness",
+          href: "/admin?view=health#launch-readiness",
           label: "03",
           title: "进入运营台"
         }
@@ -2453,7 +2730,7 @@ function getAdminLockedGuide(locale: Locale) {
       },
       {
         body: "With the right role, open operations for reviews, launch readiness, payouts, delivery, and audit.",
-        href: "/admin#launch-readiness",
+        href: "/admin?view=health#launch-readiness",
         label: "03",
         title: "Open operations"
       }
@@ -2808,8 +3085,70 @@ function formatAdminOrderNext(transaction: FinanceLedgerTransaction, locale: Loc
   return locale === "zh" ? "查看详情" : "Review";
 }
 
+function getAdminViewFromSearchParams(params: AdminSearchParams): AdminConsoleView {
+  const rawView = params.view;
+  const value = Array.isArray(rawView) ? rawView[0] : rawView;
+
+  return adminConsoleViews.includes(value as AdminConsoleView) ? (value as AdminConsoleView) : "overview";
+}
+
+function adminViewHref(view: AdminConsoleView, locale: Locale, anchor?: string) {
+  const hash = anchor ? `#${anchor}` : "";
+  return localizedHref(`/admin?view=${view}${hash}`, locale);
+}
+
 function adminAnchor(anchor: string, locale: Locale) {
-  return localizedHref(`/admin#${anchor}`, locale);
+  const normalizedAnchor = anchor.startsWith("#") ? anchor.slice(1) : anchor;
+  return adminViewHref(getAdminViewForAnchor(`#${normalizedAnchor}`), locale, normalizedAnchor);
+}
+
+function getAdminViewForAnchor(anchor: string): AdminConsoleView {
+  switch (anchor) {
+    case "#admin-analytics":
+      return "analytics";
+    case "#admin-traffic":
+    case "#admin-traffic-details":
+      return "traffic";
+    case "#admin-ai-referrals":
+      return "ai-referrals";
+    case "#admin-funnel":
+      return "funnel";
+    case "#admin-reviews":
+    case "#admin-group-review":
+      return "reviews";
+    case "#admin-curation":
+    case "#admin-group-identity":
+      return "curation";
+    case "#admin-identity":
+      return "identity";
+    case "#admin-deliveries":
+    case "#admin-webhooks":
+    case "#admin-group-delivery":
+      return "deliveries";
+    case "#admin-orders":
+      return "orders";
+    case "#admin-finance":
+    case "#admin-finance-details":
+    case "#admin-ledger":
+    case "#admin-group-finance":
+      return "finance";
+    case "#admin-payouts":
+      return "payouts";
+    case "#admin-risk":
+    case "#admin-adjustments":
+    case "#admin-group-risk":
+      return "risk";
+    case "#admin-system-health":
+    case "#launch-readiness":
+    case "#admin-group-launch":
+      return "health";
+    case "#admin-audit":
+      return "audit";
+    case "#admin-templates":
+      return "settings";
+    default:
+      return "overview";
+  }
 }
 
 function getAdminNavIcon(anchor: string) {

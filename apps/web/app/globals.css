@@ -31458,6 +31458,106 @@ textarea:focus {
   min-height: 106px;
 }
 
+.admin-console-app .admin-dashboard-grid--v2,
+.admin-console-app .admin-funnel-card,
+.admin-console-app .admin-source-grid,
+.admin-console-app .admin-system-health-strip,
+.admin-console-app .admin-operations-grid,
+.admin-console-app .admin-traffic-workspace,
+.admin-console-app .admin-module-page {
+  display: none;
+}
+
+.admin-console-app .admin-access-strip,
+.admin-console-app .admin-detail-workbench {
+  display: none !important;
+}
+
+.admin-console-app .admin-console-main--overview .admin-dashboard-grid--v2,
+.admin-console-app .admin-console-main--analytics .admin-dashboard-grid--v2 {
+  display: grid;
+}
+
+.admin-console-app .admin-console-main--overview .admin-funnel-card,
+.admin-console-app .admin-console-main--funnel .admin-funnel-card {
+  display: block;
+}
+
+.admin-console-app .admin-console-main--overview .admin-source-grid,
+.admin-console-app .admin-console-main--traffic .admin-source-grid,
+.admin-console-app .admin-console-main--ai-referrals .admin-source-grid {
+  display: grid;
+}
+
+.admin-console-app .admin-console-main--overview .admin-system-health-strip,
+.admin-console-app .admin-console-main--health .admin-system-health-strip {
+  display: grid;
+}
+
+.admin-console-app .admin-console-main--orders .admin-operations-grid,
+.admin-console-app .admin-console-main--traffic .admin-traffic-workspace {
+  display: grid;
+}
+
+.admin-console-app .admin-console-main--reviews #admin-reviews.admin-module-page,
+.admin-console-app .admin-console-main--curation #admin-curation.admin-module-page,
+.admin-console-app .admin-console-main--identity #admin-identity.admin-module-page,
+.admin-console-app .admin-console-main--deliveries #admin-deliveries.admin-module-page,
+.admin-console-app .admin-console-main--finance #admin-finance.admin-module-page,
+.admin-console-app .admin-console-main--payouts #admin-payouts.admin-module-page,
+.admin-console-app .admin-console-main--risk #admin-risk.admin-module-page,
+.admin-console-app .admin-console-main--health #admin-health-module.admin-module-page,
+.admin-console-app .admin-console-main--audit #admin-audit.admin-module-page,
+.admin-console-app .admin-console-main--settings #admin-templates.admin-module-page {
+  display: grid;
+}
+
+.admin-console-app .admin-module-page {
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-console-app .admin-module-page__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+  border: 1px solid rgba(224, 237, 226, 0.105);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    radial-gradient(circle at 92% 10%, rgba(134, 243, 111, 0.05), transparent 30%),
+    rgba(11, 16, 19, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 58px rgba(0, 0, 0, 0.2);
+  padding: 18px;
+}
+
+.admin-console-app .admin-module-page__head h2 {
+  max-width: 780px;
+  margin: 8px 0 8px;
+  color: #f3f7ef;
+  font-size: clamp(24px, 2vw, 36px);
+  letter-spacing: 0;
+  line-height: 1.05;
+}
+
+.admin-console-app .admin-module-page__head p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(224, 237, 226, 0.62);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.admin-console-app .admin-module-page > .workspace-ops-layout,
+.admin-console-app .admin-module-page > .admin-layout,
+.admin-console-app .admin-module-page > .admin-payment-panel {
+  min-width: 0;
+}
+
 @media (max-width: 1540px) {
   .admin-console-app .admin-kpi-grid--ops {
     grid-template-columns: repeat(4, minmax(0, 1fr));
