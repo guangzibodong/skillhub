@@ -12,6 +12,7 @@ type Props = {
 export function PublicInfoPage({ locale, page }: Props) {
   const copy = page[locale];
   const jsonLd = buildJsonLd(page, locale);
+  const isLegal = page.layout === "legal";
 
   return (
     <AppShell active={page.active} locale={locale}>
@@ -19,11 +20,12 @@ export function PublicInfoPage({ locale, page }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="public-info-page">
+      <div className={`public-info-page ${isLegal ? "public-info-page--legal" : ""}`}>
         <section className="public-info-hero">
           <div className="public-info-hero__copy">
             <p className="eyebrow">{copy.eyebrow}</p>
             <h1>{copy.title}</h1>
+            {copy.updated ? <span className="public-info-updated">{copy.updated}</span> : null}
             <p>{copy.lead}</p>
             <div className="public-info-actions">
               {copy.primaryCta ? (
@@ -57,24 +59,52 @@ export function PublicInfoPage({ locale, page }: Props) {
           ) : null}
         </section>
 
-        <section className="public-info-grid" aria-label={locale === "zh" ? "页面内容" : "Page content"}>
-          {copy.sections.map((section, index) => (
-            <article className="public-info-card" key={section.title}>
-              <div className="public-info-card__icon" aria-hidden="true">
-                {index % 3 === 0 ? <Info size={18} /> : <CheckCircle2 size={18} />}
-              </div>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
-              {section.bullets ? (
-                <ul>
-                  {section.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-              ) : null}
+        {isLegal ? (
+          <section className="public-info-legal" aria-label={locale === "zh" ? "政策正文" : "Policy content"}>
+            <aside className="public-info-toc" aria-label={locale === "zh" ? "本页目录" : "On this page"}>
+              <strong>{locale === "zh" ? "本页内容" : "On this page"}</strong>
+              {copy.sections.map((section, index) => (
+                <a href={`#section-${index + 1}`} key={section.title}>
+                  {section.title}
+                </a>
+              ))}
+            </aside>
+            <article className="public-info-legal__article">
+              {copy.sections.map((section, index) => (
+                <section id={`section-${index + 1}`} key={section.title}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                  {section.bullets ? (
+                    <ul>
+                      {section.bullets.map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+              ))}
             </article>
-          ))}
-        </section>
+          </section>
+        ) : (
+          <section className="public-info-grid" aria-label={locale === "zh" ? "页面内容" : "Page content"}>
+            {copy.sections.map((section, index) => (
+              <article className="public-info-card" key={section.title}>
+                <div className="public-info-card__icon" aria-hidden="true">
+                  {index % 3 === 0 ? <Info size={18} /> : <CheckCircle2 size={18} />}
+                </div>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+                {section.bullets ? (
+                  <ul>
+                    {section.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </article>
+            ))}
+          </section>
+        )}
 
         {copy.faq ? (
           <section className="public-info-faq" aria-labelledby="public-info-faq-title">

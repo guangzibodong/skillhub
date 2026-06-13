@@ -2,24 +2,8 @@ import type { MetadataRoute } from "next";
 import { indexablePublicPaths } from "@/lib/public-pages";
 import { localizedUrl, siteUrl } from "@/lib/seo";
 
-const skillSlugs = [
-  "browser-research-pro",
-  "crm-enrichment",
-  "support-triage",
-  "data-pipeline-orchestrator",
-  "financial-report-analyzer",
-  "code-review-assistant",
-];
-
-const publisherSlugs = ["skillhub-labs", "devops-guild", "analyst-forge", "nexusai"];
-
-const extraPublicPaths = [
-  ...skillSlugs.map((slug) => `/skills/${slug}`),
-  ...publisherSlugs.map((slug) => `/publishers/${slug}`),
-];
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = Array.from(new Set([...indexablePublicPaths, ...extraPublicPaths]));
+  const paths = Array.from(new Set(indexablePublicPaths));
 
   return paths.flatMap((path) =>
     (["en", "zh"] as const).map((locale) => ({
@@ -45,10 +29,6 @@ function getPriority(path: string): number {
 
   if (path === "/marketplace" || path === "/docs" || path === "/what-is-a-skill") {
     return 0.9;
-  }
-
-  if (path.startsWith("/skills/") || path.startsWith("/publishers/")) {
-    return 0.74;
   }
 
   return 0.78;

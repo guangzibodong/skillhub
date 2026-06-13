@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { companyInfo, companyLinks } from "@/lib/company-info";
 import {
   getDictionary,
   getLocaleFromSearchParams,
@@ -253,38 +254,54 @@ const homeLandingCopy = {
         title: "Product",
         links: [
           ["Browse Skills", "/marketplace"],
-          ["Publish", "/publish"],
-          ["Pricing", "/marketplace#pricing"],
-          ["Workspace", "/developer"],
+          ["Registry", "/registry"],
+          ["Pricing", "/pricing"],
+          ["What is a Skill?", "/what-is-a-skill"],
+          ["Roadmap", "/roadmap"],
         ],
       },
       {
         title: "Developers",
         links: [
+          ["Quickstart", "/quickstart"],
           ["Docs", "/docs"],
-          ["API", "/docs#api"],
-          ["MCP", "/docs#mcp"],
+          ["API", "/api"],
+          ["MCP", "/mcp"],
+          ["Project Keys", "/project-keys"],
+          ["Examples", "/examples"],
+          ["Webhooks", "/webhooks"],
           ["Status", "/status"],
         ],
       },
       {
-        title: "Security",
+        title: "Publishers",
+        links: [
+          ["Publish Skill", "/publish"],
+          ["Publisher Review", "/publisher-review"],
+          ["Publisher Directory", "/publishers"],
+          ["Publisher Agreement", "/publisher-agreement"],
+        ],
+      },
+      {
+        title: "Trust",
         links: [
           ["Security", "/security"],
-          ["Publisher Review", "/publish"],
-          ["Data Handling", "/security#data"],
-          ["Health", "/status"],
+          ["Data Handling", "/data-handling"],
+          ["Privacy Policy", "/privacy"],
+          ["Terms", "/terms"],
+          ["Security Disclosure", "/security-disclosure"],
+          ["Acceptable Use", "/acceptable-use"],
         ],
       },
       {
         title: "Company",
-        links: [["Contact", "/support"]],
-      },
-      {
-        title: "Legal",
         links: [
-          ["Terms", "/terms"],
-          ["Privacy", "/privacy"],
+          ["About", "/about"],
+          ["Contact", "/contact"],
+          ["Support", "/support"],
+          ["Changelog", "/changelog"],
+          ["Cookie Policy", "/cookie-policy"],
+          ["Subprocessors", "/subprocessors"],
         ],
       },
     ],
@@ -422,38 +439,54 @@ const homeLandingCopy = {
         title: "产品",
         links: [
           ["浏览 Skills", "/marketplace"],
-          ["发布", "/publish"],
-          ["价格", "/marketplace#pricing"],
-          ["工作台", "/developer"],
+          ["注册表", "/registry"],
+          ["价格", "/pricing"],
+          ["什么是 Skill", "/what-is-a-skill"],
+          ["路线图", "/roadmap"],
         ],
       },
       {
         title: "开发者",
         links: [
+          ["快速开始", "/quickstart"],
           ["文档", "/docs"],
-          ["API", "/docs#api"],
-          ["MCP", "/docs#mcp"],
+          ["API", "/api"],
+          ["MCP", "/mcp"],
+          ["Project Key", "/project-keys"],
+          ["示例", "/examples"],
+          ["Webhooks", "/webhooks"],
           ["状态", "/status"],
         ],
       },
       {
-        title: "安全",
+        title: "发布者",
+        links: [
+          ["发布 Skill", "/publish"],
+          ["发布审核", "/publisher-review"],
+          ["发布者目录", "/publishers"],
+          ["发布者协议", "/publisher-agreement"],
+        ],
+      },
+      {
+        title: "信任",
         links: [
           ["安全", "/security"],
-          ["发布审核", "/publish"],
-          ["数据处理", "/security#data"],
-          ["健康状态", "/status"],
+          ["数据处理", "/data-handling"],
+          ["隐私政策", "/privacy"],
+          ["服务条款", "/terms"],
+          ["安全披露", "/security-disclosure"],
+          ["可接受使用", "/acceptable-use"],
         ],
       },
       {
         title: "公司",
-        links: [["联系我们", "/support"]],
-      },
-      {
-        title: "法律",
         links: [
-          ["服务条款", "/terms"],
-          ["隐私政策", "/privacy"],
+          ["关于我们", "/about"],
+          ["联系我们", "/contact"],
+          ["支持中心", "/support"],
+          ["更新日志", "/changelog"],
+          ["Cookie 政策", "/cookie-policy"],
+          ["子处理方", "/subprocessors"],
         ],
       },
     ],
@@ -627,7 +660,7 @@ export default async function Home({ searchParams }: PageProps) {
             <div className="eyebrow">
               <span>{landing.eyebrow}</span>
             </div>
-            <h1 id="home-heading">
+            <h1 id="home-heading" aria-label={landing.title}>
               {locale === "en" ? (
                 <>
                   Run agent skills like{" "}
@@ -984,6 +1017,15 @@ export default async function Home({ searchParams }: PageProps) {
           <div className="home-footer__brand">
             <strong>SkillHub</strong>
             <span>{landing.footerBody}</span>
+            <span>
+              {locale === "zh" ? "技术支持：" : "Technical support: "}
+              <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
+            </span>
+            <span>
+              {locale === "zh" ? "商务合作：" : "Business cooperation: "}
+              <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
+            </span>
+            <span>{locale === "zh" ? "公司地址：" : "Address: "}{companyInfo.address}</span>
             <PublicEventLink href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
               {landing.systemStatus} · {publicStats.publicSkills} skills
             </PublicEventLink>

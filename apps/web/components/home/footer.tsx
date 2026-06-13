@@ -1,4 +1,5 @@
 import { localizedHref, type Locale } from "@/lib/i18n";
+import { companyInfo, companyLinks } from "@/lib/company-info";
 
 type Props = {
   locale: Locale;
@@ -23,15 +24,20 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/registry", label: "Registry" },
         { href: "/pricing", label: "Pricing preview" },
         { href: "/what-is-a-skill", label: "What is a Skill?" },
+        { href: "/roadmap", label: "Roadmap" },
       ],
     },
     {
       title: "Developers",
       links: [
+        { href: "/quickstart", label: "Quickstart" },
         { href: "/docs", label: "Docs" },
         { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP" },
-        { href: "/developer", label: "Developer workspace" },
+        { href: "/project-keys", label: "Project Keys" },
+        { href: "/examples", label: "Examples" },
+        { href: "/webhooks", label: "Webhooks" },
+        { href: "/status", label: "Status" },
       ],
     },
     {
@@ -40,7 +46,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/publish", label: "Publish" },
         { href: "/publisher-review", label: "Publisher review" },
         { href: "/publishers", label: "Publisher directory" },
-        { href: "/roadmap", label: "Roadmap" },
+        { href: "/publisher-agreement", label: "Publisher agreement" },
       ],
     },
     {
@@ -50,6 +56,8 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/data-handling", label: "Data handling" },
         { href: "/privacy", label: "Privacy" },
         { href: "/terms", label: "Terms" },
+        { href: "/security-disclosure", label: "Security disclosure" },
+        { href: "/acceptable-use", label: "Acceptable use" },
       ],
     },
     {
@@ -59,6 +67,8 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/contact", label: "Contact" },
         { href: "/support", label: "Support" },
         { href: "/changelog", label: "Changelog" },
+        { href: "/cookie-policy", label: "Cookie policy" },
+        { href: "/subprocessors", label: "Subprocessors" },
       ],
     },
   ],
@@ -70,15 +80,20 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/registry", label: "注册表" },
         { href: "/pricing", label: "价格预览" },
         { href: "/what-is-a-skill", label: "什么是 Skill" },
+        { href: "/roadmap", label: "路线图" },
       ],
     },
     {
       title: "开发者",
       links: [
+        { href: "/quickstart", label: "快速开始" },
         { href: "/docs", label: "文档" },
         { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP" },
-        { href: "/developer", label: "开发者工作区" },
+        { href: "/project-keys", label: "Project Key" },
+        { href: "/examples", label: "示例" },
+        { href: "/webhooks", label: "Webhooks" },
+        { href: "/status", label: "状态" },
       ],
     },
     {
@@ -87,7 +102,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/publish", label: "发布技能" },
         { href: "/publisher-review", label: "发布审核" },
         { href: "/publishers", label: "发布者目录" },
-        { href: "/roadmap", label: "路线图" },
+        { href: "/publisher-agreement", label: "发布者协议" },
       ],
     },
     {
@@ -97,6 +112,8 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/data-handling", label: "数据处理" },
         { href: "/privacy", label: "隐私政策" },
         { href: "/terms", label: "服务条款" },
+        { href: "/security-disclosure", label: "安全披露" },
+        { href: "/acceptable-use", label: "可接受使用" },
       ],
     },
     {
@@ -106,6 +123,8 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/contact", label: "联系我们" },
         { href: "/support", label: "支持中心" },
         { href: "/changelog", label: "更新日志" },
+        { href: "/cookie-policy", label: "Cookie 政策" },
+        { href: "/subprocessors", label: "子处理方" },
       ],
     },
   ],
@@ -141,6 +160,19 @@ export function HomeFooter({ locale }: Props) {
             </div>
           ))}
         </nav>
+
+        <section className="home-footer__contact" aria-label={locale === "zh" ? "联系信息" : "Contact information"}>
+          <h2>{locale === "zh" ? "联系信息" : "Contact"}</h2>
+          <p>
+            {locale === "zh" ? "技术支持：" : "Technical support: "}
+            <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
+          </p>
+          <p>
+            {locale === "zh" ? "商务合作：" : "Business cooperation: "}
+            <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
+          </p>
+          <p>{locale === "zh" ? "公司地址：" : "Address: "}{companyInfo.address}</p>
+        </section>
 
         <div className="home-footer__bottom">
           <p>

@@ -1,4 +1,6 @@
 import type { NavPage } from "@/components/home/nav";
+import { companyInfo, companyLinks } from "@/lib/company-info";
+import { launchPublicPages, type LaunchPublicPageKey } from "@/lib/launch-public-pages";
 import type { Locale } from "@/lib/locale-routing";
 import type { LocalizedSeo } from "@/lib/seo";
 
@@ -12,7 +14,8 @@ export type PublicPageKey =
   | "pricing"
   | "publisher-review"
   | "roadmap"
-  | "what-is-a-skill";
+  | "what-is-a-skill"
+  | LaunchPublicPageKey;
 
 export type PublicInfoPageCopy = {
   eyebrow: string;
@@ -27,11 +30,13 @@ export type PublicInfoPageCopy = {
     bullets?: string[];
   }>;
   faq?: Array<{ question: string; answer: string }>;
+  updated?: string;
 };
 
 export type PublicPageDefinition = {
   active?: NavPage;
   indexable: boolean;
+  layout?: "cards" | "legal";
   path: string;
   schema: "Article" | "ContactPage" | "WebPage";
   seo: {
@@ -68,12 +73,24 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       quickAnswer:
         "SkillHub uses clear fallback contact paths during Launch Preview. Product and support questions go through support, while sensitive security reports should request a secure disclosure channel before sharing details.",
       primaryCta: { href: "/support", label: "Open support" },
-      secondaryCta: { href: "mailto:support@skillhub.dev", label: "Email the team" },
+      secondaryCta: { href: companyLinks.supportMailto, label: "Email support" },
       sections: [
         {
-          title: "General inquiries",
-          body: "Ask product, partnership, documentation, or adoption questions through the support route or email fallback.",
-          bullets: ["Do not include Project Keys, OAuth secrets, or private customer data.", "Include the public URL or Skill slug when relevant."],
+          title: "Technical support",
+          body: "Use this channel for account, login, Project Key, API/MCP invocation, Skill publishing, and admin workspace issues.",
+          bullets: [
+            `Email: ${companyInfo.supportEmail}`,
+            "Include account email, page URL, error screenshot, request time, and reproduction steps.",
+            "Do not include Project Keys, OAuth secrets, passwords, or private customer data.",
+          ],
+        },
+        {
+          title: "Business cooperation",
+          body: "Use this channel for enterprise evaluation, channel partnerships, publisher cooperation, procurement, media, or ecosystem discussions.",
+          bullets: [
+            `Email: ${companyInfo.businessEmail}`,
+            "Include organization name, cooperation direction, contact person, and expected timeline.",
+          ],
         },
         {
           title: "Publisher onboarding",
@@ -82,11 +99,11 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         },
         {
           title: "Security reports",
-          body: "Security issues should request a secure disclosure channel first. Public support reports must not include exploitable payloads or secrets.",
+          body: `Security issues should request a secure disclosure channel first through ${companyInfo.supportEmail}. Public support reports must not include exploitable payloads or secrets.`,
         },
         {
-          title: "Enterprise or team evaluation",
-          body: "Teams evaluating SkillHub can review security, data handling, API/MCP docs, and Launch Preview limits before requesting a call.",
+          title: "Company address",
+          body: companyInfo.address,
         },
       ],
     },
@@ -97,12 +114,24 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       quickAnswer:
         "公开预览阶段，SkillHub 使用明确的联系路径而不是假表单。产品与支持问题走支持入口；敏感安全报告应先请求安全披露渠道，再共享细节。",
       primaryCta: { href: "/support", label: "打开支持中心" },
-      secondaryCta: { href: "mailto:support@skillhub.dev", label: "邮件联系团队" },
+      secondaryCta: { href: companyLinks.supportMailto, label: "邮件联系支持" },
       sections: [
         {
-          title: "通用咨询",
-          body: "产品、合作、文档或采用评估问题可以通过支持入口或邮件 fallback 联系。",
-          bullets: ["不要提交 Project Key、OAuth secret 或客户私有数据。", "如果和页面或 Skill 有关，请附上公开 URL 或 Skill slug。"],
+          title: "技术支持",
+          body: "账号、登录、Project Key、API/MCP 调用、Skill 发布和后台使用问题，请走技术支持路径。",
+          bullets: [
+            `邮箱：${companyInfo.supportEmail}`,
+            "建议提供账号邮箱、页面 URL、错误截图、请求时间和复现步骤。",
+            "不要提交 Project Key、OAuth secret、密码或客户私有数据。",
+          ],
+        },
+        {
+          title: "商务合作",
+          body: "企业评估、渠道合作、发布者合作、采购咨询、媒体或生态合作，请走商务合作路径。",
+          bullets: [
+            `邮箱：${companyInfo.businessEmail}`,
+            "建议提供公司/组织名称、合作方向、联系人和时间要求。",
+          ],
         },
         {
           title: "发布者入驻",
@@ -111,11 +140,11 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         },
         {
           title: "安全报告",
-          body: "安全问题请先请求安全披露渠道。公开支持报告中不要包含可利用 payload、token 或 secret。",
+          body: `安全问题请先通过 ${companyInfo.supportEmail} 请求安全披露渠道。公开支持报告中不要包含可利用 payload、token 或 secret。`,
         },
         {
-          title: "企业 / 团队评估",
-          body: "团队评估 SkillHub 时，可以先查看安全、数据处理、API/MCP 文档和公开预览限制，再联系团队。",
+          title: "公司地址",
+          body: companyInfo.address,
         },
       ],
     },
@@ -577,6 +606,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       ],
     },
   },
+  ...launchPublicPages,
 };
 
 export const indexablePublicPaths = [
@@ -597,11 +627,22 @@ export const indexablePublicPaths = [
   "/privacy",
   "/pricing",
   "/what-is-a-skill",
+  "/project-keys",
+  "/quickstart",
+  "/examples",
+  "/webhooks",
   "/api",
   "/mcp",
   "/changelog",
   "/about",
   "/roadmap",
+  "/marketplace-terms",
+  "/publisher-agreement",
+  "/refund-policy",
+  "/acceptable-use",
+  "/security-disclosure",
+  "/cookie-policy",
+  "/subprocessors",
 ] as const;
 
 export const privateNoIndexPaths = [

@@ -20,6 +20,16 @@ export function getLocaleFromSearchParams(searchParams: SearchParams): Locale {
 }
 
 export function localizedHref(path: string, locale: Locale) {
+  if (
+    path.startsWith("mailto:") ||
+    path.startsWith("tel:") ||
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("#")
+  ) {
+    return path;
+  }
+
   const [base, hash] = path.split("#");
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}lang=${locale}${hash ? `#${hash}` : ""}`;

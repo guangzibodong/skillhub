@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { RotateCcw, ShieldAlert } from "lucide-react";
 
 type ErrorPageProps = {
@@ -29,9 +30,9 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
               <RotateCcw size={18} aria-hidden="true" />
               <span>Try again</span>
             </button>
-            <a className="secondary-button secondary-button--large" href="/marketplace?lang=en">
+            <Link className="secondary-button secondary-button--large" href="/marketplace?lang=en">
               Marketplace
-            </a>
+            </Link>
           </div>
           {error.digest ? <small className="error-digest">Error digest: {error.digest}</small> : null}
         </div>

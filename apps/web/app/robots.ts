@@ -10,6 +10,11 @@ export default function robots(): MetadataRoute.Robots {
         allow: [...indexablePublicPaths, "/skills/", "/publishers/"],
         disallow: [
           ...privateNoIndexPaths,
+          "/login/",
+          "/admin/",
+          "/account/",
+          "/publisher/",
+          "/developer/",
           "/dashboard/",
           "/api/auth/",
           "/api/admin/",

@@ -32,18 +32,24 @@ type NavProps = {
 
 const navLinks = {
   en: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "Marketplace" },
-    { href: "/registry", page: "registry" as NavPage, label: "Registry" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
+    { href: "/quickstart", page: "docs" as NavPage, label: "Quickstart" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs" },
+    { href: "/api", page: "docs" as NavPage, label: "API" },
+    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
+    { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
+    { href: "/security", page: "security" as NavPage, label: "Security" },
     { href: "/pricing", page: "marketplace" as NavPage, label: "Pricing" },
-    { href: "/publish", page: "publish" as NavPage, label: "Publish" },
   ],
   zh: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "市场" },
-    { href: "/registry", page: "registry" as NavPage, label: "注册表" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
+    { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
+    { href: "/api", page: "docs" as NavPage, label: "API" },
+    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
+    { href: "/publish", page: "publish" as NavPage, label: "发布 Skill" },
+    { href: "/security", page: "security" as NavPage, label: "安全" },
     { href: "/pricing", page: "marketplace" as NavPage, label: "价格" },
-    { href: "/publish", page: "publish" as NavPage, label: "发布" },
   ],
 };
 
