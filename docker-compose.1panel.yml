@@ -11,8 +11,13 @@ services:
       - .env
     environment:
       SKILLHUB_ENV: production
+      SKILLHUB_ACCESS_LOG_PATHS: /var/log/skillhub/useskillhub/access.log,/var/log/skillhub/www.useskillhub/access.log
+      SKILLHUB_ANALYTICS_TIME_ZONE: Asia/Shanghai
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
+    volumes:
+      - /opt/1panel/www/sites/useskillhub.com/log:/var/log/skillhub/useskillhub:ro
+      - /opt/1panel/www/sites/www.useskillhub.com/log:/var/log/skillhub/www.useskillhub:ro
     ports:
       - "127.0.0.1:3100:3000"
     depends_on:

@@ -38,6 +38,7 @@ import { SkillFeedbackManager } from "@/components/skill-feedback-manager";
 import { AppShell } from "@/components/app-shell";
 import { WebhookDeliveryManager } from "@/components/webhook-delivery-manager";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
+import { getAccessLogAnalytics } from "@/lib/access-log-analytics";
 import { signOutAction } from "@/lib/auth-actions";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
@@ -936,7 +937,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     abuseReports,
     incidents,
     skillFeedback,
-    reviews
+    reviews,
+    accessLogAnalytics
   ] = await Promise.all([
     getFinanceLedger(),
     getAdminLaunchReadiness(),
@@ -953,7 +955,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     getAdminAbuseReports(),
     getAdminIncidents(),
     getAdminSkillFeedback(),
-    getAdminReviews()
+    getAdminReviews(),
+    getAccessLogAnalytics()
   ]);
   const financeRows =
     financeLedger.recentTransactions.length > 0
@@ -1061,6 +1064,16 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ] as const;
   const pendingDataLabel = adminV2Labels.dataSourcePending;
   const pendingShortLabel = locale === "zh" ? "待接入" : "Pending";
+  const accessLogSourceLabel = accessLogAnalytics.connected
+    ? accessLogAnalytics.sourceLabel
+    : (locale === "zh" ? "日志未挂载" : "Log not mounted");
+  const todayUvValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayUv) : pendingShortLabel;
+  const uniqueIpValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayUniqueIps) : pendingShortLabel;
+  const todayPageViewValue = accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.todayPageViews) : pendingDataLabel;
+  const trafficSourceState = accessLogAnalytics.connected
+    ? (locale === "zh" ? "访问日志已接入" : "Access log connected")
+    : pendingDataLabel;
+  const trafficSourceTone = accessLogAnalytics.connected ? "green" : "amber";
   const overviewKpis: Array<{
     detail: string;
     href: string;
@@ -1071,22 +1084,26 @@ export default async function AdminPage({ searchParams }: PageProps) {
     value: string;
   }> = [
     {
-      detail: locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected.",
+      detail: accessLogAnalytics.connected
+        ? (locale === "zh" ? "按访问日志 IP + UA 去重统计。" : "Deduplicated by IP + user agent from access logs.")
+        : (locale === "zh" ? "访问日志接入后显示今日 UV。" : "Shown after traffic logs are connected."),
       href: adminViewHref("traffic", locale),
       Icon: Users,
       label: locale === "zh" ? "今日 UV" : "Today UV",
-      tone: "warning",
-      trend: locale === "zh" ? "Analytics 待接入" : "Analytics pending",
-      value: pendingShortLabel
+      tone: accessLogAnalytics.connected ? "ready" : "warning",
+      trend: accessLogSourceLabel,
+      value: todayUvValue
     },
     {
-      detail: locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source.",
+      detail: accessLogAnalytics.connected
+        ? (locale === "zh" ? "从 1Panel / Nginx access.log 统计唯一访问 IP。" : "Unique IPs counted from 1Panel / Nginx access.log.")
+        : (locale === "zh" ? "独立 IP 需接入 Cloudflare 或 Nginx 日志。" : "Requires Cloudflare or Nginx log source."),
       href: adminViewHref("traffic", locale),
       Icon: ShieldCheck,
       label: locale === "zh" ? "独立 IP" : "Unique IP",
-      tone: "warning",
-      trend: locale === "zh" ? "日志待接入" : "Logs pending",
-      value: pendingShortLabel
+      tone: accessLogAnalytics.connected ? "ready" : "warning",
+      trend: accessLogSourceLabel,
+      value: uniqueIpValue
     },
     {
       detail: locale === "zh" ? "当前身份目录用户总数，今日新增待接入事件流。" : "Current identity directory; daily signup events pending.",
@@ -1264,21 +1281,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
       tone: webhookActionCount > 0 ? "warning" : "ready"
     }
   ] as const;
-  const sourceChannels = [
-    ["Google", pendingDataLabel, 0, "cyan"],
-    ["GitHub", pendingDataLabel, 0, "green"],
-    ["Direct", pendingDataLabel, 0, "neutral"],
-    ["Bing", pendingDataLabel, 0, "cyan"]
-  ] as const;
-  const aiReferralChannels = [
-    ["ChatGPT", pendingDataLabel, 0],
-    ["Perplexity", pendingDataLabel, 0],
-    ["Claude", pendingDataLabel, 0],
-    ["Gemini", pendingDataLabel, 0],
-    ["Copilot", pendingDataLabel, 0]
-  ] as const;
+  const sourceChannels = accessLogAnalytics.channels.map((channel) => [
+    channel.label,
+    accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
+    channel.share,
+    channel.label === "GitHub" ? "green" : channel.label === "Direct" ? "neutral" : "cyan"
+  ] as const);
+  const aiReferralChannels = accessLogAnalytics.aiReferrals.map((channel) => [
+    channel.label,
+    accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
+    channel.share
+  ] as const);
   const conversionFunnel = [
-    [locale === "zh" ? "访问网站" : "Visit site", pendingDataLabel, locale === "zh" ? "入口待接入" : "Source pending"],
+    [locale === "zh" ? "访问网站" : "Visit site", todayPageViewValue, accessLogAnalytics.connected ? accessLogSourceLabel : (locale === "zh" ? "入口待接入" : "Source pending")],
     [locale === "zh" ? "注册/登录" : "Sign in", formatCompactNumber(identityDirectory.summary.userCount), locale === "zh" ? "身份目录" : "Identity"],
     ["Project Key", pendingDataLabel, locale === "zh" ? "事件待接入" : "Event pending"],
     [locale === "zh" ? "浏览技能" : "Browse skills", pendingDataLabel, locale === "zh" ? "Analytics 待接入" : "Analytics pending"],
@@ -1299,10 +1314,56 @@ export default async function AdminPage({ searchParams }: PageProps) {
     ["DB", adminV2Labels.apiHealthy, "green"],
     ["Webhook", adminConsoleLabels.payment.items[2][1], webhookActionCount > 0 ? "red" : "amber"],
     ["Email", deliveryActionCount > 0 ? (locale === "zh" ? "待处理" : "Pending") : adminV2Labels.apiHealthy, deliveryActionCount > 0 ? "amber" : "green"],
-    ["Analytics", adminConsoleLabels.kpis.trafficValue, "amber"],
+    ["Analytics", trafficSourceState, trafficSourceTone],
     [locale === "zh" ? "支付回调" : "Payment callback", adminConsoleLabels.payment.items[2][1], "amber"]
   ] as const;
-  const trafficBars = [74, 56, 42, 68, 28, 38];
+  const trafficRows = [
+    {
+      label: "PV",
+      value: todayPageViewValue,
+      width: accessLogAnalytics.connected ? 100 : 0
+    },
+    {
+      label: "UV",
+      value: todayUvValue,
+      width: accessLogAnalytics.todayPageViews > 0 ? Math.round((accessLogAnalytics.todayUv / accessLogAnalytics.todayPageViews) * 100) : 0
+    },
+    {
+      label: locale === "zh" ? "独立 IP" : "Unique IP",
+      value: uniqueIpValue,
+      width: accessLogAnalytics.todayPageViews > 0 ? Math.round((accessLogAnalytics.todayUniqueIps / accessLogAnalytics.todayPageViews) * 100) : 0
+    },
+    ...accessLogAnalytics.channels.slice(0, 2).map((channel) => ({
+      label: channel.label,
+      value: accessLogAnalytics.connected ? `${formatCompactNumber(channel.count)} / ${channel.share}%` : pendingDataLabel,
+      width: channel.share
+    })),
+    {
+      label: locale === "zh" ? "热门路径" : "Top path",
+      value: accessLogAnalytics.connected ? accessLogAnalytics.topPath : pendingDataLabel,
+      width: accessLogAnalytics.paths[0]?.share ?? 0
+    }
+  ];
+  const trafficDataSources = [
+    [
+      "1Panel access.log",
+      accessLogAnalytics.connected
+        ? (locale === "zh" ? "已挂载" : "Connected")
+        : (locale === "zh" ? "需要挂载" : "Mount required")
+    ],
+    [
+      locale === "zh" ? "读取文件" : "Parsed files",
+      accessLogAnalytics.connected ? formatCompactNumber(accessLogAnalytics.files.length) : "0"
+    ],
+    [
+      locale === "zh" ? "Top Referrer" : "Top referrer",
+      accessLogAnalytics.connected ? accessLogAnalytics.topReferrer : pendingDataLabel
+    ],
+    [
+      locale === "zh" ? "Top Path" : "Top path",
+      accessLogAnalytics.connected ? accessLogAnalytics.topPath : pendingDataLabel
+    ]
+  ] as const;
   const workbenchCounts = [
     launchReadiness.summary.blocker,
     reviewMetrics.actionable,
@@ -1689,7 +1750,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span>{locale === "zh" ? "来源分析" : "Source analysis"}</span>
               </div>
               <h2>{locale === "zh" ? "普通来源" : "Standard channels"}</h2>
-              <p>{locale === "zh" ? "Google、GitHub、Direct、Bing 等入口接入分析后显示真实占比。" : "Google, GitHub, Direct, and Bing share will appear after analytics is connected."}</p>
+              <p>
+                {accessLogAnalytics.connected
+                  ? (locale === "zh" ? "来自 1Panel / Nginx access.log 的当天来源占比。" : "Same-day source share from 1Panel / Nginx access.log.")
+                  : (locale === "zh" ? "Google、GitHub、Direct、Bing 等入口接入分析后显示真实占比。" : "Google, GitHub, Direct, and Bing share will appear after analytics is connected.")}
+              </p>
               <div className="admin-channel-list">
                 {sourceChannels.map(([label, value, width, tone]) => (
                   <div className={`admin-channel-row admin-channel-row--${tone}`} key={label}>
@@ -1707,7 +1772,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <span>{locale === "zh" ? "AI 推荐来源" : "AI referral sources"}</span>
               </div>
               <h2>{locale === "zh" ? "AI 推荐来源" : "AI referrals"}</h2>
-              <p>{locale === "zh" ? "单独跟踪 ChatGPT、Perplexity、Claude、Gemini、Copilot，服务后续 GEO 增长。" : "Tracks ChatGPT, Perplexity, Claude, Gemini, and Copilot for GEO growth."}</p>
+              <p>
+                {accessLogAnalytics.connected
+                  ? (locale === "zh" ? "从 referrer 中识别 ChatGPT、Perplexity、Claude、Gemini、Copilot 等 AI 推荐来源。" : "AI referrals are detected from referrers such as ChatGPT, Perplexity, Claude, Gemini, and Copilot.")
+                  : (locale === "zh" ? "单独跟踪 ChatGPT、Perplexity、Claude、Gemini、Copilot，服务后续 GEO 增长。" : "Tracks ChatGPT, Perplexity, Claude, Gemini, and Copilot for GEO growth.")}
+              </p>
               <div className="admin-channel-list">
                 {aiReferralChannels.map(([label, value, width]) => (
                   <div className="admin-channel-row admin-channel-row--ai" key={label}>
@@ -1882,18 +1951,24 @@ export default async function AdminPage({ searchParams }: PageProps) {
                     <span>{adminConsoleLabels.traffic.title}</span>
                   </div>
                   <h2 id="admin-traffic-title">{adminV2Labels.traffic.title}</h2>
-                  <p>{adminConsoleLabels.traffic.description}</p>
+                  <p>
+                    {accessLogAnalytics.connected
+                      ? (locale === "zh"
+                          ? "已接入 1Panel / Nginx 访问日志，展示当天 UV、PV、独立 IP、来源和热门路径。"
+                          : "1Panel / Nginx access logs are connected for same-day UV, PV, unique IPs, referrers, and hot paths.")
+                      : adminConsoleLabels.traffic.description}
+                  </p>
                 </div>
                 <a className="btn-secondary" href={adminViewHref("settings", locale)}>{adminV2Labels.configureDataSource}</a>
               </div>
 
               <div className="admin-traffic-body">
                 <div className="admin-traffic-bars">
-                  {adminV2Labels.traffic.labels.map((label, index) => (
-                    <div className="admin-traffic-bar" key={label}>
-                      <span>{label}</span>
-                      <i><b style={{ width: `${trafficBars[index] ?? 30}%` }} /></i>
-                      <strong>{index < 3 ? `${trafficBars[index]}%` : index === 4 ? (locale === "zh" ? "警惕" : "Watch") : (locale === "zh" ? "监控" : "Monitor")}</strong>
+                  {trafficRows.map((row) => (
+                    <div className="admin-traffic-bar" key={row.label}>
+                      <span>{row.label}</span>
+                      <i><b style={{ width: `${Math.max(0, Math.min(row.width, 100))}%` }} /></i>
+                      <strong>{row.value}</strong>
                     </div>
                   ))}
                 </div>
@@ -1907,7 +1982,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <div className="admin-traffic-sources" aria-label={adminConsoleLabels.traffic.sourcesTitle}>
                 <strong>{adminConsoleLabels.traffic.sourcesTitle}</strong>
                 <div>
-                  {adminConsoleLabels.traffic.sources.map(([source, state]) => (
+                  {trafficDataSources.map(([source, state]) => (
                     <span key={source}>
                       {source}
                       <em>{state}</em>
