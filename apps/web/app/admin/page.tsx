@@ -1363,20 +1363,87 @@ export default async function AdminPage({ searchParams }: PageProps) {
               </div>
 
               <div className="admin-analytics-workspace">
-                <div className="admin-motion-chart" aria-hidden="true">
-                  <div className="admin-motion-chart__legend">
-                    <span><i />GMV</span>
-                    <span><i />{locale === "zh" ? "订单" : "Orders"}</span>
-                    <span><i />{locale === "zh" ? "安装/调用" : "Installs / calls"}</span>
+                <div
+                  className="admin-ops-chart"
+                  role="img"
+                  aria-label={
+                    locale === "zh"
+                      ? "运营趋势预览，展示账本、订单、安装调用和事件检查点"
+                      : "Operational trend preview showing ledger, orders, installs, calls, and event checkpoints"
+                  }
+                >
+                  <div className="admin-ops-chart__header">
+                    <div>
+                      <span>{locale === "zh" ? "7 日运营信号" : "7 day operational signal"}</span>
+                      <strong>{locale === "zh" ? "账本、订单、安装调用" : "Ledger, orders, installs and calls"}</strong>
+                    </div>
+                    <b className="admin-state-pill admin-state-pill--amber">
+                      {financeLedger.recentTransactions.length > 0
+                        ? adminConsoleLabels.analytics.cards.usageOrders
+                        : adminV2Labels.dataSourcePending}
+                    </b>
                   </div>
-                  <svg viewBox="0 0 900 300" preserveAspectRatio="none">
-                    <path className="admin-chart-fill" d="M0,230 C60,210 90,170 145,176 C205,183 226,126 292,134 C348,141 379,90 445,98 C512,106 540,155 605,130 C672,105 728,88 790,105 C835,118 862,82 900,60 L900,300 L0,300 Z" />
-                    <path className="admin-chart-line admin-chart-line--gmv" d="M0,230 C60,210 90,170 145,176 C205,183 226,126 292,134 C348,141 379,90 445,98 C512,106 540,155 605,130 C672,105 728,88 790,105 C835,118 862,82 900,60" />
-                    <path className="admin-chart-line admin-chart-line--orders" d="M0,246 C66,224 135,214 190,190 C250,165 297,178 350,145 C424,98 496,140 565,108 C630,78 714,125 900,90" />
-                    <path className="admin-chart-line admin-chart-line--calls" d="M0,260 C90,245 162,238 226,222 C322,198 392,178 470,186 C548,194 620,154 700,160 C780,166 838,144 900,128" />
-                  </svg>
+
+                  <div className="admin-ops-chart__legend" aria-hidden="true">
+                    <span className="admin-ops-chart__legend-item admin-ops-chart__legend-item--gmv">GMV</span>
+                    <span className="admin-ops-chart__legend-item admin-ops-chart__legend-item--orders">
+                      {locale === "zh" ? "订单" : "Orders"}
+                    </span>
+                    <span className="admin-ops-chart__legend-item admin-ops-chart__legend-item--calls">
+                      {locale === "zh" ? "安装 / 调用" : "Installs / calls"}
+                    </span>
+                  </div>
+
+                  <div className="admin-ops-chart__plot">
+                    <div className="admin-ops-chart__axis admin-ops-chart__axis--y" aria-hidden="true">
+                      {["100", "75", "50", "25", "0"].map((tick) => (
+                        <span key={tick}>{tick}</span>
+                      ))}
+                    </div>
+                    <svg viewBox="0 0 900 320" preserveAspectRatio="none" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="adminOpsArea" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#7fee64" stopOpacity="0.18" />
+                          <stop offset="100%" stopColor="#7fee64" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path className="admin-ops-chart__area" d="M0,248 C70,228 118,204 178,202 C236,200 276,160 338,150 C408,138 456,168 520,142 C590,112 646,124 706,112 C774,98 828,110 900,74 L900,320 L0,320 Z" />
+                      <path className="admin-ops-chart__line admin-ops-chart__line--gmv" d="M0,248 C70,228 118,204 178,202 C236,200 276,160 338,150 C408,138 456,168 520,142 C590,112 646,124 706,112 C774,98 828,110 900,74" />
+                      <path className="admin-ops-chart__line admin-ops-chart__line--orders" d="M0,266 C86,244 154,236 220,214 C294,190 336,184 406,190 C496,198 544,164 628,152 C710,140 772,150 900,122" />
+                      <path className="admin-ops-chart__line admin-ops-chart__line--calls" d="M0,286 C94,270 164,252 236,230 C304,210 366,196 446,188 C520,180 598,164 676,168 C760,172 824,150 900,132" />
+                      <line className="admin-ops-chart__cursor" x1="704" x2="704" y1="46" y2="292" />
+                      <circle className="admin-ops-chart__dot admin-ops-chart__dot--gmv" cx="704" cy="112" r="4" />
+                      <circle className="admin-ops-chart__dot admin-ops-chart__dot--orders" cx="704" cy="145" r="4" />
+                      <circle className="admin-ops-chart__dot admin-ops-chart__dot--calls" cx="704" cy="168" r="4" />
+                    </svg>
+                    <div className="admin-ops-chart__tooltip" aria-hidden="true">
+                      <span>{locale === "zh" ? "最新检查点" : "Latest checkpoint"}</span>
+                      <strong>{primaryPriorityItem.title}</strong>
+                      <small>{primaryPriorityItem.metric}</small>
+                    </div>
+                    <div className="admin-ops-chart__axis admin-ops-chart__axis--x" aria-hidden="true">
+                      {(locale === "zh" ? ["周一", "周二", "周三", "周四", "周五", "周六", "今天"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Today"]).map((tick) => (
+                        <span key={tick}>{tick}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="admin-ops-chart__events" aria-label={locale === "zh" ? "运营事件轨道" : "Operational event track"}>
+                    {[
+                      [locale === "zh" ? "审核" : "Reviews", formatCompactNumber(reviewMetrics.actionable)],
+                      [locale === "zh" ? "订单" : "Orders", formatCompactNumber(orderActionCount)],
+                      [locale === "zh" ? "支付" : "Payments", formatCompactNumber(payoutActionCount + adjustmentActionCount)],
+                      [locale === "zh" ? "风控" : "Risk", formatCompactNumber(activeIncidentCount + openAbuseReportCount)]
+                    ].map(([label, value]) => (
+                      <span key={label}>
+                        <strong>{value}</strong>
+                        <small>{label}</small>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="admin-insight-stack">
+
+                <div className="admin-insight-stack admin-insight-stack--ops">
                   {analyticsInsights.map(([label, value, detail]) => (
                     <div className="admin-insight-card" key={label}>
                       <span>{label}</span>
@@ -1384,6 +1451,15 @@ export default async function AdminPage({ searchParams }: PageProps) {
                       <small>{detail}</small>
                     </div>
                   ))}
+                  <div className="admin-insight-card admin-insight-card--source">
+                    <span>{locale === "zh" ? "数据口径" : "Data scope"}</span>
+                    <strong>{locale === "zh" ? "预发布可核验" : "Prelaunch, verifiable"}</strong>
+                    <small>
+                      {locale === "zh"
+                        ? "未接入的 Stripe、Alipay、Analytics 只显示状态，不伪造生产数据。"
+                        : "Stripe, Alipay, and analytics stay status-labeled until production data is connected."}
+                    </small>
+                  </div>
                 </div>
               </div>
             </article>
