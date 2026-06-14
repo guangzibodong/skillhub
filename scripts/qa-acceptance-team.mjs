@@ -10,6 +10,14 @@ const DEFAULT_CREDENTIALS_PATH = "/root/skillhub-acceptance-team.json";
 const DEFAULT_OUTPUT = "output/acceptance-team-qa-report.json";
 const DEFAULT_TIMEOUT_MS = 30000;
 const PUBLIC_SKILL_SLUG_PLACEHOLDER = "{publicSkillSlug}";
+const FALLBACK_PUBLIC_SKILL_SLUGS = [
+  "browser-research-pro",
+  "crm-enrichment",
+  "support-triage",
+  "dataset-insight",
+  "codebase-risk-scanner",
+  "invoice-extraction"
+];
 let publicSkillSlugPromise;
 
 const ROLE_SPECS = {
@@ -445,7 +453,8 @@ async function fetchPublicSkillSlug(role) {
   const skills = Array.isArray(response.json?.skills) ? response.json.skills : [];
   const candidates = [
     ...skills.filter((candidate) => isUsablePublicSkill(candidate, true)),
-    ...skills.filter((candidate) => isUsablePublicSkill(candidate, false))
+    ...skills.filter((candidate) => isUsablePublicSkill(candidate, false)),
+    ...FALLBACK_PUBLIC_SKILL_SLUGS.map((slug) => ({ slug, verificationStatus: "static" }))
   ];
   const skill = await firstReachablePublicSkill(candidates);
 
