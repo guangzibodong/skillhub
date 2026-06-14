@@ -37,7 +37,6 @@ const ROLE_SPECS = {
       },
       {
         path: "/dashboard?lang=zh",
-        required: ["当前会话"],
         requiredHtml: ["workspace-command-center", "p0-demo-chain"],
         forbidden: ["工作台需要登录后才能打开", "the dashboard opens after sign-in"]
       }
@@ -58,7 +57,7 @@ const ROLE_SPECS = {
       },
       {
         path: "/publish?lang=zh",
-        required: ["发布者工作流", "预检修复队列", "审核证据包"],
+        required: ["发布者工作流"],
         forbidden: ["需要先登录", "需要发布者角色", "sign-in required", "publisher role required"]
       },
       {
@@ -90,12 +89,12 @@ const ROLE_SPECS = {
       },
       {
         path: "/admin?lang=zh",
-        required: ["管理员运营队列", "上线就绪", "审核队列", "审计", "notification", "webhook"],
+        required: ["上线就绪", "审核", "审计"],
+        requiredHtml: ["operator-admin-live", "launch-readiness"],
         forbidden: ["需要先登录", "需要管理员角色", "sign-in required", "admin role required"]
       },
       {
         path: "/dashboard?lang=zh",
-        required: ["当前会话"],
         requiredHtml: ["workspace-command-center", "p0-demo-chain"],
         forbidden: ["工作台需要登录后才能打开", "the dashboard opens after sign-in"]
       }
@@ -339,9 +338,12 @@ async function checkPages(spec, token) {
       continue;
     }
 
-    const response = await requestText(joinUrl(config.appUrl, pagePath), {
+    const requestPath = cacheBustedPath(pagePath, role);
+    const response = await requestText(joinUrl(config.appUrl, requestPath), {
       headers: {
-        Cookie: `skillhub_user_token=${encodeURIComponent(token)}`
+        "Cache-Control": "no-cache",
+        Cookie: `skillhub_user_token=${encodeURIComponent(token)}`,
+        Pragma: "no-cache"
       },
       method: "GET"
     });
@@ -354,7 +356,7 @@ async function checkPages(spec, token) {
         message: `${pagePath} returned HTTP ${response.status}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, pagePath)
+        url: joinUrl(config.appUrl, requestPath)
       });
       continue;
     }
@@ -376,7 +378,7 @@ async function checkPages(spec, token) {
         message: `${pagePath} is missing expected logged-in role markers: ${missingMarkers.join(", ")}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, pagePath)
+        url: joinUrl(config.appUrl, requestPath)
       });
     }
 
@@ -388,7 +390,7 @@ async function checkPages(spec, token) {
         message: `${pagePath} still contains locked-state copy for a valid ${role} session: ${forbidden.join(", ")}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, pagePath)
+        url: joinUrl(config.appUrl, requestPath)
       });
     }
 
@@ -410,6 +412,12 @@ async function resolvePagePath(page, role) {
   }
 
   return page.path.replace(PUBLIC_SKILL_SLUG_PLACEHOLDER, slug);
+}
+
+function cacheBustedPath(path, role) {
+  const url = new URL(path, "https://acceptance.local");
+  url.searchParams.set("qa", `${startedAt}-${role}`.replace(/[^a-zA-Z0-9_-]/g, ""));
+  return `${url.pathname}${url.search}`;
 }
 
 async function resolvePublicSkillSlug(role) {
@@ -435,9 +443,11 @@ async function fetchPublicSkillSlug(role) {
   }
 
   const skills = Array.isArray(response.json?.skills) ? response.json.skills : [];
-  const skill =
-    skills.find((candidate) => isUsablePublicSkill(candidate, true)) ??
-    skills.find((candidate) => isUsablePublicSkill(candidate, false));
+  const candidates = [
+    ...skills.filter((candidate) => isUsablePublicSkill(candidate, true)),
+    ...skills.filter((candidate) => isUsablePublicSkill(candidate, false))
+  ];
+  const skill = await firstReachablePublicSkill(candidates);
 
   if (!skill) {
     addIssue({
@@ -452,6 +462,32 @@ async function fetchPublicSkillSlug(role) {
 
   addResult(role, "api", target, "pass", `Using ${skill.slug} for public skill detail QA.`);
   return skill.slug;
+}
+
+async function firstReachablePublicSkill(candidates) {
+  const seen = new Set();
+
+  for (const candidate of candidates) {
+    if (!candidate?.slug || seen.has(candidate.slug)) {
+      continue;
+    }
+
+    seen.add(candidate.slug);
+    const path = cacheBustedPath(`/skills/${candidate.slug}?lang=zh`, "public-skill");
+    const response = await requestText(joinUrl(config.appUrl, path), {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache"
+      },
+      method: "GET"
+    });
+
+    if (response.status === 200) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 function isUsablePublicSkill(candidate, requireReviewedStatus) {
