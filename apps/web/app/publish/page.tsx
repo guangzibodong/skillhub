@@ -15,7 +15,7 @@ import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { getPublishCopy } from "@/lib/publish-copy";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
     ? "/publisher"
     : session.subject
       ? "/account"
-      : "/login";
+      : hrefWithReturnTo("/login", "/publish", locale);
   const signalIcons = [ClipboardCheck, ShieldCheck, Gauge, HandCoins];
   const stepIcons = [
     FileJson,
@@ -222,7 +222,7 @@ function getPublishAccessNotice({
 
   if (!hasSession) {
     return {
-      actionHref: localizedHref("/login", locale),
+      actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
       actionLabel: locale === "zh" ? "先登录" : "Sign in",
       body:
         locale === "zh"

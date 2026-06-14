@@ -10,8 +10,21 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { AdminAuditLogPanel } from "@/components/admin-audit-log-panel";
+import { AdminIdentityDirectory } from "@/components/admin-identity-directory";
+import { AdminLaunchReadinessPanel } from "@/components/admin-launch-readiness-panel";
+import { AdminPayoutManager } from "@/components/admin-payout-manager";
+import { AdminReviewManager } from "@/components/admin-review-manager";
 import { signOutAction } from "@/lib/auth-actions";
-import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getWorkspaceSession, type SessionSubject } from "@/lib/auth-session";
+import { getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
+import {
+  getAdminAuditLogs,
+  getAdminIdentityDirectory,
+  getAdminLaunchReadiness,
+  getAdminPayouts,
+  getAdminReviews,
+} from "@/lib/ops-data";
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +57,8 @@ type StatusStripItem = {
   title: BilingualText;
   tone: string;
 };
+
+const operatorRoles = new Set(["admin", "finance", "reviewer", "support", "super_admin"]);
 
 const text = (zh: string, en: string): BilingualText => ({ en, zh });
 
@@ -383,6 +398,33 @@ const sampleApiRequest = `curl -X POST "https://api.browsercorp.ai/v1/run" \\
 
 export default async function AdminPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(await searchParams);
+  const session = await getWorkspaceSession();
+  const roleSet = subjectRoleSet(session.subject);
+  const hasOperatorAccess = hasAnyRole(roleSet, operatorRoles);
+
+  if (!session.subject) {
+    return <AdminAccessGate kind="signed-out" locale={locale} />;
+  }
+
+  if (!hasOperatorAccess) {
+    return <AdminAccessGate kind="forbidden" locale={locale} subject={session.subject} />;
+  }
+
+  const [
+    launchReadiness,
+    reviews,
+    payouts,
+    identityDirectory,
+    auditLogs,
+  ] = await Promise.all([
+    getAdminLaunchReadiness(),
+    getAdminReviews(),
+    getAdminPayouts(),
+    getAdminIdentityDirectory(),
+    getAdminAuditLogs(),
+  ]);
+  const operatorName = session.subject.displayName ?? session.subject.email ?? "Admin";
+  const operatorInitial = operatorName.slice(0, 1).toUpperCase();
 
   async function signOut() {
     "use server";
@@ -447,8 +489,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <CircleHelp size={16} aria-hidden="true" />
             </a>
             <button className="operator-user-menu" type="button">
-              <span>A</span>
-              <strong>{inlineBilingual(text("管理员", "Admin"))}</strong>
+              <span>{operatorInitial}</span>
+              <strong>{operatorName}</strong>
               <ChevronDown size={14} aria-hidden="true" />
             </button>
             <form action={signOut}>
@@ -469,6 +511,29 @@ export default async function AdminPage({ searchParams }: PageProps) {
               <em>{bilingual(item.detail)}</em>
             </article>
           ))}
+        </section>
+
+        <section className="operator-admin-live" id="launch-readiness" aria-label="管理员运营队列 / Admin operations queue">
+          <header className="operator-admin-live__head">
+            <div>
+              <span>{bilingual(text("管理员运营队列", "Admin operations queue"))}</span>
+              <h2>{bilingual(text("上线就绪、审核、身份、打款和审计", "Launch readiness, review, identity, payout, and audit"))}</h2>
+            </div>
+            <a href={localizedHref("/docs#admin", locale)}>{linkWithArrow(text("查看运营文档", "View operator docs"))}</a>
+          </header>
+
+          <AdminLaunchReadinessPanel locale={locale} readiness={launchReadiness} />
+
+          <div className="admin-operations-grid operator-admin-live__grid">
+            <div className="operator-admin-live__stack">
+              <AdminReviewManager locale={locale} reviews={reviews} />
+              <AdminIdentityDirectory directory={identityDirectory} locale={locale} />
+            </div>
+            <div className="operator-admin-live__stack">
+              <AdminPayoutManager locale={locale} payouts={payouts} />
+              <AdminAuditLogPanel locale={locale} logs={auditLogs} />
+            </div>
+          </div>
         </section>
 
         <section className="operator-core-grid">
@@ -492,6 +557,87 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
+}
+
+function AdminAccessGate({
+  kind,
+  locale,
+  subject,
+}: {
+  kind: "forbidden" | "signed-out";
+  locale: Locale;
+  subject?: SessionSubject;
+}) {
+  const isSignedOut = kind === "signed-out";
+  const copy =
+    locale === "zh"
+      ? {
+          action: isSignedOut ? "去登录" : "查看账号角色",
+          body: isSignedOut
+            ? "后台包含审核、财务、打款、身份目录和审计操作。请先使用具备 reviewer、finance、support、admin 或 super_admin 权限的账号登录。"
+            : `当前账号 ${subject?.email ?? subject?.displayName ?? ""} 没有运营权限。请切换到运营账号，或让超级管理员授予 reviewer、finance、support、admin 或 super_admin 角色。`,
+          eyebrow: "后台准入",
+          secondary: "返回首页",
+          title: isSignedOut ? "需要先登录运营账号" : "需要运营权限",
+        }
+      : {
+          action: isSignedOut ? "Sign in" : "Check account roles",
+          body: isSignedOut
+            ? "Admin operations include review, finance, payout, identity directory, and audit actions. Sign in with reviewer, finance, support, admin, or super_admin access first."
+            : `The current account ${subject?.email ?? subject?.displayName ?? ""} does not have operator access. Switch accounts or ask a super admin to grant reviewer, finance, support, admin, or super_admin access.`,
+          eyebrow: "Admin access",
+          secondary: "Back home",
+          title: isSignedOut ? "Operator sign-in required" : "Operator role required",
+        };
+  const actionHref = isSignedOut
+    ? localizedHrefWithReturnTo("/login", locale, "/admin")
+    : localizedHref("/account", locale);
+
+  return (
+    <main className="product-shell admin-access-gate">
+      <section className="workspace-locked-panel">
+        <article className="ops-panel workspace-locked-panel__card">
+          <div className="workspace-locked-panel__main">
+            <div className="card-kicker">
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{copy.eyebrow}</span>
+            </div>
+            <h1>{copy.title}</h1>
+            <p>{copy.body}</p>
+            <a className="primary-button" href={actionHref}>
+              <span>{copy.action}</span>
+              <ShieldCheck size={16} aria-hidden="true" />
+            </a>
+          </div>
+          <div className="workspace-locked-panel__actions" aria-label={copy.eyebrow}>
+            <a className="workspace-locked-panel__action" href={localizedHref("/", locale)}>
+              <span>01</span>
+              <strong>{copy.secondary}</strong>
+              <small>SkillHub</small>
+            </a>
+            <a className="workspace-locked-panel__action" href={localizedHref("/docs", locale)}>
+              <span>02</span>
+              <strong>{locale === "zh" ? "查看文档" : "Read docs"}</strong>
+              <small>{locale === "zh" ? "了解运营权限和审核流程" : "Review operator roles and review flows"}</small>
+            </a>
+            <a className="workspace-locked-panel__action" href={localizedHref("/status", locale)}>
+              <span>03</span>
+              <strong>{locale === "zh" ? "查看状态" : "View status"}</strong>
+              <small>{locale === "zh" ? "确认公开服务状态" : "Confirm public service status"}</small>
+            </a>
+          </div>
+        </article>
+      </section>
+    </main>
+  );
+}
+
+function subjectRoleSet(subject: SessionSubject | null | undefined) {
+  return new Set([subject?.platformRole, ...(subject?.roles ?? [])].filter((role): role is string => Boolean(role)));
+}
+
+function hasAnyRole(roles: Set<string>, allowedRoles: Set<string>) {
+  return Array.from(allowedRoles).some((role) => roles.has(role));
 }
 
 function ReviewQueue() {

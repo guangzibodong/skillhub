@@ -272,10 +272,10 @@ export function WorkspaceSignupForm({
                 </label>
                 <label className="auth-form-grid__wide">
                   <span>{labels.role}</span>
-                  <select defaultValue="owner" name="role">
-                    <option value="owner">{labels.owner}</option>
+                  <select defaultValue="developer" name="role">
                     <option value="developer">{labels.developer}</option>
                     <option value="publisher">{labels.publisher}</option>
+                    <option value="owner">{labels.owner}</option>
                   </select>
                 </label>
               </>

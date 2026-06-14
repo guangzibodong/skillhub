@@ -28,7 +28,7 @@ import { SkillAbuseReportForm } from "@/components/skill-abuse-report-form";
 import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
 import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
@@ -244,12 +244,13 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const skillActionState = getPublicSkillActionState(skill.verification.en, hasDeveloperAccess);
   const installState = getSkillInstallState(skill.verification.en);
   const isSkillInstallable = skillActionState.canInstallNow;
+  const skillReturnTo = `/skills/${skill.slug}`;
   const developerAccessHref = skillActionState.canShowProjectHandoff
     ? hasDeveloperAccess
       ? "/developer"
       : hasWorkspaceSession
         ? "/account"
-        : "/login"
+        : hrefWithReturnTo("/login", skillReturnTo, locale)
     : "/marketplace";
   const developerAccessLabel = skillActionState.canShowProjectHandoff
     ? hasDeveloperAccess
@@ -408,7 +409,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                         ? "保存、安装、订阅和测试会写入组织项目状态，需要开发者、所有者或管理员角色。你仍然可以复制 API 查看命令并检查权限、运行时、价格和审核信号。"
                         : "Saving, installing, subscribing, and testing write project state, so they require a developer, owner, or admin role. You can still copy API inspect commands and review permissions, runtime, pricing, and review signals."
                     }
-                    lockedCtaHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+                    lockedCtaHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, skillReturnTo)}
                     lockedCtaLabel={
                       hasWorkspaceSession
                         ? locale === "zh"

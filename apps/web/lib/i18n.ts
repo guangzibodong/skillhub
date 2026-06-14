@@ -2,7 +2,9 @@ import type { Locale } from "@/lib/locale-routing";
 
 export {
   getLocaleFromSearchParams,
+  hrefWithReturnTo,
   localizedHref,
+  localizedHrefWithReturnTo,
   locales,
   resolveLocale,
 } from "@/lib/locale-routing";

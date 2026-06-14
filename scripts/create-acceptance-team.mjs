@@ -72,25 +72,32 @@ try {
   console.log(`API: ${config.apiUrl}`);
   console.log(`App: ${config.appUrl}`);
   console.log(`Run id: ${runId}`);
-  console.log("Creating or verifying three role accounts. Credentials will not be printed.");
+  console.log("Creating or verifying eight role accounts: 3 developers, 3 publishers, and 2 admins. Credentials will not be printed.");
   console.log("");
 
   for (const account of Object.values(accounts)) {
     await ensurePasswordAccount(config, account);
   }
 
-  const bootstrap = await promoteAdmin(config, accounts.admin);
+  const bootstraps = {};
+
+  for (const [key, account] of Object.entries(accounts)) {
+    if (account.kind === "admin") {
+      bootstraps[key] = await promoteAdmin(config, account);
+    }
+  }
+
   const verified = {};
 
   for (const [key, account] of Object.entries(accounts)) {
     verified[key] = await loginAndVerify(config, account, {
-      requireAdmin: key === "admin"
+      requireAdmin: account.kind === "admin"
     });
   }
 
   const output = buildOutput({
     accounts,
-    bootstrap,
+    bootstraps,
     config,
     existing,
     runId,
@@ -101,7 +108,7 @@ try {
 
   console.log("Acceptance team ready.");
   console.log(`Private credentials file: ${resolve(config.output)}`);
-  console.log("Accounts prepared: admin/operator, developer user, publisher partner.");
+  console.log("Accounts prepared: 2 admin operators, 3 developer users, 3 publisher partners.");
   console.log("No passwords, tokens, OAuth secrets, or service credentials were printed.");
 } catch (error) {
   console.error(redactSecrets(error instanceof Error ? error.message : String(error)));
@@ -237,8 +244,23 @@ async function loginAndVerify(config, account, { requireAdmin }) {
   };
 }
 
-function buildOutput({ accounts, bootstrap, config, existing, runId, verified }) {
+function buildOutput({ accounts, bootstraps, config, existing, runId, verified }) {
   const createdAt = new Date().toISOString();
+  const outputAccounts = Object.fromEntries(
+    Object.entries(accounts).map(([key, account]) => [
+      key,
+      outputAccount(account, verified[key], {
+        ...(bootstraps[key]
+          ? {
+              bootstrapToken: bootstraps[key].token,
+              bootstrapTokenLast4: bootstraps[key].tokenLast4,
+              bootstrapTokenName: bootstraps[key].tokenName
+            }
+          : {}),
+        workspaceUrl: workspaceUrlForAccount(config.appUrl, account)
+      })
+    ])
+  );
 
   return {
     schema: "skillhub.acceptance-team.v1",
@@ -248,18 +270,11 @@ function buildOutput({ accounts, bootstrap, config, existing, runId, verified })
     apiUrl: config.apiUrl,
     appUrl: config.appUrl,
     runId,
-    accounts: {
-      admin: outputAccount(accounts.admin, verified.admin, {
-        bootstrapToken: bootstrap.token,
-        bootstrapTokenLast4: bootstrap.tokenLast4,
-        workspaceUrl: joinUrl(config.appUrl, "/admin?lang=zh")
-      }),
-      developer: outputAccount(accounts.developer, verified.developer, {
-        workspaceUrl: joinUrl(config.appUrl, "/developer?lang=zh")
-      }),
-      publisher: outputAccount(accounts.publisher, verified.publisher, {
-        workspaceUrl: joinUrl(config.appUrl, "/publisher?lang=zh")
-      })
+    accounts: outputAccounts,
+    cohorts: {
+      admins: Object.keys(accounts).filter((key) => accounts[key].kind === "admin"),
+      developers: Object.keys(accounts).filter((key) => accounts[key].kind === "developer"),
+      publishers: Object.keys(accounts).filter((key) => accounts[key].kind === "publisher")
     },
     walkthrough: [
       {
@@ -310,51 +325,67 @@ function outputAccount(account, verified, extra) {
   };
 }
 
+function workspaceUrlForAccount(appUrl, account) {
+  if (account.kind === "admin") {
+    return joinUrl(appUrl, "/admin?lang=zh");
+  }
+
+  if (account.kind === "publisher") {
+    return joinUrl(appUrl, "/publisher?lang=zh");
+  }
+
+  return joinUrl(appUrl, "/developer?lang=zh");
+}
+
 function buildAccounts({ existing, runId, config }) {
   const suffix = runId.replace(/[^a-z0-9_-]/g, "").slice(0, 16);
   const domain = normalizeEmailDomain(config.emailDomain);
+  const specs = [
+    ["admin", "admin", "SkillHub Acceptance Admin", "SkillHub Acceptance Admin Ops"],
+    ["admin2", "admin", "SkillHub Acceptance Admin 2", "SkillHub Acceptance Admin Ops 2"],
+    ["developer", "developer", "SkillHub Acceptance Developer", "SkillHub Acceptance Developer Lab"],
+    ["developer2", "developer", "SkillHub Acceptance Developer 2", "SkillHub Acceptance Developer Lab 2"],
+    ["developer3", "developer", "SkillHub Acceptance Developer 3", "SkillHub Acceptance Developer Lab 3"],
+    ["publisher", "publisher", "SkillHub Acceptance Partner", "SkillHub Acceptance Partner Studio"],
+    ["publisher2", "publisher", "SkillHub Acceptance Partner 2", "SkillHub Acceptance Partner Studio 2"],
+    ["publisher3", "publisher", "SkillHub Acceptance Partner 3", "SkillHub Acceptance Partner Studio 3"]
+  ];
 
-  return {
-    admin: buildAccount({
-      defaults: {
-        displayName: "SkillHub Acceptance Admin",
-        email: `qa-admin-${suffix}@${domain}`,
-        expectedRole: config.adminPlatformRole,
-        kind: "admin",
-        organizationName: "SkillHub Acceptance Admin Ops",
-        organizationRole: "owner",
-        organizationSlug: `qa-admin-${suffix}`,
-        username: `qa_admin_${suffix}`
-      },
-      existing: existing?.accounts?.admin
-    }),
-    developer: buildAccount({
-      defaults: {
-        displayName: "SkillHub Acceptance Developer",
-        email: `qa-developer-${suffix}@${domain}`,
-        expectedRole: "developer",
-        kind: "developer",
-        organizationName: "SkillHub Acceptance Developer Lab",
-        organizationRole: "developer",
-        organizationSlug: `qa-dev-${suffix}`,
-        username: `qa_dev_${suffix}`
-      },
-      existing: existing?.accounts?.developer
-    }),
-    publisher: buildAccount({
-      defaults: {
-        displayName: "SkillHub Acceptance Partner",
-        email: `qa-partner-${suffix}@${domain}`,
-        expectedRole: "publisher",
-        kind: "publisher",
-        organizationName: "SkillHub Acceptance Partner Studio",
-        organizationRole: "publisher",
-        organizationSlug: `qa-partner-${suffix}`,
-        username: `qa_partner_${suffix}`
-      },
-      existing: existing?.accounts?.publisher
+  return Object.fromEntries(
+    specs.map(([key, kind, displayName, organizationName]) => {
+      const indexSuffix = key.replace(/^(admin|developer|publisher)/, "") || "1";
+      const normalizedIndex = indexSuffix === "1" ? "" : indexSuffix;
+      const usernamePrefix =
+        kind === "admin"
+          ? `qa_admin${normalizedIndex}`
+          : kind === "developer"
+            ? `qa_dev${normalizedIndex}`
+            : `qa_partner${normalizedIndex}`;
+      const slugPrefix =
+        kind === "admin"
+          ? `qa-admin${normalizedIndex}`
+          : kind === "developer"
+            ? `qa-dev${normalizedIndex}`
+            : `qa-partner${normalizedIndex}`;
+
+      return [
+        key,
+        buildAccount({
+          defaults: {
+            displayName,
+            email: `${slugPrefix}-${suffix}@${domain}`,
+            expectedRole: kind === "admin" ? config.adminPlatformRole : kind,
+            kind,
+            organizationName,
+            organizationRole: kind === "admin" ? "owner" : kind,
+            organizationSlug: `${slugPrefix}-${suffix}`,
+            username: `${usernamePrefix}_${suffix}`
+          },
+          existing: existing?.accounts?.[key]
+        })
+      ];
     })
-  };
+  );
 }
 
 function buildAccount({ defaults, existing }) {
@@ -632,10 +663,10 @@ function parseArgs(argv) {
 function printHelp() {
   console.log(`Usage: node scripts/create-acceptance-team.mjs [options]
 
-Creates or verifies three real SkillHub acceptance accounts:
-  - admin/operator account promoted with the server service token
-  - developer user account using normal password signup/login
-  - publisher partner account using normal password signup/login
+Creates or verifies eight real SkillHub acceptance accounts:
+  - 2 admin/operator accounts promoted with the server service token
+  - 3 developer user accounts using normal password signup/login
+  - 3 publisher partner accounts using normal password signup/login
 
 Credentials are written only to a private local JSON file and are never printed.
 

@@ -24,7 +24,7 @@ import { SessionStatusPanel } from "@/components/session-status-panel";
 import { SiteHeader } from "@/components/site-header";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -443,7 +443,7 @@ function getPublisherLockedGuide(locale: Locale) {
       actions: [
         {
           body: "用 Google、GitHub 或邮箱密码进入账号，建立当前组织会话。",
-          href: "/login",
+          href: hrefWithReturnTo("/login", "/publisher", locale),
           label: "01",
           title: "登录账号"
         },
@@ -470,7 +470,7 @@ function getPublisherLockedGuide(locale: Locale) {
     actions: [
       {
         body: "Use Google, GitHub, or email/password to create the current organization session.",
-        href: "/login",
+        href: hrefWithReturnTo("/login", "/publisher", locale),
         label: "01",
         title: "Sign in"
       },
@@ -885,7 +885,7 @@ function formatCommercialAction(blockers: PublisherCommercialBlocker[], labels: 
 
 function getPublisherCommandHref(taskId: ReadinessTask["id"], locale: Locale) {
   if (taskId === "session") {
-    return localizedHref("/login", locale);
+    return localizedHrefWithReturnTo("/login", locale, "/publisher");
   }
 
   if (taskId === "publish") {
@@ -910,6 +910,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const hasWorkspaceSession = Boolean(session.subject);
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasPublisherAccess = hasWorkspaceSession && publisherAccessRoles.some((role) => roleSet.has(role));
+  const publisherLoginPath = hrefWithReturnTo("/login", "/publisher", locale);
 
   if (!hasPublisherAccess) {
     return (
@@ -928,7 +929,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </section>
 
         <JourneyRail
-          actionHrefOverride={hasWorkspaceSession ? "/account" : "/login"}
+          actionHrefOverride={hasWorkspaceSession ? "/account" : publisherLoginPath}
           actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           currentStep="publisher"
           journey="publisher"
@@ -940,7 +941,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </section>
 
         <WorkspaceLockedPanel
-          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/publisher")}
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
@@ -1467,7 +1468,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
         </>
       ) : (
         <WorkspaceLockedPanel
-          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/publisher")}
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"

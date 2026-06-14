@@ -34,3 +34,14 @@ export function localizedHref(path: string, locale: Locale) {
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}lang=${locale}${hash ? `#${hash}` : ""}`;
 }
+
+export function hrefWithReturnTo(path: string, returnTo: string, locale: Locale) {
+  const returnHref = returnTo.startsWith("/") ? localizedHref(returnTo, locale) : returnTo;
+  const separator = path.includes("?") ? "&" : "?";
+
+  return `${path}${separator}returnTo=${encodeURIComponent(returnHref)}`;
+}
+
+export function localizedHrefWithReturnTo(path: string, locale: Locale, returnTo: string) {
+  return localizedHref(hrefWithReturnTo(path, returnTo, locale), locale);
+}

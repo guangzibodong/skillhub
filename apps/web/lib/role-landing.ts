@@ -27,6 +27,10 @@ export function roleLandingPath(subject: SessionSubject | null | undefined, loca
     return `/developer${suffix}`;
   }
 
+  if (roles.has("owner")) {
+    return `/developer${suffix}`;
+  }
+
   return `/account${suffix}`;
 }
 
