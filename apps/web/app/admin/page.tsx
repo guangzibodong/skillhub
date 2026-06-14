@@ -517,7 +517,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <header className="operator-admin-live__head">
             <div>
               <span>{bilingual(text("管理员运营队列", "Admin operations queue"))}</span>
-              <h2>{bilingual(text("上线就绪、审核、身份、打款和审计", "Launch readiness, review, identity, payout, and audit"))}</h2>
+              <h2>{bilingual(text("上线就绪、审核、身份、打款、通知、Webhook 和审计", "Launch readiness, review, identity, payout, notification, webhook, and audit"))}</h2>
             </div>
             <a href={localizedHref("/docs#admin", locale)}>{linkWithArrow(text("查看运营文档", "View operator docs"))}</a>
           </header>

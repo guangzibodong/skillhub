@@ -29,7 +29,7 @@ const ROLE_SPECS = {
         required: ["市场", "详情"]
       },
       {
-        path: "/skills/browser-research?lang=zh",
+        path: "/skills/browser-research-pro?lang=zh",
         required: ["用户反馈", "发布者信任"],
         requiredHtml: ["skill-developer-handoff-packet"]
       },
