@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import type { SkillSummary } from "@useskillhub/schema";
 
 export type RegistryStats = {
@@ -16,7 +17,7 @@ export type GatewayMetric = {
   value: string;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const apiUrl = getServerApiUrl();
 
 export async function getSkills(): Promise<SkillSummary[]> {
   try {

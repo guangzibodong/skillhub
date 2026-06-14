@@ -1,5 +1,6 @@
 "use server";
 
+import { getServerApiUrl } from "@/lib/api-url";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearSessionCookie, fetchSessionSubject, setSessionCookie, type SessionSubject } from "@/lib/auth-session";
@@ -414,7 +415,7 @@ function resolveAuthRedirect(
 }
 
 function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  return getServerApiUrl();
 }
 
 function emailErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {

@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import { getUserToken } from "@/lib/auth-session";
 
 export type AuthProviderStatus = {
@@ -95,7 +96,7 @@ export type AccountSessionRecord = {
   tokenPrefix: string;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const apiUrl = getServerApiUrl();
 
 const fallbackProviders: AuthProviderStatus[] = [
   {

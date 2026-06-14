@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import { demoFallback } from "@/lib/demo-fallback";
 
 export type SkillFeedbackRecord = {
@@ -35,7 +36,7 @@ export type SkillFeedbackPayload = {
   summary: SkillFeedbackSummary;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const apiUrl = getServerApiUrl();
 
 const fallbackFeedback = [
   {

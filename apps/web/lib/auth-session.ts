@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import { cookies } from "next/headers";
 
 export type SessionSubject = {
@@ -124,5 +125,5 @@ function normalizeToken(value: string | undefined | null) {
 }
 
 function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  return getServerApiUrl();
 }

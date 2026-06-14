@@ -1,4 +1,5 @@
 import type { SkillManifest, SkillSummary } from "@useskillhub/schema";
+import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
 import {
   getMarketplaceSkill,
   marketplaceSkills,
@@ -42,7 +43,8 @@ export type MarketplaceSkillSuggestion = {
   skill: MarketplaceSkill;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const publicApiUrl = getPublicApiUrl();
+const serverApiUrl = getServerApiUrl();
 
 export async function getPublicMarketplaceSkills(
   options: PublicMarketplaceSearchOptions = {},
@@ -65,7 +67,7 @@ export async function getPublicMarketplaceSkills(
     );
 
     const response = await fetch(
-      `${apiUrl}/v1/skills/search?${searchParams.toString()}`,
+      `${serverApiUrl}/v1/skills/search?${searchParams.toString()}`,
       {
         cache: "no-store",
       },
@@ -161,7 +163,7 @@ async function hydrateMarketplaceSkill(summary: SkillSummary) {
 async function fetchSkillManifest(slug: string) {
   try {
     const response = await fetch(
-      `${apiUrl}/v1/skills/${encodeURIComponent(slug)}`,
+      `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}`,
       {
         cache: "no-store",
       },
@@ -180,7 +182,7 @@ async function fetchSkillManifest(slug: string) {
 async function fetchSkillSummary(slug: string) {
   try {
     const response = await fetch(
-      `${apiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
+      `${serverApiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
       {
         cache: "no-store",
       },
@@ -200,7 +202,7 @@ async function fetchSkillSummary(slug: string) {
 async function fetchSkillPrices(slug: string) {
   try {
     const response = await fetch(
-      `${apiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
+      `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
       {
         cache: "no-store",
       },
@@ -259,8 +261,8 @@ function manifestToMarketplaceSkill(
       schemaExample(manifest?.inputSchema, "input"),
     installs: staticSkill?.installs ?? formatCompactCount(summary.installCount),
     installsCommand: {
-      cli: publicApiInspectCommand(apiUrl, summary.slug),
-      mcp: `${apiUrl.replace(/\/+$/, "")}/mcp`,
+      cli: publicApiInspectCommand(publicApiUrl, summary.slug),
+      mcp: `${publicApiUrl}/mcp`,
       sdk: `CLI/SDK preview: ${summary.slug}`,
     },
     latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),

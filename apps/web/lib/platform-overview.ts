@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import { demoFallback } from "@/lib/demo-fallback";
 
 export type OverviewMetric = {
@@ -56,7 +57,7 @@ export type PlatformOverview = {
   };
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const apiUrl = getServerApiUrl();
 
 const fallbackOverview: PlatformOverview = {
   platform: {

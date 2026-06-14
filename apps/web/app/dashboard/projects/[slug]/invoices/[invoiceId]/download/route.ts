@@ -1,3 +1,4 @@
+import { getServerApiUrl } from "@/lib/api-url";
 import { getWorkspaceToken } from "@/lib/auth-session";
 
 type RouteContext = {
@@ -38,5 +39,5 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  return getServerApiUrl();
 }

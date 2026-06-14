@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
 import { demoFallback } from "@/lib/demo-fallback";
 import {
   marketplaceSkills,
@@ -85,7 +86,8 @@ export type PublicPublisherProfile = {
   updatedAt: string;
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+const publicApiUrl = getPublicApiUrl();
+const serverApiUrl = getServerApiUrl();
 const publisherSlugAliases: Record<string, string> = {
   "skillhub-publisher": "skillhub",
 };
@@ -100,7 +102,7 @@ export async function getPublicPublisherProfile(
 
   try {
     const response = await fetch(
-      `${apiUrl}/v1/publishers/${encodeURIComponent(normalizedSlug)}`,
+      `${serverApiUrl}/v1/publishers/${encodeURIComponent(normalizedSlug)}`,
       {
         cache: "no-store",
       },
@@ -126,7 +128,7 @@ export async function getPublicPublisherProfile(
 
 export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
   try {
-    const response = await fetch(`${apiUrl}/v1/publishers?limit=24`, {
+    const response = await fetch(`${serverApiUrl}/v1/publishers?limit=24`, {
       cache: "no-store",
     });
 
@@ -171,7 +173,7 @@ function apiProfileToPublicProfile(
     callCount: skill.callCount,
     description: publicSkillDescription(skill.slug, skill.description),
     displayName: publicSkillDisplayName(skill.slug, skill.displayName),
-    installCommand: publicApiInspectCommand(apiUrl, skill.slug),
+    installCommand: publicApiInspectCommand(publicApiUrl, skill.slug),
     installCount: skill.installCount,
     permissionLevel: skill.permissionLevel,
     price: formatApiPrice(skill),

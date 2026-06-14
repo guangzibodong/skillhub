@@ -1,5 +1,6 @@
 "use server";
 
+import { getServerApiUrl } from "@/lib/api-url";
 import { revalidatePath } from "next/cache";
 import { getUserToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
@@ -114,5 +115,5 @@ function revalidateNotificationSurfaces() {
 }
 
 function getApiUrl() {
-  return process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  return getServerApiUrl();
 }
