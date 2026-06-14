@@ -5,7 +5,6 @@ import {
   marketplaceSkills,
   type MarketplaceSkill,
 } from "@/lib/marketplace-data";
-import { demoFallback } from "@/lib/demo-fallback";
 import {
   isVerifiedSkillStatus,
   publicApiInspectCommand,
@@ -80,14 +79,14 @@ export async function getPublicMarketplaceSkills(
     const payload = (await response.json()) as { skills: SkillSummary[] };
 
     if (payload.skills.length === 0) {
-      return demoFallback(marketplaceSkills, []);
+      return marketplaceSkills;
     }
 
     return Promise.all(
       payload.skills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
   } catch {
-    return demoFallback(marketplaceSkills, []);
+    return marketplaceSkills;
   }
 }
 
@@ -108,7 +107,7 @@ export async function getPublicMarketplaceSkill(
     }
 
     if (!manifest) {
-      return demoFallback(staticSkill ?? null, null);
+      return staticSkill ?? null;
     }
 
     return manifestToMarketplaceSkill(
@@ -118,7 +117,7 @@ export async function getPublicMarketplaceSkill(
       staticSkill,
     );
   } catch {
-    return demoFallback(staticSkill ?? null, null);
+    return staticSkill ?? null;
   }
 }
 
