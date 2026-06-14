@@ -444,7 +444,11 @@ function AdminAccessGate({
 }
 
 function subjectRoleSet(subject: SessionSubject | null | undefined) {
-  return new Set([subject?.platformRole].filter((role): role is string => Boolean(role)));
+  return new Set(
+    [subject?.platformRole, ...(subject?.roles ?? [])].filter(
+      (role): role is string => Boolean(role),
+    ),
+  );
 }
 
 function hasAnyRole(roles: Set<string>, allowedRoles: Set<string>) {

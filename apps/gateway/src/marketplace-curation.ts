@@ -209,7 +209,7 @@ export async function upsertMarketplaceCuration(skillSlug: string, input: Curati
     }
 
     if (placement === "featured" && !canFeatureSkill(skill)) {
-      throw new Error("Only public skills with submitted or verified review status can be featured.");
+      throw new Error("Only public verified skills can be featured.");
     }
 
     const existingRows = (await tx`
@@ -334,7 +334,7 @@ export async function upsertMarketplaceCuration(skillSlug: string, input: Curati
 }
 
 function canFeatureSkill(skill: { verificationStatus: string; visibility: string }) {
-  return skill.visibility === "public" && ["submitted", "verified"].includes(skill.verificationStatus);
+  return skill.visibility === "public" && skill.verificationStatus === "verified";
 }
 
 function normalizePlacement(value: unknown): MarketplacePlacement {

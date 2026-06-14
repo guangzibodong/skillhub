@@ -39,13 +39,16 @@ for attempt in $(seq 1 30); do
   sleep 2
 done
 
-if curl -fsS http://127.0.0.1:18787/v1/skills/acceptance-qa-20260614-publisher3 >/dev/null; then
-  curl -fsSI "http://127.0.0.1:3100/skills/acceptance-qa-20260614-publisher3?lang=zh" >/dev/null
-fi
+echo "Running public production smoke..."
+pnpm smoke:p0 -- \
+  --api-url http://127.0.0.1:18787 \
+  --app-url http://127.0.0.1:3100 \
+  --skip-admin \
+  --timeout-ms 30000
 
-if curl -fsS http://127.0.0.1:18787/v1/publishers/qa-partner3-qa-20260614 >/dev/null; then
-  curl -fsSI "http://127.0.0.1:3100/publishers/qa-partner3-qa-20260614?lang=zh" >/dev/null
-fi
+pnpm qa:anonymous -- \
+  --app-url http://127.0.0.1:3100 \
+  --timeout-ms 30000
 
 echo "SkillHub stack started."
 echo "Web: http://127.0.0.1:3100"

@@ -1944,7 +1944,7 @@ app.get("/v1/admin/audit-logs", async (c) => {
 });
 
 app.get("/v1/admin/marketplace-curation", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+  const authorization = await authorize(c.req.header("Authorization"), curationOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -1963,7 +1963,7 @@ app.get("/v1/admin/marketplace-curation", async (c) => {
 });
 
 app.get("/v1/admin/marketplace-curation/appeals", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), adminOperatorRoles);
+  const authorization = await authorize(c.req.header("Authorization"), curationOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);

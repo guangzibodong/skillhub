@@ -500,7 +500,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
                 <Building2 size={18} aria-hidden="true" />
                 <span>{labels.directory}</span>
               </a>
-              <a className="btn-text" href={localizedHref("/login", locale)}>
+              <a className="btn-text" href={localizedHrefWithReturnTo("/login", locale, "/publisher")}>
                 <WalletCards size={17} aria-hidden="true" />
                 <span>{labels.console}</span>
               </a>

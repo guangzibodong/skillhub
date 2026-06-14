@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
-import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
@@ -130,7 +130,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                 <PackageCheck size={18} aria-hidden="true" />
                 <span>{labels.marketplace}</span>
               </a>
-              <a className="btn-secondary btn-secondary--large" href={localizedHref("/login", locale)}>
+              <a className="btn-secondary btn-secondary--large" href={localizedHrefWithReturnTo("/login", locale, "/publisher")}>
                 <WalletCards size={18} aria-hidden="true" />
                 <span>{labels.publisherWorkspace}</span>
               </a>

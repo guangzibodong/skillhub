@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname, useSearchParams } from "next/navigation";
 import { localizedHref, type Locale } from "@/lib/i18n";
 import { companyInfo, companyLinks } from "@/lib/company-info";
 
@@ -132,6 +135,14 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
 
 export function HomeFooter({ locale }: Props) {
   const columns = footerColumns[locale];
+  const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
+  const alternateLocale = locale === "zh" ? "en" : "zh";
+  const alternateLocaleHref = localizedHrefWithCurrentSearch(
+    pathname,
+    alternateLocale,
+    searchParams,
+  );
 
   return (
     <footer className="home-footer" aria-label={locale === "zh" ? "站点页脚" : "Site footer"}>
@@ -182,7 +193,7 @@ export function HomeFooter({ locale }: Props) {
           <div>
             <a href={localizedHref("/status", locale)}>{locale === "zh" ? "状态" : "Status"}</a>
             <a href={localizedHref("/contact", locale)}>{locale === "zh" ? "联系" : "Contact"}</a>
-            <a href={locale === "zh" ? localizedHref("/", "en") : localizedHref("/", "zh")}>
+            <a href={alternateLocaleHref}>
               {locale === "zh" ? "EN" : "中文"}
             </a>
           </div>
@@ -190,4 +201,23 @@ export function HomeFooter({ locale }: Props) {
       </div>
     </footer>
   );
+}
+
+function localizedHrefWithCurrentSearch(
+  pathname: string,
+  locale: Locale,
+  searchParams: Pick<URLSearchParams, "forEach">,
+) {
+  const nextParams = new URLSearchParams();
+
+  searchParams.forEach((value, key) => {
+    if (key !== "lang") {
+      nextParams.append(key, value);
+    }
+  });
+
+  nextParams.set("lang", locale);
+  const query = nextParams.toString();
+
+  return `${pathname}${query ? `?${query}` : ""}`;
 }

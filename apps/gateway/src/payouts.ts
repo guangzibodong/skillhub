@@ -327,6 +327,10 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
   const providerReference = normalizeText(input.providerReference);
   const retryCondition = normalizeText(input.retryCondition);
 
+  if (!reason || reason.length < 8) {
+    throw new Error("Payout decision requires a reason of at least 8 characters.");
+  }
+
   if (action === "block" && !retryCondition) {
     throw new Error("Blocked payout requires a retry condition.");
   }
@@ -385,7 +389,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
     }
 
     if (action === "mark_paid") {
-      ensurePayoutStatus(payout.status, ["requested", "review", "processing"], action);
+      ensurePayoutStatus(payout.status, ["processing"], action);
       await tx`
         update payouts
         set
@@ -428,7 +432,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
           updated_at = now()
         where id = ${payoutId}
       `;
-      await updateLinkedBalanceState(tx, payoutId, "blocked");
+      await updateLinkedBalanceState(tx, payoutId, "available");
     }
 
     await recordPayoutAudit(tx, `payout.${action}`, payoutId, reason, {

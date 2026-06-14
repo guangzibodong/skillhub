@@ -1,6 +1,6 @@
 import { LifeBuoy, LogIn, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +57,7 @@ export default async function ReportPage({ searchParams }: PageProps) {
           <p className="body-text max-w-[640px] mx-auto mb-10">{labels.body}</p>
 
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <a className="btn-primary btn-primary--large" href={localizedHref("/login", locale)}>
+            <a className="btn-primary btn-primary--large" href={localizedHrefWithReturnTo("/login", locale, "/report")}>
               <LogIn size={18} aria-hidden="true" />
               <span>{labels.primary}</span>
             </a>

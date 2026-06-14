@@ -1,6 +1,10 @@
 import { KeyRound, LockKeyhole, ShieldCheck, UserRoundCheck } from "lucide-react";
 import type { WorkspaceSession } from "@/lib/auth-session";
-import { localizedHref, type Locale } from "@/lib/locale-routing";
+import {
+  localizedHref,
+  localizedHrefWithReturnTo,
+  type Locale,
+} from "@/lib/locale-routing";
 
 type WorkspaceAccessPanelProps = {
   locale: Locale;
@@ -90,6 +94,9 @@ export function WorkspaceAccessPanel({ locale, requiredRoles, session, workspace
   const hasSession = Boolean(subject);
   const state = hasSession && hasRequiredRole ? "ready" : hasSession ? "missing_role" : "no_session";
   const workspaceCopy = labels.workspaces[workspace];
+  const accessHref = hasSession
+    ? localizedHref("/account", locale)
+    : localizedHrefWithReturnTo("/login", locale, `/${workspace}`);
 
   return (
     <article className={`ops-panel workspace-access-panel workspace-access-panel--${state}`}>
@@ -104,7 +111,7 @@ export function WorkspaceAccessPanel({ locale, requiredRoles, session, workspace
           <span className={state === "ready" ? "status-chip" : "status-chip status-chip--warning"}>
             {state === "ready" ? labels.workspaceReady : state === "missing_role" ? labels.missingRole : labels.noSession}
           </span>
-          <a className="ghost-button ghost-button--inline" href={localizedHref(hasSession ? "/account" : "/login", locale)}>
+          <a className="ghost-button ghost-button--inline" href={accessHref}>
             <KeyRound size={15} aria-hidden="true" />
             <span>{hasSession ? labels.accountAction : labels.signInAction}</span>
           </a>

@@ -347,7 +347,7 @@ export async function decideMarketplaceCurationAppeal(
       const curationReason = `Appeal approved: ${reason}`.slice(0, 600);
 
       if (placement === "featured" && !canFeatureSkill(appeal)) {
-        throw new Error("Only public skills with submitted or verified review status can be featured.");
+        throw new Error("Only public verified skills can be featured.");
       }
 
       const curationRows = (await tx`
@@ -644,7 +644,7 @@ function requestTypeFor(currentPlacement: MarketplacePlacement, requestedPlaceme
 }
 
 function canFeatureSkill(skill: { verificationStatus: string; visibility: string }) {
-  return skill.visibility === "public" && ["submitted", "verified"].includes(skill.verificationStatus);
+  return skill.visibility === "public" && skill.verificationStatus === "verified";
 }
 
 function defaultBoostForApproval(placement: MarketplacePlacement, currentBoost: number) {

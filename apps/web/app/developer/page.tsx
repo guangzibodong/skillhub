@@ -26,7 +26,7 @@ import { ProjectCreateForm } from "@/components/project-create-form";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -321,7 +321,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         </section>
 
         <JourneyRail
-          actionHrefOverride={hasWorkspaceSession ? "/account" : "/login"}
+          actionHrefOverride={hasWorkspaceSession ? "/account" : hrefWithReturnTo("/login", "/developer", locale)}
           actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           currentStep="developer"
           journey="developer"
@@ -335,7 +335,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
         </section>
 
         <WorkspaceLockedPanel
-          actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
+          actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/developer")}
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
