@@ -231,14 +231,22 @@ function buildIdentitySection(env: LaunchReadinessEnv | undefined): LaunchReadin
   );
   const stateSecret = configured(env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET, "SKILLHUB_OAUTH_STATE_SECRET", "SESSION_SECRET");
   const googleReady = hasAll(
-    env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID,
-    env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET,
+    configured(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID, "SKILLHUB_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"),
+    configured(
+      env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET,
+      "SKILLHUB_GOOGLE_CLIENT_SECRET",
+      "GOOGLE_CLIENT_SECRET"
+    ),
     callbackBaseUrl,
     stateSecret
   );
   const githubReady = hasAll(
-    env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID,
-    env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET,
+    configured(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID, "SKILLHUB_GITHUB_CLIENT_ID", "GITHUB_CLIENT_ID"),
+    configured(
+      env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET,
+      "SKILLHUB_GITHUB_CLIENT_SECRET",
+      "GITHUB_CLIENT_SECRET"
+    ),
     callbackBaseUrl,
     stateSecret
   );
