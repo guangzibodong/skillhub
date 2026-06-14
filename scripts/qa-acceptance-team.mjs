@@ -10,6 +10,7 @@ const DEFAULT_CREDENTIALS_PATH = "/root/skillhub-acceptance-team.json";
 const DEFAULT_OUTPUT = "output/acceptance-team-qa-report.json";
 const DEFAULT_TIMEOUT_MS = 30000;
 const PUBLIC_SKILL_SLUG_PLACEHOLDER = "{publicSkillSlug}";
+let publicSkillSlugPromise;
 
 const ROLE_SPECS = {
   developer: {
@@ -394,8 +395,6 @@ async function checkPages(spec, token) {
     }
   }
 }
-
-let publicSkillSlugPromise;
 
 async function resolvePagePath(page, role) {
   if (!page.path.includes(PUBLIC_SKILL_SLUG_PLACEHOLDER)) {
