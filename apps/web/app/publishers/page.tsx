@@ -111,6 +111,9 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
 
   return (
     <AppShell active="publishers" locale={locale}>
+      <p className="visually-hidden">
+        {locale === "zh" ? "代表技能" : "Top public skills"}
+      </p>
       <section className="section pt-20 pb-12" aria-labelledby="publisher-directory-heading">
         <div className="section-inner flex flex-col lg:flex-row gap-12">
           <Reveal>

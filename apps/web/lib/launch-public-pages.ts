@@ -46,7 +46,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         "Project Keys are scoped credentials for runtime calls. They connect a signed-in project to approved Skills without exposing user secrets publicly.",
       quickAnswer:
         "Public Skill discovery does not require a Project Key. Runtime invocation does. Create keys inside a workspace project, scope them to approved Skills, rotate them regularly, and revoke them immediately when access changes.",
-      primaryCta: { href: "/developer", label: "Open workspace" },
+      primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "Sign in for workspace" },
       secondaryCta: { href: "/quickstart", label: "Read quickstart" },
       sections: [
         { title: "What a Project Key does", body: "It authenticates runtime calls from your project to SkillHub REST or MCP boundaries, while preserving policy checks, limits, and logs." },
@@ -67,7 +67,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       lead: "Project Key 是运行调用使用的项目级凭据。它把登录后的项目与已批准 Skill 连接起来，不把用户密钥公开暴露。",
       quickAnswer:
         "公开浏览 Skill 不需要 Project Key；真实运行调用需要。请在工作区项目中创建 Key，限制到已批准的 Skill，并在权限变化时轮换或撤销。",
-      primaryCta: { href: "/developer", label: "打开工作区" },
+      primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "登录后进入工作区" },
       secondaryCta: { href: "/quickstart", label: "阅读快速开始" },
       sections: [
         { title: "Project Key 做什么", body: "它认证从项目到 SkillHub REST 或 MCP 边界的运行调用，同时保留策略检查、限流和日志。" },
@@ -215,7 +215,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       lead: "Webhooks turn review, runtime, billing-preview, and payout-preview activity into auditable external events.",
       quickAnswer:
         "Webhook delivery is preview-gated. Store signing secrets safely, verify signatures, handle retries idempotently, and never log sensitive payload fields.",
-      primaryCta: { href: "/developer", label: "Open workspace" },
+      primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "Sign in for workspace" },
       secondaryCta: { href: "/security", label: "Security model" },
       sections: [
         { title: "Supported events", body: "skill.review.submitted, skill.review.approved, skill.review.rejected, skill.invocation.started, skill.invocation.succeeded, skill.invocation.failed, project_key.created, project_key.revoked, billing.order.created, billing.payment.succeeded, billing.payment.failed, publisher.payout.created, and publisher.payout.failed." },
@@ -232,7 +232,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       lead: "Webhook 把审核、运行、账务预览和提现预览活动转成可审计的外部事件。",
       quickAnswer:
         "Webhook 投递仍受预览门禁约束。请安全保存签名密钥、校验签名、幂等处理重试，并避免记录敏感 payload 字段。",
-      primaryCta: { href: "/developer", label: "打开工作区" },
+      primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "登录后进入工作区" },
       secondaryCta: { href: "/security", label: "安全模型" },
       sections: [
         { title: "支持事件", body: "skill.review.submitted、skill.review.approved、skill.review.rejected、skill.invocation.started、skill.invocation.succeeded、skill.invocation.failed、project_key.created、project_key.revoked、billing.order.created、billing.payment.succeeded、billing.payment.failed、publisher.payout.created、publisher.payout.failed。" },
@@ -506,4 +506,3 @@ function legalPage(input: LegalPageInput): PublicPageDefinition {
     },
   };
 }
-

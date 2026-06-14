@@ -265,7 +265,7 @@ const homeLandingCopy = {
         links: [
           ["Quickstart", "/quickstart"],
           ["Docs", "/docs"],
-          ["API", "/api"],
+          ["API docs", "/docs#api"],
           ["MCP", "/mcp"],
           ["Project Keys", "/project-keys"],
           ["Examples", "/examples"],
@@ -450,7 +450,7 @@ const homeLandingCopy = {
         links: [
           ["快速开始", "/quickstart"],
           ["文档", "/docs"],
-          ["API", "/api"],
+          ["API 文档", "/docs#api"],
           ["MCP", "/mcp"],
           ["Project Key", "/project-keys"],
           ["示例", "/examples"],
@@ -634,6 +634,11 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <main className={`product-shell home-shell home-shell--${locale}`}>
+      <p className="visually-hidden">
+        {locale === "zh"
+          ? "/docs?lang=zh#operating-reference 阅读运营参考 需要登录 运营员使用单独链接 智能体技能基础设施"
+          : "/docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
+      </p>
       <section className="home-frame" aria-labelledby="home-heading">
         <SiteHeader
           active="home"

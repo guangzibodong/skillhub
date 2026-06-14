@@ -29,7 +29,7 @@ import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
-import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
+import { localizeText } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
@@ -213,10 +213,6 @@ const copy = {
     viewPublisher: "打开发布者档案"
   }
 } as const;
-
-export function generateStaticParams() {
-  return marketplaceSkills.map((skill) => ({ slug: skill.slug }));
-}
 
 export default async function SkillDetailPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);

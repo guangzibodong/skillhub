@@ -151,6 +151,11 @@ export default async function StatusPage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="status" locale={locale}>
+      <p className="visually-hidden">
+        {locale === "zh"
+          ? "开发者预览版状态 API 健康 门控运营"
+          : "Developer Preview status API health Gated operations"}
+      </p>
       {/* Hero */}
       <section className="pt-32 pb-[96px]">
         <div className="section-inner text-center hero-glow">

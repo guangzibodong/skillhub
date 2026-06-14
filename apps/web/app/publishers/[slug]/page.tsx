@@ -14,9 +14,9 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { localizeText, marketplaceSkills } from "@/lib/marketplace-data";
+import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
-import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
+import { getPublicPublisherProfile } from "@/lib/public-publishers";
 import { getSkillInstallState } from "@/lib/skill-install-state";
 
 export const dynamic = "force-dynamic";
@@ -80,10 +80,6 @@ const copy = {
     verificationStatuses: { deprecated: "已弃用", draft: "草稿", rejected: "已拒绝", submitted: "已提交", suspended: "已暂停", verified: "已验证" },
   },
 } as const;
-
-export function generateStaticParams() {
-  return Array.from(new Set(marketplaceSkills.map((skill) => publisherSlugFromName(skill.author)))).map((slug) => ({ slug }));
-}
 
 export default async function PublicPublisherPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
@@ -254,8 +250,8 @@ function publisherSkillAvailability(installState: ReturnType<typeof getSkillInst
   }
 
   return locale === "zh"
-    ? "skillhub install <slug>"
-    : "skillhub install <slug>";
+    ? "登录后在项目中采用"
+    : "Adopt after sign-in";
 }
 
 function trustClass(trustLevel: string) {

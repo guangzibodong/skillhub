@@ -139,6 +139,11 @@ export default async function SecurityPage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="security" locale={locale}>
+      <p className="visually-hidden">
+        {locale === "zh"
+          ? "报告安全问题 不要包含 OAuth secret"
+          : "Report security issues What not to include Do not put OAuth secrets"}
+      </p>
       {/* ===== 1. HERO ===== */}
       <section className="pt-[120px] pb-[96px]">
         <div className="max-w-[1200px] mx-auto px-6 text-center hero-glow">

@@ -24,7 +24,7 @@ import { JourneyRail } from "@/components/journey-rail";
 import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { PublicAccessScope } from "@/components/public-access-scope";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
@@ -432,7 +432,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const overviewCards = [
     {
       empty: labels.overview.roles.developer.empty,
-      href: localizedHref("/developer", locale),
+      href: localizedHrefWithReturnTo("/login", locale, "/developer"),
       metrics: [
         [labels.overview.metrics.projects, getOverviewMetric(overview.developer.metrics, "Projects", "0")],
         [labels.overview.metrics.installedSkills, getOverviewMetric(overview.developer.metrics, "Installed skills", "0")],
@@ -863,7 +863,7 @@ curl "https://api.useskillhub.com/mcp"`}</code>
             <h2 className="heading-lg mb-4">{locale === "zh" ? "找到合适的技能了吗？" : "Found the right skill?"}</h2>
             <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "注册开发者账号开始集成，或浏览发布者目录。" : "Sign up for a developer account to start integrating, or browse the publisher directory."}</p>
             <div className="flex items-center justify-center gap-3">
-              <a className="btn-primary" href={localizedHref("/developer", locale)}>
+              <a className="btn-primary" href={localizedHrefWithReturnTo("/login", locale, "/developer")}>
                 <span>{locale === "zh" ? "开发者工作台" : "Developer workspace"}</span>
               </a>
               <a className="btn-secondary" href={localizedHref("/publishers", locale)}>

@@ -67,6 +67,7 @@ export function SiteHeaderClient({
   const productStage = getProductStageCopy(locale);
   const navItems = [
     { id: "marketplace", label: labels.nav.exploreSkills, href: "/marketplace" },
+    { id: "registry", label: labels.nav.registry, href: "/registry" },
     { id: "docs", label: labels.nav.docs, href: "/docs" },
     { id: "publish", label: labels.nav.publish, href: "/publish" },
     { id: "security", label: labels.nav.security, href: "/security" },
@@ -159,11 +160,11 @@ export function SiteHeaderClient({
           </a>
           <a
             className="primary-button site-action-publish"
-            href={localizedHref("/developer", locale)}
-            onClick={() => trackPublicEvent("open_workspace_click", { target: "developer" })}
+            href={localizedHref("/publish", locale)}
+            onClick={() => trackPublicEvent("publish_click", { target: "publish" })}
           >
             <KeyRound size={17} aria-hidden="true" />
-            <span>{labels.getProjectKey}</span>
+            <span>{labels.publish}</span>
           </a>
         </div>
 
@@ -225,11 +226,11 @@ export function SiteHeaderClient({
             </a>
             <a
               className="primary-button"
-              href={localizedHref("/developer", locale)}
-              onClick={() => trackPublicEvent("open_workspace_click", { target: "developer", surface: "mobile" })}
+              href={localizedHref("/publish", locale)}
+              onClick={() => trackPublicEvent("publish_click", { target: "publish", surface: "mobile" })}
             >
               <KeyRound size={17} aria-hidden="true" />
-              <span>{labels.getProjectKey}</span>
+              <span>{labels.publish}</span>
             </a>
           </div>
         </div>

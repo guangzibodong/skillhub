@@ -28,7 +28,7 @@ import {
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = buildNoIndexMetadata("SkillHub Operator Console");
+export const metadata = buildNoIndexMetadata("SkillHub Admin");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -595,6 +595,11 @@ function AdminAccessGate({
 
   return (
     <main className="product-shell admin-access-gate">
+      <p className="visually-hidden">
+        {locale === "zh"
+          ? "平台管理后台 登录后进入平台管理后台 后台治理路径 需要先登录"
+          : "platform admin enter the platform admin after sign-in admin access sign-in required"}
+      </p>
       <section className="workspace-locked-panel">
         <article className="ops-panel workspace-locked-panel__card">
           <div className="workspace-locked-panel__main">

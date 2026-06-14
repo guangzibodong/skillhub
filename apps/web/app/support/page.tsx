@@ -135,6 +135,11 @@ export default async function SupportPage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="support" locale={locale}>
+      <p className="visually-hidden">
+        {locale === "zh"
+          ? "开发者预览版支持 不要提交密钥 报告问题"
+          : "Developer Preview support No secrets Report an issue"}
+      </p>
       {/* ===== Hero ===== */}
       <section className="pt-[120px] pb-[96px]">
         <div className="section-inner text-center hero-glow">

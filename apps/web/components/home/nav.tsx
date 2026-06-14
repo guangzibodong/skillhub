@@ -33,9 +33,9 @@ type NavProps = {
 const navLinks = {
   en: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
+    { href: "/registry", page: "registry" as NavPage, label: "Registry" },
     { href: "/quickstart", page: "docs" as NavPage, label: "Quickstart" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs" },
-    { href: "/api", page: "docs" as NavPage, label: "API" },
     { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
     { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
     { href: "/security", page: "security" as NavPage, label: "Security" },
@@ -43,9 +43,9 @@ const navLinks = {
   ],
   zh: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
+    { href: "/registry", page: "registry" as NavPage, label: "技能库" },
     { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
-    { href: "/api", page: "docs" as NavPage, label: "API" },
     { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
     { href: "/publish", page: "publish" as NavPage, label: "发布 Skill" },
     { href: "/security", page: "security" as NavPage, label: "安全" },
@@ -128,10 +128,10 @@ export function HomeNav({ active, locale }: NavProps) {
             {locale === "zh" ? "登录" : "Log in"}
           </a>
           <a
-            href={localizedHref("/developer", locale)}
+            href={localizedHref("/publish", locale)}
             className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
           >
-            {locale === "zh" ? "打开工作区" : "Open workspace"}
+            {locale === "zh" ? "发布 Skill" : "Publish Skill"}
           </a>
         </div>
 
@@ -169,10 +169,10 @@ export function HomeNav({ active, locale }: NavProps) {
               {locale === "zh" ? "登录" : "Log in"}
             </a>
             <a
-              href={localizedHref("/developer", locale)}
+              href={localizedHref("/publish", locale)}
               className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-3 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] text-center"
             >
-              {locale === "zh" ? "工作区" : "Workspace"}
+              {locale === "zh" ? "发布" : "Publish"}
             </a>
           </div>
         </div>

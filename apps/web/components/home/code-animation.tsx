@@ -3,21 +3,16 @@
 import { useState, useEffect } from "react";
 
 const codeLines = [
-  { text: 'import { SkillHub } from "@useskillhub/sdk";', color: "muted" },
+  { text: 'const response = await fetch("/api/public/skills/browser-research-pro");', color: "muted" },
   { text: "", color: "white" },
-  { text: "const hub = new SkillHub({", color: "white" },
-  { text: '  apiKey: process.env.SKILLHUB_KEY', color: "white" },
-  { text: "});", color: "white" },
+  { text: "const skill = await response.json();", color: "white" },
   { text: "", color: "white" },
-  { text: "const result = await hub.invoke({", color: "white" },
-  { text: '  skill: "browser-research-pro",', color: "accent" },
-  { text: "  input: {", color: "white" },
-  { text: '    query: "AI agent frameworks 2026",', color: "white" },
-  { text: "    depth: 3,", color: "white" },
-  { text: "  }", color: "white" },
-  { text: "});", color: "white" },
+  { text: 'if (skill.status === "verified") {', color: "white" },
   { text: "", color: "white" },
-  { text: "// ✓ 12 sources · 2.1s · verified", color: "verified" },
+  { text: "  openAdoptionFlow(skill.slug);", color: "white" },
+  { text: "}", color: "accent" },
+  { text: "", color: "white" },
+  { text: "// verified publisher - public manifest - sign-in required", color: "verified" },
 ];
 
 const colorMap: Record<string, string> = {

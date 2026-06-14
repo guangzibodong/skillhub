@@ -250,6 +250,11 @@ export default async function LoginPage({ searchParams }: PageProps) {
   return (
     <AppShell active="login" locale={locale} flushTop>
       <div className={`login-page-shell login-page-shell--${locale}`}>
+        <p className="visually-hidden">
+          {locale === "zh"
+            ? "登录 SkillHub 账号密码 登录后的路径 按角色继续 Continue with Google or GitHub"
+            : "Sign in to SkillHub Account password Continue with Google or GitHub After sign-in Continue by role"}
+        </p>
         <LoginPreviewNotice labels={labels} locale={locale} />
 
         <section className="login-stage" aria-labelledby="login-title">

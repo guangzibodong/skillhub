@@ -91,6 +91,9 @@ const serverApiUrl = getServerApiUrl();
 const publisherSlugAliases: Record<string, string> = {
   "skillhub-publisher": "skillhub",
 };
+const fallbackPublisherSlugAliases: Record<string, string> = {
+  skillhub: "skillhub-labs",
+};
 const publisherDisplayNameSlugs: Record<string, string> = {
   "skillhub publisher": "skillhub",
 };
@@ -118,12 +121,15 @@ export async function getPublicPublisherProfile(
     // Static fallback below keeps public pages available when the API is not reachable.
   }
 
-  return demoFallback(
-    fallbackPublicPublishers().find(
-      (profile) => profile.slug === normalizedSlug,
-    ) ?? null,
-    null,
-  );
+  const fallbackProfiles = fallbackPublicPublishers();
+  const fallbackProfile =
+    fallbackProfiles.find((profile) => profile.slug === normalizedSlug) ??
+    fallbackProfiles.find(
+      (profile) => profile.slug === fallbackPublisherSlugAliases[normalizedSlug],
+    ) ??
+    null;
+
+  return demoFallback(fallbackProfile, null);
 }
 
 export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {

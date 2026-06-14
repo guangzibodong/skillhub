@@ -95,7 +95,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-06-04",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/browser-research-pro"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=browser-research"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: browser-research-pro"
     },
@@ -204,7 +204,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-06-02",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/crm-enrichment"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=crm-enrichment"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: crm-enrichment"
     },
@@ -301,7 +301,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "low",
     lastReviewed: "2026-06-01",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/support-triage"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=support-triage"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: support-triage"
     },
@@ -398,7 +398,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-05-30",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/dataset-insight"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=dataset-summarizer"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: dataset-insight"
     },
@@ -490,7 +490,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "high",
     lastReviewed: "2026-05-28",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/codebase-risk-scanner"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=codebase-risk-scanner"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: codebase-risk-scanner"
     },
@@ -582,7 +582,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-05-26",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/invoice-extraction"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=invoice-extraction"',
       mcp: "https://api.useskillhub.com/mcp",
       sdk: "CLI/SDK preview: invoice-extraction"
     },
@@ -699,8 +699,14 @@ export const marketplaceCategories = [
   { key: "ops", label: { en: "Operations", zh: "运营" } }
 ] as const;
 
+const marketplaceSkillAliases: Record<string, string> = {
+  "browser-research": "browser-research-pro",
+  "dataset-summarizer": "dataset-insight",
+};
+
 export function getMarketplaceSkill(slug: string) {
-  return marketplaceSkills.find((skill) => skill.slug === slug);
+  const canonicalSlug = marketplaceSkillAliases[slug] ?? slug;
+  return marketplaceSkills.find((skill) => skill.slug === canonicalSlug);
 }
 
 export function localizeText(value: LocalizedText, locale: Locale) {
