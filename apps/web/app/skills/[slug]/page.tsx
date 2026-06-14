@@ -795,7 +795,10 @@ function DeveloperHandoffPacket({
   ];
 
   return (
-    <div className="mt-6 border border-[rgba(255,255,255,0.08)] rounded-[12px] overflow-hidden">
+    <div
+      className="mt-6 border border-[rgba(255,255,255,0.08)] rounded-[12px] overflow-hidden"
+      data-testid="skill-developer-handoff-packet"
+    >
       <div className="p-4 border-b border-[rgba(255,255,255,0.08)]">
         <strong className="text-white text-sm block">{labels.title}</strong>
         <p className="body-text-sm text-[#999] mt-1">{labels.body}</p>
