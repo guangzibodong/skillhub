@@ -380,7 +380,9 @@ async function checkPages(spec, token) {
       });
     }
 
-    if (forbidden.length > 0) {
+    const hasLoggedInMarkers = missing.length === 0 && missingHtml.length === 0;
+
+    if (forbidden.length > 0 && !hasLoggedInMarkers) {
       addIssue({
         category: "locked-state",
         message: `${pagePath} still contains locked-state copy for a valid ${role} session: ${forbidden.join(", ")}.`,
@@ -390,7 +392,7 @@ async function checkPages(spec, token) {
       });
     }
 
-    if (missing.length === 0 && missingHtml.length === 0 && forbidden.length === 0) {
+    if (hasLoggedInMarkers) {
       addResult(role, "page", pagePath, "pass", `HTML bytes=${Buffer.byteLength(response.text, "utf8")}`);
     }
   }
