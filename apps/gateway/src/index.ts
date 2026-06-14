@@ -218,6 +218,11 @@ type Env = {
     SKILLHUB_EMAIL_AUTH_SECRET?: string;
     SKILLHUB_EMAIL_FROM?: string;
     SKILLHUB_EMAIL_PROVIDER?: string;
+    SKILLHUB_SMTP_HOST?: string;
+    SKILLHUB_SMTP_PASSWORD?: string;
+    SKILLHUB_SMTP_PORT?: string;
+    SKILLHUB_SMTP_SECURE?: string;
+    SKILLHUB_SMTP_USER?: string;
     SKILLHUB_OAUTH_STATE_SECRET?: string;
     SKILLHUB_ENV: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;

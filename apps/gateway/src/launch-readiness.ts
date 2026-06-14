@@ -26,6 +26,11 @@ type LaunchReadinessEnv = {
   SKILLHUB_EMAIL_AUTH_SECRET?: string;
   SKILLHUB_EMAIL_FROM?: string;
   SKILLHUB_EMAIL_PROVIDER?: string;
+  SKILLHUB_SMTP_HOST?: string;
+  SKILLHUB_SMTP_PASSWORD?: string;
+  SKILLHUB_SMTP_PORT?: string;
+  SKILLHUB_SMTP_SECURE?: string;
+  SKILLHUB_SMTP_USER?: string;
   SKILLHUB_ENABLE_DEMO_FALLBACK?: string;
   SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN?: string;
   SKILLHUB_ENV?: string;
@@ -296,9 +301,17 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
     provider === "resend" &&
     Boolean(configured(env?.RESEND_API_KEY, "RESEND_API_KEY")) &&
     Boolean(configured(env?.SKILLHUB_EMAIL_FROM, "SKILLHUB_EMAIL_FROM"));
+  const smtpReady =
+    provider === "smtp" &&
+    Boolean(configured(env?.SKILLHUB_SMTP_HOST, "SKILLHUB_SMTP_HOST")) &&
+    Boolean(configured(env?.SKILLHUB_SMTP_USER, "SKILLHUB_SMTP_USER")) &&
+    Boolean(configured(env?.SKILLHUB_SMTP_PASSWORD, "SKILLHUB_SMTP_PASSWORD")) &&
+    Boolean(configured(env?.SKILLHUB_EMAIL_FROM, "SKILLHUB_EMAIL_FROM")) &&
+    smtpPortReady(configured(env?.SKILLHUB_SMTP_PORT, "SKILLHUB_SMTP_PORT"));
+  const providerReady = resendReady || smtpReady;
   const debugEnabled = truthy(configured(env?.SKILLHUB_EMAIL_AUTH_DEBUG_CODES, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES"));
   const production = isProductionLike(env);
-  const emailProviderStatus: LaunchReadinessStatus = resendReady ? "ready" : production ? "blocker" : "warning";
+  const emailProviderStatus: LaunchReadinessStatus = providerReady ? "ready" : production ? "blocker" : "warning";
   const items: LaunchReadinessItem[] = [
     {
       action: emailSecret ? "Keep this secret stable; changing it invalidates pending codes." : "Set SKILLHUB_EMAIL_AUTH_SECRET.",
@@ -327,16 +340,18 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
     {
       action:
         production && debugProvider
-          ? "Replace SKILLHUB_EMAIL_PROVIDER=debug_preview with resend and configure RESEND_API_KEY plus SKILLHUB_EMAIL_FROM."
-          : resendReady
+          ? "Replace SKILLHUB_EMAIL_PROVIDER=debug_preview with smtp or resend and configure production credentials."
+          : providerReady
             ? "Run an email delivery smoke test."
-            : "Set SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM.",
+            : "Set SKILLHUB_EMAIL_PROVIDER=smtp with SMTP credentials, or set SKILLHUB_EMAIL_PROVIDER=resend with RESEND_API_KEY and SKILLHUB_EMAIL_FROM.",
       description: "Production email-code login needs provider delivery, not debug preview.",
       detail:
         production && debugProvider
           ? "debug_preview is disabled for production delivery."
-          : resendReady
-            ? "Resend delivery is configured."
+          : smtpReady
+            ? "SMTP delivery is configured."
+            : resendReady
+              ? "Resend delivery is configured."
             : `${provider} is not fully production-ready.`,
       key: "email_provider",
       label: "Email provider",
@@ -1457,6 +1472,15 @@ function configured(value: string | undefined, ...keys: string[]) {
 
 function hasAll(...values: Array<string | null | undefined>) {
   return values.every((value) => Boolean(value?.trim()));
+}
+
+function smtpPortReady(value: string | null) {
+  if (!value) {
+    return true;
+  }
+
+  const port = Number(value);
+  return Number.isInteger(port) && port > 0 && port <= 65535;
 }
 
 function truthy(value: string | null | undefined) {

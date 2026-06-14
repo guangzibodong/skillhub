@@ -614,7 +614,7 @@ Added external notification delivery operations, covering:
 - `notification_events` now stores delivery attempts, last attempt time, next retry time, provider name, and provider message id for external `email` and `webhook` events.
 - Admin/support operators can inspect the external delivery queue from `/admin` without mixing it with user-owned in-app unread notifications.
 - Delivery decisions support sent, failed, retry, and skipped states with required reasons, audit logs, provider metadata, and redacted payload summaries.
-- Email verification-code delivery decisions synchronize `email_login_challenges.delivery_status`, making signup/login support inspectable before final SMTP/API worker integration.
+- Email verification-code delivery decisions synchronize `email_login_challenges.delivery_status`, making signup/login support inspectable across SMTP, API provider, and manual retry paths.
 - Raw verification codes are redacted from admin delivery lists, preserving the provider-worker path without exposing sensitive login material in the operations UI.
 
 Added notification delivery batch processing, covering:
@@ -622,7 +622,7 @@ Added notification delivery batch processing, covering:
 - `/v1/admin/notification-deliveries/process` processes due external `email` and `webhook` events in `dry_run` or `deliver` mode.
 - In `deliver` mode, the processor now fans eligible in-app business events into email and webhook queue rows using user notification preferences and organization webhook endpoint subscriptions, then reports fanout counts to the admin console.
 - Email and webhook processing now render active `notification_templates` by event type, channel, and locale at delivery time, so default or operator-edited templates control actual outbound copy/payload without changing business event writers.
-- Resend-backed email sending is ready when `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM` are configured; missing provider configuration becomes an explicit failed state instead of a silent queue stall.
+- Provider-backed email sending is ready when SMTP (`SKILLHUB_EMAIL_PROVIDER=smtp`, SMTP host/user/password, and `SKILLHUB_EMAIL_FROM`) or Resend (`SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`) is configured; missing provider configuration becomes an explicit failed state instead of a silent queue stall.
 - Webhook processing fans organization-scoped external events into `webhook_delivery_events` for active subscribed endpoints, then the dedicated webhook outbox worker handles signed network delivery and retry response capture.
 - `/admin` now exposes a compact Process due control and result summary so operators can run dry-runs and delivery batches without leaving the platform command center.
 

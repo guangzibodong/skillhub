@@ -295,7 +295,7 @@ Acceptance checks:
 - Email verification challenge delivery status stays synchronized with the matching `auth.email.code.requested` delivery event without exposing the raw code in admin lists.
 - Fresh deployments seed active default templates for the main account, review, runtime, billing, payout, buyer-request, feedback, trust, curation, and delivery-operation events before provider-specific email or webhook integrations are connected.
 - External delivery processing fans in-app business events into email/webhook queue rows using user email notification preferences and organization webhook endpoint subscriptions, then renders the active template for the delivery channel and locale at send time.
-- Admin/support operators can process due external delivery events in batches, including dry-run mode, Resend-backed email delivery when configured, explicit provider-configuration failure states, and webhook fan-out into `webhook_delivery_events`.
+- Admin/support operators can process due external delivery events in batches, including dry-run mode, SMTP or Resend email delivery when configured, explicit provider-configuration failure states, and webhook fan-out into `webhook_delivery_events`.
 - Admin/support operators can inspect launch readiness without exposing secrets, covering identity providers, email delivery, webhook worker schema, database migrations, required active notification-template coverage, runtime key hashing, commission rules, publisher terms acceptance, payout state, demo fallback, legacy signup, service token presence, and final-provider-deferred areas.
 - Launch readiness exposes migration-runner history from `schema_migrations` so operators can see whether the server has run the current expected migration before the API depends on new columns or tables.
 - Launch readiness exposes configurable credibility thresholds from real marketplace state: verified public skills, active publishers with public supply, active developer projects, successful governed invocations, and published buyer feedback.
@@ -480,7 +480,7 @@ Completed:
 - `/v1/admin/notification-deliveries/process` now first fans out eligible in-app business notifications into external email/webhook delivery rows according to user email preferences and organization webhook endpoint subscriptions, reports fanout counts, and renders active templates for email text and webhook JSON payloads at delivery time.
 - Email verification-code notification delivery decisions synchronize the matching `email_login_challenges.delivery_status`, keeping signup/login operations inspectable before the final email provider worker is connected.
 - `/v1/admin/notification-deliveries/process` now lets admin/support operators process due external delivery events in `dry_run` or `deliver` mode.
-- Email delivery processing supports Resend when `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM` are configured; missing provider configuration records an explicit failed state instead of silently dropping login or operational email.
+- Email delivery processing supports SMTP when `SKILLHUB_EMAIL_PROVIDER=smtp`, `SKILLHUB_SMTP_HOST`, `SKILLHUB_SMTP_USER`, `SKILLHUB_SMTP_PASSWORD`, and `SKILLHUB_EMAIL_FROM` are configured, and still supports Resend with `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`; missing provider configuration records an explicit failed state instead of silently dropping login or operational email.
 - Webhook processing fans matching organization-scoped external events into `webhook_delivery_events` for subscribed active endpoints without mixing webhook state with in-app unread notifications.
 - Webhook delivery worker migration `023_webhook_delivery_worker.sql` adds outbox `processing` state, `last_attempted_at`, and due-event indexes so endpoint-level HTTP delivery can be claimed before network work.
 - `/v1/admin/webhook-deliveries` and `/v1/admin/webhook-deliveries/process` now let admin/support operators inspect endpoint-level webhook outbox rows and process due deliveries with signed HTTP POST requests, response capture, endpoint status updates, stale-processing recovery, and retry backoff.
@@ -620,7 +620,7 @@ Completed:
 Next:
 
 - Resolve any launch-readiness blockers reported by `/admin` before public launch or paid marketplace rollout.
-- Configure real production email delivery with `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`; `/v1/admin/launch-readiness` treats missing production email delivery as a blocker, and debug preview is limited to non-production testing.
+- Configure real production email delivery with SMTP (`SKILLHUB_EMAIL_PROVIDER=smtp`, SMTP host/user/password, and `SKILLHUB_EMAIL_FROM`) or Resend (`SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`); `/v1/admin/launch-readiness` treats missing production email delivery as a blocker, and debug preview is limited to non-production testing.
 - Finalize legal review of `/terms` once payment provider, tax/KYC region, refund window, and minimum payout decisions are locked.
 - Provider-specific payout account integration can replace the P0 manual PayPal/Alipay transfer workflow later.
 - Payment-provider customer/session integration after billing states are stable.

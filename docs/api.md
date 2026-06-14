@@ -433,8 +433,13 @@ SKILLHUB_AUTH_COOKIE_DOMAIN=.useskillhub.com
 SKILLHUB_OAUTH_STATE_SECRET=replace-with-a-long-random-secret
 SKILLHUB_EMAIL_AUTH_SECRET=replace-with-a-different-long-random-secret
 SKILLHUB_EMAIL_AUTH_DEBUG_CODES=false
-SKILLHUB_EMAIL_PROVIDER=resend
-SKILLHUB_EMAIL_FROM=no-reply@useskillhub.com
+SKILLHUB_EMAIL_PROVIDER=smtp
+SKILLHUB_EMAIL_FROM=SkillHub <support@useskillhub.com>
+SKILLHUB_SMTP_HOST=mail.spacemail.com
+SKILLHUB_SMTP_PORT=465
+SKILLHUB_SMTP_SECURE=true
+SKILLHUB_SMTP_USER=support@useskillhub.com
+SKILLHUB_SMTP_PASSWORD=
 RESEND_API_KEY=
 SKILLHUB_GOOGLE_CLIENT_ID=
 SKILLHUB_GOOGLE_CLIENT_SECRET=
@@ -1861,7 +1866,7 @@ curl -X POST "https://api.useskillhub.com/v1/admin/notification-deliveries/$NOTI
   -H "Content-Type: application/json" \
   -d '{
     "action": "retry",
-    "reason": "SMTP provider is not connected yet; retry after provider setup.",
+    "reason": "Email provider was not connected yet; retry after provider setup.",
     "nextAttemptAt": "2026-06-06T12:00:00.000Z",
     "provider": "provider_deferred"
   }'
@@ -1899,9 +1904,9 @@ In `deliver` mode, the processor first fans eligible queued in-app business noti
 
 In `dry_run` mode, those fanout fields are now a secret-safe preview rather than a mutation. The processor reads the same queued in-app business events, user email preferences, and organization webhook endpoint subscriptions, then returns `fanoutMode: "preview"` with the number of external rows that would be created. In `deliver` mode, the same fields return `fanoutMode: "created"` and count the rows actually inserted before due external deliveries are processed.
 
-At delivery time, email and webhook processors look for an active `notification_templates` row matching `(eventType, channel, locale)`, falling back to the language code and then `en`. Email delivery uses the rendered template subject/body as the Resend text payload. Webhook fanout stores the rendered JSON body as `renderedPayload` in `webhook_delivery_events`, while preserving the original notification payload for audit and troubleshooting. Template rendering substitutes `{{payloadKey}}` and dotted paths such as `{{skill.slug}}`; missing values render as empty strings rather than exposing raw placeholders.
+At delivery time, email and webhook processors look for an active `notification_templates` row matching `(eventType, channel, locale)`, falling back to the language code and then `en`. Email delivery uses the rendered template subject/body as the provider text payload. Webhook fanout stores the rendered JSON body as `renderedPayload` in `webhook_delivery_events`, while preserving the original notification payload for audit and troubleshooting. Template rendering substitutes `{{payloadKey}}` and dotted paths such as `{{skill.slug}}`; missing values render as empty strings rather than exposing raw placeholders.
 
-Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider. Production delivery rejects `debug_preview` and reports a configuration failure instead of pretending the code was sent. Once an email-code event is marked sent, the processor removes the raw `code` from the stored notification payload while preserving challenge and provider metadata for audit.
+Email delivery uses provider configuration. With `SKILLHUB_EMAIL_PROVIDER=smtp`, `SKILLHUB_SMTP_HOST`, `SKILLHUB_SMTP_USER`, `SKILLHUB_SMTP_PASSWORD`, and `SKILLHUB_EMAIL_FROM`, the processor sends through an SSL/TLS SMTP server and records the generated message id. With `SKILLHUB_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `SKILLHUB_EMAIL_FROM`, the processor sends through Resend and records the provider message id. Without a provider, production processing marks the event failed with a clear configuration error. Non-production debug-code deployments can use `SKILLHUB_EMAIL_PROVIDER=debug_preview` or `SKILLHUB_EMAIL_AUTH_DEBUG_CODES=true` to mark debug email events sent without contacting a provider. Production delivery rejects `debug_preview` and reports a configuration failure instead of pretending the code was sent. Once an email-code event is marked sent, the processor removes the raw `code` from the stored notification payload while preserving challenge and provider metadata for audit.
 
 Webhook processing fans out matching organization-scoped webhook events into `webhook_delivery_events` for active endpoints whose subscribed event list matches the exact event type or its topic, then marks the external notification event sent. The webhook outbox worker consumes those endpoint-level rows and records signed HTTP delivery state separately.
 

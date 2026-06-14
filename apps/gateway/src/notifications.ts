@@ -59,6 +59,11 @@ type NotificationDeliveryRuntimeEnv = {
   SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
   SKILLHUB_EMAIL_FROM?: string;
   SKILLHUB_EMAIL_PROVIDER?: string;
+  SKILLHUB_SMTP_HOST?: string;
+  SKILLHUB_SMTP_PASSWORD?: string;
+  SKILLHUB_SMTP_PORT?: string;
+  SKILLHUB_SMTP_SECURE?: string;
+  SKILLHUB_SMTP_USER?: string;
   SKILLHUB_ENV?: string;
   VERCEL_ENV?: string;
 };
@@ -966,7 +971,8 @@ async function processEmailDelivery(
       nextAttemptAt: null,
       provider,
       providerMessageId: null,
-      reason: "Debug email delivery is disabled in production. Configure SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM."
+      reason:
+        "Debug email delivery is disabled in production. Configure SKILLHUB_EMAIL_PROVIDER=smtp with SMTP credentials, or use SKILLHUB_EMAIL_PROVIDER=resend."
     };
   }
 
@@ -980,13 +986,18 @@ async function processEmailDelivery(
     };
   }
 
+  if (provider === "smtp") {
+    return processSmtpEmailDelivery(row, env, mode, recipient, renderedTemplate);
+  }
+
   if (provider !== "resend") {
     return {
       action: "mark_failed",
       nextAttemptAt: null,
       provider,
       providerMessageId: null,
-      reason: "Email provider is not configured. Set SKILLHUB_EMAIL_PROVIDER=resend, RESEND_API_KEY, and SKILLHUB_EMAIL_FROM."
+      reason:
+        "Email provider is not configured. Set SKILLHUB_EMAIL_PROVIDER=smtp with SMTP credentials, or use SKILLHUB_EMAIL_PROVIDER=resend."
     };
   }
 
@@ -1045,6 +1056,73 @@ async function processEmailDelivery(
     providerMessageId: payload.id ?? `resend_${row.id.slice(0, 8)}`,
     reason: "Email delivered through Resend."
   };
+}
+
+async function processSmtpEmailDelivery(
+  row: NotificationRow,
+  env: NotificationDeliveryRuntimeEnv | undefined,
+  mode: NotificationDeliveryProcessMode,
+  recipient: string,
+  renderedTemplate: Awaited<ReturnType<typeof resolveRenderedNotificationTemplate>>
+): Promise<ProcessedDeliveryOutcome> {
+  const provider = "smtp";
+  const host = getRuntimeEnv(env, "SKILLHUB_SMTP_HOST");
+  const port = normalizeSmtpPort(getRuntimeEnv(env, "SKILLHUB_SMTP_PORT"));
+  const secure = normalizeSmtpSecure(getRuntimeEnv(env, "SKILLHUB_SMTP_SECURE"), port);
+  const username = getRuntimeEnv(env, "SKILLHUB_SMTP_USER");
+  const password = getRuntimeEnv(env, "SKILLHUB_SMTP_PASSWORD");
+  const from = getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
+
+  if (!host || !username || !password || !from) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason:
+        "SMTP delivery requires SKILLHUB_SMTP_HOST, SKILLHUB_SMTP_USER, SKILLHUB_SMTP_PASSWORD, and SKILLHUB_EMAIL_FROM."
+    };
+  }
+
+  if (mode === "dry_run") {
+    return {
+      action: "mark_sent",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: "dry_run",
+      reason: `SMTP is configured for ${host}:${port} and would send email to ${recipient}.`
+    };
+  }
+
+  try {
+    const providerMessageId = await sendSmtpEmail({
+      from,
+      host,
+      password,
+      port,
+      secure,
+      subject: renderedTemplate?.subject ?? row.subject ?? "SkillHub notification",
+      text: renderedTemplate?.body ?? renderEmailText(row),
+      to: recipient,
+      username
+    });
+
+    return {
+      action: "mark_sent",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId,
+      reason: "Email delivered through SMTP."
+    };
+  } catch (error) {
+    return {
+      action: "mark_failed",
+      nextAttemptAt: null,
+      provider,
+      providerMessageId: null,
+      reason: `SMTP delivery failed: ${error instanceof Error ? error.message : String(error)}.`
+    };
+  }
 }
 
 async function processWebhookDelivery(
@@ -1298,6 +1376,214 @@ function normalizeEmailProvider(env: NotificationDeliveryRuntimeEnv | undefined)
   }
 
   return "provider_deferred";
+}
+
+type SmtpSocket = import("node:net").Socket | import("node:tls").TLSSocket;
+
+type SmtpEmailInput = {
+  from: string;
+  host: string;
+  password: string;
+  port: number;
+  secure: boolean;
+  subject: string;
+  text: string;
+  to: string;
+  username: string;
+};
+
+async function sendSmtpEmail(input: SmtpEmailInput) {
+  const [net, tls] = await Promise.all([import("node:net"), import("node:tls")]);
+  const socket: SmtpSocket = input.secure
+    ? tls.connect({
+        host: input.host,
+        port: input.port,
+        servername: input.host
+      })
+    : net.connect({
+        host: input.host,
+        port: input.port
+      });
+  const fromAddress = parseEmailAddress(input.from, "SKILLHUB_EMAIL_FROM");
+  const toAddress = parseEmailAddress(input.to, "recipient");
+  const messageId = smtpMessageId(input.host);
+
+  socket.setEncoding("utf8");
+  socket.setTimeout(15000, () => {
+    socket.destroy(new Error("SMTP connection timed out."));
+  });
+
+  try {
+    await waitForSmtpSocket(socket, input.secure ? "secureConnect" : "connect");
+    expectSmtpResponse(await readSmtpResponse(socket), [220]);
+    await sendSmtpCommand(socket, `EHLO ${smtpClientName()}`, [250]);
+    await sendSmtpCommand(socket, `AUTH PLAIN ${smtpPlainAuth(input.username, input.password)}`, [235]);
+    await sendSmtpCommand(socket, `MAIL FROM:<${fromAddress}>`, [250]);
+    await sendSmtpCommand(socket, `RCPT TO:<${toAddress}>`, [250, 251]);
+    await sendSmtpCommand(socket, "DATA", [354]);
+    socket.write(`${buildSmtpMessage(input, messageId)}\r\n.\r\n`);
+    expectSmtpResponse(await readSmtpResponse(socket), [250]);
+    socket.write("QUIT\r\n");
+    return messageId;
+  } finally {
+    socket.end();
+    socket.destroy();
+  }
+}
+
+function normalizeSmtpPort(value: string | undefined) {
+  const port = Number(value ?? "465");
+  return Number.isInteger(port) && port > 0 && port <= 65535 ? port : 465;
+}
+
+function normalizeSmtpSecure(value: string | undefined, port: number) {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized) {
+    return port === 465;
+  }
+
+  return ["1", "ssl", "tls", "true", "yes"].includes(normalized);
+}
+
+function waitForSmtpSocket(socket: SmtpSocket, event: "connect" | "secureConnect") {
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("SMTP connection timed out."));
+    }, 15000);
+    const cleanup = () => {
+      clearTimeout(timer);
+      socket.off(event, onReady);
+      socket.off("error", onError);
+    };
+    const onReady = () => {
+      cleanup();
+      resolve();
+    };
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+
+    socket.once(event, onReady);
+    socket.once("error", onError);
+  });
+}
+
+async function sendSmtpCommand(socket: SmtpSocket, command: string, expectedCodes: number[]) {
+  socket.write(`${command}\r\n`);
+  expectSmtpResponse(await readSmtpResponse(socket), expectedCodes);
+}
+
+function readSmtpResponse(socket: SmtpSocket) {
+  return new Promise<{ code: number; text: string }>((resolve, reject) => {
+    let buffer = "";
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error("SMTP server response timed out."));
+    }, 15000);
+    const cleanup = () => {
+      clearTimeout(timer);
+      socket.off("data", onData);
+      socket.off("error", onError);
+      socket.off("end", onEnd);
+    };
+    const onData = (chunk: string | Buffer) => {
+      buffer += chunk.toString();
+      const match = buffer.match(/(?:^|\r?\n)(\d{3}) [^\r\n]*(?:\r?\n|$)/);
+
+      if (match) {
+        cleanup();
+        resolve({
+          code: Number(match[1]),
+          text: buffer.trim()
+        });
+      }
+    };
+    const onError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const onEnd = () => {
+      cleanup();
+      reject(new Error("SMTP server closed the connection."));
+    };
+
+    socket.on("data", onData);
+    socket.once("error", onError);
+    socket.once("end", onEnd);
+  });
+}
+
+function expectSmtpResponse(response: { code: number; text: string }, expectedCodes: number[]) {
+  if (!expectedCodes.includes(response.code)) {
+    throw new Error(`SMTP returned ${response.code}: ${response.text}`);
+  }
+}
+
+function buildSmtpMessage(input: SmtpEmailInput, messageId: string) {
+  const headers = [
+    `From: ${sanitizeHeader(input.from)}`,
+    `To: ${sanitizeHeader(input.to)}`,
+    `Subject: ${encodeMimeHeader(input.subject)}`,
+    `Date: ${new Date().toUTCString()}`,
+    `Message-ID: <${messageId}>`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit"
+  ];
+  const body = dotStuff(input.text.replace(/\r?\n/g, "\r\n"));
+
+  return `${headers.join("\r\n")}\r\n\r\n${body}`;
+}
+
+function parseEmailAddress(value: string, label: string) {
+  const trimmed = value.trim();
+  const bracketMatch = trimmed.match(/<([^<>\s]+@[^<>\s]+)>/);
+  const directMatch = trimmed.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  const address = bracketMatch?.[1] ?? directMatch?.[0];
+
+  if (!address) {
+    throw new Error(`${label} must contain a valid email address.`);
+  }
+
+  return address;
+}
+
+function sanitizeHeader(value: string) {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
+function encodeMimeHeader(value: string) {
+  const clean = sanitizeHeader(value);
+
+  if (/^[\x20-\x7E]*$/.test(clean)) {
+    return clean;
+  }
+
+  return `=?UTF-8?B?${Buffer.from(clean, "utf8").toString("base64")}?=`;
+}
+
+function dotStuff(value: string) {
+  return value
+    .split("\r\n")
+    .map((line) => (line.startsWith(".") ? `.${line}` : line))
+    .join("\r\n");
+}
+
+function smtpPlainAuth(username: string, password: string) {
+  return Buffer.from(`\u0000${username}\u0000${password}`, "utf8").toString("base64");
+}
+
+function smtpClientName() {
+  return "useskillhub.com";
+}
+
+function smtpMessageId(host: string) {
+  const safeHost = host.replace(/[^a-zA-Z0-9.-]+/g, "") || "useskillhub.com";
+  const nonce = Math.random().toString(36).slice(2, 10);
+  return `skillhub.${Date.now()}.${nonce}@${safeHost}`;
 }
 
 async function resolveRenderedNotificationTemplate(
