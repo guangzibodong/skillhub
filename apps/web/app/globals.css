@@ -32405,8 +32405,8 @@ textarea:focus {
   font-size: 13px;
   grid-template-columns: 14px minmax(0, 1fr) auto;
   gap: 8px;
-  min-height: 32px;
-  padding: 0 8px;
+  min-height: 42px;
+  padding: 5px 8px;
 }
 
 .operator-nav__item:hover,
@@ -32445,6 +32445,54 @@ textarea:focus {
   font-weight: 600;
   line-height: 1;
   padding: 3px 7px;
+}
+
+.operator-bi {
+  display: inline-grid;
+  gap: 2px;
+  line-height: 1.12;
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.operator-bi > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operator-bi > small,
+.operator-topbar__actions small,
+.operator-docs-card small,
+.operator-ghost-button small,
+.operator-panel__action small,
+.operator-policy-row small,
+.operator-section-link small,
+.operator-tabs small,
+.operator-select-button small,
+.operator-live-action small {
+  color: var(--color-slate);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: none;
+}
+
+.operator-nav__group-label small {
+  font-size: 8px;
+  letter-spacing: 0;
+}
+
+.operator-nav__label small {
+  font-size: 10px;
+}
+
+.operator-panel__action small,
+.operator-section-link small,
+.operator-docs-card small,
+.operator-ghost-button small {
+  margin-left: 3px;
 }
 
 .operator-docs-card {
@@ -32587,8 +32635,8 @@ textarea:focus {
   font-size: 12px;
   font-weight: 500;
   gap: 8px;
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: 38px;
+  padding: 4px 10px;
 }
 
 .operator-launch-pill {
@@ -32596,11 +32644,20 @@ textarea:focus {
   color: var(--color-reactor-green);
 }
 
-.operator-env-button span {
+.operator-env-button > span:first-child {
   background: var(--color-reactor-green);
   border-radius: 999px;
+  flex: 0 0 auto;
   height: 6px;
   width: 6px;
+}
+
+.operator-launch-pill,
+.operator-env-button,
+.operator-user-menu,
+.operator-exit-button,
+.operator-select-button {
+  line-height: 1.1;
 }
 
 .operator-icon-button {
@@ -32622,7 +32679,7 @@ textarea:focus {
   top: -4px;
 }
 
-.operator-user-menu span {
+.operator-user-menu > span:first-child {
   align-items: center;
   background: var(--color-carbon);
   border: 1px solid var(--color-fern);
@@ -32664,7 +32721,6 @@ textarea:focus {
   color: var(--color-slate);
   font-size: 11px;
   font-weight: 500;
-  text-transform: uppercase;
 }
 
 .operator-status-item strong {
@@ -32735,6 +32791,7 @@ textarea:focus {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
+  min-width: 0;
 }
 
 .operator-panel__action,
@@ -32761,6 +32818,11 @@ textarea:focus {
   padding: 0 10px 8px 0;
   text-align: left;
   white-space: nowrap;
+}
+
+.operator-table th .operator-bi,
+.operator-table td .operator-bi {
+  max-width: 100%;
 }
 
 .operator-table td {
@@ -32797,12 +32859,12 @@ textarea:focus {
 
 .operator-panel--queue .operator-table th:nth-child(1),
 .operator-panel--queue .operator-table td:nth-child(1) {
-  width: 26%;
+  width: 24%;
 }
 
 .operator-panel--queue .operator-table th:nth-child(2),
 .operator-panel--queue .operator-table td:nth-child(2) {
-  width: 16%;
+  width: 15%;
 }
 
 .operator-panel--queue .operator-table th:nth-child(3),
@@ -32812,7 +32874,7 @@ textarea:focus {
 
 .operator-panel--queue .operator-table th:nth-child(4),
 .operator-panel--queue .operator-table td:nth-child(4) {
-  width: 13%;
+  width: 14%;
 }
 
 .operator-panel--queue .operator-table th:nth-child(5),
@@ -32827,7 +32889,7 @@ textarea:focus {
 
 .operator-panel--queue .operator-table th:nth-child(7),
 .operator-panel--queue .operator-table td:nth-child(7) {
-  width: 15%;
+  width: 18%;
 }
 
 .operator-panel--queue .operator-table td > span {
@@ -32842,6 +32904,10 @@ textarea:focus {
   font-size: 11px;
   font-weight: 500;
   padding: 2px 7px;
+}
+
+.operator-badge .operator-bi {
+  gap: 1px;
 }
 
 .operator-badge.is-success,
