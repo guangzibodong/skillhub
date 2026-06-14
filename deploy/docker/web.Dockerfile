@@ -21,6 +21,14 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS builder
 
+ARG NEXT_PUBLIC_APP_URL=https://useskillhub.com
+ARG NEXT_PUBLIC_API_URL=https://api.useskillhub.com
+ARG SKILLHUB_SERVER_API_URL=https://api.useskillhub.com
+
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV SKILLHUB_SERVER_API_URL=$SKILLHUB_SERVER_API_URL
+
 COPY . .
 RUN pnpm --filter @useskillhub/web... build
 

@@ -86,8 +86,6 @@ export type PublicPublisherProfile = {
   updatedAt: string;
 };
 
-const publicApiUrl = getPublicApiUrl();
-const serverApiUrl = getServerApiUrl();
 const publisherSlugAliases: Record<string, string> = {
   "skillhub-publisher": "skillhub",
 };
@@ -102,6 +100,7 @@ export async function getPublicPublisherProfile(
   slug: string,
 ): Promise<PublicPublisherProfile | null> {
   const normalizedSlug = publisherSlugFromName(slug);
+  const serverApiUrl = getServerApiUrl();
 
   try {
     const response = await fetch(
@@ -133,6 +132,8 @@ export async function getPublicPublisherProfile(
 }
 
 export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
+  const serverApiUrl = getServerApiUrl();
+
   try {
     const response = await fetch(`${serverApiUrl}/v1/publishers?limit=24`, {
       cache: "no-store",
@@ -174,6 +175,7 @@ export function publisherSlugFromName(name: string) {
 function apiProfileToPublicProfile(
   profile: PublicPublisherApiProfile,
 ): PublicPublisherProfile {
+  const publicApiUrl = getPublicApiUrl();
   const skills = profile.skills.map((skill) => ({
     billing: skill.billingModel,
     callCount: skill.callCount,

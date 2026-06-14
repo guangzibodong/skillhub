@@ -3,6 +3,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}"
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}"
+export SKILLHUB_SERVER_API_URL="${SKILLHUB_SERVER_API_URL:-$NEXT_PUBLIC_API_URL}"
+export SKILLHUB_AUTH_CALLBACK_BASE_URL="${SKILLHUB_AUTH_CALLBACK_BASE_URL:-$NEXT_PUBLIC_API_URL}"
+
 if [ ! -f .env ]; then
   echo "Missing .env. Copy .env.example to .env and fill in secrets first." >&2
   exit 1
@@ -33,6 +38,14 @@ for attempt in $(seq 1 30); do
 
   sleep 2
 done
+
+if curl -fsS http://127.0.0.1:18787/v1/skills/acceptance-qa-20260614-publisher3 >/dev/null; then
+  curl -fsSI "http://127.0.0.1:3100/skills/acceptance-qa-20260614-publisher3?lang=zh" >/dev/null
+fi
+
+if curl -fsS http://127.0.0.1:18787/v1/publishers/qa-partner3-qa-20260614 >/dev/null; then
+  curl -fsSI "http://127.0.0.1:3100/publishers/qa-partner3-qa-20260614?lang=zh" >/dev/null
+fi
 
 echo "SkillHub stack started."
 echo "Web: http://127.0.0.1:3100"

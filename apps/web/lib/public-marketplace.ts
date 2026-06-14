@@ -42,12 +42,11 @@ export type MarketplaceSkillSuggestion = {
   skill: MarketplaceSkill;
 };
 
-const publicApiUrl = getPublicApiUrl();
-const serverApiUrl = getServerApiUrl();
-
 export async function getPublicMarketplaceSkills(
   options: PublicMarketplaceSearchOptions = {},
 ): Promise<MarketplaceSkill[]> {
+  const serverApiUrl = getServerApiUrl();
+
   try {
     const searchParams = new URLSearchParams({
       limit: String(options.limit ?? 50),
@@ -160,6 +159,8 @@ async function hydrateMarketplaceSkill(summary: SkillSummary) {
 }
 
 async function fetchSkillManifest(slug: string) {
+  const serverApiUrl = getServerApiUrl();
+
   try {
     const response = await fetch(
       `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}`,
@@ -179,6 +180,8 @@ async function fetchSkillManifest(slug: string) {
 }
 
 async function fetchSkillSummary(slug: string) {
+  const serverApiUrl = getServerApiUrl();
+
   try {
     const response = await fetch(
       `${serverApiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
@@ -199,6 +202,8 @@ async function fetchSkillSummary(slug: string) {
 }
 
 async function fetchSkillPrices(slug: string) {
+  const serverApiUrl = getServerApiUrl();
+
   try {
     const response = await fetch(
       `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
@@ -224,6 +229,7 @@ function manifestToMarketplaceSkill(
   prices: SkillPriceRecord[],
   staticSkill?: MarketplaceSkill,
 ): MarketplaceSkill {
+  const publicApiUrl = getPublicApiUrl();
   const activePrice =
     prices.find((price) => price.status === "active") ?? prices[0];
   const billing =
