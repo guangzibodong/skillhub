@@ -134,7 +134,7 @@ export async function authorize(
   const service = authorizeServiceToken(token);
 
   if (service) {
-    return roleResult(service, allowedRoles);
+    return roleResult(service, allowedRoles, scope);
   }
 
   const sql = await getSql();
@@ -166,7 +166,7 @@ export async function authorize(
     };
   }
 
-  return roleResult(subject, allowedRoles);
+  return roleResult(subject, allowedRoles, scope);
 }
 
 export async function requireServiceAuthorization(authorizationHeader: string | undefined): Promise<AuthorizationResult> {
@@ -1294,10 +1294,21 @@ async function completeEmailLogin(
   };
 }
 
-function roleResult(subject: AuthSubject, allowedRoles: AuthRole[]): AuthorizationResult {
+function roleResult(subject: AuthSubject, allowedRoles: AuthRole[], scope: AuthorizationScope = {}): AuthorizationResult {
   const allowed = new Set<AuthRole>(allowedRoles);
+  const hasOrganizationScope = Boolean(
+    scope.organizationId || scope.projectSlug || scope.publisherProfileId || scope.requireOrganization
+  );
 
-  if (subject.platformRole === "super_admin" || subject.roles.includes("super_admin") || subject.roles.some((role) => allowed.has(role))) {
+  if (subject.type === "service" && subject.roles.some((role) => allowed.has(role))) {
+    return { ok: true, subject };
+  }
+
+  if (subject.platformRole === "super_admin" || allowed.has(subject.platformRole)) {
+    return { ok: true, subject };
+  }
+
+  if (hasOrganizationScope && subject.roles.some((role) => allowed.has(role))) {
     return { ok: true, subject };
   }
 

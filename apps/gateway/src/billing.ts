@@ -1292,7 +1292,13 @@ function calculateSplit(amountCents: number, commissionRule: CommissionRule) {
 }
 
 function normalizeCurrency(currency = "usd") {
-  return currency.trim().toLowerCase() || "usd";
+  const normalized = currency.trim().toLowerCase() || "usd";
+
+  if (normalized !== "usd") {
+    throw new Error("SkillHub paid marketplace currently supports USD pricing only.");
+  }
+
+  return normalized;
 }
 
 function normalizeAmount(amount: number | undefined, billingModel: BillingModel) {

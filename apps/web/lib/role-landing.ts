@@ -13,11 +13,11 @@ export function roleLandingPath(subject: SessionSubject | null | undefined, loca
     return `/login${suffix}`;
   }
 
-  const roles = subjectRoleSet(subject);
-
-  if (hasAnyRole(roles, adminRoles)) {
+  if (adminRoles.has(subject.platformRole)) {
     return `/admin${suffix}`;
   }
+
+  const roles = subjectRoleSet(subject);
 
   if (roles.has("publisher")) {
     return `/publisher${suffix}`;
@@ -45,11 +45,11 @@ export function roleCanOpenRequestedPath(subject: SessionSubject | null | undefi
     return false;
   }
 
-  const roles = subjectRoleSet(subject);
-
   if (isRoute(pathname, "/admin")) {
-    return hasAnyRole(roles, adminRoles);
+    return adminRoles.has(subject.platformRole);
   }
+
+  const roles = subjectRoleSet(subject);
 
   if (isRoute(pathname, "/publisher")) {
     return hasAnyRole(roles, publisherRoles);

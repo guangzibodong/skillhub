@@ -29,9 +29,9 @@ export function derivePublicPlatformStats(skills: SkillSummary[]): Pick<
   PublicPlatformStats,
   "callableSkills" | "feedbackSignals" | "publicSkills" | "recordedCalls" | "submittedSkills" | "verifiedSkills"
 > {
+  const submittedSkills = skills.filter((skill) => skill.verificationStatus === "submitted" && !isQaSkillSummary(skill));
   const publicSkills = skills.filter(isPublicSkillSummary);
   const verifiedSkills = publicSkills.filter((skill) => isVerifiedSkillStatus(skill.verificationStatus));
-  const submittedSkills = publicSkills.filter((skill) => skill.verificationStatus === "submitted");
 
   return {
     callableSkills: verifiedSkills.filter(isCallableSkillSummary).length,
@@ -83,11 +83,16 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
 }
 
 export function isPublicSkillSummary(skill: SkillSummary) {
-  return ["verified", "submitted", "deprecated"].includes(skill.verificationStatus);
+  return isVerifiedSkillStatus(skill.verificationStatus) && !isQaSkillSummary(skill);
 }
 
 export function isCallableSkillSummary(skill: SkillSummary) {
   return isPublicSkillSummary(skill) && isVerifiedSkillStatus(skill.verificationStatus);
+}
+
+function isQaSkillSummary(skill: SkillSummary) {
+  const haystack = [skill.slug, skill.displayName, skill.description].join(" ").toLowerCase();
+  return haystack.includes("acceptance-") || haystack.includes("qa-") || haystack.includes("acceptance partner");
 }
 
 export function formatPublicPlatformLatency(value: number | null) {

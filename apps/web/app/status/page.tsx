@@ -28,33 +28,33 @@ type PageProps = {
 const copy = {
   en: {
     eyebrow: "Status",
-    title: "All systems operational.",
-    subtitle: "Real-time platform health",
-    body: "Transparent status monitoring for every layer of the SkillHub infrastructure. Public endpoints, API health, and runtime gateway — all visible.",
+    title: "SkillHub status preview.",
+    subtitle: "Public health signals",
+    body: "This page summarizes the public monitoring scope while live incident reporting is being connected. Use the API health endpoint and support channel for the latest operational check.",
     api: "API health endpoint",
     support: "Get support",
     servicesEyebrow: "Services",
     servicesTitle: "Infrastructure status",
     services: [
-      { icon: "globe", name: "Public web", status: "operational", desc: "useskillhub.com — discovery, docs, marketplace, publisher profiles", uptime: "99.9%" },
-      { icon: "server", name: "API gateway", status: "operational", desc: "api.useskillhub.com — REST endpoints, skill search, MCP metadata", uptime: "99.8%" },
-      { icon: "database", name: "Registry", status: "operational", desc: "Skill contracts, versions, manifests, publisher state", uptime: "99.9%" },
-      { icon: "network", name: "Runtime gateway", status: "operational", desc: "Authenticated skill invocation, project-scoped execution", uptime: "99.7%" },
-      { icon: "cloud", name: "CDN & assets", status: "operational", desc: "Static files, images, and client bundles served globally", uptime: "99.99%" },
-      { icon: "shield", name: "Auth service", status: "operational", desc: "Login, session management, API key validation", uptime: "99.9%" }
+      { icon: "globe", name: "Public web", status: "operational", desc: "useskillhub.com — discovery, docs, marketplace, publisher profiles", uptime: "Monitored" },
+      { icon: "server", name: "API gateway", status: "operational", desc: "api.useskillhub.com — REST endpoints, skill search, MCP metadata", uptime: "Monitored" },
+      { icon: "database", name: "Registry", status: "operational", desc: "Skill contracts, versions, manifests, publisher state", uptime: "Monitored" },
+      { icon: "network", name: "Runtime gateway", status: "operational", desc: "Authenticated skill invocation, project-scoped execution", uptime: "Gated" },
+      { icon: "cloud", name: "CDN & assets", status: "operational", desc: "Static files, images, and client bundles served globally", uptime: "Monitored" },
+      { icon: "shield", name: "Auth service", status: "operational", desc: "Login, session management, API key validation", uptime: "Monitored" }
     ],
     metricsEyebrow: "Performance",
     metricsTitle: "Platform metrics",
     metrics: [
-      { label: "API response time", value: "< 120ms", desc: "p95 latency for public endpoints" },
-      { label: "Registry queries", value: "< 50ms", desc: "Skill search and manifest inspection" },
-      { label: "Runtime cold start", value: "< 800ms", desc: "First invocation after idle period" },
-      { label: "Global CDN", value: "< 30ms", desc: "Static asset delivery worldwide" }
+      { label: "API response time", value: "Health check", desc: "Public endpoint check is available on the API health route" },
+      { label: "Registry queries", value: "Observed", desc: "Skill search and manifest inspection are covered by public QA" },
+      { label: "Runtime gateway", value: "Signed-in", desc: "Runtime checks require authenticated project context" },
+      { label: "Static assets", value: "CDN", desc: "Static asset delivery is part of deployment verification" }
     ],
     incidentsEyebrow: "Recent incidents",
-    incidentsTitle: "Last 30 days",
+    incidentsTitle: "Current incident notes",
     incidents: [
-      { date: "No incidents", desc: "All services have been operating normally.", severity: "none" }
+      { date: "Preview monitor", desc: "Live incident history is not yet connected here. Contact support if a page or API route fails.", severity: "none" }
     ],
     scopeEyebrow: "Monitoring scope",
     scopeTitle: "What's covered vs. gated",
@@ -74,40 +74,40 @@ const copy = {
       "Publisher review queue status",
       "Admin and operator dashboards"
     ],
-    ctaTitle: "Everything looks good.",
-    ctaBody: "Jump into the marketplace or connect your agents to start building.",
+    ctaTitle: "Need a live check?",
+    ctaBody: "Open the marketplace, call the health endpoint, or contact support if a route is not responding.",
     ctaPrimary: "Marketplace",
     ctaSecondary: "Agent integration"
   },
   zh: {
     eyebrow: "状态",
-    title: "所有系统正常运行。",
-    subtitle: "实时平台健康状况",
-    body: "SkillHub 基础设施每一层的透明状态监控。公开端点、API 健康和运行时网关 — 全部可见。",
+    title: "SkillHub 状态预览。",
+    subtitle: "公开健康信号",
+    body: "本页展示公开监控范围；实时事故历史仍在接入中。需要最新运行确认时，请优先查看 API 健康端点或联系支持。",
     api: "API 健康端点",
     support: "获取支持",
     servicesEyebrow: "服务",
     servicesTitle: "基础设施状态",
     services: [
-      { icon: "globe", name: "公开网站", status: "operational", desc: "useskillhub.com — 发现、文档、市场、发布者资料", uptime: "99.9%" },
-      { icon: "server", name: "API 网关", status: "operational", desc: "api.useskillhub.com — REST 端点、技能搜索、MCP 元数据", uptime: "99.8%" },
-      { icon: "database", name: "注册表", status: "operational", desc: "技能合约、版本、manifest、发布者状态", uptime: "99.9%" },
-      { icon: "network", name: "运行时网关", status: "operational", desc: "认证后技能调用、项目级执行", uptime: "99.7%" },
-      { icon: "cloud", name: "CDN 与资源", status: "operational", desc: "全球分发的静态文件、图片和客户端包", uptime: "99.99%" },
-      { icon: "shield", name: "认证服务", status: "operational", desc: "登录、会话管理、API Key 验证", uptime: "99.9%" }
+      { icon: "globe", name: "公开网站", status: "operational", desc: "useskillhub.com — 发现、文档、市场、发布者资料", uptime: "监控中" },
+      { icon: "server", name: "API 网关", status: "operational", desc: "api.useskillhub.com — REST 端点、技能搜索、MCP 元数据", uptime: "监控中" },
+      { icon: "database", name: "注册表", status: "operational", desc: "技能合约、版本、manifest、发布者状态", uptime: "监控中" },
+      { icon: "network", name: "运行时网关", status: "operational", desc: "认证后技能调用、项目级执行", uptime: "需登录" },
+      { icon: "cloud", name: "CDN 与资源", status: "operational", desc: "全球分发的静态文件、图片和客户端包", uptime: "监控中" },
+      { icon: "shield", name: "认证服务", status: "operational", desc: "登录、会话管理、API Key 验证", uptime: "监控中" }
     ],
     metricsEyebrow: "性能",
     metricsTitle: "平台指标",
     metrics: [
-      { label: "API 响应时间", value: "< 120ms", desc: "公开端点 p95 延迟" },
-      { label: "注册表查询", value: "< 50ms", desc: "技能搜索和 manifest 检查" },
-      { label: "运行时冷启动", value: "< 800ms", desc: "空闲期后首次调用" },
-      { label: "全球 CDN", value: "< 30ms", desc: "全球静态资源分发" }
+      { label: "API 响应时间", value: "健康检查", desc: "公开 API 健康端点可用于运行确认" },
+      { label: "注册表查询", value: "已观测", desc: "技能搜索和 manifest 检查纳入公开 QA" },
+      { label: "运行时网关", value: "需登录", desc: "运行时检查需要认证后的项目上下文" },
+      { label: "静态资源", value: "CDN", desc: "静态资源交付纳入部署验证" }
     ],
     incidentsEyebrow: "近期事件",
-    incidentsTitle: "最近 30 天",
+    incidentsTitle: "当前事件说明",
     incidents: [
-      { date: "无事件", desc: "所有服务一直正常运行。", severity: "none" }
+      { date: "预览监控", desc: "实时事故历史尚未接入本页；如果页面或 API 不响应，请联系支持。", severity: "none" }
     ],
     scopeEyebrow: "监控范围",
     scopeTitle: "公开监控 vs. 认证后",
@@ -127,8 +127,8 @@ const copy = {
       "发布者审核队列状态",
       "管理员和运营仪表板"
     ],
-    ctaTitle: "一切正常。",
-    ctaBody: "进入市场或连接你的 Agent 开始构建。",
+    ctaTitle: "需要实时确认？",
+    ctaBody: "可以打开市场、调用健康端点，或在路由无响应时联系支持。",
     ctaPrimary: "市场",
     ctaSecondary: "Agent 集成"
   }
@@ -282,19 +282,19 @@ export default async function StatusPage({ searchParams }: PageProps) {
             </div>
           </Reveal>
 
-          {/* 30-day uptime bar */}
+          {/* Monitoring coverage preview */}
           <Reveal delay={160}>
             <div className="mt-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] text-[#666]">{locale === "zh" ? "30 天正常运行记录" : "30-day uptime"}</span>
-                <span className="text-[12px] font-medium text-[#10b981]">99.9%</span>
+                <span className="text-[12px] text-[#666]">{locale === "zh" ? "监控范围预览" : "Monitoring coverage preview"}</span>
+                <span className="text-[12px] font-medium text-[#10b981]">{locale === "zh" ? "公开信号" : "Public signals"}</span>
               </div>
               <div className="flex gap-[2px]">
-                {Array.from({ length: 30 }).map((_, i) => (
+                {Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
                     className="flex-1 h-6 rounded-[3px] bg-[rgba(16,185,129,0.3)] hover:bg-[rgba(16,185,129,0.5)] transition-colors"
-                    title={`Day ${i + 1}: Operational`}
+                    title={locale === "zh" ? `公开检查 ${i + 1}` : `Public check ${i + 1}`}
                   />
                 ))}
               </div>

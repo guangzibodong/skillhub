@@ -814,9 +814,7 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     }
 
     const demoSummaries = demoSkills.map(toSummary);
-    const publicDemoSkills = demoSummaries.filter((skill) =>
-      ["verified", "submitted", "deprecated"].includes(skill.verificationStatus),
-    );
+    const publicDemoSkills = demoSummaries.filter((skill) => skill.verificationStatus === "verified");
 
     return {
       callableSkills: publicDemoSkills.filter(
@@ -875,7 +873,10 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     select
       count(*) filter (
         where visibility = 'public'
-          and verification_status in ('verified', 'submitted', 'deprecated')
+          and verification_status = 'verified'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%qa-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance partner%'
           and exists (
             select 1
             from skill_versions sv
@@ -885,6 +886,9 @@ export async function getRegistryStats(): Promise<RegistryStats> {
       count(*) filter (
         where visibility = 'public'
           and verification_status = 'submitted'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%qa-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance partner%'
           and exists (
             select 1
             from skill_versions sv
@@ -894,6 +898,9 @@ export async function getRegistryStats(): Promise<RegistryStats> {
       count(*) filter (
         where visibility = 'public'
           and verification_status = 'verified'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%qa-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance partner%'
           and exists (
             select 1
             from skill_versions sv
@@ -903,6 +910,9 @@ export async function getRegistryStats(): Promise<RegistryStats> {
       count(*) filter (
         where visibility = 'public'
           and verification_status = 'verified'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%qa-%'
+          and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance partner%'
           and exists (
             select 1
             from skill_versions sv

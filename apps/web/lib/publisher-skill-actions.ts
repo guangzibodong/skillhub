@@ -264,7 +264,7 @@ export async function setPublisherSkillPriceAction(
     const response = await fetch(`${getApiUrl()}/v1/skills/${encodeURIComponent(skillSlug)}/prices`, {
       body: JSON.stringify({
         billingModel,
-        currency: String(formData.get("currency") ?? "usd").trim().toLowerCase() || "usd",
+        currency: "usd",
         status: priceStatus,
         unitAmountCents: billingModel === "free" ? 0 : unitAmountCents
       }),

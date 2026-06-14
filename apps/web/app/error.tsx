@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { RotateCcw, ShieldAlert } from "lucide-react";
 
 type ErrorPageProps = {
@@ -9,6 +10,10 @@ type ErrorPageProps = {
 };
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
+  const searchParams = useSearchParams();
+  const locale = searchParams.get("lang") === "zh" ? "zh" : "en";
+  const marketplaceHref = locale === "zh" ? "/marketplace?lang=zh" : "/marketplace?lang=en";
+
   return (
     <main className="product-shell">
       <section className="not-found-shell" aria-labelledby="error-title">
@@ -30,7 +35,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
               <RotateCcw size={18} aria-hidden="true" />
               <span>Try again</span>
             </button>
-            <Link className="secondary-button secondary-button--large" href="/marketplace?lang=en">
+            <Link className="secondary-button secondary-button--large" href={marketplaceHref}>
               Marketplace
             </Link>
           </div>

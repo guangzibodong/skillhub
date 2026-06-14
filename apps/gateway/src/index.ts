@@ -631,11 +631,14 @@ app.post("/v1/organization/team/members/:userId/remove", async (c) => {
   }
 
   try {
+    const body = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+
     return c.json(
       await removeOrganizationTeamMember(
         authorization.subject.organizationId,
         c.req.param("userId"),
-        authorization.subject.userId
+        authorization.subject.userId,
+        body
       )
     );
   } catch (error) {
@@ -2687,9 +2690,7 @@ app.post("/v1/publisher/payout-account/onboarding", async (c) => {
 });
 
 app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
-  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles, {
-    requireOrganization: true
-  });
+  const authorization = await authorize(c.req.header("Authorization"), financeOperatorRoles);
 
   if (!authorization.ok) {
     return c.json({ error: authorization.error }, authorization.status);
@@ -2698,8 +2699,9 @@ app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
   try {
     return c.json({
       publisher: await completePayoutAccountOnboarding(
-        authorization.subject.organizationId,
-        (await c.req.json().catch(() => ({}))) as Record<string, unknown>
+        null,
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
       )
     });
   } catch (error) {

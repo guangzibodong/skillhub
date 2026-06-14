@@ -30,6 +30,7 @@ const copy = {
     missingUser: "Missing team member id.",
     tokenCreated: "Team access token created. Copy it now; it will not be shown again.",
     unableCreateToken: "Unable to create team access token.",
+    missingRemovalConfirmation: "Type REMOVE and provide a reason before removing a team member.",
     unableRemove: "Unable to remove team member.",
     unableSave: "Unable to save team member."
   },
@@ -40,6 +41,7 @@ const copy = {
     missingToken: "请先使用具备 owner/admin 角色的账号登录，才能管理团队权限。",
     missingUser: "缺少团队成员 ID。",
     tokenCreated: "团队访问 token 已创建。请现在复制，它不会再次显示。",
+    missingRemovalConfirmation: "移除团队成员前，请输入 REMOVE 并填写原因。",
     unableCreateToken: "无法创建团队访问 token。",
     unableRemove: "无法移除团队成员。",
     unableSave: "无法保存团队成员。"
@@ -166,9 +168,15 @@ export async function removeOrganizationTeamMemberAction(
   const labels = copy[locale];
   const token = await getWorkspaceToken();
   const userId = String(formData.get("userId") ?? "").trim();
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim();
 
   if (!userId) {
     return { message: labels.missingUser, status: "error" };
+  }
+
+  if (confirmation !== "REMOVE" || reason.length < 8) {
+    return { message: labels.missingRemovalConfirmation, status: "error", userId };
   }
 
   if (!token) {
@@ -177,8 +185,13 @@ export async function removeOrganizationTeamMemberAction(
 
   try {
     const response = await fetch(`${getApiUrl()}/v1/organization/team/members/${encodeURIComponent(userId)}/remove`, {
+      body: JSON.stringify({
+        confirmation,
+        reason
+      }),
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
       method: "POST"
     });

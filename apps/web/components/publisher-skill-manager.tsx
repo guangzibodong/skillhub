@@ -448,7 +448,7 @@ function PublisherSkillCard({
   const pricePreview =
     selectedBillingModel === "free"
       ? labels.pricingGate.freePreview
-      : `${formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} / ${labels.billingModels[selectedBillingModel]}`;
+      : `${formatMoney(skill.pricing.unitAmountCents, "usd")} / ${labels.billingModels[selectedBillingModel]}`;
 
   useEffect(() => {
     if (paidPricingBlocked && selectedPriceStatus === "active") {
@@ -476,7 +476,7 @@ function PublisherSkillCard({
         <Metric icon={<CheckCircle2 size={15} aria-hidden="true" />} label={labels.successRate} value={formatPercent(skill.analytics.successRate)} />
         <Metric icon={<Star size={15} aria-hidden="true" />} label={labels.rating} value={formatRating(skill.feedback?.averageRating)} />
         <Metric icon={<MessageSquareText size={15} aria-hidden="true" />} label={labels.feedback} value={formatFeedbackCounts(skill.feedback)} />
-        <Metric icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.unitAmount} value={formatMoney(skill.pricing.unitAmountCents, skill.analytics.currency)} />
+        <Metric icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.unitAmount} value={formatMoney(skill.pricing.unitAmountCents, "usd")} />
       </div>
 
       <div className="publisher-skill-quality">
@@ -699,7 +699,7 @@ function PublisherSkillCard({
         </label>
         <label>
           <span>{labels.currency}</span>
-          <input defaultValue={skill.analytics.currency} maxLength={8} name="currency" />
+          <input name="currency" readOnly value="usd" />
         </label>
         <label>
           <span>{labels.priceStatus}</span>

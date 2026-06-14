@@ -10,6 +10,11 @@ type TeamMemberInput = {
   tokenName?: unknown;
 };
 
+type TeamMemberRemovalInput = {
+  confirmation?: unknown;
+  reason?: unknown;
+};
+
 export type OrganizationTeamMember = {
   userId: string;
   email: string;
@@ -146,11 +151,18 @@ export async function upsertOrganizationTeamMember(
 export async function removeOrganizationTeamMember(
   organizationId: string | null | undefined,
   userId: string,
-  actorUserId: string | null | undefined
+  actorUserId: string | null | undefined,
+  input: TeamMemberRemovalInput = {}
 ) {
   const sql = await requireSql();
   const orgId = requireOrganizationId(organizationId);
   const normalizedUserId = normalizeUuidText(userId, "userId");
+  const confirmation = String(input.confirmation ?? "").trim();
+  const reason = normalizeOptionalText(input.reason, 500);
+
+  if (confirmation !== "REMOVE" || !reason || reason.length < 8) {
+    throw new Error("Removing an organization team member requires confirmation and an audit reason.");
+  }
 
   return sql.begin(async (tx: Sql) => {
     const member = await getTeamMember(tx, orgId, normalizedUserId);
@@ -181,7 +193,7 @@ export async function removeOrganizationTeamMember(
     await recordTeamAudit(tx, actorUserId, "organization.member.removed", normalizedUserId, {
       email: member.email,
       role: member.role
-    });
+    }, reason);
     await recordTeamNotification(tx, orgId, "account.team.member_removed", "Organization team member removed", {
       email: member.email,
       role: member.role,
@@ -323,11 +335,12 @@ async function recordTeamAudit(
   actorUserId: string | null | undefined,
   action: string,
   entityId: string,
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
+  reason = "Organization team access changed."
 ) {
   await sql`
     insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
-    values (${actorUserId ?? null}, ${action}, 'organization_member', ${entityId}, 'Organization team access changed.', ${sql.json(metadata)})
+    values (${actorUserId ?? null}, ${action}, 'organization_member', ${entityId}, ${reason}, ${sql.json(metadata)})
   `;
 }
 

@@ -77,10 +77,6 @@ export async function getPublicMarketplaceSkills(
 
     const payload = (await response.json()) as { skills: SkillSummary[] };
 
-    if (payload.skills.length === 0) {
-      return marketplaceSkills;
-    }
-
     return Promise.all(
       payload.skills.map((summary) => hydrateMarketplaceSkill(summary)),
     );

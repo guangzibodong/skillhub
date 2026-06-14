@@ -419,10 +419,11 @@ export async function createPayoutAccountOnboarding(organizationId: string | nul
 
 export async function completePayoutAccountOnboarding(
   organizationId: string | null | undefined,
-  input: CompleteOnboardingInput
+  input: CompleteOnboardingInput,
+  actorUserId?: string | null
 ) {
   const sql = await requireSql();
-  const scopedOrganizationId = requireOrganizationId(organizationId);
+  const scopedOrganizationId = organizationId ? requireOrganizationId(organizationId) : null;
   const status = normalizePayoutStatus(input.status ?? "verified");
 
   return sql.begin(async (tx: Sql) => {
@@ -462,10 +463,10 @@ export async function completePayoutAccountOnboarding(
       publisherProfileId: target.publisherProfileId,
       status,
       sessionId: target.sessionId
-    });
+    }, actorUserId);
     await recordPublisherNotification(
       tx,
-      scopedOrganizationId,
+      target.organizationId,
       `payout_account.${status}`,
       `Payout account ${status}`,
       {
@@ -476,7 +477,7 @@ export async function completePayoutAccountOnboarding(
       }
     );
 
-    return queryPublisherAccountSummary(tx, scopedOrganizationId, target.publisherProfileId);
+    return queryPublisherAccountSummary(tx, target.organizationId, target.publisherProfileId);
   });
 }
 
@@ -586,20 +587,21 @@ async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise
   return rows[0];
 }
 
-async function getOnboardingTarget(sql: Sql, organizationId: string, input: CompleteOnboardingInput) {
+async function getOnboardingTarget(sql: Sql, organizationId: string | null, input: CompleteOnboardingInput) {
   if (input.sessionId) {
     const rows = (await sql`
       select
         po.id::text as "sessionId",
+        pp.organization_id::text as "organizationId",
         po.publisher_profile_id::text as "publisherProfileId",
         po.payout_account_id::text as "payoutAccountId"
       from payout_account_onboarding_sessions po
       join publisher_profiles pp on pp.id = po.publisher_profile_id
       where po.id = ${input.sessionId}
-        and pp.organization_id = ${organizationId}
+        and (${organizationId}::uuid is null or pp.organization_id = ${organizationId})
       limit 1
       for update of po
-    `) as Array<{ sessionId: string; publisherProfileId: string; payoutAccountId: string }>;
+    `) as Array<{ sessionId: string; organizationId: string; publisherProfileId: string; payoutAccountId: string }>;
 
     return rows[0] ?? null;
   }
@@ -608,15 +610,16 @@ async function getOnboardingTarget(sql: Sql, organizationId: string, input: Comp
     const rows = (await sql`
       select
         null::text as "sessionId",
+        pp.organization_id::text as "organizationId",
         pp.id::text as "publisherProfileId",
         pa.id::text as "payoutAccountId"
       from payout_accounts pa
       join publisher_profiles pp on pp.id = pa.publisher_profile_id
       where pa.id = ${input.payoutAccountId}
-        and pp.organization_id = ${organizationId}
+        and (${organizationId}::uuid is null or pp.organization_id = ${organizationId})
       limit 1
       for update of pa
-    `) as Array<{ sessionId: string | null; publisherProfileId: string; payoutAccountId: string }>;
+    `) as Array<{ sessionId: string | null; organizationId: string; publisherProfileId: string; payoutAccountId: string }>;
 
     return rows[0] ?? null;
   }

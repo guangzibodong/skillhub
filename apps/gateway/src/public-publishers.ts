@@ -247,7 +247,10 @@ async function listPublicSupplyRows(sql: Sql) {
       from skills s
       join organizations o on o.id = s.organization_id
       where s.visibility = 'public'
-        and s.verification_status in ('verified', 'submitted', 'deprecated')
+        and s.verification_status = 'verified'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
       group by s.organization_id, o.name, o.slug
       order by max(s.updated_at) desc
   `) as PublicSupplyRow[];
@@ -259,7 +262,10 @@ async function listStoredPublisherProfiles(sql: Sql) {
       select distinct organization_id
       from skills
       where visibility = 'public'
-        and verification_status in ('verified', 'submitted', 'deprecated')
+        and verification_status = 'verified'
+        and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance-%'
+        and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%qa-%'
+        and lower(coalesce(slug, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(description, '')) not like '%acceptance partner%'
     )
     select
       pp.id::text,
@@ -303,7 +309,10 @@ async function listPublicAuthorRows(sql: Sql, schema: PublicPublisherSchema) {
         limit 1
       ) latest on true
       where s.visibility = 'public'
-        and s.verification_status in ('verified', 'submitted', 'deprecated')
+        and s.verification_status = 'verified'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
         and nullif(trim(latest.manifest -> 'author' ->> 'name'), '') is not null
       order by
         s.organization_id,
@@ -325,7 +334,10 @@ async function listPublicAuthorRows(sql: Sql, schema: PublicPublisherSchema) {
       limit 1
     ) latest on true
     where s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status = 'verified'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
       and nullif(trim(latest.manifest -> 'author' ->> 'name'), '') is not null
     order by
       s.organization_id,
@@ -433,7 +445,10 @@ async function listPublicPublisherSkillRows(
       ) latest on true
       where o.slug = ${profile.organizationSlug}
         and s.visibility = 'public'
-        and s.verification_status in ('verified', 'submitted', 'deprecated')
+        and s.verification_status = 'verified'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+        and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
       order by
         case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
         s.updated_at desc
@@ -467,7 +482,10 @@ async function listPublicPublisherSkillRows(
     ) latest on true
     where o.slug = ${profile.organizationSlug}
       and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status = 'verified'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
     order by
       case s.verification_status when 'verified' then 0 when 'submitted' then 1 when 'draft' then 2 else 3 end,
       s.updated_at desc
@@ -490,7 +508,10 @@ async function listSkillInstallCounts(sql: Sql, profile: PublisherProfileRow) {
     join project_skill_installs psi on psi.skill_id = s.id
     where o.slug = ${profile.organizationSlug}
       and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status = 'verified'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
       and psi.status = 'installed'
     group by s.slug
   `) as Array<{ installCount: number; slug: string }>;
@@ -512,7 +533,10 @@ async function listSkillInvocationMetrics(
     join skill_invocations si on si.skill_id = s.id
     where o.slug = ${profile.organizationSlug}
       and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status = 'verified'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
     group by s.slug
   `) as Array<{ callCount: number; slug: string; successCount: number }>;
 
@@ -539,7 +563,10 @@ async function listSkillPricesForPublisher(
     join skill_prices sp on sp.skill_id = s.id
     where o.slug = ${profile.organizationSlug}
       and s.visibility = 'public'
-      and s.verification_status in ('verified', 'submitted', 'deprecated')
+      and s.verification_status = 'verified'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%qa-%'
+      and lower(coalesce(s.slug, '') || ' ' || coalesce(s.display_name, '') || ' ' || coalesce(s.description, '')) not like '%acceptance partner%'
     order by s.slug, case when sp.status = 'active' then 0 else 1 end, sp.created_at desc
   `) as Array<{
     billingModel: "free" | "per_call" | "subscription" | null;
