@@ -95,11 +95,20 @@ try {
     });
   }
 
+  const publishedSkills = {};
+
+  for (const [key, account] of Object.entries(accounts)) {
+    if (account.kind === "publisher") {
+      publishedSkills[key] = await ensurePublisherSkill(config, account, verified[key]?.token, runId, key);
+    }
+  }
+
   const output = buildOutput({
     accounts,
     bootstraps,
     config,
     existing,
+    publishedSkills,
     runId,
     verified
   });
@@ -109,6 +118,7 @@ try {
   console.log("Acceptance team ready.");
   console.log(`Private credentials file: ${resolve(config.output)}`);
   console.log("Accounts prepared: 2 admin operators, 3 developer users, 3 publisher partners.");
+  console.log("Publisher skills submitted: 3 acceptance skills are queued for operator review.");
   console.log("No passwords, tokens, OAuth secrets, or service credentials were printed.");
 } catch (error) {
   console.error(redactSecrets(error instanceof Error ? error.message : String(error)));
@@ -244,7 +254,104 @@ async function loginAndVerify(config, account, { requireAdmin }) {
   };
 }
 
-function buildOutput({ accounts, bootstraps, config, existing, runId, verified }) {
+async function ensurePublisherSkill(config, account, token, runId, key) {
+  if (!token) {
+    throw new Error(`Unable to publish acceptance skill for ${key}: missing publisher session token.`);
+  }
+
+  const manifest = buildPublisherSkillManifest(account, runId, key);
+  const headers = {
+    Authorization: `Bearer ${token}`
+  };
+
+  const publishResponse = await requestJson(config, "/v1/skills", {
+    body: {
+      manifest
+    },
+    headers,
+    method: "POST"
+  });
+
+  if (publishResponse.status !== 201) {
+    throw new Error(`Unable to publish acceptance skill for ${key}: ${safeError(publishResponse)}`);
+  }
+
+  const submitResponse = await requestJson(config, `/v1/skills/${encodeURIComponent(manifest.name)}/submit`, {
+    body: {
+      version: manifest.version
+    },
+    headers,
+    method: "POST"
+  });
+
+  if (submitResponse.status !== 201) {
+    throw new Error(`Unable to submit acceptance skill for ${key}: ${safeError(submitResponse)}`);
+  }
+
+  return {
+    detailUrl: joinUrl(config.appUrl, `/skills/${manifest.name}?lang=zh`),
+    displayName: manifest.displayName,
+    reviewStatus: submitResponse.json?.review?.status ?? null,
+    slug: manifest.name,
+    status: publishResponse.json?.status ?? null,
+    version: manifest.version
+  };
+}
+
+function buildPublisherSkillManifest(account, runId, key) {
+  const index = key.replace(/^publisher/, "") || "1";
+  const slug = `acceptance-${runId}-${key}`.replace(/_/g, "-").slice(0, 60).replace(/-+$/g, "");
+
+  return {
+    schemaVersion: "0.1",
+    name: slug,
+    displayName: `Acceptance Partner ${index} Workflow Skill`,
+    version: "1.0.0",
+    description:
+      `Acceptance test skill published by ${account.organizationName} for role QA, marketplace review, and developer handoff verification.`,
+    author: {
+      name: account.organizationName,
+      url: "https://www.useskillhub.com"
+    },
+    tags: ["acceptance", "ops", index === "1" ? "research" : index === "2" ? "data" : "support"],
+    runtime: {
+      type: "http",
+      entrypoint: `https://api.useskillhub.com/acceptance/${runId}/${key}`
+    },
+    permissions: {
+      browser: index === "1",
+      filesystem: "none",
+      network: true,
+      secrets: []
+    },
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: {
+          type: "string",
+          minLength: 3
+        }
+      }
+    },
+    outputSchema: {
+      type: "object",
+      required: ["summary"],
+      properties: {
+        summary: {
+          type: "string"
+        },
+        confidence: {
+          maximum: 1,
+          minimum: 0,
+          type: "number"
+        }
+      }
+    }
+  };
+}
+
+function buildOutput({ accounts, bootstraps, config, existing, publishedSkills, runId, verified }) {
   const createdAt = new Date().toISOString();
   const outputAccounts = Object.fromEntries(
     Object.entries(accounts).map(([key, account]) => [
@@ -270,6 +377,7 @@ function buildOutput({ accounts, bootstraps, config, existing, runId, verified }
     apiUrl: config.apiUrl,
     appUrl: config.appUrl,
     runId,
+    publishedSkills,
     accounts: outputAccounts,
     cohorts: {
       admins: Object.keys(accounts).filter((key) => accounts[key].kind === "admin"),
@@ -282,7 +390,7 @@ function buildOutput({ accounts, bootstraps, config, existing, runId, verified }
         startUrl: joinUrl(config.appUrl, "/login?lang=zh"),
         inspect: [
           "/marketplace?lang=zh",
-          "/skills/browser-research?lang=zh",
+          "/marketplace?lang=zh#open-a-public-skill",
           "/developer?lang=zh",
           "/dashboard?lang=zh"
         ],
@@ -667,6 +775,7 @@ Creates or verifies eight real SkillHub acceptance accounts:
   - 2 admin/operator accounts promoted with the server service token
   - 3 developer user accounts using normal password signup/login
   - 3 publisher partner accounts using normal password signup/login
+  - 3 publisher-owned acceptance skills submitted to the operator review queue
 
 Credentials are written only to a private local JSON file and are never printed.
 

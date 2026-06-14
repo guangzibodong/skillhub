@@ -9,6 +9,7 @@ const DEFAULT_APP_URL = "https://useskillhub.com";
 const DEFAULT_CREDENTIALS_PATH = "/root/skillhub-acceptance-team.json";
 const DEFAULT_OUTPUT = "output/acceptance-team-qa-report.json";
 const DEFAULT_TIMEOUT_MS = 30000;
+const PUBLIC_SKILL_SLUG_PLACEHOLDER = "{publicSkillSlug}";
 
 const ROLE_SPECS = {
   developer: {
@@ -29,7 +30,7 @@ const ROLE_SPECS = {
         required: ["市场", "详情"]
       },
       {
-        path: "/skills/browser-research-pro?lang=zh",
+        path: `/skills/${PUBLIC_SKILL_SLUG_PLACEHOLDER}?lang=zh`,
         required: ["用户反馈", "发布者信任"],
         requiredHtml: ["skill-developer-handoff-packet"]
       },
@@ -330,23 +331,29 @@ async function checkProtectedApis(spec, token) {
 
 async function checkPages(spec, token) {
   for (const page of spec.pages) {
-    const response = await requestText(joinUrl(config.appUrl, page.path), {
+    const role = spec.accountKey;
+    const pagePath = await resolvePagePath(page, role);
+
+    if (!pagePath) {
+      continue;
+    }
+
+    const response = await requestText(joinUrl(config.appUrl, pagePath), {
       headers: {
         Cookie: `skillhub_user_token=${encodeURIComponent(token)}`
       },
       method: "GET"
     });
-    const role = spec.accountKey;
 
-    assertNoLeaks(role, "page", page.path, response.text);
+    assertNoLeaks(role, "page", pagePath, response.text);
 
     if (response.status !== 200) {
       addIssue({
         category: "page",
-        message: `${page.path} returned HTTP ${response.status}.`,
+        message: `${pagePath} returned HTTP ${response.status}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, page.path)
+        url: joinUrl(config.appUrl, pagePath)
       });
       continue;
     }
@@ -365,27 +372,97 @@ async function checkPages(spec, token) {
       const missingMarkers = [...missing, ...missingHtml];
       addIssue({
         category: "page-marker",
-        message: `${page.path} is missing expected logged-in role markers: ${missingMarkers.join(", ")}.`,
+        message: `${pagePath} is missing expected logged-in role markers: ${missingMarkers.join(", ")}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, page.path)
+        url: joinUrl(config.appUrl, pagePath)
       });
     }
 
     if (forbidden.length > 0) {
       addIssue({
         category: "locked-state",
-        message: `${page.path} still contains locked-state copy for a valid ${role} session: ${forbidden.join(", ")}.`,
+        message: `${pagePath} still contains locked-state copy for a valid ${role} session: ${forbidden.join(", ")}.`,
         role,
         severity: "P0",
-        url: joinUrl(config.appUrl, page.path)
+        url: joinUrl(config.appUrl, pagePath)
       });
     }
 
     if (missing.length === 0 && missingHtml.length === 0 && forbidden.length === 0) {
-      addResult(role, "page", page.path, "pass", `HTML bytes=${Buffer.byteLength(response.text, "utf8")}`);
+      addResult(role, "page", pagePath, "pass", `HTML bytes=${Buffer.byteLength(response.text, "utf8")}`);
     }
   }
+}
+
+let publicSkillSlugPromise;
+
+async function resolvePagePath(page, role) {
+  if (!page.path.includes(PUBLIC_SKILL_SLUG_PLACEHOLDER)) {
+    return page.path;
+  }
+
+  const slug = await resolvePublicSkillSlug(role);
+
+  if (!slug) {
+    return null;
+  }
+
+  return page.path.replace(PUBLIC_SKILL_SLUG_PLACEHOLDER, slug);
+}
+
+async function resolvePublicSkillSlug(role) {
+  publicSkillSlugPromise ??= fetchPublicSkillSlug(role);
+  return publicSkillSlugPromise;
+}
+
+async function fetchPublicSkillSlug(role) {
+  const target = "/v1/skills/search?sort=recommended&limit=20";
+  const response = await requestJson(joinUrl(config.apiUrl, target), {
+    method: "GET"
+  });
+
+  if (response.status < 200 || response.status >= 300) {
+    addIssue({
+      category: "api",
+      message: `Unable to resolve a public skill detail page: ${target} returned HTTP ${response.status}.`,
+      role,
+      severity: "P0",
+      url: joinUrl(config.apiUrl, target)
+    });
+    return null;
+  }
+
+  const skills = Array.isArray(response.json?.skills) ? response.json.skills : [];
+  const skill =
+    skills.find((candidate) => isUsablePublicSkill(candidate, true)) ??
+    skills.find((candidate) => isUsablePublicSkill(candidate, false));
+
+  if (!skill) {
+    addIssue({
+      category: "api",
+      message: "No public skill was returned by /v1/skills/search, so the developer detail-page handoff could not be verified.",
+      role,
+      severity: "P0",
+      url: joinUrl(config.apiUrl, target)
+    });
+    return null;
+  }
+
+  addResult(role, "api", target, "pass", `Using ${skill.slug} for public skill detail QA.`);
+  return skill.slug;
+}
+
+function isUsablePublicSkill(candidate, requireReviewedStatus) {
+  if (!candidate || typeof candidate.slug !== "string" || candidate.slug.trim() === "") {
+    return false;
+  }
+
+  if (!requireReviewedStatus) {
+    return true;
+  }
+
+  return ["deprecated", "submitted", "verified"].includes(candidate.verificationStatus);
 }
 
 function inspectLaunchReadiness(json) {
