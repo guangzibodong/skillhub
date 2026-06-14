@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getPermissionLevel, type SkillBillingModel, type SkillManifest, type SkillRuntime, type SkillSummary } from "@useskillhub/schema";
 import {
+  getSql,
   getRegistryStats,
   getSkillManifest,
   listSkillManifests,
@@ -1596,10 +1597,19 @@ app.post("/v1/admin/finance/process-usage", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+  const body = (await c.req.json().catch(() => ({}))) as { confirmation?: string; limit?: number; reason?: string };
 
   try {
-    return c.json(await processBillableUsage(body.limit));
+    const { reason } = requireFinanceBatchConfirmation(body);
+    const result = await processBillableUsage(body.limit);
+    await recordFinanceBatchAudit(
+      authorization.subject.userId,
+      "finance.ledger.process_usage",
+      reason,
+      result
+    );
+
+    return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to process billable usage." }, 400);
   }
@@ -1612,10 +1622,19 @@ app.post("/v1/admin/finance/process-subscriptions", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+  const body = (await c.req.json().catch(() => ({}))) as { confirmation?: string; limit?: number; reason?: string };
 
   try {
-    return c.json(await processSubscriptionPeriods(body.limit));
+    const { reason } = requireFinanceBatchConfirmation(body);
+    const result = await processSubscriptionPeriods(body.limit);
+    await recordFinanceBatchAudit(
+      authorization.subject.userId,
+      "finance.ledger.process_subscriptions",
+      reason,
+      result
+    );
+
+    return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to process subscription periods." }, 400);
   }
@@ -1628,10 +1647,19 @@ app.post("/v1/admin/finance/renew-subscriptions", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+  const body = (await c.req.json().catch(() => ({}))) as { confirmation?: string; limit?: number; reason?: string };
 
   try {
-    return c.json(await renewSubscriptionPeriods(body.limit, authorization.subject.userId));
+    const { reason } = requireFinanceBatchConfirmation(body);
+    const result = await renewSubscriptionPeriods(body.limit, authorization.subject.userId);
+    await recordFinanceBatchAudit(
+      authorization.subject.userId,
+      "finance.ledger.renew_subscriptions",
+      reason,
+      result
+    );
+
+    return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to renew subscription periods." }, 400);
   }
@@ -1644,10 +1672,19 @@ app.post("/v1/admin/finance/release-balances", async (c) => {
     return c.json({ error: authorization.error }, authorization.status);
   }
 
-  const body = (await c.req.json().catch(() => ({}))) as { limit?: number };
+  const body = (await c.req.json().catch(() => ({}))) as { confirmation?: string; limit?: number; reason?: string };
 
   try {
-    return c.json(await releaseAvailableBalances(body.limit));
+    const { reason } = requireFinanceBatchConfirmation(body);
+    const result = await releaseAvailableBalances(body.limit);
+    await recordFinanceBatchAudit(
+      authorization.subject.userId,
+      "finance.ledger.release_balances",
+      reason,
+      result
+    );
+
+    return c.json(result);
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to release balances." }, 400);
   }
@@ -1673,7 +1710,15 @@ app.post("/v1/admin/finance/refunds", async (c) => {
   }
 
   try {
-    return c.json({ refund: await createRefundRequest((await c.req.json().catch(() => ({}))) as Record<string, unknown>) }, 201);
+    return c.json(
+      {
+        refund: await createRefundRequest(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to request refund." }, 400);
   }
@@ -1688,7 +1733,11 @@ app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
 
   try {
     return c.json({
-      refund: await decideRefund(c.req.param("refundId"), (await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+      refund: await decideRefund(
+        c.req.param("refundId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update refund." }, 400);
@@ -1715,7 +1764,15 @@ app.post("/v1/admin/finance/disputes", async (c) => {
   }
 
   try {
-    return c.json({ dispute: await createDispute((await c.req.json().catch(() => ({}))) as Record<string, unknown>) }, 201);
+    return c.json(
+      {
+        dispute: await createDispute(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId
+        )
+      },
+      201
+    );
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to open dispute." }, 400);
   }
@@ -1730,7 +1787,11 @@ app.post("/v1/admin/finance/disputes/:disputeId/decision", async (c) => {
 
   try {
     return c.json({
-      dispute: await decideDispute(c.req.param("disputeId"), (await c.req.json().catch(() => ({}))) as Record<string, unknown>)
+      dispute: await decideDispute(
+        c.req.param("disputeId"),
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId
+      )
     });
   } catch (error) {
     return c.json({ error: error instanceof Error ? error.message : "Unable to update dispute." }, 400);
@@ -3295,6 +3356,42 @@ function isManifestForSkill(value: unknown, skillSlug: string) {
 
 function parseOAuthProvider(value: string): OAuthProvider | null {
   return value === "google" || value === "github" ? value : null;
+}
+
+function requireFinanceBatchConfirmation(body: {
+  confirmation?: unknown;
+  reason?: unknown;
+}) {
+  const confirmation = String(body.confirmation ?? "").trim();
+  const reason = String(body.reason ?? "").trim();
+
+  if (confirmation !== "RUN") {
+    throw new Error("Type RUN to confirm this finance batch operation.");
+  }
+
+  if (reason.length < 8) {
+    throw new Error("A finance batch reason of at least 8 characters is required.");
+  }
+
+  return { reason: reason.slice(0, 600) };
+}
+
+async function recordFinanceBatchAudit(
+  actorUserId: string | null | undefined,
+  action: string,
+  reason: string,
+  metadata: Record<string, unknown>
+) {
+  const sql = await getSql();
+
+  if (!sql) {
+    return;
+  }
+
+  await sql`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${actorUserId ?? null}, ${action}, 'finance_batch', null, ${reason}, ${sql.json(metadata)})
+  `;
 }
 
 function parsePermissionLevel(value: string | undefined): SkillSummary["permissionLevel"] | undefined {

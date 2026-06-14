@@ -24,7 +24,10 @@ import {
   marketplaceCategories,
   type MarketplaceSkill,
 } from "@/lib/marketplace-data";
-import { publisherSlugFromName } from "@/lib/public-publishers";
+import {
+  publisherSlugFromName,
+  type PublicPublisherProfile,
+} from "@/lib/public-publishers";
 import {
   getSkillInstallState,
   isVerifiedSkillStatus,
@@ -33,6 +36,7 @@ import {
 type MarketplaceBrowserProps = {
   initialFilters?: MarketplaceInitialFilters;
   locale: Locale;
+  publisherProfiles?: PublicPublisherProfile[];
   skills: MarketplaceSkill[];
 };
 
@@ -241,6 +245,7 @@ const emptyCatalogCopy = {
 export function MarketplaceBrowser({
   initialFilters,
   locale,
+  publisherProfiles = [],
   skills,
 }: MarketplaceBrowserProps) {
   const normalizedInitialFilters = useMemo(
@@ -272,6 +277,10 @@ export function MarketplaceBrowser({
   const dictionary = labels[locale];
   const emptyCatalog = emptyCatalogCopy[locale];
   const isEmptyCatalog = skills.length === 0;
+  const publicPublisherSlugs = useMemo(
+    () => new Set(publisherProfiles.map((publisher) => publisher.slug)),
+    [publisherProfiles],
+  );
   const hasActiveFilters =
     query.trim().length > 0 ||
     category !== "all" ||
@@ -622,6 +631,8 @@ export function MarketplaceBrowser({
             const handoffTitle = isVerified ? dictionary.handoff.verifiedTitle : dictionary.handoff.submittedTitle;
             const handoffBody = isVerified ? dictionary.handoff.verifiedBody : dictionary.handoff.submittedBody;
             const handoffItems = isVerified ? dictionary.handoff.verifiedItems : dictionary.handoff.submittedItems;
+            const publisherSlug = publisherSlugFromName(skill.author);
+            const hasPublisherProfile = publicPublisherSlugs.has(publisherSlug);
 
             return (
             <article className="market-skill-card lift-card" key={skill.slug}>
@@ -632,15 +643,21 @@ export function MarketplaceBrowser({
                 <div>
                   <span>{localizeText(skill.category, locale)}</span>
                   <h2>{localizeText(skill.name, locale)}</h2>
-                  <a
-                    className="market-skill-card__publisher"
-                    href={localizedHref(
-                      `/publishers/${publisherSlugFromName(skill.author)}`,
-                      locale,
-                    )}
-                  >
-                    {dictionary.by} {skill.author}
-                  </a>
+                  {hasPublisherProfile ? (
+                    <a
+                      className="market-skill-card__publisher"
+                      href={localizedHref(
+                        `/publishers/${publisherSlug}`,
+                        locale,
+                      )}
+                    >
+                      {dictionary.by} {skill.author}
+                    </a>
+                  ) : (
+                    <span className="market-skill-card__publisher market-skill-card__publisher--text">
+                      {dictionary.by} {skill.author}
+                    </span>
+                  )}
                 </div>
                 <span className={`risk-badge risk-badge--${skill.risk}`}>
                   {dictionary.risk[skill.risk]}

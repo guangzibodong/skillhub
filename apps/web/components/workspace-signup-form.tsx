@@ -39,8 +39,8 @@ const copy = {
     emailLoginMode: "Sign in",
     emailPlaceholder: "you@company.com",
     forgotDisabledTitle:
-      "Password reset is not public yet. Use the advanced invite or recovery token flow below if an operator issued one.",
-    forgotPassword: "Forgot password?",
+      "Password reset is not public yet. Contact support for account recovery or use an operator-issued recovery token below.",
+    forgotPassword: "Forgot password? Contact support",
     hidePassword: "Hide password",
     helper: "Use email or username with a password, or register a new workspace.",
     identifier: "Email or username",
@@ -89,8 +89,8 @@ const copy = {
     emailLoginMode: "登录",
     emailPlaceholder: "you@company.com",
     forgotDisabledTitle:
-      "公开密码重置还没有上线。如果管理员给了邀请码或恢复令牌，请使用下方高级登录。",
-    forgotPassword: "忘记密码？",
+      "公开密码重置还没有上线。请联系支持恢复账号，或使用管理员提供的恢复令牌。",
+    forgotPassword: "忘记密码？联系支持",
     hidePassword: "隐藏密码",
     helper: "使用邮箱或用户名加密码登录，也可以注册新的工作区。",
     identifier: "邮箱或用户名",
@@ -307,13 +307,13 @@ export function WorkspaceSignupForm({
                 <input defaultChecked name="remember" type="checkbox" />
                 <span>{labels.remember}</span>
               </label>
-              <span
-                aria-disabled="true"
+              <a
                 className="auth-muted-action"
+                href={localizedHref("/support", locale)}
                 title={labels.forgotDisabledTitle}
               >
                 {labels.forgotPassword}
-              </span>
+              </a>
             </div>
           ) : null}
 

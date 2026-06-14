@@ -16,12 +16,15 @@ type AdminLedgerProcessorProps = {
 const copy = {
   en: {
     availableBalances: "Available balance",
+    confirmation: "Type RUN to execute",
     limit: "Batch limit",
     pendingBalances: "Pending balance",
     processRenewals: "Renew periods",
     processSubscriptions: "Post subscriptions",
     processUsage: "Post usage",
     releaseBalances: "Release balances",
+    reason: "Audit reason",
+    reasonPlaceholder: "Why is this batch safe to run now?",
     running: "Processing",
     subscriptionsRenewable: "Renewable subscription periods",
     subscriptionsQueued: "Unposted subscription periods",
@@ -31,12 +34,15 @@ const copy = {
   },
   zh: {
     availableBalances: "\u53ef\u63d0\u4f59\u989d",
+    confirmation: "输入 RUN 确认执行",
     limit: "\u6279\u6b21\u6570\u91cf",
     pendingBalances: "\u5f85\u91ca\u653e\u4f59\u989d",
     processRenewals: "\u7eed\u671f\u8d26\u671f",
     processSubscriptions: "\u8ba2\u9605\u5165\u8d26",
     processUsage: "\u6309\u6b21\u5165\u8d26",
     releaseBalances: "\u91ca\u653e\u4f59\u989d",
+    reason: "审计原因",
+    reasonPlaceholder: "为什么现在可以执行这次批处理？",
     running: "\u5904\u7406\u4e2d",
     subscriptionsRenewable: "\u53ef\u7eed\u671f\u8ba2\u9605\u5468\u671f",
     subscriptionsQueued: "\u672a\u5165\u8d26\u8ba2\u9605\u5468\u671f",
@@ -89,6 +95,26 @@ export function AdminLedgerProcessor({ ledger, locale }: AdminLedgerProcessorPro
         <label>
           <span>{labels.limit}</span>
           <input defaultValue={50} max={500} min={1} name="limit" step={1} type="number" />
+        </label>
+        <label>
+          <span>{labels.reason}</span>
+          <input
+            maxLength={600}
+            minLength={8}
+            name="reason"
+            placeholder={labels.reasonPlaceholder}
+            required
+          />
+        </label>
+        <label>
+          <span>{labels.confirmation}</span>
+          <input
+            autoComplete="off"
+            name="confirmation"
+            pattern="RUN"
+            placeholder="RUN"
+            required
+          />
         </label>
         <div className="admin-ledger-processor__actions">
           <button className="secondary-button secondary-button--compact" disabled={isPending} name="operation" type="submit" value="usage">

@@ -76,9 +76,10 @@ export async function getPublicMarketplaceSkills(
     }
 
     const payload = (await response.json()) as { skills: SkillSummary[] };
+    const publicSkills = payload.skills.filter(isPublicCatalogSkillSummary);
 
     return Promise.all(
-      payload.skills.map((summary) => hydrateMarketplaceSkill(summary)),
+      publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
   } catch {
     return marketplaceSkills;
@@ -88,6 +89,10 @@ export async function getPublicMarketplaceSkills(
 export async function getPublicMarketplaceSkill(
   slug: string,
 ): Promise<MarketplaceSkill | null> {
+  if (isAcceptanceQaCatalogRecord(slug)) {
+    return null;
+  }
+
   const staticSkill = getMarketplaceSkill(slug);
 
   try {
@@ -191,7 +196,11 @@ async function fetchSkillSummary(slug: string) {
     }
 
     const payload = (await response.json()) as { skills: SkillSummary[] };
-    return payload.skills.find((skill) => skill.slug === slug) ?? null;
+    return (
+      payload.skills.find(
+        (skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill),
+      ) ?? null
+    );
   } catch {
     return null;
   }
@@ -319,6 +328,26 @@ function manifestToSummary(manifest: SkillManifest): SkillSummary {
     verificationStatus: "submitted",
     version: manifest.version,
   };
+}
+
+function isPublicCatalogSkillSummary(summary: SkillSummary) {
+  return !isAcceptanceQaCatalogRecord(
+    summary.slug,
+    summary.displayName,
+    summary.description,
+    ...summary.tags,
+  );
+}
+
+function isAcceptanceQaCatalogRecord(...parts: string[]) {
+  const haystack = parts.join(" ").toLowerCase();
+
+  return (
+    /acceptance[-_\s]*qa/.test(haystack) ||
+    /qa[-_\s]*partner/.test(haystack) ||
+    /acceptance[-_\s]*partner/.test(haystack) ||
+    /\bqa[-_\s]*20\d{6,}/.test(haystack)
+  );
 }
 
 function permissionLevelFromManifest(

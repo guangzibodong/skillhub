@@ -140,7 +140,7 @@ export async function listProjectRefunds(projectSlug: string, organizationId: st
   return listRefundRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });
 }
 
-export async function createRefundRequest(input: RefundInput) {
+export async function createRefundRequest(input: RefundInput, actorUserId?: string | null) {
   const sql = await requireSql();
 
   return sql.begin(async (tx: Sql) => {
@@ -173,7 +173,7 @@ export async function createRefundRequest(input: RefundInput) {
     `) as Array<{ id: string }>;
     const refundId = rows[0].id;
 
-    await recordFinanceAudit(tx, "refund.requested", "refund", refundId, input.reason, {
+    await recordFinanceAudit(tx, actorUserId, "refund.requested", "refund", refundId, input.reason, {
       transactionId: transaction.id,
       amountCents,
       currency: transaction.currency,
@@ -192,7 +192,7 @@ export async function createRefundRequest(input: RefundInput) {
   });
 }
 
-export async function decideRefund(refundId: string, input: RefundDecisionInput) {
+export async function decideRefund(refundId: string, input: RefundDecisionInput, actorUserId?: string | null) {
   const sql = await requireSql();
   const action = input.action;
 
@@ -250,7 +250,7 @@ export async function decideRefund(refundId: string, input: RefundDecisionInput)
       await postRefundAdjustment(tx, refundId, input.reason, input.providerReference);
     }
 
-    await recordFinanceAudit(tx, `refund.${action}`, "refund", refundId, input.reason, {
+    await recordFinanceAudit(tx, actorUserId, `refund.${action}`, "refund", refundId, input.reason, {
       previousStatus: refund.status,
       providerReference: input.providerReference ?? null
     });
@@ -290,7 +290,7 @@ export async function listProjectDisputes(projectSlug: string, organizationId: s
   return listDisputeRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });
 }
 
-export async function createDispute(input: DisputeInput) {
+export async function createDispute(input: DisputeInput, actorUserId?: string | null) {
   const sql = await requireSql();
 
   return sql.begin(async (tx: Sql) => {
@@ -329,7 +329,7 @@ export async function createDispute(input: DisputeInput) {
     `) as Array<{ id: string }>;
     const disputeId = rows[0].id;
 
-    await recordFinanceAudit(tx, "dispute.opened", "dispute", disputeId, input.reason, {
+    await recordFinanceAudit(tx, actorUserId, "dispute.opened", "dispute", disputeId, input.reason, {
       transactionId: transaction.id,
       amountCents,
       currency: transaction.currency,
@@ -350,7 +350,7 @@ export async function createDispute(input: DisputeInput) {
   });
 }
 
-export async function decideDispute(disputeId: string, input: DisputeDecisionInput) {
+export async function decideDispute(disputeId: string, input: DisputeDecisionInput, actorUserId?: string | null) {
   const sql = await requireSql();
   const status = input.status;
 
@@ -409,7 +409,7 @@ export async function decideDispute(disputeId: string, input: DisputeDecisionInp
       refundId = await postDisputeLossRefund(tx, dispute, input.reason);
     }
 
-    await recordFinanceAudit(tx, `dispute.${status}`, "dispute", disputeId, input.reason, {
+    await recordFinanceAudit(tx, actorUserId, `dispute.${status}`, "dispute", disputeId, input.reason, {
       previousStatus: dispute.status,
       refundId
     });
@@ -748,6 +748,7 @@ async function getRefundableRemainingCents(sql: Sql, transactionId: string, tran
 
 async function recordFinanceAudit(
   sql: Sql,
+  actorUserId: string | null | undefined,
   action: string,
   entityType: "refund" | "dispute",
   entityId: string,
@@ -755,8 +756,8 @@ async function recordFinanceAudit(
   metadata: Record<string, unknown>
 ) {
   await sql`
-    insert into admin_audit_logs (action, entity_type, entity_id, reason, metadata)
-    values (${action}, ${entityType}, ${entityId}, ${reason ?? null}, ${sql.json(metadata)})
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (${actorUserId ?? null}, ${action}, ${entityType}, ${entityId}, ${reason ?? null}, ${sql.json(metadata)})
   `;
 }
 

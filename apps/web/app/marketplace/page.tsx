@@ -558,7 +558,12 @@ curl "https://api.useskillhub.com/mcp"`}</code>
 
       {/* Catalog */}
       <div id="catalog">
-        <MarketplaceBrowser initialFilters={initialFilters} locale={locale} skills={skills} />
+        <MarketplaceBrowser
+          initialFilters={initialFilters}
+          locale={locale}
+          publisherProfiles={publishers}
+          skills={skills}
+        />
       </div>
 
       <div className="section-divider" />

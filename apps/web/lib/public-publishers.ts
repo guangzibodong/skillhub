@@ -100,6 +100,11 @@ export async function getPublicPublisherProfile(
   slug: string,
 ): Promise<PublicPublisherProfile | null> {
   const normalizedSlug = publisherSlugFromName(slug);
+
+  if (isAcceptanceQaCatalogRecord(normalizedSlug)) {
+    return null;
+  }
+
   const serverApiUrl = getServerApiUrl();
 
   try {
@@ -114,7 +119,9 @@ export async function getPublicPublisherProfile(
       const payload = (await response.json()) as {
         publisher: PublicPublisherApiProfile;
       };
-      return apiProfileToPublicProfile(payload.publisher);
+      return isPublicCatalogPublisherProfile(payload.publisher)
+        ? apiProfileToPublicProfile(payload.publisher)
+        : null;
     }
   } catch {
     // Static fallback below keeps public pages available when the API is not reachable.
@@ -143,7 +150,9 @@ export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
       const payload = (await response.json()) as {
         publishers: PublicPublisherApiProfile[];
       };
-      const profiles = payload.publishers.map(apiProfileToPublicProfile);
+      const profiles = payload.publishers
+        .filter(isPublicCatalogPublisherProfile)
+        .map(apiProfileToPublicProfile);
 
       if (profiles.length > 0) {
         return profiles;
@@ -176,7 +185,7 @@ function apiProfileToPublicProfile(
   profile: PublicPublisherApiProfile,
 ): PublicPublisherProfile {
   const publicApiUrl = getPublicApiUrl();
-  const skills = profile.skills.map((skill) => ({
+  const skills = profile.skills.filter(isPublicCatalogPublisherSkill).map((skill) => ({
     billing: skill.billingModel,
     callCount: skill.callCount,
     description: publicSkillDescription(skill.slug, skill.description),
@@ -194,8 +203,35 @@ function apiProfileToPublicProfile(
 
   return {
     ...profile,
+    metrics: publisherMetrics(skills),
     skills,
   };
+}
+
+function isPublicCatalogPublisherProfile(profile: PublicPublisherApiProfile) {
+  return (
+    !isAcceptanceQaCatalogRecord(profile.slug, profile.displayName) &&
+    profile.skills.some(isPublicCatalogPublisherSkill)
+  );
+}
+
+function isPublicCatalogPublisherSkill(skill: PublicPublisherApiSkill) {
+  return !isAcceptanceQaCatalogRecord(
+    skill.slug,
+    skill.displayName,
+    skill.description,
+  );
+}
+
+function isAcceptanceQaCatalogRecord(...parts: string[]) {
+  const haystack = parts.join(" ").toLowerCase();
+
+  return (
+    /acceptance[-_\s]*qa/.test(haystack) ||
+    /qa[-_\s]*partner/.test(haystack) ||
+    /acceptance[-_\s]*partner/.test(haystack) ||
+    /\bqa[-_\s]*20\d{6,}/.test(haystack)
+  );
 }
 
 function fallbackPublicPublishers(): PublicPublisherProfile[] {

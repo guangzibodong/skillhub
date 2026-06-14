@@ -181,6 +181,16 @@ async function checkSkillCards() {
       const url = resolveHref(href, page.url);
 
       if (url && new URL(url).pathname.startsWith("/skills/")) {
+        const leak = findPublicTestDataLeak(new URL(url).pathname.toLowerCase());
+
+        if (leak) {
+          fail(
+            "marketplace skill cards",
+            `public marketplace links to acceptance/QA test data: ${leak}`,
+          );
+          return;
+        }
+
         skillLinks.add(url);
       }
     }
@@ -229,6 +239,12 @@ async function checkSkillCards() {
 }
 
 function validatePageState(path, plain, html) {
+  const publicTestDataLeak = findPublicTestDataLeak(plain);
+
+  if (publicTestDataLeak) {
+    return `public page exposes acceptance/QA test data: ${publicTestDataLeak}`;
+  }
+
   if (path === "/" || path.startsWith("/?")) {
     const forbidden = [
       "view workspace proof",
@@ -480,6 +496,18 @@ function decodeHtml(text) {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, " ");
+}
+
+function findPublicTestDataLeak(text) {
+  const markers = [
+    "acceptance-qa-",
+    "acceptance qa",
+    "qa-partner",
+    "qa partner",
+    "acceptance partner",
+  ];
+
+  return markers.find((marker) => text.includes(marker)) ?? "";
 }
 
 function parseArgs(argv) {

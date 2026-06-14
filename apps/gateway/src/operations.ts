@@ -861,6 +861,7 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput,
       sr.id::text,
       sr.skill_id::text as "skillId",
       sr.skill_version_id::text as "skillVersionId",
+      sr.status,
       s.organization_id::text as "organizationId",
       s.slug as "skillSlug",
       s.display_name as "displayName",
@@ -875,6 +876,7 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput,
     id: string;
     skillId: string;
     skillVersionId: string | null;
+    status: string;
     organizationId: string;
     skillSlug: string;
     displayName: string;
@@ -888,6 +890,10 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput,
     throw new Error("Review not found.");
   }
 
+  if (!["queued", "in_review", "blocked"].includes(review.status)) {
+    throw new Error(`Review is already ${review.status} and cannot be changed.`);
+  }
+
   if (input.status === "approved") {
     await requireApprovalChecks(sql, review.skillVersionId, review.manifest);
   }
@@ -899,8 +905,13 @@ export async function decideReview(reviewId: string, input: ReviewDecisionInput,
       notes = ${input.notes ?? null},
       decided_at = now()
     where id = ${reviewId}
+      and status in ('queued', 'in_review', 'blocked')
     returning id::text, status, notes, decided_at as "decidedAt"
   `) as Array<{ id: string; status: string; notes: string | null; decidedAt: string }>;
+
+  if (!decidedRows[0]) {
+    throw new Error("Review is no longer pending and cannot be changed.");
+  }
 
   const verificationStatus =
     input.status === "approved"

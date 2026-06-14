@@ -702,10 +702,18 @@
 }
 
 .auth-muted-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
   color: var(--sh-green);
-  cursor: default;
+  cursor: pointer;
   font-size: 13px;
-  opacity: 0.68;
+  text-decoration: none;
+}
+
+.auth-muted-action:hover,
+.auth-muted-action:focus-visible {
+  color: var(--sh-green-strong);
 }
 
 .auth-register-prompt {
@@ -15611,8 +15619,10 @@ a {
 
 .market-skill-card__publisher {
   display: inline-flex;
+  align-items: center;
   width: fit-content;
   max-width: 100%;
+  min-height: 28px;
   margin-top: 6px;
   overflow-wrap: anywhere;
   color: var(--cyan);
@@ -15623,6 +15633,14 @@ a {
 
 .market-skill-card__publisher:hover {
   color: var(--signal);
+}
+
+.market-skill-card__publisher--text {
+  color: var(--muted);
+}
+
+.market-skill-card__publisher--text:hover {
+  color: var(--muted);
 }
 
 .market-skill-card h2 {
@@ -26935,6 +26953,9 @@ a {
 }
 
 .home-footer__group a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
   color: var(--home-muted);
   font-size: 13px;
   line-height: 1.35;

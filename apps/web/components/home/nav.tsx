@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/i18n";
 
@@ -56,7 +57,16 @@ const navLinks = {
 export function HomeNav({ active, locale }: NavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
   const links = navLinks[locale];
+  const alternateLocale = locale === "zh" ? "en" : "zh";
+  const alternateLocaleLabel = locale === "zh" ? "EN" : "中文";
+  const alternateLocaleHref = localizedHrefWithCurrentSearch(
+    pathname,
+    alternateLocale,
+    searchParams,
+  );
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -116,10 +126,10 @@ export function HomeNav({ active, locale }: NavProps) {
 
         <div className="hidden md:flex items-center gap-4">
           <a
-            href={locale === "zh" ? localizedHref("/", "en") : localizedHref("/", "zh")}
+            href={alternateLocaleHref}
             className="text-[12px] text-[#a9b3a3] hover:text-white transition-colors"
           >
-            {locale === "zh" ? "EN" : "中文"}
+            {alternateLocaleLabel}
           </a>
           <a
             href={localizedHref("/login", locale)}
@@ -164,7 +174,10 @@ export function HomeNav({ active, locale }: NavProps) {
               {link.label}
             </a>
           ))}
-          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-3">
+          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-3 gap-3">
+            <a href={alternateLocaleHref} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
+              {alternateLocaleLabel}
+            </a>
             <a href={localizedHref("/login", locale)} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
               {locale === "zh" ? "登录" : "Log in"}
             </a>
@@ -179,4 +192,23 @@ export function HomeNav({ active, locale }: NavProps) {
       )}
     </header>
   );
+}
+
+function localizedHrefWithCurrentSearch(
+  pathname: string,
+  locale: Locale,
+  searchParams: Pick<URLSearchParams, "forEach">,
+) {
+  const nextParams = new URLSearchParams();
+
+  searchParams.forEach((value, key) => {
+    if (key !== "lang") {
+      nextParams.append(key, value);
+    }
+  });
+
+  nextParams.set("lang", locale);
+  const query = nextParams.toString();
+
+  return `${pathname}${query ? `?${query}` : ""}`;
 }

@@ -362,6 +362,13 @@ const PUBLIC_ADMIN_LINK_MARKERS = [
   "/admin?lang=en",
   "/admin?lang=zh",
 ];
+const PUBLIC_TEST_DATA_MARKERS = [
+  "acceptance-qa-",
+  "acceptance qa",
+  "qa-partner",
+  "qa partner",
+  "acceptance partner",
+];
 const ANONYMOUS_NAV_REQUIRED_HREFS = [
   'href="/registry',
   'href="/marketplace',
@@ -982,6 +989,13 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
       return;
     }
 
+    const testDataLeak = findPublicTestDataLeak(JSON.stringify(json.skills));
+
+    if (testDataLeak) {
+      fail(name, `public search exposes acceptance/QA test data: ${testDataLeak}`);
+      return;
+    }
+
     if (
       (smokeContext.stats?.publicSkills ?? 0) > 0 &&
       json.skills.length === 0
@@ -994,14 +1008,46 @@ async function checkPublicSkillSearch({ apiUrl, timeoutMs }) {
     }
 
     const publicSkillCount = smokeContext.stats?.publicSkills;
+    const verifiedSkillCount = smokeContext.stats?.verifiedSkills;
+    const submittedSkillCount = smokeContext.stats?.submittedSkills;
+    const searchVerifiedCount = json.skills.filter(
+      (skill) =>
+        skill?.verificationStatus === "verified" ||
+        skill?.verificationStatus === "approved",
+    ).length;
+    const searchSubmittedCount = json.skills.filter(
+      (skill) => skill?.verificationStatus === "submitted",
+    ).length;
 
     if (
-      isFiniteNumber(publicSkillCount) &&
-      publicSkillCount !== json.skills.length
+      isFiniteNumber(verifiedSkillCount) &&
+      verifiedSkillCount !== searchVerifiedCount
     ) {
       fail(
         name,
-        `public stats report ${publicSkillCount} public skill(s), but search returned ${json.skills.length}`,
+        `public stats report ${verifiedSkillCount} verified skill(s), but search returned ${searchVerifiedCount}`,
+      );
+      return;
+    }
+
+    if (
+      isFiniteNumber(submittedSkillCount) &&
+      submittedSkillCount !== searchSubmittedCount
+    ) {
+      fail(
+        name,
+        `public stats report ${submittedSkillCount} submitted skill(s), but search returned ${searchSubmittedCount}`,
+      );
+      return;
+    }
+
+    if (
+      isFiniteNumber(publicSkillCount) &&
+      publicSkillCount > json.skills.length
+    ) {
+      fail(
+        name,
+        `public stats report ${publicSkillCount} public skill(s), but search returned only ${json.skills.length}`,
       );
       return;
     }
@@ -1104,6 +1150,13 @@ async function checkPublicSkillCategorySearch({ apiUrl, timeoutMs }) {
       return;
     }
 
+    const testDataLeak = findPublicTestDataLeak(JSON.stringify(json.skills));
+
+    if (testDataLeak) {
+      fail(name, `public category search exposes acceptance/QA test data: ${testDataLeak}`);
+      return;
+    }
+
     if (json.skills.length === 0) {
       skip(
         name,
@@ -1146,6 +1199,13 @@ async function checkPublicPublishers({ apiUrl, timeoutMs }) {
 
     if (!Array.isArray(json?.publishers)) {
       fail(name, "expected publishers array");
+      return;
+    }
+
+    const testDataLeak = findPublicTestDataLeak(JSON.stringify(json.publishers));
+
+    if (testDataLeak) {
+      fail(name, `public publisher directory exposes acceptance/QA test data: ${testDataLeak}`);
       return;
     }
 
@@ -3668,6 +3728,14 @@ function isFiniteNumber(value) {
 
 function isNullableFiniteNumber(value) {
   return value === null || isFiniteNumber(value);
+}
+
+function findPublicTestDataLeak(text) {
+  const normalized = String(text ?? "").toLowerCase();
+
+  return (
+    PUBLIC_TEST_DATA_MARKERS.find((marker) => normalized.includes(marker)) ?? ""
+  );
 }
 
 function isObjectRecord(value) {

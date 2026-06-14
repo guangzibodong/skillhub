@@ -1,4 +1,4 @@
-import { getServerApiUrl } from "@/lib/api-url";
+﻿import { getServerApiUrl } from "@/lib/api-url";
 import type { SkillFeedbackRecord } from "@/lib/skill-feedback";
 
 type FinanceLedgerSummary = {
@@ -1095,6 +1095,15 @@ function demoFallback<T>(fallback: T, productionValue: T): T {
 
 function safeOperationValue<T>(value: T, productionValue: T): T {
   return allowDemoFallback || !hasDemoSentinel(value) ? value : productionValue;
+}
+
+function safeOperationFallback<T>(error: unknown, fallback: T, productionValue: T): T {
+  return isAuthorizationFailure(error) ? productionValue : demoFallback(fallback, productionValue);
+}
+
+function isAuthorizationFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /\b(401|403)\b/.test(message);
 }
 
 function hasDemoSentinel(value: unknown): boolean {
@@ -3431,8 +3440,8 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
     }
 
     return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
-  } catch {
-    return demoFallback(fallbackLedger, emptyLedger);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackLedger, emptyLedger);
   }
 }
 
@@ -3457,8 +3466,8 @@ export async function getAdminCommissionRules(): Promise<CommissionRuleRecord[]>
 
     const payload = (await response.json()) as { rules: CommissionRuleRecord[] };
     return safeOperationValue(payload.rules, []);
-  } catch {
-    return demoFallback(fallbackCommissionRules, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackCommissionRules, []);
   }
 }
 
@@ -3482,8 +3491,8 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
     }
 
     return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
-  } catch {
-    return demoFallback(fallbackLedger, emptyLedger);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackLedger, emptyLedger);
   }
 }
 
@@ -3508,8 +3517,8 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
 
     const payload = (await response.json()) as { notifications: AdminNotification[] };
     return safeOperationValue(payload.notifications, []);
-  } catch {
-    return demoFallback(fallbackNotifications, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackNotifications, []);
   }
 }
 
@@ -3534,8 +3543,8 @@ export async function getAdminNotificationDeliveries(): Promise<AdminNotificatio
 
     const payload = (await response.json()) as { deliveries: AdminNotificationDelivery[] };
     return safeOperationValue(payload.deliveries, []);
-  } catch {
-    return demoFallback(fallbackNotificationDeliveries, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackNotificationDeliveries, []);
   }
 }
 
@@ -3560,8 +3569,8 @@ export async function getAdminWebhookDeliveries(): Promise<AdminWebhookDelivery[
 
     const payload = (await response.json()) as { deliveries: AdminWebhookDelivery[] };
     return safeOperationValue(payload.deliveries, []);
-  } catch {
-    return demoFallback(fallbackWebhookDeliveries, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackWebhookDeliveries, []);
   }
 }
 
@@ -3586,8 +3595,8 @@ export async function getAdminLaunchReadiness(): Promise<LaunchReadinessReport> 
 
     const payload = (await response.json()) as { readiness: LaunchReadinessReport };
     return safeOperationValue(payload.readiness, emptyLaunchReadiness);
-  } catch {
-    return demoFallback(fallbackLaunchReadiness, emptyLaunchReadiness);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackLaunchReadiness, emptyLaunchReadiness);
   }
 }
 
@@ -3612,8 +3621,8 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
 
     const payload = (await response.json()) as { auditLogs: AdminAuditLogRecord[] };
     return safeOperationValue(payload.auditLogs, []);
-  } catch {
-    return demoFallback(fallbackAdminAuditLogs, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackAdminAuditLogs, []);
   }
 }
 
@@ -3711,8 +3720,8 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
 
     const payload = (await response.json()) as { templates: NotificationTemplateRecord[] };
     return safeOperationValue(payload.templates, []);
-  } catch {
-    return demoFallback(fallbackNotificationTemplates, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackNotificationTemplates, []);
   }
 }
 
@@ -3737,8 +3746,8 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
 
     const payload = (await response.json()) as { identity: AdminIdentityDirectory };
     return safeOperationValue(payload.identity, emptyAdminIdentityDirectory);
-  } catch {
-    return demoFallback(fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
   }
 }
 
@@ -3763,8 +3772,8 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
 
     const payload = (await response.json()) as { members: OrganizationTeamMember[] };
     return safeOperationValue(payload.members, []);
-  } catch {
-    return demoFallback(fallbackOrganizationTeam, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackOrganizationTeam, []);
   }
 }
 
@@ -3789,8 +3798,8 @@ export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWeb
 
     const payload = (await response.json()) as { endpoints: OrganizationWebhookEndpoint[] };
     return safeOperationValue(payload.endpoints, []);
-  } catch {
-    return demoFallback(fallbackOrganizationWebhookEndpoints, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackOrganizationWebhookEndpoints, []);
   }
 }
 
@@ -3815,8 +3824,8 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
 
     const payload = (await response.json()) as { reviews: AdminReviewRecord[] };
     return safeOperationValue(payload.reviews, []);
-  } catch {
-    return demoFallback(fallbackAdminReviews, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackAdminReviews, []);
   }
 }
 
@@ -3850,8 +3859,8 @@ export async function getUserNotificationInbox(): Promise<UserNotificationInbox>
       notifications,
       summary: payload.summary ?? summarizeUserNotifications(notifications)
     }, emptyUserNotificationInbox);
-  } catch {
-    return demoFallback(fallbackUserNotificationInbox, emptyUserNotificationInbox);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackUserNotificationInbox, emptyUserNotificationInbox);
   }
 }
 
@@ -3948,8 +3957,8 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
 
     const payload = (await response.json()) as { preferences: NotificationPreferenceRecord[] };
     return safeOperationValue(payload.preferences, []);
-  } catch {
-    return demoFallback(fallbackNotificationPreferences, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackNotificationPreferences, []);
   }
 }
 
@@ -3974,8 +3983,8 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
 
     const payload = (await response.json()) as { payouts: PayoutRecord[] };
     return safeOperationValue(payload.payouts, []);
-  } catch {
-    return demoFallback(fallbackPayouts, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackPayouts, []);
   }
 }
 
@@ -3999,8 +4008,8 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
     }
 
     return safeOperationValue((await response.json()) as PublisherPayoutSummary, emptyPublisherPayoutSummary);
-  } catch {
-    return demoFallback(fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
   }
 }
 
@@ -4024,8 +4033,8 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
     }
 
     return safeOperationValue((await response.json()) as PublisherAccountSummary, emptyPublisherAccountSummary);
-  } catch {
-    return demoFallback(fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
   }
 }
 
@@ -4050,8 +4059,8 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
 
     const payload = (await response.json()) as { billing: OrganizationBillingSummary };
     return safeOperationValue(payload.billing, emptyOrganizationBillingSummary);
-  } catch {
-    return demoFallback(fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
   }
 }
 
@@ -4076,8 +4085,8 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
 
     const payload = (await response.json()) as { skills: PublisherSkillRecord[] };
     return safeOperationValue(payload.skills, []);
-  } catch {
-    return demoFallback(fallbackPublisherSkills, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackPublisherSkills, []);
   }
 }
 
@@ -4102,8 +4111,8 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
 
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
     return safeOperationValue(payload.requests, []);
-  } catch {
-    return demoFallback(fallbackBuyerRequests, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackBuyerRequests, []);
   }
 }
 
@@ -4128,8 +4137,8 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
 
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
     return safeOperationValue(payload.requests, []);
-  } catch {
-    return demoFallback(fallbackBuyerRequests, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackBuyerRequests, []);
   }
 }
 
@@ -4154,8 +4163,8 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
 
     const payload = (await response.json()) as { projects: DeveloperProjectRecord[] };
     return safeOperationValue(payload.projects, []);
-  } catch {
-    return demoFallback(fallbackDeveloperProjects, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackDeveloperProjects, []);
   }
 }
 
@@ -4266,8 +4275,8 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
 
     const payload = (await response.json()) as { refunds: RefundRecord[] };
     return safeOperationValue(payload.refunds, []);
-  } catch {
-    return demoFallback(fallbackRefunds, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackRefunds, []);
   }
 }
 
@@ -4292,8 +4301,8 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
 
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
     return safeOperationValue(payload.disputes, []);
-  } catch {
-    return demoFallback(fallbackDisputes, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackDisputes, []);
   }
 }
 
@@ -4318,8 +4327,8 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
 
     const payload = (await response.json()) as { refunds: RefundRecord[] };
     return safeOperationValue(payload.refunds, []);
-  } catch {
-    return demoFallback(fallbackRefunds, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackRefunds, []);
   }
 }
 
@@ -4344,8 +4353,8 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
 
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
     return safeOperationValue(payload.disputes, []);
-  } catch {
-    return demoFallback(fallbackDisputes, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackDisputes, []);
   }
 }
 
@@ -4370,8 +4379,8 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
 
     const payload = (await response.json()) as { reports: AbuseReportRecord[] };
     return safeOperationValue(payload.reports, []);
-  } catch {
-    return demoFallback(fallbackAbuseReports, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackAbuseReports, []);
   }
 }
 
@@ -4396,8 +4405,8 @@ export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
 
     const payload = (await response.json()) as { incidents: AdminIncidentRecord[] };
     return safeOperationValue(payload.incidents, []);
-  } catch {
-    return demoFallback(fallbackAdminIncidents, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackAdminIncidents, []);
   }
 }
 
@@ -4422,8 +4431,8 @@ export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
 
     const payload = (await response.json()) as { feedback: SkillFeedbackRecord[] };
     return safeOperationValue(payload.feedback, []);
-  } catch {
-    return demoFallback(fallbackSkillFeedback, []);
+  } catch (error) {
+    return safeOperationFallback(error, fallbackSkillFeedback, []);
   }
 }
 
@@ -4467,3 +4476,4 @@ async function readAdminOperatorToken() {
   const { getAdminOperatorToken } = await import("@/lib/auth-session");
   return getAdminOperatorToken();
 }
+

@@ -117,6 +117,12 @@ const PUBLIC_REGISTRY_READ_TABLES = [
   "skills",
 ];
 
+const PUBLIC_CATALOG_STATUSES: SkillSummary["verificationStatus"][] = [
+  "verified",
+  "submitted",
+  "deprecated",
+];
+
 export async function searchSkills(
   options: SearchOptions = {},
 ): Promise<SkillSummary[]> {
@@ -246,7 +252,7 @@ async function listPublicSkillBaseRows(
   schema: PublicRegistrySchema,
 ) {
   if (schema.skillReviews) {
-    return (await sql`
+    const rows = (await sql`
       select
         s.id::text,
         s.slug,
@@ -284,9 +290,11 @@ async function listPublicSkillBaseRows(
         and s.verification_status not in ('draft', 'rejected', 'suspended')
       order by s.updated_at desc
     `) as PublicSkillBaseRow[];
+
+    return rows.filter(isPublicCatalogSkillRow);
   }
 
-  return (await sql`
+  const rows = (await sql`
     select
       s.id::text,
       s.slug,
@@ -310,6 +318,8 @@ async function listPublicSkillBaseRows(
       and s.verification_status not in ('draft', 'rejected', 'suspended')
     order by s.updated_at desc
   `) as PublicSkillBaseRow[];
+
+  return rows.filter(isPublicCatalogSkillRow);
 }
 
 async function listActiveBillingModelsBySkillId(sql: NonNullable<SqlClient>) {
@@ -411,7 +421,7 @@ async function listPublicSkillManifestRows(
   schema: PublicRegistrySchema,
 ) {
   if (schema.skillReviews) {
-    return (await sql`
+    const rows = (await sql`
       select latest.manifest
       from skills s
       join lateral (
@@ -439,9 +449,11 @@ async function listPublicSkillManifestRows(
         and s.verification_status in ('verified', 'submitted', 'deprecated')
       order by s.updated_at desc
     `) as Array<{ manifest: SkillManifest }>;
+
+    return rows.filter((row) => isPublicCatalogManifest(row.manifest));
   }
 
-  return (await sql`
+  const rows = (await sql`
     select latest.manifest
     from skills s
     join lateral (
@@ -455,6 +467,8 @@ async function listPublicSkillManifestRows(
       and s.verification_status in ('verified', 'submitted', 'deprecated')
     order by s.updated_at desc
   `) as Array<{ manifest: SkillManifest }>;
+
+  return rows.filter((row) => isPublicCatalogManifest(row.manifest));
 }
 
 async function getPublicSkillManifestRows(
@@ -463,7 +477,7 @@ async function getPublicSkillManifestRows(
   schema: PublicRegistrySchema,
 ) {
   if (schema.skillReviews) {
-    return (await sql`
+    const rows = (await sql`
       select latest.manifest
       from skills s
       join lateral (
@@ -492,9 +506,11 @@ async function getPublicSkillManifestRows(
         and s.verification_status in ('verified', 'submitted', 'deprecated')
       limit 1
     `) as Array<{ manifest: SkillManifest }>;
+
+    return rows.filter((row) => isPublicCatalogManifest(row.manifest));
   }
 
-  return (await sql`
+  const rows = (await sql`
     select latest.manifest
     from skills s
     join lateral (
@@ -509,6 +525,8 @@ async function getPublicSkillManifestRows(
       and s.verification_status in ('verified', 'submitted', 'deprecated')
     limit 1
   `) as Array<{ manifest: SkillManifest }>;
+
+  return rows.filter((row) => isPublicCatalogManifest(row.manifest));
 }
 
 export async function listSkillManifests(): Promise<SkillManifest[]> {
@@ -989,11 +1007,9 @@ function filterSummaries(
       const verificationMatch =
         !options.verificationStatus ||
         skill.verificationStatus === options.verificationStatus;
-      const publicStatusMatch = [
-        "verified",
-        "submitted",
-        "deprecated",
-      ].includes(skill.verificationStatus);
+      const publicStatusMatch = PUBLIC_CATALOG_STATUSES.includes(
+        skill.verificationStatus,
+      );
 
       return (
         queryMatch &&
@@ -1003,7 +1019,8 @@ function filterSummaries(
         runtimeMatch &&
         billingMatch &&
         verificationMatch &&
-        publicStatusMatch
+        publicStatusMatch &&
+        isPublicCatalogSkillSummary(skill)
       );
     })
     .sort((first, second) =>
@@ -1013,6 +1030,50 @@ function filterSummaries(
   return filtered
     .slice(0, Math.min(Math.max(limit, 1), 100))
     .map(stripCuration);
+}
+
+function isPublicCatalogSkillRow(row: PublicSkillBaseRow) {
+  return (
+    PUBLIC_CATALOG_STATUSES.includes(row.verification_status) &&
+    !isAcceptanceQaCatalogRecord(
+      row.slug,
+      row.display_name,
+      row.description,
+      ...row.tags,
+    )
+  );
+}
+
+function isPublicCatalogSkillSummary(skill: SkillSummary) {
+  return (
+    PUBLIC_CATALOG_STATUSES.includes(skill.verificationStatus) &&
+    !isAcceptanceQaCatalogRecord(
+      skill.slug,
+      skill.displayName,
+      skill.description,
+      ...skill.tags,
+    )
+  );
+}
+
+function isPublicCatalogManifest(manifest: SkillManifest) {
+  return !isAcceptanceQaCatalogRecord(
+    manifest.name,
+    manifest.displayName,
+    manifest.description,
+    ...manifest.tags,
+  );
+}
+
+function isAcceptanceQaCatalogRecord(...parts: string[]) {
+  const haystack = parts.join(" ").toLowerCase();
+
+  return (
+    /acceptance[-_\s]*qa/.test(haystack) ||
+    /qa[-_\s]*partner/.test(haystack) ||
+    /acceptance[-_\s]*partner/.test(haystack) ||
+    /\bqa[-_\s]*20\d{6,}/.test(haystack)
+  );
 }
 
 function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
