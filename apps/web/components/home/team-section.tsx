@@ -58,18 +58,18 @@ export function TeamSection({ locale }: Props) {
             </div>
             <div>
               <p className="text-[13px] font-medium text-white">Research Agent</p>
-              <p className="text-[11px] text-[#666]">3 members · 5 skills</p>
+              <p className="text-[11px] text-[#666]">3 members · 2 skills</p>
             </div>
           </div>
-          <span className="text-[11px] text-[#666] bg-[#292929] px-2.5 py-1 rounded-[6px]">Pro plan</span>
+          <span className="text-[11px] text-[#666] bg-[#292929] px-2.5 py-1 rounded-[6px]">Team evaluation</span>
         </div>
 
         {/* Usage bars (visual element) */}
         <div className="space-y-4 mb-5">
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[11px] text-[#999]">API Calls</span>
-              <span className="text-[11px] text-[#666]">12,482 / 50,000</span>
+              <span className="text-[11px] text-[#999]">Approved skills</span>
+              <span className="text-[11px] text-[#666]">1 / 2</span>
             </div>
             <div className="h-1.5 bg-[#292929] rounded-full overflow-hidden">
               <div className="h-full bg-[#7fee64] rounded-full" style={{ width: "25%" }} />
@@ -77,8 +77,8 @@ export function TeamSection({ locale }: Props) {
           </div>
           <div>
             <div className="flex justify-between mb-1.5">
-              <span className="text-[11px] text-[#999]">Budget</span>
-              <span className="text-[11px] text-[#666]">$42.18 / $200.00</span>
+              <span className="text-[11px] text-[#999]">Project Keys</span>
+              <span className="text-[11px] text-[#666]">1 active</span>
             </div>
             <div className="h-1.5 bg-[#292929] rounded-full overflow-hidden">
               <div className="h-full bg-[var(--color-verified)] rounded-full" style={{ width: "21%" }} />
@@ -89,10 +89,8 @@ export function TeamSection({ locale }: Props) {
         {/* Recent activity rows */}
         <div className="space-y-0">
           {[
-            { skill: "browser-research-pro", time: "2m ago", status: "success" },
-            { skill: "crm-enrichment", time: "5m ago", status: "success" },
-            { skill: "support-triage", time: "12m ago", status: "success" },
-            { skill: "code-review-assistant", time: "18m ago", status: "error" },
+            { skill: "browser-research", time: "2m ago", status: "success" },
+            { skill: "dataset-summarizer", time: "review", status: "success" },
           ].map((row, i) => (
             <div key={i} className="flex items-center justify-between py-2.5 border-b border-[rgba(255,255,255,0.05)] last:border-0">
               <div className="flex items-center gap-2">

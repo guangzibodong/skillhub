@@ -2,6 +2,7 @@ import { Box, ExternalLink, PackageCheck, ShieldCheck } from "lucide-react";
 import type { SkillSummary } from "@useskillhub/schema";
 import type { Dictionary } from "@/lib/i18n";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
+import { getMarketplaceSkill } from "@/lib/marketplace-data";
 import {
   publicSkillDescription,
   publicSkillDisplayName,
@@ -40,6 +41,10 @@ export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, loc
         const displayName = publicSkillDisplayName(skill.slug, skill.displayName)[locale];
         const description = publicSkillDescription(skill.slug, skill.description)[locale];
         const tags = publicSkillTags(skill.slug, skill.tags)[locale];
+        const manifestHref = `${apiUrl}/v1/skills/${skill.slug}`;
+        const publicDetailHref = getMarketplaceSkill(skill.slug)
+          ? localizedHref(`/skills/${skill.slug}`, locale)
+          : null;
 
         return (
           <article className="skill-row" key={skill.id}>
@@ -72,15 +77,15 @@ export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, loc
             <div className="skill-row__actions">
               <a
                 className="secondary-button secondary-button--compact"
-                href={localizedHref(`/skills/${skill.slug}`, locale)}
+                href={publicDetailHref ?? manifestHref}
                 aria-label={`${labels.details}: ${displayName}`}
               >
                 <ShieldCheck size={16} aria-hidden="true" />
-                <span>{labels.details}</span>
+                <span>{publicDetailHref ? labels.details : labels.openManifest}</span>
               </a>
               <a
                 className="icon-button icon-button--quiet"
-                href={`${apiUrl}/v1/skills/${skill.slug}`}
+                href={manifestHref}
                 aria-label={`${labels.openManifest}: ${displayName}`}
               >
                 <ExternalLink size={16} />

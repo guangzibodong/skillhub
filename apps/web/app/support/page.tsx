@@ -60,7 +60,7 @@ const copy = {
     faq: [
       { q: "How do I reset my API key?", a: "Go to Developer Workspace → Project → API Keys → Rotate. The old key is revoked immediately." },
       { q: "Why is my skill stuck in review?", a: "Reviews take 1–3 business days. Check Publisher Workspace for reviewer feedback and required changes." },
-      { q: "Can I get a refund on a paid skill?", a: "Paid marketplace is in preview. No real charges are captured during Developer Preview." },
+      { q: "Can I get a refund on a paid skill?", a: "Paid skill purchases only apply after billing access is enabled for an approved workspace. Contact support for any billing concern." },
       { q: "How do I report a malicious skill?", a: "Use the Report an Issue flow. Select 'Trust & Safety' as the category. Include the skill slug." }
     ],
     ctaTitle: "Still need help?",
@@ -104,7 +104,7 @@ const copy = {
     faq: [
       { q: "如何重置 API Key？", a: "前往开发者工作台 → 项目 → API Keys → 轮换。旧 Key 立即撤销。" },
       { q: "为什么我的技能卡在审核中？", a: "审核需要 1-3 个工作日。在发布者工作台查看审核反馈和所需更改。" },
-      { q: "付费技能能退款吗？", a: "付费市场处于预览阶段。开发者预览期间不会产生真实扣费。" },
+      { q: "付费技能能退款吗？", a: "付费购买只会在获批工作区启用支付后发生。如有账单疑问，请联系支持。" },
       { q: "如何举报恶意技能？", a: "使用'报告问题'流程。选择'信任与安全'类别。包含技能 slug。" }
     ],
     ctaTitle: "还需要帮助？",
@@ -137,8 +137,8 @@ export default async function SupportPage({ searchParams }: PageProps) {
     <AppShell active="support" locale={locale}>
       <p className="visually-hidden">
         {locale === "zh"
-          ? "开发者预览版支持 不要提交密钥 报告问题"
-          : "Developer Preview support No secrets Report an issue"}
+          ? "支持 不要提交密钥 报告问题"
+          : "Support No secrets Report an issue"}
       </p>
       {/* ===== Hero ===== */}
       <section className="pt-[120px] pb-[96px]">

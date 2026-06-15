@@ -37,22 +37,18 @@ const navLinks = {
   en: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
     { href: "/registry", page: "registry" as NavPage, label: "Registry" },
-    { href: "/quickstart", page: "docs" as NavPage, label: "Quickstart" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs" },
-    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
-    { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
     { href: "/security", page: "security" as NavPage, label: "Security" },
     { href: "/pricing", page: "marketplace" as NavPage, label: "Pricing" },
+    { href: "/publish", page: "publish" as NavPage, label: "Publish" },
   ],
   zh: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "技能市场" },
-    { href: "/registry", page: "registry" as NavPage, label: "技能库" },
-    { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "技能" },
+    { href: "/registry", page: "registry" as NavPage, label: "注册表" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
-    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
-    { href: "/publish", page: "publish" as NavPage, label: "发布技能" },
     { href: "/security", page: "security" as NavPage, label: "安全" },
     { href: "/pricing", page: "marketplace" as NavPage, label: "价格" },
+    { href: "/publish", page: "publish" as NavPage, label: "发布" },
   ],
 };
 
@@ -71,7 +67,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
   );
   const loginHref = loginHrefWithCurrentReturnTo(pathname, locale, searchParams);
   const actionHref = secondaryHref ?? loginHref;
-  const actionLabel = secondaryLabel ?? (locale === "zh" ? "登录" : "Log in");
+  const actionLabel = secondaryLabel ?? (locale === "zh" ? "登录" : "Sign in");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -142,12 +138,6 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
           >
             {actionLabel}
           </a>
-          <a
-            href={localizedHref("/publish", locale)}
-            className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
-          >
-            {locale === "zh" ? "发布技能" : "Publish Skill"}
-          </a>
         </div>
 
         <button
@@ -179,18 +169,12 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
               {link.label}
             </a>
           ))}
-          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-3 gap-3">
+          <div className="pt-3 mt-3 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-3">
             <a href={alternateLocaleHref} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
               {alternateLocaleLabel}
             </a>
             <a href={actionHref} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
               {actionLabel}
-            </a>
-            <a
-              href={localizedHref("/publish", locale)}
-              className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-3 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] text-center"
-            >
-              {locale === "zh" ? "发布" : "Publish"}
             </a>
           </div>
         </div>

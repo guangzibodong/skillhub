@@ -1,4 +1,4 @@
-import { Github, LockKeyhole } from "lucide-react";
+import { Github } from "lucide-react";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
@@ -14,16 +14,12 @@ type ProviderId = "github" | "google";
 
 const copy = {
   en: {
-    disabledAction: "Not configured",
-    empty: "Google and GitHub stay locked until their provider credentials and callback URLs are active. Use email or username/password below.",
-    helper: "OAuth redirects only appear active when the provider is configured.",
+    helper: "Use a configured OAuth provider, or continue with email and password below.",
     oauthAction: "Continue with",
     title: "Use another sign-in method",
   },
   zh: {
-    disabledAction: "暂未配置",
-    empty: "Google 和 GitHub 在凭证与回调地址配置完成前会保持锁定。现在可以使用下方邮箱或用户名密码登录。",
-    helper: "第三方登录只有在完成配置后才会变成真实跳转。",
+    helper: "使用已配置的第三方登录，或继续使用下方邮箱和密码。",
     oauthAction: "继续使用",
     title: "使用其他方式登录",
   },
@@ -47,17 +43,20 @@ export function AuthProviderPanel({
     surface === "embedded"
       ? "auth-provider-panel auth-provider-panel--oauth auth-provider-panel--embedded"
       : "ops-panel auth-provider-panel auth-provider-panel--oauth";
-  const providerItems = visibleProviders.map((providerConfig) => {
+  const providerItems = visibleProviders.flatMap((providerConfig) => {
     const provider = providers.find(
       (item) => item.provider === providerConfig.id,
     );
     const action = provider
       ? providerAction(provider, apiUrl, locale, labels, returnTo)
-      : { href: null, label: `${providerConfig.label} ${labels.disabledAction}` };
+      : null;
 
-    return { action, providerConfig };
+    return action?.href ? [{ action, providerConfig }] : [];
   });
-  const hasActiveProviders = providerItems.some((item) => Boolean(item.action.href));
+
+  if (providerItems.length === 0) {
+    return null;
+  }
 
   return (
     <Wrapper className={className}>
@@ -67,13 +66,7 @@ export function AuthProviderPanel({
       <div className="oauth-provider-stack" aria-label={labels.title}>
         {providerItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
-          const buttonClass = [
-            "oauth-provider-button",
-            `oauth-provider-button--${providerConfig.id}`,
-            action.href ? "" : "oauth-provider-button--disabled",
-          ]
-            .filter(Boolean)
-            .join(" ");
+          const buttonClass = `oauth-provider-button oauth-provider-button--${providerConfig.id}`;
 
           const content = (
             <>
@@ -81,16 +74,10 @@ export function AuthProviderPanel({
               <span className="oauth-provider-button__label">
                 {providerName}
               </span>
-              {!action.href ? (
-                <span className="oauth-provider-button__lock">
-                  <LockKeyhole size={14} aria-hidden="true" />
-                  <span>{labels.disabledAction}</span>
-                </span>
-              ) : null}
             </>
           );
 
-          return action.href ? (
+          return (
             <a
               aria-label={`${labels.oauthAction} ${providerName}`}
               className={buttonClass}
@@ -99,20 +86,10 @@ export function AuthProviderPanel({
             >
               {content}
             </a>
-          ) : (
-            <button
-              aria-label={`${providerName} ${labels.disabledAction}`}
-              className={buttonClass}
-              disabled
-              key={providerConfig.id}
-              type="button"
-            >
-              {content}
-            </button>
           );
         })}
       </div>
-      <p className="oauth-provider-note">{hasActiveProviders ? labels.helper : labels.empty}</p>
+      <p className="oauth-provider-note">{labels.helper}</p>
     </Wrapper>
   );
 }
@@ -141,7 +118,7 @@ function providerAction(
 
   return {
     href: null,
-    label: `${providerLabel(provider)} ${labels.disabledAction}`,
+    label: providerLabel(provider),
   };
 }
 

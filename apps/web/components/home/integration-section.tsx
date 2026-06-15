@@ -70,20 +70,18 @@ const configs: Record<string, string> = {
   -H "Authorization: Bearer sk_proj_..." \\
   -H "Content-Type: application/json" \\
   -d '{
-    "skill": "browser-research-pro",
-    "version": "^2.0.0",
+    "skill": "browser-research",
+    "version": "1.0.0",
     "input": {
-      "query": "AI agent frameworks 2026",
-      "depth": 3,
-      "format": "structured"
+      "query": "AI agent skill security",
+      "depth": "standard"
     }
   }'
 
-# 200 OK · 2.1s
+# 200 OK
 # {
-#   "summary": "...",
-#   "sources": [12 items],
-#   "confidence": 0.94
+#   "summary": "Recent references emphasize manifest inspection...",
+#   "sources": [{ "title": "...", "url": "..." }]
 # }`,
 };
 

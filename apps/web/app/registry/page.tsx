@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Terminal
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
@@ -19,12 +20,32 @@ import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/registry",
+    en: {
+      title: "SkillHub Registry - Versioned Skill Contracts",
+      description:
+        "Inspect SkillHub registry contracts, manifests, review state, runtime resolution, and commercial readiness links.",
+    },
+    zh: {
+      title: "SkillHub 注册表 - 版本化技能合约",
+      description:
+        "查看 SkillHub 注册表合约、manifest、审核状态、运行解析和商业化准备链接。",
+    },
+  });
+}
 
 const registryProtocolCopy = {
   en: {
@@ -43,7 +64,7 @@ const registryProtocolCopy = {
     heroProof: [
       ["Contract first", "Every skill starts as a versioned manifest before it becomes a marketplace listing."],
       ["Gateway governed", "REST, MCP, SDK, and console tests all resolve the same version and policy state."],
-      ["Audit ready", "Review, signed-in adoption, runtime, prelaunch ledger, delivery, and audit records stay connected."]
+      ["Audit ready", "Review, signed-in adoption, runtime, billing, delivery, and audit records stay connected."]
     ],
     lifecycleTitle: "Contract lifecycle",
     lifecycle: [
@@ -51,7 +72,7 @@ const registryProtocolCopy = {
       ["Review", "Automated manifest/runtime/example/security checks feed a human decision with SLA."],
       ["Approved", "Verified versions become eligible for sign-in gated project adoption and are immutable."],
       ["Runtime", "Signed-in projects pin versions, approve policy, create keys, and invoke through the governed gateway."],
-      ["Paid preview", "Paid-marketplace ledger, refund, dispute, and payout state remains prelaunch operating reference material."]
+      ["Commercial readiness", "Billing, refund, dispute, and payout state stays reviewable before any public paid activation."]
     ],
     manifestTitle: "Manifest quality bar",
     manifestFields: [
@@ -59,7 +80,7 @@ const registryProtocolCopy = {
       ["Runtime", "http, mcp, or restricted local runtime with target, transport, and health posture"],
       ["Schemas", "inputSchema, outputSchema, examples, required fields, typed result shape"],
       ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive/payment workflows"],
-      ["Paid preview", "billing model, paid-preview blockers, publisher terms, finance-reviewed paid readiness"],
+      ["Commercial", "billing model, publisher terms, finance-reviewed readiness, refund and payout controls"],
       ["Trust", "review status, checks, incidents, feedback, deprecation and replacement path"]
     ],
     notes: [
@@ -98,7 +119,7 @@ const registryProtocolCopy = {
     heroProof: [
       ["合约优先", "每个技能先成为带版本的 manifest，再进入市场展示。"],
       ["网关治理", "REST、MCP、SDK 和控制台测试都会解析同一套版本和策略状态。"],
-      ["可审计", "审核、登录后采用、运行、预发布账本、投递和审计记录保持连贯。"]
+      ["可审计", "审核、登录后采用、运行、账务、投递和审计记录保持连贯。"]
     ],
     lifecycleTitle: "合约生命周期",
     lifecycle: [
@@ -106,7 +127,7 @@ const registryProtocolCopy = {
       ["审核", "manifest/runtime/example/security 自动检查进入带 SLA 的人工决策。"],
       ["批准", "已验证版本会进入登录后项目采用路径，并且不可原地修改。"],
       ["运行", "登录后的项目固定版本、审批策略、创建 Key，并通过治理网关调用。"],
-      ["付费预览", "付费市场账本、退款、争议和提现状态仍是预发布运营参考。"]
+      ["商业化准备", "计费、退款、争议和打款状态在公开付费启用前保持可复核。"]
     ],
     manifestTitle: "Manifest 质量门槛",
     manifestFields: [
@@ -114,7 +135,7 @@ const registryProtocolCopy = {
       ["运行时", "HTTP、MCP 或受限本地运行时，包含目标、传输和健康状态"],
       ["Schema", "inputSchema、outputSchema、示例、必填字段和类型化结果"],
       ["权限", "网络、浏览器、文件系统、密钥、敏感数据、破坏性/支付流程"],
-      ["付费预览", "计费模型、付费预览阻断、发布者条款、财务复核元数据"],
+      ["商业化", "计费模型、发布者条款、财务复核准备、退款和打款控制"],
       ["信任", "审核状态、检查、事故、反馈、废弃和替代路径"]
     ],
     notes: [

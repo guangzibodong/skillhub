@@ -9,13 +9,12 @@ import {
   PackageCheck,
   ShieldCheck,
   Star,
-  Terminal,
   WalletCards
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { localizeText } from "@/lib/marketplace-data";
+import { getMarketplaceSkill, localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublisherProfile } from "@/lib/public-publishers";
 import { getSkillInstallState } from "@/lib/skill-install-state";
@@ -54,18 +53,17 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     path: `/publishers/${publisher.slug}`,
     en: {
       title: `${publisher.displayName} - SkillHub Publisher Profile`,
-      description: `Review ${publisher.displayName}'s verified skills, public listings, runtime evidence, install signals, and paid-marketplace preview status.`
+      description: `Review ${publisher.displayName}'s verified skills, public listings, review state, support posture, and commercial readiness.`
     },
     zh: {
       title: `${publisher.displayName} - SkillHub 发布者档案`,
-      description: `查看 ${publisher.displayName} 的已验证技能、公开上架、运行证据、安装信号和付费市场预览状态。`
+      description: `查看 ${publisher.displayName} 的已验证技能、公开上架、审核状态、支持姿态和商业化准备。`
     }
   });
 }
 
 const copy = {
   en: {
-    activePaid: "Paid preview inventory",
     back: "Back to marketplace",
     calls: "Calls",
     details: "Skill details",
@@ -75,23 +73,22 @@ const copy = {
     metricInstalls: "Adoption evidence",
     metricPublic: "Public skills",
     metricVerified: "Verified skills",
-    payout: "Paid marketplace preview",
+    payout: "Commercial readiness",
     profile: "Publisher profile",
     publicSkills: "Public skills",
     skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
     status: "Profile status",
     success: "Avg success",
     trust: "Trust signals",
-    trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, runtime evidence, and install evidence. Paid-marketplace preview state is shown as prelaunch context only.",
+    trustBody: "Publisher trust is based on profile state, verified skill count, public listings, review status, support posture, and issue history.",
     trustLevels: { active: "Public profile", blocked: "Blocked publisher", limited: "Limited publisher", verified: "Verified publisher" },
     billingModels: { free: "Free", per_call: "Per call", subscription: "Subscription" },
-    payoutStatuses: { blocked: "Blocked", not_configured: "Prelaunch / not configured", verification_required: "Verification required", verified: "Verified" },
+    payoutStatuses: { blocked: "Blocked", not_configured: "Not active", verification_required: "Verification required", verified: "Verified" },
     permissionLevels: { high: "High risk", low: "Low risk", medium: "Medium risk" },
     publisherStatuses: { active: "Active", pending: "Pending", restricted: "Restricted", suspended: "Suspended" },
     verificationStatuses: { deprecated: "Deprecated", draft: "Draft", rejected: "Rejected", submitted: "Submitted", suspended: "Suspended", verified: "Verified" },
   },
   zh: {
-    activePaid: "付费预览库存",
     back: "返回市场",
     calls: "调用",
     details: "技能详情",
@@ -101,17 +98,17 @@ const copy = {
     metricInstalls: "采用证据",
     metricPublic: "公开技能",
     metricVerified: "已验证技能",
-    payout: "付费市场预览",
+    payout: "商业化准备",
     profile: "发布者档案",
     publicSkills: "公开技能",
     skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
     status: "资料状态",
     success: "平均成功率",
     trust: "信任信号",
-    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。付费市场预览状态只作为预发布上下文展示。",
+    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、支持姿态和问题记录共同决定。",
     trustLevels: { active: "公开资料", blocked: "已阻断发布者", limited: "受限发布者", verified: "已验证发布者" },
     billingModels: { free: "免费", per_call: "按次调用", subscription: "订阅" },
-    payoutStatuses: { blocked: "已阻断", not_configured: "预发布 / 未配置", verification_required: "需要验证", verified: "已验证" },
+    payoutStatuses: { blocked: "已阻断", not_configured: "暂未启用", verification_required: "需要验证", verified: "已验证" },
     permissionLevels: { high: "高风险", low: "低风险", medium: "中风险" },
     publisherStatuses: { active: "活跃", pending: "待完善", restricted: "受限", suspended: "已暂停" },
     verificationStatuses: { deprecated: "已弃用", draft: "草稿", rejected: "已拒绝", submitted: "已提交", suspended: "已暂停", verified: "已验证" },
@@ -189,6 +186,7 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
               <div className="flex flex-col gap-4">
                 {publisher.skills.map((skill, i) => {
                   const installState = getSkillInstallState(skill.verificationStatus);
+                  const hasPublicDetail = Boolean(getMarketplaceSkill(skill.slug));
                   return (
                     <Reveal delay={i * 60} key={skill.slug}>
                       <section className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-5 flex flex-col gap-3">
@@ -220,11 +218,18 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                         </div>
                         <div className="flex items-center justify-between gap-3 pt-2 border-t border-[rgba(255,255,255,0.08)]">
                           <code className="text-xs text-[#666] break-all">{publisherSkillAvailability(installState, locale)}</code>
-                          <a className="btn-secondary flex-shrink-0" href={localizedHref(`/skills/${skill.slug}`, locale)}>
-                            <ShieldCheck size={15} aria-hidden="true" />
-                            <span>{labels.details}</span>
-                            <ArrowRight size={14} aria-hidden="true" />
-                          </a>
+                          {hasPublicDetail ? (
+                            <a className="btn-secondary flex-shrink-0" href={localizedHref(`/skills/${skill.slug}`, locale)}>
+                              <ShieldCheck size={15} aria-hidden="true" />
+                              <span>{labels.details}</span>
+                              <ArrowRight size={14} aria-hidden="true" />
+                            </a>
+                          ) : (
+                            <span className="pill pill--neutral flex-shrink-0">
+                              <ShieldCheck size={15} aria-hidden="true" />
+                              {labels.publicSkills}
+                            </span>
+                          )}
                         </div>
                       </section>
                     </Reveal>
@@ -245,7 +250,6 @@ export default async function PublicPublisherPage({ params, searchParams }: Page
                   <TrustRow icon={<CircleDollarSign size={15} aria-hidden="true" />} label={labels.payout} value={labels.payoutStatuses[publisher.payoutStatus]} />
                   <TrustRow icon={<PackageCheck size={15} aria-hidden="true" />} label={labels.metricVerified} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
                   <TrustRow icon={<Star size={15} aria-hidden="true" />} label={labels.success} value={formatPercent(publisher.metrics.avgSuccessRate)} />
-                  <TrustRow icon={<Terminal size={15} aria-hidden="true" />} label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />
                 </div>
               </section>
             </Reveal>

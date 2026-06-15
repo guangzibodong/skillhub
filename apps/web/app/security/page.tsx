@@ -24,9 +24,9 @@ type PageProps = {
 const copy = {
   en: {
     eyebrow: "Security",
-    title: "Security-first by design.",
+    title: "Security model for governed Agent Skills.",
     subtitle: "Report vulnerabilities responsibly",
-    body: "SkillHub treats security as a core operating principle, not an afterthought. Every skill is reviewed, every runtime call is governed, and every secret stays protected.",
+    body: "SkillHub helps teams inspect, approve, and monitor skills before runtime invocation through permission review, scoped Project Keys, audit logs, and secret isolation.",
     support: "Report an issue",
     status: "Check status",
     principlesEyebrow: "Principles",
@@ -39,7 +39,7 @@ const copy = {
     ],
     disclosureEyebrow: "Responsible disclosure",
     disclosureTitle: "Report security issues without exposing secrets.",
-    disclosureBody: "Use the public support path to request a secure disclosure channel during Developer Preview. Do not put sensitive data into public reports.",
+    disclosureBody: "Use the public support path to request a secure disclosure channel. Do not put sensitive data into public reports.",
     includeTitle: "What to include",
     includeItems: [
       "Affected public URL or skill slug",
@@ -77,9 +77,9 @@ const copy = {
   },
   zh: {
     eyebrow: "安全",
-    title: "安全优先，从设计开始。",
+    title: "受治理 Agent Skills 的安全模型。",
     subtitle: "负责任地报告漏洞",
-    body: "SkillHub 将安全视为核心运营原则，而非事后补救。每个技能都经过审查，每次运行调用都受治理，每个密钥都受保护。",
+    body: "SkillHub 帮助团队在运行调用前检查、批准和监控技能，通过权限审查、有范围的 Project Key、审计日志和密钥隔离降低风险。",
     support: "报告问题",
     status: "查看状态",
     principlesEyebrow: "原则",
@@ -92,7 +92,7 @@ const copy = {
     ],
     disclosureEyebrow: "负责任披露",
     disclosureTitle: "报告安全问题时不要暴露密钥。",
-    disclosureBody: "开发者预览版期间，请通过公开支持路径请求安全披露渠道。不要在公开报告中包含敏感数据。",
+    disclosureBody: "请通过公开支持路径请求安全披露渠道。不要在公开报告中包含敏感数据。",
     includeTitle: "应该包含",
     includeItems: [
       "受影响的公开 URL 或技能 slug",

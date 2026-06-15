@@ -44,9 +44,9 @@ export const dictionaries = {
       eyebrow: "Agent skill infrastructure",
       title: "Trusted skills for AI agents.",
       description:
-        "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Developer Preview: public discovery and inspection are live; runtime invocation requires a signed-in project key; paid marketplace features remain prelaunch.",
+        "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Public discovery and inspection are live; runtime invocation requires a signed-in project key; commercial billing is enabled only for approved workspaces.",
       publishCta: "Publish a skill",
-      gatewayTitle: "Developer Preview gateway",
+      gatewayTitle: "Governed runtime gateway",
       registryEyebrow: "Registry",
       registryTitle: "Agent Skill Registry",
       newSkill: "Submit a skill",
@@ -99,7 +99,7 @@ export const dictionaries = {
         },
         {
           title: "Operator control",
-          description: "Paid publishing preview, review, refunds, and finance review stay behind audited platform controls."
+          description: "Paid publishing, review, refunds, and finance review stay behind audited platform controls."
         }
       ]
     },
@@ -154,7 +154,7 @@ export const dictionaries = {
       eyebrow: "Marketplace model",
       title: "A skill marketplace built for publishers, developers, and agents.",
       description:
-        "SkillHub separates discovery, governed execution, ledger modeling, and prelaunch payout operations so third-party skill authors can publish while buyers keep control of cost and risk.",
+        "SkillHub separates discovery, governed execution, ledger records, and payout review so third-party skill authors can publish while buyers keep control of cost and risk.",
       ctaPrimary: "Open dashboard",
       ctaSecondary: "Read docs",
       rails: [
@@ -201,10 +201,10 @@ export const dictionaries = {
       eyebrow: "Workspace dashboard",
       title: "Run the publisher and developer sides from one console.",
       description:
-        "The dashboard is split into publisher operations, buyer projects, paid-preview ledger state, and finance-gated readiness so the platform can grow into real marketplace workflows.",
+        "The dashboard is split into publisher operations, buyer projects, billing ledger state, and finance-gated readiness so the platform can grow into real marketplace workflows.",
       publisher: "Publisher backend",
       buyer: "Developer backend",
-      earnings: "Paid preview",
+      earnings: "Billing ledger",
       payouts: "Finance review",
       metrics: [
         ["Available balance", "$4,820"],
@@ -222,7 +222,7 @@ export const dictionaries = {
         ["Subscriptions", "Approved paid skills, renewals, cancellations"],
         ["Usage", "Cost, calls, latency, and skill-level breakdowns"]
       ],
-      ledgerTitle: "Paid-preview ledger",
+      ledgerTitle: "Billing ledger",
       ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
       ledgerRows: [
         ["browser-research", "$1,240", "$248", "$992", "available"],
@@ -253,7 +253,7 @@ export const dictionaries = {
       ],
       reviewTitle: "Skill review queue",
       reviewRows: [
-        ["browser-research-pro", "High", "Runtime test passed", "Manual review"],
+        ["browser-research", "Medium", "Runtime test passed", "Manual review"],
         ["crm-enrichment", "Medium", "Needs data policy", "Waiting"],
         ["local-file-agent", "High", "Filesystem access", "Blocked"]
       ],
@@ -450,9 +450,9 @@ export const dictionaries = {
       eyebrow: "智能体技能基础设施",
       title: "给 AI Agent 使用的可信技能注册表。",
       description:
-        "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。开发者预览版：公开发现和查看已上线；运行调用需要登录后的项目 Key；付费市场能力仍处于预发布阶段。",
+        "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。公开发现和查看已上线；运行调用需要登录后的项目 Key；商业化计费只对已审核工作区启用。",
       publishCta: "发布一个技能",
-      gatewayTitle: "开发者预览版网关",
+      gatewayTitle: "受治理运行网关",
       registryEyebrow: "技能库",
       registryTitle: "智能体技能注册表",
       newSkill: "提交技能",
@@ -505,7 +505,7 @@ export const dictionaries = {
         },
         {
           title: "运营可控",
-          description: "付费发布预览、审核、退款和财务复核都放在带审计的后台控制里。"
+          description: "付费发布、审核、退款和财务复核都放在带审计的后台控制里。"
         }
       ]
     },
@@ -606,10 +606,10 @@ export const dictionaries = {
       eyebrow: "工作台",
       title: "发布者后台和开发者后台放在同一个控制台。",
       description:
-        "工作台拆成发布运营、购买方项目、付费预览账本和收款资料准备四块，这样平台以后可以自然接入真实市场流程。",
+        "工作台拆成发布运营、购买方项目、计费账本和收款资料准备四块，这样平台可以自然接入真实市场流程。",
       publisher: "发布者后台",
       buyer: "开发者后台",
-      earnings: "付费预览",
+      earnings: "计费账本",
       payouts: "财务复核",
       metrics: [
         ["可提现余额", "$4,820"],
@@ -627,7 +627,7 @@ export const dictionaries = {
         ["订阅", "已批准付费技能、续费和取消记录"],
         ["用量", "成本、调用、延迟和技能级别拆分"]
       ],
-      ledgerTitle: "付费预览账本",
+      ledgerTitle: "计费账本",
       ledgerHeaders: ["技能", "预览总额", "佣金", "发布者份额", "状态"],
       ledgerRows: [
         ["browser-research", "$1,240", "$248", "$992", "可提现"],
@@ -658,7 +658,7 @@ export const dictionaries = {
       ],
       reviewTitle: "技能审核队列",
       reviewRows: [
-        ["browser-research-pro", "高", "运行测试通过", "人工审核"],
+        ["browser-research", "中", "运行测试通过", "人工审核"],
         ["crm-enrichment", "中", "需要数据政策", "等待"],
         ["local-file-agent", "高", "文件系统权限", "已阻止"]
       ],

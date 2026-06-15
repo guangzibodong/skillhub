@@ -54,7 +54,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "Create a key in 3 steps", body: "Open the developer workspace, create or select a project, then issue a scoped key for the approved Skill set you plan to call." },
         { title: "REST example", body: "Send Authorization: Bearer PROJECT_KEY to the runtime invoke endpoint with a Skill slug and typed input payload. Keep keys server-side." },
         { title: "MCP config example", body: "Use the SkillHub MCP endpoint with a project-scoped key so Agent workbenches can list and call approved tools." },
-        { title: "Rotate, revoke, audit", body: "Rotate keys when owners change, revoke keys when a project is retired, and use logs to investigate runtime or billing-preview questions." },
+        { title: "Rotate, revoke, audit", body: "Rotate keys when owners change, revoke keys when a project is retired, and use logs to investigate runtime or billing readiness questions." },
       ],
       faq: [
         { question: "Can anonymous users invoke Skills?", answer: "No. Production runtime calls require a signed-in project and Project Key." },
@@ -75,7 +75,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "三步创建 Key", body: "打开开发者工作区，创建或选择项目，然后为计划调用的已批准 Skill 集合创建有作用域的 Key。" },
         { title: "REST 示例", body: "使用 Authorization: Bearer PROJECT_KEY 调用运行端点，传入 Skill slug 和类型化输入。Key 应保留在服务端。" },
         { title: "MCP 配置示例", body: "使用 SkillHub MCP 端点和项目级 Key，让 Agent 工作台可以列出并调用已批准工具。" },
-        { title: "轮换、撤销和审计", body: "负责人变化时轮换 Key，项目废弃时撤销 Key，并通过日志排查运行或账务预览问题。" },
+        { title: "轮换、撤销和审计", body: "负责人变化时轮换 Key，项目废弃时撤销 Key，并通过日志排查运行或计费准备问题。" },
       ],
       faq: [
         { question: "匿名用户能调用 Skill 吗？", answer: "不能。生产运行调用需要登录后的项目和 Project Key。" },
@@ -104,7 +104,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       eyebrow: "5-minute setup",
       title: "Quickstart",
       lead:
-        "Move from public discovery to a controlled runtime call without guessing which pieces are live and which are still preview.",
+        "Move from public discovery to a controlled runtime call with clear boundaries for workspace, Project Key, and provider-dependent features.",
       quickAnswer:
         "Start by browsing a public Skill, inspect the manifest, create a project and Project Key, test a REST request, then configure MCP for Agent workbench use.",
       primaryCta: { href: "/marketplace", label: "Browse Skills" },
@@ -115,13 +115,13 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "3. Create a Project Key", body: "Sign in, create a project, and issue a scoped key for approved runtime calls." },
         { title: "4. Call the REST API", body: "Invoke the Skill through the runtime endpoint with Authorization: Bearer PROJECT_KEY and a typed input payload." },
         { title: "5. Configure MCP", body: "Add SkillHub MCP to your Agent workbench so approved Skills appear as callable tools." },
-        { title: "6. Review logs", body: "Check runtime logs, policy blocks, rate limits, and preview billing signals after test calls." },
+        { title: "6. Review logs", body: "Check runtime logs, policy blocks, rate limits, and billing readiness signals after test calls." },
       ],
     },
     zh: {
       eyebrow: "5 分钟跑通",
       title: "快速开始",
-      lead: "从公开发现到受控运行调用，清楚知道哪些能力已开放，哪些仍处于预览。",
+      lead: "从公开发现到受控运行调用，清楚知道工作区、Project Key 和服务商依赖能力的边界。",
       quickAnswer:
         "先浏览公开 Skill，检查 manifest，创建项目和 Project Key，测试 REST 请求，再为 Agent 工作台配置 MCP。",
       primaryCta: { href: "/marketplace", label: "浏览 Skills" },
@@ -132,7 +132,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "3. 创建 Project Key", body: "登录后创建项目，并为已批准运行调用生成有作用域的 Key。" },
         { title: "4. 调用 REST API", body: "使用 Authorization: Bearer PROJECT_KEY 和类型化输入调用运行端点。" },
         { title: "5. 配置 MCP", body: "把 SkillHub MCP 加入 Agent 工作台，使已批准 Skill 以工具形式出现。" },
-        { title: "6. 查看日志", body: "测试调用后检查运行日志、策略阻断、限流和账务预览信号。" },
+        { title: "6. 查看日志", body: "测试调用后检查运行日志、策略阻断、限流和计费准备信号。" },
       ],
     },
   },
@@ -210,11 +210,11 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       },
     },
     en: {
-      eyebrow: "Preview integration",
+      eyebrow: "Workspace integration",
       title: "Webhooks",
-      lead: "Webhooks turn review, runtime, billing-preview, and payout-preview activity into auditable external events.",
+      lead: "Webhooks turn review, runtime, billing, and payout activity into auditable external events.",
       quickAnswer:
-        "Webhook delivery is preview-gated. Store signing secrets safely, verify signatures, handle retries idempotently, and never log sensitive payload fields.",
+        "Webhook delivery is workspace-gated. Store signing secrets safely, verify signatures, handle retries idempotently, and never log sensitive payload fields.",
       primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "Sign in for workspace" },
       secondaryCta: { href: "/security", label: "Security model" },
       sections: [
@@ -227,11 +227,11 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
       ],
     },
     zh: {
-      eyebrow: "预览集成",
+      eyebrow: "工作区集成",
       title: "Webhooks",
-      lead: "Webhook 把审核、运行、账务预览和提现预览活动转成可审计的外部事件。",
+      lead: "Webhook 把审核、运行、账务和打款活动转成可审计的外部事件。",
       quickAnswer:
-        "Webhook 投递仍受预览门禁约束。请安全保存签名密钥、校验签名、幂等处理重试，并避免记录敏感 payload 字段。",
+        "Webhook 投递受工作区权限和端点配置约束。请安全保存签名密钥、校验签名、幂等处理重试，并避免记录敏感 payload 字段。",
       primaryCta: { href: "/login?returnTo=%2Fdeveloper", label: "登录后进入工作区" },
       secondaryCta: { href: "/security", label: "安全模型" },
       sections: [
@@ -248,24 +248,24 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     path: "/marketplace-terms",
     titleEn: "Marketplace Terms",
     titleZh: "市场条款",
-    descriptionEn:
-      "Marketplace terms for SkillHub public discovery, preview runtime use, paid listing readiness, billing-preview records, refunds, disputes, and support routes.",
-    descriptionZh:
-      "SkillHub 市场条款，覆盖公开发现、预览运行、付费上架准备、账务预览记录、退款、争议和支持路径。",
-    leadEn:
-      "These terms explain the current marketplace operating state during Launch Preview. Paid marketplace capture remains gated until provider flows are explicitly enabled.",
-    leadZh:
-      "这些条款说明公开预览阶段的市场运营状态。付费市场扣款在支付渠道明确启用前保持门禁。",
+      descriptionEn:
+      "Marketplace terms for SkillHub public discovery, runtime use, paid listing readiness, billing records, refunds, disputes, and support routes.",
+      descriptionZh:
+      "SkillHub 市场条款，覆盖公开发现、运行使用、付费上架准备、账务记录、退款、争议和支持路径。",
+      leadEn:
+      "These terms explain the marketplace operating rules for discovery, adoption, runtime use, billing readiness, refunds, disputes, and support.",
+      leadZh:
+      "这些条款说明市场在发现、采用、运行、计费准备、退款、争议和支持上的运营规则。",
     sectionsEn: [
       ["Public discovery", "Users may browse public Skills, inspect manifests, compare permissions, and read review status before adopting a Skill."],
       ["Runtime use", "Runtime invocation requires a signed-in project and Project Key. Anonymous production invocation is not allowed."],
-      ["Paid marketplace preview", "Paid listings, orders, refunds, disputes, commissions, and payouts are modeled as preview/prelaunch states until providers are live."],
+      ["Commercial readiness", "Paid listings, orders, refunds, disputes, commissions, and payouts require provider configuration and finance review before public activation."],
       ["Refunds and disputes", "Refund and dispute records should be auditable adjustments, not silent edits to historical transactions."],
     ],
     sectionsZh: [
       ["公开发现", "用户可以浏览公开 Skill、检查 manifest、比较权限，并在采用前阅读审核状态。"],
       ["运行使用", "运行调用需要登录后的项目和 Project Key。不允许匿名生产调用。"],
-      ["付费市场预览", "付费 listing、订单、退款、争议、佣金和提现在渠道上线前保持预览/预发布状态。"],
+      ["商业化准备", "付费 listing、订单、退款、争议、佣金和打款在公开启用前需要完成服务商配置和财务复核。"],
       ["退款与争议", "退款和争议记录应是可审计调整，而不是静默修改历史交易。"],
     ],
   }),
@@ -274,9 +274,9 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     titleEn: "Publisher Agreement",
     titleZh: "发布者协议",
     descriptionEn:
-      "Publisher agreement covering Skill manifests, review workflow, versioning, permissions, support obligations, paid-readiness metadata, and payout-preview status.",
+      "Publisher agreement covering Skill manifests, review workflow, versioning, permissions, support obligations, commercial readiness metadata, and payout readiness status.",
     descriptionZh:
-      "发布者协议，覆盖 Skill manifest、审核流程、版本、权限、支持责任、付费准备和提现预览状态。",
+      "发布者协议，覆盖 Skill manifest、审核流程、版本、权限、支持责任、商业化准备和打款准备状态。",
     leadEn:
       "Publishers are responsible for accurate Skill contracts, safe runtime behavior, support paths, and versioned updates.",
     leadZh:
@@ -284,13 +284,13 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     sectionsEn: [
       ["Listing requirements", "Each Skill needs a manifest, version, runtime entrypoint, input/output schemas, permissions, examples, support path, and changelog."],
       ["Review and changes", "Verified versions should not mutate behavior in place. Submit new versions for schema, runtime, permission, pricing, or behavior changes."],
-      ["Paid readiness", "Paid metadata can be prepared during preview, but production paid activation requires provider, finance, refund, and payout gates."],
+      ["Paid readiness", "Paid metadata can be prepared before activation, but production paid activation requires provider, finance, refund, and payout gates."],
       ["Support obligations", "Publishers should maintain support paths and communicate incidents, deprecations, and breaking changes."],
     ],
     sectionsZh: [
       ["上架要求", "每个 Skill 需要 manifest、版本、运行入口、输入/输出 schema、权限、示例、支持路径和更新记录。"],
       ["审核与变更", "已验证版本不应就地改变行为。schema、运行时、权限、价格或行为变化应提交新版本。"],
-      ["付费准备", "预览阶段可准备付费元数据，但生产付费激活需要支付、财务、退款和提现门禁。"],
+      ["商业化准备", "公开启用前可准备商业化资料；生产付费激活需要支付、财务、退款和打款门禁。"],
       ["支持责任", "发布者应维护支持路径，并说明事故、废弃和破坏性变更。"],
     ],
   }),
@@ -299,24 +299,24 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     titleEn: "Refund Policy",
     titleZh: "退款政策",
     descriptionEn:
-      "SkillHub refund policy for Launch Preview, paid marketplace prelaunch status, future refunds, disputes, and support escalation.",
+      "SkillHub refund policy for paid access eligibility, refunds, disputes, billing support, and support escalation.",
     descriptionZh:
-      "SkillHub 退款政策，说明公开预览、付费市场预发布、未来退款、争议和支持升级路径。",
+      "SkillHub 退款政策，说明付费访问资格、退款、争议、账务支持和支持升级路径。",
     leadEn:
-      "During Launch Preview, public pages must not imply live payment capture unless a provider flow is explicitly configured.",
+      "Payment capture is offered only through configured provider flows for approved workspaces, with refund and dispute records preserved for audit.",
     leadZh:
-      "公开预览阶段，除非支付渠道明确配置，公开页面不应暗示真实扣款已经上线。",
+      "支付扣款只会通过已配置服务商流程向获批工作区开放，退款和争议记录会保留审计轨迹。",
     sectionsEn: [
-      ["Preview status", "Public discovery and documentation are available. General paid capture, automated refunds, and automated payouts remain prelaunch."],
-      ["Future refunds", "When paid capture is enabled, refund eligibility, windows, dispute handling, and provider timelines will be documented before launch."],
+      ["Payment eligibility", "Public discovery and documentation are available to all visitors. Paid capture requires an approved workspace and a configured provider flow."],
+      ["Refund handling", "Refund eligibility, windows, dispute handling, and provider timelines are documented before paid access is enabled for a workspace."],
       ["Dispute records", "Refunds and disputes should create adjustment records that preserve the original transaction trail."],
-      ["How to ask", `For billing-preview questions, contact ${companyInfo.supportEmail} and include account email, URL, order reference if available, and reproduction steps.`],
+      ["How to ask", `For billing questions, contact ${companyInfo.supportEmail} and include account email, URL, order reference if available, and reproduction steps.`],
     ],
     sectionsZh: [
-      ["预览状态", "公开发现和文档已开放。通用付费扣款、自动退款和自动提现仍是预发布状态。"],
-      ["未来退款", "付费扣款启用时，会在上线前说明退款条件、窗口、争议处理和渠道时效。"],
+      ["支付资格", "公开发现和文档面向所有访客开放。付费扣款需要获批工作区和已配置服务商流程。"],
+      ["退款处理", "退款条件、窗口、争议处理和渠道时效会在工作区启用付费访问前说明。"],
       ["争议记录", "退款和争议应创建调整记录，保留原始交易轨迹。"],
-      ["如何咨询", `账务预览问题请联系 ${companyInfo.supportEmail}，并提供账号邮箱、页面 URL、可用订单引用和复现步骤。`],
+      ["如何咨询", `账务问题请联系 ${companyInfo.supportEmail}，并提供账号邮箱、页面 URL、可用订单引用和复现步骤。`],
     ],
   }),
   "acceptable-use": legalPage({
@@ -399,9 +399,9 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     titleEn: "Subprocessors",
     titleZh: "子处理方",
     descriptionEn:
-      "SkillHub subprocessors and provider categories for hosting, DNS/security, email delivery, analytics readiness, payments preview, and support operations.",
+      "SkillHub subprocessors and provider categories for hosting, DNS/security, email delivery, analytics readiness, payments, and support operations.",
     descriptionZh:
-      "SkillHub 子处理方和服务类别，包括托管、DNS/安全、邮件投递、分析准备、支付预览和支持运营。",
+      "SkillHub 子处理方和服务类别，包括托管、DNS/安全、邮件投递、分析准备、支付和支持运营。",
     leadEn:
       "This page lists provider categories used or planned for SkillHub operations without inventing compliance claims or customer commitments.",
     leadZh:
@@ -409,14 +409,14 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     sectionsEn: [
       ["Hosting and infrastructure", "SkillHub may use cloud hosting, database, cache, and deployment providers to operate public pages and workspaces."],
       ["DNS, security, and analytics", "Cloudflare-style DNS, security, and analytics data may support traffic health, country/region visibility, and abuse investigation."],
-      ["Email and notifications", "Email providers may deliver account, review, runtime, billing-preview, payout-preview, and security notifications after configuration."],
-      ["Payments preview", "Stripe, Alipay, PayPal, or other payment providers are treated as prelaunch until production payment capture and payout workflows are explicitly enabled."],
+      ["Email and notifications", "Email providers may deliver account, review, runtime, billing, payout, and security notifications after configuration."],
+      ["Payments", "Stripe, Alipay, PayPal, or other payment providers are used only when production payment capture and payout workflows are explicitly configured."],
     ],
     sectionsZh: [
       ["托管与基础设施", "SkillHub 可使用云托管、数据库、缓存和部署服务来运营公开页面和工作区。"],
       ["DNS、安全与分析", "Cloudflare 类 DNS、安全和分析数据可用于流量健康、国家/地区可见性和滥用调查。"],
-      ["邮件与通知", "配置完成后，邮件服务可发送账号、审核、运行、账务预览、提现预览和安全通知。"],
-      ["支付预览", "Stripe、Alipay、PayPal 或其他支付服务在生产扣款和提现流程明确启用前都视为预发布。"],
+      ["邮件与通知", "配置完成后，邮件服务可发送账号、审核、运行、账务、打款和安全通知。"],
+      ["支付", "Stripe、Alipay、PayPal 或其他支付服务只会在生产扣款和打款流程明确配置后使用。"],
     ],
   }),
 };

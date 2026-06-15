@@ -47,11 +47,15 @@ import {
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = buildNoIndexMetadata("SkillHub Developer Workspace");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps) {
+  const locale = getLocaleFromSearchParams(await searchParams);
+  return buildNoIndexMetadata(locale === "zh" ? "SkillHub 开发者工作台" : "SkillHub Developer Workspace");
+}
 
 type DeveloperLocale = "en" | "zh";
 
@@ -259,7 +263,7 @@ const copy = {
     title: "Manage the skills your agents use."
   },
   zh: {
-    description: "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
+    description: "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、账单准备和运行治理。",
     emptyProjects: "还没有开发者项目。先创建一个项目，再开始采用、审批和测试已验证技能。",
     eyebrow: "开发者工作台",
     lockedDescription: "请先登录已开通开发权限的账号，再创建项目、Key、预算、买家需求、Webhook、通知和受治理的运行测试。",

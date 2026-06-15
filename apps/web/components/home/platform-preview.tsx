@@ -66,12 +66,8 @@ export function PlatformPreview({ locale }: Props) {
 
 function RegistryContent({ locale }: Props) {
   const skills = [
-    { name: "browser-research-pro", ver: "2.1.0", runtime: "HTTP", verified: true, calls: "12.4k", publisher: "SkillHub Labs" },
-    { name: "crm-enrichment", ver: "1.8.3", runtime: "HTTP", verified: true, calls: "8.7k", publisher: "Revenue Tools" },
-    { name: "support-triage", ver: "1.3.0", runtime: "HTTP", verified: true, calls: "6.2k", publisher: "NexusAI" },
-    { name: "code-review-assistant", ver: "3.0.1", runtime: "MCP", verified: true, calls: "15.1k", publisher: "DevOps Guild" },
-    { name: "data-pipeline-orchestrator", ver: "1.1.0", runtime: "HTTP", verified: false, calls: "3.4k", publisher: "DevOps Guild" },
-    { name: "financial-report-analyzer", ver: "2.0.0", runtime: "MCP", verified: true, calls: "9.8k", publisher: "Analyst Forge" },
+    { name: "browser-research", ver: "1.0.0", runtime: "REST", verified: true, access: "Callable", publisher: "SkillHub Official" },
+    { name: "dataset-summarizer", ver: "0.1.0", runtime: "REST", verified: false, access: "Inspection only", publisher: "SkillHub Labs" },
   ];
 
   return (
@@ -85,20 +81,20 @@ function RegistryContent({ locale }: Props) {
       </div>
 
       {/* Table header */}
-      <div className="grid grid-cols-[1fr_100px_70px_80px_80px_80px] gap-2 px-5 py-2.5 border-b border-[rgba(255,255,255,0.06)] bg-[#1a1a1a]">
+      <div className="grid grid-cols-[1fr_120px_70px_80px_90px_110px] gap-2 px-5 py-2.5 border-b border-[rgba(255,255,255,0.06)] bg-[#1a1a1a]">
         <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em]">Skill</span>
         <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em]">Publisher</span>
         <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em]">Version</span>
         <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em]">Runtime</span>
         <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em]">Status</span>
-        <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em] text-right">Calls</span>
+        <span className="text-[11px] font-medium text-[#525252] uppercase tracking-[0.05em] text-right">Access</span>
       </div>
 
       {/* Rows */}
       {skills.map((s) => (
         <div
           key={s.name}
-          className="grid grid-cols-[1fr_100px_70px_80px_80px_80px] gap-2 px-5 py-3 border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition-colors"
+          className="grid grid-cols-[1fr_120px_70px_80px_90px_110px] gap-2 px-5 py-3 border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition-colors"
         >
           <span className="text-[13px] text-white font-medium truncate">{s.name}</span>
           <span className="text-[11px] text-[#666] self-center truncate">{s.publisher}</span>
@@ -115,7 +111,7 @@ function RegistryContent({ locale }: Props) {
               <span className="text-[10px] text-[#666]">Pending</span>
             )}
           </span>
-          <span className="text-[12px] text-[#999] text-right self-center font-mono">{s.calls}</span>
+          <span className="text-[12px] text-[#999] text-right self-center">{s.access}</span>
         </div>
       ))}
     </div>
@@ -125,20 +121,19 @@ function RegistryContent({ locale }: Props) {
 function ManifestContent() {
   return (
     <pre className="p-6 font-mono text-[12px] leading-[1.8] text-[#999] overflow-auto max-h-[400px]">
-      <code>{`name: browser-research-pro
-version: 2.1.0
-displayName: Browser Research Pro
-publisher: skillhub-labs
-runtime: http
-description: Deep web research with multi-source extraction
+      <code>{`name: browser-research
+version: 1.0.0
+displayName: Browser Research
+publisher: SkillHub Official
+runtime: rest
+description: Public-source research with citations
 
 permissions:
-  - network:outbound
-  - storage:read
+  - network
+  - browser
 
 pricing:
-  model: per-call
-  price: $0.012
+  model: free_discovery
 
 input:
   type: object
@@ -148,14 +143,9 @@ input:
       type: string
       description: Research topic or question
     depth:
-      type: integer
-      default: 3
-      minimum: 1
-      maximum: 10
-    format:
       type: string
-      enum: [structured, summary, raw]
-      default: structured
+      enum: [standard, deep]
+      default: standard
 
 output:
   type: object
@@ -177,9 +167,8 @@ output:
 
 trust:
   verification: verified
-  security_scan: passed
   human_review: approved
-  last_audit: 2026-01-15`}</code>
+  last_reviewed: 2026-06-14`}</code>
     </pre>
   );
 }
@@ -194,14 +183,13 @@ function GatewayContent({ locale }: Props) {
           <span className="text-[10px] text-[#7fee64] bg-[rgba(127,238,100,0.1)] px-2 py-0.5 rounded-[4px]">POST</span>
         </div>
         <div className="bg-[#1a1a1a] rounded-[10px] p-4 font-mono text-[12px] leading-[1.7]">
-          <p className="text-[#999]">POST /v1/invoke/browser-research-pro</p>
+          <p className="text-[#999]">POST /v1/skills/browser-research/invoke</p>
           <p className="text-[#525252]">Host: api.skillhub.dev</p>
           <p className="text-[#525252]">Authorization: Bearer sk_proj_***</p>
           <p className="text-[#525252]">Content-Type: application/json</p>
           <p className="text-[#525252] mt-2">{`{`}</p>
-          <p className="text-[#999] pl-4">{`"query": "AI agent frameworks 2026",`}</p>
-          <p className="text-[#999] pl-4">{`"depth": 3,`}</p>
-          <p className="text-[#999] pl-4">{`"format": "structured"`}</p>
+          <p className="text-[#999] pl-4">{`"query": "AI agent skill security",`}</p>
+          <p className="text-[#999] pl-4">{`"depth": "standard"`}</p>
           <p className="text-[#525252]">{`}`}</p>
         </div>
       </div>
@@ -211,14 +199,12 @@ function GatewayContent({ locale }: Props) {
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-medium text-[#525252] uppercase tracking-[0.05em]">Response</span>
           <span className="text-[10px] text-[#10b981] bg-[rgba(16,185,129,0.1)] px-2 py-0.5 rounded-[4px]">200 OK</span>
-          <span className="text-[10px] text-[#525252]">· 2.1s · 12 sources</span>
         </div>
         <div className="bg-[#1a1a1a] rounded-[10px] p-4 font-mono text-[12px] leading-[1.7]">
           <p className="text-[#525252]">{`{`}</p>
-          <p className="text-[#999] pl-4">{`"summary": "Comprehensive overview of ...",`}</p>
-          <p className="text-[#999] pl-4">{`"sources": [ { "url": "...", "title": "...", "relevance": 0.95 }, ... ],`}</p>
-          <p className="text-[#999] pl-4">{`"confidence": 0.94,`}</p>
-          <p className="text-[#999] pl-4">{`"usage": { "cost": "$0.012", "duration_ms": 2100 }`}</p>
+          <p className="text-[#999] pl-4">{`"summary": "Recent references emphasize manifest inspection...",`}</p>
+          <p className="text-[#999] pl-4">{`"sources": [ { "url": "...", "title": "..." } ],`}</p>
+          <p className="text-[#999] pl-4">{`"next_actions": ["Inspect requested permissions"]`}</p>
           <p className="text-[#525252]">{`}`}</p>
         </div>
       </div>

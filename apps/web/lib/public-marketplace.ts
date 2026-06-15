@@ -1,6 +1,5 @@
 import type { SkillManifest, SkillSummary } from "@useskillhub/schema";
 import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
-import { demoFallback } from "@/lib/demo-fallback";
 import {
   getMarketplaceSkill,
   marketplaceSkills,
@@ -46,55 +45,9 @@ export type MarketplaceSkillSuggestion = {
 export async function getPublicMarketplaceSkills(
   options: PublicMarketplaceSearchOptions = {},
 ): Promise<MarketplaceSkill[]> {
-  const serverApiUrl = getServerApiUrl();
-  const shouldIncludeReviewListings = Boolean(options.verificationStatus);
+  const shouldIncludeReviewListings = options.verificationStatus !== "verified";
 
-  try {
-    const searchParams = new URLSearchParams({
-      limit: String(options.limit ?? 50),
-      sort: options.sort ?? "recommended",
-    });
-
-    appendSearchParam(searchParams, "billingModel", options.billingModel);
-    appendSearchParam(searchParams, "category", options.category);
-    appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
-    appendSearchParam(searchParams, "q", options.query);
-    appendSearchParam(searchParams, "runtimeType", options.runtimeType);
-    appendSearchParam(
-      searchParams,
-      "verificationStatus",
-      options.verificationStatus,
-    );
-
-    const response = await fetch(
-      `${serverApiUrl}/v1/skills/search?${searchParams.toString()}`,
-      {
-        cache: "no-store",
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Marketplace skill search failed: ${response.status}`);
-    }
-
-    const payload = (await response.json()) as { skills: SkillSummary[] };
-    const publicSkills = payload.skills.filter((summary) =>
-      isPublicCatalogSkillSummary(summary, {
-        includeReviewListings: shouldIncludeReviewListings,
-      }),
-    );
-
-    return Promise.all(
-      publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
-    );
-  } catch {
-    return demoFallback(
-      marketplaceSkills.filter((skill) =>
-        shouldIncludeReviewListings || isVerifiedSkillStatus(skill.verification.en),
-      ),
-      [],
-    );
-  }
+  return filterCuratedMarketplaceSkills(options, shouldIncludeReviewListings);
 }
 
 export async function getPublicMarketplaceSkill(
@@ -106,30 +59,55 @@ export async function getPublicMarketplaceSkill(
 
   const staticSkill = getMarketplaceSkill(slug);
 
-  try {
-    const [manifest, prices, summary] = await Promise.all([
-      fetchSkillManifest(slug),
-      fetchSkillPrices(slug),
-      fetchSkillSummary(slug),
-    ]);
+  return staticSkill ?? null;
+}
 
-    if (!manifest && !staticSkill) {
-      return null;
-    }
+function filterCuratedMarketplaceSkills(
+  options: PublicMarketplaceSearchOptions,
+  includeReviewListings: boolean,
+) {
+  const normalizedQuery = String(options.query ?? "").trim().toLowerCase();
+  const runtime = options.runtimeType ? runtimeLabel(options.runtimeType) : undefined;
 
-    if (!manifest) {
-      return demoFallback(staticSkill ?? null, null);
-    }
+  return marketplaceSkills
+    .filter((skill) => includeReviewListings || isVerifiedSkillStatus(skill.verification.en))
+    .filter((skill) => !options.billingModel || skill.billing === options.billingModel)
+    .filter((skill) => !options.category || skill.categoryKey === options.category)
+    .filter((skill) => !options.permissionLevel || skill.risk === options.permissionLevel)
+    .filter((skill) => !runtime || skill.runtime === runtime)
+    .filter((skill) => {
+      if (!normalizedQuery) {
+        return true;
+      }
 
-    return manifestToMarketplaceSkill(
-      manifest,
-      summary ?? manifestToSummary(manifest),
-      prices,
-      staticSkill,
-    );
-  } catch {
-    return demoFallback(staticSkill ?? null, null);
-  }
+      return [
+        skill.slug,
+        skill.name.en,
+        skill.name.zh,
+        skill.summary.en,
+        skill.summary.zh,
+        skill.author,
+        skill.category.en,
+        skill.category.zh,
+        ...skill.tags.en,
+        ...skill.tags.zh,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    })
+    .sort((first, second) => {
+      if (options.sort === "low_risk") {
+        return riskRank(first.risk) - riskRank(second.risk);
+      }
+
+      if (options.sort === "recent") {
+        return Date.parse(second.lastReviewed) - Date.parse(first.lastReviewed);
+      }
+
+      return first.slug.localeCompare(second.slug);
+    })
+    .slice(0, options.limit ?? 50);
 }
 
 export async function getRelatedMarketplaceSkills(
@@ -256,8 +234,8 @@ function manifestToMarketplaceSkill(
     ? runtimeLabel(manifest.runtime.type)
     : summary.runtimeType
       ? runtimeLabel(summary.runtimeType)
-      : (staticSkill?.runtime ?? "HTTP");
-  const categoryKey = inferCategoryKey(summary.tags);
+      : (staticSkill?.runtime ?? "REST");
+  const categoryKey = staticSkill?.categoryKey ?? inferCategoryKey(summary.tags);
   const category = categoryLabel(categoryKey);
   const author =
     manifest?.author?.name ?? staticSkill?.author ?? "SkillHub Publisher";
@@ -404,10 +382,6 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
     return "research";
   }
 
-  if (normalized.some((tag) => ["crm", "sales", "revenue"].includes(tag))) {
-    return "sales";
-  }
-
   if (
     normalized.some((tag) =>
       ["support", "ticket", "classification"].includes(tag),
@@ -422,22 +396,29 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
   if (
     normalized.some((tag) =>
-      ["security", "trust", "review", "schema"].includes(tag),
+      ["code", "repo", "repository", "review", "security"].includes(tag),
     )
   ) {
-    return "security";
+    return "code";
   }
 
-  return "ops";
+  if (
+    normalized.some((tag) =>
+      ["docs", "documentation", "qa", "knowledge"].includes(tag),
+    )
+  ) {
+    return "docs";
+  }
+
+  return "support";
 }
 
 function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
   const labels = {
+    code: { en: "Code", zh: "代码" },
     data: { en: "Data", zh: "数据" },
-    ops: { en: "Operations", zh: "运营" },
+    docs: { en: "Docs", zh: "文档" },
     research: { en: "Research", zh: "研究" },
-    sales: { en: "Sales", zh: "销售" },
-    security: { en: "Security", zh: "安全" },
     support: { en: "Support", zh: "客服" },
   } satisfies Record<
     MarketplaceSkill["categoryKey"],
@@ -458,7 +439,7 @@ function runtimeLabel(
     return "Local";
   }
 
-  return "HTTP";
+  return "REST";
 }
 
 function formatPrice(

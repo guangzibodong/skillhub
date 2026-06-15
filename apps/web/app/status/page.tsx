@@ -49,7 +49,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 const copy = {
   en: {
     eyebrow: "Status",
-    title: "SkillHub status preview.",
+    title: "SkillHub public status.",
     subtitle: "Public health signals",
     body: "This page summarizes the public monitoring scope while live incident reporting is being connected. Use the API health endpoint and support channel for the latest operational check.",
     api: "API health endpoint",
@@ -75,7 +75,7 @@ const copy = {
     incidentsEyebrow: "Recent incidents",
     incidentsTitle: "Current incident notes",
     incidents: [
-      { date: "Preview monitor", desc: "Live incident history is not yet connected here. Contact support if a page or API route fails.", severity: "none" }
+      { date: "Current note", desc: "No public incident is currently posted. Contact support if a page or API route fails.", severity: "none" }
     ],
     scopeEyebrow: "Monitoring scope",
     scopeTitle: "What's covered vs. gated",
@@ -102,7 +102,7 @@ const copy = {
   },
   zh: {
     eyebrow: "状态",
-    title: "SkillHub 状态预览。",
+    title: "SkillHub 公开状态。",
     subtitle: "公开健康信号",
     body: "本页展示公开监控范围；实时事故历史仍在接入中。需要最新运行确认时，请优先查看 API 健康端点或联系支持。",
     api: "API 健康端点",
@@ -128,7 +128,7 @@ const copy = {
     incidentsEyebrow: "近期事件",
     incidentsTitle: "当前事件说明",
     incidents: [
-      { date: "预览监控", desc: "实时事故历史尚未接入本页；如果页面或 API 不响应，请联系支持。", severity: "none" }
+      { date: "当前说明", desc: "当前没有公开事故记录。如果页面或 API 不响应，请联系支持。", severity: "none" }
     ],
     scopeEyebrow: "监控范围",
     scopeTitle: "公开监控 vs. 认证后",
@@ -174,8 +174,8 @@ export default async function StatusPage({ searchParams }: PageProps) {
     <AppShell active="status" locale={locale}>
       <p className="visually-hidden">
         {locale === "zh"
-          ? "开发者预览版状态 API 健康 门控运营"
-          : "Developer Preview status API health Gated operations"}
+          ? "状态 API 健康 认证后运营"
+          : "Status API health Authenticated operations"}
       </p>
       {/* Hero */}
       <section className="pt-32 pb-[96px]">
@@ -307,7 +307,7 @@ export default async function StatusPage({ searchParams }: PageProps) {
           <Reveal delay={160}>
             <div className="mt-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] text-[#666]">{locale === "zh" ? "监控范围预览" : "Monitoring coverage preview"}</span>
+                <span className="text-[12px] text-[#666]">{locale === "zh" ? "监控范围" : "Monitoring coverage"}</span>
                 <span className="text-[12px] font-medium text-[#10b981]">{locale === "zh" ? "公开信号" : "Public signals"}</span>
               </div>
               <div className="flex gap-[2px]">

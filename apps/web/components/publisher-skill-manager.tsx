@@ -287,29 +287,29 @@ const commercialCopy = {
     blocked: "Blocked",
     blockerLabels: {
       current_terms: "Accept current terms",
-      payout: "Verify paid-readiness metadata",
+      payout: "Verify commercial readiness",
       publisher_profile: "Create publisher profile",
       publisher_status: "Reactivate publisher profile",
       review: "Pass skill review",
       terms: "Accept operating terms"
     },
-    help: "Required before a per-call or subscription price can enter paid-marketplace preview review.",
+    help: "Required before a per-call or subscription price can enter commercial review.",
     ready: "Ready",
-    title: "Paid-preview gate"
+    title: "Commercial gate"
   },
   zh: {
     blocked: "\u672a\u5c31\u7eea",
     blockerLabels: {
       current_terms: "\u63a5\u53d7\u5f53\u524d\u6761\u6b3e",
-      payout: "\u5b8c\u6210\u4ed8\u8d39\u51c6\u5907\u590d\u6838",
+      payout: "\u5b8c\u6210\u5546\u4e1a\u5316\u51c6\u5907\u590d\u6838",
       publisher_profile: "\u521b\u5efa\u53d1\u5e03\u8005\u8d44\u6599",
       publisher_status: "\u6062\u590d\u53d1\u5e03\u8005\u8d44\u6599",
       review: "\u901a\u8fc7\u6280\u80fd\u5ba1\u6838",
       terms: "\u63a5\u53d7\u8fd0\u8425\u6761\u6b3e"
     },
-    help: "\u6309\u6b21\u8c03\u7528\u6216\u8ba2\u9605\u4ef7\u683c\u8fdb\u5165\u4ed8\u8d39\u5e02\u573a\u9884\u89c8\u590d\u6838\u524d\u5fc5\u987b\u5b8c\u6210\u3002",
+    help: "\u6309\u6b21\u8c03\u7528\u6216\u8ba2\u9605\u4ef7\u683c\u8fdb\u5165\u5546\u4e1a\u5316\u590d\u6838\u524d\u5fc5\u987b\u5b8c\u6210\u3002",
     ready: "\u5df2\u5c31\u7eea",
-    title: "\u4ed8\u8d39\u9884\u89c8\u95e8\u7981"
+    title: "\u5546\u4e1a\u5316\u95e8\u7981"
   }
 } as const;
 

@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { KeyRound, LogIn, Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
-import { getProductStageCopy } from "@/lib/product-stage";
 import { trackPublicEvent } from "@/lib/public-analytics";
 import { LanguageSwitcher } from "./language-switcher";
 
@@ -64,14 +63,13 @@ export function SiteHeaderClient({
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const labels = headerLabels(dictionary, locale);
-  const productStage = getProductStageCopy(locale);
   const navItems = [
     { id: "marketplace", label: labels.nav.exploreSkills, href: "/marketplace" },
     { id: "registry", label: labels.nav.registry, href: "/registry" },
     { id: "docs", label: labels.nav.docs, href: "/docs" },
-    { id: "publish", label: labels.nav.publish, href: "/publish" },
     { id: "security", label: labels.nav.security, href: "/security" },
     { id: "pricing", label: labels.nav.pricing, href: "/pricing" },
+    { id: "publish", label: labels.nav.publish, href: "/publish" },
   ] as const;
 
   useEffect(() => {
@@ -137,9 +135,6 @@ export function SiteHeaderClient({
               onClick={() => trackPublicEvent("home_nav_click", { target: item.id })}
             >
               {item.label}
-              {item.id === "pricing" ? (
-                <span className="site-nav__badge">{labels.preview}</span>
-              ) : null}
             </a>
           ))}
         </nav>
@@ -157,14 +152,6 @@ export function SiteHeaderClient({
           >
             <LogIn size={17} aria-hidden="true" />
             <span>{consoleLabel ?? labels.console}</span>
-          </a>
-          <a
-            className="primary-button site-action-publish"
-            href={localizedHref("/publish", locale)}
-            onClick={() => trackPublicEvent("publish_click", { target: "publish" })}
-          >
-            <KeyRound size={17} aria-hidden="true" />
-            <span>{labels.publish}</span>
           </a>
         </div>
 
@@ -209,9 +196,6 @@ export function SiteHeaderClient({
                 onClick={() => trackPublicEvent("home_nav_click", { target: item.id, surface: "mobile" })}
               >
                 {item.label}
-                {item.id === "pricing" ? (
-                  <span className="site-nav__badge">{labels.preview}</span>
-                ) : null}
               </a>
             ))}
           </nav>
@@ -224,21 +208,9 @@ export function SiteHeaderClient({
               <LogIn size={17} aria-hidden="true" />
               <span>{consoleLabel ?? labels.console}</span>
             </a>
-            <a
-              className="primary-button"
-              href={localizedHref("/publish", locale)}
-              onClick={() => trackPublicEvent("publish_click", { target: "publish", surface: "mobile" })}
-            >
-              <KeyRound size={17} aria-hidden="true" />
-              <span>{labels.publish}</span>
-            </a>
           </div>
         </div>
       </header>
-      <div className="product-stage-banner" role="status">
-        <strong>{productStage.label}</strong>
-        <span>{productStage.body}</span>
-      </div>
     </>
   );
 }
@@ -252,14 +224,13 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
       language: "语言",
       mobileNavigation: "移动导航",
       openNavigation: "打开导航",
-      preview: "预览",
       primaryNavigation: "主导航",
       publish: "发布",
       nav: {
-        exploreSkills: "技能市场",
+        exploreSkills: "技能",
         home: "首页",
-        marketplace: "市场",
-        registry: "技能库",
+        marketplace: "技能",
+        registry: "注册表",
         agents: "智能体",
         docs: "文档",
         publish: "发布",
@@ -280,12 +251,11 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
     language: dictionary.common.language,
     mobileNavigation: "Mobile navigation",
     openNavigation: "Open navigation",
-    preview: "Preview",
     primaryNavigation: "Primary navigation",
     publish: dictionary.common.publish,
     nav: {
       ...dictionary.nav,
-      exploreSkills: "Explore Skills",
+      exploreSkills: "Skills",
       publish: "Publish",
       security: "Security",
       pricing: "Pricing",

@@ -55,11 +55,15 @@ import {
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = buildNoIndexMetadata("SkillHub Dashboard");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps) {
+  const locale = getLocaleFromSearchParams(await searchParams);
+  return buildNoIndexMetadata(locale === "zh" ? "SkillHub 综合工作台" : "SkillHub Dashboard");
+}
 
 type DemoChainStatus = "attention" | "ready" | "waiting";
 
@@ -139,7 +143,7 @@ const opsCopy = {
     pipelineTitle: "发布流水线",
     pipelineHeaders: ["技能", "阶段", "信号", "下一步"],
     pipelineRows: [
-      ["browser-research-pro", "价格批准", "Mira", "确认按次调用上限"],
+      ["browser-research", "价格批准", "Mira", "确认按次调用上限"],
       ["crm-enrichment", "数据政策", "Nolan", "审核 CRM token 范围"],
       ["codebase-risk-scanner", "受限上线", "Asha", "需要负责人批准"]
     ],
