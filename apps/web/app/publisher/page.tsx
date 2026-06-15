@@ -162,16 +162,16 @@ const publisherCommandCopy = {
   },
   zh: {
     body:
-      "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u4e0d\u5e94\u8be5\u53ea\u662f\u770b\u6570\u636e\uff0c\u800c\u662f\u628a\u5165\u9a7b\u3001\u5ba1\u6838\u3001\u4e70\u65b9\u9700\u6c42\u3001\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e\u3001\u4ed8\u8d39\u9884\u89c8\u8d26\u672c\u548c\u8d22\u52a1\u95e8\u63a7\u51c6\u5907\u6536\u675f\u5230\u4e00\u4e2a\u4e0b\u4e00\u6b65\u3002",
+      "发布者工作台不应该只是看数据，而是把入驻、审核、买方需求、付费准备元数据、预发布账本和收款资料收束到一个下一步。",
     completeAction: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
     completeDetail:
-      "\u6838\u5fc3\u53d1\u5e03\u51c6\u5907\u5df2\u5b8c\u6210\u3002\u63a5\u4e0b\u6765\u91cd\u70b9\u76d1\u63a7\u5ba1\u6838\u8bc1\u636e\u3001\u4e70\u65b9\u9700\u6c42\u3001\u4ed8\u8d39\u9884\u89c8\u8d26\u672c\u3001\u53cd\u9988\u3001\u8d22\u52a1\u95e8\u63a7\u51c6\u5907\u548c\u5e02\u573a\u4f4d\u7f6e\u3002",
+      "核心发布准备已完成。接下来重点监控审核证据、买方需求、预发布账本、反馈、收款资料和市场位置。",
     completeTitle: "\u4fdd\u6301\u4f9b\u7ed9\u95ed\u73af\u5065\u5eb7",
     eyebrow: "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
     ready: "\u5df2\u5c31\u7eea",
     title: "\u53d1\u5e03\u8005\u73b0\u5728\u5e94\u8be5\u5148\u505a\u4ec0\u4e48\uff1f",
     actions: {
-      payout: "\u6253\u5f00\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e",
+      payout: "打开收款资料",
       profile: "\u5b8c\u6210\u53d1\u5e03\u8005\u8d26\u6237",
       publish: "\u53d1\u5e03\u6280\u80fd",
       session: "\u53bb\u767b\u5f55",
@@ -191,7 +191,7 @@ const publisherCommandCopy = {
       readyMetric: "\u5065\u5eb7",
       readyTitle: "\u4f9b\u7ed9\u95ed\u73af\u6b63\u5e38",
       readyDetail:
-        "\u5f53\u524d\u6ca1\u6709\u7d27\u6025\u53d1\u5e03\u8005\u963b\u585e\u3002\u7ee7\u7eed\u76d1\u63a7\u5ba1\u6838\u3001\u53cd\u9988\u3001\u4e70\u65b9\u9700\u6c42\u3001\u4ed8\u8d39\u9884\u89c8\u8d26\u672c\u3001\u8d22\u52a1\u95e8\u63a7\u51c6\u5907\u548c\u5e02\u573a\u4f4d\u7f6e\u3002",
+        "当前没有紧急发布者阻塞。继续监控审核、反馈、买方需求、预发布账本、收款资料和市场位置。",
       title: "\u4f18\u5148\u7ea7\u961f\u5217"
     },
     queueActions: {
@@ -201,7 +201,7 @@ const publisherCommandCopy = {
       feedback: "\u6253\u5f00\u53cd\u9988\u56de\u590d",
       ledger: "\u67e5\u770b\u8c03\u6574\u8bb0\u5f55",
       monitor: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
-      payout: "\u6253\u5f00\u4ed8\u8d39\u51c6\u5907\u5143\u6570\u636e",
+      payout: "打开收款资料",
       pricing: "\u6253\u5f00\u4ed8\u8d39\u9884\u89c8\u590d\u6838",
       review: "\u6253\u5f00\u6280\u80fd\u5de5\u4f5c\u53f0",
       runtime: "\u6253\u5f00\u5ba1\u6838\u8bc1\u636e"
@@ -372,7 +372,7 @@ const copy = {
       progress: "准备度",
       title: "发布者上线清单",
       tasks: {
-        session: ["登录工作区会话", "通过账号入口登录，让发布、定价意图、付费准备元数据和通知都归属到当前组织。"],
+        session: ["登录工作区会话", "通过账号入口登录，让发布、定价意图、付费准备和通知都归属到当前组织。"],
         profile: ["创建发布者档案", "设置买家安装技能前会看到的公开发布者名称。"],
         terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和付费市场准备政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],
@@ -439,7 +439,7 @@ function getPublisherLockedGuide(locale: Locale) {
     return {
       ariaLabel: "发布者准入步骤",
       eyebrow: "发布者准入",
-      marker: "发布者运营队列 / 优先级队列 / 付费预览阻断 / 财务门控准备",
+      marker: "发布者工作台 / 优先级队列 / 付费准备元数据 / 收款资料",
       actions: [
         {
           body: "用 Google、GitHub 或邮箱密码进入账号，建立当前组织会话。",
@@ -448,7 +448,7 @@ function getPublisherLockedGuide(locale: Locale) {
           title: "登录账号"
         },
         {
-          body: "在个人中心确认 publisher、owner 或 admin 角色后再进入工作台。",
+          body: "在账号中心确认这个组织已开通发布权限后，再进入工作台。",
           href: "/account",
           label: "02",
           title: "确认发布权限"
@@ -911,11 +911,21 @@ export default async function PublisherPage({ searchParams }: PageProps) {
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasPublisherAccess = hasWorkspaceSession && publisherAccessRoles.some((role) => roleSet.has(role));
   const publisherLoginPath = hrefWithReturnTo("/login", "/publisher", locale);
+  const shellSecondaryHref = hasWorkspaceSession ? localizedHref("/account", locale) : undefined;
+  const shellSecondaryLabel = hasWorkspaceSession ? (locale === "zh" ? "个人中心" : "Account") : undefined;
 
   if (!hasPublisherAccess) {
     return (
       <main className="product-shell">
-        <SiteHeader active="publisher" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/publisher" />
+        <SiteHeader
+          active="publisher"
+          apiUrl={apiUrl}
+          consoleHref={shellSecondaryHref}
+          consoleLabel={shellSecondaryLabel}
+          dictionary={dictionary}
+          locale={locale}
+          pathname="/publisher"
+        />
 
         <section className="page-hero page-hero--compact">
           <div>
@@ -930,7 +940,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
         <JourneyRail
           actionHrefOverride={hasWorkspaceSession ? "/account" : publisherLoginPath}
-          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           currentStep="publisher"
           journey="publisher"
           locale={locale}
@@ -942,14 +952,14 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
         <WorkspaceLockedPanel
           actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/publisher")}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、财务门控收款资料和反馈写操作。当前会话还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
+              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
               : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
           locale={locale}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布权限" : "Publisher access required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </main>
     );
@@ -1130,7 +1140,15 @@ export default async function PublisherPage({ searchParams }: PageProps) {
 
   return (
     <main className="product-shell">
-      <SiteHeader active="publisher" apiUrl={apiUrl} dictionary={dictionary} locale={locale} pathname="/publisher" />
+      <SiteHeader
+        active="publisher"
+        apiUrl={apiUrl}
+        consoleHref={shellSecondaryHref}
+        consoleLabel={shellSecondaryLabel}
+        dictionary={dictionary}
+        locale={locale}
+        pathname="/publisher"
+      />
 
       <section className="page-hero page-hero--compact">
         <div>
@@ -1469,14 +1487,14 @@ export default async function PublisherPage({ searchParams }: PageProps) {
       ) : (
         <WorkspaceLockedPanel
           actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/publisher")}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、财务门控收款资料和反馈写操作。当前会话还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
+              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
               : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
           locale={locale}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布者角色" : "Publisher role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要发布权限" : "Publisher access required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
     </main>

@@ -29,6 +29,8 @@ export type NavPage =
 type NavProps = {
   active?: NavPage;
   locale: Locale;
+  secondaryHref?: string;
+  secondaryLabel?: string;
 };
 
 const navLinks = {
@@ -43,18 +45,18 @@ const navLinks = {
     { href: "/pricing", page: "marketplace" as NavPage, label: "Pricing" },
   ],
   zh: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "技能市场" },
     { href: "/registry", page: "registry" as NavPage, label: "技能库" },
     { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
     { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
-    { href: "/publish", page: "publish" as NavPage, label: "发布 Skill" },
+    { href: "/publish", page: "publish" as NavPage, label: "发布技能" },
     { href: "/security", page: "security" as NavPage, label: "安全" },
     { href: "/pricing", page: "marketplace" as NavPage, label: "价格" },
   ],
 };
 
-export function HomeNav({ active, locale }: NavProps) {
+export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname() ?? "/";
@@ -67,6 +69,9 @@ export function HomeNav({ active, locale }: NavProps) {
     alternateLocale,
     searchParams,
   );
+  const loginHref = loginHrefWithCurrentReturnTo(pathname, locale, searchParams);
+  const actionHref = secondaryHref ?? loginHref;
+  const actionLabel = secondaryLabel ?? (locale === "zh" ? "登录" : "Log in");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -92,7 +97,7 @@ export function HomeNav({ active, locale }: NavProps) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[100] isolate transition-all duration-300 ${
         scrolled || mobileOpen
           ? "bg-[rgba(3,5,3,0.88)] backdrop-blur-[16px] border-b border-[rgba(221,255,220,0.1)]"
           : ""
@@ -132,16 +137,16 @@ export function HomeNav({ active, locale }: NavProps) {
             {alternateLocaleLabel}
           </a>
           <a
-            href={localizedHref("/login", locale)}
+            href={actionHref}
             className="text-[14px] font-medium text-[#a9b3a3] hover:text-white transition-colors"
           >
-            {locale === "zh" ? "登录" : "Log in"}
+            {actionLabel}
           </a>
           <a
             href={localizedHref("/publish", locale)}
             className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
           >
-            {locale === "zh" ? "发布 Skill" : "Publish Skill"}
+            {locale === "zh" ? "发布技能" : "Publish Skill"}
           </a>
         </div>
 
@@ -149,7 +154,7 @@ export function HomeNav({ active, locale }: NavProps) {
           aria-controls="home-mobile-menu"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? (locale === "zh" ? "关闭导航" : "Close menu") : (locale === "zh" ? "打开导航" : "Open menu")}
-          className="md:hidden p-2 text-[#dce8d8]"
+          className="relative z-[101] md:hidden p-2 text-[#dce8d8]"
           onClick={() => setMobileOpen((current) => !current)}
           type="button"
         >
@@ -178,8 +183,8 @@ export function HomeNav({ active, locale }: NavProps) {
             <a href={alternateLocaleHref} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
               {alternateLocaleLabel}
             </a>
-            <a href={localizedHref("/login", locale)} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
-              {locale === "zh" ? "登录" : "Log in"}
+            <a href={actionHref} className="text-[14px] text-[#dce8d8] px-3 py-2 rounded-[6px] border border-[rgba(221,255,220,0.1)] text-center">
+              {actionLabel}
             </a>
             <a
               href={localizedHref("/publish", locale)}
@@ -192,6 +197,35 @@ export function HomeNav({ active, locale }: NavProps) {
       )}
     </header>
   );
+}
+
+function loginHrefWithCurrentReturnTo(
+  pathname: string,
+  locale: Locale,
+  searchParams: Pick<URLSearchParams, "forEach">,
+) {
+  if (pathname === "/login" || pathname.startsWith("/login/")) {
+    return localizedHref("/login", locale);
+  }
+
+  const returnParams = new URLSearchParams();
+
+  searchParams.forEach((value, key) => {
+    if (key !== "returnTo") {
+      returnParams.append(key, value);
+    }
+  });
+
+  returnParams.set("lang", locale);
+
+  const returnQuery = returnParams.toString();
+  const returnTo = `${pathname}${returnQuery ? `?${returnQuery}` : ""}`;
+  const loginParams = new URLSearchParams({
+    lang: locale,
+    returnTo,
+  });
+
+  return `/login?${loginParams.toString()}`;
 }
 
 function localizedHrefWithCurrentSearch(

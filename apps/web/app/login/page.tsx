@@ -162,13 +162,13 @@ const copy = {
     oauthConnected: "OAuth 登录已完成，浏览器会话已连接到工作区。",
     oauthConnectedTitle: "OAuth 已连接",
     oauthError: "OAuth 登录需要处理",
-    oauthErrorFallback: "Provider 回调没有完成，请检查配置后重试。",
+    oauthErrorFallback: "OAuth 回调没有完成，请检查登录提供商配置后重试。",
     recoveryTitle: "高级登录方式：邀请码 / 恢复令牌",
     role: "角色",
     runtimeAria: "SkillHub 运行调用流程",
     sessionActive: "浏览器会话已连接",
     sessionBody:
-      "你的浏览器会话已连接，可以继续进入工作区，管理项目、已接入技能、Project Key 和 REST / MCP 运行调用。",
+      "你的浏览器会话已连接，可以继续进入工作区，管理项目、已接入技能、项目密钥和 REST / MCP 运行调用。",
     sessionStatus: "会话状态",
     sessionTitle: "当前会话",
     signedInEyebrow: "已登录账号",
@@ -176,7 +176,7 @@ const copy = {
     switchAccountBody: "退出后会清除当前浏览器会话，并回到登录流程。",
     workspace: "工作区",
     workspaceAction: "进入工作区",
-    flowNodes: ["已验证技能", "项目密钥", "SkillHub Gateway", "REST / MCP Runtime"],
+    flowNodes: ["已验证技能", "项目密钥", "SkillHub 网关", "REST / MCP 运行时"],
     metrics: [
       ["已上线", "公开发现"],
       ["必需", "项目 Key"],
@@ -186,7 +186,7 @@ const copy = {
     signedInValueCards: [
       {
         body: "管理项目访问与运行凭证。",
-        title: "管理项目与 Key",
+        title: "管理项目与密钥",
       },
       {
         body: "查看已接入技能和审批状态。",
@@ -208,7 +208,7 @@ const copy = {
       },
       {
         body: "创建项目密钥，控制运行权限。",
-        title: "管理 Project Key",
+        title: "管理项目密钥",
       },
       {
         body: "查看 schema、权限与审核状态。",
@@ -252,7 +252,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <div className={`login-page-shell login-page-shell--${locale}`}>
         <p className="visually-hidden">
           {locale === "zh"
-            ? "登录 SkillHub 账号密码 登录后的路径 按角色继续 Continue with Google or GitHub"
+            ? "账号入口：登录 SkillHub。可使用账号密码、Google 或 GitHub。登录后的路径会按角色继续进入可用的工作区。"
             : "Sign in to SkillHub Account password Continue with Google or GitHub After sign-in Continue by role"}
         </p>
         <LoginPreviewNotice labels={labels} locale={locale} />

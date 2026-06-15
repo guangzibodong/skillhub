@@ -98,6 +98,9 @@ const sensitiveCopy = {
     removeConfirmPlaceholder: "Type REMOVE",
     removeDescription: "Removing an installed skill blocks runtime calls and keeps the install only for audit and possible restoration.",
     removeReasonPlaceholder: "Skill retired, no longer used by this project, or replacement installed",
+    restoreConfirmPlaceholder: "Type RESTORE",
+    restoreDescription: "Restoring an installed skill can re-enable project runtime access. Record why the skill is safe to return before restoring it.",
+    restoreReasonPlaceholder: "Incident resolved, owner approved restoration, or replacement rollback completed",
     suspendConfirmPlaceholder: "Type SUSPEND",
     suspendDescription: "Suspending an installed skill keeps it visible but immediately blocks runtime calls for this project.",
     suspendReasonPlaceholder: "Incident triage, permission review, budget protection, or owner request"
@@ -113,6 +116,9 @@ const sensitiveCopy = {
     removeConfirmPlaceholder: "\u8f93\u5165 REMOVE",
     removeDescription: "\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u4f1a\u963b\u65ad\u8fd0\u884c\u8c03\u7528\uff0c\u4ec5\u4fdd\u7559\u5ba1\u8ba1\u548c\u6062\u590d\u72b6\u6001\u3002",
     removeReasonPlaceholder: "\u6280\u80fd\u4e0b\u7ebf\u3001\u9879\u76ee\u4e0d\u518d\u4f7f\u7528\uff0c\u6216\u5df2\u5b89\u88c5\u66ff\u4ee3\u65b9\u6848",
+    restoreConfirmPlaceholder: "输入 RESTORE",
+    restoreDescription: "恢复已安装技能可能重新开放项目运行访问。恢复前请记录为什么该技能可以安全回到运行路径。",
+    restoreReasonPlaceholder: "事故已解决、负责人批准恢复，或替代方案回滚完成",
     suspendConfirmPlaceholder: "\u8f93\u5165 SUSPEND",
     suspendDescription: "\u6682\u505c\u5df2\u5b89\u88c5\u6280\u80fd\u4f1a\u4fdd\u7559\u53ef\u89c1\u72b6\u6001\uff0c\u4f46\u7acb\u5373\u963b\u65ad\u8be5\u9879\u76ee\u7684\u8fd0\u884c\u8c03\u7528\u3002",
     suspendReasonPlaceholder: "\u4e8b\u6545\u6392\u67e5\u3001\u6743\u9650\u590d\u6838\u3001\u9884\u7b97\u4fdd\u62a4\u6216\u8d1f\u8d23\u4eba\u8981\u6c42"
@@ -230,6 +236,7 @@ export function ProjectSkillPolicyManager({
                         disabled={isInstallPending}
                         icon="restore"
                         label={labels.restore}
+                        sensitiveLabels={sensitiveLabels}
                         skillSlug={skill.skillSlug}
                         status="installed"
                       />
@@ -355,16 +362,29 @@ function InstallStatusButton({
 }) {
   const Icon = icon === "remove" ? Trash2 : icon === "restore" ? RotateCcw : PauseCircle;
 
-  if (sensitiveLabels && status !== "installed") {
+  if (sensitiveLabels) {
     const isRemove = status === "removed";
+    const isRestore = status === "installed";
 
     return (
       <ProjectSensitiveActionForm
         action={action}
         cancelLabel={sensitiveLabels.cancel}
         confirmLabel={sensitiveLabels.confirm}
-        confirmPlaceholder={isRemove ? sensitiveLabels.removeConfirmPlaceholder : sensitiveLabels.suspendConfirmPlaceholder}
-        description={isRemove ? sensitiveLabels.removeDescription : sensitiveLabels.suspendDescription}
+        confirmPlaceholder={
+          isRestore
+            ? sensitiveLabels.restoreConfirmPlaceholder
+            : isRemove
+              ? sensitiveLabels.removeConfirmPlaceholder
+              : sensitiveLabels.suspendConfirmPlaceholder
+        }
+        description={
+          isRestore
+            ? sensitiveLabels.restoreDescription
+            : isRemove
+              ? sensitiveLabels.removeDescription
+              : sensitiveLabels.suspendDescription
+        }
         disabled={disabled}
         hiddenFields={{
           skillSlug,
@@ -373,7 +393,13 @@ function InstallStatusButton({
         icon={Icon}
         label={label}
         reasonLabel={sensitiveLabels.reason}
-        reasonPlaceholder={isRemove ? sensitiveLabels.removeReasonPlaceholder : sensitiveLabels.suspendReasonPlaceholder}
+        reasonPlaceholder={
+          isRestore
+            ? sensitiveLabels.restoreReasonPlaceholder
+            : isRemove
+              ? sensitiveLabels.removeReasonPlaceholder
+              : sensitiveLabels.suspendReasonPlaceholder
+        }
         submitLabel={label}
         tone={isRemove ? "danger" : "warning"}
       />

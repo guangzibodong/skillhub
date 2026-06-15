@@ -34,7 +34,7 @@ import { PublisherSkillManager } from "@/components/publisher-skill-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { AppShell } from "@/components/app-shell";
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -460,10 +460,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const demoChainLabels = dashboardDemoChainCopy[locale];
   const ops = opsCopy[locale];
   const session = await getWorkspaceSession();
+  const shellSecondaryHref = session.subject ? localizedHref("/account", locale) : undefined;
+  const shellSecondaryLabel = session.subject ? (locale === "zh" ? "个人中心" : "Account") : undefined;
 
   if (!session.subject) {
     return (
-      <AppShell active="dashboard" locale={locale}>
+      <AppShell active="dashboard" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
         <section className="section">
           <div className="section-inner">
             <div className="eyebrow mb-4 flex items-center gap-2">
@@ -478,13 +480,25 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </p>
           </div>
           <div className="section-inner mt-6 flex items-center gap-3 flex-wrap">
-            <a className="btn-primary" href={localizedHref("/login", locale)}>
+            <a className="btn-primary" href={localizedHrefWithReturnTo("/login", locale, "/dashboard")}>
               <UserCircle size={18} aria-hidden="true" />
               <span>{locale === "zh" ? "\u53bb\u767b\u5f55" : "Sign in"}</span>
             </a>
             <a className="btn-secondary" href={localizedHref("/registry", locale)}>
               <PackageCheck size={18} aria-hidden="true" />
               <span>{locale === "zh" ? "\u6d4f\u89c8\u6280\u80fd\u5e93" : "Browse registry"}</span>
+            </a>
+            <a className="ghost-button" href={localizedHref("/publish", locale)}>
+              <UploadCloud size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u53d1\u5e03\u6280\u80fd" : "Publish skill"}</span>
+            </a>
+            <a className="ghost-button" href={localizedHref("/publisher-review", locale)}>
+              <ClipboardCheck size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u53d1\u5e03\u5ba1\u6838" : "Publisher review"}</span>
+            </a>
+            <a className="ghost-button" href={localizedHref("/developer", locale)}>
+              <BriefcaseBusiness size={18} aria-hidden="true" />
+              <span>{locale === "zh" ? "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0" : "Developer workspace"}</span>
             </a>
           </div>
         </section>
@@ -774,7 +788,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         locale === "zh"
           ? `${formatCompactNumber(financeLedger.recentTransactions.length)} 条账本 / ${formatCompactNumber(activePayoutWork)} 个提现动作 / ${formatCompactNumber(payoutBlockerCount)} 个阻断`
           : `${formatCompactNumber(financeLedger.recentTransactions.length)} ledger rows / ${formatCompactNumber(activePayoutWork)} payout actions / ${formatCompactNumber(payoutBlockerCount)} blockers`,
-      href: "/publisher#publisher-payouts",
+      href: "/publisher#publisher-payout",
       icon: CircleDollarSign,
       id: "money",
       next: demoChainLabels.steps.money.next,
@@ -810,7 +824,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const demoChainBottleneck = demoChainSteps.find((step) => step.status !== "ready") ?? null;
 
   return (
-    <AppShell active="dashboard" locale={locale}>
+    <AppShell active="dashboard" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
       <section className="section">
         <div className="section-inner">
           <div className="eyebrow mb-4 flex items-center gap-2">

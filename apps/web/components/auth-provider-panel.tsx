@@ -10,18 +10,20 @@ type AuthProviderPanelProps = {
   surface?: "card" | "embedded";
 };
 
-type ProviderId = "github" | "google" | "microsoft" | "slack" | "apple" | "discord";
+type ProviderId = "github" | "google";
 
 const copy = {
   en: {
     disabledAction: "Not configured",
+    empty: "Google and GitHub stay locked until their provider credentials and callback URLs are active. Use email or username/password below.",
     helper: "OAuth redirects only appear active when the provider is configured.",
     oauthAction: "Continue with",
     title: "Use another sign-in method",
   },
   zh: {
     disabledAction: "暂未配置",
-    helper: "只有已完成配置的第三方登录才会启用跳转。",
+    empty: "Google 和 GitHub 在凭证与回调地址配置完成前会保持锁定。现在可以使用下方邮箱或用户名密码登录。",
+    helper: "第三方登录只有在完成配置后才会变成真实跳转。",
     oauthAction: "继续使用",
     title: "使用其他方式登录",
   },
@@ -30,10 +32,6 @@ const copy = {
 const visibleProviders: Array<{ id: ProviderId; label: string }> = [
   { id: "github", label: "GitHub" },
   { id: "google", label: "Google" },
-  { id: "microsoft", label: "Microsoft" },
-  { id: "slack", label: "Slack" },
-  { id: "apple", label: "Apple" },
-  { id: "discord", label: "Discord" },
 ];
 
 export function AuthProviderPanel({
@@ -49,6 +47,17 @@ export function AuthProviderPanel({
     surface === "embedded"
       ? "auth-provider-panel auth-provider-panel--oauth auth-provider-panel--embedded"
       : "ops-panel auth-provider-panel auth-provider-panel--oauth";
+  const providerItems = visibleProviders.map((providerConfig) => {
+    const provider = providers.find(
+      (item) => item.provider === providerConfig.id,
+    );
+    const action = provider
+      ? providerAction(provider, apiUrl, locale, labels, returnTo)
+      : { href: null, label: `${providerConfig.label} ${labels.disabledAction}` };
+
+    return { action, providerConfig };
+  });
+  const hasActiveProviders = providerItems.some((item) => Boolean(item.action.href));
 
   return (
     <Wrapper className={className}>
@@ -56,13 +65,7 @@ export function AuthProviderPanel({
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack" aria-label={labels.title}>
-        {visibleProviders.map((providerConfig) => {
-          const provider = providers.find(
-            (item) => item.provider === providerConfig.id,
-          );
-          const action = provider
-            ? providerAction(provider, apiUrl, locale, labels, returnTo)
-            : { href: null, label: `${providerConfig.label} ${labels.disabledAction}` };
+        {providerItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
           const buttonClass = [
             "oauth-provider-button",
@@ -72,43 +75,44 @@ export function AuthProviderPanel({
             .filter(Boolean)
             .join(" ");
 
-          if (action.href) {
-            return (
-              <a
-                aria-label={`${labels.oauthAction} ${providerName}`}
-                className={buttonClass}
-                href={action.href}
-                key={providerConfig.id}
-              >
-                <BrandProviderIcon provider={providerConfig.id} />
-                <span className="oauth-provider-button__label">
-                  {providerName}
+          const content = (
+            <>
+              <BrandProviderIcon provider={providerConfig.id} />
+              <span className="oauth-provider-button__label">
+                {providerName}
+              </span>
+              {!action.href ? (
+                <span className="oauth-provider-button__lock">
+                  <LockKeyhole size={14} aria-hidden="true" />
+                  <span>{labels.disabledAction}</span>
                 </span>
-              </a>
-            );
-          }
+              ) : null}
+            </>
+          );
 
-          return (
+          return action.href ? (
+            <a
+              aria-label={`${labels.oauthAction} ${providerName}`}
+              className={buttonClass}
+              href={action.href}
+              key={providerConfig.id}
+            >
+              {content}
+            </a>
+          ) : (
             <button
-              aria-label={action.label}
+              aria-label={`${providerName} ${labels.disabledAction}`}
               className={buttonClass}
               disabled
               key={providerConfig.id}
-              title={labels.disabledAction}
               type="button"
             >
-              <BrandProviderIcon provider={providerConfig.id} />
-              <span className="oauth-provider-button__label">{providerName}</span>
-              <LockKeyhole
-                className="oauth-provider-button__lock"
-                size={13}
-                aria-hidden="true"
-              />
+              {content}
             </button>
           );
         })}
       </div>
-      <p className="oauth-provider-note">{labels.helper}</p>
+      <p className="oauth-provider-note">{hasActiveProviders ? labels.helper : labels.empty}</p>
     </Wrapper>
   );
 }
@@ -156,29 +160,6 @@ function BrandProviderIcon({ provider }: { provider: ProviderId }) {
       aria-hidden="true"
     >
       {provider === "google" ? <span className="brand-google-mark" /> : null}
-      {provider === "microsoft" ? (
-        <span className="brand-microsoft-mark">
-          <span />
-          <span />
-          <span />
-          <span />
-        </span>
-      ) : null}
-      {provider === "slack" ? (
-        <span className="brand-slack-mark">
-          <span />
-          <span />
-          <span />
-          <span />
-        </span>
-      ) : null}
-      {provider === "apple" ? <span className="brand-apple-mark" /> : null}
-      {provider === "discord" ? (
-        <span className="brand-discord-mark">
-          <span />
-          <span />
-        </span>
-      ) : null}
     </span>
   );
 }

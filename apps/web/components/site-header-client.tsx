@@ -256,7 +256,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
       primaryNavigation: "主导航",
       publish: "发布",
       nav: {
-        exploreSkills: "浏览 Skills",
+        exploreSkills: "技能市场",
         home: "首页",
         marketplace: "市场",
         registry: "技能库",

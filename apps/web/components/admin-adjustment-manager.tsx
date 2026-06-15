@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   CheckCircle2,
   Clock3,
@@ -37,7 +37,8 @@ const copy = {
     emptyRefunds: "No refunds require finance action.",
     fail: "Fail",
     post: "Post refund",
-    postRefund: "Post refund on loss",
+    postRefund: "Create refund request on loss",
+    postRefundHint: "Available only when the dispute decision is Lost.",
     project: "Project",
     providerReference: "Provider ref",
     reason: "Finance reason",
@@ -74,7 +75,8 @@ const copy = {
     emptyRefunds: "当前没有需要财务处理的退款。",
     fail: "失败",
     post: "入账退款",
-    postRefund: "败诉时入账退款",
+    postRefund: "败诉时创建退款申请",
+    postRefundHint: "只有把争议状态改为“已败诉”时才会生效。",
     project: "项目",
     providerReference: "服务商编号",
     reason: "财务原因",
@@ -232,24 +234,15 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
 
                     <form action={disputeAction} className="admin-adjustment-action-form admin-adjustment-action-form--dispute">
                       <input name="disputeId" type="hidden" value={latest.id} />
-                      <label>
-                        <span>{labels.disputeStatus}</span>
-                        <select defaultValue={suggestedDisputeStatus(latest)} name="status">
-                          <option value="open">{labels.disputeStatuses.open}</option>
-                          <option value="warning_needs_response">{labels.disputeStatuses.warning_needs_response}</option>
-                          <option value="won">{labels.disputeStatuses.won}</option>
-                          <option value="lost">{labels.disputeStatuses.lost}</option>
-                        </select>
-                      </label>
+                      <DisputeStatusDecisionFields
+                        labels={labels}
+                        status={suggestedDisputeStatus(latest)}
+                      />
                       <label>
                         <span>{labels.disputeReason}</span>
                         <input defaultValue={defaultDisputeReason(latest, locale)} name="reason" required />
                       </label>
-                      <label className="admin-adjustment-check">
-                        <input defaultChecked name="postRefund" type="checkbox" />
-                        <span>{labels.postRefund}</span>
-                      </label>
-                      <button className="secondary-button secondary-button--compact" disabled={isDisputePending} type="submit">
+                      <button className="secondary-button secondary-button--compact" disabled={isDisputePending || isDisputeTerminal(latest.status)} type="submit">
                         <Save size={15} aria-hidden="true" />
                         <span>{isDisputePending && rowState ? labels.saving : labels.save}</span>
                       </button>
@@ -301,6 +294,41 @@ function RecordNote({ icon, text }: { icon: ReactNode; text: string | null }) {
       {icon}
       <span>{text}</span>
     </div>
+  );
+}
+
+function DisputeStatusDecisionFields({
+  labels,
+  status,
+}: {
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  status: DisputeRecord["status"];
+}) {
+  const [selectedStatus, setSelectedStatus] = useState(status);
+  const canPostRefund = selectedStatus === "lost";
+
+  return (
+    <>
+      <label>
+        <span>{labels.disputeStatus}</span>
+        <select
+          name="status"
+          onChange={(event) => setSelectedStatus(event.currentTarget.value as DisputeRecord["status"])}
+          required
+          value={selectedStatus}
+        >
+          <option value="open">{labels.disputeStatuses.open}</option>
+          <option value="warning_needs_response">{labels.disputeStatuses.warning_needs_response}</option>
+          <option value="won">{labels.disputeStatuses.won}</option>
+          <option value="lost">{labels.disputeStatuses.lost}</option>
+        </select>
+      </label>
+      <label className="admin-adjustment-check" title={labels.postRefundHint}>
+        <input disabled={!canPostRefund} name="postRefund" type="checkbox" />
+        <span>{labels.postRefund}</span>
+      </label>
+      <small className="body-text-sm text-[#999]">{labels.postRefundHint}</small>
+    </>
   );
 }
 
@@ -391,6 +419,10 @@ function disputeStatusClass(status: DisputeRecord["status"]) {
 
 function isRefundTerminal(status: RefundRecord["status"]) {
   return status === "posted" || status === "rejected" || status === "failed";
+}
+
+function isDisputeTerminal(status: DisputeRecord["status"]) {
+  return status === "won" || status === "lost";
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {

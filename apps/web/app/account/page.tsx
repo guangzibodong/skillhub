@@ -162,7 +162,7 @@ const copy = {
     profile: "个人资料",
     projects: "项目",
     publisher: "发布者工作台",
-    publisherBody: "上传、审核修复、买方需求、付费准备元数据和预发布财务状态。",
+    publisherBody: "上传、审核修复、买方需求、付费准备和预发布财务状态。",
     publisherStatus: "发布者",
     reviewAccount: "检查账号",
     role: "角色",
@@ -219,6 +219,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
     getNotificationPreferences()
   ]);
   const signedIn = Boolean(account.profile.userId);
+  const shellSecondaryHref = signedIn ? localizedHref("/account", locale) : undefined;
+  const shellSecondaryLabel = signedIn ? (locale === "zh" ? "个人中心" : "Account") : undefined;
   const workspaceStats = [
     [labels.team, account.workspace.teamMemberCount, Users],
     [labels.projects, account.workspace.projectCount, LayoutDashboard],
@@ -233,7 +235,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
   ] as const;
 
   return (
-    <AppShell active="account" locale={locale}>
+    <AppShell active="account" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
       <section className="section">
         <div className="section-inner flex flex-col gap-4">
           <div className="eyebrow">

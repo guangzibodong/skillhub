@@ -107,11 +107,11 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
         </label>
         <label>
           <span>{labels.newTitle}</span>
-          <input name="title" placeholder={labels.newTitlePlaceholder} />
+          <input name="title" placeholder={labels.newTitlePlaceholder} required />
         </label>
         <label>
           <span>{labels.severity}</span>
-          <select defaultValue="medium" name="severity">
+          <select defaultValue="medium" name="severity" required>
             {severities.map((severity) => (
               <option key={severity} value={severity}>
                 {labels.severityLabels[severity]}
@@ -121,7 +121,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
         </label>
         <label className="incident-create-form__summary">
           <span>{labels.summary}</span>
-          <input name="summary" placeholder={labels.summaryPlaceholder} />
+          <input name="summary" placeholder={labels.summaryPlaceholder} required />
         </label>
         <button className="secondary-button secondary-button--compact" disabled={isCreatePending} type="submit">
           <RadioTower size={15} aria-hidden="true" />
@@ -168,7 +168,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                   <input name="incidentId" type="hidden" value={incident.id} />
                   <label>
                     <span>{labels.status}</span>
-                    <select defaultValue={suggestedStatus(incident)} name="status">
+                    <select defaultValue={suggestedStatus(incident)} name="status" required>
                       {statuses.map((status) => (
                         <option key={status} value={status}>
                           {labels.statuses[status]}
@@ -178,7 +178,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                   </label>
                   <label>
                     <span>{labels.severity}</span>
-                    <select defaultValue={incident.severity} name="severity">
+                    <select defaultValue={incident.severity} name="severity" required>
                       {severities.map((severity) => (
                         <option key={severity} value={severity}>
                           {labels.severityLabels[severity]}
@@ -188,7 +188,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                   </label>
                   <label>
                     <span>{labels.reason}</span>
-                    <input defaultValue={incident.summary ?? ""} name="reason" />
+                    <input defaultValue={incident.summary ?? ""} name="reason" required />
                   </label>
                   <button className="secondary-button secondary-button--compact" disabled={isDecisionPending} type="submit">
                     <Save size={15} aria-hidden="true" />

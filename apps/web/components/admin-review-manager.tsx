@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState, type ReactNode } from "react";
+import { useActionState, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowDownWideNarrow,
@@ -66,6 +66,19 @@ const copy = {
     targetField: "Target",
     created: "Submitted",
     decision: "Decision",
+    decisionHelp:
+      "Choose deliberately. Approval can make the version eligible for public listing; rejection or blocking returns work to the publisher.",
+    chooseDecision: "Choose decision",
+    confirmDecision: {
+      approved: "Approve {skill}? This can make the version eligible for public marketplace listing after launch checks.",
+      blocked: "Block {skill}? The publisher will need to repair the listed evidence before review can continue.",
+      rejected: "Reject {skill}? The version will return to the publisher as not approved."
+    },
+    decisionButtons: {
+      approved: "Approve and record",
+      blocked: "Block review",
+      rejected: "Reject version"
+    },
     empty: "No skill reviews need operator action.",
     emptyFiltered: "No reviews match this queue view.",
     filters: {
@@ -408,7 +421,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                     <strong>{review.displayName}</strong>
                     <span>{review.skillSlug}</span>
                   </div>
-                  <span className={riskClass(review.riskLevel)}>{review.riskLevel ?? "unknown"}</span>
+                  <span className={riskClass(review.riskLevel)}>{formatRiskLevel(review.riskLevel, locale)}</span>
                 </header>
 
                 <div className={priorityClass(priority.tone)}>
@@ -432,11 +445,11 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                 <div className="admin-review-meta">
                   <span>
                     <strong>{labels.version}</strong>
-                    {review.version ?? "draft"}
+                    {review.version ?? formatReviewStatus("draft", locale)}
                   </span>
                   <span>
                     <strong>{labels.status}</strong>
-                    <em className={statusClass(review.status)}>{review.status}</em>
+                    <em className={statusClass(review.status)}>{formatReviewStatus(review.status, locale)}</em>
                   </span>
                   <span>
                     <strong>{labels.created}</strong>
@@ -456,7 +469,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </span>
                   <span>
                     <strong>{labels.risk}</strong>
-                    {review.riskLevel ?? "unknown"}
+                    {formatRiskLevel(review.riskLevel, locale)}
                   </span>
                 </div>
 
@@ -467,7 +480,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </div>
                 ) : null}
 
-                {review.reviewEvidence ? <ReviewEvidence evidence={review.reviewEvidence} labels={evidenceLabels} /> : null}
+                {review.reviewEvidence ? <ReviewEvidence evidence={review.reviewEvidence} labels={evidenceLabels} locale={locale} /> : null}
 
                 {review.runtimeChecks?.length ? (
                   <div className="admin-review-checks" aria-label={labels.checks}>
@@ -480,7 +493,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                             {check.isBlocking ? labels.blocking : labels.advisory}
                           </em>
                         ) : null}
-                        <small>{check.message ?? check.status}</small>
+                        <small>{check.message ?? formatCheckStatus(check.status, labels)}</small>
                         {check.nextAction ? (
                           <small>
                             <b>{labels.nextAction}</b>
@@ -498,32 +511,14 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </div>
                 ) : null}
 
-                <form action={action} className="admin-review-action-form">
-                  <input name="reviewId" type="hidden" value={review.id} />
-                  <input name="skillSlug" type="hidden" value={review.skillSlug} />
-                  <label>
-                    <span>{labels.decision}</span>
-                    <select defaultValue={suggestedDecision(review)} name="status">
-                      <option value="approved">{labels.approve}</option>
-                      <option value="rejected">{labels.reject}</option>
-                      <option value="blocked">{labels.block}</option>
-                    </select>
-                  </label>
-                  <label className="admin-review-action-form__notes">
-                    <span>{labels.notes}</span>
-                    <textarea defaultValue={review.notes ?? ""} name="notes" required />
-                  </label>
-                  <div className="admin-review-actions">
-                    <a className="ghost-button" href={localizedHref(`/skills/${review.skillSlug}`, locale)}>
-                      <ShieldAlert size={15} aria-hidden="true" />
-                      <span>{labels.viewSkill}</span>
-                    </a>
-                    <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
-                      <Save size={15} aria-hidden="true" />
-                      <span>{isPending && rowState ? labels.saving : labels.save}</span>
-                    </button>
-                  </div>
-                </form>
+                <ReviewDecisionForm
+                  action={action}
+                  isPending={isPending}
+                  labels={labels}
+                  locale={locale}
+                  review={review}
+                  rowState={rowState}
+                />
 
                 {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
               </section>
@@ -555,12 +550,117 @@ function ActionMessage({ state }: { state: AdminReviewActionState }) {
   );
 }
 
+type ReviewDecision = "approved" | "blocked" | "rejected";
+
+function ReviewDecisionForm({
+  action,
+  isPending,
+  labels,
+  locale,
+  review,
+  rowState
+}: {
+  action: (payload: FormData) => void;
+  isPending: boolean;
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  review: AdminReviewRecord;
+  rowState: AdminReviewActionState | null;
+}) {
+  const [decision, setDecision] = useState<ReviewDecision | "">("");
+  const decisionCopy = getReviewDecisionCopy(locale);
+  const buttonLabel = decision ? decisionCopy.buttons[decision] : labels.save;
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!decision) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!window.confirm(decisionCopy.confirm[decision].replace("{skill}", review.displayName))) {
+      event.preventDefault();
+    }
+  }
+
+  return (
+    <form action={action} className="admin-review-action-form" onSubmit={handleSubmit}>
+      <input name="reviewId" type="hidden" value={review.id} />
+      <input name="skillSlug" type="hidden" value={review.skillSlug} />
+      <label>
+        <span>{labels.decision}</span>
+        <select
+          name="status"
+          onChange={(event) => setDecision(event.target.value as ReviewDecision | "")}
+          required
+          value={decision}
+        >
+          <option value="">{decisionCopy.choose}</option>
+          <option value="approved">{labels.approve}</option>
+          <option value="rejected">{labels.reject}</option>
+          <option value="blocked">{labels.block}</option>
+        </select>
+        <small>{decisionCopy.help}</small>
+      </label>
+      <label className="admin-review-action-form__notes">
+        <span>{labels.notes}</span>
+        <textarea defaultValue={review.notes ?? ""} name="notes" required />
+      </label>
+      <div className="admin-review-actions">
+        <a className="ghost-button" href={localizedHref(`/skills/${review.skillSlug}`, locale)}>
+          <ShieldAlert size={15} aria-hidden="true" />
+          <span>{labels.viewSkill}</span>
+        </a>
+        <button className="secondary-button secondary-button--compact" disabled={isPending || !decision} type="submit">
+          <Save size={15} aria-hidden="true" />
+          <span>{isPending && rowState ? labels.saving : buttonLabel}</span>
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function getReviewDecisionCopy(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      buttons: {
+        approved: "批准并记录",
+        blocked: "阻断审核",
+        rejected: "拒绝版本"
+      },
+      choose: "请选择审核决定",
+      confirm: {
+        approved: "确认批准 {skill}？该版本可能在上线检查通过后进入公开市场上架路径。",
+        blocked: "确认阻断 {skill}？发布者需要先修复当前证据问题，审核才能继续。",
+        rejected: "确认拒绝 {skill}？该版本会作为未通过审核返回给发布者。"
+      },
+      help: "请明确选择动作。批准可能进入公开上架路径；拒绝或阻断会把修复任务返回给发布者。"
+    };
+  }
+
+  return {
+    buttons: {
+      approved: "Approve and record",
+      blocked: "Block review",
+      rejected: "Reject version"
+    },
+    choose: "Choose decision",
+    confirm: {
+      approved: "Approve {skill}? This can make the version eligible for public marketplace listing after launch checks.",
+      blocked: "Block {skill}? The publisher will need to repair the listed evidence before review can continue.",
+      rejected: "Reject {skill}? The version will return to the publisher as not approved."
+    },
+    help: "Choose deliberately. Approval can make the version eligible for public listing; rejection or blocking returns work to the publisher."
+  };
+}
+
 function ReviewEvidence({
   evidence,
-  labels
+  labels,
+  locale
 }: {
   evidence: NonNullable<AdminReviewRecord["reviewEvidence"]>;
   labels: ReviewEvidenceLabels;
+  locale: Locale;
 }) {
   const manifest = evidence.manifestSummary;
   const publisher = evidence.publisher;
@@ -578,7 +678,7 @@ function ReviewEvidence({
             {labels.organization}: {publisher.organizationName ?? publisher.organizationSlug ?? labels.unknown}
           </small>
           <small>
-            {labels.status}: {publisher.status ?? labels.unknown} / {labels.payout}: {publisher.payoutStatus ?? labels.unknown}
+            {labels.status}: {formatPublisherStatus(publisher.status, locale, labels.unknown)} / {labels.payout}: {formatPublisherStatus(publisher.payoutStatus, locale, labels.unknown)}
           </small>
         </EvidenceItem>
 
@@ -597,13 +697,13 @@ function ReviewEvidence({
           ) : null}
         </EvidenceItem>
 
-        <EvidenceItem icon={<ShieldAlert size={14} aria-hidden="true" />} label={labels.permissions} title={manifest?.permissionLevel ?? labels.unknown}>
+        <EvidenceItem icon={<ShieldAlert size={14} aria-hidden="true" />} label={labels.permissions} title={formatRiskLevel(manifest?.permissionLevel ?? null, locale)}>
           {manifest ? (
             <div className="admin-review-evidence__chips">
               <span>{formatEnabledLabel(labels.network, manifest.permissions.network, labels)}</span>
               <span>{formatEnabledLabel(labels.browser, manifest.permissions.browser, labels)}</span>
               <span>
-                {labels.filesystem}: {manifest.permissions.filesystem}
+                {labels.filesystem}: {formatFilesystemPermission(manifest.permissions.filesystem, locale, labels.unknown)}
               </span>
               <span>
                 {labels.secrets}: {manifest.permissions.secretCount}
@@ -680,6 +780,123 @@ function formatSchemaCounts(properties: number, required: number, labels: Review
 
 function formatEnabledLabel(label: string, enabled: boolean, labels: ReviewEvidenceLabels) {
   return `${label}: ${enabled ? labels.enabled : labels.disabled}`;
+}
+
+function formatRiskLevel(value: string | null | undefined, locale: Locale) {
+  const normalized = value?.trim().toLowerCase();
+  const labels =
+    locale === "zh"
+      ? {
+          high: "高",
+          low: "低",
+          medium: "中",
+          unknown: "未知"
+        }
+      : {
+          high: "High",
+          low: "Low",
+          medium: "Medium",
+          unknown: "Unknown"
+        };
+
+  if (!normalized) {
+    return labels.unknown;
+  }
+
+  return labels[normalized as keyof typeof labels] ?? humanizeEnum(value ?? "", locale);
+}
+
+function formatReviewStatus(value: string | null | undefined, locale: Locale) {
+  const normalized = value?.trim().toLowerCase();
+  const labels =
+    locale === "zh"
+      ? {
+          approved: "已批准",
+          blocked: "已阻断",
+          draft: "草稿",
+          in_review: "审核中",
+          queued: "排队中",
+          rejected: "已拒绝",
+          submitted: "已提交",
+          unknown: "未知"
+        }
+      : {
+          approved: "Approved",
+          blocked: "Blocked",
+          draft: "Draft",
+          in_review: "In review",
+          queued: "Queued",
+          rejected: "Rejected",
+          submitted: "Submitted",
+          unknown: "Unknown"
+        };
+
+  if (!normalized) {
+    return labels.unknown;
+  }
+
+  return labels[normalized as keyof typeof labels] ?? humanizeEnum(value ?? "", locale);
+}
+
+function formatPublisherStatus(value: string | null | undefined, locale: Locale, fallback: string) {
+  const normalized = value?.trim().toLowerCase();
+  const labels =
+    locale === "zh"
+      ? {
+          active: "已启用",
+          approved: "已批准",
+          blocked: "已阻断",
+          pending: "待处理",
+          rejected: "已拒绝",
+          suspended: "已暂停",
+          verified: "已验证"
+        }
+      : {
+          active: "Active",
+          approved: "Approved",
+          blocked: "Blocked",
+          pending: "Pending",
+          rejected: "Rejected",
+          suspended: "Suspended",
+          verified: "Verified"
+        };
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  return labels[normalized as keyof typeof labels] ?? humanizeEnum(value ?? "", locale);
+}
+
+function formatFilesystemPermission(value: string | null | undefined, locale: Locale, fallback: string) {
+  const normalized = value?.trim().toLowerCase();
+  const labels =
+    locale === "zh"
+      ? {
+          none: "无",
+          read: "只读",
+          write: "可写"
+        }
+      : {
+          none: "None",
+          read: "Read",
+          write: "Write"
+        };
+
+  if (!normalized) {
+    return fallback;
+  }
+
+  return labels[normalized as keyof typeof labels] ?? humanizeEnum(value ?? "", locale);
+}
+
+function humanizeEnum(value: string, locale: Locale) {
+  const text = value.replaceAll("_", " ").trim();
+  if (!text) {
+    return locale === "zh" ? "未知" : "Unknown";
+  }
+
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function buildReviewMetrics(reviews: AdminReviewRecord[]) {
@@ -786,8 +1003,12 @@ function buildReviewPriority(review: AdminReviewRecord, labels: (typeof copy)["e
 
   if (isDecisionReady(review)) {
     score += 110;
-    label = labels.priority.labels.ready;
-    tone = "ready";
+    if (tone === "neutral") {
+      label = labels.priority.labels.ready;
+      tone = "ready";
+    } else {
+      reasons.add(labels.priority.labels.ready);
+    }
   }
 
   return {

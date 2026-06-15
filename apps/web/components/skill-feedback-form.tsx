@@ -8,6 +8,7 @@ import { createSkillFeedbackAction, type SkillFeedbackActionState } from "@/lib/
 type SkillFeedbackFormProps = {
   canSubmit?: boolean;
   locale: Locale;
+  loginHref?: string;
   skillName: string;
   skillSlug: string;
 };
@@ -50,7 +51,7 @@ const initialState: SkillFeedbackActionState = {
   status: "idle"
 };
 
-export function SkillFeedbackForm({ canSubmit = true, locale, skillName, skillSlug }: SkillFeedbackFormProps) {
+export function SkillFeedbackForm({ canSubmit = true, locale, loginHref, skillName, skillSlug }: SkillFeedbackFormProps) {
   const labels = copy[locale];
   const signInAction = locale === "zh" ? "\u767b\u5f55\u540e\u63d0\u4ea4" : copy.en.signInAction;
   const signInBody =
@@ -72,7 +73,7 @@ export function SkillFeedbackForm({ canSubmit = true, locale, skillName, skillSl
       {!canSubmit ? (
         <div className="skill-action-locked">
           <p>{signInBody}</p>
-          <a className="secondary-button" href={localizedHref("/login", locale)}>
+          <a className="secondary-button" href={loginHref ?? localizedHref("/login", locale)}>
             <LogIn size={15} aria-hidden="true" />
             <span>{signInAction}</span>
           </a>

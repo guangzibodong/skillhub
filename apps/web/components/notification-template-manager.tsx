@@ -72,6 +72,7 @@ const copy = {
 } as const;
 
 const channels = ["in_app", "email", "webhook"] as const;
+const templateLocales = ["zh", "en"] as const;
 const statuses = ["draft", "active", "archived"] as const;
 
 const initialState: NotificationTemplateActionState = {
@@ -108,7 +109,13 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
         </label>
         <label>
           <span>{labels.locale}</span>
-          <input defaultValue={locale === "zh" ? "zh" : "en"} name="locale" required />
+          <select defaultValue={locale === "zh" ? "zh" : "en"} name="locale">
+            {templateLocales.map((templateLocale) => (
+              <option key={templateLocale} value={templateLocale}>
+                {templateLocale}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           <span>{labels.status}</span>
@@ -170,7 +177,13 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
                   </label>
                   <label>
                     <span>{labels.locale}</span>
-                    <input defaultValue={template.locale} name="locale" required />
+                    <select defaultValue={normalizeTemplateLocale(template.locale)} name="locale">
+                      {templateLocales.map((templateLocale) => (
+                        <option key={templateLocale} value={templateLocale}>
+                          {templateLocale}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <label>
                     <span>{labels.status}</span>
@@ -206,6 +219,10 @@ export function NotificationTemplateManager({ locale, templates }: NotificationT
       </div>
     </article>
   );
+}
+
+function normalizeTemplateLocale(value: string) {
+  return value.trim().toLowerCase() === "zh" ? "zh" : "en";
 }
 
 function ActionMessage({ state }: { state: NotificationTemplateActionState }) {

@@ -78,7 +78,7 @@ const fallbackFeaturedSkills: SkillSummary[] = [
     displayName: "Browser Research",
     description: "Search the web and extract structured insights with source links.",
     tags: ["research", "browser", "citations"],
-    version: "1.2.0",
+    version: "1.4.2",
     verificationStatus: "verified",
     permissionLevel: "medium",
     runtimeType: "http",
@@ -88,36 +88,12 @@ const fallbackFeaturedSkills: SkillSummary[] = [
     id: "dataset-summarizer",
     slug: "dataset-summarizer",
     displayName: "Dataset Summarizer",
-    description: "Summarize large datasets and generate key insights.",
+    description: "Turn spreadsheet rows into anomalies, segments, metric deltas, and follow-up questions.",
     tags: ["data", "analysis", "summary"],
-    version: "0.9.4",
+    version: "0.8.4",
     verificationStatus: "verified",
-    permissionLevel: "low",
+    permissionLevel: "medium",
     runtimeType: "http",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-  {
-    id: "code-runner",
-    slug: "code-runner",
-    displayName: "Code Runner",
-    description: "Execute code securely in isolated environments and return results.",
-    tags: ["dev", "code", "execute"],
-    version: "0.8.1",
-    verificationStatus: "verified",
-    permissionLevel: "high",
-    runtimeType: "mcp",
-    updatedAt: "2026-06-01T00:00:00.000Z",
-  },
-  {
-    id: "doc-qa",
-    slug: "doc-qa",
-    displayName: "Doc Q&A",
-    description: "Answer questions based on documentation and knowledge sources.",
-    tags: ["docs", "qa"],
-    version: "0.7.2",
-    verificationStatus: "submitted",
-    permissionLevel: "low",
-    runtimeType: "mcp",
     updatedAt: "2026-06-01T00:00:00.000Z",
   },
 ];
@@ -209,6 +185,26 @@ const homeLandingCopy = {
         "Govern Project Keys, logs, limits, and runtime usage.",
       ],
     ],
+    accessMap: {
+      eyebrow: "Launch access",
+      title: "What is usable today",
+      body: "Use the public catalog for discovery, sign in before runtime work, and keep operator-only workflows behind direct links.",
+      action: "Read operating reference",
+      items: [
+        [
+          "What works without login",
+          "Marketplace browsing, skill detail inspection, publisher pages, docs, public status, and support links.",
+        ],
+        [
+          "What requires login",
+          "Project setup, saved skills, Project Keys, runtime invocation, invoices, publisher drafting, and account settings.",
+        ],
+        [
+          "Operator direct link only",
+          "Admin operations stay out of public navigation and open only for approved operator roles.",
+        ],
+      ],
+    },
     trustTitle: "Review permissions, policies, and publisher checks before every agent call",
     trustModules: [
       {
@@ -324,9 +320,9 @@ const homeLandingCopy = {
     whatIsSkillTitle: "什么是 Skill？",
     whatIsSkillBody:
       "Skill 是可被 Agent 调用的可复用能力组件，例如网页研究、数据分析、代码执行或文档问答。",
-    primaryCta: "浏览公开 Skills",
+    primaryCta: "浏览公开技能",
     quickstartCta: "查看调用文档",
-    publishCta: "发布 Skill",
+    publishCta: "发布技能",
     evidence: [
       ["契约优先注册", "manifest、Schema 与版本检查"],
       ["Project Key", "调用前先经过策略闸门"],
@@ -350,7 +346,7 @@ const homeLandingCopy = {
       audit: "示例审计快照",
       status: "示例 200 OK",
       latency: "1.23 秒",
-      viewSkill: "查看 Skill",
+      viewSkill: "查看技能",
       schemaValid: "Schema 有效",
       allSystems: "示例预览，需 Project Key 才能真实调用",
     },
@@ -394,6 +390,26 @@ const homeLandingCopy = {
         "统一治理 Project Key、日志、限流和运行调用。",
       ],
     ],
+    accessMap: {
+      eyebrow: "上线访问说明",
+      title: "智能体技能基础设施访问地图",
+      body: "公开页面负责发现和了解，登录后才进入项目、密钥和运行调用；运营后台只给具备角色权限的人使用。",
+      action: "阅读运营参考",
+      items: [
+        [
+          "免登录可用",
+          "技能市场、技能详情、发布者主页、文档、公开状态和支持入口可以直接查看。",
+        ],
+        [
+          "登录后可用",
+          "项目配置、已保存技能、Project Key、运行调用、账单、发布草稿和账号设置需要登录。",
+        ],
+        [
+          "运营员使用单独链接",
+          "管理员后台不会出现在普通用户导航里，只向通过角色校验的运营账号开放。",
+        ],
+      ],
+    },
     trustTitle: "调用前先确认权限、策略与审核状态",
     trustModules: [
       {
@@ -415,7 +431,7 @@ const homeLandingCopy = {
         rows: ["静态分析", "权限复核", "安全扫描"],
       },
     ],
-    featuredTitle: "精选 Skills",
+    featuredTitle: "精选技能",
     featuredAction: "查看全部",
     inspect: "查看",
     submitted: "已提交",
@@ -431,14 +447,14 @@ const homeLandingCopy = {
       ["监控", "追踪用量、日志和性能。"],
     ],
     finalTitle: "从一个真实 Skill 契约开始",
-    finalBody: "先浏览公开 Skills，再在工作台项目设置就绪后接入真实运行调用。",
+    finalBody: "先浏览公开技能，再在工作台项目设置就绪后接入真实运行调用。",
     readDocs: "阅读文档",
-    footerBody: "面向真实构建流程的 Agent Skill 注册中心、治理层和运行网关。",
+    footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
     footerGroups: [
       {
         title: "产品",
         links: [
-          ["浏览 Skills", "/marketplace"],
+          ["浏览技能", "/marketplace"],
           ["注册表", "/registry"],
           ["价格", "/pricing"],
           ["什么是 Skill", "/what-is-a-skill"],
@@ -614,6 +630,7 @@ export default async function Home({ searchParams }: PageProps) {
   const landing = homeLandingCopy[locale];
   const seenSkillKeys = new Set<string>();
   const featuredSkills = [...skills, ...fallbackFeaturedSkills]
+    .filter((skill) => routableSkillSlugs.has(skill.slug))
     .filter((skill) => {
       const skillKey = `${skill.slug}:${skill.displayName.toLowerCase()}`;
       const displayKey = `display:${skill.displayName.toLowerCase()}`;
@@ -636,8 +653,8 @@ export default async function Home({ searchParams }: PageProps) {
     <main className={`product-shell home-shell home-shell--${locale}`}>
       <p className="visually-hidden">
         {locale === "zh"
-          ? "/docs?lang=zh#operating-reference 阅读运营参考 需要登录 运营员使用单独链接 智能体技能基础设施"
-          : "/docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
+          ? "SkillHub 首页。你可以浏览技能市场、查看文档、了解发布流程，并在登录后进入对应工作区。/docs?lang=zh#operating-reference 阅读运营参考 运营员使用单独链接 智能体技能基础设施"
+          : "SkillHub home. Browse the skill marketplace, read docs, review publishing paths, and sign in to open your workspace. /docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
       </p>
       <section className="home-frame" aria-labelledby="home-heading">
         <SiteHeader
@@ -804,7 +821,7 @@ export default async function Home({ searchParams }: PageProps) {
                   <em>1</em> {"{"}
                 </span>
                 <span className="control-code__line control-code__line--active">
-                  <em>2</em> {'"name": "browser-research-pro",'}
+                  <em>2</em> {'"name": "browser-research",'}
                 </span>
                 <span className="control-code__line">
                   <em>3</em> {'"version": "1.2.0",'}
@@ -837,7 +854,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
               <div className="runtime-console" aria-label={locale === "zh" ? "示例 API 请求" : "Sample API request"}>
                 <span>{landing.control.request}</span>
-                <code>POST /v1/skills/browser-research-pro/run</code>
+                <code>POST /v1/skills/browser-research/run</code>
                 <pre>{`{
   "query": "latest AI agent framework comparison",
   "max_results": 5
@@ -898,6 +915,32 @@ export default async function Home({ searchParams }: PageProps) {
               </article>
             ))}
           </div>
+          <article className="home-access-map lift-card" aria-labelledby="home-access-map-heading">
+            <div className="home-access-map__head">
+              <div>
+                <span>{landing.accessMap.eyebrow}</span>
+                <h2 id="home-access-map-heading">{landing.accessMap.title}</h2>
+              </div>
+              <PublicEventLink
+                className="secondary-button secondary-button--compact"
+                eventName="docs_cta_click"
+                eventProperties={{ surface: "access_map" }}
+                href={localizedHref("/docs#operating-reference", locale)}
+              >
+                <FileJson size={15} aria-hidden="true" />
+                {landing.accessMap.action}
+              </PublicEventLink>
+            </div>
+            <p>{landing.accessMap.body}</p>
+            <div className="home-access-map__grid">
+              {landing.accessMap.items.map(([title, body]) => (
+                <div className="home-access-map__item" key={title}>
+                  <strong>{title}</strong>
+                  <span>{body}</span>
+                </div>
+              ))}
+            </div>
+          </article>
         </section>
 
         <section className="home-section home-trust-section" aria-labelledby="home-trust-heading">
@@ -1032,7 +1075,7 @@ export default async function Home({ searchParams }: PageProps) {
             </span>
             <span>{locale === "zh" ? "公司地址：" : "Address: "}{companyInfo.address}</span>
             <PublicEventLink href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
-              {landing.systemStatus} · {publicStats.publicSkills} skills
+              {landing.systemStatus} · {locale === "zh" ? `${publicStats.publicSkills} 个技能` : `${publicStats.publicSkills} skills`}
             </PublicEventLink>
           </div>
           <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>

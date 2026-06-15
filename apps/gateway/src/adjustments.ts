@@ -246,7 +246,7 @@ export async function decideRefund(refundId: string, input: RefundDecisionInput,
     }
 
     if (action === "post") {
-      ensureRefundStatus(refund.status, ["requested", "approved"], action);
+      ensureRefundStatus(refund.status, ["approved"], action);
       await postRefundAdjustment(tx, refundId, input.reason, input.providerReference);
     }
 
@@ -405,7 +405,7 @@ export async function decideDispute(disputeId: string, input: DisputeDecisionInp
 
     let refundId: string | null = null;
 
-    if (status === "lost" && input.postRefund !== false) {
+    if (status === "lost" && input.postRefund === true) {
       refundId = await postDisputeLossRefund(tx, dispute, input.reason);
     }
 
@@ -476,8 +476,6 @@ async function postDisputeLossRefund(
     returning id::text
   `) as Array<{ id: string }>;
   const refundId = rows[0].id;
-
-  await postRefundAdjustment(tx, refundId, reason ?? "Dispute lost; refund posted.", null);
 
   return refundId;
 }

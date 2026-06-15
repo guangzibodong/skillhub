@@ -322,7 +322,7 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   auth_identity_storage: {
-    href: "/admin#admin-identity",
+    href: "/admin#admin-identities",
     scope: {
       en: "Identity directory and account linkage",
       zh: "\u8eab\u4efd\u76ee\u5f55\u4e0e\u8d26\u53f7\u7ed1\u5b9a"
@@ -371,14 +371,14 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   email_debug_codes: {
-    href: "/admin#admin-deliveries",
+    href: "/admin#admin-notifications",
     scope: {
       en: "Email-code delivery without preview leakage",
       zh: "\u4e0d\u6cc4\u9732\u9884\u89c8\u7801\u7684\u90ae\u4ef6\u6295\u9012"
     }
   },
   email_provider: {
-    href: "/admin#admin-deliveries",
+    href: "/admin#admin-notifications",
     scope: {
       en: "External email delivery queue",
       zh: "\u5916\u90e8\u90ae\u4ef6\u6295\u9012\u961f\u5217"
@@ -406,7 +406,7 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   notification_delivery_schema: {
-    href: "/admin#admin-deliveries",
+    href: "/admin#admin-notifications",
     scope: {
       en: "Notification delivery processing",
       zh: "\u901a\u77e5\u6295\u9012\u5904\u7406"
@@ -476,14 +476,14 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   published_feedback_threshold: {
-    href: "/admin#admin-risk",
+    href: "/admin#admin-feedback",
     scope: {
       en: "Feedback moderation and public trust signals",
       zh: "\u8bc4\u4ef7\u5ba1\u6838\u4e0e\u516c\u5f00\u4fe1\u4efb\u4fe1\u53f7"
     }
   },
   publisher_feedback_responses: {
-    href: "/admin#admin-risk",
+    href: "/admin#admin-feedback",
     scope: {
       en: "Feedback response and moderation loop",
       zh: "\u8bc4\u4ef7\u56de\u590d\u4e0e\u5ba1\u6838\u95ed\u73af"
@@ -518,7 +518,7 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   service_token: {
-    href: "/admin#admin-identity",
+    href: "/admin#admin-identities",
     scope: {
       en: "Bootstrap and recovery access posture",
       zh: "\u542f\u52a8\u4e0e\u6062\u590d\u8bbf\u95ee\u59ff\u6001"
@@ -570,21 +570,21 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
 
 const sectionTargets: Record<string, { href: string; scope: Record<Locale, string> }> = {
   commercial: {
-    href: "/admin#admin-finance",
+    href: "/admin#admin-ledger",
     scope: {
       en: "Finance, payout, ledger, and terms controls",
       zh: "\u8d22\u52a1\u3001\u63d0\u73b0\u3001\u8d26\u672c\u4e0e\u6761\u6b3e\u63a7\u5236"
     }
   },
   email: {
-    href: "/admin#admin-deliveries",
+    href: "/admin#admin-notifications",
     scope: {
       en: "Email and notification delivery operations",
       zh: "\u90ae\u4ef6\u4e0e\u901a\u77e5\u6295\u9012\u8fd0\u8425"
     }
   },
   guardrails: {
-    href: "/admin#admin-identity",
+    href: "/admin#admin-identities",
     scope: {
       en: "Production access and fallback guardrails",
       zh: "\u751f\u4ea7\u8bbf\u95ee\u4e0e\u515c\u5e95\u9632\u62a4"

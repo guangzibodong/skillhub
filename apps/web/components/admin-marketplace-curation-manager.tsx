@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 import { CheckCircle2, ListFilter, Save, Star, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import {
@@ -31,6 +31,9 @@ const copy = {
     appealReason: "Decision reason",
     appealTitle: "Publisher distribution appeals",
     appealEmpty: "No marketplace distribution appeals waiting for review.",
+    chooseAppealAction: "Choose action",
+    confirmAppealAction: "Confirm marketplace appeal decision?",
+    confirmRanking: "Confirm marketplace ranking change?",
     appealStatuses: {
       approved: "Approved",
       closed: "Closed",
@@ -46,6 +49,7 @@ const copy = {
     feedback: "Feedback",
     installs: "Installs",
     incidents: "Incidents",
+    notAvailable: "Not available",
     placement: "Placement",
     quality: "Quality signals",
     reason: "Reason",
@@ -55,10 +59,25 @@ const copy = {
     targetPlacement: "Target",
     title: "Marketplace ranking controls",
     updated: "Updated",
+    verification: "Verification",
+    visibility: "Visibility",
     placements: {
       featured: "Featured",
       standard: "Standard",
       suppressed: "Suppressed"
+    },
+    verificationStatuses: {
+      deprecated: "Deprecated",
+      draft: "Draft",
+      rejected: "Rejected",
+      submitted: "Submitted",
+      suspended: "Suspended",
+      verified: "Verified"
+    },
+    visibilityStatuses: {
+      private: "Private",
+      public: "Public",
+      unlisted: "Unlisted"
     }
   },
   zh: {
@@ -72,6 +91,9 @@ const copy = {
     appealReason: "\u5904\u7406\u539f\u56e0",
     appealTitle: "\u53d1\u5e03\u8005\u5206\u53d1\u7533\u8bc9",
     appealEmpty: "\u6682\u65e0\u5f85\u590d\u5ba1\u7684\u5e02\u573a\u5206\u53d1\u7533\u8bc9\u3002",
+    chooseAppealAction: "\u9009\u62e9\u5904\u7406\u52a8\u4f5c",
+    confirmAppealAction: "\u786e\u8ba4\u63d0\u4ea4\u8fd9\u4e2a\u5e02\u573a\u7533\u8bc9\u5904\u7406\u7ed3\u679c\uff1f",
+    confirmRanking: "\u786e\u8ba4\u4fdd\u5b58\u8fd9\u6b21\u5e02\u573a\u6392\u540d\u53d8\u66f4\uff1f",
     appealStatuses: {
       approved: "\u5df2\u901a\u8fc7",
       closed: "\u5df2\u5173\u95ed",
@@ -87,6 +109,7 @@ const copy = {
     feedback: "\u53cd\u9988",
     installs: "\u5b89\u88c5",
     incidents: "\u4e8b\u6545",
+    notAvailable: "\u6682\u65e0",
     placement: "\u5c55\u793a\u7b56\u7565",
     quality: "\u8d28\u91cf\u4fe1\u53f7",
     reason: "\u539f\u56e0",
@@ -96,10 +119,25 @@ const copy = {
     targetPlacement: "\u76ee\u6807",
     title: "\u5e02\u573a\u6392\u540d\u63a7\u5236",
     updated: "\u66f4\u65b0",
+    verification: "\u5ba1\u6838\u72b6\u6001",
+    visibility: "\u53ef\u89c1\u6027",
     placements: {
       featured: "\u7cbe\u9009",
       standard: "\u6807\u51c6",
       suppressed: "\u964d\u6743"
+    },
+    verificationStatuses: {
+      deprecated: "\u5df2\u5e9f\u5f03",
+      draft: "\u8349\u7a3f",
+      rejected: "\u5df2\u62d2\u7edd",
+      submitted: "\u5df2\u63d0\u4ea4",
+      suspended: "\u5df2\u6682\u505c",
+      verified: "\u5df2\u9a8c\u8bc1"
+    },
+    visibilityStatuses: {
+      private: "\u79c1\u6709",
+      public: "\u516c\u5f00",
+      unlisted: "\u672a\u5217\u51fa"
     }
   }
 } as const;
@@ -180,42 +218,13 @@ export function AdminMarketplaceCurationManager({
                     <Signal label={labels.feedback} value={String(appeal.feedbackCount)} />
                   </div>
 
-                  <form action={appealAction} className="marketplace-curation-form marketplace-curation-form--appeal">
-                    <input name="appealId" type="hidden" value={appeal.id} />
-                    <label>
-                      <span>{labels.targetPlacement}</span>
-                      <select defaultValue={appeal.requestedPlacement} name="placement">
-                        <option value="standard">{labels.placements.standard}</option>
-                        <option value="featured">{labels.placements.featured}</option>
-                      </select>
-                    </label>
-                    <label>
-                      <span>{labels.boost}</span>
-                      <input defaultValue={appeal.requestedPlacement === "featured" ? 100 : 0} max={250} min={-250} name="boost" step={1} type="number" />
-                    </label>
-                    <label>
-                      <span>{labels.endsAt}</span>
-                      <input name="endsAt" type="datetime-local" />
-                    </label>
-                    <label className="marketplace-curation-form__wide">
-                      <span>{labels.appealReason}</span>
-                      <input name="reason" required />
-                    </label>
-                    <label>
-                      <span>{labels.placement}</span>
-                      <select defaultValue="review" name="action">
-                        {(["review", "approve", "reject", "close"] as const).map((item) => (
-                          <option key={item} value={item}>
-                            {labels.appealActions[item]}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <button className="secondary-button secondary-button--compact" disabled={isAppealPending} type="submit">
-                      <Save size={15} aria-hidden="true" />
-                      <span>{isAppealPending && statusMessage ? labels.saving : labels.save}</span>
-                    </button>
-                  </form>
+                  <AppealDecisionForm
+                    action={appealAction}
+                    appeal={appeal}
+                    isPending={isAppealPending}
+                    isSaving={Boolean(isAppealPending && statusMessage)}
+                    labels={labels}
+                  />
 
                   {statusMessage && statusMessage.status !== "idle" ? <AppealActionMessage state={statusMessage} /> : null}
                 </section>
@@ -238,7 +247,7 @@ export function AdminMarketplaceCurationManager({
                   <div>
                     <strong>{item.displayName}</strong>
                     <span>
-                      {item.skillSlug} / {item.verificationStatus} / {item.visibility}
+                        {item.skillSlug} / {formatVerificationStatus(item.verificationStatus, labels)} / {formatVisibilityStatus(item.visibility, labels)}
                     </span>
                   </div>
                   <span className={placementClass(item.placement)}>
@@ -251,39 +260,17 @@ export function AdminMarketplaceCurationManager({
                   <Signal label={labels.installs} value={formatCompact(item.installCount)} />
                   <Signal label={labels.calls} value={formatCompact(item.invocationCount)} />
                   <Signal label={labels.success} value={formatPercent(item.successRate)} />
-                  <Signal label={labels.feedback} value={formatFeedback(item)} />
+                  <Signal label={labels.feedback} value={formatFeedback(item, labels)} />
                   <Signal label={labels.incidents} value={String(item.incidentCount)} />
                 </div>
 
-                <form action={action} className="marketplace-curation-form">
-                  <input name="skillSlug" type="hidden" value={item.skillSlug} />
-                  <label>
-                    <span>{labels.placement}</span>
-                    <select defaultValue={item.placement} name="placement">
-                      {placements.map((placement) => (
-                        <option key={placement} value={placement}>
-                          {labels.placements[placement]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>{labels.boost}</span>
-                    <input defaultValue={item.boost} max={250} min={-250} name="boost" step={1} type="number" />
-                  </label>
-                  <label>
-                    <span>{labels.endsAt}</span>
-                    <input defaultValue={toDateTimeLocal(item.endsAt)} name="endsAt" type="datetime-local" />
-                  </label>
-                  <label className="marketplace-curation-form__wide">
-                    <span>{labels.reason}</span>
-                    <input defaultValue={item.reason ?? ""} name="reason" required />
-                  </label>
-                  <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
-                    <Save size={15} aria-hidden="true" />
-                    <span>{isPending && statusMessage ? labels.saving : labels.save}</span>
-                  </button>
-                </form>
+                <RankingControlForm
+                  action={action}
+                  isPending={isPending}
+                  isSaving={Boolean(isPending && statusMessage)}
+                  item={item}
+                  labels={labels}
+                />
 
                 {item.updatedAt ? (
                   <small className="marketplace-curation-updated">
@@ -299,6 +286,122 @@ export function AdminMarketplaceCurationManager({
         ) : null}
       </div>
     </article>
+  );
+}
+
+type CurationLabels = (typeof copy)["en"] | (typeof copy)["zh"];
+
+function AppealDecisionForm({
+  action,
+  appeal,
+  isPending,
+  isSaving,
+  labels
+}: {
+  action: (payload: FormData) => void;
+  appeal: AdminMarketplaceCurationAppealRecord;
+  isPending: boolean;
+  isSaving: boolean;
+  labels: CurationLabels;
+}) {
+  const [selectedAction, setSelectedAction] = useState("");
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!selectedAction || !window.confirm(labels.confirmAppealAction)) {
+      event.preventDefault();
+    }
+  }
+
+  return (
+    <form action={action} className="marketplace-curation-form marketplace-curation-form--appeal" onSubmit={handleSubmit}>
+      <input name="appealId" type="hidden" value={appeal.id} />
+      <label>
+        <span>{labels.targetPlacement}</span>
+        <select defaultValue={appeal.requestedPlacement} name="placement">
+          <option value="standard">{labels.placements.standard}</option>
+          <option value="featured">{labels.placements.featured}</option>
+        </select>
+      </label>
+      <label>
+        <span>{labels.boost}</span>
+        <input defaultValue={appeal.requestedPlacement === "featured" ? 100 : 0} max={250} min={-250} name="boost" step={1} type="number" />
+      </label>
+      <label>
+        <span>{labels.endsAt}</span>
+        <input name="endsAt" type="datetime-local" />
+      </label>
+      <label className="marketplace-curation-form__wide">
+        <span>{labels.appealReason}</span>
+        <input name="reason" required />
+      </label>
+      <label>
+        <span>{labels.placement}</span>
+        <select name="action" onChange={(event) => setSelectedAction(event.target.value)} required value={selectedAction}>
+          <option value="">{labels.chooseAppealAction}</option>
+          {(["review", "approve", "reject", "close"] as const).map((item) => (
+            <option key={item} value={item}>
+              {labels.appealActions[item]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} type="submit">
+        <Save size={15} aria-hidden="true" />
+        <span>{isSaving ? labels.saving : labels.save}</span>
+      </button>
+    </form>
+  );
+}
+
+function RankingControlForm({
+  action,
+  isPending,
+  isSaving,
+  item,
+  labels
+}: {
+  action: (payload: FormData) => void;
+  isPending: boolean;
+  isSaving: boolean;
+  item: AdminMarketplaceCurationRecord;
+  labels: CurationLabels;
+}) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!window.confirm(labels.confirmRanking)) {
+      event.preventDefault();
+    }
+  }
+
+  return (
+    <form action={action} className="marketplace-curation-form" onSubmit={handleSubmit}>
+      <input name="skillSlug" type="hidden" value={item.skillSlug} />
+      <label>
+        <span>{labels.placement}</span>
+        <select defaultValue={item.placement} name="placement">
+          {placements.map((placement) => (
+            <option key={placement} value={placement}>
+              {labels.placements[placement]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span>{labels.boost}</span>
+        <input defaultValue={item.boost} max={250} min={-250} name="boost" step={1} type="number" />
+      </label>
+      <label>
+        <span>{labels.endsAt}</span>
+        <input defaultValue={toDateTimeLocal(item.endsAt)} name="endsAt" type="datetime-local" />
+      </label>
+      <label className="marketplace-curation-form__wide">
+        <span>{labels.reason}</span>
+        <input defaultValue={item.reason ?? ""} name="reason" required />
+      </label>
+      <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+        <Save size={15} aria-hidden="true" />
+        <span>{isSaving ? labels.saving : labels.save}</span>
+      </button>
+    </form>
   );
 }
 
@@ -357,9 +460,24 @@ function formatAppealStatus(status: AdminMarketplaceCurationAppealRecord["status
   return labels[status] ?? status.replaceAll("_", " ");
 }
 
-function formatFeedback(item: AdminMarketplaceCurationRecord) {
-  const rating = item.averageRating === null ? "n/a" : item.averageRating.toFixed(1);
+function formatFeedback(item: AdminMarketplaceCurationRecord, labels: CurationLabels) {
+  const rating = item.averageRating === null ? labels.notAvailable : item.averageRating.toFixed(1);
   return `${rating} / ${item.feedbackCount}+${item.pendingFeedbackCount}`;
+}
+
+function formatVerificationStatus(value: string, labels: CurationLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.verificationStatuses[normalized as keyof typeof labels.verificationStatuses] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function formatVisibilityStatus(value: string, labels: CurationLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.visibilityStatuses[normalized as keyof typeof labels.visibilityStatuses] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function humanizeEnum(value: string, fallback: string) {
+  const normalized = value.replaceAll("_", " ").trim();
+  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : fallback;
 }
 
 function formatCompact(value: number) {

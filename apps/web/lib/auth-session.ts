@@ -13,14 +13,25 @@ export type SessionSubject = {
 };
 
 export type WorkspaceSession = {
+  error: WorkspaceSessionError | null;
   source: "cookie" | "environment" | "none";
+  status: "anonymous" | "authenticated" | "invalid" | "unavailable";
   subject: SessionSubject | null;
-  token: string | null;
 };
 
 export const authCookieName = "skillhub_user_token";
 
 const sessionMaxAge = 60 * 60 * 24 * 14;
+
+type WorkspaceSessionError = {
+  code: "api_unavailable" | "invalid_session";
+  message: string;
+  status?: number;
+};
+
+type SessionSubjectResult =
+  | { subject: SessionSubject; type: "ok" }
+  | { error: WorkspaceSessionError; type: "invalid" | "unavailable" };
 
 export async function getSessionToken() {
   const cookieStore = await cookies();
@@ -45,16 +56,29 @@ export async function getWorkspaceSession(): Promise<WorkspaceSession> {
 
   if (!token) {
     return {
+      error: null,
       source: "none",
-      subject: null,
-      token: null
+      status: "anonymous",
+      subject: null
+    };
+  }
+
+  const result = await fetchSessionSubjectResult(token);
+
+  if (result.type === "ok") {
+    return {
+      error: null,
+      source: "cookie",
+      status: "authenticated",
+      subject: result.subject
     };
   }
 
   return {
+    error: result.error,
     source: "cookie",
-    subject: await fetchSessionSubject(token),
-    token
+    status: result.type === "invalid" ? "invalid" : "unavailable",
+    subject: null
   };
 }
 
@@ -86,6 +110,11 @@ export async function clearSessionCookie() {
 }
 
 export async function fetchSessionSubject(token: string): Promise<SessionSubject | null> {
+  const result = await fetchSessionSubjectResult(token);
+  return result.type === "ok" ? result.subject : null;
+}
+
+async function fetchSessionSubjectResult(token: string): Promise<SessionSubjectResult> {
   try {
     const response = await fetch(`${getApiUrl()}/v1/auth/me`, {
       cache: "no-store",
@@ -95,13 +124,48 @@ export async function fetchSessionSubject(token: string): Promise<SessionSubject
     });
 
     if (!response.ok) {
-      return null;
+      if (response.status === 401 || response.status === 403) {
+        return {
+          error: {
+            code: "invalid_session",
+            message: "Session token is invalid or no longer has access.",
+            status: response.status
+          },
+          type: "invalid"
+        };
+      }
+
+      return {
+        error: {
+          code: "api_unavailable",
+          message: `Session service returned HTTP ${response.status}.`,
+          status: response.status
+        },
+        type: "unavailable"
+      };
     }
 
     const payload = (await response.json()) as { subject?: SessionSubject };
-    return payload.subject ?? null;
-  } catch {
-    return null;
+    if (payload.subject) {
+      return { subject: payload.subject, type: "ok" };
+    }
+
+    return {
+      error: {
+        code: "invalid_session",
+        message: "Session service did not return a valid subject.",
+        status: response.status
+      },
+      type: "invalid"
+    };
+  } catch (error) {
+    return {
+      error: {
+        code: "api_unavailable",
+        message: error instanceof Error ? error.message : "Session service is unavailable."
+      },
+      type: "unavailable"
+    };
   }
 }
 

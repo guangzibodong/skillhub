@@ -240,7 +240,7 @@ export const dictionaries = {
     adminPage: {
       eyebrow: "Platform admin",
       lockedDescription:
-        "Sign in with a reviewer, finance, support, admin, or super_admin role before opening review, finance, payout, delivery, identity, launch-readiness, and audit operations.",
+        "Sign in with an operations, finance, support, review, or system admin account before opening review, finance, payout, delivery, identity, launch-readiness, and audit operations.",
       lockedTitle: "Enter the platform admin after sign-in.",
       title: "Control review, risk, finance, payouts, and audit trails.",
       description:
@@ -606,7 +606,7 @@ export const dictionaries = {
       eyebrow: "工作台",
       title: "发布者后台和开发者后台放在同一个控制台。",
       description:
-        "工作台拆成发布运营、购买方项目、付费预览账本和财务门控准备四块，这样平台以后可以自然接入真实市场流程。",
+        "工作台拆成发布运营、购买方项目、付费预览账本和收款资料准备四块，这样平台以后可以自然接入真实市场流程。",
       publisher: "发布者后台",
       buyer: "开发者后台",
       earnings: "付费预览",
@@ -645,7 +645,7 @@ export const dictionaries = {
     adminPage: {
       eyebrow: "平台管理后台",
       lockedDescription:
-        "先使用 reviewer、finance、support、admin 或 super_admin 角色登录，再进入审核、财务、提现、投递、身份、上线就绪和审计操作。",
+        "先使用已开通审核、财务、支持或系统管理权限的运营账号登录，再进入审核、财务、提现、投递、身份、上线就绪和审计操作。",
       lockedTitle: "登录后进入平台管理后台。",
       title: "控制审核、风险、财务、提现和审计链路。",
       description:
@@ -766,7 +766,7 @@ export const dictionaries = {
         }
       ],
       endpointsTitle: "核心端点",
-      publishNote: "发布使用组织范围内的发布者、owner 或 admin 用户会话，发现接口保持公开。"
+      publishNote: "发布需要组织范围内的发布权限，发现接口保持公开。"
     },
     publishPage: {
       eyebrow: "发布流程",

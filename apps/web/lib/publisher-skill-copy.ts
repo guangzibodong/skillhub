@@ -172,7 +172,7 @@ const publisherSkillCopy = {
       pricing: "先解决付费预览阻塞项，再进入付费价格复核。",
       review: "提交一个准确的语义版本进入审核。",
       runtime: "修复失败检查，或补充警告项说明后再完成审核。",
-      verified: "持续监控采用、调用、买方需求、付费预览账本和财务门控准备。",
+      verified: "持续监控采用、调用、买方需求、预发布账本和收款资料准备。",
       version: "从已保存草稿创建语义版本。"
     },
     reviewRepair: {
@@ -220,7 +220,7 @@ const publisherSkillCopy = {
       draft: "草稿"
     },
     pricingGate: {
-      activeBlocked: "付费价格启用前必须完成审核、条款、付费准备元数据和发布者资料准备。",
+      activeBlocked: "付费价格启用前必须完成审核、条款、付费准备和发布者资料准备。",
       draftSafe: "可以先保存草稿价格；启用付费价格仍然需要通过付费市场预览门禁。",
       freePreview: "免费上架",
       preview: "价格预览",

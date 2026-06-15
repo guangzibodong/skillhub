@@ -215,7 +215,7 @@ function notificationSummary(notification: UserNotificationRecord, locale: Local
   ].filter(Boolean);
 
   if (values.length > 0) {
-    return values.slice(0, 3).join(" / ");
+    return values.slice(0, 3).join(locale === "zh" ? "、" : " / ");
   }
 
   return locale === "zh" ? "查看这条运营事件的最新状态。" : "Review the latest state for this operating event.";

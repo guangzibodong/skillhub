@@ -51,15 +51,22 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
   ]);
 
   const derived = derivePublicPlatformStats(skills);
+  const publisherDerived = derivePublisherPlatformStats(publishers);
   const statsAvailable = registryStats.publicSkills !== undefined;
-  const publicSkills = statsAvailable ? registryStats.publicSkills ?? 0 : derived.publicSkills;
+  const publicSkills = statsAvailable
+    ? Math.max(registryStats.publicSkills ?? 0, publisherDerived.publicSkills)
+    : Math.max(derived.publicSkills, publisherDerived.publicSkills);
   const verifiedSkills = statsAvailable
-    ? registryStats.verifiedSkills
-    : derived.verifiedSkills;
+    ? Math.max(registryStats.verifiedSkills, publisherDerived.verifiedSkills)
+    : Math.max(derived.verifiedSkills, publisherDerived.verifiedSkills);
   const submittedSkills = statsAvailable
     ? registryStats.submittedSkills ?? 0
     : derived.submittedSkills;
-  const callableSkills = registryStats.callableSkills ?? (statsAvailable ? verifiedSkills : derived.callableSkills);
+  const callableSkills =
+    registryStats.callableSkills ??
+    (statsAvailable
+      ? verifiedSkills
+      : Math.max(derived.callableSkills, publisherDerived.verifiedSkills));
   const skillCallCount = derived.recordedCalls;
   const publisherCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
   const registryCallCount = registryStats.apiCalls ?? 0;
@@ -70,7 +77,7 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
     callableSkills,
     feedbackSignals: derived.feedbackSignals,
     hiddenOrPrelaunchSkillRecords: Math.max(totalSkillRecords - publicSkills, 0),
-    installEvidence: publishers.reduce((sum, publisher) => sum + publisher.metrics.installCount, 0),
+    installEvidence: publisherDerived.installEvidence,
     publicPublishers: publishers.length,
     publicSkills,
     recordedCalls: Math.max(skillCallCount, publisherCallCount, registryCallCount),
@@ -80,6 +87,21 @@ export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {
     verifiedSkills,
     payoutReadyPublishers: publishers.filter((publisher) => publisher.payoutStatus === "verified").length
   };
+}
+
+function derivePublisherPlatformStats(publishers: PublicPublisherProfile[]) {
+  return publishers.reduce(
+    (stats, publisher) => ({
+      installEvidence: stats.installEvidence + publisher.metrics.installCount,
+      publicSkills: stats.publicSkills + publisher.metrics.publicSkillCount,
+      verifiedSkills: stats.verifiedSkills + publisher.metrics.verifiedSkillCount,
+    }),
+    {
+      installEvidence: 0,
+      publicSkills: 0,
+      verifiedSkills: 0,
+    },
+  );
 }
 
 export function isPublicSkillSummary(skill: SkillSummary) {

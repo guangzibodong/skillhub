@@ -82,6 +82,20 @@ export default async function PublishPage({ searchParams }: PageProps) {
               <p className="body-text mt-4 max-w-[600px]">
                 {labels.description}
               </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a className="btn-primary btn-primary--large" href={accessNotice.actionHref}>
+                  <UploadCloud size={18} aria-hidden="true" />
+                  <span>
+                    {hasPublisherAccess
+                      ? (locale === "zh" ? "进入发布者工作台" : "Open publisher workspace")
+                      : (locale === "zh" ? "先登录发布技能" : "Sign in to publish")}
+                  </span>
+                </a>
+                <a className="btn-secondary btn-secondary--large" href={localizedHref("/publisher-review", locale)}>
+                  <ClipboardCheck size={18} aria-hidden="true" />
+                  <span>{locale === "zh" ? "查看审核规则" : "Review requirements"}</span>
+                </a>
+              </div>
             </div>
             <div className="flex flex-col gap-4 items-start">
               <div className="pill">
@@ -131,6 +145,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
           <WorkspaceAccessPanel
             locale={locale}
             requiredRoles={publisherRoles}
+            returnTo="/publish"
             session={session}
             workspace="publisher"
           />
@@ -170,10 +185,10 @@ export default async function PublishPage({ searchParams }: PageProps) {
             </div>
             <a
               className="btn-secondary"
-              href={localizedHref("/publisher", locale)}
+              href={accessNotice.actionHref}
             >
               <Gauge size={16} aria-hidden="true" />
-              <span>{labels.publisherWorkspace}</span>
+              <span>{hasPublisherAccess ? labels.publisherWorkspace : accessNotice.actionLabel}</span>
             </a>
           </div>
           <FlowStepList
@@ -213,7 +228,7 @@ function getPublishAccessNotice({
         locale === "zh" ? "打开发布者工作台" : "Open publisher workspace",
       body:
         locale === "zh"
-          ? "当前会话拥有发布权限，可以保存组织范围内的草稿。正式上架仍需要版本审核、运行检查、条款、定价和收款准备。"
+          ? "当前账号已具备发布权限，可以保存草稿并继续提交审核。正式公开上架前仍需要完成版本审核、运行检查、条款确认、定价意图和收款资料准备。"
           : "Your current session can save organization-scoped drafts. Public listing still requires version review and runtime checks; pricing and paid-readiness fields remain prelaunch metadata.",
       canSubmit: true,
       title: locale === "zh" ? "发布权限已就绪" : "Publisher access ready",
@@ -224,10 +239,10 @@ function getPublishAccessNotice({
     return {
       actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
       actionLabel: locale === "zh" ? "先登录" : "Sign in",
-      body:
-        locale === "zh"
-          ? "请先通过用户名/邮箱密码、已配置的 Google/GitHub OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
-          : "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
+    body:
+      locale === "zh"
+        ? "请先通过用户名/邮箱密码、已配置的 Google/GitHub OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
+        : "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
       canSubmit: false,
       title: locale === "zh" ? "需要先登录" : "Sign-in required",
     };
@@ -235,12 +250,12 @@ function getPublishAccessNotice({
 
   return {
     actionHref: localizedHref("/account", locale),
-    actionLabel: locale === "zh" ? "查看账号角色" : "Check account roles",
+    actionLabel: locale === "zh" ? "查看账号权限" : "Check account access",
     body:
       locale === "zh"
-        ? "当前会话已登录，但缺少 publisher、owner、admin 或 super_admin 角色。请到账号中心确认组织角色后再保存草稿。"
-        : "You are signed in, but this workspace requires publisher, owner, admin, or super_admin access. Check your organization role before saving a draft.",
+        ? "当前账号已登录，但还没有发布权限。请到账号中心确认所在组织的权限，或让组织负责人开通发布权限后再保存草稿。"
+        : "You are signed in, but this account does not have publisher access yet. Check your organization access before saving a draft.",
     canSubmit: false,
-    title: locale === "zh" ? "需要发布者角色" : "Publisher role required",
+    title: locale === "zh" ? "需要发布权限" : "Publisher access required",
   };
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useActionState } from "react";
+import { useActionState, useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Banknote, CheckCircle2, Clock3, ReceiptText, RotateCcw, Save, UserRound, WalletCards, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { PayoutRecord } from "@/lib/ops-data";
@@ -22,6 +21,13 @@ const copy = {
     approve: "Approve",
     balanceCount: "Reserved balances",
     block: "Block",
+    chooseAction: "Choose finance action",
+    confirmActions: {
+      approve: "Approve this payout for manual transfer? No money is marked paid until a transfer reference is recorded.",
+      block: "Block this payout? The publisher must satisfy the retry condition before requesting again.",
+      fail: "Mark this payout as failed? Reserved balances may be released according to the backend workflow.",
+      mark_paid: "Mark this payout as paid? Confirm the transfer reference is correct before continuing."
+    },
     empty: "No payouts require finance review.",
     fail: "Fail",
     markPaid: "Mark paid",
@@ -66,6 +72,13 @@ const copy = {
     approve: "\u6279\u51c6",
     balanceCount: "\u9501\u5b9a\u4f59\u989d",
     block: "\u963b\u65ad",
+    chooseAction: "\u8bf7\u9009\u62e9\u8d22\u52a1\u52a8\u4f5c",
+    confirmActions: {
+      approve: "\u786e\u8ba4\u6279\u51c6\u8be5\u63d0\u73b0\u8fdb\u5165\u624b\u5de5\u8f6c\u8d26\uff1f\u6b64\u64cd\u4f5c\u4e0d\u4f1a\u76f4\u63a5\u6807\u8bb0\u5df2\u6253\u6b3e\u3002",
+      block: "\u786e\u8ba4\u963b\u65ad\u8be5\u63d0\u73b0\uff1f\u53d1\u5e03\u8005\u9700\u8981\u6ee1\u8db3\u518d\u6b21\u7533\u8bf7\u6761\u4ef6\u540e\u624d\u80fd\u91cd\u8bd5\u3002",
+      fail: "\u786e\u8ba4\u6807\u8bb0\u8be5\u63d0\u73b0\u5931\u8d25\uff1f\u540e\u7aef\u6d41\u7a0b\u53ef\u80fd\u4f1a\u91ca\u653e\u9501\u5b9a\u4f59\u989d\u3002",
+      mark_paid: "\u786e\u8ba4\u6807\u8bb0\u5df2\u6253\u6b3e\uff1f\u8bf7\u5148\u6838\u5bf9\u8f6c\u8d26\u51ed\u8bc1\u6216\u6d41\u6c34\u53f7\u3002"
+    },
     empty: "\u5f53\u524d\u6ca1\u6709\u9700\u8981\u8d22\u52a1\u5ba1\u6838\u7684\u63d0\u73b0\u3002",
     fail: "\u5931\u8d25",
     markPaid: "\u6807\u8bb0\u5df2\u6253\u6b3e",
@@ -166,35 +179,14 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                   </div>
                 ) : null}
 
-                <form action={action} className="admin-payout-action-form admin-payout-action-form--explainable">
-                  <input name="payoutId" type="hidden" value={latest.id} />
-                  <label>
-                    <span>{labels.action}</span>
-                    <select defaultValue={suggestedAction(latest)} name="action">
-                      <option value="approve">{labels.approve}</option>
-                      <option value="mark_paid">{labels.markPaid}</option>
-                      <option value="fail">{labels.fail}</option>
-                      <option value="block">{labels.block}</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>{labels.reason}</span>
-                    <input defaultValue={defaultReason(latest, locale)} name="reason" required />
-                  </label>
-                  <label>
-                    <span>{labels.retryCondition}</span>
-                    <input aria-describedby={`retry-${latest.id}`} defaultValue={defaultRetryCondition(latest, locale)} name="retryCondition" />
-                    <small id={`retry-${latest.id}`}>{labels.retryHint}</small>
-                  </label>
-                  <label>
-                    <span>{labels.transferReference}</span>
-                    <input defaultValue={latest.providerReference ?? ""} name="providerReference" />
-                  </label>
-                  <button className="secondary-button secondary-button--compact" disabled={isPending || isTerminal(latest.status)} type="submit">
-                    <Save size={15} aria-hidden="true" />
-                    <span>{isPending && rowState ? labels.saving : labels.save}</span>
-                  </button>
-                </form>
+                <PayoutDecisionForm
+                  action={action}
+                  isPending={isPending}
+                  labels={labels}
+                  latest={latest}
+                  locale={locale}
+                  rowState={rowState}
+                />
 
                 {isTerminal(latest.status) ? <span className="admin-payout-terminal">{terminalLabel(latest.status, locale)}</span> : null}
                 {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
@@ -225,6 +217,80 @@ function ActionMessage({ state }: { state: AdminPayoutActionState }) {
       {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
       <span>{state.message}</span>
     </div>
+  );
+}
+
+type PayoutAction = "approve" | "block" | "fail" | "mark_paid";
+
+function PayoutDecisionForm({
+  action,
+  isPending,
+  labels,
+  latest,
+  locale,
+  rowState
+}: {
+  action: (payload: FormData) => void;
+  isPending: boolean;
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  latest: PayoutRecord;
+  locale: Locale;
+  rowState: AdminPayoutActionState | null;
+}) {
+  const [selectedAction, setSelectedAction] = useState<PayoutAction | "">("");
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!selectedAction) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!window.confirm(labels.confirmActions[selectedAction])) {
+      event.preventDefault();
+    }
+  }
+
+  return (
+    <form action={action} className="admin-payout-action-form admin-payout-action-form--explainable" onSubmit={handleSubmit}>
+      <input name="payoutId" type="hidden" value={latest.id} />
+      <label>
+        <span>{labels.action}</span>
+        <select
+          name="action"
+          onChange={(event) => setSelectedAction(event.target.value as PayoutAction | "")}
+          required
+          value={selectedAction}
+        >
+          <option value="">{labels.chooseAction}</option>
+          <option value="approve">{labels.approve}</option>
+          <option value="mark_paid">{labels.markPaid}</option>
+          <option value="fail">{labels.fail}</option>
+          <option value="block">{labels.block}</option>
+        </select>
+      </label>
+      <label>
+        <span>{labels.reason}</span>
+        <input defaultValue={defaultReason(latest, locale)} name="reason" required />
+      </label>
+      <label>
+        <span>{labels.retryCondition}</span>
+        <input
+          aria-describedby={`retry-${latest.id}`}
+          defaultValue={defaultRetryCondition(latest, locale)}
+          name="retryCondition"
+          required={selectedAction === "block"}
+        />
+        <small id={`retry-${latest.id}`}>{labels.retryHint}</small>
+      </label>
+      <label>
+        <span>{labels.transferReference}</span>
+        <input defaultValue={latest.providerReference ?? ""} name="providerReference" required={selectedAction === "mark_paid"} />
+      </label>
+      <button className="secondary-button secondary-button--compact" disabled={isPending || isTerminal(latest.status) || !selectedAction} type="submit">
+        <Save size={15} aria-hidden="true" />
+        <span>{isPending && rowState ? labels.saving : labels.save}</span>
+      </button>
+    </form>
   );
 }
 

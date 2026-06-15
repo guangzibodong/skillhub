@@ -83,7 +83,7 @@ const copy = {
     deliveryEvidence: "证据链接",
     deliveryEvidencePlaceholder: "https://example.com/runbook-or-demo",
     deliveryNote: "交付说明",
-    deliveryNotePlaceholder: "说明构建内容、review 状态、测试证据和买家验收路径。",
+    deliveryNotePlaceholder: "说明构建内容、审核状态、测试证据和买家验收路径。",
     deliverySkill: "交付技能版本",
     deliverySkillFallback: "技能 slug",
     deliverySubmitted: "已提交交付",
@@ -612,13 +612,13 @@ function formatMoney(cents: number, currency = "usd") {
 
 function formatReviewStatus(status: string | null | undefined, locale: Locale) {
   if (!status) {
-    return locale === "zh" ? "未进入 review" : "Not reviewed";
+    return locale === "zh" ? "未提交审核" : "Not reviewed";
   }
 
   const zhStatus: Record<string, string> = {
     approved: "已批准",
     blocked: "已阻断",
-    in_review: "Review 中",
+    in_review: "审核中",
     queued: "排队中",
     rejected: "已拒绝"
   };

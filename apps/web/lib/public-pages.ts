@@ -27,7 +27,7 @@ export type PublicInfoPageCopy = {
   sections: Array<{
     title: string;
     body: string;
-    bullets?: string[];
+    bullets?: Array<string | { href: string; label: string }>;
   }>;
   faq?: Array<{ question: string; answer: string }>;
   updated?: string;
@@ -224,14 +224,24 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       quickAnswer:
         "Publisher Review is the workflow that moves a Skill from draft to submitted, in review, verified, restricted, rejected, or preview. It covers manifest quality, schema validity, permissions, runtime behavior, security signals, and human operator decisions.",
       primaryCta: { href: "/publish", label: "Publish a Skill" },
-      secondaryCta: { href: "/docs", label: "Read package docs" },
+      secondaryCta: { href: "/publisher#publisher-skills", label: "Open skill workspace" },
       sections: [
         { title: "Submission requirements", body: "A Skill submission needs identity, version, runtime, input/output schemas, permissions, examples, support path, changelog, and preview pricing intent when applicable." },
         { title: "Manifest and schema validation", body: "SkillHub checks JSON structure, required fields, semantic versioning, schema shape, examples, and runtime declarations." },
         { title: "Permission review", body: "Network, browser, filesystem, secrets, sensitive data, destructive actions, and payment-related permissions require explicit review." },
         { title: "Runtime endpoint review", body: "Runtime URLs, health checks, sample inputs, response shape, failure modes, and rate-limit behavior must match the manifest." },
         { title: "Verification states", body: "Draft, Submitted, In review, Verified, Restricted, Rejected, and Preview states are shown honestly so buyers understand adoption risk." },
-        { title: "How publishers fix issues", body: "Publishers should submit a new version or revise draft metadata rather than mutating verified behavior in place." },
+        {
+          title: "How publishers fix issues",
+          body: "Publishers should submit a new version or revise draft metadata rather than mutating verified behavior in place.",
+          bullets: [
+            "Draft: finish manifest, examples, support path, and permission notes before submitting.",
+            "Needs changes: update the draft or submit a new version from the publisher workspace.",
+            { href: "/publisher#publisher-skills", label: "Open publisher skill workspace" },
+            "Restricted: read the distribution reason, repair trust or runtime gaps, then request a placement review.",
+            "Rejected: keep the decision visible, create a corrected version, or contact support when the decision looks wrong.",
+          ],
+        },
       ],
     },
     zh: {
@@ -240,15 +250,25 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       lead: "Skill 市场的信任来自清晰的审核路径，让发布者和购买方都知道状态代表什么。",
       quickAnswer:
         "发布审核是 Skill 从草稿、已提交、审核中，到已验证、受限、已拒绝或预览状态的流程。它覆盖 manifest 质量、schema 有效性、权限、运行行为、安全信号和人工运营决策。",
-      primaryCta: { href: "/publish", label: "发布 Skill" },
-      secondaryCta: { href: "/docs", label: "查看包文档" },
+      primaryCta: { href: "/publish", label: "发布技能" },
+      secondaryCta: { href: "/publisher#publisher-skills", label: "打开技能工作台" },
       sections: [
         { title: "提交要求", body: "Skill 提交需要身份、版本、运行时、输入输出 schema、权限、示例、支持路径、变更记录，以及适用时的价格预览意图。" },
         { title: "Manifest 与 schema 校验", body: "SkillHub 会检查 JSON 结构、必填字段、语义版本、schema 形状、示例和运行声明。" },
         { title: "权限检查", body: "网络、浏览器、文件系统、密钥、敏感数据、破坏性动作和支付相关权限需要明确审核。" },
         { title: "运行端点审核", body: "运行 URL、健康检查、样例输入、响应结构、失败模式和限流行为必须与 manifest 一致。" },
         { title: "验证状态", body: "草稿、已提交、审核中、已验证、受限、已拒绝和预览状态都要真实展示，让购买方理解采用风险。" },
-        { title: "发布者如何修复问题", body: "发布者应提交新版本或修改草稿元数据，而不是直接改变已验证版本的行为。" },
+        {
+          title: "发布者如何处理问题",
+          body: "发布者应提交新版本或修改草稿信息，而不是直接改变已验证版本的行为。",
+          bullets: [
+            "草稿：先补齐 manifest、示例、支持路径和权限说明，再提交审核。",
+            "需修改：回到发布者工作台修改草稿，或提交一个修复后的新版本。",
+            { href: "/publisher#publisher-skills", label: "打开发布者技能工作台" },
+            "受限：查看市场分发原因，修复信任或运行缺口后再申请复核。",
+            "已拒绝：保留审核结论，创建修正版本；如果判断明显有误，再联系支持申诉。",
+          ],
+        },
       ],
     },
   },

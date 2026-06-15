@@ -150,13 +150,13 @@ export function AdminIdentityDirectory({ directory, locale }: AdminIdentityDirec
                       <strong>{user.displayName ?? user.email}</strong>
                       <span>{user.email}</span>
                     </div>
-                    <span className={roleClass(user.platformRole)}>{user.platformRole}</span>
+                    <span className={roleClass(user.platformRole)} title={user.platformRole}>{formatRole(user.platformRole, locale)}</span>
                   </header>
 
                   <div className="admin-identity-memberships">
                     {user.memberships.slice(0, 3).map((membership) => (
                       <span key={`${user.id}-${membership.organizationId}`}>
-                        <strong>{membership.role}</strong>
+                        <strong title={membership.role}>{formatRole(membership.role, locale)}</strong>
                         {membership.organizationName || membership.organizationSlug}
                       </span>
                     ))}
@@ -202,6 +202,36 @@ function roleClass(role: string) {
   }
 
   return "status-chip status-chip--neutral";
+}
+
+function formatRole(role: string, locale: Locale) {
+  if (locale === "zh") {
+    const roles: Record<string, string> = {
+      admin: "管理员",
+      developer: "开发者",
+      finance: "财务运营",
+      owner: "组织负责人",
+      publisher: "发布者",
+      reviewer: "审核运营",
+      super_admin: "系统管理员",
+      support: "支持运营",
+      user: "普通用户",
+    };
+    return roles[role] ?? role.replaceAll("_", " ");
+  }
+
+  const roles: Record<string, string> = {
+    admin: "Admin",
+    developer: "Developer",
+    finance: "Finance operator",
+    owner: "Organization owner",
+    publisher: "Publisher",
+    reviewer: "Review operator",
+    super_admin: "System admin",
+    support: "Support operator",
+    user: "User",
+  };
+  return roles[role] ?? role.replaceAll("_", " ");
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {

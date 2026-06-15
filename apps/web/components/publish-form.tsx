@@ -290,7 +290,7 @@ export function PublishForm({
                 <span>{access.actionLabel}</span>
               </a>
             }
-            body={access.body}
+            body={locale === "zh" ? "首屏主按钮已经给出下一步，这里保留权限状态说明，避免填完 manifest 后才发现无法提交。" : "The hero CTA already gives the next step. This panel keeps the access status visible so publishers do not finish a manifest only to fail at submit time."}
             title={access.title}
             tone="warning"
           />
@@ -686,7 +686,7 @@ function getLockedPublishGuide(locale: Locale) {
   if (locale === "zh") {
     return {
       ariaLabel: "发布入口准入说明",
-      body: "未登录或缺少发布者角色时，先不要填写 manifest。完成账号和角色确认后，系统会显示预检、草稿保存和版本提交流程。",
+      body: "未登录或缺少发布权限时，先不要填写 manifest。完成账号和权限确认后，系统会显示预检、草稿保存和版本提交流程。",
       note: "登录前不会收集 manifest、管理员 token、服务 token 或 OAuth 密钥。",
       steps: [
         {
@@ -694,7 +694,7 @@ function getLockedPublishGuide(locale: Locale) {
           title: "登录账号",
         },
         {
-          body: "在个人中心确认组织和 publisher / owner / admin 权限。",
+          body: "在账号中心确认组织已开通发布权限，或请组织负责人协助开通。",
           title: "确认发布权限",
         },
         {

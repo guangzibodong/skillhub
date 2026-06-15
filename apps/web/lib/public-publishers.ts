@@ -216,10 +216,13 @@ function isPublicCatalogPublisherProfile(profile: PublicPublisherApiProfile) {
 }
 
 function isPublicCatalogPublisherSkill(skill: PublicPublisherApiSkill) {
-  return !isAcceptanceQaCatalogRecord(
-    skill.slug,
-    skill.displayName,
-    skill.description,
+  return (
+    skill.verificationStatus === "verified" &&
+    !isAcceptanceQaCatalogRecord(
+      skill.slug,
+      skill.displayName,
+      skill.description,
+    )
   );
 }
 
@@ -237,7 +240,7 @@ function isAcceptanceQaCatalogRecord(...parts: string[]) {
 function fallbackPublicPublishers(): PublicPublisherProfile[] {
   const groups = new Map<string, MarketplaceSkill[]>();
 
-  marketplaceSkills.forEach((skill) => {
+  marketplaceSkills.filter((skill) => isVerifiedSkillStatus(skill.verification.en)).forEach((skill) => {
     const slug = publisherSlugFromName(skill.author);
     groups.set(slug, [...(groups.get(slug) ?? []), skill]);
   });

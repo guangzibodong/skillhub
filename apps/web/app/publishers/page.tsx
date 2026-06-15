@@ -9,6 +9,7 @@ import {
   Terminal,
   WalletCards,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
@@ -16,10 +17,30 @@ import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/publishers",
+    en: {
+      title: "SkillHub Publishers - Trusted AI Skill Suppliers",
+      description:
+        "Browse public publisher profiles, verified skill inventory, runtime evidence, install signals, and paid-marketplace preview readiness."
+    },
+    zh: {
+      title: "SkillHub 发布者目录 - 可信 AI 技能供应方",
+      description:
+        "浏览公开发布者档案、已验证技能库存、运行证据、安装信号和付费市场预览准备状态。"
+    }
+  });
+}
 
 const copy = {
   en: {

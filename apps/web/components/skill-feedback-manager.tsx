@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 import { CheckCircle2, MessageSquareText, Save, Star, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { SkillFeedbackRecord } from "@/lib/skill-feedback";
@@ -19,6 +19,9 @@ const copy = {
     action: "Action",
     decided: "Decision",
     empty: "No skill feedback needs moderation.",
+    noProject: "No project",
+    noUseCase: "No use case",
+    notAvailable: "Not available",
     project: "Project",
     reason: "Decision reason",
     reviewer: "Reviewer",
@@ -27,6 +30,12 @@ const copy = {
     status: "Status",
     title: "Skill feedback moderation",
     useCase: "Use case",
+    statuses: {
+      hidden: "Hidden",
+      pending: "Pending",
+      published: "Published",
+      rejected: "Rejected"
+    },
     actions: {
       hide: "Hide",
       publish: "Publish",
@@ -38,6 +47,9 @@ const copy = {
     action: "动作",
     decided: "处理结果",
     empty: "当前没有需要审核的技能反馈。",
+    noProject: "未关联项目",
+    noUseCase: "未填写使用场景",
+    notAvailable: "暂无",
     project: "项目",
     reason: "处理原因",
     reviewer: "反馈人",
@@ -46,6 +58,12 @@ const copy = {
     status: "状态",
     title: "技能反馈审核",
     useCase: "使用场景",
+    statuses: {
+      hidden: "已隐藏",
+      pending: "待审核",
+      published: "已发布",
+      rejected: "已拒绝"
+    },
     actions: {
       hide: "隐藏",
       publish: "发布",
@@ -85,7 +103,7 @@ export function SkillFeedbackManager({ feedback, locale }: SkillFeedbackManagerP
                       {item.skillName} / {item.skillSlug}
                     </span>
                   </div>
-                  <span className={statusClass(item.status)}>{item.status}</span>
+                  <span className={statusClass(item.status)}>{labels.statuses[item.status]}</span>
                 </header>
 
                 <div className="skill-feedback-rating" aria-label={`${item.rating} / 5`}>
@@ -104,19 +122,19 @@ export function SkillFeedbackManager({ feedback, locale }: SkillFeedbackManagerP
                 <div className="skill-feedback-review-meta">
                   <span>
                     <strong>{labels.reviewer}</strong>
-                    {item.reviewerOrganizationName ?? item.reviewerDisplayName ?? item.reviewerEmail ?? "unknown"}
+                    {item.reviewerOrganizationName ?? item.reviewerDisplayName ?? item.reviewerEmail ?? labels.notAvailable}
                   </span>
                   <span>
                     <strong>{labels.project}</strong>
-                    {item.projectSlug ?? "n/a"}
+                    {item.projectSlug ?? labels.noProject}
                   </span>
                   <span>
                     <strong>{labels.useCase}</strong>
-                    {item.useCase ?? "n/a"}
+                    {item.useCase ?? labels.noUseCase}
                   </span>
                   <span>
                     <strong>{labels.status}</strong>
-                    {item.status}
+                    {labels.statuses[item.status]}
                   </span>
                 </div>
 
@@ -130,27 +148,14 @@ export function SkillFeedbackManager({ feedback, locale }: SkillFeedbackManagerP
                   </div>
                 ) : null}
 
-                <form action={action} className="skill-feedback-action-form">
-                  <input name="feedbackId" type="hidden" value={item.id} />
-                  <label>
-                    <span>{labels.action}</span>
-                    <select defaultValue={suggestedAction(item)} name="action">
-                      {Object.entries(labels.actions).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    <span>{labels.reason}</span>
-                    <input defaultValue={item.moderationReason ?? ""} name="reason" required />
-                  </label>
-                  <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
-                    <Save size={15} aria-hidden="true" />
-                    <span>{isPending && statusMessage ? labels.saving : labels.save}</span>
-                  </button>
-                </form>
+                <FeedbackDecisionForm
+                  action={action}
+                  isPending={isPending}
+                  item={item}
+                  labels={labels}
+                  locale={locale}
+                  statusMessage={statusMessage}
+                />
 
                 {statusMessage && statusMessage.status !== "idle" ? (
                   <div className={statusMessage.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
@@ -169,16 +174,93 @@ export function SkillFeedbackManager({ feedback, locale }: SkillFeedbackManagerP
   );
 }
 
-function suggestedAction(feedback: SkillFeedbackRecord) {
-  if (feedback.status === "pending") {
-    return "publish";
+type FeedbackAction = "hide" | "publish" | "reject" | "reopen";
+
+function FeedbackDecisionForm({
+  action,
+  isPending,
+  item,
+  labels,
+  locale,
+  statusMessage
+}: {
+  action: (payload: FormData) => void;
+  isPending: boolean;
+  item: SkillFeedbackRecord;
+  labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  locale: Locale;
+  statusMessage: SkillFeedbackDecisionActionState | null;
+}) {
+  const [selectedAction, setSelectedAction] = useState<FeedbackAction | "">("");
+  const actionCopy = getFeedbackActionCopy(locale);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!selectedAction) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!window.confirm(actionCopy.confirm[selectedAction].replace("{title}", item.title))) {
+      event.preventDefault();
+    }
   }
 
-  if (feedback.status === "published") {
-    return "hide";
+  return (
+    <form action={action} className="skill-feedback-action-form" onSubmit={handleSubmit}>
+      <input name="feedbackId" type="hidden" value={item.id} />
+      <label>
+        <span>{labels.action}</span>
+        <select
+          name="action"
+          onChange={(event) => setSelectedAction(event.target.value as FeedbackAction | "")}
+          required
+          value={selectedAction}
+        >
+          <option value="">{actionCopy.choose}</option>
+          {Object.entries(labels.actions).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <small>{actionCopy.help}</small>
+      </label>
+      <label>
+        <span>{labels.reason}</span>
+        <input defaultValue={item.moderationReason ?? ""} name="reason" required />
+      </label>
+      <button className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} type="submit">
+        <Save size={15} aria-hidden="true" />
+        <span>{isPending && statusMessage ? labels.saving : labels.save}</span>
+      </button>
+    </form>
+  );
+}
+
+function getFeedbackActionCopy(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      choose: "请选择处理动作",
+      confirm: {
+        hide: "确认隐藏「{title}」？公开页面将不再展示该反馈。",
+        publish: "确认发布「{title}」到公开评价？请先确认没有隐私、攻击或误导内容。",
+        reject: "确认拒绝「{title}」？该反馈不会公开。",
+        reopen: "确认退回「{title}」到待审状态？"
+      },
+      help: "发布会进入公开评价区域；请先确认不包含隐私、攻击性内容或误导信息。"
+    };
   }
 
-  return "reopen";
+  return {
+    choose: "Choose action",
+    confirm: {
+      hide: "Hide \"{title}\"? It will no longer appear publicly.",
+      publish: "Publish \"{title}\" as public feedback? Confirm it contains no private, abusive, or misleading content.",
+      reject: "Reject \"{title}\"? It will not be public.",
+      reopen: "Reopen \"{title}\" for moderation?"
+    },
+    help: "Publishing makes this feedback visible on public surfaces. Confirm privacy and content quality first."
+  };
 }
 
 function statusClass(status: SkillFeedbackRecord["status"]) {

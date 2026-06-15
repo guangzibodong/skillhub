@@ -8,12 +8,21 @@ type AppShellProps = {
   locale: Locale;
   /** Set to true for pages that manage their own top padding (e.g. hero sections) */
   flushTop?: boolean;
+  secondaryHref?: string;
+  secondaryLabel?: string;
 };
 
-export function AppShell({ active, children, locale, flushTop }: AppShellProps) {
+export function AppShell({
+  active,
+  children,
+  locale,
+  flushTop,
+  secondaryHref,
+  secondaryLabel,
+}: AppShellProps) {
   return (
     <div className="app-shell app-shell--premium min-h-screen flex flex-col">
-      <HomeNav active={active} locale={locale} />
+      <HomeNav active={active} locale={locale} secondaryHref={secondaryHref} secondaryLabel={secondaryLabel} />
       <main className={`app-shell__main flex-1 ${flushTop ? "" : "pt-[88px]"}`}>
         {children}
       </main>

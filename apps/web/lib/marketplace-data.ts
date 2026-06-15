@@ -58,7 +58,7 @@ export type MarketplaceRequest = {
 
 export const marketplaceSkills: MarketplaceSkill[] = [
   {
-    slug: "browser-research-pro",
+    slug: "browser-research",
     name: {
       en: "Browser Research Pro",
       zh: "浏览器研究专家"
@@ -95,9 +95,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-06-04",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=browser-research"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/browser-research"',
       mcp: "https://api.useskillhub.com/mcp",
-      sdk: "CLI/SDK preview: browser-research-pro"
+      sdk: "CLI/SDK preview: browser-research"
     },
     permissions: [
       {
@@ -361,7 +361,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     outputExample: '{ "priority": "high", "category": "billing", "refundRisk": true }'
   },
   {
-    slug: "dataset-insight",
+    slug: "dataset-summarizer",
     name: {
       en: "Dataset Insight",
       zh: "数据集洞察"
@@ -398,9 +398,9 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     risk: "medium",
     lastReviewed: "2026-05-30",
     installsCommand: {
-      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=dataset-summarizer"',
+      cli: 'curl "https://api.useskillhub.com/v1/skills/dataset-summarizer"',
       mcp: "https://api.useskillhub.com/mcp",
-      sdk: "CLI/SDK preview: dataset-insight"
+      sdk: "CLI/SDK preview: dataset-summarizer"
     },
     permissions: [
       {
@@ -523,7 +523,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
       },
       {
         label: { en: "Risk gate", zh: "风险门槛" },
-        value: { en: "Requires project owner approval", zh: "需要项目 owner 批准" }
+        value: { en: "Requires project owner approval", zh: "需要项目负责人批准" }
       }
     ],
     changelog: [
@@ -699,14 +699,8 @@ export const marketplaceCategories = [
   { key: "ops", label: { en: "Operations", zh: "运营" } }
 ] as const;
 
-const marketplaceSkillAliases: Record<string, string> = {
-  "browser-research": "browser-research-pro",
-  "dataset-summarizer": "dataset-insight",
-};
-
 export function getMarketplaceSkill(slug: string) {
-  const canonicalSlug = marketplaceSkillAliases[slug] ?? slug;
-  return marketplaceSkills.find((skill) => skill.slug === canonicalSlug);
+  return marketplaceSkills.find((skill) => skill.slug === slug);
 }
 
 export function localizeText(value: LocalizedText, locale: Locale) {

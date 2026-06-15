@@ -15,15 +15,36 @@ import {
   Wifi,
   Zap
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/status",
+    en: {
+      title: "SkillHub Status - Platform Health",
+      description:
+        "Check public SkillHub web, API gateway, registry, runtime gateway, CDN, and authentication service health signals."
+    },
+    zh: {
+      title: "SkillHub 状态 - 平台健康信号",
+      description:
+        "查看 SkillHub 公开网站、API 网关、注册表、运行时网关、CDN 和认证服务的健康状态。"
+    }
+  });
+}
 
 const copy = {
   en: {
@@ -47,7 +68,7 @@ const copy = {
     metricsTitle: "Platform metrics",
     metrics: [
       { label: "API response time", value: "Health check", desc: "Public endpoint check is available on the API health route" },
-      { label: "Registry queries", value: "Observed", desc: "Skill search and manifest inspection are covered by public QA" },
+      { label: "Registry queries", value: "Observed", desc: "Skill search and manifest inspection are covered by public availability monitoring" },
       { label: "Runtime gateway", value: "Signed-in", desc: "Runtime checks require authenticated project context" },
       { label: "Static assets", value: "CDN", desc: "Static asset delivery is part of deployment verification" }
     ],
@@ -100,7 +121,7 @@ const copy = {
     metricsTitle: "平台指标",
     metrics: [
       { label: "API 响应时间", value: "健康检查", desc: "公开 API 健康端点可用于运行确认" },
-      { label: "注册表查询", value: "已观测", desc: "技能搜索和 manifest 检查纳入公开 QA" },
+      { label: "注册表查询", value: "已观测", desc: "技能搜索和 manifest 检查纳入公开可用性监控" },
       { label: "运行时网关", value: "需登录", desc: "运行时检查需要认证后的项目上下文" },
       { label: "静态资源", value: "CDN", desc: "静态资源交付纳入部署验证" }
     ],

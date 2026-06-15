@@ -208,10 +208,10 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "发布控制台",
       description:
-        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和付费准备元数据。",
+        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和付费准备。",
       eyebrow: "发布者工作流",
       pipelineBody:
-        "一个市场上架项只有进入草稿状态、版本状态、审核状态、运行检查状态和付费准备元数据状态后，才算可信供应。",
+        "一个市场上架项只有进入草稿、版本、审核、运行检查和付费准备状态后，才算可信供应。",
       pipelineEyebrow: "运营流水线",
       pipelineTitle: "上传只是第一个控制点，不是结束。",
       publisherWorkspace: "发布者工作台",
@@ -245,12 +245,12 @@ const publishCopy = {
           title: "自动检查"
         },
         {
-          body: "Verified 上架需要审核记录通过，并且自动检查结果可接受。",
+          body: "已验证上架需要审核记录通过，并且自动检查结果可接受。",
           title: "审核决策"
         },
         {
           body: "付费激活仍处于预发布；当前只收集审核、条款、定价意图、分佣规则和财务复核需要的准备元数据。",
-          title: "付费准备元数据"
+          title: "付费准备"
         }
       ]
     },
@@ -259,7 +259,7 @@ const publishCopy = {
         api: "注册表 API",
         body: "发布动作使用登录后创建的 httpOnly 用户会话。本表单不会收集原始管理员 token、服务 token、OAuth 密钥、Webhook 密钥或用户 token。",
         session: "当前登录用户会话",
-        sessionDetail: "需要发布者、owner、admin 或 super admin 权限",
+        sessionDetail: "需要发布权限、组织负责人或管理员协助",
         title: "发布者自助访问"
       },
       action: {
@@ -270,9 +270,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "草稿保存后继续完成条款、定价意图、付费准备元数据和分佣规则闸口。",
+          action: "草稿保存后继续完成条款、定价意图、付费准备和分佣规则确认。",
           detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
-          label: "付费准备元数据"
+          label: "付费准备"
         },
         identity: {
           action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -282,9 +282,9 @@ const publishCopy = {
           short: "身份字段有效，但上架描述偏短，审核时可能要求补充。"
         },
         permissions: {
-          action: "声明最小权限，移除通配符密钥；高风险范围需要 owner 审批。",
+          action: "声明最小权限，移除通配符密钥；高风险范围需要负责人审批。",
           detail: "文件系统 {filesystem}，{secrets} 个密钥句柄。",
-          highRisk: "已声明高风险权限；后续需要审核员备注和项目 owner 批准。",
+          highRisk: "已声明高风险权限；后续需要审核员备注和项目负责人批准。",
           invalidSecrets: "密钥句柄必须明确；不允许空值或通配符密钥权限。",
           label: "权限已限定",
           missing: "需要声明 network、browser、filesystem 和 secrets 权限。"
@@ -346,7 +346,7 @@ const publishCopy = {
       repairQueue: {
         blocker: "阻塞",
         body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
-        emptyBody: "草稿保存后只剩付费准备元数据；继续到发布者工作台处理条款、定价意图、财务复核资料和审核。",
+        emptyBody: "草稿保存后继续到发布者工作台，处理条款、定价意图、收款资料和审核。",
         emptyTitle: "没有 manifest 阻塞项",
         target: "目标字段",
         title: "预检修复队列",
@@ -356,7 +356,7 @@ const publishCopy = {
         detail: "查看公开详情",
         errorTitle: "草稿未保存",
         publisher: "打开发布者工作台",
-        successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备元数据。",
+        successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
         successTitle: "草稿已保存到注册表"
       },
       reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
@@ -380,7 +380,7 @@ const publishCopy = {
     action: {
       invalidManifest: "Manifest JSON 无效。",
       missingManifest: "请先粘贴 SkillHub manifest，再保存草稿。",
-      missingToken: "请先使用发布者、owner 或 admin 用户会话登录，再发布技能。",
+      missingToken: "请先登录已开通发布权限的账号，再发布技能。",
       publishedPrefix: "草稿已保存",
       publishedSuffix: "现在可以进入版本提交和发布者运营流程。",
       unableToPublish: "无法保存技能草稿。"
@@ -393,7 +393,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     badge: "skillhub.json",
     consoleSubtitle: "发布控制台",
     description:
-      "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。付费市场字段仅作为预发布准备元数据收集。",
+      "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。付费市场字段仅作为预发布准备信息收集。",
     eyebrow: "发布者工作流",
     pipelineBody:
       "一个市场上架项只有进入草稿状态、精确版本审核状态、自动检查证据和公开目录准备状态后，才算可被信任的供应。",
@@ -430,12 +430,12 @@ const normalizedZhPublishCopy: PublishCopy = {
         title: "自动检查"
       },
       {
-        body: "Verified 上架需要审核记录通过，并且自动检查结果可接受。",
+        body: "已验证上架需要审核记录通过，并且自动检查结果可接受。",
         title: "审核决策"
       },
       {
         body: "付费市场字段在审核、条款、分佣和财务决策最终确认前，仅作为预发布元数据。",
-        title: "付费准备元数据"
+        title: "付费准备"
       }
     ]
   },
@@ -444,7 +444,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       api: "注册表 API",
       body: "发布动作使用登录后创建的 httpOnly 用户会话。本表单不会收集原始管理员 token、服务 token、OAuth 密钥、Webhook 密钥或用户 token。",
       session: "当前登录用户会话",
-      sessionDetail: "需要发布者、owner、admin 或 super admin 权限",
+      sessionDetail: "需要发布权限、组织负责人或管理员协助",
       title: "发布者自助访问"
     },
     action: {
@@ -455,9 +455,9 @@ const normalizedZhPublishCopy: PublishCopy = {
     },
     checks: {
       commercial: {
-        action: "草稿保存后继续完成条款、定价意图、付费准备元数据和分佣规则闸口。",
+        action: "草稿保存后继续完成条款、定价意图、付费准备和分佣规则确认。",
         detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
-        label: "付费准备元数据"
+        label: "付费准备"
       },
       identity: {
         action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -467,9 +467,9 @@ const normalizedZhPublishCopy: PublishCopy = {
         short: "身份字段有效，但上架描述偏短，审核时可能要求补充。"
       },
       permissions: {
-        action: "声明最小权限，移除通配符密钥；高风险范围需要 owner 审批。",
+        action: "声明最小权限，移除通配符密钥；高风险范围需要负责人审批。",
         detail: "文件系统 {filesystem}，{secrets} 个密钥句柄。",
-        highRisk: "已声明高风险权限；后续需要审核员备注和项目 owner 批准。",
+        highRisk: "已声明高风险权限；后续需要审核员备注和项目负责人批准。",
         invalidSecrets: "密钥句柄必须明确；不允许空值或通配符密钥权限。",
         label: "权限已限定",
         missing: "需要声明 network、browser、filesystem 和 secrets 权限。"
@@ -531,7 +531,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     repairQueue: {
       blocker: "阻塞",
       body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
-      emptyBody: "草稿保存后只剩付费准备元数据；继续到发布者工作台处理条款、定价意图、财务复核资料和审核。",
+      emptyBody: "草稿保存后继续到发布者工作台，处理条款、定价意图、收款资料和审核。",
       emptyTitle: "没有 manifest 阻塞项",
       target: "目标字段",
       title: "预检修复队列",
@@ -541,7 +541,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       detail: "查看公开详情",
       errorTitle: "草稿未保存",
       publisher: "打开发布者工作台",
-      successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备元数据。",
+      successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
       successTitle: "草稿已保存到注册表"
     },
     reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
@@ -565,7 +565,7 @@ const normalizedZhPublishCopy: PublishCopy = {
   action: {
     invalidManifest: "Manifest JSON 无效。",
     missingManifest: "请先粘贴 SkillHub manifest，再保存草稿。",
-    missingToken: "请先使用发布者、owner 或 admin 用户会话登录，再发布技能。",
+    missingToken: "请先登录已开通发布权限的账号，再发布技能。",
     publishedPrefix: "草稿已保存",
     publishedSuffix: "现在可以进入版本提交和发布者运营流程。",
     unableToPublish: "无法保存技能草稿。"

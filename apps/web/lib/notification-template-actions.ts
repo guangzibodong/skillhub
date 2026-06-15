@@ -16,6 +16,9 @@ export type NotificationTemplateActionState = {
 
 const copy = {
   en: {
+    invalidChannel: "Notification channel is invalid.",
+    invalidLocale: "Template locale must be zh or en.",
+    invalidStatus: "Template status is invalid.",
     missingBody: "Template body is required.",
     missingSubject: "Template subject is required.",
     missingTemplateKey: "Template key is required.",
@@ -24,6 +27,9 @@ const copy = {
     unableSave: "Unable to save notification template."
   },
   zh: {
+    invalidChannel: "通知渠道无效。",
+    invalidLocale: "模板语言只能是 zh 或 en。",
+    invalidStatus: "模板状态无效。",
     missingBody: "必须填写模板正文。",
     missingSubject: "必须填写模板标题。",
     missingTemplateKey: "必须填写模板 key。",
@@ -42,7 +48,8 @@ export async function saveNotificationTemplateAction(
   const token = await getAdminOperatorToken();
   const templateKey = String(formData.get("templateKey") ?? "").trim();
   const channel = String(formData.get("channel") ?? "in_app").trim();
-  const templateLocale = String(formData.get("locale") ?? "en").trim();
+  const templateLocale = String(formData.get("locale") ?? "en").trim().toLowerCase();
+  const status = String(formData.get("status") ?? "draft").trim();
   const templateIdentity = makeTemplateIdentity(templateKey, channel, templateLocale);
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
@@ -59,6 +66,18 @@ export async function saveNotificationTemplateAction(
     return { message: labels.missingBody, status: "error", templateIdentity, templateKey };
   }
 
+  if (!["in_app", "email", "webhook"].includes(channel)) {
+    return { message: labels.invalidChannel, status: "error", templateIdentity, templateKey };
+  }
+
+  if (!["zh", "en"].includes(templateLocale)) {
+    return { message: labels.invalidLocale, status: "error", templateIdentity, templateKey };
+  }
+
+  if (!["draft", "active", "archived"].includes(status)) {
+    return { message: labels.invalidStatus, status: "error", templateIdentity, templateKey };
+  }
+
   if (!token) {
     return { message: labels.missingToken, status: "error", templateIdentity, templateKey };
   }
@@ -69,7 +88,7 @@ export async function saveNotificationTemplateAction(
         body,
         channel,
         locale: templateLocale,
-        status: String(formData.get("status") ?? "draft").trim(),
+        status,
         subject,
         templateKey
       }),

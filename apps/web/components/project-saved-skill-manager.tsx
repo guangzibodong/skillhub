@@ -24,20 +24,64 @@ const copy = {
     collection: "Collection",
     defaultCollection: "default",
     free: "free",
+    notAvailable: "Not available",
+    perCall: "call",
     remove: "Remove",
     saving: "Saving",
     skillSlug: "Skill slug",
-    subscription: "subscription"
+    subscription: "subscription",
+    installedStatuses: {
+      approved: "Approved",
+      installed: "Installed",
+      pending: "Pending",
+      rejected: "Rejected",
+      saved: "Saved"
+    },
+    permissionLevels: {
+      high: "High risk",
+      low: "Low risk",
+      medium: "Medium risk"
+    },
+    verificationStatuses: {
+      deprecated: "Deprecated",
+      draft: "Draft",
+      rejected: "Rejected",
+      submitted: "Submitted",
+      suspended: "Suspended",
+      verified: "Verified"
+    }
   },
   zh: {
     add: "保存技能",
     collection: "集合",
     defaultCollection: "default",
     free: "免费",
+    notAvailable: "暂无",
+    perCall: "次",
     remove: "移除",
     saving: "保存中",
     skillSlug: "技能 slug",
-    subscription: "订阅"
+    subscription: "订阅",
+    installedStatuses: {
+      approved: "已批准",
+      installed: "已安装",
+      pending: "待处理",
+      rejected: "已拒绝",
+      saved: "已保存"
+    },
+    permissionLevels: {
+      high: "高风险",
+      low: "低风险",
+      medium: "中风险"
+    },
+    verificationStatuses: {
+      deprecated: "已废弃",
+      draft: "草稿",
+      rejected: "已拒绝",
+      submitted: "已提交",
+      suspended: "已暂停",
+      verified: "已验证"
+    }
   }
 } as const;
 
@@ -101,9 +145,9 @@ export function ProjectSavedSkillManager({
                   </span>
                 </div>
                 <div className="project-saved-skill-card__meta">
-                  <span className={statusChipClass(savedSkill.verificationStatus)}>{savedSkill.verificationStatus}</span>
-                  <span className="status-chip status-chip--neutral">{savedSkill.permissionLevel}</span>
-                  {savedSkill.installedStatus ? <span className="status-chip">{savedSkill.installedStatus}</span> : null}
+                  <span className={statusChipClass(savedSkill.verificationStatus)}>{formatVerificationStatus(savedSkill.verificationStatus, labels)}</span>
+                  <span className="status-chip status-chip--neutral">{formatPermissionLevel(savedSkill.permissionLevel, labels)}</span>
+                  {savedSkill.installedStatus ? <span className="status-chip">{formatInstalledStatus(savedSkill.installedStatus, labels)}</span> : null}
                 </div>
                 <small>{pricingLabel(savedSkill, locale)}</small>
                 <form action={removeAction}>
@@ -152,7 +196,29 @@ function pricingLabel(savedSkill: DeveloperProjectSavedSkillRecord, locale: Loca
     return labels.subscription;
   }
 
-  return `${formatMoney(savedSkill.pricing.unitAmountCents, savedSkill.pricing.currency)} / call`;
+  return `${formatMoney(savedSkill.pricing.unitAmountCents, savedSkill.pricing.currency)} / ${labels.perCall}`;
+}
+
+type SavedSkillLabels = (typeof copy)["en"] | (typeof copy)["zh"];
+
+function formatVerificationStatus(value: string, labels: SavedSkillLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.verificationStatuses[normalized as keyof typeof labels.verificationStatuses] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function formatPermissionLevel(value: string, labels: SavedSkillLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.permissionLevels[normalized as keyof typeof labels.permissionLevels] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function formatInstalledStatus(value: string, labels: SavedSkillLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.installedStatuses[normalized as keyof typeof labels.installedStatuses] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function humanizeEnum(value: string, fallback: string) {
+  const normalized = value.replaceAll("_", " ").trim();
+  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : fallback;
 }
 
 function formatMoney(cents: number, currency = "usd") {

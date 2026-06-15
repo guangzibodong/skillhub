@@ -18,7 +18,7 @@ import {
   Star,
   XCircle
 } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/i18n";
 import type { PublisherCommercialBlocker, PublisherSkillRecord, PublisherSkillVersionRecord, ReviewSlaStatus } from "@/lib/ops-data";
 import { formatCompactNumber, formatMoney, formatPercent } from "@/lib/ops-format";
 import {
@@ -388,7 +388,19 @@ export function PublisherSkillManager({ locale, skills }: PublisherSkillManagerP
           ))}
         </div>
       ) : (
-        <div className="publisher-skill-empty">{labels.empty}</div>
+        <div className="publisher-skill-empty">
+          <p>{labels.empty}</p>
+          <div className="publisher-skill-empty__actions">
+            <a className="secondary-button secondary-button--compact" href={localizedHref("/publish", locale)}>
+              <FileJson size={15} aria-hidden="true" />
+              <span>{locale === "zh" ? "发布第一个技能" : "Publish first skill"}</span>
+            </a>
+            <a className="ghost-button ghost-button--inline" href={localizedHref("/publisher-review", locale)}>
+              <ClipboardCheck size={15} aria-hidden="true" />
+              <span>{locale === "zh" ? "查看审核规则" : "Review requirements"}</span>
+            </a>
+          </div>
+        </div>
       )}
     </article>
   );

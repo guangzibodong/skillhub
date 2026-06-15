@@ -309,7 +309,7 @@ const copy: Record<Locale, DocsCopy> = {
           title: "市场"
         },
         {
-          body: "组织范围内的发布、版本创建、精确版本提交和付费准备元数据。",
+          body: "组织范围内的发布、版本创建、精确版本提交和付费准备。",
           endpoints: ["POST /v1/skills", "POST /v1/publisher/skills/:slug/versions", "POST /v1/publisher/skills/:slug/versions/:version/submit", "POST /v1/prices"],
           title: "发布者"
         },
@@ -319,7 +319,7 @@ const copy: Record<Locale, DocsCopy> = {
           title: "开发者"
         },
         {
-          body: "审核、信任治理、事故、上线就绪、财务、提现、通知、Webhook outbox 和审计。",
+          body: "审核、信任治理、事故、上线就绪、财务、提现、通知、Webhook 投递箱和审计。",
           endpoints: ["GET /v1/admin/reviews", "GET /v1/admin/launch-readiness", "GET /v1/admin/payouts", "GET /v1/admin/audit-logs"],
           title: "后台"
         }
@@ -349,10 +349,10 @@ const copy: Record<Locale, DocsCopy> = {
         },
         {
           action: "开始发布",
-          evidence: "草稿 -> 精确版本审核 -> 检查证据 -> 付费就绪元数据 -> 反馈和未来付费市场准备",
+          evidence: "草稿 -> 精确版本审核 -> 检查证据 -> 付费准备 -> 反馈和未来付费市场准备",
           href: "/publish",
           steps: ["粘贴 manifest", "保存草稿", "提交版本", "修复检查", "准备付费元数据"],
-          title: "上传、提交、准备付费就绪元数据并改进",
+          title: "上传、提交、补充付费准备并持续改进",
           user: "发布者 / 技能作者"
         },
         {
@@ -396,7 +396,7 @@ const copy: Record<Locale, DocsCopy> = {
       items: [
         {
           body: "SkillHub 技能包是版本化合约。公开发现应优先批准版本，不能悄悄替换已安装行为。",
-          bullets: ["draft -> submitted -> in_review -> verified/rejected", "已验证和已安装版本不可变", "相似和替代技能路径"],
+          bullets: ["草稿 -> 已提交 -> 审核中 -> 已验证/已拒绝", "已验证和已安装版本不可变", "相似和替代技能路径"],
           title: "注册库和市场"
         },
         {
@@ -439,22 +439,22 @@ const copy: Record<Locale, DocsCopy> = {
         {
           body: "技能版本的发布和审核状态。",
           title: "技能生命周期",
-          values: ["draft", "submitted", "in_review", "verified", "rejected", "deprecated", "suspended"]
+          values: ["草稿", "已提交", "审核中", "已验证", "已拒绝", "已弃用", "已暂停"]
         },
         {
           body: "审核证据和修复闭环中的自动检查状态。",
           title: "运行检查",
-          values: ["queued", "running", "passed", "warning", "failed"]
+          values: ["排队中", "运行中", "已通过", "预警", "失败"]
         },
         {
           body: "预发布付费市场准备度和资金状态模型。",
           title: "付费预览余额",
-          values: ["pending", "available", "locked", "paid", "failed", "blocked", "reversed"]
+          values: ["待处理", "可用", "锁定", "已支付", "失败", "已阻断", "已冲正"]
         },
         {
           body: "最终 provider 接入前的通知和 webhook 投递状态。",
           title: "投递",
-          values: ["queued", "pending", "processing", "sent", "skipped", "failed", "retry_ready"]
+          values: ["排队中", "待处理", "处理中", "已发送", "已跳过", "失败", "可重试"]
         }
       ],
       title: "共享状态语言"
@@ -794,7 +794,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
       <div className="section-divider" />
 
       {/* API */}
-      <section className="py-[96px] section" aria-labelledby="docs-api-heading">
+      <section className="py-[96px] section" id="api" aria-labelledby="docs-api-heading">
         <div className="section-inner flex flex-col gap-8">
           <div className="flex flex-col gap-3 max-w-[720px]">
             <div className="eyebrow">
@@ -863,7 +863,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
       <div className="section-divider" />
 
       {/* Operator */}
-      <section className="py-[96px] section" aria-labelledby="docs-operator-heading">
+      <section className="py-[96px] section" id="admin" aria-labelledby="docs-operator-heading">
         <div className="section-inner">
           <div className="card flex flex-col lg:flex-row gap-8">
             <div className="flex flex-col gap-4 flex-1">

@@ -21,6 +21,7 @@ export type NotificationDeliveryProcessActionState = {
 
 const copy = {
   en: {
+    deliverConfirmationRequired: "Type DELIVER to process real external deliveries. Use dry run for previews.",
     missingAction: "Choose a delivery action.",
     missingReason: "A delivery reason is required.",
     missingToken: "Sign in with an admin or support account before managing delivery events.",
@@ -30,6 +31,7 @@ const copy = {
     unableSave: "Unable to update delivery event."
   },
   zh: {
+    deliverConfirmationRequired: "真实外部投递前需要输入 DELIVER。预览请使用演练模式。",
     missingAction: "\u8bf7\u9009\u62e9\u6295\u9012\u64cd\u4f5c\u3002",
     missingReason: "\u9700\u8981\u586b\u5199\u6295\u9012\u5904\u7406\u539f\u56e0\u3002",
     missingToken: "请先使用具备 admin/support 角色的账号登录，才能管理投递事件。",
@@ -115,6 +117,11 @@ export async function processNotificationDeliveriesAction(
 ): Promise<NotificationDeliveryProcessActionState> {
   const labels = copy[locale];
   const token = await getAdminOperatorToken();
+  const mode = String(formData.get("mode") ?? "dry_run").trim();
+
+  if (mode === "deliver" && String(formData.get("confirmation") ?? "").trim() !== "DELIVER") {
+    return { message: labels.deliverConfirmationRequired, status: "error" };
+  }
 
   if (!token) {
     return { message: labels.missingToken, status: "error" };
@@ -124,7 +131,7 @@ export async function processNotificationDeliveriesAction(
     const response = await fetch(`${getApiUrl()}/v1/admin/notification-deliveries/process`, {
       body: JSON.stringify({
         limit: Number(formData.get("limit") ?? "10"),
-        mode: String(formData.get("mode") ?? "deliver").trim()
+        mode
       }),
       headers: {
         Authorization: `Bearer ${token}`,

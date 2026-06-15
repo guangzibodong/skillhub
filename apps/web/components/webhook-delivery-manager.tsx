@@ -17,6 +17,8 @@ type WebhookDeliveryManagerProps = {
 const copy = {
   en: {
     attempts: "Attempts",
+    confirmation: "Confirm real delivery",
+    confirmationPlaceholder: "Type DELIVER only for real sends",
     delivered: "Delivered",
     empty: "No webhook outbox deliveries are waiting.",
     endpoint: "Endpoint",
@@ -54,24 +56,26 @@ const copy = {
   },
   zh: {
     attempts: "\u5c1d\u8bd5\u6b21\u6570",
+    confirmation: "真实投递确认",
+    confirmationPlaceholder: "真实投递时输入 DELIVER",
     delivered: "\u5df2\u6295\u9012",
-    empty: "\u6682\u65e0\u5f85\u6295\u9012\u7684 Webhook outbox\u3002",
-    endpoint: "Endpoint",
-    endpointStatus: "Endpoint \u72b6\u6001",
+    empty: "暂无待投递的 Webhook 事件。",
+    endpoint: "端点",
+    endpointStatus: "端点状态",
     event: "\u4e8b\u4ef6",
     lastAttempt: "\u4e0a\u6b21\u5c1d\u8bd5",
     nextAttempt: "\u4e0b\u6b21\u91cd\u8bd5",
     organization: "\u7ec4\u7ec7",
-    payload: "\u8f7d\u8377",
+    payload: "载荷摘要",
     process: "\u6295\u9012\u5230\u671f\u4e8b\u4ef6",
     processLimit: "\u6570\u91cf",
     processMode: "\u6a21\u5f0f",
     processSummary: "\u5df2\u5904\u7406 {{processed}} / \u6210\u529f {{delivered}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
-    response: "\u54cd\u5e94",
+    response: "响应摘要",
     responseStatus: "HTTP",
     saving: "\u5904\u7406\u4e2d",
     status: "\u72b6\u6001",
-    title: "Webhook outbox",
+    title: "Webhook 投递箱",
     endpointStatuses: {
       active: "\u542f\u7528",
       disabled: "\u7981\u7528",
@@ -122,6 +126,10 @@ export function WebhookDeliveryManager({ deliveries, locale }: WebhookDeliveryMa
           <span>{labels.processLimit}</span>
           <input defaultValue="10" max="50" min="1" name="limit" type="number" />
         </label>
+        <label>
+          <span>{labels.confirmation}</span>
+          <input autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
+        </label>
         <button className="secondary-button secondary-button--compact" disabled={isProcessing} type="submit">
           <RefreshCw size={15} aria-hidden="true" />
           <span>{isProcessing ? labels.saving : labels.process}</span>
@@ -146,7 +154,7 @@ export function WebhookDeliveryManager({ deliveries, locale }: WebhookDeliveryMa
                 <MetaItem label={labels.organization} value={delivery.organizationName ?? delivery.organizationId} />
                 <MetaItem label={labels.endpointStatus} value={formatEndpointStatus(delivery.endpointStatus, labels)} />
                 <MetaItem label={labels.attempts} value={String(delivery.attemptCount)} />
-                <MetaItem label={labels.responseStatus} value={delivery.responseStatus ? String(delivery.responseStatus) : "n/a"} />
+                <MetaItem label={labels.responseStatus} value={formatOptional(delivery.responseStatus ? String(delivery.responseStatus) : null, locale)} />
                 <MetaItem label={labels.lastAttempt} value={formatDate(delivery.lastAttemptedAt, locale)} />
                 <MetaItem label={labels.nextAttempt} value={formatDate(delivery.nextAttemptAt, locale)} />
                 <MetaItem label={labels.delivered} value={formatDate(delivery.deliveredAt, locale)} />
@@ -159,7 +167,7 @@ export function WebhookDeliveryManager({ deliveries, locale }: WebhookDeliveryMa
 
               <div className="notification-delivery-payload">
                 <span>{labels.response}</span>
-                <code>{delivery.responseBody ?? "n/a"}</code>
+                <code>{formatOptional(delivery.responseBody, locale)}</code>
               </div>
             </section>
           ))
@@ -227,10 +235,18 @@ function statusClass(status: AdminWebhookDelivery["status"]) {
 
 function formatEndpointStatus(status: AdminWebhookDelivery["endpointStatus"], labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
   if (!status) {
-    return "n/a";
+    return labels === copy.zh ? "暂无" : "n/a";
   }
 
   return labels.endpointStatuses[status];
+}
+
+function formatOptional(value: string | null | undefined, locale: Locale) {
+  if (!value || value === "n/a") {
+    return locale === "zh" ? "暂无" : "n/a";
+  }
+
+  return value;
 }
 
 function payloadSummary(payload: Record<string, unknown>) {

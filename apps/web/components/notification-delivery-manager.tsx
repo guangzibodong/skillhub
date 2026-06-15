@@ -20,6 +20,8 @@ const copy = {
   en: {
     attempts: "Attempts",
     channel: "Channel",
+    confirmation: "Confirm real delivery",
+    confirmationPlaceholder: "Type DELIVER only for real sends",
     created: "Created",
     delivered: "Delivered",
     empty: "No external email or webhook delivery events are waiting.",
@@ -31,7 +33,7 @@ const copy = {
     payload: "Payload",
     provider: "Provider",
     providerMessageId: "Provider message id",
-    providerPlaceholder: "provider_deferred",
+    providerPlaceholder: "例如 SpaceMail SMTP",
     reason: "Reason",
     reasonPlaceholder: "Manual provider check, SMTP result, or retry note",
     process: "Process due",
@@ -65,6 +67,8 @@ const copy = {
   zh: {
     attempts: "\u5c1d\u8bd5\u6b21\u6570",
     channel: "\u6e20\u9053",
+    confirmation: "真实投递确认",
+    confirmationPlaceholder: "真实投递时输入 DELIVER",
     created: "\u521b\u5efa",
     delivered: "\u5df2\u6295\u9012",
     empty: "\u6682\u65e0\u5f85\u5904\u7406\u7684\u90ae\u4ef6\u6216 webhook \u6295\u9012\u4e8b\u4ef6\u3002",
@@ -76,7 +80,7 @@ const copy = {
     payload: "\u8f7d\u8377",
     provider: "\u670d\u52a1\u5546",
     providerMessageId: "\u670d\u52a1\u5546\u6d88\u606f ID",
-    providerPlaceholder: "provider_deferred",
+    providerPlaceholder: "例如 SpaceMail SMTP",
     reason: "\u539f\u56e0",
     reasonPlaceholder: "\u624b\u52a8\u6838\u5bf9\u7ed3\u679c\u3001SMTP \u7ed3\u679c\u6216\u91cd\u8bd5\u8bf4\u660e",
     process: "\u5904\u7406\u5230\u671f\u961f\u5217",
@@ -146,6 +150,10 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
           <span>{labels.processLimit}</span>
           <input defaultValue="10" max="50" min="1" name="limit" type="number" />
         </label>
+        <label>
+          <span>{labels.confirmation}</span>
+          <input autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
+        </label>
         <button className="secondary-button secondary-button--compact" disabled={isProcessing} type="submit">
           <RefreshCw size={15} aria-hidden="true" />
           <span>{isProcessing ? labels.saving : labels.process}</span>
@@ -158,6 +166,10 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
           deliveries.map((delivery) => {
             const statusMessage = state.deliveryId === delivery.id ? state : null;
             const Icon = delivery.channel === "email" ? MailCheck : Webhook;
+            const isTerminal = delivery.status === "sent" || delivery.status === "skipped";
+            const isFailed = delivery.status === "failed";
+            const disableSentOrSkip = isSaving || isTerminal || isFailed;
+            const disableRetry = isSaving || isTerminal;
 
             return (
               <section className="notification-delivery-card" key={delivery.id}>
@@ -172,12 +184,12 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
                 <dl className="notification-delivery-meta">
                   <MetaItem icon={<Icon size={15} aria-hidden="true" />} label={labels.channel} value={labels.channels[delivery.channel]} />
                   <MetaItem label={labels.attempts} value={String(delivery.deliveryAttempts)} />
-                  <MetaItem label={labels.provider} value={delivery.deliveryProvider ?? "n/a"} />
+                  <MetaItem label={labels.provider} value={formatProvider(delivery.deliveryProvider, locale)} />
                   <MetaItem label={labels.created} value={formatDate(delivery.createdAt, locale)} />
                   <MetaItem label={labels.lastAttempt} value={formatDate(delivery.lastAttemptedAt, locale)} />
                   <MetaItem label={labels.nextAttempt} value={formatDate(delivery.nextAttemptAt, locale)} />
                   <MetaItem label={labels.delivered} value={formatDate(delivery.deliveredAt, locale)} />
-                  <MetaItem label={labels.error} value={delivery.error ?? "n/a"} />
+                  <MetaItem label={labels.error} value={formatOptional(delivery.error, locale)} />
                 </dl>
 
                 <div className="notification-delivery-payload">
@@ -193,7 +205,7 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
                   </label>
                   <label>
                     <span>{labels.provider}</span>
-                    <input defaultValue={delivery.deliveryProvider ?? "provider_deferred"} name="provider" placeholder={labels.providerPlaceholder} />
+                    <input defaultValue={delivery.deliveryProvider ?? ""} name="provider" placeholder={labels.providerPlaceholder} />
                   </label>
                   <label>
                     <span>{labels.providerMessageId}</span>
@@ -205,19 +217,19 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
                   </label>
 
                   <div className="notification-delivery-actions">
-                    <button className="secondary-button secondary-button--compact" disabled={isSaving} name="action" type="submit" value="mark_sent">
+                    <button className="secondary-button secondary-button--compact" disabled={disableSentOrSkip} name="action" type="submit" value="mark_sent">
                       <Send size={15} aria-hidden="true" />
                       <span>{isSaving && statusMessage ? labels.saving : labels.markSent}</span>
                     </button>
-                    <button className="ghost-button ghost-button--compact" disabled={isSaving} name="action" type="submit" value="retry">
+                    <button className="ghost-button ghost-button--compact" disabled={disableRetry} name="action" type="submit" value="retry">
                       <RefreshCw size={15} aria-hidden="true" />
                       <span>{labels.retry}</span>
                     </button>
-                    <button className="ghost-button ghost-button--compact" disabled={isSaving} name="action" type="submit" value="mark_failed">
+                    <button className="ghost-button ghost-button--compact" disabled={isSaving || isTerminal} name="action" type="submit" value="mark_failed">
                       <XCircle size={15} aria-hidden="true" />
                       <span>{labels.fail}</span>
                     </button>
-                    <button className="ghost-button ghost-button--compact" disabled={isSaving} name="action" type="submit" value="skip">
+                    <button className="ghost-button ghost-button--compact" disabled={disableSentOrSkip} name="action" type="submit" value="skip">
                       <SkipForward size={15} aria-hidden="true" />
                       <span>{labels.skip}</span>
                     </button>
@@ -301,6 +313,22 @@ function statusClass(status: AdminNotificationDelivery["status"]) {
   return "status-chip status-chip--warning";
 }
 
+function formatProvider(value: string | null | undefined, locale: Locale) {
+  if (!value || value === "provider_deferred" || value === "n/a") {
+    return locale === "zh" ? "服务商待接入" : "Provider deferred";
+  }
+
+  return value;
+}
+
+function formatOptional(value: string | null | undefined, locale: Locale) {
+  if (!value || value === "n/a") {
+    return locale === "zh" ? "暂无" : "n/a";
+  }
+
+  return value;
+}
+
 function payloadSummary(payload: Record<string, unknown>) {
   const entries = Object.entries(payload).slice(0, 8);
 
@@ -329,7 +357,7 @@ function formatPayloadValue(value: unknown) {
 
 function formatDate(value: string | null | undefined, locale: Locale) {
   if (!value) {
-    return "n/a";
+    return locale === "zh" ? "暂无" : "n/a";
   }
 
   if (value === "demo") {

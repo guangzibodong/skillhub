@@ -5,7 +5,6 @@ import {
   BookOpenCheck,
   Building2,
   CircleDollarSign,
-  ClipboardList,
   Code2,
   Gauge,
   HandCoins,
@@ -25,7 +24,6 @@ import { MarketplaceBrowser } from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { PublicAccessScope } from "@/components/public-access-scope";
 import { getDictionary, getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
-import { localizeText, marketplaceRequests } from "@/lib/marketplace-data";
 import { getOverviewMetric, getPlatformOverview } from "@/lib/platform-overview";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import {
@@ -102,11 +100,6 @@ const pageCopy = {
     consoleSubtitle: "Agents should start from a contract they can inspect before project-gated adoption or runtime use.",
     proof: ["Searchable catalog", "Permission review", "API inspect", "Project-gated runtime"],
     mcpMetadataNote: "MCP metadata only; runtime invocation uses POST /mcp after project auth.",
-    requests: "Example skill requests - not live data",
-    requestsBody: "These are example demand scenarios for the future paid marketplace. Live buyer requests stay empty until real users submit them.",
-    requestBudget: "Sample budget",
-    requestState: "Example state",
-    requestTag: "Not live",
     publishTitle: "Publisher review path",
     publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Paid-readiness metadata", "Public listing", "Prelaunch ledger model", "Future paid review"],
     trustTitle: "Launch requirements",
@@ -228,13 +221,8 @@ const pageCopy = {
     consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的采用或运行。",
     proof: ["可搜索目录", "权限审核", "API 查看", "项目门控运行"],
     mcpMetadataNote: "仅 MCP 元数据；运行调用需项目认证后使用 POST /mcp。",
-    requests: "示例技能需求 - 非实时数据",
-    requestsBody: "这些是未来付费市场的示例需求场景。真实买方需求会在用户提交后才出现，生产数据为空时保持为空。",
-    requestBudget: "示例预算",
-    requestState: "示例状态",
-    requestTag: "非实时",
     publishTitle: "发布者审核路径",
-    publishSteps: ["草稿 manifest", "运行测试", "人工审核", "付费准备元数据", "公开上架", "预发布账本模型", "未来付费审核"],
+    publishSteps: ["草稿 manifest", "运行测试", "人工审核", "付费准备", "公开上架", "预发布账本模型", "未来付费审核"],
     trustTitle: "上线要求",
     trustItems: [
       ["Manifest", "类型化输入输出、运行时、权限、版本、作者。"],
@@ -245,7 +233,7 @@ const pageCopy = {
     moneyTitle: "未来付费市场模型",
     moneyRows: [
       ["当前阶段", "开发者预览目录；支付扣款仍处于预发布"],
-      ["付费准备", "登录后的发布者可准备付费就绪元数据，供未来财务复核"],
+      ["付费准备", "登录后的发布者可补充定价意图和收款资料，供未来财务复核"],
       ["未来账本规则", "可计费使用只会在付费市场上线门槛通过后记账"],
       ["运营控制", "财务凭证保持后台门控，公开页面仅展示预发布状态"]
     ],
@@ -766,53 +754,19 @@ curl "https://api.useskillhub.com/mcp"`}</code>
 
       <div className="section-divider" />
 
-      {/* Operations layout: Requests + Publish steps */}
+      {/* Publisher review path */}
       <section className="section py-10">
-        <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
-          <article className="card p-6 flex flex-col gap-4">
-            <div className="eyebrow">
-              <ClipboardList size={16} aria-hidden="true" />
-              <span>{labels.requests}</span>
-            </div>
-            <p className="body-text-sm text-[#666]">{labels.requestsBody}</p>
-            <div className="flex flex-col gap-3">
-              {marketplaceRequests.map((request) => (
-                <div key={localizeText(request.title, locale)} className="flex items-center justify-between py-2 border-t border-[rgba(255,255,255,0.06)]">
-                  <div className="flex flex-col gap-0.5">
-                    <strong className="text-sm text-white flex items-center gap-2">
-                      {localizeText(request.title, locale)}
-                      {request.state === "example" ? (
-                        <span className="pill pill--neutral text-[10px]">{labels.requestTag}</span>
-                      ) : null}
-                    </strong>
-                    <span className="text-xs text-[#525252]">
-                      {request.state === "example"
-                        ? `${labels.requestState}: ${localizeText(request.status, locale)}`
-                        : localizeText(request.status, locale)}
-                      {" | "}
-                      {localizeText(request.due, locale)}
-                    </span>
-                  </div>
-                  <b className="flex flex-col items-end text-sm text-white">
-                    <small className="text-[10px] text-[#525252] font-normal">{labels.requestBudget}</small>
-                    {request.bounty}
-                  </b>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="card p-6 flex flex-col gap-4">
+        <div className="section-inner">
+          <article className="card p-6 flex flex-col gap-5">
             <div className="eyebrow">
               <BookOpenCheck size={16} aria-hidden="true" />
               <span>{labels.publishTitle}</span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {labels.publishSteps.map((step, index) => (
-                <div key={step} className="flex items-center gap-3 text-sm text-white">
-                  <span className="text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
+                <div key={step} className="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-3 text-sm text-white">
+                  <span className="mb-2 block text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
                   <strong className="font-medium">{step}</strong>
-                  {index < labels.publishSteps.length - 1 && <ArrowRight size={14} aria-hidden="true" className="text-[#525252]" />}
                 </div>
               ))}
             </div>

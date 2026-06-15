@@ -6,6 +6,7 @@ type WebhookDeliveryStatus = "delivered" | "failed" | "pending" | "processing" |
 type WebhookDeliveryProcessMode = "deliver" | "dry_run";
 
 type WebhookDeliveryProcessInput = {
+  confirmation?: unknown;
   limit?: unknown;
   mode?: unknown;
 };
@@ -156,6 +157,7 @@ export async function processWebhookDeliveries(
   const sql = await requireSql();
   const limit = normalizeLimit(Number(input.limit) || 10, 50);
   const mode = normalizeProcessMode(input.mode);
+  requireDeliverConfirmation(mode, input.confirmation);
   const maxAttempts = normalizeMaxAttempts(env);
   const rows =
     mode === "deliver"
@@ -637,13 +639,23 @@ function dryRunStatus(status: WebhookDeliveryOutcome["status"]): AdminWebhookDel
 }
 
 function normalizeProcessMode(value: unknown): WebhookDeliveryProcessMode {
-  const mode = String(value ?? "deliver").trim();
+  const mode = String(value ?? "dry_run").trim();
 
   if (mode === "deliver" || mode === "dry_run") {
     return mode;
   }
 
   throw new Error("Webhook delivery process mode must be deliver or dry_run.");
+}
+
+function requireDeliverConfirmation(mode: WebhookDeliveryProcessMode, confirmation: unknown) {
+  if (mode !== "deliver") {
+    return;
+  }
+
+  if (String(confirmation ?? "").trim() !== "DELIVER") {
+    throw new Error("Type DELIVER to confirm real webhook delivery processing.");
+  }
 }
 
 function normalizeOptionalStatus(value: string | null | undefined): WebhookDeliveryStatus | null {
@@ -680,7 +692,7 @@ function toWebhookDeliveryRecord(row: WebhookDeliveryRow): AdminWebhookDeliveryR
     lastAttemptedAt: row.lastAttemptedAt,
     deliveredAt: row.deliveredAt,
     responseStatus: row.responseStatus,
-    responseBody: row.responseBody ? row.responseBody.slice(0, 400) : null,
+    responseBody: summarizeResponseBody(row.responseBody),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
   };
@@ -704,6 +716,21 @@ function summarizePayload(payload: Record<string, unknown> | undefined) {
   }
 
   return summary;
+}
+
+function summarizeResponseBody(responseBody: string | null | undefined) {
+  if (!responseBody) {
+    return null;
+  }
+
+  return redactSensitiveText(responseBody).slice(0, 400);
+}
+
+function redactSensitiveText(value: string) {
+  return value
+    .replace(/(authorization|bearer|token|secret|password|api[-_ ]?key|signature)(["'\s:=]+)([^"',\s]{6,})/gi, "$1$2[redacted]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
+    .replace(/(sk|ghp|github_pat|xox[baprs])-?[A-Za-z0-9_\-]{10,}/g, "[redacted-secret]");
 }
 
 function isSensitivePayloadKey(key: string) {

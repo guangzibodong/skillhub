@@ -78,6 +78,8 @@ type DeveloperOperationsSummary = {
 };
 
 const developerAccessRoles = ["developer", "owner", "admin", "super_admin"];
+const organizationBillingRoles = new Set(["admin", "finance", "owner", "super_admin"]);
+const organizationTeamRoles = new Set(["admin", "owner", "super_admin"]);
 
 const developerCommandCopy = {
   en: {
@@ -260,7 +262,7 @@ const copy = {
     description: "给采用已验证技能并运行项目策略检查的团队准备的独立工作台：创建智能体项目、管理 API Key、预算、买家需求、付费预览准备和运行治理。",
     emptyProjects: "还没有开发者项目。先创建一个项目，再开始采用、审批和测试已验证技能。",
     eyebrow: "开发者工作台",
-    lockedDescription: "先使用开发者、owner 或 admin 角色登录，再创建项目、Key、预算、买家需求、webhook、通知和受治理的运行测试。",
+    lockedDescription: "请先登录已开通开发权限的账号，再创建项目、Key、预算、买家需求、Webhook、通知和受治理的运行测试。",
     lockedTitle: "登录后进入开发者工作台。",
     metrics: {
       budget: "月度预算",
@@ -305,10 +307,14 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   const hasWorkspaceSession = Boolean(session.subject);
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasDeveloperAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
+  const canManageOrganizationBilling = hasAnyRole(roleSet, organizationBillingRoles);
+  const canManageOrganizationTeam = hasAnyRole(roleSet, organizationTeamRoles);
+  const shellSecondaryHref = hasWorkspaceSession ? localizedHref("/account", locale) : undefined;
+  const shellSecondaryLabel = hasWorkspaceSession ? (locale === "zh" ? "个人中心" : "Account") : undefined;
 
   if (!hasDeveloperAccess) {
     return (
-      <AppShell active="developer" locale={locale}>
+      <AppShell active="developer" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
         <section className="section">
           <div className="section-inner">
             <div className="eyebrow">
@@ -322,7 +328,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
 
         <JourneyRail
           actionHrefOverride={hasWorkspaceSession ? "/account" : hrefWithReturnTo("/login", "/developer", locale)}
-          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabelOverride={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           currentStep="developer"
           journey="developer"
           locale={locale}
@@ -336,14 +342,14 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
 
         <WorkspaceLockedPanel
           actionHref={hasWorkspaceSession ? localizedHref("/account", locale) : localizedHrefWithReturnTo("/login", locale, "/developer")}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "开发者工作台会创建项目、Key、团队成员、账单资料、webhook 和通知偏好。当前会话缺少开发者权限，因此写操作和工作区数据保持隐藏。"
+              ? "开发者工作台会创建项目、Key、团队成员、账单资料、Webhook 和通知偏好。当前账号还没有开发权限，因此写操作和工作区数据保持隐藏。"
               : "The developer workspace creates projects, keys, team access, billing profiles, webhooks, and notification preferences. This session cannot operate them, so workspace data and write controls stay hidden."
           }
           locale={locale}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发权限" : "Developer access required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </AppShell>
     );
@@ -402,7 +408,7 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
   ];
 
   return (
-    <AppShell active="developer" locale={locale}>
+    <AppShell active="developer" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
       <section className="section">
         <div className="section-inner">
           <div className="eyebrow">
@@ -570,11 +576,26 @@ export default async function DeveloperPage({ searchParams }: PageProps) {
 
             <aside className="lg:w-[360px] space-y-6">
               <div id="developer-team">
-                <OrganizationTeamManager locale={locale} members={organizationTeamMembers} />
+                {canManageOrganizationTeam ? (
+                  <OrganizationTeamManager locale={locale} members={organizationTeamMembers} />
+                ) : (
+                  <DeveloperPermissionNotice
+                    body={
+                      locale === "zh"
+                        ? "团队成员、角色和组织 token 由 owner/admin 管理。普通开发者可以继续处理项目、安装、运行和通知。"
+                        : "Team members, roles, and organization tokens are managed by owners/admins. Developers can continue with projects, installs, runtime, and notifications."
+                    }
+                    title={locale === "zh" ? "团队权限由负责人管理" : "Team access is owner-managed"}
+                  />
+                )}
               </div>
 
               <div id="developer-billing">
-                <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+                {canManageOrganizationBilling ? (
+                  <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+                ) : (
+                  <DeveloperBillingSummary billing={organizationBilling} locale={locale} />
+                )}
               </div>
 
               <div id="developer-webhooks">
@@ -666,7 +687,7 @@ function WorkspaceLockedPanel({
                 const Icon = [LogIn, FolderPlus, SearchCheck][index] ?? ClipboardList;
 
                 return (
-                  <a className="block rounded-[12px] border border-[rgba(255,255,255,0.08)] p-4 space-y-1 transition-colors hover:bg-[#212121]" href={localizedHref(action.href, locale)} key={action.title}>
+                  <a className="block rounded-[12px] border border-[rgba(255,255,255,0.08)] p-4 space-y-1 transition-colors hover:bg-[#212121]" href={formatDeveloperGuideHref(action.href, locale)} key={action.title}>
                     <Icon size={16} aria-hidden="true" className="text-[#999]" />
                     <span className="block body-text-sm text-[#666]">{action.label}</span>
                     <strong className="block text-white text-sm">{action.title}</strong>
@@ -680,6 +701,10 @@ function WorkspaceLockedPanel({
       </div>
     </section>
   );
+}
+
+function formatDeveloperGuideHref(href: string, locale: DeveloperLocale) {
+  return href === "/login" ? localizedHrefWithReturnTo("/login", locale, "/developer") : localizedHref(href, locale);
 }
 
 function getDeveloperLockedGuide(locale: DeveloperLocale) {
@@ -696,7 +721,7 @@ function getDeveloperLockedGuide(locale: DeveloperLocale) {
           title: "登录账号"
         },
         {
-          body: "在个人中心确认 developer、owner 或 admin 角色，再进入项目工作台。",
+          body: "在账号中心确认这个组织已开通开发权限后，再进入项目工作台。",
           href: "/account",
           label: "02",
           title: "确认开发权限"
@@ -1078,4 +1103,60 @@ function developerAnchor(anchor: string, locale: DeveloperLocale) {
 
 function projectHref(project: DeveloperProjectRecord, locale: DeveloperLocale) {
   return localizedHref(`/dashboard/projects/${project.slug}`, locale);
+}
+
+function hasAnyRole(roleSet: Set<string | undefined>, roles: Set<string>) {
+  return Array.from(roles).some((role) => roleSet.has(role));
+}
+
+function DeveloperPermissionNotice({
+  body,
+  title
+}: {
+  body: string;
+  title: string;
+}) {
+  return (
+    <article className="ops-panel developer-permission-notice">
+      <div className="card-kicker">
+        <LockKeyhole size={16} aria-hidden="true" />
+        <span>{title}</span>
+      </div>
+      <p>{body}</p>
+    </article>
+  );
+}
+
+function DeveloperBillingSummary({
+  billing,
+  locale
+}: {
+  billing: OrganizationBillingSummary;
+  locale: DeveloperLocale;
+}) {
+  const paymentStatus = billing.summary.defaultPaymentMethodStatus.replaceAll("_", " ");
+
+  return (
+    <article className="ops-panel developer-permission-notice">
+      <div className="card-kicker">
+        <CreditCard size={16} aria-hidden="true" />
+        <span>{locale === "zh" ? "组织账单只读" : "Organization billing read-only"}</span>
+      </div>
+      <p>
+        {locale === "zh"
+          ? "账单资料和付款状态由 owner/admin/finance 管理。这里仅展示准备状态，避免普通开发者误提交财务配置。"
+          : "Billing profile and payment state are managed by owners/admins/finance. This read-only summary keeps developers from submitting finance changes."}
+      </p>
+      <div className="developer-permission-notice__grid">
+        <span>
+          <strong>{locale === "zh" ? "发票资料" : "Invoice profile"}</strong>
+          {billing.summary.invoiceReady ? (locale === "zh" ? "可开票" : "Ready") : (locale === "zh" ? "需完善" : "Needs setup")}
+        </span>
+        <span>
+          <strong>{locale === "zh" ? "默认付款状态" : "Default payment"}</strong>
+          {paymentStatus}
+        </span>
+      </div>
+    </article>
+  );
 }

@@ -31,13 +31,15 @@ const actionCopy = {
 const sensitiveActionCopy = {
   en: {
     invalidRemoveConfirmation: "Type REMOVE before removing this installed skill.",
+    invalidRestoreConfirmation: "Type RESTORE before restoring this installed skill.",
     invalidSuspendConfirmation: "Type SUSPEND before suspending this installed skill.",
-    missingReason: "A reason is required before suspending or removing an installed skill."
+    missingReason: "A reason is required before changing installed-skill runtime status."
   },
   zh: {
     invalidRemoveConfirmation: "\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u524d\uff0c\u8bf7\u8f93\u5165 REMOVE\u3002",
+    invalidRestoreConfirmation: "恢复已安装技能前，请输入 RESTORE。",
     invalidSuspendConfirmation: "\u6682\u505c\u5df2\u5b89\u88c5\u6280\u80fd\u524d\uff0c\u8bf7\u8f93\u5165 SUSPEND\u3002",
-    missingReason: "\u6682\u505c\u6216\u79fb\u9664\u5df2\u5b89\u88c5\u6280\u80fd\u524d\u5fc5\u987b\u586b\u5199\u539f\u56e0\u3002"
+    missingReason: "调整已安装技能运行状态前必须填写原因。"
   }
 } as const;
 
@@ -65,8 +67,8 @@ export async function updateProjectSkillInstallStatusAction(
     return { message: labels.invalidStatus, status: "error", updatedSkillSlug: skillSlug };
   }
 
-  if (status === "suspended" || status === "removed") {
-    const expectedConfirmation = status === "suspended" ? "SUSPEND" : "REMOVE";
+  if (status === "suspended" || status === "removed" || status === "installed") {
+    const expectedConfirmation = status === "suspended" ? "SUSPEND" : status === "removed" ? "REMOVE" : "RESTORE";
 
     if (reason.length < 6) {
       return { message: sensitiveLabels.missingReason, status: "error", updatedSkillSlug: skillSlug };
@@ -74,7 +76,12 @@ export async function updateProjectSkillInstallStatusAction(
 
     if (confirmation.toUpperCase() !== expectedConfirmation) {
       return {
-        message: status === "suspended" ? sensitiveLabels.invalidSuspendConfirmation : sensitiveLabels.invalidRemoveConfirmation,
+        message:
+          status === "suspended"
+            ? sensitiveLabels.invalidSuspendConfirmation
+            : status === "removed"
+              ? sensitiveLabels.invalidRemoveConfirmation
+              : sensitiveLabels.invalidRestoreConfirmation,
         status: "error",
         updatedSkillSlug: skillSlug
       };

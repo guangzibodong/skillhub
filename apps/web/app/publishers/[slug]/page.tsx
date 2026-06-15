@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 import {
   ArrowRight,
   BadgeCheck,
@@ -18,6 +19,7 @@ import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublisherProfile } from "@/lib/public-publishers";
 import { getSkillInstallState } from "@/lib/skill-install-state";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,41 @@ type PageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const [{ slug }, search] = await Promise.all([params, searchParams]);
+  const locale = getLocaleFromSearchParams(search);
+  const publisher = await getPublicPublisherProfile(slug);
+
+  if (!publisher) {
+    return buildLocalizedMetadata({
+      locale,
+      path: `/publishers/${slug}`,
+      noIndex: true,
+      en: {
+        title: "Publisher not found - SkillHub",
+        description: "This SkillHub publisher profile is not currently available."
+      },
+      zh: {
+        title: "发布者不存在 - SkillHub",
+        description: "当前 SkillHub 发布者档案暂不可用。"
+      }
+    });
+  }
+
+  return buildLocalizedMetadata({
+    locale,
+    path: `/publishers/${publisher.slug}`,
+    en: {
+      title: `${publisher.displayName} - SkillHub Publisher Profile`,
+      description: `Review ${publisher.displayName}'s verified skills, public listings, runtime evidence, install signals, and paid-marketplace preview status.`
+    },
+    zh: {
+      title: `${publisher.displayName} - SkillHub 发布者档案`,
+      description: `查看 ${publisher.displayName} 的已验证技能、公开上架、运行证据、安装信号和付费市场预览状态。`
+    }
+  });
+}
 
 const copy = {
   en: {

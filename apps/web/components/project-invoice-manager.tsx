@@ -24,9 +24,17 @@ const copy = {
     generate: "Generate invoice",
     generating: "Generating",
     lineItems: "line items",
+    notAvailable: "Not available",
     periodEnd: "Period end",
     periodStart: "Period start",
-    total: "Total"
+    total: "Total",
+    statuses: {
+      draft: "Draft",
+      issued: "Issued",
+      paid: "Paid",
+      overdue: "Overdue",
+      void: "Void"
+    }
   },
   zh: {
     currency: "币种",
@@ -35,9 +43,17 @@ const copy = {
     generate: "生成发票",
     generating: "生成中",
     lineItems: "行项目",
+    notAvailable: "暂无",
     periodEnd: "结束日期",
     periodStart: "开始日期",
-    total: "合计"
+    total: "合计",
+    statuses: {
+      draft: "草稿",
+      issued: "已开具",
+      paid: "已支付",
+      overdue: "已逾期",
+      void: "已作废"
+    }
   }
 } as const;
 
@@ -105,7 +121,7 @@ export function ProjectInvoiceManager({
                     {formatDateValue(invoice.periodStart, locale, noDateLabel)} - {formatDateValue(invoice.periodEnd, locale, noDateLabel)}
                   </small>
                 </strong>
-                <span className={statusChipClass(invoice.status)}>{invoice.status}</span>
+                <span className={statusChipClass(invoice.status)}>{formatInvoiceStatus(invoice.status, labels)}</span>
               </header>
               <div className="project-invoice-card__meta">
                 <span>
@@ -144,6 +160,18 @@ function statusChipClass(status: string) {
   }
 
   return "status-chip";
+}
+
+type InvoiceLabels = (typeof copy)["en"] | (typeof copy)["zh"];
+
+function formatInvoiceStatus(value: string, labels: InvoiceLabels) {
+  const normalized = value.trim().toLowerCase();
+  return labels.statuses[normalized as keyof typeof labels.statuses] ?? humanizeEnum(value, labels.notAvailable);
+}
+
+function humanizeEnum(value: string, fallback: string) {
+  const normalized = value.replaceAll("_", " ").trim();
+  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : fallback;
 }
 
 function formatDateValue(value: string | null | undefined, locale: Locale, fallback: string) {

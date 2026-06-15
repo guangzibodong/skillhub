@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 import { CheckCircle2, Clock3, Percent, Save, Scale, XCircle } from "lucide-react";
 import { createAdminCommissionRuleAction, type AdminCommissionRuleActionState } from "@/lib/admin-commission-rule-actions";
 import type { Locale } from "@/lib/i18n";
@@ -19,7 +19,9 @@ const copy = {
     empty: "No commission rules are available yet.",
     endsAt: "Ends at",
     ended: "Ended",
+    confirmSchedule: "Confirm this commission split schedule?",
     platformFee: "Platform fee",
+    platformFeeHelp: "Enter a percent. For example, 20 means 20% platform fee and 80% publisher share.",
     publisherShare: "Publisher share",
     reason: "Finance reason",
     reasonPlaceholder: "Example: Launch 20/80 public marketplace split after finance approval.",
@@ -39,7 +41,9 @@ const copy = {
     empty: "\u8fd8\u6ca1\u6709\u53ef\u7528\u7684\u4f63\u91d1\u89c4\u5219\u3002",
     endsAt: "\u7ed3\u675f\u65f6\u95f4",
     ended: "\u5df2\u7ed3\u675f",
+    confirmSchedule: "\u786e\u8ba4\u6392\u671f\u8fd9\u6761\u4f63\u91d1\u5206\u6210\u89c4\u5219\uff1f",
     platformFee: "\u5e73\u53f0\u4f63\u91d1",
+    platformFeeHelp: "\u8bf7\u8f93\u5165\u767e\u5206\u6bd4\u3002\u4f8b\u5982 20 \u8868\u793a\u5e73\u53f0 20%\uff0c\u53d1\u5e03\u8005 80%\u3002",
     publisherShare: "\u53d1\u5e03\u8005\u5206\u6210",
     reason: "\u8d22\u52a1\u539f\u56e0",
     reasonPlaceholder: "\u4f8b\uff1a\u8d22\u52a1\u786e\u8ba4\u540e\u542f\u7528\u516c\u5f00\u5e02\u573a 20/80 \u5206\u6210\u3002",
@@ -87,33 +91,13 @@ export function AdminCommissionRuleManager({ locale, rules }: AdminCommissionRul
         <div className="admin-commission-empty">{labels.empty}</div>
       )}
 
-      <form action={action} className="admin-commission-form">
-        <label>
-          <span>{labels.ruleName}</span>
-          <input defaultValue={defaultRuleName(defaultPlatformFee, locale)} name="name" required />
-        </label>
-        <label>
-          <span>{labels.platformFee}</span>
-          <input defaultValue={defaultPlatformFee} max={10000} min={0} name="platformFeeBps" step={1} type="number" />
-        </label>
-        <label>
-          <span>{labels.startsAt}</span>
-          <input name="startsAt" type="datetime-local" />
-          <small>{labels.startsNow}</small>
-        </label>
-        <label>
-          <span>{labels.endsAt}</span>
-          <input name="endsAt" type="datetime-local" />
-        </label>
-        <label className="admin-commission-form__wide">
-          <span>{labels.reason}</span>
-          <input name="reason" placeholder={labels.reasonPlaceholder} required />
-        </label>
-        <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
-          <Save size={15} aria-hidden="true" />
-          <span>{isPending ? labels.saving : labels.save}</span>
-        </button>
-      </form>
+      <CommissionRuleForm
+        action={action}
+        defaultPlatformFee={defaultPlatformFee}
+        isPending={isPending}
+        labels={labels}
+        locale={locale}
+      />
 
       {state.status !== "idle" ? <ActionMessage state={state} /> : null}
 
@@ -143,6 +127,91 @@ export function AdminCommissionRuleManager({ locale, rules }: AdminCommissionRul
         )}
       </div>
     </article>
+  );
+}
+
+type CommissionLabels = (typeof copy)["en"] | (typeof copy)["zh"];
+
+function CommissionRuleForm({
+  action,
+  defaultPlatformFee,
+  isPending,
+  labels,
+  locale
+}: {
+  action: (payload: FormData) => void;
+  defaultPlatformFee: number;
+  isPending: boolean;
+  labels: CommissionLabels;
+  locale: Locale;
+}) {
+  const [platformFeePercent, setPlatformFeePercent] = useState(formatPercentInput(defaultPlatformFee));
+  const platformFeeBps = percentInputToBps(platformFeePercent);
+  const publisherShareBps = Math.max(0, 10000 - platformFeeBps);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    const form = event.currentTarget;
+    const startsAt = form.elements.namedItem("startsAt") as HTMLInputElement | null;
+    const endsAt = form.elements.namedItem("endsAt") as HTMLInputElement | null;
+
+    if (startsAt?.value && endsAt?.value && new Date(endsAt.value).getTime() <= new Date(startsAt.value).getTime()) {
+      event.preventDefault();
+      window.alert(locale === "zh" ? "结束时间必须晚于生效时间。" : "End time must be later than start time.");
+      return;
+    }
+
+    if (platformFeeBps < 0 || platformFeeBps > 10000 || Number.isNaN(platformFeeBps)) {
+      event.preventDefault();
+      window.alert(locale === "zh" ? "平台佣金必须是 0 到 100 之间的百分比。" : "Platform fee must be a percentage between 0 and 100.");
+      return;
+    }
+
+    if (!window.confirm(labels.confirmSchedule)) {
+      event.preventDefault();
+    }
+  }
+
+  return (
+    <form action={action} className="admin-commission-form" onSubmit={handleSubmit}>
+        <label>
+          <span>{labels.ruleName}</span>
+          <input defaultValue={defaultRuleName(defaultPlatformFee, locale)} name="name" required />
+        </label>
+        <label>
+          <span>{labels.platformFee}</span>
+          <input
+            max={100}
+            min={0}
+            onChange={(event) => setPlatformFeePercent(event.target.value)}
+            required
+            step={0.01}
+            type="number"
+            value={platformFeePercent}
+          />
+          <input name="platformFeeBps" type="hidden" value={Number.isNaN(platformFeeBps) ? "" : platformFeeBps} />
+          <small>
+            {labels.platformFee} {formatBps(platformFeeBps)} / {labels.publisherShare} {formatBps(publisherShareBps)}
+          </small>
+          <small>{labels.platformFeeHelp}</small>
+        </label>
+        <label>
+          <span>{labels.startsAt}</span>
+          <input name="startsAt" type="datetime-local" />
+          <small>{labels.startsNow}</small>
+        </label>
+        <label>
+          <span>{labels.endsAt}</span>
+          <input name="endsAt" type="datetime-local" />
+        </label>
+        <label className="admin-commission-form__wide">
+          <span>{labels.reason}</span>
+          <input name="reason" placeholder={labels.reasonPlaceholder} required />
+        </label>
+        <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+          <Save size={15} aria-hidden="true" />
+          <span>{isPending ? labels.saving : labels.save}</span>
+        </button>
+      </form>
   );
 }
 
@@ -183,8 +252,26 @@ function defaultRuleName(platformFeeBps: number, locale: Locale) {
 }
 
 function formatBps(bps: number) {
+  if (!Number.isFinite(bps)) {
+    return "0%";
+  }
+
   const percent = bps / 100;
   return `${Number.isInteger(percent) ? percent.toFixed(0) : percent.toFixed(2)}%`;
+}
+
+function formatPercentInput(bps: number) {
+  const percent = bps / 100;
+  return Number.isInteger(percent) ? String(percent) : percent.toFixed(2);
+}
+
+function percentInputToBps(value: string) {
+  if (!value.trim()) {
+    return Number.NaN;
+  }
+
+  const percent = Number(value);
+  return Math.round(percent * 100);
 }
 
 function statusClass(rule: CommissionRuleRecord) {

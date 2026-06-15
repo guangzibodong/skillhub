@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import {
   BadgeCheck,
   BookOpenCheck,
@@ -35,6 +36,7 @@ import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-p
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
 import { getPublicSkillActionState, getSkillAvailability, getSkillInstallState } from "@/lib/skill-install-state";
 import { getSkillFeedback } from "@/lib/skill-feedback";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +46,45 @@ type PageProps = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const [{ slug }, search] = await Promise.all([params, searchParams]);
+  const locale = getLocaleFromSearchParams(search);
+  const skill = await getPublicMarketplaceSkill(slug);
+
+  if (!skill) {
+    return buildLocalizedMetadata({
+      locale,
+      path: `/skills/${slug}`,
+      noIndex: true,
+      en: {
+        title: "Skill not found - SkillHub",
+        description: "This SkillHub skill listing is not currently available."
+      },
+      zh: {
+        title: "技能不存在 - SkillHub",
+        description: "当前 SkillHub 技能详情暂不可用。"
+      }
+    });
+  }
+
+  const name = localizeText(skill.name, locale);
+  const summary = localizeText(skill.summary, locale);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: `/skills/${skill.slug}`,
+    en: {
+      title: `${skill.name.en} - SkillHub Skill`,
+      description: skill.summary.en
+    },
+    zh: {
+      title: `${name} - SkillHub 技能`,
+      description: summary
+    },
+    type: "article"
+  });
+}
 
 const copy = {
   en: {
@@ -94,6 +135,7 @@ const copy = {
     installs: "Installs",
     lastReviewed: "Last reviewed",
     latency: "Median latency",
+    metricUnavailable: "Unlocks after verified approval",
     mcp: "MCP",
     mcpEndpoint: "MCP endpoint",
     output: "Output example",
@@ -177,6 +219,7 @@ const copy = {
     installs: "安装量",
     lastReviewed: "最近审核",
     latency: "中位延迟",
+    metricUnavailable: "验证通过后开放",
     mcp: "MCP",
     mcpEndpoint: "MCP 端点",
     output: "输出示例",
@@ -189,7 +232,7 @@ const copy = {
     publisher: "发布者",
     publisherResponse: "发布者回复",
     publisherTrust: "发布者信任",
-    previewMetric: "预览",
+    previewMetric: "预览中",
     related: "替代方案与替换",
     relatedBody: "在将类似技能采用到登录项目前进行比较，或为已弃用、暂停或高风险能力准备更安全的替换路径。",
     relatedDetails: "查看详情",
@@ -240,7 +283,9 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
   const skillActionState = getPublicSkillActionState(skill.verification.en, hasDeveloperAccess);
   const installState = getSkillInstallState(skill.verification.en);
   const isSkillInstallable = skillActionState.canInstallNow;
+  const showProductionMetrics = skillActionState.canShowProjectHandoff;
   const skillReturnTo = `/skills/${skill.slug}`;
+  const skillLoginHref = localizedHrefWithReturnTo("/login", locale, skillReturnTo);
   const developerAccessHref = skillActionState.canShowProjectHandoff
     ? hasDeveloperAccess
       ? "/developer"
@@ -320,24 +365,37 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               <strong className="block text-white">{localizeText(skill.verification, locale)}</strong>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="stat-card">
-              <span className="text-[#999] text-xs">{labels.success}</span>
-              <strong className="text-white">{formatMetricValue(skill.successRate, locale)}</strong>
+          {showProductionMetrics ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.success}</span>
+                <strong className="text-white">{formatMetricValue(skill.successRate, locale)}</strong>
+              </div>
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.latency}</span>
+                <strong className="text-white">{formatMetricValue(skill.latency, locale)}</strong>
+              </div>
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.installs}</span>
+                <strong className="text-white">{skill.installs}</strong>
+              </div>
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.runtime}</span>
+                <strong className="text-white">{skill.runtime}</strong>
+              </div>
             </div>
-            <div className="stat-card">
-              <span className="text-[#999] text-xs">{labels.latency}</span>
-              <strong className="text-white">{formatMetricValue(skill.latency, locale)}</strong>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.runtime}</span>
+                <strong className="text-white">{skill.runtime}</strong>
+              </div>
+              <div className="stat-card">
+                <span className="text-[#999] text-xs">{labels.previewMetric}</span>
+                <strong className="text-white">{labels.metricUnavailable}</strong>
+              </div>
             </div>
-            <div className="stat-card">
-              <span className="text-[#999] text-xs">{labels.installs}</span>
-              <strong className="text-white">{skill.installs}</strong>
-            </div>
-            <div className="stat-card">
-              <span className="text-[#999] text-xs">{labels.runtime}</span>
-              <strong className="text-white">{skill.runtime}</strong>
-            </div>
-          </div>
+          )}
         </aside>
       </section>
       </Reveal>
@@ -409,8 +467,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                     lockedCtaLabel={
                       hasWorkspaceSession
                         ? locale === "zh"
-                          ? "查看账号角色"
-                          : "Check account roles"
+                          ? "查看账号权限"
+                          : "Check account access"
                         : locale === "zh"
                           ? "先登录"
                           : "Sign in"
@@ -418,8 +476,8 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                     lockedTitle={
                       hasWorkspaceSession
                         ? locale === "zh"
-                          ? "需要开发者角色"
-                          : "Developer role required"
+                          ? "需要开发权限"
+                          : "Developer access required"
                         : locale === "zh"
                           ? "需要先登录"
                           : "Sign-in required"
@@ -508,7 +566,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               <p className="body-text-sm text-[#999] mt-3">{labels.feedbackBody}</p>
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div className="stat-card">
-                  <strong className="text-white text-lg">{feedbackData.summary.averageRating ? `${feedbackData.summary.averageRating}/5` : "n/a"}</strong>
+                  <strong className="text-white text-lg">{formatFeedbackRating(feedbackData.summary.averageRating, locale)}</strong>
                   <span className="text-[#999] text-xs">{labels.averageRating}</span>
                 </div>
                 <div className="stat-card">
@@ -549,7 +607,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                       <div className="flex flex-wrap gap-4 mt-3 text-xs text-[#666]">
                         <span>
                           <strong className="text-[#999]">{labels.feedbackUseCase}</strong>{" "}
-                          {feedback.useCase ?? "n/a"}
+                          {feedback.useCase ?? formatMissingValue(locale)}
                         </span>
                         {feedback.projectSlug ? (
                           <span>
@@ -570,6 +628,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             <Reveal delay={500}>
             <SkillFeedbackForm
               canSubmit={Boolean(session.subject)}
+              loginHref={skillLoginHref}
               locale={locale}
               skillName={localizeText(skill.name, locale)}
               skillSlug={skill.slug}
@@ -595,7 +654,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                             <strong className="text-white text-sm">{localizeText(suggestion.skill.name, locale)}</strong>
                             <span className="block text-[#666] text-xs mt-0.5">{localizeText(suggestion.skill.summary, locale)}</span>
                           </div>
-                          <span className={`pill ${suggestion.skill.risk === "high" ? "pill--danger" : suggestion.skill.risk === "medium" ? "pill--warning" : "pill--success"}`}>{suggestion.skill.risk}</span>
+                          <span className={`pill ${suggestion.skill.risk === "high" ? "pill--danger" : suggestion.skill.risk === "medium" ? "pill--warning" : "pill--success"}`}>{formatRiskLabel(suggestion.skill.risk, locale)}</span>
                         </header>
 
                         <div className="flex flex-wrap gap-2 mt-3">
@@ -630,6 +689,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
 
             <SkillAbuseReportForm
               canSubmit={Boolean(session.subject)}
+              loginHref={skillLoginHref}
               locale={locale}
               skillName={localizeText(skill.name, locale)}
               skillSlug={skill.slug}
@@ -666,7 +726,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 <span>{labels.pricing}</span>
               </div>
               <div className="mt-4">
-                <strong className="text-white text-lg block">{skill.price[locale]}</strong>
+                <strong className="text-white text-lg block">{showProductionMetrics ? skill.price[locale] : labels.metricUnavailable}</strong>
                 <span className="text-sm text-[#999] block mt-1">{pricingPreviewBody(skill.billing, skillAvailability.kind, locale)}</span>
               </div>
             </section>
@@ -820,7 +880,7 @@ function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
       <strong className="text-white text-sm">{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
       <p className="body-text-sm text-[#999]">
         {locale === "zh"
-          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目采用、运行测试、订阅、计费和账本动作只会在 verified 审核通过后开放。"
+          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目采用、运行测试、订阅、计费和账本动作只会在验证审核通过后开放。"
           : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Project adoption, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
       </p>
     </div>
@@ -834,7 +894,7 @@ function pricingPreviewBody(
 ) {
   if (availabilityKind === "inspection_only") {
     return locale === "zh"
-      ? "仅可查看。价格、项目采用、运行、计费和账本动作只会在 verified 审核通过后开放。"
+      ? "仅可查看。价格、项目采用、运行、计费和账本动作只会在验证审核通过后开放。"
       : "Inspection only. Pricing, project adoption, runtime, billing, and ledger actions unlock only after verified approval.";
   }
 
@@ -851,14 +911,54 @@ function pricingPreviewBody(
 
 function formatMetricValue(value: string | null | undefined, locale: Locale) {
   if (!value) {
-    return "n/a";
+    return formatMissingValue(locale);
   }
 
   if (value === "preview") {
     return copy[locale].previewMetric;
   }
 
+  if (
+    value.toLowerCase() === "n/a" ||
+    value.toLowerCase() === "unknown" ||
+    value.toLowerCase() === "review"
+  ) {
+    return formatMissingValue(locale);
+  }
+
   return value;
+}
+
+function formatFeedbackRating(
+  value: number | null | undefined,
+  locale: Locale,
+) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? `${value}/5`
+    : locale === "zh"
+      ? "暂无评分"
+      : "No rating yet";
+}
+
+function formatMissingValue(locale: Locale) {
+  return locale === "zh" ? "暂无数据" : "n/a";
+}
+
+function formatRiskLabel(risk: "high" | "low" | "medium", locale: Locale) {
+  const labels = {
+    en: {
+      high: "High risk",
+      low: "Low risk",
+      medium: "Medium risk",
+    },
+    zh: {
+      high: "高风险",
+      low: "低风险",
+      medium: "中风险",
+    },
+  } satisfies Record<Locale, Record<"high" | "low" | "medium", string>>;
+
+  return labels[locale][risk];
 }
 
 function formatDate(value: string, locale: "en" | "zh") {

@@ -268,7 +268,7 @@ export default async function SecurityPage({ searchParams }: PageProps) {
                 <div className="p-5 font-mono text-[13px] leading-[1.8] text-[#999]">
                   <p><span className="text-[#7fee64]">##</span> <span className="text-white">Security Report</span></p>
                   <p className="mt-3"><span className="text-[#666]">affected:</span> <span className="text-[#10b981]">/skills/browser-research</span></p>
-                  <p><span className="text-[#666]">severity:</span> <span className="text-[#f59e0b]">medium</span></p>
+                  <p><span className="text-[#666]">severity:</span> <span className="text-[#f59e0b]">{locale === "zh" ? "中" : "medium"}</span></p>
                   <p><span className="text-[#666]">type:</span> <span className="text-white">permission-escalation</span></p>
                   <p className="mt-3"><span className="text-[#666]">description:</span></p>
                   <p className="text-[#999] ml-2">{locale === "zh" ? "技能在 manifest 中声明只读权限，" : "Skill declares read-only in manifest,"}</p>

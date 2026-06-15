@@ -14,7 +14,7 @@ import {
   XCircle
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { localizedHref, type Locale } from "@/lib/i18n";
 import { formatMoney } from "@/lib/ops-format";
 import type { PublisherPayoutReadinessBlocker, PublisherPayoutSummary, PayoutRecord } from "@/lib/ops-data";
 import { requestPublisherPayoutAction, type PublisherPayoutActionState } from "@/lib/publisher-payout-actions";
@@ -40,6 +40,7 @@ const copy = {
     expectedReview: "This request will enter manual finance review because it is above the review threshold.",
     expectedRequested: "This paid-preview request can be created and then moves through finance review and manual transfer.",
     failureReason: "Failure reason",
+    fixBlocker: "Fix",
     latestPayout: "Latest paid-preview payout",
     manualMethod: "Method",
     minimum: "Minimum",
@@ -113,6 +114,7 @@ const copy = {
     expectedReview: "本次金额超过人工审核阈值，申请后会进入财务审核。",
     expectedRequested: "本次可以创建付费预览打款复核申请，然后进入财务审核和人工转账流程。",
     failureReason: "失败原因",
+    fixBlocker: "去处理",
     latestPayout: "最近付费预览打款",
     manualMethod: "收款方式",
     minimum: "最低提现",
@@ -263,7 +265,12 @@ export function PublisherPayoutManager({ locale, summary }: PublisherPayoutManag
         <div className="payout-blocker-list" aria-label={labels.blockers}>
           <strong>{labels.cannotRequest}</strong>
           {readiness.blockers.map((blocker) => (
-            <span key={blocker}>{formatBlocker(blocker, labels.blockerLabels)}</span>
+            <div className="payout-blocker-item" key={blocker}>
+              <span>{formatBlocker(blocker, labels.blockerLabels)}</span>
+              <a className="payout-blocker-action" href={localizedHref(payoutBlockerHref(blocker), locale)}>
+                {labels.fixBlocker}
+              </a>
+            </div>
           ))}
         </div>
       ) : null}
@@ -418,6 +425,24 @@ function nextReadinessAction(blockers: PublisherPayoutReadinessBlocker[]): Readi
   }
 
   return "request_payout";
+}
+
+function payoutBlockerHref(blocker: PublisherPayoutReadinessBlocker) {
+  if (
+    blocker === "publisher_profile_missing" ||
+    blocker === "publisher_not_active" ||
+    blocker === "publisher_payout_not_verified" ||
+    blocker === "payout_account_missing" ||
+    blocker === "payout_account_not_verified"
+  ) {
+    return "/publisher#publisher-account";
+  }
+
+  if (blocker === "no_available_balance" || blocker === "amount_below_minimum") {
+    return "/publisher#publisher-skills";
+  }
+
+  return "/publisher#publisher-paid-readiness";
 }
 
 function formatBlocker(blocker: PublisherPayoutReadinessBlocker, labels: Record<string, string>) {

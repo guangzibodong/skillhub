@@ -1,5 +1,6 @@
 import type { SkillManifest, SkillSummary } from "@useskillhub/schema";
 import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
+import { demoFallback } from "@/lib/demo-fallback";
 import {
   getMarketplaceSkill,
   marketplaceSkills,
@@ -46,6 +47,7 @@ export async function getPublicMarketplaceSkills(
   options: PublicMarketplaceSearchOptions = {},
 ): Promise<MarketplaceSkill[]> {
   const serverApiUrl = getServerApiUrl();
+  const shouldIncludeReviewListings = Boolean(options.verificationStatus);
 
   try {
     const searchParams = new URLSearchParams({
@@ -76,13 +78,22 @@ export async function getPublicMarketplaceSkills(
     }
 
     const payload = (await response.json()) as { skills: SkillSummary[] };
-    const publicSkills = payload.skills.filter(isPublicCatalogSkillSummary);
+    const publicSkills = payload.skills.filter((summary) =>
+      isPublicCatalogSkillSummary(summary, {
+        includeReviewListings: shouldIncludeReviewListings,
+      }),
+    );
 
     return Promise.all(
       publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
   } catch {
-    return marketplaceSkills;
+    return demoFallback(
+      marketplaceSkills.filter((skill) =>
+        shouldIncludeReviewListings || isVerifiedSkillStatus(skill.verification.en),
+      ),
+      [],
+    );
   }
 }
 
@@ -107,7 +118,7 @@ export async function getPublicMarketplaceSkill(
     }
 
     if (!manifest) {
-      return staticSkill ?? null;
+      return demoFallback(staticSkill ?? null, null);
     }
 
     return manifestToMarketplaceSkill(
@@ -117,7 +128,7 @@ export async function getPublicMarketplaceSkill(
       staticSkill,
     );
   } catch {
-    return staticSkill ?? null;
+    return demoFallback(staticSkill ?? null, null);
   }
 }
 
@@ -197,9 +208,7 @@ async function fetchSkillSummary(slug: string) {
 
     const payload = (await response.json()) as { skills: SkillSummary[] };
     return (
-      payload.skills.find(
-        (skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill),
-      ) ?? null
+      payload.skills.find((skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill, { includeReviewListings: true })) ?? null
     );
   } catch {
     return null;
@@ -235,6 +244,7 @@ function manifestToMarketplaceSkill(
   staticSkill?: MarketplaceSkill,
 ): MarketplaceSkill {
   const publicApiUrl = getPublicApiUrl();
+  const isVerified = isVerifiedSkillStatus(summary.verificationStatus);
   const activePrice =
     prices.find((price) => price.status === "active") ?? prices[0];
   const billing =
@@ -269,13 +279,15 @@ function manifestToMarketplaceSkill(
     inputExample:
       staticSkill?.inputExample ??
       schemaExample(manifest?.inputSchema, "input"),
-    installs: staticSkill?.installs ?? formatCompactCount(summary.installCount),
+    installs: isVerified
+      ? (staticSkill?.installs ?? formatCompactCount(summary.installCount))
+      : "0",
     installsCommand: {
       cli: publicApiInspectCommand(publicApiUrl, summary.slug),
       mcp: `${publicApiUrl}/mcp`,
       sdk: `CLI/SDK preview: ${summary.slug}`,
     },
-    latency: staticSkill?.latency ?? formatLatency(summary.avgLatencyMs),
+    latency: isVerified ? (staticSkill?.latency ?? formatLatency(summary.avgLatencyMs)) : "n/a",
     name: staticSkill?.name ?? publicSkillDisplayName(summary.slug, summary.displayName),
     outputExample:
       staticSkill?.outputExample ??
@@ -284,15 +296,15 @@ function manifestToMarketplaceSkill(
       ? permissionRows(manifest)
       : (staticSkill?.permissions ??
         permissionRowsFromRisk(summary.permissionLevel)),
-    price: formatPrice(activePrice, billing, staticSkill),
-    rating: formatRating(summary, staticSkill),
-    feedbackCount: summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0,
+    price: isVerified ? formatPrice(activePrice, billing, staticSkill) : reviewOnlyPrice(),
+    rating: isVerified ? formatRating(summary, staticSkill) : "review",
+    feedbackCount: isVerified ? (summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0) : 0,
     reviews: staticSkill?.reviews ?? [
       {
         author: "SkillHub Registry",
         quote: {
-          en: `Listed from the live registry with ${summary.verificationStatus} trust status.`,
-          zh: `来自实时注册表，当前信任状态为 ${summary.verificationStatus}。`,
+          en: `Listed from the live registry with ${verificationLabel(summary.verificationStatus).en} trust status.`,
+          zh: `来自实时注册表，当前信任状态为${verificationLabel(summary.verificationStatus).zh}。`,
         },
       },
     ],
@@ -302,8 +314,7 @@ function manifestToMarketplaceSkill(
       ? securityRows(manifest, summary)
       : (staticSkill?.securityReport ?? securityRows(null, summary)),
     slug: summary.slug,
-    successRate:
-      staticSkill?.successRate ?? formatSuccessRate(summary.successRate),
+    successRate: isVerified ? (staticSkill?.successRate ?? formatSuccessRate(summary.successRate)) : "n/a",
     summary: staticSkill?.summary ?? publicSkillDescription(summary.slug, summary.description),
     tags: staticSkill?.tags ?? publicSkillTags(summary.slug, summary.tags),
     useCases: staticSkill?.useCases ?? [
@@ -330,13 +341,26 @@ function manifestToSummary(manifest: SkillManifest): SkillSummary {
   };
 }
 
-function isPublicCatalogSkillSummary(summary: SkillSummary) {
-  return !isAcceptanceQaCatalogRecord(
-    summary.slug,
-    summary.displayName,
-    summary.description,
-    ...summary.tags,
-  );
+function isPublicCatalogSkillSummary(
+  summary: SkillSummary,
+  options: { includeReviewListings?: boolean } = {},
+) {
+  if (
+    isAcceptanceQaCatalogRecord(
+      summary.slug,
+      summary.displayName,
+      summary.description,
+      ...summary.tags,
+    )
+  ) {
+    return false;
+  }
+
+  if (options.includeReviewListings) {
+    return summary.verificationStatus === "submitted" || isVerifiedSkillStatus(summary.verificationStatus);
+  }
+
+  return isVerifiedSkillStatus(summary.verificationStatus);
 }
 
 function isAcceptanceQaCatalogRecord(...parts: string[]) {
@@ -478,6 +502,13 @@ function formatPrice(
   };
 }
 
+function reviewOnlyPrice() {
+  return {
+    en: "Review required before pricing",
+    zh: "审核通过后才显示定价",
+  };
+}
+
 function verificationLabel(status: SkillSummary["verificationStatus"]) {
   const labels: Record<
     SkillSummary["verificationStatus"],
@@ -541,7 +572,7 @@ function permissionRowsFromRisk(
     {
       key: "risk",
       label: { en: "Permission risk", zh: "权限风险" },
-      value: { en: permissionLevel, zh: permissionLevel },
+      value: { en: permissionRiskLabel(permissionLevel, "en"), zh: permissionRiskLabel(permissionLevel, "zh") },
     },
   ];
 }
@@ -557,7 +588,10 @@ function securityRows(
     },
     {
       label: { en: "Permission profile", zh: "权限画像" },
-      value: { en: summary.permissionLevel, zh: summary.permissionLevel },
+      value: {
+        en: permissionRiskLabel(summary.permissionLevel, "en"),
+        zh: permissionRiskLabel(summary.permissionLevel, "zh"),
+      },
     },
     {
       label: { en: "Runtime", zh: "运行时" },
@@ -582,6 +616,26 @@ function qualitySignal(summary: SkillSummary) {
   }
 
   return "review";
+}
+
+function permissionRiskLabel(
+  risk: SkillSummary["permissionLevel"],
+  locale: "en" | "zh",
+) {
+  const labels = {
+    en: {
+      high: "High risk",
+      low: "Low risk",
+      medium: "Medium risk",
+    },
+    zh: {
+      high: "高风险",
+      low: "低风险",
+      medium: "中风险",
+    },
+  } satisfies Record<"en" | "zh", Record<SkillSummary["permissionLevel"], string>>;
+
+  return labels[locale][risk];
 }
 
 function formatRating(summary: SkillSummary, staticSkill?: MarketplaceSkill) {

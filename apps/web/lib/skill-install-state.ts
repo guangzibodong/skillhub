@@ -145,7 +145,7 @@ export function getSkillAvailability(
       },
       reason: {
         en: "Verified review is complete. Project adoption and runtime actions still require a signed-in project key.",
-        zh: "\u5df2\u5b8c\u6210 verified \u5ba1\u6838\u3002\u9879\u76ee\u5b89\u88c5\u548c\u8fd0\u884c\u8c03\u7528\u4ecd\u9700\u8981\u767b\u5f55\u540e\u7684\u9879\u76ee Key\u3002",
+        zh: "\u5df2\u5b8c\u6210\u9a8c\u8bc1\u5ba1\u6838\u3002\u9879\u76ee\u5b89\u88c5\u548c\u8fd0\u884c\u8c03\u7528\u4ecd\u9700\u8981\u767b\u5f55\u540e\u7684\u9879\u76ee Key\u3002",
       },
     };
   }

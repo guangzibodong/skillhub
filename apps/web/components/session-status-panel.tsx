@@ -14,16 +14,19 @@ const copy = {
     accountFallback: "SkillHub account",
     dashboard: "Open dashboard",
     environment: "Environment fallback",
+    invalidSession: "Invalid session",
     invalidSessionTitle: "Session needs attention",
     noSession: "No workspace session",
     noSessionBody: "Connect a user session so project, publisher, billing, payout, team, and notification operations are scoped to the active member.",
     role: "Role",
+    retrySession: "Sign in again",
     signIn: "Sign in",
     signOut: "Sign out",
     status: "Status",
     signedInTitle: "You are signed in",
     signedOutTitle: "Sign in required",
     sessionReady: "Browser session active",
+    unavailableSession: "Session service unavailable",
     unknown: "Verified user session required"
   },
   zh: {
@@ -31,16 +34,19 @@ const copy = {
     accountFallback: "SkillHub 账号",
     dashboard: "进入工作台",
     environment: "环境变量兜底",
+    invalidSession: "会话已失效",
     invalidSessionTitle: "会话需要处理",
     noSession: "未连接工作区会话",
     noSessionBody: "连接用户会话后，项目、发布、账单、提现、团队和通知操作都会按当前成员权限执行。",
     role: "角色",
+    retrySession: "重新登录",
     signIn: "去登录",
     signOut: "退出登录",
     status: "状态",
     signedInTitle: "你已登录",
     signedOutTitle: "需要先登录",
     sessionReady: "浏览器会话已连接",
+    unavailableSession: "后台会话服务不可用",
     unknown: "需要已验证的用户会话"
   }
 } as const;
@@ -106,16 +112,28 @@ export function SessionStatusPanel({ locale, session }: SessionStatusPanelProps)
         </>
       ) : (
         <div className="auth-empty-state">
-          <strong>{session.source === "none" ? labels.noSession : labels.unknown}</strong>
-          <span>{labels.noSessionBody}</span>
+          <strong>{formatEmptySessionTitle(session, labels)}</strong>
+          <span>{session.error?.message ?? labels.noSessionBody}</span>
           <a className="primary-button auth-empty-state__action" href={localizedHref("/login", locale)}>
             <LogIn size={16} aria-hidden="true" />
-            <span>{labels.signIn}</span>
+            <span>{session.status === "invalid" || session.status === "unavailable" ? labels.retrySession : labels.signIn}</span>
           </a>
         </div>
       )}
     </article>
   );
+}
+
+function formatEmptySessionTitle(session: WorkspaceSession, labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  if (session.status === "unavailable") {
+    return labels.unavailableSession;
+  }
+
+  if (session.status === "invalid") {
+    return labels.invalidSession;
+  }
+
+  return session.source === "none" ? labels.noSession : labels.unknown;
 }
 
 function roleLabel(roles: string[], locale: Locale) {

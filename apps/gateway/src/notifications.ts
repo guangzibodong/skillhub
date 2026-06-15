@@ -32,6 +32,7 @@ type NotificationDeliveryActionInput = {
 };
 
 type NotificationDeliveryProcessInput = {
+  confirmation?: unknown;
   limit?: unknown;
   mode?: unknown;
 };
@@ -359,6 +360,7 @@ export async function decideNotificationDelivery(
     if (!previous) {
       throw new Error("External notification delivery event was not found.");
     }
+    ensureDeliveryTransition(previous.status, action);
 
     const rows = (await tx`
       update notification_events
@@ -446,6 +448,7 @@ export async function processNotificationDeliveries(
   const sql = await requireSql();
   const limit = Math.min(Math.max(Math.trunc(Number(input.limit) || 10), 1), 50);
   const mode = normalizeProcessMode(input.mode);
+  requireDeliverConfirmation(mode, input.confirmation);
   const fanout =
     mode === "deliver"
       ? await fanOutExternalNotificationEvents(sql, limit)
@@ -936,13 +939,23 @@ function normalizeLimit(limit: number) {
 }
 
 function normalizeProcessMode(value: unknown): NotificationDeliveryProcessMode {
-  const mode = String(value ?? "deliver").trim();
+  const mode = String(value ?? "dry_run").trim();
 
   if (mode === "deliver" || mode === "dry_run") {
     return mode;
   }
 
   throw new Error("Notification delivery process mode must be deliver or dry_run.");
+}
+
+function requireDeliverConfirmation(mode: NotificationDeliveryProcessMode, confirmation: unknown) {
+  if (mode !== "deliver") {
+    return;
+  }
+
+  if (String(confirmation ?? "").trim() !== "DELIVER") {
+    throw new Error("Type DELIVER to confirm real notification delivery processing.");
+  }
 }
 
 async function processEmailDelivery(
@@ -1842,7 +1855,11 @@ function normalizeProviderMessageId(value: unknown, action: NotificationDelivery
     return messageId.slice(0, 160);
   }
 
-  return action === "mark_sent" ? `manual_${Date.now().toString(36)}` : null;
+  if (action === "mark_sent") {
+    throw new Error("A real provider message id is required before marking delivery as sent.");
+  }
+
+  return null;
 }
 
 function normalizeNextAttemptAt(value: unknown, action: NotificationDeliveryAction) {
@@ -1889,6 +1906,16 @@ function statusForDeliveryAction(action: NotificationDeliveryAction): Notificati
   }
 
   return "queued";
+}
+
+function ensureDeliveryTransition(status: NotificationRow["status"], action: NotificationDeliveryAction) {
+  if (status === "sent" || status === "skipped") {
+    throw new Error(`Cannot ${action.replace("_", " ")} delivery while status is ${status}.`);
+  }
+
+  if (status === "failed" && action !== "retry" && action !== "mark_failed") {
+    throw new Error("Failed deliveries must be retried before they can be marked sent or skipped.");
+  }
 }
 
 async function syncEmailChallengeDeliveryStatus(sql: Sql, notification: NotificationRow) {

@@ -416,10 +416,12 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   const hasWorkspaceSession = Boolean(session.subject);
   const roleSet = new Set([session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(Boolean));
   const hasProjectAccess = hasWorkspaceSession && developerAccessRoles.some((role) => roleSet.has(role));
+  const shellSecondaryHref = hasWorkspaceSession ? localizedHref("/account", locale) : undefined;
+  const shellSecondaryLabel = hasWorkspaceSession ? (locale === "zh" ? "个人中心" : "Account") : undefined;
 
   if (!hasProjectAccess) {
     return (
-      <AppShell active="dashboard" locale={locale}>
+      <AppShell active="dashboard" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
         <section className="section">
           <div className="section-inner">
             <a className="inline-flex items-center gap-1 text-sm text-[#999] mb-4" href={localizedHref("/dashboard", locale)}>
@@ -448,7 +450,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
 
         <WorkspaceLockedPanel
           actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
               ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话无法读取这个项目，所以操作面板保持隐藏；请先登录或确认开发者角色。"
@@ -456,7 +458,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           }
           locale={locale}
           projectSlug={slug}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发权限" : "Developer access required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       </AppShell>
     );
@@ -499,7 +501,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   ] as const;
 
   return (
-    <AppShell active="dashboard" locale={locale}>
+    <AppShell active="dashboard" locale={locale} secondaryHref={shellSecondaryHref} secondaryLabel={shellSecondaryLabel}>
       <section className="section">
         <div className="section-inner">
           <a className="inline-flex items-center gap-1 text-sm text-[#999] mb-4" href={localizedHref("/dashboard", locale)}>
@@ -613,8 +615,8 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
       </section>
 
       <section className="max-w-[1200px] mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-          <div>
+        <div className="project-detail-workspace">
+          <div className="project-detail-main">
             <div id="project-policies">
               <ProjectSkillPolicyManager
                 emptyLabel={labels.empty}
@@ -661,7 +663,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
             </article>
           </div>
 
-          <aside className="flex flex-col gap-5">
+          <aside className="project-detail-side">
           <div id="project-agent-connection">
             <ProjectAgentConnectionPanel
               activeKeyCount={project.apiKeys.activeCount}
@@ -744,7 +746,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
       ) : (
         <WorkspaceLockedPanel
           actionHref={localizedHref(hasWorkspaceSession ? "/account" : "/login", locale)}
-          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号角色" : "Check account roles") : (locale === "zh" ? "先登录" : "Sign in")}
+          actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
               ? "项目详情包含策略审批、API Key、运行测试、订阅和发票操作。当前会话缺少开发者权限，因此操作面板已隐藏，但项目运营队列的治理边界仍然可见。"
@@ -752,7 +754,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           }
           locale={locale}
           projectSlug={project.slug}
-          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发者角色" : "Developer role required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
+          title={hasWorkspaceSession ? (locale === "zh" ? "需要开发权限" : "Developer access required") : (locale === "zh" ? "需要先登录" : "Sign-in required")}
         />
       )}
     </AppShell>
@@ -825,7 +827,7 @@ function getProjectLockedGuide(locale: Locale, projectSlug: string) {
           title: "登录账号"
         },
         {
-          body: "在个人中心确认 developer、owner 或 admin 角色后再打开项目。",
+          body: "在账号中心确认这个组织已开通开发权限后，再打开项目。",
           href: "/account",
           label: "02",
           title: "确认开发权限"

@@ -68,6 +68,8 @@ const labels = {
     success: "success",
     latency: "latency",
     feedback: "feedback",
+    reviewOnlyMetric: "Review pending",
+    reviewOnlyPrice: "Review required before pricing",
     install: "API inspect",
     installLocked: "Inspection only",
     installLockedBody: "Verified review is required before install and runtime actions unlock.",
@@ -142,6 +144,8 @@ const labels = {
     success: "成功率",
     latency: "延迟",
     feedback: "反馈",
+    reviewOnlyMetric: "审核中",
+    reviewOnlyPrice: "审核通过后才显示定价",
     install: "API 查看",
     installLocked: "仅可查看",
     installLockedBody: "需要完成 verified 审核后才会开放安装和运行操作。",
@@ -666,20 +670,29 @@ export function MarketplaceBrowser({
 
               <p>{localizeText(skill.summary, locale)}</p>
 
-              <div className="market-skill-card__meta">
-                <span>
-                  <Star size={14} aria-hidden="true" />
-                  {formatFeedbackSignal(skill, dictionary.feedback)}
-                </span>
-                <span>
-                  <BadgeCheck size={14} aria-hidden="true" />
-                  {skill.successRate} {dictionary.success}
-                </span>
-                <span>
-                  <Timer size={14} aria-hidden="true" />
-                  {skill.latency} {dictionary.latency}
-                </span>
-              </div>
+              {isVerified ? (
+                <div className="market-skill-card__meta">
+                  <span>
+                    <Star size={14} aria-hidden="true" />
+                    {formatFeedbackSignal(skill, dictionary.feedback, locale)}
+                  </span>
+                  <span>
+                    <BadgeCheck size={14} aria-hidden="true" />
+                    {formatMarketplaceMetric(skill.successRate, locale)} {dictionary.success}
+                  </span>
+                  <span>
+                    <Timer size={14} aria-hidden="true" />
+                    {formatMarketplaceMetric(skill.latency, locale)} {dictionary.latency}
+                  </span>
+                </div>
+              ) : (
+                <div className="market-skill-card__meta market-skill-card__meta--review">
+                  <span>
+                    <ShieldCheck size={14} aria-hidden="true" />
+                    {dictionary.reviewOnlyMetric}
+                  </span>
+                </div>
+              )}
 
               <div
                 className="market-recommendation-reasons"
@@ -777,7 +790,7 @@ export function MarketplaceBrowser({
 
               <div className="market-skill-card__foot">
                 <div>
-                  <span>{formatPublicPrice(skill, locale)}</span>
+                  <span>{isVerified ? formatPublicPrice(skill, locale) : dictionary.reviewOnlyPrice}</span>
                   <strong>{localizeText(skill.verification, locale)}</strong>
                 </div>
                 <a
@@ -1008,11 +1021,39 @@ function recommendedScore(
   return score;
 }
 
-function formatFeedbackSignal(skill: MarketplaceSkill, feedbackLabel: string) {
+function formatFeedbackSignal(
+  skill: MarketplaceSkill,
+  feedbackLabel: string,
+  locale: Locale,
+) {
   const count = skill.feedbackCount ?? 0;
-  return count > 0
-    ? `${skill.rating} / ${count} ${feedbackLabel}`
-    : skill.rating;
+
+  if (count > 0) {
+    return `${skill.rating} / ${count} ${feedbackLabel}`;
+  }
+
+  if (/^\d+(\.\d+)?$/.test(skill.rating.trim())) {
+    return skill.rating;
+  }
+
+  return locale === "zh" ? "暂无反馈" : "No feedback yet";
+}
+
+function formatMarketplaceMetric(value: string, locale: Locale) {
+  const normalized = value.trim().toLowerCase();
+
+  if (
+    !normalized ||
+    normalized === "n/a" ||
+    normalized === "review" ||
+    normalized === "verified" ||
+    normalized === "blocked" ||
+    normalized === "unknown"
+  ) {
+    return locale === "zh" ? "暂无数据" : "Not enough data";
+  }
+
+  return value;
 }
 
 function formatPublicPrice(skill: MarketplaceSkill, locale: Locale) {

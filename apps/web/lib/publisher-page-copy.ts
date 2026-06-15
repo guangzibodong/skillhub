@@ -163,7 +163,7 @@ const publisherPageCopy = {
       },
       blocked: "受阻",
       blockedSkillsTitle: "付费预览阻塞项",
-      description: "集中查看审核、条款、付费准备元数据和定价意图门禁，为未来付费市场复核做准备。",
+      description: "集中查看审核、条款、付费准备和定价意图，为未来付费市场复核做准备。",
       empty: "当前发布者范围内没有可见的付费预览阻塞项。",
       metrics: {
         blockedPaid: "受阻付费预览技能",
@@ -237,7 +237,7 @@ const publisherPageCopy = {
       verified: "已验证技能"
     },
     lockedDescription:
-      "先使用发布者、owner 或 admin 角色登录，再保存草稿、提交审核、记录付费准备元数据，并处理买家需求或反馈。",
+      "请先登录已开通发布权限的账号，再保存草稿、提交审核、补充付费准备，并处理买家需求或反馈。",
     lockedTitle: "登录后进入发布者工作台。",
     readiness: {
       blocked: "等待",
@@ -246,7 +246,7 @@ const publisherPageCopy = {
       progress: "准备度",
       title: "发布者上线清单",
       tasks: {
-        session: ["登录工作区会话", "使用组织会话登录，让发布、定价意图、付费准备元数据和通知都归属到当前组织。"],
+        session: ["登录工作区会话", "使用组织会话登录，让发布、定价意图、付费准备和通知都归属到当前组织。"],
         profile: ["创建发布者资料", "设置买家安装技能前会看到的公开发布者名称。"],
         terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和付费市场准备政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],

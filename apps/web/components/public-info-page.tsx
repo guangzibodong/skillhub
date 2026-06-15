@@ -77,7 +77,9 @@ export function PublicInfoPage({ locale, page }: Props) {
                   {section.bullets ? (
                     <ul>
                       {section.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
+                        <li key={formatBulletKey(bullet)}>
+                          <PublicInfoBullet bullet={bullet} locale={locale} />
+                        </li>
                       ))}
                     </ul>
                   ) : null}
@@ -97,7 +99,9 @@ export function PublicInfoPage({ locale, page }: Props) {
                 {section.bullets ? (
                   <ul>
                     {section.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
+                      <li key={formatBulletKey(bullet)}>
+                        <PublicInfoBullet bullet={bullet} locale={locale} />
+                      </li>
                     ))}
                   </ul>
                 ) : null}
@@ -129,6 +133,24 @@ export function PublicInfoPage({ locale, page }: Props) {
 
 function formatHref(href: string, locale: Locale) {
   return href.startsWith("mailto:") ? href : localizedHref(href, locale);
+}
+
+function formatBulletKey(bullet: string | { href: string; label: string }) {
+  return typeof bullet === "string" ? bullet : `${bullet.href}:${bullet.label}`;
+}
+
+function PublicInfoBullet({
+  bullet,
+  locale,
+}: {
+  bullet: string | { href: string; label: string };
+  locale: Locale;
+}) {
+  if (typeof bullet === "string") {
+    return <>{bullet}</>;
+  }
+
+  return <a href={formatHref(bullet.href, locale)}>{bullet.label}</a>;
 }
 
 function buildJsonLd(page: PublicPageDefinition, locale: Locale) {

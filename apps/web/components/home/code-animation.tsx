@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 const codeLines = [
-  { text: 'const response = await fetch("/api/public/skills/browser-research-pro");', color: "muted" },
+  { text: 'const response = await fetch("/api/public/skills/browser-research");', color: "muted" },
   { text: "", color: "white" },
   { text: "const skill = await response.json();", color: "white" },
   { text: "", color: "white" },

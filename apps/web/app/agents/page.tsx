@@ -50,7 +50,7 @@ function snippets(apiUrl: string, labels: ReturnType<typeof getDictionary>["agen
       body: `curl -X POST "${normalizedApiUrl}/v1/runtime/invoke" \\
   -H "Authorization: Bearer $SKILLHUB_PROJECT_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"skillSlug":"browser-research","input":{"query":"market map with citations"}}'`,
+  -d '{"skillSlug":"browser-research-pro","input":{"query":"market map with citations"}}'`,
       file: "runtime.sh",
       title: labels.restTitle
     },

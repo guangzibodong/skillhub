@@ -13,6 +13,22 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const searchParams = useSearchParams();
   const locale = searchParams.get("lang") === "zh" ? "zh" : "en";
   const marketplaceHref = locale === "zh" ? "/marketplace?lang=zh" : "/marketplace?lang=en";
+  const labels =
+    locale === "zh"
+      ? {
+          body: "页面渲染时遇到可恢复的应用错误。你可以重试，或先回到公开技能市场；我们会继续根据服务日志排查。",
+          eyebrow: "运行恢复",
+          marketplace: "返回技能市场",
+          retry: "重试",
+          title: "SkillHub 暂时无法渲染这个页面。",
+        }
+      : {
+          body: "The page hit a recoverable application error. Try again, or return to the public marketplace while the team reviews the server logs.",
+          eyebrow: "Runtime recovery",
+          marketplace: "Marketplace",
+          retry: "Try again",
+          title: "SkillHub could not render this view.",
+        };
 
   return (
     <main className="product-shell">
@@ -20,23 +36,17 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         <div className="not-found-copy">
           <div className="eyebrow">
             <ShieldAlert size={16} aria-hidden="true" />
-            <span>Runtime recovery / 运行恢复</span>
+            <span>{labels.eyebrow}</span>
           </div>
-          <h1 id="error-title">SkillHub could not render this view.</h1>
-          <p>
-            The page hit a recoverable application error. Try again, or return
-            to the public marketplace while the team reviews the server logs.
-          </p>
-          <p className="not-found-copy__zh">
-            页面渲染时遇到可恢复的应用错误。你可以重试，或先回到公开市场。
-          </p>
+          <h1 id="error-title">{labels.title}</h1>
+          <p>{labels.body}</p>
           <div className="hero-actions not-found-actions">
             <button className="primary-button primary-button--large" onClick={reset} type="button">
               <RotateCcw size={18} aria-hidden="true" />
-              <span>Try again</span>
+              <span>{labels.retry}</span>
             </button>
             <Link className="secondary-button secondary-button--large" href={marketplaceHref}>
-              Marketplace
+              {labels.marketplace}
             </Link>
           </div>
           {error.digest ? <small className="error-digest">Error digest: {error.digest}</small> : null}
