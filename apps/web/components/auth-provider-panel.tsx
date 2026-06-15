@@ -57,7 +57,11 @@ export function AuthProviderPanel({
 
     return { action, providerConfig };
   });
-  const hasActiveProviders = providerItems.some((item) => Boolean(item.action.href));
+  const activeProviderItems = providerItems.filter((item) => Boolean(item.action.href));
+
+  if (activeProviderItems.length === 0) {
+    return null;
+  }
 
   return (
     <Wrapper className={className}>
@@ -65,7 +69,7 @@ export function AuthProviderPanel({
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack" aria-label={labels.title}>
-        {providerItems.map(({ action, providerConfig }) => {
+        {activeProviderItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
           const buttonClass = [
             "oauth-provider-button",
@@ -112,7 +116,7 @@ export function AuthProviderPanel({
           );
         })}
       </div>
-      <p className="oauth-provider-note">{hasActiveProviders ? labels.helper : labels.empty}</p>
+      <p className="oauth-provider-note">{labels.helper}</p>
     </Wrapper>
   );
 }

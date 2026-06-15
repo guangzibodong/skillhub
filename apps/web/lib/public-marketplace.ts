@@ -16,6 +16,8 @@ import {
   publicSkillTags,
 } from "@/lib/public-skill-localization";
 
+const MARKETPLACE_FETCH_TIMEOUT_MS = 3500;
+
 type SkillPriceRecord = {
   id: string;
   skillSlug: string;
@@ -66,27 +68,27 @@ export async function getPublicMarketplaceSkills(
       options.verificationStatus,
     );
 
-    const response = await fetch(
+    const payload = await fetchJson<{ skills: SkillSummary[] }>(
       `${serverApiUrl}/v1/skills/search?${searchParams.toString()}`,
-      {
-        cache: "no-store",
-      },
     );
 
-    if (!response.ok) {
-      throw new Error(`Marketplace skill search failed: ${response.status}`);
+    if (!payload) {
+      throw new Error("Marketplace skill search failed");
     }
 
-    const payload = (await response.json()) as { skills: SkillSummary[] };
     const publicSkills = payload.skills.filter((summary) =>
       isPublicCatalogSkillSummary(summary, {
         includeReviewListings: shouldIncludeReviewListings,
       }),
     );
 
-    return Promise.all(
+    const hydratedSkills = await Promise.all(
       publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
+
+    return mergeMarketplaceSkills(hydratedSkills, {
+      includeReviewListings: shouldIncludeReviewListings,
+    });
   } catch {
     return demoFallback(
       marketplaceSkills.filter((skill) =>
@@ -95,6 +97,33 @@ export async function getPublicMarketplaceSkills(
       [],
     );
   }
+}
+
+function mergeMarketplaceSkills(
+  liveSkills: MarketplaceSkill[],
+  options: { includeReviewListings?: boolean } = {},
+) {
+  const staticSkills = marketplaceSkills.filter(
+    (skill) =>
+      options.includeReviewListings ||
+      isVerifiedSkillStatus(skill.verification.en),
+  );
+  const liveBySlug = new Map(liveSkills.map((skill) => [skill.slug, skill]));
+  const merged = staticSkills.map(
+    (staticSkill) => liveBySlug.get(staticSkill.slug) ?? staticSkill,
+  );
+  const seen = new Set(merged.map((skill) => skill.slug));
+
+  for (const liveSkill of liveSkills) {
+    if (seen.has(liveSkill.slug)) {
+      continue;
+    }
+
+    seen.add(liveSkill.slug);
+    merged.push(liveSkill);
+  }
+
+  return merged;
 }
 
 export async function getPublicMarketplaceSkill(
@@ -172,68 +201,50 @@ async function hydrateMarketplaceSkill(summary: SkillSummary) {
 
 async function fetchSkillManifest(slug: string) {
   const serverApiUrl = getServerApiUrl();
-
-  try {
-    const response = await fetch(
-      `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}`,
-      {
-        cache: "no-store",
-      },
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    return (await response.json()) as SkillManifest;
-  } catch {
-    return null;
-  }
+  return fetchJson<SkillManifest>(
+    `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}`,
+  );
 }
 
 async function fetchSkillSummary(slug: string) {
   const serverApiUrl = getServerApiUrl();
+  const payload = await fetchJson<{ skills: SkillSummary[] }>(
+    `${serverApiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
+  );
+
+  return (
+    payload?.skills.find((skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill, { includeReviewListings: true })) ?? null
+  );
+}
+
+async function fetchSkillPrices(slug: string) {
+  const serverApiUrl = getServerApiUrl();
+  const payload = await fetchJson<{ prices: SkillPriceRecord[] }>(
+    `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
+  );
+
+  return payload?.prices ?? [];
+}
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), MARKETPLACE_FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(
-      `${serverApiUrl}/v1/skills/search?q=${encodeURIComponent(slug)}&limit=20`,
-      {
-        cache: "no-store",
-      },
-    );
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
 
     if (!response.ok) {
       return null;
     }
 
-    const payload = (await response.json()) as { skills: SkillSummary[] };
-    return (
-      payload.skills.find((skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill, { includeReviewListings: true })) ?? null
-    );
+    return (await response.json()) as T;
   } catch {
     return null;
-  }
-}
-
-async function fetchSkillPrices(slug: string) {
-  const serverApiUrl = getServerApiUrl();
-
-  try {
-    const response = await fetch(
-      `${serverApiUrl}/v1/skills/${encodeURIComponent(slug)}/prices`,
-      {
-        cache: "no-store",
-      },
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = (await response.json()) as { prices: SkillPriceRecord[] };
-    return payload.prices;
-  } catch {
-    return [];
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

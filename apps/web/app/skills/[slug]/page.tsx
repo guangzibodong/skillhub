@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import {
+  ArrowRight,
   BadgeCheck,
   BookOpenCheck,
   Building2,
@@ -330,6 +331,18 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     }
   ];
   const availableCommandRows = skillActionState.canShowProjectHandoff ? installRows : publicInspectRows;
+  const decisionCards = getSkillDecisionCards({
+    billingModel: skill.billing,
+    developerAccessHref,
+    developerAccessLabel,
+    hasDeveloperAccess,
+    hasWorkspaceSession,
+    locale,
+    projectCount: developerProjects.length,
+    risk: skill.risk,
+    skillActionState,
+    skillAvailability,
+  });
 
   return (
     <AppShell active="skills" locale={locale}>
@@ -397,6 +410,34 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
           )}
         </aside>
+
+        <div className="section-inner grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+          {decisionCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <article className="card flex flex-col gap-3 h-full" key={card.title}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="w-9 h-9 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
+                    <Icon size={18} aria-hidden="true" className="text-[#7fee64]" />
+                  </div>
+                  <span className={`pill ${card.tone}`}>{card.badge}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-[#666]">{card.title}</span>
+                  <strong className="block text-white text-base mt-1">{card.value}</strong>
+                </div>
+                <p className="body-text-sm text-[#999]">{card.body}</p>
+                {card.href ? (
+                  <a className="btn-secondary inline-flex items-center justify-center gap-2 mt-auto" href={card.href}>
+                    <span>{card.action}</span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
       </section>
       </Reveal>
 
@@ -871,6 +912,139 @@ function DeveloperHandoffPacket({
       </div>
     </div>
   );
+}
+
+function getSkillDecisionCards({
+  billingModel,
+  developerAccessHref,
+  developerAccessLabel,
+  hasDeveloperAccess,
+  hasWorkspaceSession,
+  locale,
+  projectCount,
+  risk,
+  skillActionState,
+  skillAvailability,
+}: {
+  billingModel: "free" | "per_call" | "subscription";
+  developerAccessHref: string;
+  developerAccessLabel: string;
+  hasDeveloperAccess: boolean;
+  hasWorkspaceSession: boolean;
+  locale: Locale;
+  projectCount: number;
+  risk: "high" | "low" | "medium";
+  skillActionState: ReturnType<typeof getPublicSkillActionState>;
+  skillAvailability: ReturnType<typeof getSkillAvailability>;
+}) {
+  const availabilityTone =
+    skillActionState.kind === "authenticated_install"
+      ? "pill--success"
+      : skillActionState.kind === "verified_gated"
+        ? "pill--warning"
+        : "pill--neutral";
+  const nextStepBody = getSkillNextStepBody({
+    hasDeveloperAccess,
+    hasWorkspaceSession,
+    locale,
+    projectCount,
+    skillActionState,
+  });
+
+  return [
+    {
+      action: locale === "zh" ? "查看运行说明" : "View runtime details",
+      badge: skillAvailability.label[locale],
+      body: skillActionState.summary[locale],
+      href: "#install",
+      icon: ShieldCheck,
+      title: locale === "zh" ? "当前可用性" : "Current availability",
+      tone: availabilityTone,
+      value: skillActionState.sectionTitle[locale],
+    },
+    {
+      action: developerAccessLabel,
+      badge: hasDeveloperAccess
+        ? locale === "zh"
+          ? "已具备权限"
+          : "Access ready"
+        : locale === "zh"
+          ? "需要确认"
+          : "Needs access",
+      body: nextStepBody,
+      href: localizedHref(developerAccessHref, locale),
+      icon: KeyRound,
+      title: locale === "zh" ? "建议下一步" : "Recommended next step",
+      tone: hasDeveloperAccess ? "pill--success" : "pill--warning",
+      value: developerAccessLabel,
+    },
+    {
+      action: "",
+      badge: locale === "zh" ? "受治理" : "Governed",
+      body: pricingPreviewBody(billingModel, skillAvailability.kind, locale),
+      href: "",
+      icon: WalletCards,
+      title: locale === "zh" ? "风险与计费边界" : "Risk and billing boundary",
+      tone: risk === "high" ? "pill--danger" : risk === "medium" ? "pill--warning" : "pill--success",
+      value: `${formatRiskLabel(risk, locale)} / ${formatBillingModelLabel(billingModel, locale)}`,
+    },
+  ];
+}
+
+function getSkillNextStepBody({
+  hasDeveloperAccess,
+  hasWorkspaceSession,
+  locale,
+  projectCount,
+  skillActionState,
+}: {
+  hasDeveloperAccess: boolean;
+  hasWorkspaceSession: boolean;
+  locale: Locale;
+  projectCount: number;
+  skillActionState: ReturnType<typeof getPublicSkillActionState>;
+}) {
+  if (skillActionState.kind === "inspection_only") {
+    return locale === "zh"
+      ? "先检查 manifest、权限、发布者和审核状态。该技能通过验证前，不要把它接入真实项目。"
+      : "Inspect manifest, permissions, publisher, and review state first. Do not adopt it into a real project before verified approval.";
+  }
+
+  if (hasDeveloperAccess) {
+    return locale === "zh"
+      ? `当前账号可以进入开发者工作台。可用项目数：${projectCount}；采用前仍需确认项目策略、版本固定和 Project Key。`
+      : `This account can open the developer workspace. Available projects: ${projectCount}; confirm policy, version pinning, and Project Key before adoption.`;
+  }
+
+  if (hasWorkspaceSession) {
+    return locale === "zh"
+      ? "当前账号已登录，但需要确认 developer、owner 或 admin 权限后才能安装和运行测试。"
+      : "You are signed in, but developer, owner, or admin access is required before install and runtime testing.";
+  }
+
+  return locale === "zh"
+    ? "该技能已验证，可公开检查；要保存、安装或运行测试，需要先登录并进入项目。"
+    : "This verified skill can be inspected publicly; saving, installing, or runtime testing requires sign-in and a project.";
+}
+
+function formatBillingModelLabel(
+  billingModel: "free" | "per_call" | "subscription",
+  locale: Locale,
+) {
+  const labels = {
+    en: {
+      free: "Free intent",
+      per_call: "Per-call intent",
+      subscription: "Subscription intent",
+    },
+    zh: {
+      free: "免费意图",
+      per_call: "按次意图",
+      subscription: "订阅意图",
+    },
+  } satisfies Record<Locale, Record<"free" | "per_call" | "subscription", string>>;
+
+  return labels[locale][billingModel];
 }
 
 function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
