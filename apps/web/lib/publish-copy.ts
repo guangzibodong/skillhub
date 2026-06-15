@@ -24,7 +24,7 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "publish console",
       description:
-        "Submit a skillhub.json contract, run preflight checks, and send an exact version into verified review. Commercial fields are collected for pricing intent, terms, commission, and finance readiness.",
+        "Submit a skillhub.json contract, run preflight checks, and send an exact version into verified review. Paid marketplace fields are collected only as prelaunch readiness metadata.",
       eyebrow: "Publisher workflow",
       pipelineBody:
         "A marketplace listing is only trusted after the contract becomes draft state, exact-version review state, automated-check evidence, and public catalog readiness.",
@@ -65,8 +65,8 @@ const publishCopy = {
           title: "Reviewer decision"
         },
         {
-          body: "Commercial fields remain review evidence until review, terms, commission, and finance decisions are finalized.",
-          title: "Commercial readiness"
+          body: "Paid marketplace fields remain prelaunch metadata until review, terms, commission, and finance decisions are finalized.",
+          title: "Paid readiness metadata"
         }
       ]
     },
@@ -86,9 +86,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "Continue through terms, pricing intent, commission gates, and finance readiness after the draft is saved.",
-          detail: "Commercial activation later requires verified review, accepted terms, active pricing, an active commission rule, and finance-approved readiness.",
-          label: "Commercial readiness"
+          action: "Continue through terms, pricing intent, paid-readiness metadata, and commission gates after the draft is saved.",
+          detail: "Paid activation later requires verified review, accepted terms, active pricing, an active commission rule, and finance-approved paid-marketplace readiness.",
+          label: "Paid readiness metadata"
         },
         identity: {
           action: "Add every package identity field reviewers need before a version can be trusted.",
@@ -147,7 +147,7 @@ const publishCopy = {
         ["Draft", "Save the contract as organization-owned registry state."],
         ["Version", "Create or submit an exact semantic version from /publisher."],
         ["Review", "Resolve automated check warnings before approval."],
-        ["Pricing", "Record pricing intent; commercial activation waits for review, terms, commission, and finance approval."]
+        ["Pricing", "Record pricing intent; paid activation waits for review, terms, and prelaunch paid-readiness approval."]
       ],
       readiness: {
         blocked: "Blocked",
@@ -162,7 +162,7 @@ const publishCopy = {
       repairQueue: {
         blocker: "Blocker",
         body: "Resolve blockers before saving. Warnings can be saved as draft, but they become reviewer evidence and may require notes.",
-        emptyBody: "After draft save, continue in the publisher workspace for terms, pricing intent, finance readiness, and version review.",
+        emptyBody: "Only paid-readiness metadata remains after draft save; continue in the publisher workspace for terms, pricing intent, future finance-review metadata, and version review.",
         emptyTitle: "No manifest blockers",
         target: "Target",
         title: "Preflight repair queue",
@@ -173,7 +173,7 @@ const publishCopy = {
         errorTitle: "Draft was not saved",
         publisher: "Open publisher workspace",
         successBody:
-          "Continue in the publisher workspace to submit a reviewed version, record pricing intent, and complete commercial readiness.",
+          "Continue in the publisher workspace to submit a reviewed version, record pricing intent, and complete prelaunch paid-readiness metadata.",
         successTitle: "Draft saved to the registry"
       },
       reviewBody: "Client preflight is advisory evidence for the publisher. It is not a verified review decision.",
@@ -208,10 +208,10 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "发布控制台",
       description:
-        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和商业化准备。",
+        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和付费准备。",
       eyebrow: "发布者工作流",
       pipelineBody:
-        "一个市场上架项只有进入草稿、版本、审核、运行检查和商业化准备状态后，才算可信供应。",
+        "一个市场上架项只有进入草稿、版本、审核、运行检查和付费准备状态后，才算可信供应。",
       pipelineEyebrow: "运营流水线",
       pipelineTitle: "上传只是第一个控制点，不是结束。",
       publisherWorkspace: "发布者工作台",
@@ -249,8 +249,8 @@ const publishCopy = {
           title: "审核决策"
         },
         {
-          body: "商业化字段在审核、条款、定价意图、分佣规则和财务复核确认前，仅作为审核证据和准备信息。",
-          title: "商业化准备"
+          body: "付费激活仍处于预发布；当前只收集审核、条款、定价意图、分佣规则和财务复核需要的准备元数据。",
+          title: "付费准备"
         }
       ]
     },
@@ -270,9 +270,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "草稿保存后继续完成条款、定价意图、商业化准备和分佣规则确认。",
-          detail: "后续商业化启用需要审核通过、接受条款、启用价格、有效分佣规则和财务批准。",
-          label: "商业化准备"
+          action: "草稿保存后继续完成条款、定价意图、付费准备和分佣规则确认。",
+          detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
+          label: "付费准备"
         },
         identity: {
           action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -315,7 +315,7 @@ const publishCopy = {
       editorHintValid: "JSON 有效",
       evidencePacket: {
         body: "这是发布者在提交准确版本给平台审核前，可以先检查的安全证据包。",
-        commercial: "商业化准备闸口",
+        commercial: "付费准备闸口",
         identity: "身份",
         permissions: "权限",
         risk: "风险",
@@ -331,7 +331,7 @@ const publishCopy = {
         ["草稿", "把协议保存成组织拥有的注册表状态。"],
         ["版本", "在 /publisher 创建或提交指定语义版本。"],
         ["审核", "审批前处理自动检查警告。"],
-        ["定价", "记录定价意图；商业化启用需要等待审核、条款、分佣和财务批准。"]
+        ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
       ],
       readiness: {
         blocked: "已阻塞",
@@ -356,7 +356,7 @@ const publishCopy = {
         detail: "查看公开详情",
         errorTitle: "草稿未保存",
         publisher: "打开发布者工作台",
-        successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成商业化准备。",
+        successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
         successTitle: "草稿已保存到注册表"
       },
       reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
@@ -393,7 +393,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     badge: "skillhub.json",
     consoleSubtitle: "发布控制台",
     description:
-      "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。商业化字段用于记录定价意图、条款、分佣和财务复核准备。",
+      "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。付费市场字段仅作为预发布准备信息收集。",
     eyebrow: "发布者工作流",
     pipelineBody:
       "一个市场上架项只有进入草稿状态、精确版本审核状态、自动检查证据和公开目录准备状态后，才算可被信任的供应。",
@@ -434,8 +434,8 @@ const normalizedZhPublishCopy: PublishCopy = {
         title: "审核决策"
       },
       {
-        body: "商业化字段在审核、条款、分佣和财务决策最终确认前，仅作为审核证据和准备信息。",
-        title: "商业化准备"
+        body: "付费市场字段在审核、条款、分佣和财务决策最终确认前，仅作为预发布元数据。",
+        title: "付费准备"
       }
     ]
   },
@@ -455,9 +455,9 @@ const normalizedZhPublishCopy: PublishCopy = {
     },
     checks: {
       commercial: {
-        action: "草稿保存后继续完成条款、定价意图、分佣规则和财务复核准备。",
-        detail: "后续商业化启用需要审核通过、接受条款、启用价格、有效分佣规则和财务批准。",
-        label: "商业化准备"
+        action: "草稿保存后继续完成条款、定价意图、付费准备和分佣规则确认。",
+        detail: "后续付费激活需要审核通过、接受条款、启用价格、有效分佣规则和财务批准的付费市场准备状态。",
+        label: "付费准备"
       },
       identity: {
         action: "补齐审核员判断可信版本所需的所有包身份字段。",
@@ -500,7 +500,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     editorHintValid: "JSON 有效",
     evidencePacket: {
       body: "这是发布者在把准确版本提交给平台审核前，可以先检查的安全证据包。",
-      commercial: "商业化准备闸口",
+      commercial: "付费准备闸口",
       identity: "身份",
       permissions: "权限",
       risk: "风险",
@@ -516,7 +516,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       ["草稿", "把合约保存成组织拥有的注册表状态。"],
       ["版本", "在 /publisher 创建或提交指定语义版本。"],
       ["审核", "审批前处理自动检查警告。"],
-      ["定价", "记录定价意图；商业化启用需要等待审核、条款、分佣和财务批准。"]
+      ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
     ],
     readiness: {
       blocked: "已阻塞",
@@ -541,7 +541,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       detail: "查看公开详情",
       errorTitle: "草稿未保存",
       publisher: "打开发布者工作台",
-      successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成商业化准备。",
+      successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
       successTitle: "草稿已保存到注册表"
     },
     reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",

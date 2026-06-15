@@ -34,7 +34,7 @@ type SkillInstallCommandPanelProps = {
   projectCount: number;
   readinessTitle?: string;
   risk: "high" | "low" | "medium";
-  runtime: "REST" | "Local" | "MCP";
+  runtime: "HTTP" | "Local" | "MCP";
   showCommands?: boolean;
   verificationLabel: string;
   verificationLabelEn: string;

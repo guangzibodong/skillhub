@@ -73,7 +73,7 @@ const copy = {
         title: "Developer workspace"
       },
       publisher: {
-        description: "Upload skills, manage review repair, pricing intent, buyer demand, feedback, commercial readiness, and notifications.",
+        description: "Upload skills, manage review repair, pricing intent, buyer demand, feedback, paid-readiness metadata, and notifications.",
         path: "/publisher",
         role: "Publisher / owner",
         title: "Publisher workspace"
@@ -129,7 +129,7 @@ const copy = {
       },
       publisher: {
         description:
-          "\u4e0a\u4f20\u6280\u80fd\u3001\u4fee\u590d\u5ba1\u6838\u95ee\u9898\u3001\u5904\u7406\u5b9a\u4ef7\u963b\u65ad\u3001\u4e70\u65b9\u9700\u6c42\u3001\u53cd\u9988\u3001\u6536\u5165\u3001\u5546\u4e1a\u5316\u51c6\u5907\u548c\u901a\u77e5\u3002",
+          "\u4e0a\u4f20\u6280\u80fd\u3001\u4fee\u590d\u5ba1\u6838\u95ee\u9898\u3001\u5904\u7406\u5b9a\u4ef7\u963b\u65ad\u3001\u4e70\u65b9\u9700\u6c42\u3001\u53cd\u9988\u3001\u6536\u5165\u3001\u63d0\u73b0\u51c6\u5907\u548c\u901a\u77e5\u3002",
         path: "/publisher",
         role: "\u53d1\u5e03\u8005 / \u8d1f\u8d23\u4eba",
         title: "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0"

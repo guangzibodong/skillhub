@@ -201,11 +201,11 @@ function apiProfileToPublicProfile(
     version: skill.version,
   }));
 
-  return normalizePublicPublisherProfile({
+  return {
     ...profile,
     metrics: publisherMetrics(skills),
     skills,
-  });
+  };
 }
 
 function isPublicCatalogPublisherProfile(profile: PublicPublisherApiProfile) {
@@ -248,7 +248,7 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
   return Array.from(groups.entries()).map(([slug, skills]) => {
     const publicSkills = skills.map(marketplaceSkillToPublisherSkill);
 
-    return normalizePublicPublisherProfile({
+    return {
       createdAt: "demo",
       displayName: skills[0]?.author ?? "SkillHub Publisher",
       metrics: publisherMetrics(publicSkills),
@@ -262,36 +262,8 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
         ? "verified"
         : "active",
       updatedAt: "demo",
-    });
+    };
   });
-}
-
-function normalizePublicPublisherProfile(
-  profile: PublicPublisherProfile,
-): PublicPublisherProfile {
-  if (!isOfficialSkillHubPublisher(profile)) {
-    return profile;
-  }
-
-  return {
-    ...profile,
-    displayName: "SkillHub Official",
-    payoutStatus: "verified",
-    status: "active",
-    trustLevel: "verified",
-  };
-}
-
-function isOfficialSkillHubPublisher(profile: PublicPublisherProfile) {
-  const name = profile.displayName.trim().toLowerCase();
-
-  return (
-    profile.slug === "skillhub" ||
-    profile.slug === "skillhub-labs" ||
-    name === "skillhub" ||
-    name === "skillhub official" ||
-    name === "skillhub publisher"
-  );
 }
 
 function marketplaceSkillToPublisherSkill(

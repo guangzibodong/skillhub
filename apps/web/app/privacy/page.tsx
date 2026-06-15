@@ -1,8 +1,6 @@
 import { Database, FileText, KeyRound, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
-import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -10,30 +8,11 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const locale = getLocaleFromSearchParams(await searchParams);
-
-  return buildLocalizedMetadata({
-    locale,
-    path: "/privacy",
-    en: {
-      title: "SkillHub Privacy and Data Handling",
-      description:
-        "Review how SkillHub handles account, workspace, manifest, review, runtime, billing readiness, notification, and support data.",
-    },
-    zh: {
-      title: "SkillHub 隐私与数据处理",
-      description:
-        "了解 SkillHub 如何处理账号、工作区、manifest、审核、运行、计费准备、通知和支持数据。",
-    },
-  });
-}
-
 const copy = {
   en: {
     eyebrow: "Privacy",
     title: "Privacy and data handling.",
-    body: "SkillHub stores only the operational data needed to run the registry, review Skills, govern runtime usage, secure accounts, and support billing readiness workflows. We do not claim broad compliance certifications until they are formally completed.",
+    body: "SkillHub stores only the operational data needed to run the registry, review Skills, govern runtime usage, secure accounts, and support billing-preview workflows. We do not claim broad compliance certifications until they are formally completed.",
     updated: "Current public-launch privacy posture",
     ctaPrimary: "Contact support",
     ctaSecondary: "Read security model",
@@ -61,7 +40,7 @@ const copy = {
       {
         icon: "lock",
         title: "Retention and deletion",
-        body: "Operational records are retained while needed for security, auditability, billing readiness, abuse response, and user support. Deletion and export requests can be routed through support.",
+        body: "Operational records are retained while needed for security, auditability, billing preview, abuse response, and user support. Deletion and export requests can be routed through support.",
       },
       {
         icon: "mail",
@@ -73,7 +52,7 @@ const copy = {
   zh: {
     eyebrow: "隐私",
     title: "隐私与数据处理。",
-    body: "SkillHub 仅存储运行 Skill 注册中心、审核 Skill、治理运行调用、保护账户以及支持计费准备流程所需的运营数据。在正式完成前，我们不会声称已取得广泛合规认证。",
+    body: "SkillHub 仅存储运行 Skill 注册中心、审核 Skill、治理运行调用、保护账户以及支持账务预览流程所需的运营数据。在正式完成前，我们不会声称已取得广泛合规认证。",
     updated: "当前公开上线隐私态势",
     ctaPrimary: "联系支持",
     ctaSecondary: "查看安全模型",
@@ -101,7 +80,7 @@ const copy = {
       {
         icon: "lock",
         title: "保留和删除",
-        body: "运营记录会在安全、审计、计费准备、滥用响应和用户支持所需期间保留。删除和导出请求可通过支持页面提交。",
+        body: "运营记录会在安全、审计、账务预览、滥用响应和用户支持所需期间保留。删除和导出请求可通过支持页面提交。",
       },
       {
         icon: "mail",

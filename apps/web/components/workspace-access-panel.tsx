@@ -44,12 +44,12 @@ const copy = {
       },
       developer: {
         body:
-          "Developer operations cover projects, verified-skill adoption, runtime keys, project policy, login-gated tests, commercial readiness where applicable, team access, notifications, and webhooks.",
+          "Developer operations cover projects, verified-skill adoption, runtime keys, project policy, login-gated tests, paid-readiness where applicable, team access, notifications, and webhooks.",
         title: "Developer workspace access"
       },
       publisher: {
         body:
-          "Publisher operations cover manifest drafts, version review, repair loops, pricing intent, buyer demand, feedback, commercial readiness, and notifications.",
+          "Publisher operations cover manifest drafts, version review, repair loops, pricing intent, buyer demand, feedback, paid-readiness metadata, and notifications.",
         title: "Publisher workspace access"
       }
     }
@@ -83,12 +83,12 @@ const copy = {
       },
       developer: {
         body:
-          "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0\u7528\u4e8e\u9879\u76ee\u3001\u5b89\u88c5\u3001\u8fd0\u884c Key\u3001\u9879\u76ee\u7b56\u7565\u3001\u53d7\u6cbb\u7406\u6d4b\u8bd5\u3001\u5546\u4e1a\u5316\u51c6\u5907\u3001\u56e2\u961f\u3001\u901a\u77e5\u548c webhook\u3002",
+          "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0\u7528\u4e8e\u9879\u76ee\u3001\u5b89\u88c5\u3001\u8fd0\u884c Key\u3001\u9879\u76ee\u7b56\u7565\u3001\u53d7\u6cbb\u7406\u6d4b\u8bd5\u3001\u8d26\u5355\u51c6\u5907\u3001\u56e2\u961f\u3001\u901a\u77e5\u548c webhook\u3002",
         title: "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0\u8bbf\u95ee"
       },
       publisher: {
         body:
-          "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u7528\u4e8e manifest \u8349\u7a3f\u3001\u7248\u672c\u5ba1\u6838\u3001\u4fee\u590d\u95ed\u73af\u3001\u5b9a\u4ef7\u963b\u65ad\u3001\u4e70\u65b9\u9700\u6c42\u3001\u53cd\u9988\u3001\u6536\u5165\u3001\u5546\u4e1a\u5316\u51c6\u5907\u548c\u901a\u77e5\u3002",
+          "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u7528\u4e8e manifest \u8349\u7a3f\u3001\u7248\u672c\u5ba1\u6838\u3001\u4fee\u590d\u95ed\u73af\u3001\u5b9a\u4ef7\u963b\u65ad\u3001\u4e70\u65b9\u9700\u6c42\u3001\u53cd\u9988\u3001\u6536\u5165\u3001\u63d0\u73b0\u51c6\u5907\u548c\u901a\u77e5\u3002",
         title: "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0\u8bbf\u95ee"
       }
     }

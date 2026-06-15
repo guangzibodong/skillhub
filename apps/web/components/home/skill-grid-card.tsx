@@ -1,5 +1,5 @@
 import type { SkillSummary } from "@useskillhub/schema";
-import { Zap, Globe, ShieldCheck, Database } from "lucide-react";
+import { Zap, Globe, ShieldCheck, FileJson, Activity, Database } from "lucide-react";
 
 type Props = {
   skill: SkillSummary;
@@ -7,13 +7,21 @@ type Props = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  "browser-research": <Globe size={24} className="text-[#7fee64]" />,
-  "dataset-summarizer": <Database size={24} className="text-[#7fee64]" />,
+  "browser-research-pro": <Globe size={24} className="text-[#7fee64]" />,
+  "crm-enrichment": <Database size={24} className="text-[#7fee64]" />,
+  "support-triage": <Activity size={24} className="text-[#7fee64]" />,
+  "code-review-assistant": <FileJson size={24} className="text-[#7fee64]" />,
+  "data-pipeline-orchestrator": <Zap size={24} className="text-[#7fee64]" />,
+  "financial-report-analyzer": <ShieldCheck size={24} className="text-[#7fee64]" />,
 };
 
 const zhDesc: Record<string, string> = {
-  "browser-research": "浏览器研究 — 公开来源检索、引用和结构化摘要",
-  "dataset-summarizer": "数据集摘要 — 表格行摘要、异常点和下一步建议",
+  "browser-research-pro": "深度网络研究 — 多源抓取、结构化摘要",
+  "crm-enrichment": "自动补全 CRM 数据 — 社交、公司、职位",
+  "support-triage": "AI 工单分类 — 优先级识别、团队分配",
+  "code-review-assistant": "智能代码审查 — 安全、性能、最佳实践",
+  "data-pipeline-orchestrator": "数据管道编排 — ETL 调度、依赖管理",
+  "financial-report-analyzer": "财报分析 — 指标提取、趋势检测",
 };
 
 export function SkillGridCard({ skill, locale }: Props) {

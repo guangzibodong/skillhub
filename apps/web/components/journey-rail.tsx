@@ -48,7 +48,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
   en: {
     admin: {
       body:
-        "The operator path proves SkillHub is governable: readiness, review, trust, money-state controls, delivery, and audit stay in one command center.",
+        "The operator path proves SkillHub is governable: readiness, review, trust, prelaunch money-state controls, delivery, and audit stay in one command center.",
       current: "Current",
       next: "Next",
       steps: [
@@ -75,7 +75,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "Review finance",
-          detail: "Review billing ledger, refunds, disputes, commissions, and payout decisions before paid access changes.",
+          detail: "Review prelaunch ledger, refunds, disputes, commissions, and payout decisions before paid marketplace rollout.",
           href: "/admin",
           id: "finance",
           label: "Finance review model"
@@ -136,7 +136,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     publisher: {
       body:
-        "The publisher path proves authors have repeat work: draft packaging, exact-version review, repair, pricing intent, feedback, buyer demand, and commercial readiness.",
+        "The publisher path proves authors have repeat work: draft packaging, exact-version review, repair, pricing intent, feedback, buyer demand, and paid-readiness metadata.",
       current: "Current",
       next: "Next",
       steps: [
@@ -149,7 +149,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "Open publisher",
-          detail: "Operate owned skills, versions, buyer demand, notifications, and commercial readiness signals.",
+          detail: "Operate owned skills, versions, buyer demand, notifications, and paid-preview readiness signals.",
           href: "/publisher",
           id: "publisher",
           label: "Publisher workspace"
@@ -162,15 +162,15 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
           label: "Review repair"
         },
         {
-          action: "Clear commercial gates",
-          detail: "Complete profile, terms, commercial readiness, verified review, and pricing intent.",
+          action: "Clear paid gates",
+          detail: "Complete profile, terms, paid-readiness metadata, verified review, and pricing intent.",
           href: "/publisher#publisher-paid-readiness",
           id: "commercial",
           label: "Paid-readiness metadata"
         },
         {
           action: "Improve listing",
-          detail: "Respond to feedback, buyer requests, commercial signals, refund/dispute notices, and placement appeals.",
+          detail: "Respond to feedback, buyer requests, paid-preview signals, refund/dispute notices, and placement appeals.",
           href: "/publisher",
           id: "improve",
           label: "Improve and retain"
@@ -270,7 +270,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     publisher: {
       body:
-        "发布者路径证明作者有持续回来的工作：草稿打包、精确版本审核、修复、商业化准备、反馈和买方需求。",
+        "发布者路径证明作者有持续回来的工作：草稿打包、精确版本审核、修复、付费准备、反馈和买方需求。",
       current: "\u5f53\u524d",
       next: "\u4e0b\u4e00\u6b65",
       steps: [
@@ -283,7 +283,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "\u6253\u5f00\u5de5\u4f5c\u53f0",
-          detail: "\u8fd0\u8425\u5df2\u62e5\u6709\u6280\u80fd\u3001\u7248\u672c\u3001\u4e70\u65b9\u9700\u6c42\u3001\u901a\u77e5\u548c\u5546\u4e1a\u5316\u51c6\u5907\u4fe1\u53f7\u3002",
+          detail: "\u8fd0\u8425\u5df2\u62e5\u6709\u6280\u80fd\u3001\u7248\u672c\u3001\u4e70\u65b9\u9700\u6c42\u3001\u901a\u77e5\u548c\u4ed8\u8d39\u9884\u89c8\u51c6\u5907\u4fe1\u53f7\u3002",
           href: "/publisher",
           id: "publisher",
           label: "\u53d1\u5e03\u8005\u5de5\u4f5c\u53f0"
@@ -296,15 +296,15 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
           label: "\u5ba1\u6838\u4fee\u590d"
         },
         {
-          action: "\u6e05\u7406\u5546\u4e1a\u5316\u95e8\u69db",
-          detail: "完成资料、条款、商业化准备、已验证审核和价格状态。",
+          action: "\u6e05\u7406\u4ed8\u8d39\u95e8\u69db",
+          detail: "完成资料、条款、付费准备、已验证审核和价格状态。",
           href: "/publisher#publisher-paid-readiness",
           id: "commercial",
-          label: "商业化准备"
+          label: "付费准备"
         },
         {
           action: "\u6539\u8fdb\u4e0a\u67b6",
-          detail: "\u54cd\u5e94\u53cd\u9988\u3001\u4e70\u65b9\u9700\u6c42\u3001\u5546\u4e1a\u5316\u4fe1\u53f7\u3001\u9000\u6b3e/\u4e89\u8bae\u901a\u77e5\u548c\u5206\u53d1\u7533\u8bc9\u3002",
+          detail: "\u54cd\u5e94\u53cd\u9988\u3001\u4e70\u65b9\u9700\u6c42\u3001\u4ed8\u8d39\u9884\u89c8\u4fe1\u53f7\u3001\u9000\u6b3e/\u4e89\u8bae\u901a\u77e5\u548c\u5206\u53d1\u7533\u8bc9\u3002",
           href: "/publisher",
           id: "improve",
           label: "\u6539\u8fdb\u4e0e\u7559\u5b58"
@@ -513,7 +513,7 @@ export function JourneyRailDeck({
         <p>
           {locale === "zh"
             ? "\u4e09\u4e2a\u89d2\u8272\u5171\u7528\u4e00\u6761\u8fd0\u8425\u94fe\u8def\uff1a\u6280\u80fd\u4e0a\u67b6\u3001\u5ba1\u6838\u3001\u5b89\u88c5\u3001\u8fd0\u884c\u3001\u8bb0\u8d26\u3001\u63d0\u73b0\u548c\u5ba1\u8ba1\u3002"
-            : "The three roles share one operating chain: publish, review, signed-in adoption, run, billing ledger, and audit."}
+            : "The three roles share one operating chain: publish, review, signed-in adoption, run, prelaunch ledger model, and audit."}
         </p>
       </div>
       <div className="journey-rail-deck__grid">

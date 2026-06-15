@@ -67,7 +67,7 @@ export function buildLocalizedMetadata(input: BuildMetadataInput): Metadata {
 
 export function buildNoIndexMetadata(title = "SkillHub"): Metadata {
   return {
-    title: title.startsWith(siteName) ? { absolute: title } : title,
+    title,
     robots: {
       follow: false,
       index: false,

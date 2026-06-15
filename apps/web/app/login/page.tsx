@@ -1,5 +1,4 @@
 import type { LucideIcon } from "lucide-react";
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -35,14 +34,7 @@ import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const locale = getLocaleFromSearchParams(await searchParams);
-
-  return buildNoIndexMetadata(
-    locale === "zh" ? "SkillHub 登录" : "SkillHub Login",
-  );
-}
+export const metadata = buildNoIndexMetadata("SkillHub Login");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -53,13 +45,13 @@ const copy = {
     account: "Account",
     accountCenter: "Account center",
     accountFallback: "SkillHub account",
-    authSubtitle: "Use a configured sign-in method to enter your SkillHub workspace.",
+    authSubtitle: "Choose a method to enter your SkillHub workspace.",
     authTitle: "Sign in",
     body:
       "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
     currentBrowser: "Current browser session",
     environment: "Environment fallback",
-    eyebrow: "Governed access",
+    eyebrow: "Developer Preview",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
     footerPrivacy: "Privacy",
     footerSecurity: "Security",
@@ -73,8 +65,8 @@ const copy = {
     heroTitleBefore: "Sign in to your",
     lastSignedIn: "Last signed in",
     noticeBody:
-      "Use Project Keys, permissions, and runtime logs to control how agents use SkillHub.",
-    noticeLabel: "Secure workspace",
+      "public discovery and inspection are live; runtime invocation requires a project key; paid marketplace remains prelaunch.",
+    noticeLabel: "Developer Preview",
     noticeLink: "Learn more",
     oauthConnected:
       "OAuth login completed. Your browser session is now connected to the workspace.",
@@ -101,7 +93,7 @@ const copy = {
       ["Live", "Public discovery"],
       ["Required", "Project Key"],
       ["Governed", "REST / MCP"],
-      ["Workspace", "Governance"],
+      ["Prelaunch", "Paid marketplace"],
     ],
     signedInValueCards: [
       {
@@ -144,13 +136,13 @@ const copy = {
     account: "账号",
     accountCenter: "账户中心",
     accountFallback: "SkillHub 账号",
-    authSubtitle: "使用已配置的登录方式进入 SkillHub 工作区。",
+    authSubtitle: "选择一种方式进入 SkillHub 工作区。",
     authTitle: "登录账号",
     body:
       "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
     currentBrowser: "当前浏览器会话",
     environment: "环境变量兜底",
-    eyebrow: "受治理访问",
+    eyebrow: "开发者预览版",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
     footerPrivacy: "隐私政策",
     footerSecurity: "安全",
@@ -164,8 +156,8 @@ const copy = {
     heroTitleBefore: "登录",
     lastSignedIn: "登录时间",
     noticeBody:
-      "使用 Project Key、权限和运行日志控制智能体如何使用 SkillHub。",
-    noticeLabel: "安全工作区",
+      "公开发现与查看已上线；运行调用需要项目 Key；付费市场仍处于预发布阶段。",
+    noticeLabel: "开发者预览版",
     noticeLink: "了解详情",
     oauthConnected: "OAuth 登录已完成，浏览器会话已连接到工作区。",
     oauthConnectedTitle: "OAuth 已连接",
@@ -189,7 +181,7 @@ const copy = {
       ["已上线", "公开发现"],
       ["必需", "项目 Key"],
       ["受治理", "REST / MCP"],
-      ["工作区", "治理"],
+      ["预发布", "付费市场"],
     ],
     signedInValueCards: [
       {
@@ -260,9 +252,11 @@ export default async function LoginPage({ searchParams }: PageProps) {
       <div className={`login-page-shell login-page-shell--${locale}`}>
         <p className="visually-hidden">
           {locale === "zh"
-            ? "账号入口：登录 SkillHub。可使用已配置登录方式或账号密码。登录后的路径会按角色继续进入可用的工作区。"
-            : "Sign in to SkillHub with configured providers or account password. After sign-in, continue by role."}
+            ? "账号入口：登录 SkillHub。可使用账号密码、Google 或 GitHub。登录后的路径会按角色继续进入可用的工作区。"
+            : "Sign in to SkillHub Account password Continue with Google or GitHub After sign-in Continue by role"}
         </p>
+        <LoginPreviewNotice labels={labels} locale={locale} />
+
         <section className="login-stage" aria-labelledby="login-title">
           <LoginTechBackdrop />
           <div className="login-stage__grid">
@@ -391,7 +385,7 @@ function LoginWorkspaceHero({
 
       <div
         className="login-metric-strip-v2"
-        aria-label="SkillHub operating state"
+        aria-label="SkillHub preview state"
       >
         {labels.metrics.map(([value, label]) => (
           <div className="login-metric-v2" key={label}>
@@ -465,13 +459,6 @@ function LoginAuthCard({
   providers: Awaited<ReturnType<typeof getAuthProviders>>;
   returnTo: string;
 }) {
-  const hasActiveOauthProvider = providers.some(
-    (provider) =>
-      (provider.provider === "github" || provider.provider === "google") &&
-      Boolean(provider.startUrl) &&
-      (provider.status === "active" || provider.status === "connected"),
-  );
-
   return (
     <section className="login-auth-card-v2" aria-labelledby="login-card-title">
       {notice ? <LoginNotice notice={notice} /> : null}
@@ -481,24 +468,20 @@ function LoginAuthCard({
         </h2>
         <p>{labels.authSubtitle}</p>
       </div>
-      {hasActiveOauthProvider ? (
-        <>
-          <AuthProviderPanel
-            apiUrl={apiUrl}
-            locale={locale}
-            providers={providers}
-            returnTo={returnTo}
-            surface="embedded"
-          />
-          <div className="login-divider-v2" role="separator">
-            <span />
-            <small>
-              {locale === "zh" ? "或" : "or"}
-            </small>
-            <span />
-          </div>
-        </>
-      ) : null}
+      <AuthProviderPanel
+        apiUrl={apiUrl}
+        locale={locale}
+        providers={providers}
+        returnTo={returnTo}
+        surface="embedded"
+      />
+      <div className="login-divider-v2" role="separator">
+        <span />
+        <small>
+          {locale === "zh" ? "或" : "or"}
+        </small>
+        <span />
+      </div>
       <LoginEmailCard labels={labels} locale={locale} returnTo={returnTo} />
       <LoginRecoveryBlock labels={labels} locale={locale} returnTo={returnTo} />
     </section>

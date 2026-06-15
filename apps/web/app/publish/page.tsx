@@ -1,25 +1,21 @@
-import type { Metadata } from "next";
 import {
-  ArrowRight,
   BookOpenCheck,
-  CheckCircle2,
   ClipboardCheck,
   FileJson,
   Gauge,
+  HandCoins,
   ListChecks,
   ShieldCheck,
   UploadCloud,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
+import { JourneyRail } from "@/components/journey-rail";
+import { FlowStepList, StatusChip } from "@/components/operational-status";
 import { PublishForm } from "@/components/publish-form";
+import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import {
-  getLocaleFromSearchParams,
-  localizedHref,
-  localizedHrefWithReturnTo,
-  type Locale,
-} from "@/lib/i18n";
+import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { getPublishCopy } from "@/lib/publish-copy";
 
 export const dynamic = "force-dynamic";
@@ -28,92 +24,13 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-  const locale = getLocaleFromSearchParams(await searchParams);
-
-  return {
-    title: locale === "zh" ? "发布 AI Agent Skill" : "Publish an AI Agent Skill",
-    description:
-      locale === "zh"
-        ? "提交 skillhub.json、运行预检、保存草稿，并把精确版本送入 SkillHub 审核。"
-        : "Submit skillhub.json, run preflight, save a draft, and send the exact version into SkillHub review.",
-  };
-}
-
 const publisherRoles = ["publisher", "owner", "admin", "super_admin"];
-
-const copy = {
-  en: {
-    eyebrow: "Publish",
-    title: "Publish your AI Agent Skill to a governed marketplace",
-    body:
-      "Submit versioned skills with manifests, examples, permissions, and review status so teams can inspect, approve, and run them safely.",
-    primary: "Start Publishing",
-    secondary: "Review requirements",
-    whyTitle: "Why publish on SkillHub",
-    why: [
-      ["Inspectable contracts", "Teams can review manifests, schemas, permissions, and examples before adoption."],
-      ["Governed runtime path", "Approved skills connect to scoped Project Keys, policies, logs, and REST / MCP invocation."],
-      ["Publisher trust", "Version history, review status, support paths, and pricing readiness live with the listing."],
-    ],
-    howTitle: "How publishing works",
-    steps: [
-      ["Create publisher profile", "Set public identity, support path, and organization ownership."],
-      ["Upload manifest", "Submit name, version, runtime, schema, permissions, and examples."],
-      ["Add examples and permissions", "Make input, output, and risk clear for buyers and reviewers."],
-      ["Submit for review", "Run automated checks and human review before public trust status changes."],
-      ["Go live in the registry", "Verified skills become discoverable with a stable detail page."],
-    ],
-    manifestTitle: "Manifest example",
-    reviewTitle: "Review process",
-    workspaceTitle: "Publisher workspace",
-    workspaceRows: [
-      ["Skill", "browser-research"],
-      ["Version", "1.0.0"],
-      ["Status", "Submitted"],
-      ["Next action", "Review permissions"],
-    ],
-    formTitle: "Publisher submission",
-  },
-  zh: {
-    eyebrow: "发布",
-    title: "把你的 AI Agent Skill 发布到治理型市场",
-    body:
-      "提交带版本的技能，包含 manifest、示例、权限和审核状态，让团队可以检查、批准并安全运行。",
-    primary: "开始发布",
-    secondary: "查看审核要求",
-    whyTitle: "为什么发布到 SkillHub",
-    why: [
-      ["可检查的合约", "团队采用前可以查看 manifest、schema、权限和示例。"],
-      ["受治理的运行路径", "已批准技能可接入有范围的 Project Key、策略、日志和 REST / MCP 调用。"],
-      ["发布者信任", "版本历史、审核状态、支持入口和商业化准备信息跟随列表展示。"],
-    ],
-    howTitle: "发布流程",
-    steps: [
-      ["创建发布者档案", "设置公开身份、支持入口和组织归属。"],
-      ["上传 manifest", "提交名称、版本、运行时、schema、权限和示例。"],
-      ["补充示例和权限", "让买方和审核人员看清输入、输出和风险。"],
-      ["提交审核", "通过自动检查和人工审核后，公开信任状态才会变化。"],
-      ["进入公开注册表", "已验证技能获得稳定详情页并可被发现。"],
-    ],
-    manifestTitle: "Manifest 示例",
-    reviewTitle: "审核流程",
-    workspaceTitle: "发布者工作区预览",
-    workspaceRows: [
-      ["技能", "browser-research"],
-      ["版本", "1.0.0"],
-      ["状态", "已提交"],
-      ["下一步", "复核权限"],
-    ],
-    formTitle: "发布者提交",
-  },
-} as const;
 
 export default async function PublishPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const labels = copy[locale];
   const publishCopy = getPublishCopy(locale);
+  const labels = publishCopy.page;
   const apiUrl =
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const session = await getWorkspaceSession();
@@ -130,157 +47,168 @@ export default async function PublishPage({ searchParams }: PageProps) {
     hasSession: Boolean(session.subject),
     locale,
   });
+  const journeyActionHref = hasPublisherAccess
+    ? "/publisher"
+    : session.subject
+      ? "/account"
+      : hrefWithReturnTo("/login", "/publish", locale);
+  const signalIcons = [ClipboardCheck, ShieldCheck, Gauge, HandCoins];
+  const stepIcons = [
+    FileJson,
+    ListChecks,
+    ClipboardCheck,
+    ShieldCheck,
+    Gauge,
+    BookOpenCheck,
+    HandCoins,
+  ];
 
   return (
     <AppShell active="publish" locale={locale}>
-      <section className="section pt-10 pb-14 md:pt-16 md:pb-20" aria-labelledby="publish-heading">
-        <div className="section-inner hero-glow grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-10 items-center">
-          <Reveal>
-            <div className="flex flex-col gap-6">
+      <section
+        className="section py-[96px]"
+        aria-labelledby="publish-heading"
+      >
+        <Reveal>
+          <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
+            <div className="flex-1 hero-glow">
               <div className="eyebrow">
                 <UploadCloud size={16} aria-hidden="true" />
                 <span>{labels.eyebrow}</span>
               </div>
-              <div className="flex flex-col gap-4 max-w-[760px]">
-                <h1 id="publish-heading" className="heading-xl">{labels.title}</h1>
-                <p className="body-text text-[#999]">{labels.body}</p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <a className="btn-primary--large" href={accessNotice.actionHref}>
+              <h1 id="publish-heading" className="heading-xl mt-4">
+                {labels.title}
+              </h1>
+              <p className="body-text mt-4 max-w-[600px]">
+                {labels.description}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a className="btn-primary btn-primary--large" href={accessNotice.actionHref}>
                   <UploadCloud size={18} aria-hidden="true" />
-                  <span>{labels.primary}</span>
-                  <ArrowRight size={15} aria-hidden="true" />
+                  <span>
+                    {hasPublisherAccess
+                      ? (locale === "zh" ? "进入发布者工作台" : "Open publisher workspace")
+                      : (locale === "zh" ? "先登录发布技能" : "Sign in to publish")}
+                  </span>
                 </a>
-                <a className="btn-secondary--large" href={localizedHref("/publisher-review", locale)}>
+                <a className="btn-secondary btn-secondary--large" href={localizedHref("/publisher-review", locale)}>
                   <ClipboardCheck size={18} aria-hidden="true" />
-                  <span>{labels.secondary}</span>
+                  <span>{locale === "zh" ? "查看审核规则" : "Review requirements"}</span>
                 </a>
               </div>
             </div>
-          </Reveal>
+            <div className="flex flex-col gap-4 items-start">
+              <div className="pill">
+                <FileJson size={18} aria-hidden="true" />
+                <span>{labels.badge}</span>
+              </div>
+              <div
+                className="grid grid-cols-2 gap-3"
+                aria-label={labels.signalLabel}
+              >
+                {labels.signals.map(([label, value], index) => {
+                  const Icon = signalIcons[index] ?? ClipboardCheck;
 
-          <Reveal delay={120}>
-            <WorkspacePreview locale={locale} labels={labels} />
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="section py-12" aria-labelledby="publish-why-heading">
-        <div className="section-inner flex flex-col gap-6">
-          <h2 id="publish-why-heading" className="heading-lg">{labels.whyTitle}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {labels.why.map(([title, body]) => (
-              <article className="card p-6 flex flex-col gap-3" key={title}>
-                <ShieldCheck size={20} aria-hidden="true" className="text-[#7fee64]" />
-                <h3 className="heading-sm">{title}</h3>
-                <p className="body-text-sm text-[#999]">{body}</p>
-              </article>
-            ))}
+                  return (
+                    <div
+                      key={label}
+                      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
+                    >
+                      <Icon size={16} aria-hidden="true" />
+                      <span className="body-text-sm text-[#999]">{label}</span>
+                      <strong className="text-white text-sm">{value}</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      <section className="section py-12" aria-labelledby="publish-how-heading">
-        <div className="section-inner flex flex-col gap-6">
-          <h2 id="publish-how-heading" className="heading-lg">{labels.howTitle}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {labels.steps.map(([title, body], index) => (
-              <article className="card--compact p-4 flex flex-col gap-3" key={title}>
-                <span className="text-xs text-[#525252]">{String(index + 1).padStart(2, "0")}</span>
-                <strong className="text-sm text-white">{title}</strong>
-                <p className="body-text-sm text-[#777]">{body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="section-divider" />
 
-      <section className="section py-12">
-        <div className="section-inner grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <article className="card p-6">
-            <div className="eyebrow">
-              <FileJson size={16} aria-hidden="true" />
-              <span>{labels.manifestTitle}</span>
-            </div>
-            <div className="code-block mt-4">
-              <pre className="p-4 text-sm overflow-x-auto">
-                <code>{`{
-  "name": "browser-research",
-  "version": "1.0.0",
-  "runtime": { "type": "http" },
-  "permissions": {
-    "network": true,
-    "browser": true,
-    "secrets": []
-  },
-  "examples": ["research brief with citations"]
-}`}</code>
-              </pre>
-            </div>
-          </article>
+      <Reveal delay={100}>
+        <JourneyRail
+          actionHrefOverride={journeyActionHref}
+          actionLabelOverride={accessNotice.actionLabel}
+          currentStep="publish"
+          journey="publisher"
+          locale={locale}
+        />
+      </Reveal>
 
-          <article className="card p-6">
-            <div className="eyebrow">
-              <BookOpenCheck size={16} aria-hidden="true" />
-              <span>{labels.reviewTitle}</span>
-            </div>
-            <div className="mt-4 flex flex-col gap-3">
-              {labels.steps.slice(1, 4).map(([title, body]) => (
-                <div className="flex items-start gap-3" key={title}>
-                  <CheckCircle2 size={16} aria-hidden="true" className="text-[#7fee64] mt-0.5" />
-                  <div>
-                    <strong className="block text-sm text-white">{title}</strong>
-                    <span className="text-sm text-[#999]">{body}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
+      <div className="section-divider" />
 
-      <section className="section py-12" aria-labelledby="publish-form-heading">
-        <div className="section-inner flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <div className="eyebrow">
-              <Gauge size={16} aria-hidden="true" />
-              <span>{labels.formTitle}</span>
-            </div>
-            <h2 id="publish-form-heading" className="heading-lg">{labels.formTitle}</h2>
-          </div>
-          <PublishForm
-            access={accessNotice}
-            apiUrl={apiUrl}
-            labels={publishCopy.form}
+      <section className="section py-[96px]">
+        <div className="section-inner">
+          <WorkspaceAccessPanel
             locale={locale}
+            requiredRoles={publisherRoles}
+            returnTo="/publish"
+            session={session}
+            workspace="publisher"
           />
         </div>
       </section>
-    </AppShell>
-  );
-}
 
-function WorkspacePreview({
-  labels,
-}: {
-  locale: Locale;
-  labels: (typeof copy)[Locale];
-}) {
-  return (
-    <aside className="card p-6 flex flex-col gap-4">
-      <div className="eyebrow">
-        <ListChecks size={16} aria-hidden="true" />
-        <span>{labels.workspaceTitle}</span>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {labels.workspaceRows.map(([label, value]) => (
-          <div className="stat-card" key={label}>
-            <span className="text-xs text-[#777]">{label}</span>
-            <strong className="text-sm text-white">{value}</strong>
+      <div className="section-divider" />
+
+      <Reveal delay={200}>
+        <PublishForm
+          access={accessNotice}
+          apiUrl={apiUrl}
+          labels={publishCopy.form}
+          locale={locale}
+        />
+      </Reveal>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="publish-pipeline-heading">
+        <div className="section-inner">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+            <div>
+              <div className="eyebrow">
+                <BookOpenCheck size={16} aria-hidden="true" />
+                <span>{labels.pipelineEyebrow}</span>
+              </div>
+              <h2
+                id="publish-pipeline-heading"
+                className="heading-lg mt-3"
+              >
+                {labels.pipelineTitle}
+              </h2>
+              <p className="body-text mt-3 max-w-[560px]">
+                {labels.pipelineBody}
+              </p>
+            </div>
+            <a
+              className="btn-secondary"
+              href={accessNotice.actionHref}
+            >
+              <Gauge size={16} aria-hidden="true" />
+              <span>{hasPublisherAccess ? labels.publisherWorkspace : accessNotice.actionLabel}</span>
+            </a>
           </div>
-        ))}
-      </div>
-    </aside>
+          <FlowStepList
+            ariaLabel={labels.pipelineTitle}
+            steps={labels.pipelineSteps.map((step, index) => {
+              const Icon = stepIcons[index] ?? ListChecks;
+
+              return {
+                body: step.body,
+                icon: <Icon size={16} aria-hidden="true" />,
+                title: step.title,
+              };
+            })}
+          />
+          <div className="mt-6">
+            <StatusChip tone="neutral">{labels.badge}</StatusChip>
+          </div>
+        </div>
+      </section>
+    </AppShell>
   );
 }
 
@@ -291,7 +219,7 @@ function getPublishAccessNotice({
 }: {
   hasPublisherAccess: boolean;
   hasSession: boolean;
-  locale: Locale;
+  locale: "en" | "zh";
 }) {
   if (hasPublisherAccess) {
     return {
@@ -300,8 +228,8 @@ function getPublishAccessNotice({
         locale === "zh" ? "打开发布者工作台" : "Open publisher workspace",
       body:
         locale === "zh"
-          ? "当前账号已具备发布权限，可以保存草稿并提交审核。"
-          : "Your current session can save drafts and submit versions for review.",
+          ? "当前账号已具备发布权限，可以保存草稿并继续提交审核。正式公开上架前仍需要完成版本审核、运行检查、条款确认、定价意图和收款资料准备。"
+          : "Your current session can save organization-scoped drafts. Public listing still requires version review and runtime checks; pricing and paid-readiness fields remain prelaunch metadata.",
       canSubmit: true,
       title: locale === "zh" ? "发布权限已就绪" : "Publisher access ready",
     };
@@ -311,10 +239,10 @@ function getPublishAccessNotice({
     return {
       actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
       actionLabel: locale === "zh" ? "先登录" : "Sign in",
-      body:
-        locale === "zh"
-          ? "请先登录或创建工作区，然后保存草稿并提交审核。"
-          : "Sign in or create a workspace before saving drafts and submitting for review.",
+    body:
+      locale === "zh"
+        ? "请先通过用户名/邮箱密码、已配置的 Google/GitHub OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
+        : "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
       canSubmit: false,
       title: locale === "zh" ? "需要先登录" : "Sign-in required",
     };
@@ -325,8 +253,8 @@ function getPublishAccessNotice({
     actionLabel: locale === "zh" ? "查看账号权限" : "Check account access",
     body:
       locale === "zh"
-        ? "当前账号还没有发布权限。请在账号中心确认组织角色。"
-        : "This account does not have publisher access yet. Check organization roles in account settings.",
+        ? "当前账号已登录，但还没有发布权限。请到账号中心确认所在组织的权限，或让组织负责人开通发布权限后再保存草稿。"
+        : "You are signed in, but this account does not have publisher access yet. Check your organization access before saving a draft.",
     canSubmit: false,
     title: locale === "zh" ? "需要发布权限" : "Publisher access required",
   };

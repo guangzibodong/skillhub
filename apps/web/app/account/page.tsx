@@ -33,20 +33,16 @@ import { getNotificationPreferences } from "@/lib/ops-data";
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Account");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps) {
-  const locale = getLocaleFromSearchParams(await searchParams);
-  return buildNoIndexMetadata(locale === "zh" ? "SkillHub 账号中心" : "SkillHub Account");
-}
-
 const copy = {
   en: {
     account: "Account",
-    accountEmpty: "Connect a workspace session to see profile, organization, roles, sessions, and notification readiness. Billing and payout readiness appear only when your workspace role allows it.",
+    accountEmpty: "Connect a workspace session to see profile, organization, roles, sessions, and notification readiness. Billing and payout readiness appear only when paid marketplace preview permissions apply.",
     activeSessions: "Active sessions",
     activeTokens: "Active tokens",
     admin: "Admin",
@@ -56,7 +52,7 @@ const copy = {
     commandIdentity: "Identity",
     commandIdentityBody: "Profile, verified email, connected providers, and organization membership.",
     commandOperations: "Operations",
-    commandOperationsBody: "Unread notifications, session activity, and role-gated readiness. Billing and payout states appear only for roles that can operate them.",
+    commandOperationsBody: "Unread notifications, session activity, and role-gated readiness. Billing and payout states appear only for paid marketplace preview permissions.",
     commandSecurity: "Security",
     commandSecurityBody: "Session fingerprints and revocation controls without exposing raw tokens.",
     commandSignInBody:
@@ -80,11 +76,11 @@ const copy = {
     no: "No",
     notificationPreferences: "Notification preferences",
     organization: "Organization",
-    payout: "Payout readiness",
+    payout: "Paid preview",
     profile: "Profile",
     projects: "Projects",
     publisher: "Publisher workspace",
-    publisherBody: "Upload, review repair, buyer demand, commercial readiness, and finance state.",
+    publisherBody: "Upload, review repair, buyer demand, paid-readiness metadata, and prelaunch finance state.",
     publisherStatus: "Publisher",
     reviewAccount: "Review account",
     role: "Role",
@@ -129,7 +125,7 @@ const copy = {
   },
   zh: {
     account: "账号",
-    accountEmpty: "连接工作区会话后，可查看资料、组织、角色、会话和通知准备度。账单和提现准备度仅在当前角色允许时显示。",
+    accountEmpty: "连接工作区会话后，可查看资料、组织、角色、会话和通知准备度。账单和提现准备度仅在具备付费市场预览权限时显示。",
     activeSessions: "有效会话",
     activeTokens: "有效 token",
     admin: "后台",
@@ -139,11 +135,11 @@ const copy = {
     commandIdentity: "身份",
     commandIdentityBody: "资料、已验证邮箱、绑定 provider 和组织成员关系。",
     commandOperations: "运营",
-    commandOperationsBody: "未读通知、会话活动和按角色开放的准备状态。账单和提现仅对具备权限的角色显示。",
+    commandOperationsBody: "未读通知、会话活动和按角色开放的准备状态。账单和提现仅在付费市场预览权限下显示。",
     commandSecurity: "安全",
     commandSecurityBody: "会话指纹和撤销控制，不暴露原始 token。",
     commandSignInBody:
-      "使用 Google、GitHub，或用户名/邮箱加密码进入后，再查看身份、会话、角色和通知。商业化状态仅在角色允许时显示。",
+      "使用 Google、GitHub，或用户名/邮箱加密码进入后，再查看身份、会话、角色和通知。付费准备状态仅在角色允许时显示。",
     commandSignInTitle: "登录后解锁账号中心。",
     commandWorkspace: "工作区",
     commandWorkspaceBody: "团队、项目、已拥有技能和有效 token 的运营准备度。",
@@ -162,11 +158,11 @@ const copy = {
     no: "否",
     notificationPreferences: "通知偏好",
     organization: "组织",
-    payout: "打款准备",
+    payout: "付费预览",
     profile: "个人资料",
     projects: "项目",
     publisher: "发布者工作台",
-    publisherBody: "上传、审核修复、买方需求、商业化准备和财务状态。",
+    publisherBody: "上传、审核修复、买方需求、付费准备和预发布财务状态。",
     publisherStatus: "发布者",
     reviewAccount: "检查账号",
     role: "角色",

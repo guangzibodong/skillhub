@@ -31,17 +31,17 @@ const publisherSkillCopy = {
       title: "Next operating step",
       curation: "Request distribution review after quality gaps are fixed.",
       feedback: "Respond to published buyer feedback to improve trust.",
-      pricing: "Resolve commercial blockers before paid pricing can enter review.",
+      pricing: "Resolve paid-preview blockers before paid pricing can enter review.",
       review: "Submit an exact version for review.",
       runtime: "Resolve failed checks or document warnings before review can close.",
-      verified: "Monitor adoption, calls, buyer demand, ledger state, and finance-gated payout readiness.",
+      verified: "Monitor adoption, calls, buyer demand, paid-preview ledger state, and finance-gated payout readiness.",
       version: "Create a semantic version from the saved draft."
     },
     reviewRepair: {
       actions: "Repair actions",
       actionLabels: {
         clarify_risk: "Document high-risk permission rationale",
-        complete_commercial: "Clear commercial blockers",
+        complete_commercial: "Clear paid-preview blockers",
         create_version: "Create a new semantic version",
         fix_checks: "Fix failed checks or document warnings",
         monitor: "Monitor operations",
@@ -82,11 +82,11 @@ const publisherSkillCopy = {
       draft: "Draft"
     },
     pricingGate: {
-      activeBlocked: "Active pricing is blocked until review, terms, commercial readiness, and publisher readiness are complete.",
-      draftSafe: "Draft pricing can be saved now; active paid pricing still requires commercial review.",
+      activeBlocked: "Active paid pricing is blocked until review, terms, paid-readiness metadata, and publisher readiness are complete.",
+      draftSafe: "Draft pricing can be saved now; active paid pricing still follows the paid-marketplace preview gate.",
       freePreview: "Free listing",
       preview: "Price preview",
-      ready: "Commercially ready",
+      ready: "Paid-preview ready",
       title: "Pricing gate"
     },
     quality: "Quality",
@@ -169,17 +169,17 @@ const publisherSkillCopy = {
       title: "下一步运营动作",
       curation: "质量问题修复后，申请市场分发复审。",
       feedback: "回复已公开的买家反馈，提升买家信任。",
-      pricing: "先解决商业化阻塞项，再进入付费价格复核。",
+      pricing: "先解决付费预览阻塞项，再进入付费价格复核。",
       review: "提交一个准确的语义版本进入审核。",
       runtime: "修复失败检查，或补充警告项说明后再完成审核。",
-      verified: "持续监控采用、调用、买方需求、账本和收款资料准备。",
+      verified: "持续监控采用、调用、买方需求、预发布账本和收款资料准备。",
       version: "从已保存草稿创建语义版本。"
     },
     reviewRepair: {
       actions: "修复动作",
       actionLabels: {
         clarify_risk: "补充高风险权限说明",
-        complete_commercial: "清理商业化阻塞",
+        complete_commercial: "清理付费预览阻塞",
         create_version: "创建新的语义版本",
         fix_checks: "修复失败检查或补充警告说明",
         monitor: "持续监控运营",
@@ -220,11 +220,11 @@ const publisherSkillCopy = {
       draft: "草稿"
     },
     pricingGate: {
-      activeBlocked: "价格启用前必须完成审核、条款、商业化准备和发布者资料准备。",
-      draftSafe: "可以先保存草稿价格；启用付费价格仍然需要通过商业化复核。",
+      activeBlocked: "付费价格启用前必须完成审核、条款、付费准备和发布者资料准备。",
+      draftSafe: "可以先保存草稿价格；启用付费价格仍然需要通过付费市场预览门禁。",
       freePreview: "免费上架",
       preview: "价格预览",
-      ready: "商业化已就绪",
+      ready: "付费预览已就绪",
       title: "定价门禁"
     },
     quality: "质量",

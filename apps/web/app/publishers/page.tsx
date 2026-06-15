@@ -13,7 +13,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
-import { getMarketplaceSkill, localizeText } from "@/lib/marketplace-data";
+import { localizeText } from "@/lib/marketplace-data";
 import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
@@ -32,24 +32,25 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     en: {
       title: "SkillHub Publishers - Trusted AI Skill Suppliers",
       description:
-        "Browse public publisher profiles, verified skill inventory, review state, support posture, and public trust signals."
+        "Browse public publisher profiles, verified skill inventory, runtime evidence, install signals, and paid-marketplace preview readiness."
     },
     zh: {
-      title: "SkillHub 发布者信任预览 - 可信 AI 技能供应方",
+      title: "SkillHub 发布者目录 - 可信 AI 技能供应方",
       description:
-        "浏览公开发布者档案、已验证技能库存、审核状态、支持姿态和公开信任信号。"
+        "浏览公开发布者档案、已验证技能库存、运行证据、安装信号和付费市场预览准备状态。"
     }
   });
 }
 
 const copy = {
   en: {
+    activePaid: "Paid preview inventory",
     back: "Back to marketplace",
     calls: "Runtime calls",
     directory: "Public publishers",
-    directoryBody: "Browse marketplace suppliers by trust level, verified listings, public review status, support posture, and public skill inventory.",
+    directoryBody: "Browse marketplace suppliers by trust level, verified listings, public review status, install evidence, runtime calls, support posture, and public skill inventory.",
     docs: "Review docs",
-    eyebrow: "Publisher trust preview",
+    eyebrow: "Publisher trust directory",
     installs: "Installs",
     marketplace: "Marketplace",
     metricInstalls: "Install evidence",
@@ -57,12 +58,12 @@ const copy = {
     metricPublishers: "Publishers",
     metricVerifiedPublishers: "Verified publishers",
     notAvailable: "n/a",
-    payout: "Commercial readiness",
+    payout: "Paid marketplace preview",
     profile: "View profile",
     publisherWorkspace: "Sign in for publisher workspace",
     publicSkills: "Public skills",
-    sideBody: "Publisher trust is based on profile state, verified skills, public listings, review status, support path, and issue history.",
-    sideTitle: "How to read trust",
+    sideBody: "The directory makes supplier quality visible before payment integration is connected. Publisher trust is based on profile state, verified skills, public listings, review status, runtime evidence, install evidence, support path, and issue history.",
+    sideTitle: "How to read the directory",
     status: "Profile status",
     success: "Avg success",
     title: "Browse publishers before adopting their skills.",
@@ -72,15 +73,16 @@ const copy = {
     trustLevels: { active: "Public profile", blocked: "Blocked publisher", limited: "Limited publisher", verified: "Verified publisher" },
     publisherStatuses: { active: "Active", pending: "Pending", restricted: "Restricted", suspended: "Suspended" },
     payoutStatuses: { blocked: "Blocked", not_configured: "Not configured", verification_required: "Verification required", verified: "Verified" },
-    checks: ["Verified skills carry more ranking weight.", "Commercial readiness is shown only when supported by review state.", "Support paths and issue history affect trust.", "Skill-level pages expose API inspect commands, availability, and permissions."],
+    checks: ["Verified skills carry more ranking weight.", "Paid marketplace readiness remains prelaunch.", "Runtime evidence shows real adoption.", "Skill-level pages expose API inspect commands, availability, and permissions."],
   },
   zh: {
+    activePaid: "付费预览库存",
     back: "返回市场",
     calls: "运行调用",
     directory: "公开发布者",
-    directoryBody: "按信任等级、已验证上架、公开审核状态、支持状态和公开技能库存浏览市场供应方。",
+    directoryBody: "按信任等级、已验证上架、公开审核状态、安装证据、运行调用、支持状态和公开技能库存浏览市场供应方。",
     docs: "审核文档",
-    eyebrow: "发布者信任预览",
+    eyebrow: "发布者信任目录",
     installs: "安装",
     marketplace: "市场",
     metricInstalls: "安装证据",
@@ -88,12 +90,12 @@ const copy = {
     metricPublishers: "发布者",
     metricVerifiedPublishers: "已验证发布者",
     notAvailable: "暂无",
-    payout: "商业化准备",
+    payout: "付费市场预览",
     profile: "查看档案",
     publisherWorkspace: "登录后进入发布者工作台",
     publicSkills: "公开技能",
-    sideBody: "发布者信任主要基于资料状态、已验证技能数、公开上架、审核状态、支持路径和问题记录。",
-    sideTitle: "如何阅读信任",
+    sideBody: "目录会在最终支付接口接入前先把供应方质量显性化。发布者信任主要基于资料状态、已验证技能数、公开上架、审核状态、运行证据、安装证据、支持路径和问题记录。",
+    sideTitle: "如何阅读目录",
     status: "资料状态",
     success: "平均成功率",
     title: "采用技能之前，先浏览发布者。",
@@ -103,7 +105,7 @@ const copy = {
     trustLevels: { active: "公开资料", blocked: "已阻断发布者", limited: "受限发布者", verified: "已验证发布者" },
     publisherStatuses: { active: "活跃", pending: "待完善", restricted: "受限", suspended: "已暂停" },
     payoutStatuses: { blocked: "已阻断", not_configured: "未配置", verification_required: "需要验证", verified: "已验证" },
-    checks: ["已验证技能会获得更高排序权重。", "商业化准备只在审核状态支持时展示。", "支持路径和问题记录会影响信任判断。", "技能详情页展示 API 查看命令、可用状态和权限。"],
+    checks: ["已验证技能会获得更高排序权重。", "付费市场准备仍属于预发布能力。", "运行证据体现真实采用情况。", "技能详情页展示 API 查看命令、可用状态和权限。"],
   },
 } as const;
 
@@ -219,27 +221,16 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                       <Metric label={labels.verifiedSkills} value={formatCompactNumber(publisher.metrics.verifiedSkillCount)} />
                       <Metric label={labels.installs} value={formatCompactNumber(publisher.metrics.installCount)} />
                       <Metric label={labels.calls} value={formatCompactNumber(publisher.metrics.callCount)} />
+                      <Metric label={labels.activePaid} value={formatCompactNumber(publisher.metrics.activePaidSkillCount)} />
                       <Metric label={labels.success} value={publisher.metrics.avgSuccessRate === null ? labels.notAvailable : formatPercent(publisher.metrics.avgSuccessRate)} />
                     </div>
                     <div className="flex flex-wrap gap-2" aria-label={labels.topSkills}>
-                      {publisher.skills.slice(0, 4).map((skill) => {
-                        const content = (
-                          <>
-                            <Star size={13} aria-hidden="true" />
-                            <span>{localizeText(skill.displayName, locale)}</span>
-                          </>
-                        );
-
-                        return getMarketplaceSkill(skill.slug) ? (
-                          <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug} className="pill flex items-center gap-1.5">
-                            {content}
-                          </a>
-                        ) : (
-                          <span key={skill.slug} className="pill flex items-center gap-1.5">
-                            {content}
-                          </span>
-                        );
-                      })}
+                      {publisher.skills.slice(0, 4).map((skill) => (
+                        <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug} className="pill flex items-center gap-1.5">
+                          <Star size={13} aria-hidden="true" />
+                          <span>{localizeText(skill.displayName, locale)}</span>
+                        </a>
+                      ))}
                     </div>
                     <footer className="flex items-center justify-between mt-auto pt-3 border-t border-[rgba(255,255,255,0.08)]">
                       <span className="text-xs text-[#666]">{labels.topSkills}: {formatCompactNumber(Math.min(publisher.skills.length, 4))}</span>

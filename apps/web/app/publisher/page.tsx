@@ -46,15 +46,11 @@ import { getPublisherPageCopy, type PublisherPageCopy } from "@/lib/publisher-pa
 import { buildNoIndexMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+export const metadata = buildNoIndexMetadata("SkillHub Publisher Workspace");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-export async function generateMetadata({ searchParams }: PageProps) {
-  const locale = getLocaleFromSearchParams(await searchParams);
-  return buildNoIndexMetadata(locale === "zh" ? "SkillHub 发布者工作台" : "SkillHub Publisher Workspace");
-}
 
 type ReadinessTask = {
   detail: string;
@@ -91,16 +87,16 @@ const publisherAccessRoles = ["publisher", "owner", "admin", "super_admin"];
 const publisherCommandCopy = {
   en: {
     body:
-      "The publisher workspace should behave like an operating queue: onboarding, review, buyer demand, commercial readiness, ledger state, and finance-gated payout readiness all point to one next move.",
+      "The publisher workspace should behave like an operating queue: onboarding, review, buyer demand, paid-readiness metadata, paid-preview ledger, and finance-gated payout readiness all point to one next move.",
     completeAction: "Review publisher operations",
     completeDetail:
-      "Core publisher readiness is complete. Monitor review evidence, buyer demand, ledger state, feedback, finance-gated payout readiness, and marketplace placement.",
+      "Core publisher readiness is complete. Monitor review evidence, buyer demand, paid-preview ledger state, feedback, finance-gated payout readiness, and marketplace placement.",
     completeTitle: "Keep the supply loop healthy",
     eyebrow: "Publisher operations queue",
     ready: "Ready",
     title: "What should the publisher do next?",
     actions: {
-      payout: "Open commercial readiness",
+      payout: "Open paid-readiness metadata",
       profile: "Complete publisher account",
       publish: "Publish a skill",
       session: "Sign in",
@@ -109,7 +105,7 @@ const publisherCommandCopy = {
     },
     metrics: {
       demand: "Buyer demand",
-      payout: "Commercial state",
+      payout: "Paid preview state",
       pricing: "Paid blockers",
       readiness: "Launch readiness",
       review: "Review work"
@@ -120,7 +116,7 @@ const publisherCommandCopy = {
       readyMetric: "Healthy",
       readyTitle: "Supply loop is healthy",
       readyDetail:
-        "No urgent publisher blockers are visible. Keep watching reviews, feedback, buyer demand, ledger state, finance-gated payout readiness, and marketplace placement.",
+        "No urgent publisher blockers are visible. Keep watching reviews, feedback, buyer demand, paid-preview ledger state, finance-gated payout readiness, and marketplace placement.",
       title: "Priority queue"
     },
     queueActions: {
@@ -130,8 +126,8 @@ const publisherCommandCopy = {
       feedback: "Open feedback responses",
       ledger: "Review adjustments",
       monitor: "Review publisher operations",
-      payout: "Open commercial readiness",
-      pricing: "Open commercial readiness",
+      payout: "Open paid-readiness metadata",
+      pricing: "Open paid readiness",
       review: "Open skill workbench",
       runtime: "Open review evidence"
     },
@@ -140,9 +136,9 @@ const publisherCommandCopy = {
       demand: "Buyer request is waiting for a publisher action",
       distribution: "Marketplace placement needs improvement or appeal follow-up",
       feedback: "Published buyer feedback needs a publisher response",
-      payoutReady: "Payout review is ready",
-      payoutBlocked: "Payout readiness is blocked",
-      pricing: "Pricing review is blocked",
+      payoutReady: "Paid-preview payout review is ready",
+      payoutBlocked: "Paid-preview payout readiness is blocked",
+      pricing: "Paid-preview review is blocked",
       reviewRepair: "Review repair is blocking a skill",
       reviewSla: "Review SLA needs follow-up",
       runtime: "Runtime check needs repair"
@@ -152,8 +148,8 @@ const publisherCommandCopy = {
       demand: "Buyer demand",
       distribution: "Marketplace distribution",
       feedback: "Feedback responses",
-      payout: "Payout readiness",
-      pricing: "Pricing review",
+      payout: "Paid-preview payout readiness",
+      pricing: "Paid-preview review",
       reviewRepair: "Review repair",
       reviewSla: "Review SLA",
       runtime: "Runtime checks"
@@ -166,10 +162,10 @@ const publisherCommandCopy = {
   },
   zh: {
     body:
-      "发布者工作台不应该只是看数据，而是把入驻、审核、买方需求、商业化准备、账本和收款资料收束到一个下一步。",
+      "发布者工作台不应该只是看数据，而是把入驻、审核、买方需求、付费准备元数据、预发布账本和收款资料收束到一个下一步。",
     completeAction: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
     completeDetail:
-      "核心发布准备已完成。接下来重点监控审核证据、买方需求、账本、反馈、收款资料和市场位置。",
+      "核心发布准备已完成。接下来重点监控审核证据、买方需求、预发布账本、反馈、收款资料和市场位置。",
     completeTitle: "\u4fdd\u6301\u4f9b\u7ed9\u95ed\u73af\u5065\u5eb7",
     eyebrow: "\u53d1\u5e03\u8005\u8fd0\u8425\u961f\u5217",
     ready: "\u5df2\u5c31\u7eea",
@@ -184,8 +180,8 @@ const publisherCommandCopy = {
     },
     metrics: {
       demand: "\u4e70\u65b9\u9700\u6c42",
-      payout: "\u5546\u4e1a\u5316\u72b6\u6001",
-      pricing: "\u5546\u4e1a\u5316\u963b\u65ad",
+      payout: "\u4ed8\u8d39\u9884\u89c8\u72b6\u6001",
+      pricing: "\u4ed8\u8d39\u963b\u65ad",
       readiness: "\u4e0a\u7ebf\u51c6\u5907",
       review: "\u5ba1\u6838\u5de5\u4f5c"
     },
@@ -195,7 +191,7 @@ const publisherCommandCopy = {
       readyMetric: "\u5065\u5eb7",
       readyTitle: "\u4f9b\u7ed9\u95ed\u73af\u6b63\u5e38",
       readyDetail:
-        "当前没有紧急发布者阻塞。继续监控审核、反馈、买方需求、账本、收款资料和市场位置。",
+        "当前没有紧急发布者阻塞。继续监控审核、反馈、买方需求、预发布账本、收款资料和市场位置。",
       title: "\u4f18\u5148\u7ea7\u961f\u5217"
     },
     queueActions: {
@@ -206,7 +202,7 @@ const publisherCommandCopy = {
       ledger: "\u67e5\u770b\u8c03\u6574\u8bb0\u5f55",
       monitor: "\u67e5\u770b\u53d1\u5e03\u8005\u8fd0\u8425",
       payout: "打开收款资料",
-      pricing: "\u6253\u5f00\u5546\u4e1a\u5316\u590d\u6838",
+      pricing: "\u6253\u5f00\u4ed8\u8d39\u9884\u89c8\u590d\u6838",
       review: "\u6253\u5f00\u6280\u80fd\u5de5\u4f5c\u53f0",
       runtime: "\u6253\u5f00\u5ba1\u6838\u8bc1\u636e"
     },
@@ -215,9 +211,9 @@ const publisherCommandCopy = {
       demand: "\u4e70\u65b9\u9700\u6c42\u6b63\u5728\u7b49\u5f85\u53d1\u5e03\u8005\u52a8\u4f5c",
       distribution: "\u5e02\u573a\u4f4d\u7f6e\u9700\u8981\u6539\u8fdb\u6216\u8ddf\u8fdb\u7533\u8bc9",
       feedback: "\u5df2\u516c\u5f00\u4e70\u5bb6\u53cd\u9988\u9700\u8981\u53d1\u5e03\u8005\u56de\u590d",
-      payoutReady: "\u6253\u6b3e\u590d\u6838\u5df2\u5c31\u7eea",
-      payoutBlocked: "\u6253\u6b3e\u51c6\u5907\u88ab\u963b\u585e",
-      pricing: "\u5546\u4e1a\u5316\u590d\u6838\u88ab\u963b\u585e",
+      payoutReady: "\u4ed8\u8d39\u9884\u89c8\u6253\u6b3e\u590d\u6838\u5df2\u5c31\u7eea",
+      payoutBlocked: "\u4ed8\u8d39\u9884\u89c8\u6253\u6b3e\u51c6\u5907\u88ab\u963b\u585e",
+      pricing: "\u4ed8\u8d39\u9884\u89c8\u590d\u6838\u88ab\u963b\u585e",
       reviewRepair: "\u5ba1\u6838\u4fee\u590d\u6b63\u5728\u963b\u585e\u6280\u80fd",
       reviewSla: "\u5ba1\u6838 SLA \u9700\u8981\u8ddf\u8fdb",
       runtime: "\u8fd0\u884c\u68c0\u67e5\u9700\u8981\u4fee\u590d"
@@ -227,8 +223,8 @@ const publisherCommandCopy = {
       demand: "\u4e70\u65b9\u9700\u6c42",
       distribution: "\u5e02\u573a\u5206\u53d1",
       feedback: "\u53cd\u9988\u56de\u590d",
-      payout: "\u6253\u6b3e\u51c6\u5907",
-      pricing: "\u5546\u4e1a\u5316\u590d\u6838",
+      payout: "\u4ed8\u8d39\u9884\u89c8\u6253\u6b3e\u51c6\u5907",
+      pricing: "\u4ed8\u8d39\u9884\u89c8\u590d\u6838",
       reviewRepair: "\u5ba1\u6838\u4fee\u590d",
       reviewSla: "\u5ba1\u6838 SLA",
       runtime: "\u8fd0\u884c\u68c0\u67e5"
@@ -250,13 +246,13 @@ const copy = {
     adjustmentTitle: "Refund and dispute watch",
     disputeReview: "Dispute review",
     description:
-      "A focused workspace for skill publishers to move packages through review, record pricing intent for commercial review, respond to buyer demand, and prepare finance readiness.",
+      "A focused workspace for skill publishers to move packages through review, record pricing intent for future paid-marketplace review, respond to buyer demand, and prepare paid-marketplace metadata.",
     eyebrow: "Publisher workspace",
-    ledgerEmpty: "No posted ledger rows yet",
+    ledgerEmpty: "No posted paid-preview ledger rows yet",
     ledgerHeaders: ["Skill", "Source", "Gross", "Fee", "Net", "Status"],
-    ledgerTitle: "Publisher commercial ledger",
+    ledgerTitle: "Publisher paid-marketplace ledger preview",
     refundReview: "Refund review",
-    sourceMixTitle: "Ledger source mix",
+    sourceMixTitle: "Paid-preview source mix",
     sourceShareLabel: "publisher share",
     sourceTransactionLabel: "transactions",
     unknownProject: "unknown-project",
@@ -293,7 +289,7 @@ const copy = {
       requested: "Requested"
     },
     metrics: {
-      available: "Available balance",
+      available: "Paid preview balance",
       demand: "Open demand",
       skills: "Owned skills",
       verified: "Verified skills"
@@ -305,12 +301,12 @@ const copy = {
       progress: "readiness",
       title: "Publisher launch checklist",
       tasks: {
-        session: ["Sign in with workspace session", "Sign in through the account entry so publishing, pricing intent, commercial readiness, and notifications stay scoped to the current organization."],
+        session: ["Sign in with workspace session", "Sign in through the account entry so publishing, pricing intent, paid-readiness metadata, and notifications stay scoped to the current organization."],
         profile: ["Create publisher profile", "Set the public publisher name buyers will see before they install a skill."],
-        terms: ["Accept operating terms", "Record the current refund, dispute, takedown, data, notification, and commercial readiness policy before paid publishing."],
+        terms: ["Accept operating terms", "Record the current refund, dispute, takedown, data, notification, and paid-marketplace readiness policy before paid publishing."],
         publish: ["Publish your first skill", "Submit a manifest and move it into review from the publisher skill operations panel."],
         verified: ["Reach verified listing status", "Complete review and activate pricing so buyers can trust and install the skill."],
-        payout: ["Prepare commercial readiness", "Record receiving details for finance review before any paid rollout."]
+        payout: ["Prepare paid-marketplace metadata", "Record receiving details for future finance review before any public paid rollout."]
       }
     },
     title: "Manage skill submissions and review readiness."
@@ -321,13 +317,13 @@ const copy = {
     adjustmentTitle: "退款与争议跟进",
     disputeReview: "争议复核",
     description:
-      "给技能发布者使用的独立工作台：推进技能审核，记录商业化复核所需的定价意图，响应买方需求，并准备财务复核资料。",
+      "给技能发布者使用的独立工作台：推进技能审核，记录未来付费市场复核所需的定价意图，响应买方需求，并准备付费市场元数据。",
     eyebrow: "发布者工作台",
-    ledgerEmpty: "暂无已入账的账本记录",
+    ledgerEmpty: "暂无已入账的付费预览账本记录",
     ledgerHeaders: ["技能", "来源", "预览总额", "平台费", "发布者份额", "状态"],
-    ledgerTitle: "发布者商业化账本",
+    ledgerTitle: "发布者付费市场账本预览",
     refundReview: "退款复核",
-    sourceMixTitle: "账本来源结构",
+    sourceMixTitle: "付费预览来源结构",
     sourceShareLabel: "发布者分成",
     sourceTransactionLabel: "笔交易",
     unknownProject: "未知项目",
@@ -342,7 +338,7 @@ const copy = {
       won: "已胜诉"
     },
     ledgerStatuses: {
-      available: "可用余额",
+      available: "付费预览可用",
       blocked: "已锁定",
       pending: "待结算",
       posted: "已入账",
@@ -364,7 +360,7 @@ const copy = {
       requested: "已申请"
     },
     metrics: {
-      available: "余额",
+      available: "付费预览余额",
       demand: "开放需求",
       skills: "我的技能",
       verified: "已验证技能"
@@ -376,12 +372,12 @@ const copy = {
       progress: "准备度",
       title: "发布者上线清单",
       tasks: {
-        session: ["登录工作区会话", "通过账号入口登录，让发布、定价意图、商业化准备和通知都归属到当前组织。"],
+        session: ["登录工作区会话", "通过账号入口登录，让发布、定价意图、付费准备和通知都归属到当前组织。"],
         profile: ["创建发布者档案", "设置买家安装技能前会看到的公开发布者名称。"],
-        terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和商业化准备政策。"],
+        terms: ["接受运营条款", "在付费发布前记录当前退款、争议、下架、数据、通知和付费市场准备政策。"],
         publish: ["发布第一个技能", "提交 manifest，并在发布者技能运营面板里推进审核。"],
         verified: ["获得已验证上架状态", "完成审核并启用价格，让买家可以信任并安装技能。"],
-        payout: ["准备商业化资料", "在付费上线前，记录后续财务复核需要的收款资料。"]
+        payout: ["准备付费市场元数据", "在公开付费市场上线前，记录后续财务复核需要的收款资料。"]
       }
     },
     title: "管理技能提交和审核准备。"
@@ -443,7 +439,7 @@ function getPublisherLockedGuide(locale: Locale) {
     return {
       ariaLabel: "发布者准入步骤",
       eyebrow: "发布者准入",
-      marker: "发布者工作台 / 优先级队列 / 商业化准备 / 收款资料",
+      marker: "发布者工作台 / 优先级队列 / 付费准备元数据 / 收款资料",
       actions: [
         {
           body: "用 Google、GitHub 或邮箱密码进入账号，建立当前组织会话。",
@@ -470,7 +466,7 @@ function getPublisherLockedGuide(locale: Locale) {
   return {
     ariaLabel: "Publisher access steps",
     eyebrow: "Publisher access",
-    marker: "publisher operations queue / review readiness / commercial readiness",
+    marker: "publisher operations queue / review readiness / paid marketplace preview",
     actions: [
       {
         body: "Use Google, GitHub, or email/password to create the current organization session.",
@@ -959,7 +955,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者工作台包含草稿、审核、定价意图、商业化准备、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
+              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
               : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
           locale={locale}
@@ -1494,7 +1490,7 @@ export default async function PublisherPage({ searchParams }: PageProps) {
           actionLabel={hasWorkspaceSession ? (locale === "zh" ? "查看账号权限" : "Check account access") : (locale === "zh" ? "先登录" : "Sign in")}
           body={
             locale === "zh"
-              ? "发布者工作台包含草稿、审核、定价意图、商业化准备、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
+              ? "发布者工作台包含草稿、审核、定价意图、付费准备元数据、收款资料和反馈操作。当前账号还没有发布权限，所以先显示准入步骤，表单和工作区数据保持隐藏。"
               : "Publisher operations include draft, review, pricing, payout, withdrawal, and feedback writes. This session cannot operate them, so publisher data and forms stay hidden."
           }
           locale={locale}

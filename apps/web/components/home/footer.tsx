@@ -23,9 +23,9 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "Product",
       links: [
-        { href: "/marketplace", label: "Skills" },
+        { href: "/marketplace", label: "Marketplace" },
         { href: "/registry", label: "Registry" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/pricing", label: "Pricing preview" },
         { href: "/what-is-a-skill", label: "What is a Skill?" },
         { href: "/roadmap", label: "Roadmap" },
       ],
@@ -48,7 +48,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
       links: [
         { href: "/publish", label: "Publish" },
         { href: "/publisher-review", label: "Publisher review" },
-        { href: "/publishers", label: "Publisher trust" },
+        { href: "/publishers", label: "Publisher directory" },
         { href: "/publisher-agreement", label: "Publisher agreement" },
       ],
     },
@@ -79,9 +79,9 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "产品",
       links: [
-        { href: "/marketplace", label: "技能" },
+        { href: "/marketplace", label: "技能市场" },
         { href: "/registry", label: "注册表" },
-        { href: "/pricing", label: "价格" },
+        { href: "/pricing", label: "价格预览" },
         { href: "/what-is-a-skill", label: "什么是 Skill" },
         { href: "/roadmap", label: "路线图" },
       ],
@@ -104,7 +104,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
       links: [
         { href: "/publish", label: "发布技能" },
         { href: "/publisher-review", label: "发布审核" },
-        { href: "/publishers", label: "发布者信任" },
+        { href: "/publishers", label: "发布者目录" },
         { href: "/publisher-agreement", label: "发布者协议" },
       ],
     },
@@ -154,8 +154,8 @@ export function HomeFooter({ locale }: Props) {
           </a>
           <p>
             {locale === "zh"
-              ? "面向 AI Agent Skills 的治理型市场、注册表与运行网关。"
-              : "A governed marketplace, registry, and runtime gateway for AI Agent Skills."}
+              ? "面向 AI Agent 的 Skill 注册、审核、运行治理和市场预览基础设施。"
+              : "Registry, review, runtime governance, and marketplace preview infrastructure for AI Agent Skills."}
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export function HomeFooter({ locale }: Props) {
         <div className="home-footer__bottom">
           <p>
             © {new Date().getFullYear()} SkillHub.{" "}
-            {locale === "zh" ? "公开能力以实时配置和访问权限为准。" : "Public capabilities depend on live configuration and access policy."}
+            {locale === "zh" ? "所有公开能力以预览状态和实际配置为准。" : "Public capabilities depend on preview state and live configuration."}
           </p>
           <div>
             <a href={localizedHref("/status", locale)}>{locale === "zh" ? "状态" : "Status"}</a>

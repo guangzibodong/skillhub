@@ -68,7 +68,7 @@ const copy: Record<
     fallbackStats: [
       { label: "Evidence rows", value: "Live" },
       { label: "Governance path", tone: "good", value: "REST + MCP" },
-      { label: "Money state", value: "Commercial ready" },
+      { label: "Money state", value: "Prelaunch model" },
       { label: "Audit posture", tone: "good", value: "Reasoned writes" }
     ],
     focus: {
@@ -86,19 +86,19 @@ const copy: Record<
       },
       marketplace: {
         body:
-          "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated runtime governance, and commercial billing readiness.",
-        eyebrow: "Operating reference - governed model",
+          "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated runtime governance, and prelaunch paid-marketplace modeling.",
+        eyebrow: "Operating reference - Developer Preview model",
         title: "The catalog points to the governed path behind it."
       },
       platform: {
         body:
-          "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to governed runtime, and later to billing ledger and audit states.",
-        eyebrow: "Architecture reference - governed model",
+          "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to governed runtime, and later to paid-marketplace ledger and audit states.",
+        eyebrow: "Architecture reference - Developer Preview model",
         title: "One visible path from publisher supply to agent use."
       },
       publisher: {
         body:
-          "Publishers need a repeatable path from draft package to review repair, commercial readiness metadata, buyer demand, future billing evidence, and finance review readiness.",
+          "Publishers need a repeatable path from draft package to review repair, paid-readiness metadata, buyer demand, future paid-marketplace evidence, and finance review readiness.",
         eyebrow: "Publisher evidence chain",
         title: "A skill package can become a maintained marketplace product."
       }
@@ -141,17 +141,17 @@ const copy: Record<
         detail: "Future paid usage and subscription periods will post immutable transactions, commission splits, balance rows, refunds, and disputes after launch gates.",
         href: "/admin",
         id: "ledger",
-        label: "Billing ledger",
+        label: "Prelaunch ledger",
         owner: "Finance admin",
-        state: "Ready -> gated"
+        state: "Modeled -> gated"
       },
       {
-        detail: "Payout movement remains finance-gated; public pages show only readiness state.",
+        detail: "Paid marketplace payout movement remains prelaunch and finance-gated; public pages show only readiness state.",
         href: "/publisher",
         id: "payout",
-        label: "Payout readiness",
+        label: "Paid readiness",
         owner: "Publisher + admin",
-        state: "Ready"
+        state: "Prelaunch"
       }
     ],
     view: "Open"
@@ -161,7 +161,7 @@ const copy: Record<
     fallbackStats: [
       { label: "证据行", value: "真实状态" },
       { label: "治理路径", tone: "good", value: "REST + MCP" },
-      { label: "资金状态", value: "商业化准备" },
+      { label: "资金状态", value: "先入账本" },
       { label: "审计姿态", tone: "good", value: "带理由写入" }
     ],
     focus: {
@@ -176,17 +176,17 @@ const copy: Record<
         title: "公开查看之后，登录后采用会进入受控项目状态。"
       },
       marketplace: {
-        body: "市场可信不只靠列表，而是公开技能能连接发布者信任、可用状态、登录后运行治理和商业化准备。",
+        body: "市场可信不只靠列表，而是公开技能能连接发布者信任、可用状态、登录后运行治理和预发布账本模型。",
         eyebrow: "市场证据链",
         title: "目录背后要能看见真实运营系统。"
       },
       platform: {
-        body: "SkillHub 不是静态目录：一个技能可以从合约、审核、登录后采用、受治理运行，一直走到商业化准备和审计。",
+        body: "SkillHub 不是静态目录：一个技能可以从合约、审核、登录后采用、受治理运行，一直走到预发布账本模型和审计。",
         eyebrow: "运营证据链",
         title: "从发布者供给到 Agent 使用，一条路径看清楚。"
       },
       publisher: {
-        body: "发布者需要一条可重复路径：草稿包、审核修复、商业化准备、买方需求、付费信号和收款资料准备。",
+        body: "发布者需要一条可重复路径：草稿包、审核修复、付费准备、买方需求、预发布付费信号和收款资料准备。",
         eyebrow: "发布者证据链",
         title: "技能包可以变成持续维护的市场产品。"
       }
@@ -229,17 +229,17 @@ const copy: Record<
         detail: "可计费用量和订阅周期会生成不可变交易、佣金分成、余额行、退款和争议调整。",
         href: "/admin",
         id: "ledger",
-        label: "账务总账",
+        label: "预发布账本",
         owner: "财务后台",
         state: "用量 -> 余额"
       },
       {
-        detail: "资金流转需要财务复核；公开页面只展示准备状态。",
+        detail: "付费市场资金流转仍处于预发布并需要财务复核；公开页面只展示准备状态。",
         href: "/publisher",
         id: "payout",
-        label: "打款准备",
+        label: "付费准备",
         owner: "发布者 + 后台",
-        state: "准备中"
+        state: "预发布"
       }
     ],
     view: "打开"
