@@ -3400,14 +3400,24 @@ function parsePermissionLevel(value: string | undefined): SkillSummary["permissi
 
 function parseSkillCategory(value: string | undefined): PublicSkillCategory | undefined {
   if (
+    value === "content" ||
     value === "data" ||
+    value === "dev" ||
     value === "ops" ||
-    value === "research" ||
     value === "sales" ||
     value === "security" ||
-    value === "support"
+    value === "seo" ||
+    value === "ui"
   ) {
     return value;
+  }
+
+  if (value === "research") {
+    return "content";
+  }
+
+  if (value === "support") {
+    return "ops";
   }
 
   return undefined;

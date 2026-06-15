@@ -1,6 +1,15 @@
 import type { Locale } from "@/lib/i18n";
 
 type LocalizedText = Record<Locale, string>;
+export type MarketplaceCategoryKey =
+  | "content"
+  | "data"
+  | "dev"
+  | "ops"
+  | "sales"
+  | "security"
+  | "seo"
+  | "ui";
 
 export type MarketplaceSkill = {
   slug: string;
@@ -8,7 +17,7 @@ export type MarketplaceSkill = {
   summary: LocalizedText;
   author: string;
   category: LocalizedText;
-  categoryKey: "research" | "sales" | "support" | "data" | "security" | "ops";
+  categoryKey: MarketplaceCategoryKey;
   tags: Record<Locale, string[]>;
   price: LocalizedText;
   billing: "free" | "per_call" | "subscription";
@@ -69,13 +78,13 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     author: "SkillHub Labs",
     category: {
-      en: "Research",
-      zh: "研究"
+      en: "Content",
+      zh: "内容"
     },
-    categoryKey: "research",
+    categoryKey: "content",
     tags: {
-      en: ["citations", "browser", "research"],
-      zh: ["引用", "浏览器", "研究"]
+      en: ["content", "research", "citations"],
+      zh: ["内容", "研究", "引用"]
     },
     price: {
       en: "$0.018 / call",
@@ -275,13 +284,13 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     author: "SkillHub Labs",
     category: {
-      en: "Support",
-      zh: "客服"
+      en: "Operations",
+      zh: "运营"
     },
-    categoryKey: "support",
+    categoryKey: "ops",
     tags: {
-      en: ["support", "routing", "classification"],
-      zh: ["客服", "路由", "分类"]
+      en: ["operations", "support", "routing"],
+      zh: ["运营", "客服", "路由"]
     },
     price: {
       en: "Free",
@@ -635,6 +644,374 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     ],
     inputExample: '{ "fileUrl": "https://signed.example.com/invoice.pdf" }',
     outputExample: '{ "vendor": "...", "amount": 1280, "dueDate": "2026-06-30" }'
+  },
+  {
+    slug: "seo-page-auditor",
+    name: {
+      en: "SEO Page Auditor",
+      zh: "SEO 页面诊断"
+    },
+    summary: {
+      en: "Audits a page for search intent, titles, headings, internal links, schema gaps, and indexability blockers.",
+      zh: "诊断页面的搜索意图、标题、层级、内链、结构化数据缺口和收录阻碍。"
+    },
+    author: "GrowthOps Studio",
+    category: {
+      en: "SEO",
+      zh: "SEO"
+    },
+    categoryKey: "seo",
+    tags: {
+      en: ["seo", "audit", "schema"],
+      zh: ["SEO", "诊断", "结构化数据"]
+    },
+    price: {
+      en: "$0.015 / call",
+      zh: "$0.015 / 次"
+    },
+    billing: "per_call",
+    rating: "4.8",
+    feedbackCount: 173,
+    installs: "9.6k",
+    successRate: "97.9%",
+    latency: "1.4s",
+    runtime: "HTTP",
+    verification: {
+      en: "Verified",
+      zh: "已验证"
+    },
+    risk: "medium",
+    lastReviewed: "2026-06-08",
+    installsCommand: {
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=seo-page-auditor"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: seo-page-auditor"
+    },
+    permissions: [
+      {
+        key: "network",
+        label: { en: "Network", zh: "网络" },
+        value: { en: "Fetch public page and metadata", zh: "读取公开页面和元信息" }
+      },
+      {
+        key: "browser",
+        label: { en: "Browser", zh: "浏览器" },
+        value: { en: "Optional rendered-page check", zh: "可选渲染页检查" }
+      }
+    ],
+    useCases: [
+      {
+        en: "Find title, H1, canonical, schema, and internal-link problems before publishing a landing page.",
+        zh: "发布落地页前检查标题、H1、canonical、结构化数据和内链问题。"
+      },
+      {
+        en: "Give content agents a prioritized SEO repair list instead of a generic checklist.",
+        zh: "给内容智能体输出有优先级的 SEO 修复清单，而不是泛泛清单。"
+      }
+    ],
+    securityReport: [
+      {
+        label: { en: "Runtime test", zh: "运行测试" },
+        value: { en: "Passed public-page extraction checks", zh: "通过公开页面提取检查" }
+      },
+      {
+        label: { en: "Data scope", zh: "数据范围" },
+        value: { en: "Public URLs only", zh: "仅公开 URL" }
+      }
+    ],
+    changelog: [
+      {
+        version: "1.2.0",
+        note: { en: "Added schema and canonical conflict checks.", zh: "增加结构化数据和 canonical 冲突检查。" }
+      }
+    ],
+    reviews: [
+      {
+        author: "SearchDesk",
+        quote: {
+          en: "The repair list is concise enough for our publishing workflow.",
+          zh: "修复清单足够清晰，可以直接进入我们的发布流程。"
+        }
+      }
+    ],
+    inputExample: '{ "url": "https://example.com/pricing", "targetQuery": "ai agent skills" }',
+    outputExample: '{ "score": 82, "blockers": ["missing schema"], "actions": ["rewrite title"] }'
+  },
+  {
+    slug: "ui-ux-reviewer",
+    name: {
+      en: "UI/UX Review",
+      zh: "UI/UX 体验评审"
+    },
+    summary: {
+      en: "Reviews screenshots or page snapshots for hierarchy, spacing, CTA clarity, mobile layout, and accessibility issues.",
+      zh: "评审截图或页面快照的层级、间距、按钮主次、移动端排版和可访问性问题。"
+    },
+    author: "Interface Works",
+    category: {
+      en: "UI/UX",
+      zh: "UI/UX"
+    },
+    categoryKey: "ui",
+    tags: {
+      en: ["ui", "ux", "accessibility"],
+      zh: ["UI", "UX", "可访问性"]
+    },
+    price: {
+      en: "$39 / month",
+      zh: "$39 / 月"
+    },
+    billing: "subscription",
+    rating: "4.9",
+    feedbackCount: 221,
+    installs: "7.3k",
+    successRate: "98.6%",
+    latency: "1.2s",
+    runtime: "HTTP",
+    verification: {
+      en: "Verified",
+      zh: "已验证"
+    },
+    risk: "low",
+    lastReviewed: "2026-06-07",
+    installsCommand: {
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=ui-ux-reviewer"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: ui-ux-reviewer"
+    },
+    permissions: [
+      {
+        key: "data",
+        label: { en: "Data", zh: "数据" },
+        value: { en: "Screenshot or DOM snapshot only", zh: "仅截图或 DOM 快照" }
+      },
+      {
+        key: "secrets",
+        label: { en: "Secrets", zh: "密钥" },
+        value: { en: "None", zh: "无" }
+      }
+    ],
+    useCases: [
+      {
+        en: "Catch crowded cards, weak CTA hierarchy, and mobile overflow before a release.",
+        zh: "上线前发现卡片拥挤、按钮主次弱、移动端溢出等体验问题。"
+      },
+      {
+        en: "Turn design QA feedback into prioritized frontend tasks.",
+        zh: "把设计验收意见转成有优先级的前端任务。"
+      }
+    ],
+    securityReport: [
+      {
+        label: { en: "Input scope", zh: "输入范围" },
+        value: { en: "Visual snapshot, no account data required", zh: "视觉快照，不需要账户数据" }
+      },
+      {
+        label: { en: "Accessibility", zh: "可访问性" },
+        value: { en: "Checks touch targets, contrast, focus, and overflow", zh: "检查触控目标、对比度、焦点和溢出" }
+      }
+    ],
+    changelog: [
+      {
+        version: "1.0.5",
+        note: { en: "Added mobile overflow and CTA density scoring.", zh: "增加移动端溢出和按钮密度评分。" }
+      }
+    ],
+    reviews: [
+      {
+        author: "LaunchQA",
+        quote: {
+          en: "The mobile notes caught issues our desktop review missed.",
+          zh: "移动端反馈发现了桌面评审漏掉的问题。"
+        }
+      }
+    ],
+    inputExample: '{ "pageUrl": "https://example.com/marketplace", "viewport": "mobile" }',
+    outputExample: '{ "issues": [{ "severity": "high", "area": "filters", "fix": "..." }] }'
+  },
+  {
+    slug: "content-brief-builder",
+    name: {
+      en: "Content Brief Builder",
+      zh: "内容简报生成"
+    },
+    summary: {
+      en: "Builds article, landing-page, and product-page briefs from audience, offer, keyword, and competitor context.",
+      zh: "根据受众、卖点、关键词和竞品上下文生成文章、落地页和产品页内容简报。"
+    },
+    author: "Content Engine",
+    category: {
+      en: "Content",
+      zh: "内容"
+    },
+    categoryKey: "content",
+    tags: {
+      en: ["content", "brief", "copywriting"],
+      zh: ["内容", "简报", "文案"]
+    },
+    price: {
+      en: "Free",
+      zh: "免费"
+    },
+    billing: "free",
+    rating: "4.7",
+    feedbackCount: 134,
+    installs: "6.1k",
+    successRate: "97.1%",
+    latency: "900ms",
+    runtime: "MCP",
+    verification: {
+      en: "Verified",
+      zh: "已验证"
+    },
+    risk: "low",
+    lastReviewed: "2026-06-06",
+    installsCommand: {
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=content-brief-builder"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: content-brief-builder"
+    },
+    permissions: [
+      {
+        key: "network",
+        label: { en: "Network", zh: "网络" },
+        value: { en: "Optional competitor URL fetch", zh: "可选竞品 URL 读取" }
+      },
+      {
+        key: "secrets",
+        label: { en: "Secrets", zh: "密钥" },
+        value: { en: "None", zh: "无" }
+      }
+    ],
+    useCases: [
+      {
+        en: "Create a landing-page brief before a writing agent drafts copy.",
+        zh: "写作智能体出稿前，先生成落地页内容简报。"
+      },
+      {
+        en: "Align SEO, product, and sales inputs into one brief.",
+        zh: "把 SEO、产品和销售输入统一成一份简报。"
+      }
+    ],
+    securityReport: [
+      {
+        label: { en: "Prompt guard", zh: "提示词防护" },
+        value: { en: "Separates source notes from generated claims", zh: "区分来源笔记和生成结论" }
+      },
+      {
+        label: { en: "Retention", zh: "保留" },
+        value: { en: "Brief metadata 14 days", zh: "简报元数据保留 14 天" }
+      }
+    ],
+    changelog: [
+      {
+        version: "0.9.8",
+        note: { en: "Added product-page and landing-page outline modes.", zh: "增加产品页和落地页大纲模式。" }
+      }
+    ],
+    reviews: [
+      {
+        author: "Growth Writer",
+        quote: {
+          en: "It keeps writers from starting with a blank page.",
+          zh: "它让写作者不用从空白页开始。"
+        }
+      }
+    ],
+    inputExample: '{ "keyword": "AI agent marketplace", "audience": "startup operators" }',
+    outputExample: '{ "angle": "...", "outline": ["..."], "mustCover": ["..."] }'
+  },
+  {
+    slug: "api-contract-tester",
+    name: {
+      en: "API Contract Tester",
+      zh: "API 合约测试"
+    },
+    summary: {
+      en: "Checks OpenAPI or manifest contracts against example payloads, status codes, and backward-compatibility rules.",
+      zh: "根据示例请求、状态码和兼容性规则检查 OpenAPI 或 manifest 合约。"
+    },
+    author: "Builder Tools",
+    category: {
+      en: "Development",
+      zh: "开发"
+    },
+    categoryKey: "dev",
+    tags: {
+      en: ["development", "api", "contract"],
+      zh: ["开发", "API", "合约"]
+    },
+    price: {
+      en: "$0.01 / call",
+      zh: "$0.01 / 次"
+    },
+    billing: "per_call",
+    rating: "4.6",
+    feedbackCount: 88,
+    installs: "4.2k",
+    successRate: "96.9%",
+    latency: "1.6s",
+    runtime: "Local",
+    verification: {
+      en: "Verified",
+      zh: "已验证"
+    },
+    risk: "medium",
+    lastReviewed: "2026-06-05",
+    installsCommand: {
+      cli: 'curl "https://api.useskillhub.com/v1/skills/search?q=api-contract-tester"',
+      mcp: "https://api.useskillhub.com/mcp",
+      sdk: "CLI/SDK preview: api-contract-tester"
+    },
+    permissions: [
+      {
+        key: "filesystem",
+        label: { en: "Filesystem", zh: "文件系统" },
+        value: { en: "Read contract files", zh: "读取合约文件" }
+      },
+      {
+        key: "network",
+        label: { en: "Network", zh: "网络" },
+        value: { en: "Optional staging endpoint", zh: "可选测试环境端点" }
+      }
+    ],
+    useCases: [
+      {
+        en: "Validate API examples before docs or SDK release.",
+        zh: "文档或 SDK 发布前校验 API 示例。"
+      },
+      {
+        en: "Detect breaking changes before an agent skill version is submitted.",
+        zh: "技能版本提交前发现破坏性变更。"
+      }
+    ],
+    securityReport: [
+      {
+        label: { en: "Execution", zh: "执行" },
+        value: { en: "Local contract checks by default", zh: "默认本地合约检查" }
+      },
+      {
+        label: { en: "Network gate", zh: "网络门槛" },
+        value: { en: "Staging endpoint requires explicit project policy", zh: "测试端点需项目策略明确允许" }
+      }
+    ],
+    changelog: [
+      {
+        version: "0.8.1",
+        note: { en: "Added backward-compatible schema diff checks.", zh: "增加向后兼容 schema 差异检查。" }
+      }
+    ],
+    reviews: [
+      {
+        author: "SDK Ops",
+        quote: {
+          en: "Useful before publishing SDK examples.",
+          zh: "发布 SDK 示例前很有用。"
+        }
+      }
+    ],
+    inputExample: '{ "contractPath": "openapi.json", "examplesPath": "examples/" }',
+    outputExample: '{ "passed": true, "warnings": ["new optional field"] }'
   }
 ];
 
@@ -691,12 +1068,14 @@ export const marketplaceRequests: MarketplaceRequest[] = [
 
 export const marketplaceCategories = [
   { key: "all", label: { en: "All", zh: "全部" } },
-  { key: "research", label: { en: "Research", zh: "研究" } },
+  { key: "seo", label: { en: "SEO", zh: "SEO" } },
+  { key: "ui", label: { en: "UI/UX", zh: "UI/UX" } },
+  { key: "content", label: { en: "Content", zh: "内容" } },
   { key: "sales", label: { en: "Sales", zh: "销售" } },
-  { key: "support", label: { en: "Support", zh: "客服" } },
   { key: "data", label: { en: "Data", zh: "数据" } },
-  { key: "security", label: { en: "Security", zh: "安全" } },
-  { key: "ops", label: { en: "Operations", zh: "运营" } }
+  { key: "ops", label: { en: "Operations", zh: "运营" } },
+  { key: "dev", label: { en: "Development", zh: "开发" } },
+  { key: "security", label: { en: "Security", zh: "安全" } }
 ] as const;
 
 export function getMarketplaceSkill(slug: string) {

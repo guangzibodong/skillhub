@@ -93,12 +93,14 @@ type PublishSkillOptions = {
 };
 
 export type PublicSkillCategory =
+  | "content"
   | "data"
+  | "dev"
   | "ops"
-  | "research"
   | "sales"
   | "security"
-  | "support";
+  | "seo"
+  | "ui";
 
 /** Tagged-template SQL client (postgres.js). Deliberately broad to cover both Sql and TransactionSql usage. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1080,9 +1082,33 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
   const normalized = tags.map((tag) => tag.toLowerCase());
 
   if (
-    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
+    normalized.some((tag) =>
+      ["seo", "search", "indexability", "canonical"].includes(tag),
+    )
   ) {
-    return "research";
+    return "seo";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["ui", "ux", "design", "accessibility", "frontend"].includes(tag),
+    )
+  ) {
+    return "ui";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["content", "copywriting", "brief", "browser", "citations", "research"].includes(tag),
+    )
+  ) {
+    return "content";
+  }
+
+  if (
+    normalized.some((tag) => ["api", "contract", "development", "sdk", "openapi"].includes(tag))
+  ) {
+    return "dev";
   }
 
   if (normalized.some((tag) => ["crm", "sales", "revenue"].includes(tag))) {
@@ -1091,10 +1117,10 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
 
   if (
     normalized.some((tag) =>
-      ["support", "ticket", "classification"].includes(tag),
+      ["support", "ticket", "classification", "operations"].includes(tag),
     )
   ) {
-    return "support";
+    return "ops";
   }
 
   if (normalized.some((tag) => ["data", "analysis", "summary"].includes(tag))) {
@@ -1139,12 +1165,19 @@ function rowToSummary(
 }
 
 function toSummary(skill: SkillManifest): RankedSkillSummary {
-  const status: SkillSummary["verificationStatus"] =
-    skill.name === "browser-research"
-      ? "verified"
-      : skill.name === "dataset-summarizer"
-        ? "submitted"
-        : "draft";
+  const verifiedDemoSkills = new Set([
+    "api-contract-tester",
+    "browser-research",
+    "content-brief-builder",
+    "seo-page-auditor",
+    "support-triage",
+    "ui-ux-reviewer",
+  ]);
+  const status: SkillSummary["verificationStatus"] = verifiedDemoSkills.has(skill.name)
+    ? "verified"
+    : skill.name === "dataset-summarizer"
+      ? "submitted"
+      : "draft";
   const signals = demoSkillSignals(skill.name);
 
   return {
@@ -1210,6 +1243,50 @@ function demoSkillSignals(
       avgLatencyMs: 620,
       averageRating: 4.7,
       feedbackCount: 311,
+    };
+  }
+
+  if (slug === "seo-page-auditor") {
+    return {
+      installCount: 9600,
+      invocationCount: 53600,
+      successRate: 0.979,
+      avgLatencyMs: 1400,
+      averageRating: 4.8,
+      feedbackCount: 173,
+    };
+  }
+
+  if (slug === "ui-ux-reviewer") {
+    return {
+      installCount: 7300,
+      invocationCount: 48200,
+      successRate: 0.986,
+      avgLatencyMs: 1200,
+      averageRating: 4.9,
+      feedbackCount: 221,
+    };
+  }
+
+  if (slug === "content-brief-builder") {
+    return {
+      installCount: 6100,
+      invocationCount: 37400,
+      successRate: 0.971,
+      avgLatencyMs: 900,
+      averageRating: 4.7,
+      feedbackCount: 134,
+    };
+  }
+
+  if (slug === "api-contract-tester") {
+    return {
+      installCount: 4200,
+      invocationCount: 26800,
+      successRate: 0.969,
+      avgLatencyMs: 1600,
+      averageRating: 4.6,
+      feedbackCount: 88,
     };
   }
 

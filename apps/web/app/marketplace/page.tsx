@@ -89,16 +89,23 @@ type MarketplaceInitialFilterState = {
 
 const pageCopy = {
   en: {
-    eyebrow: "Agent skill registry preview",
-    title: "Find, inspect, and prepare governed agent skills.",
+    eyebrow: "Agent skill marketplace",
+    title: "Choose agent skills with the evidence teams need before adoption.",
     description:
-      "Developer Preview: search public skills, inspect permissions, and use registry/gateway discovery now. Paid marketplace, payment capture, and payout automation remain prelaunch.",
-    primary: "Browse catalog",
+      "Browse verified and in-review skills by use case, permission risk, publisher, runtime signal, and pricing intent. The marketplace helps people compare options; the registry keeps the inspectable contract behind each listing.",
+    primary: "Browse skills",
     directory: "Publisher directory",
-    console: "Sign in for publisher workspace",
-    consoleTitle: "Public inspect path",
-    consoleSubtitle: "Agents should start from a contract they can inspect before project-gated adoption or runtime use.",
-    proof: ["Searchable catalog", "Permission review", "API inspect", "Project-gated runtime"],
+    console: "Developer workspace",
+    consoleTitle: "How to read this page",
+    consoleSubtitle: "Start with the marketplace card, open the detail page for manifest evidence, then sign in only when a verified skill should become project state.",
+    proof: ["Use case", "Permission risk", "Publisher trust", "Runtime evidence"],
+    decisionTitle: "Marketplace vs registry",
+    decisionRows: [
+      ["Marketplace", "A human-facing surface for discovery, comparison, pricing intent, and publisher trust."],
+      ["Registry", "The contract layer for manifest, schema, versions, runtime metadata, and API inspection."],
+      ["After sign-in", "Verified skills can be attached to projects with policy, budget, and runtime evidence."],
+      ["Public limit", "Public pages do not invoke production runtimes or execute operator actions."]
+    ],
     mcpMetadataNote: "MCP metadata only; runtime invocation uses POST /mcp after project auth.",
     publishTitle: "Publisher review path",
     publishSteps: ["Draft manifest", "Runtime checks", "Human review", "Paid-readiness metadata", "Public listing", "Prelaunch ledger model", "Future paid review"],
@@ -211,15 +218,22 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体技能市场",
-    title: "挑选、比较并采用适合你的技能。",
+    title: "像选应用一样挑选 AI Agent 技能。",
     description:
-      "这里是给人看的技能市场。先看技能简介、权限、发布者和验证状态，再决定是否登录后采用到项目里。底层注册表则负责保存可检索的技能契约。",
-    primary: "浏览目录",
+      "这里负责让团队快速看懂一个技能能做什么、谁发布的、权限风险多大、有没有验证和运行证据。市场用于挑选和比较，注册表负责保存可检查的 manifest、schema 和版本契约。",
+    primary: "浏览技能",
     directory: "发布者目录",
-    console: "登录后进入开发者工作台",
-    consoleTitle: "市场里先看什么",
-    consoleSubtitle: "先看技能能做什么、谁发布的、权限有多大、是否已验证，再决定是否继续采用。",
-    proof: ["用途清楚", "权限清楚", "发布者清楚", "状态清楚"],
+    console: "开发者工作台",
+    consoleTitle: "这个页面怎么用",
+    consoleSubtitle: "先看市场卡片判断是否值得采用，再进详情页检查 manifest 和权限；只有确认要接入项目时，才需要登录进入工作台。",
+    proof: ["用途清楚", "权限清楚", "发布者清楚", "证据清楚"],
+    decisionTitle: "市场和注册表的区别",
+    decisionRows: [
+      ["技能市场", "给人选技能、看卡片、比用途、比风险、看发布者和价格意向。"],
+      ["技能注册表", "给系统和 API 查 manifest、schema、版本、运行时和检索结果。"],
+      ["登录后可做", "把已验证技能加入项目，配置策略、预算并查看运行证据。"],
+      ["公开页不做", "不直接调用生产运行时，也不执行后台运营操作。"]
+    ],
     mcpMetadataNote: "MCP 这里只展示能力元数据；真正调用要登录后通过项目 Key 进行。",
     publishTitle: "发布者怎么上架",
     publishSteps: ["准备 manifest", "跑运行测试", "人工审核", "补全定价", "公开上架", "维护版本", "处理反馈"],
@@ -469,63 +483,57 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="marketplace" locale={locale}>
-      {/* Hero */}
-      <section className="section" aria-labelledby="marketplace-heading">
-        <div className="section-inner hero-glow grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] items-center gap-8 py-20">
-          <Reveal>
-            <div className="flex flex-col items-start gap-6">
-              <div className="eyebrow">
-                <Store size={16} aria-hidden="true" />
-                <span>{labels.eyebrow}</span>
-              </div>
-              <h1 id="marketplace-heading" className="heading-xl max-w-[760px]">{labels.title}</h1>
-              <p className="body-text text-[#999] max-w-[680px]">{labels.description}</p>
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <a className="btn-primary--large" href="#catalog">
-                  <PackageSearch size={18} aria-hidden="true" />
-                  <span>{labels.primary}</span>
-                </a>
-                <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
-                  <Building2 size={18} aria-hidden="true" />
-                  <span>{labels.directory}</span>
-                </a>
-                <a className="btn-text" href={localizedHrefWithReturnTo("/login", locale, "/developer")}>
-                  <WalletCards size={17} aria-hidden="true" />
-                  <span>{labels.console}</span>
-                </a>
-              </div>
+      <section className="market-hero" aria-labelledby="marketplace-heading">
+        <Reveal>
+          <div className="market-hero__copy">
+            <div className="eyebrow">
+              <Store size={16} aria-hidden="true" />
+              <span>{labels.eyebrow}</span>
             </div>
-          </Reveal>
-          <aside className="card p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-white text-sm font-medium">
+            <h1 id="marketplace-heading">{labels.title}</h1>
+            <p>{labels.description}</p>
+            <div className="market-hero__actions">
+              <a className="btn-primary--large" href="#catalog">
+                <PackageSearch size={18} aria-hidden="true" />
+                <span>{labels.primary}</span>
+              </a>
+              <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
+                <Building2 size={18} aria-hidden="true" />
+                <span>{labels.directory}</span>
+              </a>
+              <a className="btn-text" href={localizedHrefWithReturnTo("/login", locale, "/developer")}>
+                <WalletCards size={17} aria-hidden="true" />
+                <span>{labels.console}</span>
+              </a>
+            </div>
+          </div>
+        </Reveal>
+        <aside className="market-hero-panel" aria-label={labels.consoleTitle}>
+          <div className="market-hero-panel__head">
+            <span>
               <Terminal size={16} aria-hidden="true" />
-              <span>{labels.consoleTitle}</span>
-            </div>
-            <p className="body-text-sm text-[#999]">{labels.consoleSubtitle}</p>
-            <div className="grid grid-cols-1 gap-3">
-              {labels.moneyRows.map(([label, value]) => (
-                <div className="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] p-3" key={label}>
-                  <strong className="block text-sm text-white">{label}</strong>
-                  <span className="mt-1 block text-xs leading-5 text-[#777]">{value}</span>
-                </div>
-              ))}
-            </div>
-            <pre className="code-block">
-              <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
-curl "https://api.useskillhub.com/v1/skills/browser-research"
-# ${labels.mcpMetadataNote}
-curl "https://api.useskillhub.com/mcp"`}</code>
-            </pre>
-            <div className="flex flex-wrap gap-3">
-              {labels.proof.map((item) => (
-                <span key={item} className="flex items-center gap-1.5 text-xs text-[#10b981]">
-                  <BadgeCheck size={14} aria-hidden="true" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          </aside>
-        </div>
+              {labels.consoleTitle}
+            </span>
+            <strong>{labels.reviewMetricValue}</strong>
+          </div>
+          <p>{labels.consoleSubtitle}</p>
+          <div className="market-decision-list">
+            {labels.decisionRows.map(([label, value]) => (
+              <div key={label}>
+                <strong>{label}</strong>
+                <span>{value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="proof-grid">
+            {labels.proof.map((item) => (
+              <span key={item}>
+                <BadgeCheck size={14} aria-hidden="true" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </aside>
       </section>
 
       <div className="section-divider" />
@@ -534,18 +542,13 @@ curl "https://api.useskillhub.com/mcp"`}</code>
 
       <div className="section-divider" />
 
-      {/* Metrics strip */}
-      <section className="section" aria-label="Marketplace operating metrics">
-        <div className="section-inner flex flex-wrap gap-4 py-6">
-          {metrics.map(([label, value], index) => (
-            <Reveal key={label} delay={index * 100}>
-              <div className="stat-card flex-1 min-w-[160px]">
-                <span className="text-xs text-[#999]">{label}</span>
-                <strong className="text-white text-lg font-semibold">{value}</strong>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+      <section className="marketplace-ops-strip" aria-label="Marketplace operating metrics">
+        {metrics.map(([label, value]) => (
+          <div key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
       </section>
 
       <div className="section-divider" />
@@ -579,66 +582,65 @@ curl "https://api.useskillhub.com/mcp"`}</code>
 
       <div className="section-divider" />
 
-      {/* Overview section */}
-      <section className="section py-16" aria-labelledby="market-overview-heading">
-        <div className="section-inner flex flex-col gap-10">
-          <div className="flex flex-col gap-4 max-w-[800px]">
+      <section className="market-overview-section" aria-labelledby="market-overview-heading">
+        <div className="market-overview-head">
+          <div>
             <div className="eyebrow">
               <Gauge size={16} aria-hidden="true" />
               <span>{labels.overview.eyebrow}</span>
             </div>
-            <h2 id="market-overview-heading" className="heading-lg">{labels.overview.title}</h2>
-            <p className="body-text text-[#999]">{labels.overview.body}</p>
+            <h2 id="market-overview-heading">{labels.overview.title}</h2>
           </div>
+          <p>{labels.overview.body}</p>
+        </div>
 
-          {/* Overview grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="market-overview-grid">
             {overviewCards.map((card, index) => {
               const Icon = overviewRoleIcons[index];
 
               return (
                 <Reveal key={card.title} delay={index * 120}>
-                  <article className="card p-6 flex flex-col gap-5">
-                    <header className="flex items-start gap-3">
-                      <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-[rgba(255,255,255,0.06)]">
+                  <article className="market-overview-card">
+                    <header>
+                      <span className="market-overview-card__icon">
                         <Icon size={17} aria-hidden="true" />
                       </span>
-                      <div className="flex flex-col gap-1">
-                        <h3 className="heading-sm">{card.title}</h3>
-                        <p className="body-text-sm text-[#666]">{card.subtitle}</p>
+                      <div>
+                        <h3>{card.title}</h3>
+                        <p>{card.subtitle}</p>
                       </div>
                     </header>
 
-                    <div className="flex flex-wrap gap-4">
+                    <div className="market-overview-metrics">
                       {card.metrics.map(([label, value]) => (
-                        <div key={label} className="flex flex-col gap-1">
-                          <span className="text-xs text-[#666]">{label}</span>
-                          <strong className="text-sm text-white font-medium">{value}</strong>
+                        <div key={label}>
+                          <span>{label}</span>
+                          <strong>{value}</strong>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    <div className="market-overview-queue">
                       {card.rows.length > 0 ? (
                         card.rows.map((row) => (
-                          <div key={`${card.title}-${row.title}-${row.detail}`} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
-                            <strong className="text-sm text-white">{row.title}</strong>
-                            <span className="text-xs text-[#666]">{row.detail}</span>
-                            <small className="text-xs text-[#525252]">{row.meta}</small>
+                          <div key={`${card.title}-${row.title}-${row.detail}`} className="market-overview-row">
+                            <strong>{row.title}</strong>
+                            <span>{row.detail}</span>
+                            <small>{row.meta}</small>
                           </div>
                         ))
                       ) : (
-                        <div className="text-xs text-[#525252] py-2">{card.empty}</div>
+                        <div className="market-overview-empty">{card.empty}</div>
                       )}
                     </div>
 
                     {card.href ? (
-                      <a className="btn-text mt-auto" href={card.href}>
+                      <a className="ghost-button" href={card.href}>
                         <span>{card.title}</span>
                         <ArrowRight size={14} aria-hidden="true" />
                       </a>
                     ) : (
-                      <span className="flex items-center gap-1.5 text-xs text-[#525252] mt-auto">
+                      <span className="market-overview-card__operator-only">
                         <ShieldCheck size={14} aria-hidden="true" />
                         <span>{locale === "zh" ? "运营专用" : "Operator only"}</span>
                       </span>
@@ -647,178 +649,143 @@ curl "https://api.useskillhub.com/mcp"`}</code>
                 </Reveal>
               );
             })}
-          </div>
+        </div>
 
-          {/* Retention card */}
-          <div className="card p-6 flex flex-col gap-4" aria-label={labels.overview.retentionTitle}>
-            <strong className="heading-sm">{labels.overview.retentionTitle}</strong>
-            <div className="flex flex-wrap gap-3">
-              {[...labels.overview.retention.developer, ...labels.overview.retention.publisher].map((reason) => (
-                <span key={reason} className="flex items-center gap-1.5 text-xs text-[#999]">
-                  <BadgeCheck size={14} aria-hidden="true" />
-                  {reason}
-                </span>
-              ))}
-            </div>
+        <div className="market-retention-card" aria-label={labels.overview.retentionTitle}>
+          <strong>{labels.overview.retentionTitle}</strong>
+          <div>
+            {[...labels.overview.retention.developer, ...labels.overview.retention.publisher].map((reason) => (
+              <span key={reason}>
+                <BadgeCheck size={14} aria-hidden="true" />
+                {reason}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* Publisher directory callout */}
-      <section className="section py-10" aria-label={labels.publisherDirectoryTitle}>
-        <div className="section-inner card p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-col gap-2">
+      <section className="market-publisher-callout" aria-label={labels.publisherDirectoryTitle}>
+          <div>
             <div className="eyebrow">
               <Building2 size={16} aria-hidden="true" />
               <span>{labels.publisherDirectoryTitle}</span>
             </div>
-            <p className="body-text-sm text-[#999] max-w-[560px]">{labels.publisherDirectoryBody}</p>
+            <p>{labels.publisherDirectoryBody}</p>
           </div>
-          <a className="btn-secondary flex items-center gap-2 whitespace-nowrap" href={localizedHref("/publishers", locale)}>
+          <a className="secondary-button" href={localizedHref("/publishers", locale)}>
             <ShieldCheck size={15} aria-hidden="true" />
             <span>{labels.publisherDirectoryCta}</span>
             <ArrowRight size={14} aria-hidden="true" />
           </a>
-        </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* Operating loop section */}
-      <section className="section py-16" aria-labelledby="market-loop-heading">
-        <div className="section-inner flex flex-col lg:flex-row gap-10">
-          <div className="flex flex-col gap-6 flex-1">
+      <section className="market-operating-loop" aria-labelledby="market-loop-heading">
+          <div className="market-loop-copy">
             <div className="eyebrow">
               <Activity size={16} aria-hidden="true" />
               <span>{labels.loopEyebrow}</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="flex flex-col gap-2 max-w-[560px]">
-                <h2 id="market-loop-heading" className="heading-lg">{labels.loopTitle}</h2>
-                <p className="body-text text-[#999]">{labels.loopBody}</p>
+            <div className="market-loop-copy__head">
+              <div>
+                <h2 id="market-loop-heading">{labels.loopTitle}</h2>
+                <p>{labels.loopBody}</p>
               </div>
-              <span className="pill pill--success flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+              <span className="market-loop-live">
                 {labels.reviewMetricValue}
               </span>
             </div>
 
-            {/* Loop metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" aria-label={labels.loopEyebrow}>
+            <div className="market-loop-metric-grid" aria-label={labels.loopEyebrow}>
               {loopMetrics.map(([label, value]) => (
-                <div key={label} className="stat-card">
-                  <span className="text-xs text-[#666]">{label}</span>
-                  <strong className="text-white text-lg font-semibold">{value}</strong>
+                <div key={label} className="market-loop-metric">
+                  <span>{label}</span>
+                  <strong>{value}</strong>
                 </div>
               ))}
             </div>
 
-            {/* Loop steps */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="market-loop-steps">
               {labels.loopSteps.map(([title, detail, meta], index) => {
                 const Icon = loopStepIcons[index];
 
                 return (
-                  <article key={title} className="card--compact p-4 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.06)]">
+                  <article key={title} className="market-loop-step">
+                    <div className="market-loop-step__top">
+                      <span className="market-loop-step__icon">
                         <Icon size={17} aria-hidden="true" />
                       </span>
-                      <small className="text-xs text-[#525252]">{meta}</small>
+                      <small>{meta}</small>
                     </div>
-                    <strong className="text-sm text-white">{title}</strong>
-                    <p className="body-text-sm text-[#666]">{detail}</p>
+                    <strong>{title}</strong>
+                    <p>{detail}</p>
                   </article>
                 );
               })}
             </div>
           </div>
 
-          {/* Loop ledger aside */}
-          <aside className="card p-6 flex flex-col gap-5 lg:w-[360px]" aria-label={labels.loopLedgerTitle}>
-            <div className="flex items-center justify-between">
+          <aside className="market-loop-ledger" aria-label={labels.loopLedgerTitle}>
+            <div className="market-loop-ledger__head">
               <div className="eyebrow">
                 <CircleDollarSign size={16} aria-hidden="true" />
                 <span>{labels.loopLedgerTitle}</span>
               </div>
-              <span className="text-xs text-[#525252]">{labels.moneyMetricValue}</span>
+              <span>{labels.moneyMetricValue}</span>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="market-loop-log">
               {labels.loopLedgerRows.map(([phase, signal, detail]) => (
-                <div key={phase} className="flex flex-col gap-1 py-2 border-t border-[rgba(255,255,255,0.06)]">
-                  <span className="text-xs text-[#525252]">{phase}</span>
-                  <strong className="text-sm text-white">{signal}</strong>
-                  <p className="body-text-sm text-[#666]">{detail}</p>
+                <div key={phase} className="market-loop-log-row">
+                  <span>{phase}</span>
+                  <div>
+                    <strong>{signal}</strong>
+                    <p>{detail}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </aside>
-        </div>
       </section>
 
       <div className="section-divider" />
 
-      {/* Publisher review path */}
-      <section className="section py-10">
-        <div className="section-inner">
-          <article className="card p-6 flex flex-col gap-5">
-            <div className="eyebrow">
-              <BookOpenCheck size={16} aria-hidden="true" />
-              <span>{labels.publishTitle}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {labels.publishSteps.map((step, index) => (
-                <div key={step} className="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-3 text-sm text-white">
-                  <span className="mb-2 block text-xs text-[#525252] font-mono">{String(index + 1).padStart(2, "0")}</span>
-                  <strong className="font-medium">{step}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      {/* Trust + Money bottom row */}
-      <section className="section py-10">
-        <div className="section-inner grid grid-cols-1 md:grid-cols-2 gap-6">
-          <article className="card p-6 flex flex-col gap-4">
+      <section className="market-operations-layout market-operations-layout--bottom">
+          <article className="market-ops-panel">
             <div className="eyebrow">
               <ShieldCheck size={16} aria-hidden="true" />
               <span>{labels.trustTitle}</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="trust-requirement-grid">
               {labels.trustItems.map(([title, detail]) => (
-                <div key={title} className="flex flex-col gap-1">
-                  <strong className="text-sm text-white">{title}</strong>
-                  <span className="text-xs text-[#666]">{detail}</span>
+                <div key={title} className="trust-requirement">
+                  <strong>{title}</strong>
+                  <span>{detail}</span>
                 </div>
               ))}
             </div>
           </article>
 
-          <aside className="card p-6 flex flex-col gap-4">
+          <aside className="market-ops-panel">
             <div className="eyebrow">
-              <HandCoins size={16} aria-hidden="true" />
-              <span>{labels.moneyTitle}</span>
+              <BookOpenCheck size={16} aria-hidden="true" />
+              <span>{labels.publishTitle}</span>
             </div>
-            <div className="flex flex-col gap-2">
-              {labels.moneyRows.map(([label, value]) => (
-                <div key={label} className="flex flex-col gap-0.5 py-2 border-t border-[rgba(255,255,255,0.06)]">
-                  <span className="text-xs text-[#525252]">{label}</span>
-                  <strong className="text-sm text-white">{value}</strong>
+            <div className="publish-flow-list">
+              {labels.publishSteps.map((step, index) => (
+                <div key={step} className="publish-flow-step">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{step}</strong>
                 </div>
               ))}
             </div>
-            <a className="btn-text" href={localizedHref("/docs", locale)}>
+            <a className="ghost-button ghost-button--inline" href={localizedHref("/docs", locale)}>
               <Code2 size={16} aria-hidden="true" />
               <span>{dictionary.nav.docs}</span>
             </a>
           </aside>
-        </div>
       </section>
 
       {/* Closing CTA */}
@@ -875,15 +842,19 @@ function parseMarketplaceQuery(value: string | undefined) {
 function parseMarketplaceCategory(
   value: string | undefined,
 ): PublicMarketplaceSearchOptions["category"] {
+  const normalized = value === "research" ? "content" : value === "support" ? "ops" : value;
+
   if (
-    value === "data" ||
-    value === "ops" ||
-    value === "research" ||
-    value === "sales" ||
-    value === "security" ||
-    value === "support"
+    normalized === "content" ||
+    normalized === "data" ||
+    normalized === "dev" ||
+    normalized === "ops" ||
+    normalized === "sales" ||
+    normalized === "security" ||
+    normalized === "seo" ||
+    normalized === "ui"
   ) {
-    return value;
+    return normalized;
   }
 
   return undefined;

@@ -399,9 +399,33 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
   const normalized = tags.map((tag) => tag.toLowerCase());
 
   if (
-    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
+    normalized.some((tag) =>
+      ["seo", "search", "indexability", "canonical"].includes(tag),
+    )
   ) {
-    return "research";
+    return "seo";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["ui", "ux", "design", "accessibility", "frontend"].includes(tag),
+    )
+  ) {
+    return "ui";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["content", "copywriting", "brief", "browser", "citations", "research"].includes(tag),
+    )
+  ) {
+    return "content";
+  }
+
+  if (
+    normalized.some((tag) => ["api", "contract", "development", "sdk", "openapi"].includes(tag))
+  ) {
+    return "dev";
   }
 
   if (normalized.some((tag) => ["crm", "sales", "revenue"].includes(tag))) {
@@ -410,10 +434,10 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
   if (
     normalized.some((tag) =>
-      ["support", "ticket", "classification"].includes(tag),
+      ["support", "ticket", "classification", "operations"].includes(tag),
     )
   ) {
-    return "support";
+    return "ops";
   }
 
   if (normalized.some((tag) => ["data", "analysis", "summary"].includes(tag))) {
@@ -433,12 +457,14 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
 function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
   const labels = {
+    content: { en: "Content", zh: "内容" },
     data: { en: "Data", zh: "数据" },
+    dev: { en: "Development", zh: "开发" },
     ops: { en: "Operations", zh: "运营" },
-    research: { en: "Research", zh: "研究" },
     sales: { en: "Sales", zh: "销售" },
     security: { en: "Security", zh: "安全" },
-    support: { en: "Support", zh: "客服" },
+    seo: { en: "SEO", zh: "SEO" },
+    ui: { en: "UI/UX", zh: "UI/UX" },
   } satisfies Record<
     MarketplaceSkill["categoryKey"],
     MarketplaceSkill["category"]

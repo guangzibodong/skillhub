@@ -52,7 +52,7 @@ type MarketplaceInitialFilters = {
 
 const labels = {
   en: {
-    search: "Search skills, integrations, permissions",
+    search: "Search SEO, UI, content, sales, data, ops skills",
     results: "results",
     copy: "Copy inspect",
     copied: "Copied",
@@ -73,9 +73,9 @@ const labels = {
     install: "API inspect",
     installLocked: "Inspection only",
     installLockedBody: "Verified review is required before install and runtime actions unlock.",
-    catalog: "SkillHub Catalog",
-    filters: "Discovery filters",
-    category: "Category",
+    catalog: "Skill catalog",
+    filters: "Refine results",
+    category: "Use case",
     pricing: "Pricing intent",
     permissionRisk: "Permission risk",
     runtime: "Runtime",
@@ -86,7 +86,14 @@ const labels = {
     reset: "Reset filters",
     emptyTitle: "No skills match these filters",
     emptyBody:
-      "Broaden the search, risk, runtime, pricing, or verification filters to see more agent-ready capabilities.",
+      "Try a broader use case like SEO, UI, content, sales, data, operations, or development.",
+    compare: "Compare",
+    detail: "Open details",
+    installReady: "Copy inspect command",
+    installLockedLabel: "Review required",
+    publisher: "Publisher",
+    signals: "Signals",
+    contract: "Contract checks",
     handoff: {
       submittedBody: "Project install, runtime test, billing, and ledger actions may unlock only after review approval.",
       submittedItems: ["Project install", "Runtime test", "Billing", "Ledger actions"],
@@ -128,7 +135,7 @@ const labels = {
     },
   },
   zh: {
-    search: "搜索技能、集成、权限",
+    search: "搜索 SEO、UI、内容、销售、数据、运营技能",
     results: "个结果",
     copy: "复制查看命令",
     copied: "已复制",
@@ -149,9 +156,9 @@ const labels = {
     install: "API 查看",
     installLocked: "仅可查看",
     installLockedBody: "需要完成 verified 审核后才会开放安装和运行操作。",
-    catalog: "SkillHub 技能目录",
-    filters: "发现筛选",
-    category: "类别",
+    catalog: "技能目录",
+    filters: "筛选结果",
+    category: "用途分类",
     pricing: "定价意向",
     permissionRisk: "权限风险",
     runtime: "运行时",
@@ -162,7 +169,14 @@ const labels = {
     reset: "重置筛选",
     emptyTitle: "没有符合条件的技能",
     emptyBody:
-      "放宽搜索词、风险、运行时、价格或验证状态筛选，可以看到更多适合智能体使用的能力。",
+      "可以换成 SEO、UI、内容、销售、数据、运营、开发等更宽的用途分类来找。",
+    compare: "对比",
+    detail: "查看详情",
+    installReady: "复制查看命令",
+    installLockedLabel: "需要审核",
+    publisher: "发布者",
+    signals: "信号",
+    contract: "合约检查",
     handoff: {
       submittedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
       submittedItems: ["\u9879\u76ee\u5b89\u88c5", "\u8fd0\u884c\u6d4b\u8bd5", "\u8ba1\u8d39", "\u8d26\u672c\u64cd\u4f5c"],
@@ -644,8 +658,8 @@ export function MarketplaceBrowser({
                 <div className="market-skill-card__icon" aria-hidden="true">
                   <Zap size={18} />
                 </div>
-                <div>
-                  <span>{localizeText(skill.category, locale)}</span>
+                <div className="market-skill-card__title">
+                  <span>{localizeText(skill.category, locale)} / {skill.runtime}</span>
                   <h2>{localizeText(skill.name, locale)}</h2>
                   {hasPublisherProfile ? (
                     <a
@@ -663,9 +677,14 @@ export function MarketplaceBrowser({
                     </span>
                   )}
                 </div>
-                <span className={`risk-badge risk-badge--${skill.risk}`}>
-                  {dictionary.risk[skill.risk]}
-                </span>
+                <div className="market-skill-card__badges">
+                  <span className={`risk-badge risk-badge--${skill.risk}`}>
+                    {dictionary.risk[skill.risk]}
+                  </span>
+                  <span className="market-verify-badge">
+                    {localizeText(skill.verification, locale)}
+                  </span>
+                </div>
               </div>
 
               <p>{localizeText(skill.summary, locale)}</p>
@@ -691,6 +710,10 @@ export function MarketplaceBrowser({
                     <ShieldCheck size={14} aria-hidden="true" />
                     {dictionary.reviewOnlyMetric}
                   </span>
+                  <span>
+                    <Timer size={14} aria-hidden="true" />
+                    {dictionary.installLockedLabel}
+                  </span>
                 </div>
               )}
 
@@ -700,7 +723,7 @@ export function MarketplaceBrowser({
               >
                 <span className="market-recommendation-reasons__title">
                   <ShieldCheck size={14} aria-hidden="true" />
-                  {dictionary.recommendation.title}
+                  {dictionary.signals}
                 </span>
                 <div>
                   {buildRecommendationReasons(skill, dictionary).map((reason) => (
@@ -710,6 +733,21 @@ export function MarketplaceBrowser({
                     </span>
                   ))}
                 </div>
+              </div>
+
+              <div className="market-contract-grid" aria-label={dictionary.contract}>
+                <span>
+                  <small>{dictionary.runtime}</small>
+                  <strong>{skill.runtime}</strong>
+                </span>
+                <span>
+                  <small>{dictionary.pricing}</small>
+                  <strong>{isVerified ? formatPublicPrice(skill, locale) : dictionary.reviewOnlyPrice}</strong>
+                </span>
+                <span>
+                  <small>{dictionary.publisher}</small>
+                  <strong>{skill.author}</strong>
+                </span>
               </div>
 
               <div className="tag-list">
@@ -790,15 +828,15 @@ export function MarketplaceBrowser({
 
               <div className="market-skill-card__foot">
                 <div>
-                  <span>{isVerified ? formatPublicPrice(skill, locale) : dictionary.reviewOnlyPrice}</span>
-                  <strong>{localizeText(skill.verification, locale)}</strong>
+                  <span>{dictionary.compare}</span>
+                  <strong>{isVerified ? dictionary.installReady : dictionary.installLocked}</strong>
                 </div>
                 <a
                   className="secondary-button"
                   href={localizedHref(`/skills/${skill.slug}`, locale)}
                 >
                   <ShieldCheck size={16} aria-hidden="true" />
-                  <span>{dictionary.details}</span>
+                  <span>{dictionary.detail}</span>
                   <ExternalLink size={15} aria-hidden="true" />
                 </a>
               </div>
@@ -829,11 +867,7 @@ export function MarketplaceBrowser({
 
 function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
   return {
-    category: normalizeOption(
-      filters.category,
-      marketplaceCategories.map((item) => item.key),
-      "all",
-    ),
+    category: normalizeCategory(filters.category),
     pricing: normalizeOption(filters.pricing, pricingOptions.map((item) => item.key), "all"),
     query: String(filters.query ?? "").trim().slice(0, 120),
     risk: normalizeOption(filters.risk, riskOptions, "all"),
@@ -841,6 +875,20 @@ function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
     sort: normalizeSort(filters.sort),
     verification: normalizeOption(filters.verification, verificationOptions, "all"),
   };
+}
+
+function normalizeCategory(value: string | undefined): CategoryKey {
+  const legacyMap: Record<string, CategoryKey> = {
+    research: "content",
+    support: "ops",
+  };
+  const normalized = String(value ?? "").trim();
+
+  return normalizeOption(
+    legacyMap[normalized] ?? normalized,
+    marketplaceCategories.map((item) => item.key),
+    "all",
+  );
 }
 
 function normalizeOption<T extends string>(
