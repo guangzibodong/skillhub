@@ -421,7 +421,7 @@ export const dictionaries = {
     common: {
       admin: "管理后台",
       apiHealth: "API 状态",
-      backToRegistry: "技能库",
+      backToRegistry: "注册表",
       dashboard: "工作台",
       gateway: "网关",
       github: "GitHub",
@@ -438,7 +438,7 @@ export const dictionaries = {
     nav: {
       home: "首页",
       marketplace: "市场",
-      registry: "技能库",
+      registry: "注册表",
       agents: "智能体",
       docs: "文档",
       dashboard: "工作台",

@@ -101,9 +101,9 @@ const fallbackFeaturedSkills: SkillSummary[] = [
 const homeLandingCopy = {
   en: {
     banner: {
-      label: "Launch Preview",
-      body: "Skill discovery and manifest inspection are available today. Runtime execution is available for signed-in workspaces with Project Keys. Paid marketplace flows are still in preview.",
-      action: "View status",
+      label: "Build agents with trusted skills",
+      body: "Discover reusable agent skills, inspect their contracts, and connect them through governed REST or MCP runtime paths.",
+      action: "Explore live status",
     },
     eyebrow: "Agent infrastructure / skill runtime",
     title: "Run agent skills like production infrastructure.",
@@ -250,54 +250,30 @@ const homeLandingCopy = {
         title: "Product",
         links: [
           ["Browse Skills", "/marketplace"],
-          ["Registry", "/registry"],
-          ["Pricing", "/pricing"],
           ["What is a Skill?", "/what-is-a-skill"],
-          ["Roadmap", "/roadmap"],
         ],
       },
       {
         title: "Developers",
         links: [
-          ["Quickstart", "/quickstart"],
           ["Docs", "/docs"],
-          ["API docs", "/docs#api"],
           ["MCP", "/mcp"],
           ["Project Keys", "/project-keys"],
-          ["Examples", "/examples"],
-          ["Webhooks", "/webhooks"],
-          ["Status", "/status"],
         ],
       },
       {
         title: "Publishers",
         links: [
           ["Publish Skill", "/publish"],
-          ["Publisher Review", "/publisher-review"],
           ["Publisher Directory", "/publishers"],
-          ["Publisher Agreement", "/publisher-agreement"],
         ],
       },
       {
         title: "Trust",
         links: [
           ["Security", "/security"],
-          ["Data Handling", "/data-handling"],
           ["Privacy Policy", "/privacy"],
           ["Terms", "/terms"],
-          ["Security Disclosure", "/security-disclosure"],
-          ["Acceptable Use", "/acceptable-use"],
-        ],
-      },
-      {
-        title: "Company",
-        links: [
-          ["About", "/about"],
-          ["Contact", "/contact"],
-          ["Support", "/support"],
-          ["Changelog", "/changelog"],
-          ["Cookie Policy", "/cookie-policy"],
-          ["Subprocessors", "/subprocessors"],
         ],
       },
     ],
@@ -306,9 +282,9 @@ const homeLandingCopy = {
   },
   zh: {
     banner: {
-      label: "公开预览中",
-      body: "Skill 发现与 manifest 检查已开放；登录工作台并创建 Project Key 后可进行运行调用。付费市场流程仍处于预览阶段。",
-      action: "查看状态",
+      label: "让 Agent 安全调用可信技能",
+      body: "在 SkillHub 发现可复用技能，查看契约、权限和发布者信息，再通过受治理的 REST / MCP 路径接入运行。",
+      action: "查看运行状态",
     },
     eyebrow: "Agent 基础设施 / Skill 运行时",
     title: "把 Agent Skills 作为生产基础设施运行。",
@@ -455,54 +431,30 @@ const homeLandingCopy = {
         title: "产品",
         links: [
           ["浏览技能", "/marketplace"],
-          ["注册表", "/registry"],
-          ["价格", "/pricing"],
           ["什么是 Skill", "/what-is-a-skill"],
-          ["路线图", "/roadmap"],
         ],
       },
       {
         title: "开发者",
         links: [
-          ["快速开始", "/quickstart"],
           ["文档", "/docs"],
-          ["API 文档", "/docs#api"],
           ["MCP", "/mcp"],
           ["Project Key", "/project-keys"],
-          ["示例", "/examples"],
-          ["Webhooks", "/webhooks"],
-          ["状态", "/status"],
         ],
       },
       {
         title: "发布者",
         links: [
           ["发布 Skill", "/publish"],
-          ["发布审核", "/publisher-review"],
           ["发布者目录", "/publishers"],
-          ["发布者协议", "/publisher-agreement"],
         ],
       },
       {
         title: "信任",
         links: [
           ["安全", "/security"],
-          ["数据处理", "/data-handling"],
           ["隐私政策", "/privacy"],
           ["服务条款", "/terms"],
-          ["安全披露", "/security-disclosure"],
-          ["可接受使用", "/acceptable-use"],
-        ],
-      },
-      {
-        title: "公司",
-        links: [
-          ["关于我们", "/about"],
-          ["联系我们", "/contact"],
-          ["支持中心", "/support"],
-          ["更新日志", "/changelog"],
-          ["Cookie 政策", "/cookie-policy"],
-          ["子处理方", "/subprocessors"],
         ],
       },
     ],

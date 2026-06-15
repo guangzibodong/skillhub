@@ -46,7 +46,7 @@ const navLinks = {
   ],
   zh: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "技能市场" },
-    { href: "/registry", page: "registry" as NavPage, label: "技能库" },
+    { href: "/registry", page: "registry" as NavPage, label: "注册表" },
     { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
     { href: "/mcp", page: "docs" as NavPage, label: "MCP" },

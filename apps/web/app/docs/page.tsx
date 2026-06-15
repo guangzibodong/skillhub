@@ -328,43 +328,43 @@ const copy: Record<Locale, DocsCopy> = {
     },
     hero: {
       description:
-        "五分钟内发现并查看公开 agent 技能。运行调用需要已登录的项目 Key。",
-      eyebrow: "开发者快速开始",
-      primary: "浏览市场",
+        "从这里了解 SkillHub 怎么用：普通用户先浏览技能市场，开发者查看 manifest 和 Project Key，发布者按审核流程提交技能。",
+      eyebrow: "使用文档",
+      primary: "先看技能市场",
       secondary: "发布技能",
-      tertiary: "MCP 设置",
-      title: "SkillHub 开发者快速开始"
+      tertiary: "查看 MCP",
+      title: "SkillHub 怎么用"
     },
     journeys: {
       body:
-        "P0 产品是否成立，要看这些路径能不能接起来，但匿名访客应先从公开发现、查看、MCP 设置和清晰登录门控开始。",
+        "按你的角色选择入口。市场用于挑选技能，注册表用于查看底层合约，登录后的工作台用于项目采用、运行和发布管理。",
       items: [
         {
-          action: "从市场开始",
-          evidence: "Listing -> 公开查看 -> 登录 -> 项目采用 -> 受治理测试调用 -> 日志和成本回访",
+          action: "浏览技能市场",
+          evidence: "市场卡片 -> 技能详情 -> 发布者资料 -> 登录后采用到项目",
           href: "/marketplace",
-          steps: ["搜索筛选", "检查信任", "登录", "加入项目", "门控测试"],
-          title: "发现、查看，然后登录测试",
-          user: "开发者 / Agent Builder"
+          steps: ["搜索技能", "比较用途", "查看权限", "检查发布者", "登录采用"],
+          title: "我想找一个技能来用",
+          user: "使用者 / 开发者"
         },
         {
           action: "开始发布",
-          evidence: "草稿 -> 精确版本审核 -> 检查证据 -> 付费准备 -> 反馈和未来付费市场准备",
+          evidence: "manifest 草稿 -> 运行检查 -> 人工审核 -> 上架 -> 版本维护",
           href: "/publish",
-          steps: ["粘贴 manifest", "保存草稿", "提交版本", "修复检查", "准备付费元数据"],
-          title: "上传、提交、补充付费准备并持续改进",
+          steps: ["准备 manifest", "填写说明", "提交审核", "修复问题", "维护版本"],
+          title: "我想发布自己的技能",
           user: "发布者 / 技能作者"
         },
         {
-          action: "阅读运营参考",
-          evidence: "审核队列 -> 信任动作 -> 事故 -> 预发布付费市场状态 -> 上线就绪和审计",
+          action: "查看运行说明",
+          evidence: "Project Key -> 策略检查 -> REST / MCP 调用 -> 日志和审计",
           href: "/docs#operating-reference",
-          steps: ["处理审核优先级", "治理风险", "复核预发布付费状态", "投递通知", "审计上线"],
-          title: "审核、治理并上线运营",
-          user: "审核 / 财务 / 超级管理员"
+          steps: ["创建项目", "生成 Key", "安装技能", "调用测试", "查看日志"],
+          title: "我想接入运行调用",
+          user: "工程师 / Agent Builder"
         }
       ],
-      title: "三条 P0 路径的运营参考"
+      title: "按角色开始"
     },
     manifest: {
       badge: "审核前必须具备",
@@ -392,40 +392,40 @@ const copy: Record<Locale, DocsCopy> = {
     },
     references: {
       body:
-        "每个域都必须给用户一个第二次回来的理由：开发者回来管理更安全的运行，发布者回来修复审核、处理买方需求并准备付费元数据，管理员回来治理真实运营。",
+        "这些概念要分清楚：市场给人挑选，注册表给系统检索，manifest 是技能契约，Project Key 决定能不能真实调用。",
       items: [
         {
-          body: "SkillHub 技能包是版本化合约。公开发现应优先批准版本，不能悄悄替换已安装行为。",
-          bullets: ["草稿 -> 已提交 -> 审核中 -> 已验证/已拒绝", "已验证和已安装版本不可变", "相似和替代技能路径"],
-          title: "注册库和市场"
+          body: "市场是给人看的页面，用来搜索、比较和决定是否采用一个技能。",
+          bullets: ["看用途和分类", "看权限和验证状态", "看发布者和支持路径"],
+          title: "技能市场"
         },
         {
-          body: "无论 agent 使用 REST、MCP、SDK 还是控制台测试，运行调用都要经过同一条治理路径。",
-          bullets: ["项目 API Key", "安装和策略检查", "预算、限流、订阅、日志和计量"],
-          title: "运行网关"
+          body: "注册表是底层清单，保存技能的 slug、版本、manifest 和可检索元数据。",
+          bullets: ["API 可查询", "Agent 可读取", "用于生成详情页和运行入口"],
+          title: "注册表"
         },
         {
-          body: "发布者需要精确修复闭环，而不是模糊拒绝理由。自动检查必须带阻断、字段、类别和下一步。",
-          bullets: ["Manifest/runtime/example/security 检查", "3 个工作日审核 SLA", "审核备注和审计链路"],
-          title: "审核和信任"
+          body: "manifest 是技能的说明书，告诉平台这个技能叫什么、怎么调用、需要哪些权限。",
+          bullets: ["输入输出 Schema", "运行入口", "权限声明和示例"],
+          title: "Manifest"
         },
         {
-          body: "开发者预览版里，用量不会直接支付给发布者。可计费用量和订阅周期只会在付费市场上线门槛通过后生成不可变商业记录。",
-          bullets: ["交易 -> 分成 -> 余额", "退款和争议生成调整记录", "未来提现审核会预留合格余额"],
-          title: "未来付费市场账本模型"
+          body: "Project Key 是项目级凭据。只有登录后创建项目并生成 Key，才能进行真实运行调用。",
+          bullets: ["项目身份", "策略检查", "日志和审计"],
+          title: "Project Key"
         },
         {
-          body: "站内通知、邮件行和 webhook outbox 要分开，个人偏好不能压制组织级 webhook 投递。",
-          bullets: ["模板渲染投递", "重试和 provider 元数据", "签名 webhook fan-out"],
-          title: "通知和 Webhook"
+          body: "REST 和 MCP 都走同一套治理路径：先确认项目和权限，再调用技能。",
+          bullets: ["REST 适合服务端集成", "MCP 适合 Agent 工具调用", "两者都需要运行策略"],
+          title: "REST / MCP"
         },
         {
-          body: "管理员需要在一个控制台看到不泄密的上线就绪、身份、审核、风险、财务、提现、投递、webhook 和审计。",
-          bullets: ["上线可信度阈值", "迁移和 schema 可见", "特权决策必须填写原因"],
-          title: "运营参考"
+          body: "发布者提交后需要通过自动检查和人工审核，避免高风险技能直接进入市场。",
+          bullets: ["草稿", "提交审核", "验证或退回修复"],
+          title: "审核流程"
         }
       ],
-      title: "参考域"
+      title: "核心概念"
     },
     runtime: {
       body:
@@ -510,7 +510,7 @@ const quickstartCopy = {
   zh: {
     apiBadge: "公开 API 已可用",
     body:
-      "发现和查看不需要登录。运行调用需要已登录项目 Key，并通过策略检查。",
+      "不用登录就可以搜索技能和查看 manifest。真正调用技能时，需要登录、创建项目、生成 Project Key，并通过策略检查。",
     cliBadge: "CLI / SDK 预览",
     cliBody:
       "CLI 和 SDK 包已在 monorepo 中，但目前不作为公开的一键运行安装命令展示。",
@@ -519,8 +519,8 @@ const quickstartCopy = {
       "MCP 客户端使用 POST /mcp。浏览器访问 GET /mcp 会返回公开服务说明。",
     steps: [
       "搜索公开技能",
-      "查看一个公开 manifest",
-      "确认安装/运行是否已解锁",
+      "打开技能详情或 manifest",
+      "需要运行时再登录创建 Project Key",
     ],
     title: "5 分钟开发者快速开始",
   },

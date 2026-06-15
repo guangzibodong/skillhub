@@ -211,37 +211,37 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体技能市场",
-    title: "搜索、查看，并准备受治理的智能体技能。",
+    title: "挑选、比较并采用适合你的技能。",
     description:
-      "开发者预览版：现在可以搜索公开技能、查看权限，并使用注册表/网关发现能力。付费市场、支付扣款和自动提现仍处于预发布阶段。",
+      "这里是给人看的技能市场。先看技能简介、权限、发布者和验证状态，再决定是否登录后采用到项目里。底层注册表则负责保存可检索的技能契约。",
     primary: "浏览目录",
     directory: "发布者目录",
-    console: "登录后进入发布者工作台",
-    consoleTitle: "公开查看路径",
-    consoleSubtitle: "智能体应先查看可检查的协议，再进入项目门控的采用或运行。",
-    proof: ["可搜索目录", "权限审核", "API 查看", "项目门控运行"],
-    mcpMetadataNote: "仅 MCP 元数据；运行调用需项目认证后使用 POST /mcp。",
-    publishTitle: "发布者审核路径",
-    publishSteps: ["草稿 manifest", "运行测试", "人工审核", "付费准备", "公开上架", "预发布账本模型", "未来付费审核"],
-    trustTitle: "上线要求",
+    console: "登录后进入开发者工作台",
+    consoleTitle: "市场里先看什么",
+    consoleSubtitle: "先看技能能做什么、谁发布的、权限有多大、是否已验证，再决定是否继续采用。",
+    proof: ["用途清楚", "权限清楚", "发布者清楚", "状态清楚"],
+    mcpMetadataNote: "MCP 这里只展示能力元数据；真正调用要登录后通过项目 Key 进行。",
+    publishTitle: "发布者怎么上架",
+    publishSteps: ["准备 manifest", "跑运行测试", "人工审核", "补全定价", "公开上架", "维护版本", "处理反馈"],
+    trustTitle: "采用前要看清什么",
     trustItems: [
-      ["Manifest", "类型化输入输出、运行时、权限、版本、作者。"],
-      ["安全", "权限分类、运行检查、密钥处理、数据保留。"],
-      ["资金", "预发布佣金与账本模型；暂不提供通用支付扣款。"],
-      ["支持", "更新记录、弃用政策、问题通道、响应预期。"]
+      ["契约", "输入输出、运行时、版本和作者。"],
+      ["权限", "网络、浏览器、文件、密钥和高风险能力。"],
+      ["验证", "状态、更新记录、运行证据和问题历史。"],
+      ["发布者", "资料完整度、支持路径和响应速度。"]
     ],
-    moneyTitle: "未来付费市场模型",
+    moneyTitle: "市场和注册表的区别",
     moneyRows: [
-      ["当前阶段", "开发者预览目录；支付扣款仍处于预发布"],
-      ["付费准备", "登录后的发布者可补充定价意图和收款资料，供未来财务复核"],
-      ["未来账本规则", "可计费使用只会在付费市场上线门槛通过后记账"],
-      ["运营控制", "财务凭证保持后台门控，公开页面仅展示预发布状态"]
+      ["技能市场", "给人选技能、看卡片、看发布者、看是否适合采用"],
+      ["技能注册表", "给系统和 API 查技能契约、版本和检索结果"],
+      ["登录后可做什么", "把已验证技能加入项目，保存策略并看运行结果"],
+      ["公开页不能做什么", "不在这里直接调用生产运行时，也不在这里执行后台操作"]
     ],
     overview: {
-      eyebrow: "架构预览",
-      title: "目录已连接买家、发布者和运营状态，但不宣称付费市场已上线。",
+      eyebrow: "一眼看懂",
+      title: "先看市场，再进注册表。",
       body:
-        "这些预览信号来自 platform overview API，用来解释从发现到运行的架构；付费市场运营仍处于预发布阶段。",
+        "Marketplace 是给人看和挑的页面，Registry 是给开发者和 API 用的底层清单。两者不是重复按钮，而是两层不同的入口。",
       metrics: {
         activeSubscriptions: "活跃订阅",
         paidPreview: "付费预览",
@@ -295,26 +295,26 @@ const pageCopy = {
         ]
       }
     },
-    catalogMetric: "公开目录预览",
-    publisherMetric: "公开发布者",
+    catalogMetric: "公开技能数",
+    publisherMetric: "发布者数",
     verifiedPublisherMetric: "已验证发布者",
     reviewMetric: "审核关卡",
     reviewMetricValue: "Schema / 运行时 / 人审",
-    moneyMetric: "付费流程",
-    moneyMetricValue: "预发布模型",
+    moneyMetric: "采用路径",
+    moneyMetricValue: "登录后接入",
     publisherDirectoryTitle: "供应方信任也是发现的一部分",
     publisherDirectoryBody:
       "每张市场技能卡都会连接到背后的发布者。公开目录让团队在采用前比较资料状态、已验证上架、公开审核状态、采用证据和运行证据。",
     publisherDirectoryCta: "浏览发布者",
     loopEyebrow: "已验证技能采用路径",
-    loopTitle: "市场在登录后保留一条受控路径。",
+    loopTitle: "看清楚，再接入。",
     loopBody:
-      "有用的技能库不止于复制一条命令。已验证技能可以在登录后进入项目策略和运行证据；已提交但未验证的技能只能公开查看，不能项目采用或测试运行。",
+      "先在市场里比对技能，再进入注册表查看合约细节。已验证技能可以在登录后进入项目策略和运行证据；未验证技能只能公开查看。",
     loopSteps: [
-      ["检查", "采用前可以看到 manifest、权限、运行时、定价意图和发布者档案。", "公共合约"],
-      ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server，并带上明确策略上下文。", "项目关卡"],
-      ["调用", "已验证运行调用携带类型化输入、项目策略检查、成功信号和可复核输出。", "运行证据"],
-      ["回访", "反馈、事故、更新记录和付费准备阻断项会形成下一次发布者行动。", "留存闭环"]
+      ["检查", "先看技能用途、权限、版本和发布者。", "公共合约"],
+      ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server。", "项目关卡"],
+      ["调用", "已验证运行调用携带类型化输入、策略检查和可复核输出。", "运行证据"],
+      ["回访", "反馈、事故和更新记录会形成下一次发布者行动。", "留存闭环"]
     ],
     loopMetrics: {
       callable: "可调用技能",
@@ -324,10 +324,10 @@ const pageCopy = {
     },
     loopLedgerTitle: "团队可回访的信息",
     loopLedgerRows: [
-      ["买家视角", "采用轨迹", "权限画像、定价意图和项目策略在登录后保持可检查。"],
+      ["买家视角", "采用轨迹", "权限画像和项目策略在登录后保持可检查。"],
       ["Agent 视角", "运行证据", "Agent 可在重复调用前校验 schema、延迟和成功历史。"],
-      ["发布者视角", "行动队列", "评价、事故、用量和更新压力会进入下一版本。"],
-      ["付费预览视角", "预发布账本模型", "未来付费用量只会在付费市场上线门槛通过后进入账本审核。"]
+      ["发布者视角", "行动队列", "评价、事故和更新压力会进入下一版本。"],
+      ["注册表视角", "底层清单", "用于检索契约、版本和可调用能力，而不是直接下单。"]
     ]
   }
 } as const;
@@ -471,39 +471,45 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     <AppShell active="marketplace" locale={locale}>
       {/* Hero */}
       <section className="section" aria-labelledby="marketplace-heading">
-        <div className="section-inner hero-glow text-center flex flex-col items-center gap-6 py-20">
+        <div className="section-inner hero-glow grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] items-center gap-8 py-20">
           <Reveal>
-            <div className="eyebrow">
-              <Store size={16} aria-hidden="true" />
-              <span>{labels.eyebrow}</span>
-            </div>
-            <h1 id="marketplace-heading" className="heading-xl max-w-[800px]">{labels.title}</h1>
-            <p className="body-text text-[#999] max-w-[640px]">{labels.description}</p>
-            <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-              <a className="btn-primary--large" href="#catalog">
-                <PackageSearch size={18} aria-hidden="true" />
-                <span>{labels.primary}</span>
-              </a>
-              <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
-                <Building2 size={18} aria-hidden="true" />
-                <span>{labels.directory}</span>
-              </a>
-              <a className="btn-text" href={localizedHrefWithReturnTo("/login", locale, "/publisher")}>
-                <WalletCards size={17} aria-hidden="true" />
-                <span>{labels.console}</span>
-              </a>
+            <div className="flex flex-col items-start gap-6">
+              <div className="eyebrow">
+                <Store size={16} aria-hidden="true" />
+                <span>{labels.eyebrow}</span>
+              </div>
+              <h1 id="marketplace-heading" className="heading-xl max-w-[760px]">{labels.title}</h1>
+              <p className="body-text text-[#999] max-w-[680px]">{labels.description}</p>
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <a className="btn-primary--large" href="#catalog">
+                  <PackageSearch size={18} aria-hidden="true" />
+                  <span>{labels.primary}</span>
+                </a>
+                <a className="btn-secondary--large" href={localizedHref("/publishers", locale)}>
+                  <Building2 size={18} aria-hidden="true" />
+                  <span>{labels.directory}</span>
+                </a>
+                <a className="btn-text" href={localizedHrefWithReturnTo("/login", locale, "/developer")}>
+                  <WalletCards size={17} aria-hidden="true" />
+                  <span>{labels.console}</span>
+                </a>
+              </div>
             </div>
           </Reveal>
-        </div>
-
-        {/* Install console aside */}
-        <aside className="section-inner max-w-[720px] mx-auto">
-          <div className="card p-6 flex flex-col gap-4">
+          <aside className="card p-6 flex flex-col gap-4">
             <div className="flex items-center gap-2 text-white text-sm font-medium">
               <Terminal size={16} aria-hidden="true" />
               <span>{labels.consoleTitle}</span>
             </div>
             <p className="body-text-sm text-[#999]">{labels.consoleSubtitle}</p>
+            <div className="grid grid-cols-1 gap-3">
+              {labels.moneyRows.map(([label, value]) => (
+                <div className="rounded-[8px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.025)] p-3" key={label}>
+                  <strong className="block text-sm text-white">{label}</strong>
+                  <span className="mt-1 block text-xs leading-5 text-[#777]">{value}</span>
+                </div>
+              ))}
+            </div>
             <pre className="code-block">
               <code>{`curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 curl "https://api.useskillhub.com/v1/skills/browser-research"
@@ -518,8 +524,8 @@ curl "https://api.useskillhub.com/mcp"`}</code>
                 </span>
               ))}
             </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </section>
 
       <div className="section-divider" />

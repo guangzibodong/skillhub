@@ -259,7 +259,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
         exploreSkills: "技能市场",
         home: "首页",
         marketplace: "市场",
-        registry: "技能库",
+        registry: "注册表",
         agents: "智能体",
         docs: "文档",
         publish: "发布",
