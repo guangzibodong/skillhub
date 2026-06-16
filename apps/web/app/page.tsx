@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import type { SkillSummary } from "@useskillhub/schema";
 import {
+  Activity,
   ArrowRight,
   BarChart3,
   Boxes,
+  Building2,
   CheckCircle2,
+  ClipboardCheck,
   FileJson,
   KeyRound,
   LockKeyhole,
@@ -24,7 +27,6 @@ import {
   localizedHref,
 } from "@/lib/i18n";
 import { PublicEventLink } from "@/components/public-event-link";
-import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +72,7 @@ const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
 const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
 const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
 const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
+const footerTrustIcons = [Building2, ClipboardCheck, KeyRound, Activity] as const;
 
 const fallbackFeaturedSkills: SkillSummary[] = [
   {
@@ -245,6 +248,12 @@ const homeLandingCopy = {
     finalBody: "Explore the public registry first, then connect runtime only after project setup is ready.",
     readDocs: "Read Docs",
     footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
+    footerTrust: [
+      ["Company contact", "Public support, business email, and Hong Kong company address."],
+      ["Review before trust", "Skill manifests, permissions, security notes, and publisher state are checked before verified adoption."],
+      ["Project Key governance", "Runtime access is scoped to signed-in projects with policy, logs, and revocation paths."],
+      ["Visible operations", "Status, docs, support, and issue-report routes stay available for buyer due diligence."],
+    ],
     footerGroups: [
       {
         title: "Product",
@@ -426,6 +435,12 @@ const homeLandingCopy = {
     finalBody: "先浏览公开技能，再在工作台项目设置就绪后接入真实运行调用。",
     readDocs: "阅读文档",
     footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
+    footerTrust: [
+      ["公司主体可查", "公开技术支持、商务邮箱和香港公司地址。"],
+      ["上架前先审核", "检查 Skill manifest、权限、安全说明和发布者状态，再进入可信采用。"],
+      ["Project Key 治理", "真实运行绑定登录项目，具备策略、日志和撤销路径。"],
+      ["运营状态可见", "状态页、文档、支持和问题报告入口对客户尽调开放。"],
+    ],
     footerGroups: [
       {
         title: "产品",
@@ -578,7 +593,6 @@ export default async function Home({ searchParams }: PageProps) {
   const apiUrl =
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const skills = await getSkills();
-  const publicStats = await getPublicPlatformStats({ skills });
   const landing = homeLandingCopy[locale];
   const seenSkillKeys = new Set<string>();
   const featuredSkills = [...skills, ...fallbackFeaturedSkills]
@@ -1027,7 +1041,7 @@ export default async function Home({ searchParams }: PageProps) {
             </span>
             <span>{locale === "zh" ? "公司地址：" : "Address: "}{companyInfo.address}</span>
             <PublicEventLink href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
-              {landing.systemStatus} · {locale === "zh" ? `${publicStats.publicSkills} 个技能` : `${publicStats.publicSkills} skills`}
+              {landing.systemStatus} · {landing.viewStatus}
             </PublicEventLink>
           </div>
           <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
@@ -1047,6 +1061,23 @@ export default async function Home({ searchParams }: PageProps) {
               </section>
             ))}
           </nav>
+          <section className="home-footer__trust-strip" aria-label={locale === "zh" ? "页脚信任信号" : "Footer trust signals"}>
+            {landing.footerTrust.map(([title, body], index) => {
+              const Icon = footerTrustIcons[index] ?? ShieldCheck;
+
+              return (
+                <article className="home-footer__trust-card" key={title}>
+                  <span className="home-footer__trust-icon">
+                    <Icon size={16} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
         </footer>
       </section>
     </main>
