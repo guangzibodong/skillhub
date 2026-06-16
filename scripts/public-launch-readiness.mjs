@@ -30,7 +30,7 @@ const checks = [
       "authenticated_install",
       "Availability",
       "Project adoption readiness",
-      "Project adoption, runtime test",
+      "Project use, execution, subscription, billing, and financial operations stay unavailable",
     ],
   },
   {
@@ -54,7 +54,8 @@ const checks = [
       "checkPrimaryCtas",
       "checkSkillCards",
       "login page missing normal auth path markers",
-      "submitted skill is not inspection-only safe",
+      "validateSubmittedSkillSafety",
+      "submitted skill page exposes unavailable action markers",
     ],
   },
   {

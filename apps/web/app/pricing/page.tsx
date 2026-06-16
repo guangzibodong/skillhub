@@ -15,7 +15,6 @@ import { Reveal } from "@/components/home/reveal";
 import {
   getLocaleFromSearchParams,
   localizedHref,
-  localizedHrefWithReturnTo,
   type Locale,
 } from "@/lib/i18n";
 import { buildLocalizedMetadata } from "@/lib/seo";
@@ -87,12 +86,12 @@ const copy: Record<Locale, PricingCopy> = {
   en: {
     boundaries: [
       ["Free basics", "Basic operations and basic SEO discovery skills are available for evaluation and lightweight workflows."],
-      ["Pro access", "$128 per month unlocks all listed skills for a signed-in workspace, subject to project policy and runtime limits."],
+      ["Pro access", "$128 per month covers all listed skills for an onboarded workspace, subject to project policy and runtime limits."],
       ["Team governance", "Project Keys, version pinning, logs, permission review, and admin visibility stay part of every paid plan."],
     ],
     cta: {
       body:
-        "Start with the marketplace to pick the first skills. Then sign in to create a project, choose a billing cycle, and connect the skills through a governed Project Key.",
+        "Start with the marketplace to pick the first skills. During Launch Preview, Pro is enabled through team onboarding while provider checkout and payment capture are being connected.",
       primary: "Browse skills",
       secondary: "Open docs",
       title: "Use the free basics first, then move real work into Pro.",
@@ -140,9 +139,9 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Configure monthly",
+        actionLabel: "Request monthly onboarding",
         billingCycle: "monthly",
-        billingNote: "Billed monthly",
+        billingNote: "Manual onboarding during Launch Preview",
         body: "For teams that want flexible access to the full catalog without a long commitment.",
         bullets: ["All listed skills", "Project Keys and runtime tests", "Version pinning and logs", "Publisher trust signals"],
         name: "Pro Monthly",
@@ -150,10 +149,10 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Configure quarterly",
+        actionLabel: "Request quarterly onboarding",
         badge: "10% off",
         billingCycle: "quarterly",
-        billingNote: "$345.60 billed quarterly",
+        billingNote: "$345.60 quarterly after onboarding",
         body: "For teams already using SkillHub in recurring operations and content workflows.",
         bullets: ["All Pro Monthly features", "Effective $115.20 / month", "Quarterly budget cadence", "Same governance controls"],
         name: "Pro Quarterly",
@@ -161,10 +160,10 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Configure annual",
+        actionLabel: "Request annual onboarding",
         badge: "20% off",
         billingCycle: "annual",
-        billingNote: "$1,228.80 billed yearly",
+        billingNote: "$1,228.80 yearly after onboarding",
         body: "For teams standardizing SkillHub as their AI skill layer across projects.",
         bullets: ["All Pro Monthly features", "Effective $102.40 / month", "Annual procurement friendly", "Best value for production use"],
         name: "Pro Annual",
@@ -177,12 +176,12 @@ const copy: Record<Locale, PricingCopy> = {
   zh: {
     boundaries: [
       ["基础免费", "免费只覆盖基础运营和基础 SEO 类技能，用于试用、轻量流程和了解平台。"],
-      ["Pro 全量", "每月 128 美金，登录工作区后可使用全部已上架技能，但仍受项目策略和运行限制管理。"],
+      ["Pro 全量", "每月 128 美金，开通后的工作区可使用全部已上架技能，但仍受项目策略和运行限制管理。"],
       ["团队治理", "Project Key、版本固定、日志、权限审核和后台可见性，会贯穿每一个付费套餐。"],
     ],
     cta: {
       body:
-        "先在找技能页面选第一批要用的技能，再登录创建项目、选择付款周期，并通过受治理的 Project Key 接入运行。",
+        "先在找技能页面选第一批要用的技能。公开预览期内，Pro 通过团队开通完成；支付渠道和自动扣款接入完成前，不展示成自助扣款流程。",
       primary: "开始找技能",
       secondary: "查看安装文档",
       title: "先用免费基础技能验证，再把真实业务放进 Pro。",
@@ -230,9 +229,9 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "登录配置月付",
+        actionLabel: "申请月付开通",
         billingCycle: "monthly",
-        billingNote: "按月付款",
+        billingNote: "公开预览期人工开通",
         body: "适合希望灵活使用完整技能目录、暂时不做长期承诺的团队。",
         bullets: ["全部已上架技能", "Project Key 与运行测试", "版本固定和日志", "发布者信任信号"],
         name: "Pro 月付",
@@ -240,10 +239,10 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "登录配置季付",
+        actionLabel: "申请季付开通",
         badge: "9 折",
         billingCycle: "quarterly",
-        billingNote: "$345.60 / 季度",
+        billingNote: "$345.60 / 季度，开通后生效",
         body: "适合已经把 SkillHub 用在持续运营、内容和研发流程里的团队。",
         bullets: ["包含月付全部能力", "折合 $115.20 / 月", "符合季度预算节奏", "同样的治理控制"],
         name: "Pro 季付",
@@ -251,10 +250,10 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "登录配置年付",
+        actionLabel: "申请年付开通",
         badge: "8 折",
         billingCycle: "annual",
-        billingNote: "$1,228.80 / 年",
+        billingNote: "$1,228.80 / 年，开通后生效",
         body: "适合把 SkillHub 标准化为多个项目 AI 技能层的团队。",
         bullets: ["包含月付全部能力", "折合 $102.40 / 月", "更适合年度采购", "生产使用最划算"],
         name: "Pro 年付",
@@ -451,9 +450,5 @@ function pricingPlanHref(plan: PricingPlan, locale: Locale) {
     return localizedHref(plan.actionHref, locale);
   }
 
-  return localizedHrefWithReturnTo(
-    "/login",
-    locale,
-    `/account?intent=pro&cycle=${plan.billingCycle}#workspace-billing`,
-  );
+  return localizedHref(`/contact?intent=pro&cycle=${plan.billingCycle}`, locale);
 }

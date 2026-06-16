@@ -28,14 +28,14 @@ const copy = {
     eyebrow: "Support",
     title: "We're here to help.",
     subtitle: "Choose the right path for your question",
-    body: "Whether you need help with integration, have a billing question, or want to report a security issue — we have dedicated channels for every type of request.",
+    body: "Choose the right support path for integration questions, Pro onboarding, skill reports, or security issues. During Launch Preview, signed-in skill reports happen from skill detail pages and general support goes through email.",
     primary: "Report an issue",
     secondary: "Security contact",
     channelsEyebrow: "Support channels",
     channelsTitle: "Pick the path that fits your situation",
     channels: [
-      { icon: "report", title: "Issue reports", desc: "Found a bug, unexpected behavior, or documentation error? Submit a report and our team will triage within 24 hours.", action: "Report an issue", href: "/report" },
-      { icon: "security", title: "Security disclosure", desc: "Discovered a vulnerability? Use our responsible disclosure process to report it safely without exposing sensitive data.", action: "Security contact", href: "/security" },
+      { icon: "report", title: "Skill reports", desc: "Signed-in skill reports are submitted from the relevant skill detail page. Public visitors can use the report guide to choose the right path without exposing private data.", action: "Report guide", href: "/report" },
+      { icon: "security", title: "Security disclosure", desc: "Discovered a vulnerability? Use the security contact path first and do not send API keys, passwords, OAuth tokens, or private user data.", action: "Security contact", href: "/security" },
       { icon: "docs", title: "Documentation", desc: "Most integration questions are answered in our API docs, manifest reference, and getting-started guides.", action: "Read the docs", href: "/docs" },
       { icon: "status", title: "Platform status", desc: "Check real-time health of the registry, API, and runtime gateway. Historical uptime data included.", action: "View status", href: "/status" }
     ],
@@ -48,23 +48,23 @@ const copy = {
       { num: "04", title: "Include context", desc: "Your runtime environment, SDK version, project ID (not the key), and timestamp help us reproduce faster." }
     ],
     expectEyebrow: "What to expect",
-    expectTitle: "Our response process",
+    expectTitle: "Launch Preview response model",
     expectItems: [
-      { icon: "clock", label: "Acknowledgment", value: "< 24 hours", desc: "Every report receives a human response within one business day." },
-      { icon: "triage", label: "Triage & priority", value: "24–72 hours", desc: "We assess severity, route to the right team, and set resolution priority." },
-      { icon: "update", label: "Status updates", value: "Every 48 hours", desc: "Open tickets receive regular status updates until resolved." },
-      { icon: "resolve", label: "Resolution", value: "SLA-driven", desc: "Critical: same day. High: 3 days. Medium: 1 week. Low: next sprint." }
+      { icon: "clock", label: "General support", value: "Email", desc: "For account, login, docs, onboarding, and Pro questions, contact Support@useskillhub.com with the page URL and reproduction steps." },
+      { icon: "triage", label: "Skill-specific reports", value: "Signed-in", desc: "Reports tied to a specific skill should be filed from that skill page after sign-in so the issue keeps skill and account context." },
+      { icon: "update", label: "Security issues", value: "Private path", desc: "Start from the security contact path and request a secure disclosure channel before sharing exploit details or sensitive data." },
+      { icon: "resolve", label: "Preview limitation", value: "No SLA", desc: "Developer Preview does not promise production SLA, automated refunds, or self-serve payment dispute handling yet." }
     ],
     faqEyebrow: "Common questions",
     faqTitle: "Before you write in",
     faq: [
       { q: "How do I reset my API key?", a: "Go to Developer Workspace → Project → API Keys → Rotate. The old key is revoked immediately." },
       { q: "Why is my skill stuck in review?", a: "Reviews take 1–3 business days. Check Publisher Workspace for reviewer feedback and required changes." },
-      { q: "Can I get a refund on a paid skill?", a: "Paid marketplace is in preview. No real charges are captured during Developer Preview." },
-      { q: "How do I report a malicious skill?", a: "Use the Report an Issue flow. Select 'Trust & Safety' as the category. Include the skill slug." }
+      { q: "Can I get a refund on a paid skill?", a: "Paid marketplace is in preview. Provider checkout and real payment capture are not generally available yet." },
+      { q: "How do I report a malicious skill?", a: "Open the skill detail page, sign in, and use the skill report path when available. For urgent safety concerns, contact support with the skill slug and page URL." }
     ],
     ctaTitle: "Still need help?",
-    ctaBody: "Our team is available during business hours. Most issues resolve within 48 hours.",
+    ctaBody: "Email Support@useskillhub.com with the page URL, account email, timestamp, screenshots, and steps to reproduce. Do not include secrets.",
     ctaPrimary: "Report an issue",
     ctaSecondary: "Browse marketplace"
   },
@@ -72,14 +72,14 @@ const copy = {
     eyebrow: "支持",
     title: "我们随时为你提供帮助。",
     subtitle: "选择适合你问题的路径",
-    body: "无论你需要集成帮助、有账单问题，还是想报告安全问题 — 我们为每种请求都有专门的渠道。",
+    body: "请选择适合的支持路径：集成问题、Pro 开通、技能举报或安全问题。公开预览期内，技能级举报从登录后的技能详情页提交，通用支持走邮件。",
     primary: "报告问题",
     secondary: "安全联系",
     channelsEyebrow: "支持渠道",
     channelsTitle: "选择适合你情况的路径",
     channels: [
-      { icon: "report", title: "问题报告", desc: "发现 Bug、意外行为或文档错误？提交报告，我们的团队将在 24 小时内进行分类。", action: "报告问题", href: "/report" },
-      { icon: "security", title: "安全披露", desc: "发现漏洞？使用我们的负责任披露流程安全地报告，不暴露敏感数据。", action: "安全联系", href: "/security" },
+      { icon: "report", title: "技能举报", desc: "技能级举报应从登录后的对应技能详情页提交。公开访客可以先阅读举报指南，选择正确路径并避免暴露私密数据。", action: "举报指南", href: "/report" },
+      { icon: "security", title: "安全披露", desc: "发现漏洞？请先走安全联系路径，不要发送 API Key、密码、OAuth token 或私人用户数据。", action: "安全联系", href: "/security" },
       { icon: "docs", title: "文档", desc: "大多数集成问题在我们的 API 文档、manifest 参考和入门指南中都有解答。", action: "阅读文档", href: "/docs" },
       { icon: "status", title: "平台状态", desc: "查看技能 API、公开 API 和运行时网关的实时健康状况。包含历史正常运行时间数据。", action: "查看状态", href: "/status" }
     ],
@@ -92,23 +92,23 @@ const copy = {
       { num: "04", title: "包含上下文", desc: "你的运行环境、SDK 版本、项目 ID（不是 Key）和时间戳帮助我们更快复现。" }
     ],
     expectEyebrow: "预期流程",
-    expectTitle: "我们的响应流程",
+    expectTitle: "公开预览期响应方式",
     expectItems: [
-      { icon: "clock", label: "确认收到", value: "< 24 小时", desc: "每份报告在一个工作日内收到人工回复。" },
-      { icon: "triage", label: "分类与优先级", value: "24–72 小时", desc: "我们评估严重程度，路由到正确的团队，并设置解决优先级。" },
-      { icon: "update", label: "状态更新", value: "每 48 小时", desc: "未关闭的工单定期收到状态更新直到解决。" },
-      { icon: "resolve", label: "解决", value: "按 SLA", desc: "严重：当天。高：3 天。中：1 周。低：下个迭代。" }
+      { icon: "clock", label: "通用支持", value: "邮件", desc: "账号、登录、文档、开通和 Pro 咨询，请发送页面 URL、复现步骤和截图到 Support@useskillhub.com。" },
+      { icon: "triage", label: "技能级举报", value: "登录后", desc: "和具体技能相关的举报，应从登录后的技能页发起，这样能保留技能和账号上下文。" },
+      { icon: "update", label: "安全问题", value: "私密通道", desc: "先走安全联系路径，并在分享漏洞细节或敏感数据前请求安全披露通道。" },
+      { icon: "resolve", label: "预览限制", value: "无 SLA", desc: "开发者预览期暂不承诺生产 SLA、自动退款或自助支付争议处理。" }
     ],
     faqEyebrow: "常见问题",
     faqTitle: "在提交之前",
     faq: [
       { q: "如何重置 API Key？", a: "前往开发者工作台 → 项目 → API Keys → 轮换。旧 Key 立即撤销。" },
       { q: "为什么我的技能卡在审核中？", a: "审核需要 1-3 个工作日。在发布者工作台查看审核反馈和所需更改。" },
-      { q: "付费技能能退款吗？", a: "付费市场处于预览阶段。开发者预览期间不会产生真实扣费。" },
-      { q: "如何举报恶意技能？", a: "使用'报告问题'流程。选择'信任与安全'类别。包含技能 slug。" }
+      { q: "付费技能能退款吗？", a: "付费市场处于预览阶段。支付渠道扣款和通用自助收银暂未开放。" },
+      { q: "如何举报恶意技能？", a: "打开对应技能详情页，登录后使用技能举报路径。紧急安全问题请联系支持，并提供技能 slug 和页面 URL。" }
     ],
     ctaTitle: "还需要帮助？",
-    ctaBody: "我们的团队在工作时间可用。大多数问题在 48 小时内解决。",
+    ctaBody: "请把页面 URL、账号邮箱、时间、截图和复现步骤发到 Support@useskillhub.com。不要包含密钥。",
     ctaPrimary: "报告问题",
     ctaSecondary: "浏览市场"
   }

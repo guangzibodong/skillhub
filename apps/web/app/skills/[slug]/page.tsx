@@ -1065,8 +1065,8 @@ function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
       <strong className="text-white text-sm">{locale === "zh" ? "仅可查看" : "Inspection only"}</strong>
       <p className="body-text-sm text-[#999]">
         {locale === "zh"
-          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目采用、运行测试、订阅、计费和账本动作只会在验证审核通过后开放。"
-          : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Project adoption, runtime test, subscription, billing, and ledger actions unlock only after verified approval."}
+          ? "该技能已提交但尚未通过验证审核。你可以查看 manifest、schema、权限、发布者和审核状态；项目接入、执行、订阅、计费和财务操作会在验证审核通过后才开放。"
+          : "This skill is submitted but not verified yet. You can inspect its manifest, schemas, permissions, publisher, and review state. Project use, execution, subscription, billing, and financial operations stay unavailable until verified approval."}
       </p>
     </div>
   );
@@ -1079,8 +1079,8 @@ function pricingPreviewBody(
 ) {
   if (availabilityKind === "inspection_only") {
     return locale === "zh"
-      ? "仅可查看。价格、项目采用、运行、计费和账本动作只会在验证审核通过后开放。"
-      : "Inspection only. Pricing, project adoption, runtime, billing, and ledger actions unlock only after verified approval.";
+      ? "仅可查看。价格、项目接入、执行、计费和财务操作会在验证审核通过后才开放。"
+      : "Inspection only. Pricing, project use, execution, billing, and financial operations stay unavailable until verified approval.";
   }
 
   if (billingModel === "free") {

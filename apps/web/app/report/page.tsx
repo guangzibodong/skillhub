@@ -15,7 +15,7 @@ const copy = {
     eyebrow: "Report trust or runtime issue",
     title: "Public issue reporting is guidance-only until sign-in.",
     body:
-      "Skill-specific trust, runtime, feedback, and abuse reports write state through the signed-in flow. Public visitors can use this page to choose the right path without exposing private data.",
+      "Skill-specific trust, runtime, feedback, and abuse reports write state through the signed-in flow. Public visitors can use this page to choose the right path without exposing private data. For general support, email Support@useskillhub.com.",
     primary: "Sign in to report",
     secondary: "Support",
     steps: [
@@ -28,7 +28,7 @@ const copy = {
     eyebrow: "报告信任或运行问题",
     title: "公开问题报告在登录前仅提供路径说明。",
     body:
-      "技能级信任、运行、反馈和滥用报告需要通过登录后的流程写入状态。公开访客可用本页选择正确路径，同时避免暴露私有数据。",
+      "技能级信任、运行、反馈和滥用报告需要通过登录后的流程写入状态。公开访客可用本页选择正确路径，同时避免暴露私有数据。通用支持请发送邮件到 Support@useskillhub.com。",
     primary: "登录后报告",
     secondary: "支持",
     steps: [
