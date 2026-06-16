@@ -170,7 +170,7 @@ const PAGE_ASSERTIONS = {
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
   "/marketplace?lang=zh": [
-    "\u667a\u80fd\u4f53\u6280\u80fd\u5e02\u573a",
+    "\u667a\u80fd\u4f53\u627e\u6280\u80fd",
     "\u53d1\u5e03\u8005\u76ee\u5f55",
     "API \u67e5\u770b",
   ],
@@ -180,11 +180,11 @@ const PAGE_ASSERTIONS = {
     "\u516c\u5f00\u53d1\u5e03\u8005",
     "\u4ee3\u8868\u6280\u80fd",
   ],
-  "/registry": ["registry protocol", "live registry", "manifest quality bar"],
+  "/registry": ["skill api protocol", "live skill api", "manifest quality bar"],
   "/registry?lang=zh": [
-    "\u516c\u5f00\u6280\u80fd\u5e93",
+    "\u516c\u5f00\u6280\u80fd API",
     "\u53d1\u73b0\u7aef\u70b9",
-    "\u6280\u80fd\u5e93",
+    "\u5b9e\u65f6\u6280\u80fd API",
   ],
   "/agents?lang=zh": [
     "\u667a\u80fd\u4f53\u8fd0\u884c\u5c42",
