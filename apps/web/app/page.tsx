@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import type { SkillSummary } from "@useskillhub/schema";
 import {
-  Activity,
   ArrowRight,
   BarChart3,
+  Bot,
   Boxes,
-  Building2,
+  BrainCircuit,
   CheckCircle2,
-  ClipboardCheck,
+  Code2,
   FileJson,
   KeyRound,
   LockKeyhole,
@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Terminal,
+  Workflow,
   Zap,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -73,7 +74,7 @@ const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
 const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
 const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
 const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
-const footerTrustIcons = [Building2, ClipboardCheck, KeyRound, Activity] as const;
+const footerTrustIcons = [Bot, Workflow, BrainCircuit, Code2] as const;
 
 const fallbackFeaturedSkills: SkillSummary[] = [
   {
@@ -250,10 +251,10 @@ const homeLandingCopy = {
     readDocs: "Read Docs",
     footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
     footerTrust: [
-      ["Company contact", "Public support, business email, and Hong Kong company address."],
-      ["Review before trust", "Skill manifests, permissions, security notes, and publisher state are checked before verified adoption."],
-      ["Project Key governance", "Runtime access is scoped to signed-in projects with policy, logs, and revocation paths."],
-      ["Visible operations", "Status, docs, support, and issue-report routes stay available for buyer due diligence."],
+      ["GPT-style agents", "Expose approved Skills through governed REST APIs or MCP tools for internal GPT and custom agent workflows.", "REST / MCP"],
+      ["Claude / MCP workspaces", "Keep manifest, schema, and permission metadata visible so MCP-capable agents can inspect before calling.", "Manifest-aware"],
+      ["Gemini workflow agents", "Combine research, SEO, UI, data, and ops Skills into repeatable multi-step agent workflows.", "Workflow-ready"],
+      ["Code and ops agents", "Give builder, support, and operations agents versioned Skills with Project Keys, logs, and revocation controls.", "Governed calls"],
     ],
     footerGroups: [
       {
@@ -437,10 +438,10 @@ const homeLandingCopy = {
     readDocs: "阅读文档",
     footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
     footerTrust: [
-      ["公司主体可查", "公开技术支持、商务邮箱和香港公司地址。"],
-      ["上架前先审核", "检查 Skill manifest、权限、安全说明和发布者状态，再进入可信采用。"],
-      ["Project Key 治理", "真实运行绑定登录项目，具备策略、日志和撤销路径。"],
-      ["运营状态可见", "状态页、文档、支持和问题报告入口对客户尽调开放。"],
+      ["GPT 类智能体", "通过受治理 REST API 或 MCP tools，把已批准 Skill 接入企业内部 GPT 和自定义 Agent 工作流。", "REST / MCP"],
+      ["Claude / MCP 工作台", "保留 manifest、schema 和权限信息，让支持 MCP 的智能体在调用前先检查。", "合约可读"],
+      ["Gemini 流程智能体", "把研究、SEO、UI、数据和运营类 Skill 组合成可重复的多步骤 Agent 工作流。", "流程可编排"],
+      ["代码与运营 Agent", "为开发、客服和运营 Agent 提供版本化 Skill、Project Key、日志和撤销控制。", "受治理调用"],
     ],
     footerGroups: [
       {
@@ -1075,8 +1076,8 @@ export default async function Home({ searchParams }: PageProps) {
               </section>
             ))}
           </nav>
-          <section className="home-footer__trust-strip" aria-label={locale === "zh" ? "页脚信任信号" : "Footer trust signals"}>
-            {landing.footerTrust.map(([title, body], index) => {
+          <section className="home-footer__trust-strip" aria-label={locale === "zh" ? "页脚智能体接入信号" : "Footer agent integration signals"}>
+            {landing.footerTrust.map(([title, body, meta], index) => {
               const Icon = footerTrustIcons[index] ?? ShieldCheck;
 
               return (
@@ -1087,6 +1088,7 @@ export default async function Home({ searchParams }: PageProps) {
                   <div>
                     <strong>{title}</strong>
                     <p>{body}</p>
+                    {meta ? <em>{meta}</em> : null}
                   </div>
                 </article>
               );

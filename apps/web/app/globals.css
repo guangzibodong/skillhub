@@ -27604,6 +27604,24 @@ a {
   line-height: 1.55;
 }
 
+.home-footer__trust-card em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  margin-top: 8px;
+  padding: 0 8px;
+  border: 1px solid rgba(127, 238, 100, 0.18);
+  border-radius: 999px;
+  color: var(--home-green);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  background: rgba(127, 238, 100, 0.08);
+}
+
 .home-frame .home-trust-modules,
 .home-frame .home-featured-grid {
   gap: 16px;
@@ -27978,6 +27996,11 @@ a {
 
   .home-footer__trust-card {
     min-height: auto;
+  }
+
+  .home-footer__trust-card em {
+    justify-self: start;
+    white-space: normal;
   }
 }
 
