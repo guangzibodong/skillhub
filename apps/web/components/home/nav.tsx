@@ -10,6 +10,9 @@ export type NavPage =
   | "marketplace"
   | "registry"
   | "docs"
+  | "quickstart"
+  | "mcp"
+  | "pricing"
   | "publish"
   | "agents"
   | "publishers"
@@ -36,23 +39,23 @@ type NavProps = {
 const navLinks = {
   en: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
-    { href: "/registry", page: "registry" as NavPage, label: "Registry" },
-    { href: "/quickstart", page: "docs" as NavPage, label: "Quickstart" },
+    { href: "/registry", page: "registry" as NavPage, label: "Registry API" },
+    { href: "/quickstart", page: "quickstart" as NavPage, label: "Quickstart" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs" },
-    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
+    { href: "/mcp", page: "mcp" as NavPage, label: "MCP" },
     { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
     { href: "/security", page: "security" as NavPage, label: "Security" },
-    { href: "/pricing", page: "marketplace" as NavPage, label: "Pricing" },
+    { href: "/pricing", page: "pricing" as NavPage, label: "Pricing" },
   ],
   zh: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "技能市场" },
-    { href: "/registry", page: "registry" as NavPage, label: "注册表" },
-    { href: "/quickstart", page: "docs" as NavPage, label: "快速开始" },
+    { href: "/registry", page: "registry" as NavPage, label: "技能注册表" },
+    { href: "/quickstart", page: "quickstart" as NavPage, label: "快速开始" },
     { href: "/docs", page: "docs" as NavPage, label: "文档" },
-    { href: "/mcp", page: "docs" as NavPage, label: "MCP" },
+    { href: "/mcp", page: "mcp" as NavPage, label: "MCP" },
     { href: "/publish", page: "publish" as NavPage, label: "发布技能" },
     { href: "/security", page: "security" as NavPage, label: "安全" },
-    { href: "/pricing", page: "marketplace" as NavPage, label: "价格" },
+    { href: "/pricing", page: "pricing" as NavPage, label: "价格" },
   ],
 };
 
@@ -113,7 +116,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
           </span>
         </a>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden xl:flex items-center gap-1">
           {links.map((link) => (
             <a
               key={link.href}
@@ -129,7 +132,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden xl:flex items-center gap-4">
           <a
             href={alternateLocaleHref}
             className="text-[12px] text-[#a9b3a3] hover:text-white transition-colors"
@@ -154,7 +157,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
           aria-controls="home-mobile-menu"
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? (locale === "zh" ? "关闭导航" : "Close menu") : (locale === "zh" ? "打开导航" : "Open menu")}
-          className="relative z-[101] md:hidden p-2 text-[#dce8d8]"
+          className="relative z-[101] xl:hidden p-2 text-[#dce8d8]"
           onClick={() => setMobileOpen((current) => !current)}
           type="button"
         >
@@ -164,7 +167,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
 
       {mobileOpen && (
         <div
-          className="md:hidden bg-[#030503] border-t border-[rgba(221,255,220,0.1)] px-6 py-4 space-y-1"
+          className="xl:hidden bg-[#030503] border-t border-[rgba(221,255,220,0.1)] px-6 py-4 space-y-1"
           id="home-mobile-menu"
         >
           {links.map((link) => (

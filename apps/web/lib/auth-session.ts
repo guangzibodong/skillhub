@@ -1,5 +1,5 @@
 import { getServerApiUrl } from "@/lib/api-url";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 export type SessionSubject = {
   displayName: string | null;
@@ -22,6 +22,7 @@ export type WorkspaceSession = {
 export const authCookieName = "skillhub_user_token";
 
 const sessionMaxAge = 60 * 60 * 24 * 14;
+const internalSessionHeader = "x-skillhub-session-token-b64";
 
 type WorkspaceSessionError = {
   code: "api_unavailable" | "invalid_session";
@@ -34,8 +35,15 @@ type SessionSubjectResult =
   | { error: WorkspaceSessionError; type: "invalid" | "unavailable" };
 
 export async function getSessionToken() {
-  const cookieStore = await cookies();
-  return normalizeToken(cookieStore.get(authCookieName)?.value);
+  const headerStore = await headers();
+  const encodedToken = headerStore.get(internalSessionHeader);
+  const decodedToken = decodeInternalSessionToken(encodedToken);
+
+  if (decodedToken) {
+    return decodedToken;
+  }
+
+  return normalizeToken(readCookieValue(headerStore.get("cookie"), authCookieName));
 }
 
 export async function getWorkspaceToken() {
@@ -186,6 +194,39 @@ export function publicTokenLabel(token: string | null | undefined) {
 function normalizeToken(value: string | undefined | null) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
+}
+
+function decodeInternalSessionToken(value: string | null) {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const padded = normalized.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    return normalizeToken(Buffer.from(padded, "base64").toString("utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
+function readCookieValue(cookieHeader: string | null, name: string) {
+  if (!cookieHeader) {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  const match = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+
+  if (!match) {
+    return undefined;
+  }
+
+  return decodeURIComponent(match.slice(prefix.length));
 }
 
 function getApiUrl() {

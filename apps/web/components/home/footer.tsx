@@ -24,31 +24,44 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
       title: "Product",
       links: [
         { href: "/marketplace", label: "Marketplace" },
-        { href: "/what-is-a-skill", label: "What is a Skill?" },
+        { href: "/registry", label: "Registry" },
         { href: "/pricing", label: "Pricing" },
+        { href: "/what-is-a-skill", label: "What is a Skill?" },
       ],
     },
     {
       title: "Developers",
       links: [
         { href: "/docs", label: "Docs" },
+        { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP" },
-        { href: "/project-keys", label: "Project Keys" },
+        { href: "/data-handling", label: "Data handling" },
       ],
     },
     {
       title: "Publishers",
       links: [
         { href: "/publish", label: "Publish" },
+        { href: "/publisher-review", label: "Review process" },
         { href: "/publishers", label: "Publisher directory" },
+        { href: "/changelog", label: "Changelog" },
       ],
     },
     {
       title: "Trust",
       links: [
         { href: "/security", label: "Security" },
+        { href: "/data-handling", label: "Data handling" },
         { href: "/privacy", label: "Privacy" },
         { href: "/terms", label: "Terms" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { href: "/about", label: "About" },
+        { href: "/contact", label: "Contact" },
+        { href: "/support", label: "Support" },
       ],
     },
   ],
@@ -57,31 +70,44 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
       title: "产品",
       links: [
         { href: "/marketplace", label: "技能市场" },
-        { href: "/what-is-a-skill", label: "什么是 Skill" },
+        { href: "/registry", label: "技能注册表" },
         { href: "/pricing", label: "价格" },
+        { href: "/what-is-a-skill", label: "什么是 Skill" },
       ],
     },
     {
       title: "开发者",
       links: [
         { href: "/docs", label: "文档" },
+        { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP" },
-        { href: "/project-keys", label: "项目密钥" },
+        { href: "/data-handling", label: "数据处理" },
       ],
     },
     {
       title: "发布者",
       links: [
         { href: "/publish", label: "发布技能" },
+        { href: "/publisher-review", label: "审核流程" },
         { href: "/publishers", label: "发布者目录" },
+        { href: "/changelog", label: "更新日志" },
       ],
     },
     {
       title: "信任",
       links: [
         { href: "/security", label: "安全" },
+        { href: "/data-handling", label: "数据处理" },
         { href: "/privacy", label: "隐私政策" },
         { href: "/terms", label: "服务条款" },
+      ],
+    },
+    {
+      title: "公司",
+      links: [
+        { href: "/about", label: "关于我们" },
+        { href: "/contact", label: "联系" },
+        { href: "/support", label: "支持" },
       ],
     },
   ],

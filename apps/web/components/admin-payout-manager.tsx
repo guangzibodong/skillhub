@@ -157,7 +157,7 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                   <StatusTile icon={<Banknote size={15} aria-hidden="true" />} label={labels.amount} value={formatMoney(latest.amountCents, latest.currency)} />
                   <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.balanceCount} value={String(latest.balanceCount)} />
                   <StatusTile icon={<WalletCards size={15} aria-hidden="true" />} label={labels.manualMethod} value={formatManualMethod(latest.manualMethod, labels.manualMethods)} />
-                  <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.account} value={latest.manualAccount ?? "n/a"} />
+                  <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.account} value={maskManualAccount(latest.manualAccount)} />
                   <StatusTile icon={<UserRound size={15} aria-hidden="true" />} label={labels.accountHolder} value={latest.manualAccountHolder ?? "n/a"} />
                   <StatusTile icon={<Clock3 size={15} aria-hidden="true" />} label={labels.requested} value={formatDate(latest.requestedAt, locale)} />
                 </div>
@@ -209,6 +209,29 @@ function StatusTile({ icon, label, value }: { icon: ReactNode; label: string; va
       <strong>{value}</strong>
     </div>
   );
+}
+
+function maskManualAccount(value: string | null | undefined) {
+  const normalized = String(value ?? "").trim();
+
+  if (!normalized) {
+    return "n/a";
+  }
+
+  const emailMatch = /^([^@\s]+)@([^@\s]+)$/.exec(normalized);
+
+  if (emailMatch) {
+    const [, localPart, domain] = emailMatch;
+    const visibleLocal = localPart.length <= 2 ? localPart[0] ?? "*" : localPart.slice(0, 2);
+    const visibleDomain = domain.length <= 3 ? domain[0] ?? "*" : domain.slice(0, 3);
+    return `${visibleLocal}***@${visibleDomain}***`;
+  }
+
+  if (normalized.length <= 6) {
+    return `${normalized.slice(0, 1)}***${normalized.slice(-1)}`;
+  }
+
+  return `${normalized.slice(0, 2)}***${normalized.slice(-3)}`;
 }
 
 function ActionMessage({ state }: { state: AdminPayoutActionState }) {

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   UploadCloud,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
@@ -19,6 +20,7 @@ import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
 import { getPublishCopy, type PublishPageCopy } from "@/lib/publish-copy";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,26 @@ type PageProps = {
 };
 
 const publisherRoles = ["publisher", "owner", "admin", "super_admin"];
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const locale = getLocaleFromSearchParams(await searchParams);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/publish",
+    type: "website",
+    en: {
+      title: "Publish an AI Agent Skill - SkillHub",
+      description:
+        "Submit a SkillHub manifest for review, prepare examples, permissions, support metadata, and paid-catalog readiness for AI Agent Skills.",
+    },
+    zh: {
+      title: "发布 AI Agent Skill - SkillHub",
+      description:
+        "提交 SkillHub manifest 进入审核，准备示例、权限、支持信息和付费目录就绪资料，让第三方作者发布 AI Agent Skill。",
+    },
+  });
+}
 
 export default async function PublishPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -281,7 +303,7 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
       operatingTitle: "一个可上线的技能，需要先回答这三件事。",
       pipelineBody:
         "从 manifest 草稿开始，经过预检、版本提交、自动检查、人工审核和上架维护。任何会影响真实调用的变更都应该走新版本，而不是偷偷改已验证版本。",
-      pipelineEyebrow: "审核流水线",
+      pipelineEyebrow: "发布者工作流",
       pipelineTitle: "上传只是第一步，可信上架靠完整证据。",
       publisherWorkspace: "发布者工作台",
       reviewRules: "查看审核规则",

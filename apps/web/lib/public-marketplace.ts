@@ -17,6 +17,7 @@ import {
 } from "@/lib/public-skill-localization";
 
 const MARKETPLACE_FETCH_TIMEOUT_MS = 3500;
+const FREE_BASIC_SKILL_SLUGS = new Set(["seo-page-auditor", "support-triage"]);
 
 type SkillPriceRecord = {
   id: string;
@@ -29,7 +30,7 @@ type SkillPriceRecord = {
 };
 
 export type PublicMarketplaceSearchOptions = {
-  billingModel?: MarketplaceSkill["billing"];
+  billingModel?: MarketplaceSkill["billing"] | "pro";
   category?: MarketplaceSkill["categoryKey"];
   limit?: number;
   permissionLevel?: MarketplaceSkill["risk"];
@@ -57,7 +58,10 @@ export async function getPublicMarketplaceSkills(
       sort: options.sort ?? "recommended",
     });
 
-    appendSearchParam(searchParams, "billingModel", options.billingModel);
+    const apiBillingModel =
+      options.billingModel === "pro" ? undefined : options.billingModel;
+
+    appendSearchParam(searchParams, "billingModel", apiBillingModel);
     appendSearchParam(searchParams, "category", options.category);
     appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
     appendSearchParam(searchParams, "q", options.query);
@@ -86,17 +90,52 @@ export async function getPublicMarketplaceSkills(
       publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
 
-    return mergeMarketplaceSkills(hydratedSkills, {
+    return applyMarketplaceSearchOptions(mergeMarketplaceSkills(hydratedSkills, {
       includeReviewListings: shouldIncludeReviewListings,
-    });
+    }), options);
   } catch {
-    return demoFallback(
+    return applyMarketplaceSearchOptions(demoFallback(
       marketplaceSkills.filter((skill) =>
         shouldIncludeReviewListings || isVerifiedSkillStatus(skill.verification.en),
       ),
       [],
-    );
+    ), options);
   }
+}
+
+function applyMarketplaceSearchOptions(
+  skills: MarketplaceSkill[],
+  options: PublicMarketplaceSearchOptions,
+) {
+  return skills.filter((skill) => {
+    if (options.billingModel) {
+      const billingMatch =
+        options.billingModel === "pro"
+          ? skill.billing !== "free"
+          : skill.billing === options.billingModel;
+
+      if (!billingMatch) {
+        return false;
+      }
+    }
+
+    if (options.category && skill.categoryKey !== options.category) {
+      return false;
+    }
+
+    if (options.permissionLevel && skill.risk !== options.permissionLevel) {
+      return false;
+    }
+
+    if (
+      options.runtimeType &&
+      skill.runtime.toLowerCase() !== options.runtimeType
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function mergeMarketplaceSkills(
@@ -147,7 +186,7 @@ export async function getPublicMarketplaceSkill(
     }
 
     if (!manifest) {
-      return demoFallback(staticSkill ?? null, null);
+      return staticSkill ?? null;
     }
 
     return manifestToMarketplaceSkill(
@@ -157,7 +196,7 @@ export async function getPublicMarketplaceSkill(
       staticSkill,
     );
   } catch {
-    return demoFallback(staticSkill ?? null, null);
+    return staticSkill ?? null;
   }
 }
 
@@ -258,17 +297,18 @@ function manifestToMarketplaceSkill(
   const isVerified = isVerifiedSkillStatus(summary.verificationStatus);
   const activePrice =
     prices.find((price) => price.status === "active") ?? prices[0];
-  const billing =
+  const categoryKey = inferCategoryKey(summary.tags);
+  const rawBilling =
     activePrice?.billingModel ??
     summary.billingModel ??
     staticSkill?.billing ??
     "free";
+  const billing = normalizePublicBilling(rawBilling, summary.slug, staticSkill);
   const runtime = manifest
     ? runtimeLabel(manifest.runtime.type)
     : summary.runtimeType
       ? runtimeLabel(summary.runtimeType)
       : (staticSkill?.runtime ?? "HTTP");
-  const categoryKey = inferCategoryKey(summary.tags);
   const category = categoryLabel(categoryKey);
   const author =
     manifest?.author?.name ?? staticSkill?.author ?? "SkillHub Publisher";
@@ -427,7 +467,31 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
   if (
     normalized.some((tag) =>
-      ["content", "copywriting", "brief", "browser", "citations", "research"].includes(tag),
+      ["research", "browser", "citations"].includes(tag),
+    )
+  ) {
+    return "research";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["finance", "invoice", "accounting", "backoffice", "payables"].includes(tag),
+    )
+  ) {
+    return "finance";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["automation", "workflow", "orchestration"].includes(tag),
+    )
+  ) {
+    return "automation";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["content", "copywriting", "brief"].includes(tag),
     )
   ) {
     return "content";
@@ -468,13 +532,16 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
 function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
   const labels = {
-    content: { en: "Content", zh: "内容" },
-    data: { en: "Data", zh: "数据" },
-    dev: { en: "Development", zh: "开发" },
-    ops: { en: "Operations", zh: "运营" },
-    sales: { en: "Sales", zh: "销售" },
-    security: { en: "Security", zh: "安全" },
-    seo: { en: "SEO", zh: "SEO" },
+    automation: { en: "Automation / Workflow", zh: "自动化 / 流程" },
+    content: { en: "Content / Copy", zh: "内容 / 文案" },
+    data: { en: "Data / Sheets", zh: "数据 / 表格" },
+    dev: { en: "Development / API", zh: "开发 / API" },
+    finance: { en: "Finance / Backoffice", zh: "财务 / 后台" },
+    ops: { en: "Operations / Support", zh: "运营 / 客服" },
+    research: { en: "Research / Browser", zh: "研究 / 浏览器" },
+    sales: { en: "Sales / CRM", zh: "销售 / CRM" },
+    security: { en: "Security / Compliance", zh: "安全 / 合规" },
+    seo: { en: "SEO / GEO", zh: "SEO / GEO" },
     ui: { en: "UI/UX", zh: "UI/UX" },
   } satisfies Record<
     MarketplaceSkill["categoryKey"],
@@ -482,6 +549,22 @@ function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
   >;
 
   return labels[categoryKey];
+}
+
+function normalizePublicBilling(
+  billing: MarketplaceSkill["billing"],
+  slug: string,
+  staticSkill?: MarketplaceSkill,
+): MarketplaceSkill["billing"] {
+  if (billing !== "free") {
+    return billing;
+  }
+
+  if (FREE_BASIC_SKILL_SLUGS.has(slug) || staticSkill?.billing === "free") {
+    return "free";
+  }
+
+  return "per_call";
 }
 
 function runtimeLabel(
@@ -503,17 +586,13 @@ function formatPrice(
   billing: MarketplaceSkill["billing"],
   staticSkill?: MarketplaceSkill,
 ) {
+  if (billing !== "free") {
+    return { en: "Included in Pro", zh: "Pro 全量计划内" };
+  }
+
   if (!price) {
     if (staticSkill?.price) {
       return staticSkill.price;
-    }
-
-    if (billing === "per_call") {
-      return { en: "Per-call pricing", zh: "按次调用价格" };
-    }
-
-    if (billing === "subscription") {
-      return { en: "Subscription pricing", zh: "订阅价格" };
     }
 
     return { en: "Free", zh: "免费" };
@@ -523,20 +602,7 @@ function formatPrice(
     return { en: "Free", zh: "免费" };
   }
 
-  const amount = new Intl.NumberFormat("en-US", {
-    currency: price.currency.toUpperCase(),
-    maximumFractionDigits: 3,
-    style: "currency",
-  }).format(price.unitAmountCents / 100);
-  const suffix =
-    billing === "subscription"
-      ? { en: " / month", zh: " / 月" }
-      : { en: " / call", zh: " / 次" };
-
-  return {
-    en: `${amount}${suffix.en}`,
-    zh: `${amount}${suffix.zh}`,
-  };
+  return { en: "Free", zh: "免费" };
 }
 
 function reviewOnlyPrice() {

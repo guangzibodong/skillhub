@@ -84,7 +84,7 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
     },
   },
   "quickstart": {
-    active: "docs",
+    active: "quickstart",
     indexable: true,
     path: "/quickstart",
     schema: "Article",

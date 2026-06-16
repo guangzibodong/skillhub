@@ -106,8 +106,8 @@ const copy = {
     developerPacket: {
       billing: {
         free: "No subscription gate",
-        per_call: "Metered usage gate",
-        subscription: "Trial or subscription gate"
+        per_call: "Pro access gate",
+        subscription: "Included in Pro"
       },
       body:
         "This verified listing can become project state only after sign-in, with a version pin, policy gate, reveal-once runtime key, login-gated runtime test, and prelaunch billing or ledger evidence where applicable.",
@@ -190,8 +190,8 @@ const copy = {
     developerPacket: {
       billing: {
         free: "无订阅门槛",
-        per_call: "按调用计费门槛",
-        subscription: "试用或订阅门槛"
+        per_call: "Pro 访问门槛",
+        subscription: "高级 Pro 访问门槛"
       },
       body:
         "此已验证列表只能在登录后成为项目状态，包含版本固定、策略门槛、一次性运行密钥、需登录的运行测试，以及预发布计费或账本证据（如适用）。",
@@ -701,7 +701,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                         <div className="flex flex-wrap gap-2 mt-3">
                           <span className="pill pill--neutral">{localizeText(suggestion.skill.category, locale)}</span>
                           <span className="pill pill--neutral">{suggestion.skill.runtime}</span>
-                          <span className="pill pill--neutral">{suggestion.skill.price[locale]}</span>
+                          <span className="pill pill--neutral">{formatPublicSkillPrice(suggestion.skill.billing, locale)}</span>
                           <span className="pill pill--neutral">{localizeText(suggestion.skill.verification, locale)}</span>
                         </div>
 
@@ -767,7 +767,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
                 <span>{labels.pricing}</span>
               </div>
               <div className="mt-4">
-                <strong className="text-white text-lg block">{showProductionMetrics ? skill.price[locale] : labels.metricUnavailable}</strong>
+                <strong className="text-white text-lg block">{showProductionMetrics ? formatPublicSkillPrice(skill.billing, locale) : labels.metricUnavailable}</strong>
                 <span className="text-sm text-[#999] block mt-1">{pricingPreviewBody(skill.billing, skillAvailability.kind, locale)}</span>
               </div>
             </section>
@@ -1033,18 +1033,29 @@ function formatBillingModelLabel(
 ) {
   const labels = {
     en: {
-      free: "Free intent",
-      per_call: "Per-call intent",
-      subscription: "Subscription intent",
+      free: "Free basics",
+      per_call: "Included in Pro",
+      subscription: "Included in Pro",
     },
     zh: {
-      free: "免费意图",
-      per_call: "按次意图",
-      subscription: "订阅意图",
+      free: "基础免费",
+      per_call: "Pro 全量计划内",
+      subscription: "Pro 全量计划内",
     },
   } satisfies Record<Locale, Record<"free" | "per_call" | "subscription", string>>;
 
   return labels[locale][billingModel];
+}
+
+function formatPublicSkillPrice(
+  billingModel: "free" | "per_call" | "subscription",
+  locale: Locale,
+) {
+  if (billingModel === "free") {
+    return locale === "zh" ? "基础免费" : "Free basics";
+  }
+
+  return locale === "zh" ? "Pro 全量计划内" : "Included in Pro";
 }
 
 function SkillInspectionOnlyNotice({ locale }: { locale: Locale }) {
@@ -1074,13 +1085,13 @@ function pricingPreviewBody(
 
   if (billingModel === "free") {
     return locale === "zh"
-      ? "付费市场计费仍处于预发布阶段。免费技能可公开查看；运行调用仍需要登录后的项目 Key。"
-      : "Paid marketplace billing is prelaunch. Free skills may be inspected publicly; runtime use still requires a signed-in project key.";
+      ? "基础免费技能可公开查看；真实运行仍需要登录后的项目 Key 和项目策略检查。"
+      : "Free basic skills may be inspected publicly; runtime use still requires a signed-in project key and project policy checks.";
   }
 
   return locale === "zh"
-      ? "付费市场计费仍处于预发布阶段。当前价格用于展示付费市场意图；真实运行仍需要登录后的项目 Key 和策略检查。"
-    : "Paid marketplace billing is prelaunch. The current price describes paid-marketplace intent; real runtime use still requires a signed-in project key and policy checks.";
+    ? "该技能包含在 Pro 全量计划中；真实运行仍需要登录后的项目 Key、项目策略和权限检查。"
+    : "This skill is included in Pro access; runtime use still requires a signed-in project key, project policy, and permission checks.";
 }
 
 function formatMetricValue(value: string | null | undefined, locale: Locale) {

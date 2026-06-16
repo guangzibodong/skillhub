@@ -296,7 +296,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
               <AccountLoginMethodManager locale={locale} methods={account.loginMethods} />
             </article>
 
-            <article className="card p-6">
+            <article className="card p-6" id="workspace-billing">
               <div className="eyebrow mb-4">
                 <Building2 size={16} aria-hidden="true" />
                 <span>{labels.workspace}</span>

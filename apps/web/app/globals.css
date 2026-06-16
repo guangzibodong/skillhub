@@ -14723,6 +14723,7 @@ a {
 
 .market-hero__copy {
   min-width: 0;
+  max-width: 100%;
 }
 
 .market-hero__actions {
@@ -14817,23 +14818,26 @@ a {
 .market-hero h1,
 .skill-detail-hero h1,
 .project-detail-hero h1 {
-  max-width: 860px;
+  max-width: min(860px, 100%);
   margin: 18px 0 0;
   color: var(--ink);
   font-size: 60px;
   font-weight: 760;
   line-height: 0.98;
+  line-break: anywhere;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .market-hero p,
 .skill-detail-hero p,
 .project-detail-hero p {
-  max-width: 760px;
+  max-width: min(760px, 100%);
   margin: 18px 0 0;
   color: var(--muted);
   font-size: 17px;
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .install-console,
@@ -15905,6 +15909,28 @@ a {
 .market-install-action {
   display: grid;
   gap: 8px;
+}
+
+.market-adopt-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.market-adopt-strip .btn-primary {
+  min-height: 40px;
+  justify-content: center;
+  padding-inline: 14px;
+  white-space: nowrap;
+}
+
+.market-adopt-strip > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .market-contract-grid {
@@ -23442,6 +23468,15 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .market-adopt-strip {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .market-adopt-strip .btn-primary {
+    width: 100%;
+  }
+
   .install-strip {
     grid-template-columns: 1fr;
   }
@@ -30057,7 +30092,7 @@ textarea:focus {
 
 .home-footer__links {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 24px;
 }
 

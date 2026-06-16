@@ -258,12 +258,12 @@ const copy: Record<Locale, DocsCopy> = {
       body:
         "这些公开调用用于确认注册表结构。真实运行调用故意不做匿名开放。",
       cards: [
-        ["技能市场", "给人看的发现页：比较技能、价格意图、发布者信任和采用风险。"],
-        ["注册表", "可检查的底层合约：slug、版本、manifest、schema、权限和审核状态。"],
+        ["公开 API 已可用", "可以匿名搜索技能、打开详情、检查 manifest、schema、权限和审核状态。"],
+        ["MCP 使用 POST", "MCP 工具发现和资源读取通过 POST 请求进入同一个受治理网关。"],
         ["Project Key", "运行凭证：登录后在项目中创建，有作用域，真实调用必须使用。"],
       ],
       codeLabel: "公开检查",
-      title: "5 分钟快速开始",
+      title: "开发者快速开始",
     },
     terms: [
       ["Skill", "带版本的 AI Agent 能力，包含 manifest、schema、权限、运行时、发布者和审核状态。"],
@@ -286,9 +286,68 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 # Read public MCP metadata
 curl "https://api.useskillhub.com/mcp"`;
 
+function getInstallGuides(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      body:
+        "安装不是复制一行命令就结束。客户要先选技能，开发者要把技能放进项目，作者要提交审核，运营要确认质量和风险。",
+      eyebrow: "安装与运营路径",
+      title: "按角色看下一步怎么做。",
+      tracks: [
+        {
+          action: "去技能市场",
+          href: "/marketplace",
+          steps: ["按 SEO/GEO、UI、内容、CRM、数据、运营、API、安全分类筛选", "打开技能详情，检查权限、输入输出、运行时和发布者", "登录后在项目中安装已验证技能", "生成 Project Key，通过 REST 或 MCP 调用"],
+          title: "客户 / 开发者如何安装",
+        },
+        {
+          action: "发布技能",
+          href: "/publish",
+          steps: ["准备 skillhub.json，写清 manifest、schema、权限和运行入口", "先跑预检，修复阻塞项", "提交精确版本进入审核", "上线后维护反馈、事故、版本和支持路径"],
+          title: "第三方作者如何发布",
+        },
+        {
+          action: "查看后台",
+          href: "/admin",
+          steps: ["看上线就绪和审核队列", "检查技能分类、价格套餐、权限风险和发布者信任", "处理反馈、举报、事故、通知和 Webhook 投递", "财务只看 Pro 套餐、退款争议、作者分成和预发布准备"],
+          title: "运营管理员如何审核",
+        },
+      ],
+    };
+  }
+
+  return {
+    body:
+      "Installation is not just copying a command. Buyers choose a skill, developers attach it to a project, publishers submit for review, and operators confirm quality and risk.",
+    eyebrow: "Install and operate",
+    title: "Next steps by role.",
+    tracks: [
+      {
+        action: "Open marketplace",
+        href: "/marketplace",
+        steps: ["Filter by SEO/GEO, UI, content, CRM, data, support, API, or security", "Open detail and inspect permissions, schema, runtime, and publisher", "Sign in and install a verified skill into a project", "Generate a Project Key and call through REST or MCP"],
+        title: "Buyer / developer install path",
+      },
+      {
+        action: "Publish skill",
+        href: "/publish",
+        steps: ["Prepare skillhub.json with manifest, schema, permissions, and runtime", "Run preflight and repair blockers", "Submit an exact version for review", "Maintain feedback, incidents, versions, and support after listing"],
+        title: "Third-party publisher path",
+      },
+      {
+        action: "Open admin",
+        href: "/admin",
+        steps: ["Review launch readiness and queues", "Check category, plan, permission risk, and publisher trust", "Handle feedback, reports, incidents, notifications, and webhook delivery", "Track Pro plans, refunds, disputes, publisher share, and prelaunch finance readiness"],
+        title: "Operator review path",
+      },
+    ],
+  };
+}
+
 export default async function DocsPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(await searchParams);
   const labels = copy[locale];
+  const installGuide = getInstallGuides(locale);
 
   return (
     <AppShell active="docs" locale={locale}>
@@ -404,6 +463,47 @@ export default async function DocsPage({ searchParams }: PageProps) {
                   <p className="body-text-sm text-[#999] mt-1">{body}</p>
                 </div>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="docs-install-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="max-w-[760px]">
+            <div className="eyebrow">
+              <ClipboardCheck size={16} aria-hidden="true" />
+              <span>{installGuide.eyebrow}</span>
+            </div>
+            <h2 id="docs-install-heading" className="heading-lg mt-3">
+              {installGuide.title}
+            </h2>
+            <p className="body-text text-[#999] mt-3">{installGuide.body}</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {installGuide.tracks.map((track, index) => (
+              <Reveal delay={index * 70} key={track.title}>
+                <article className="card flex flex-col gap-4 h-full">
+                  <h3 className="heading-sm">{track.title}</h3>
+                  <div className="flex flex-col gap-3">
+                    {track.steps.map((step, stepIndex) => (
+                      <div className="flex items-start gap-3" key={step}>
+                        <span className="text-xs font-mono text-[#525252] mt-0.5">
+                          {String(stepIndex + 1).padStart(2, "0")}
+                        </span>
+                        <span className="body-text-sm text-[#999]">{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <a className="btn-secondary inline-flex items-center gap-2 justify-center mt-auto" href={localizedHref(track.href, locale)}>
+                    <span>{track.action}</span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </article>
+              </Reveal>
             ))}
           </div>
         </div>

@@ -25,6 +25,7 @@ body {
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 /* ===== Buttons ===== */
@@ -194,6 +195,8 @@ body {
 }
 
 .section-inner {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
@@ -209,27 +212,37 @@ body {
 }
 
 .heading-xl {
+  max-width: 100%;
   font-size: clamp(36px, 5vw, 56px);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: 0;
   color: #ddffdc;
+  line-break: anywhere;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .heading-lg {
+  max-width: 100%;
   font-size: clamp(28px, 3.5vw, 40px);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: 0;
   color: #ddffdc;
+  line-break: anywhere;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .heading-md {
+  max-width: 100%;
   font-size: 22px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0;
   color: #ddffdc;
+  overflow-wrap: anywhere;
 }
 
 .heading-sm {
@@ -240,15 +253,19 @@ body {
 }
 
 .body-text {
+  max-width: 100%;
   font-size: 16px;
   line-height: 1.65;
   color: rgba(221, 255, 220, 0.66);
+  overflow-wrap: anywhere;
 }
 
 .body-text-sm {
+  max-width: 100%;
   font-size: 14px;
   line-height: 1.6;
   color: rgba(221, 255, 220, 0.66);
+  overflow-wrap: anywhere;
 }
 
 /* ===== Table ===== */

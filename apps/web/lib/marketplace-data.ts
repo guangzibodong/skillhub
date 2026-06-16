@@ -2,10 +2,13 @@ import type { Locale } from "@/lib/i18n";
 
 type LocalizedText = Record<Locale, string>;
 export type MarketplaceCategoryKey =
+  | "automation"
   | "content"
   | "data"
   | "dev"
+  | "finance"
   | "ops"
+  | "research"
   | "sales"
   | "security"
   | "seo"
@@ -75,13 +78,16 @@ type OfficialLaunchSkillConfig = Omit<
 };
 
 const categoryLabels = {
-  content: { en: "Content", zh: "内容" },
-  data: { en: "Data", zh: "数据" },
-  dev: { en: "Development", zh: "开发" },
-  ops: { en: "Operations", zh: "运营" },
-  sales: { en: "Sales", zh: "销售" },
-  security: { en: "Security", zh: "安全" },
-  seo: { en: "SEO", zh: "SEO" },
+  automation: { en: "Automation / Workflow", zh: "自动化 / 流程" },
+  content: { en: "Content / Copy", zh: "内容 / 文案" },
+  data: { en: "Data / Sheets", zh: "数据 / 表格" },
+  dev: { en: "Development / API", zh: "开发 / API" },
+  finance: { en: "Finance / Backoffice", zh: "财务 / 后台" },
+  ops: { en: "Operations / Support", zh: "运营 / 客服" },
+  research: { en: "Research / Browser", zh: "研究 / 浏览器" },
+  sales: { en: "Sales / CRM", zh: "销售 / CRM" },
+  security: { en: "Security / Compliance", zh: "安全 / 合规" },
+  seo: { en: "SEO / GEO", zh: "SEO / GEO" },
   ui: { en: "UI/UX", zh: "UI/UX" },
 } satisfies Record<MarketplaceCategoryKey, LocalizedText>;
 
@@ -100,7 +106,7 @@ function officialLaunchSkill(config: OfficialLaunchSkillConfig): MarketplaceSkil
       },
     ],
     installsCommand: {
-      cli: `curl "https://api.useskillhub.com/v1/skills/${config.slug}"`,
+      cli: `curl "https://api.useskillhub.com/v1/skills/search?q=${config.slug}"`,
       mcp: "https://api.useskillhub.com/mcp",
       sdk: `CLI/SDK preview: ${config.slug}`,
     },
@@ -196,8 +202,8 @@ const officialLaunchSkills: MarketplaceSkill[] = [
       en: ["content", "copywriting", "landing page", "conversion"],
       zh: ["内容", "文案", "落地页", "转化"],
     },
-    price: { en: "Free", zh: "免费" },
-    billing: "free",
+    price: { en: "$0.012 / call", zh: "$0.012 / 次" },
+    billing: "per_call",
     rating: "4.8",
     feedbackCount: 91,
     installs: "5.4k",
@@ -491,8 +497,8 @@ const officialLaunchSkills: MarketplaceSkill[] = [
       en: ["data", "spreadsheet", "cleanup", "analysis"],
       zh: ["数据", "表格", "清洗", "分析"],
     },
-    price: { en: "Free", zh: "免费" },
-    billing: "free",
+    price: { en: "$0.012 / call", zh: "$0.012 / 次" },
+    billing: "per_call",
     rating: "4.7",
     feedbackCount: 85,
     installs: "4.9k",
@@ -610,10 +616,10 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     author: "SkillHub Labs",
     category: {
-      en: "Content",
-      zh: "内容"
+      en: "Research / Browser",
+      zh: "研究 / 浏览器"
     },
-    categoryKey: "content",
+    categoryKey: "research",
     tags: {
       en: ["content", "research", "citations"],
       zh: ["内容", "研究", "引用"]
@@ -816,10 +822,10 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     author: "SkillHub Labs",
     category: {
-      en: "Operations",
-      zh: "运营"
+      en: "Finance / Backoffice",
+      zh: "财务 / 后台"
     },
-    categoryKey: "ops",
+    categoryKey: "finance",
     tags: {
       en: ["operations", "support", "routing"],
       zh: ["运营", "客服", "路由"]
@@ -1198,10 +1204,10 @@ export const marketplaceSkills: MarketplaceSkill[] = [
       zh: ["SEO", "诊断", "结构化数据"]
     },
     price: {
-      en: "$0.015 / call",
-      zh: "$0.015 / 次"
+      en: "Free",
+      zh: "免费"
     },
-    billing: "per_call",
+    billing: "free",
     rating: "4.8",
     feedbackCount: 173,
     installs: "9.6k",
@@ -1382,10 +1388,10 @@ export const marketplaceSkills: MarketplaceSkill[] = [
       zh: ["内容", "简报", "文案"]
     },
     price: {
-      en: "Free",
-      zh: "免费"
+      en: "$0.012 / call",
+      zh: "$0.012 / 次"
     },
-    billing: "free",
+    billing: "per_call",
     rating: "4.7",
     feedbackCount: 134,
     installs: "6.1k",
@@ -1600,14 +1606,17 @@ export const marketplaceRequests: MarketplaceRequest[] = [
 
 export const marketplaceCategories = [
   { key: "all", label: { en: "All", zh: "全部" } },
-  { key: "seo", label: { en: "SEO", zh: "SEO" } },
+  { key: "seo", label: { en: "SEO / GEO", zh: "SEO / GEO" } },
   { key: "ui", label: { en: "UI/UX", zh: "UI/UX" } },
-  { key: "content", label: { en: "Content", zh: "内容" } },
-  { key: "sales", label: { en: "Sales", zh: "销售" } },
-  { key: "data", label: { en: "Data", zh: "数据" } },
-  { key: "ops", label: { en: "Operations", zh: "运营" } },
-  { key: "dev", label: { en: "Development", zh: "开发" } },
-  { key: "security", label: { en: "Security", zh: "安全" } }
+  { key: "content", label: { en: "Content / Copy", zh: "内容 / 文案" } },
+  { key: "research", label: { en: "Research / Browser", zh: "研究 / 浏览器" } },
+  { key: "sales", label: { en: "Sales / CRM", zh: "销售 / CRM" } },
+  { key: "data", label: { en: "Data / Sheets", zh: "数据 / 表格" } },
+  { key: "finance", label: { en: "Finance / Backoffice", zh: "财务 / 后台" } },
+  { key: "ops", label: { en: "Operations / Support", zh: "运营 / 客服" } },
+  { key: "automation", label: { en: "Automation / Workflow", zh: "自动化 / 流程" } },
+  { key: "dev", label: { en: "Development / API", zh: "开发 / API" } },
+  { key: "security", label: { en: "Security / Compliance", zh: "安全 / 合规" } }
 ] as const;
 
 export function getMarketplaceSkill(slug: string) {

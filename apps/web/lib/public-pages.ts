@@ -434,7 +434,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     },
   },
   "mcp": {
-    active: "docs",
+    active: "mcp",
     indexable: true,
     path: "/mcp",
     schema: "Article",

@@ -678,7 +678,9 @@ function buildPublisherPriorityItems({
     items.push({
       actionLabel: commandLabels.queueActions.pricing,
       detail: commandLabels.queueItems.pricing,
-      href: localizedHref("/publisher#publisher-paid-readiness", locale),
+      href: blockedPaidListings > 0
+        ? localizedHref("/publisher#publisher-account", locale)
+        : localizedHref("/publisher#publisher-skills", locale),
       id: "paid-activation",
       metric: formatCompactNumber(blockedPaidListings || draftPaidPrices),
       priority: blockedPaidListings > 0 ? 45 : 70,

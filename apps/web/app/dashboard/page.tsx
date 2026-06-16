@@ -34,7 +34,7 @@ import { PublisherSkillManager } from "@/components/publisher-skill-manager";
 import { SessionStatusPanel } from "@/components/session-status-panel";
 import { AppShell } from "@/components/app-shell";
 import { getWorkspaceSession, type WorkspaceSession } from "@/lib/auth-session";
-import { getDictionary, getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
+import { getDictionary, getLocaleFromSearchParams, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
 import {
   formatCompactNumber,
   formatMoney,
@@ -595,6 +595,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const notificationIssueCount = userNotificationInbox.summary.failed + userNotificationInbox.summary.skipped;
   const primaryProject = developerProjects.find((project) => project.installs.installedSkillCount > 0) ?? developerProjects[0];
   const projectRuntimeHref = primaryProject ? `/dashboard/projects/${primaryProject.slug}` : "/developer";
+  const roleSet = dashboardRoleSet(session);
+  const canUseDeveloper = hasDashboardRole(roleSet, ["developer", "owner", "admin", "super_admin"]);
+  const canUsePublisher = hasDashboardRole(roleSet, ["publisher", "owner", "admin", "super_admin"]);
+  const canUseAdmin = hasDashboardRole(roleSet, ["reviewer", "finance", "support", "admin", "super_admin"]);
   const visibleMetrics = [
     [labels.metrics[0][0], formatMoney(financeLedger.summary.availableBalanceCents)],
     [labels.metrics[1][0], formatMoney(financeLedger.summary.pendingBalanceCents)],
@@ -1046,83 +1050,121 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </section>
 
       <section className="max-w-[1200px] mx-auto px-6 py-8">
-        <PublisherSkillManager locale={locale} skills={publisherSkills} />
+        {canUsePublisher ? (
+          <PublisherSkillManager locale={locale} skills={publisherSkills} />
+        ) : (
+          <WorkspaceLockedCard
+            body={locale === "zh" ? "当前账号没有发布者、负责人或管理员角色。这里只保留入口提示，不显示技能编辑、审核修复或付费准备表单。" : "This account does not have publisher, owner, or admin access. Skill editing, review repair, and paid-readiness forms stay hidden."}
+            ctaHref="/account"
+            ctaLabel={locale === "zh" ? "检查账号角色" : "Check account roles"}
+            locale={locale}
+            title={locale === "zh" ? "发布者操作需要对应角色" : "Publisher operations require a matching role"}
+          />
+        )}
 
-        <article className="card mt-5">
-          <div className="eyebrow mb-4 flex items-center gap-2">
-            <LockKeyhole size={16} aria-hidden="true" />
-            <span>{ops.projectTitle}</span>
-          </div>
-          <ProjectCreateForm locale={locale} />
-          <div className="mt-4 overflow-x-auto">
-            <div className="grid grid-cols-4 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
-              {ops.projectHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
+        {canUseDeveloper ? (
+          <article className="card mt-5">
+            <div className="eyebrow mb-4 flex items-center gap-2">
+              <LockKeyhole size={16} aria-hidden="true" />
+              <span>{ops.projectTitle}</span>
             </div>
-            {developerProjectRows.map((project) => (
-              <div className="grid grid-cols-4 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={project.slug}>
-                <strong>
-                  <a className="underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
-                    {project.name}
-                  </a>
-                </strong>
-                <span>{project.budget}</span>
-                <span>{project.keys}</span>
-                <span>{project.policy}</span>
+            <ProjectCreateForm locale={locale} />
+            <div className="mt-4 overflow-x-auto">
+              <div className="grid grid-cols-4 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
+                {ops.projectHeaders.map((header) => (
+                  <span key={header}>{header}</span>
+                ))}
               </div>
-            ))}
-            {developerProjectRows.length === 0 ? (
-              <div className="py-3 text-sm text-[#999]">{locale === "zh" ? "暂无开发者项目。" : "No developer projects yet."}</div>
-            ) : null}
-          </div>
-        </article>
+              {developerProjectRows.map((project) => (
+                <div className="grid grid-cols-4 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={project.slug}>
+                  <strong>
+                    <a className="underline" href={localizedHref(`/dashboard/projects/${project.slug}`, locale)}>
+                      {project.name}
+                    </a>
+                  </strong>
+                  <span>{project.budget}</span>
+                  <span>{project.keys}</span>
+                  <span>{project.policy}</span>
+                </div>
+              ))}
+              {developerProjectRows.length === 0 ? (
+                <div className="py-3 text-sm text-[#999]">{locale === "zh" ? "暂无开发者项目。" : "No developer projects yet."}</div>
+              ) : null}
+            </div>
+          </article>
+        ) : (
+          <WorkspaceLockedCard
+            body={locale === "zh" ? "当前账号没有开发者、负责人或管理员角色。项目创建、Project Key、运行测试和账单表单已隐藏。" : "This account does not have developer, owner, or admin access. Project creation, Project Keys, runtime tests, and billing forms stay hidden."}
+            ctaHref="/account"
+            ctaLabel={locale === "zh" ? "检查账号角色" : "Check account roles"}
+            locale={locale}
+            title={locale === "zh" ? "开发者操作需要对应角色" : "Developer operations require a matching role"}
+          />
+        )}
 
-        <BuyerRequestManager
-          developerRequests={developerBuyerRequests}
-          locale={locale}
-          publisherRequests={publisherBuyerRequests}
-          publisherSkills={publisherSkills}
-        />
+        {canUseDeveloper || canUsePublisher ? (
+          <BuyerRequestManager
+            developerRequests={developerBuyerRequests}
+            locale={locale}
+            publisherRequests={publisherBuyerRequests}
+            publisherSkills={publisherSkills}
+          />
+        ) : null}
       </section>
 
       <section className="max-w-[1200px] mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5">
-          <article className="card">
-            <div className="eyebrow mb-4 flex items-center gap-2">
-              <CircleDollarSign size={16} aria-hidden="true" />
-              <span>{labels.ledgerTitle}</span>
-            </div>
-            <div className="overflow-x-auto">
-              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
-                {labels.ledgerHeaders.map((header) => (
-                  <span key={header}>{header}</span>
-                ))}
+          {canUsePublisher || canUseAdmin ? (
+            <article className="card">
+              <div className="eyebrow mb-4 flex items-center gap-2">
+                <CircleDollarSign size={16} aria-hidden="true" />
+                <span>{labels.ledgerTitle}</span>
               </div>
-              {ledgerRows.length > 0 ? (
-                ledgerRows.map(([skill, gross, fee, net, status]) => (
-                  <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={skill}>
-                    <strong>{skill}</strong>
-                    <span>{gross}</span>
-                    <span>{fee}</span>
-                    <span>{net}</span>
-                    <span className="pill">{status}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="py-3 text-sm text-[#999]">
-                  <strong>{locale === "zh" ? "暂无已入账发布者收入。" : "No posted publisher revenue yet"}</strong>
+              <div className="overflow-x-auto">
+                <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
+                  {labels.ledgerHeaders.map((header) => (
+                    <span key={header}>{header}</span>
+                  ))}
                 </div>
-              )}
-            </div>
-          </article>
+                {ledgerRows.length > 0 ? (
+                  ledgerRows.map(([skill, gross, fee, net, status]) => (
+                    <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={skill}>
+                      <strong>{skill}</strong>
+                      <span>{gross}</span>
+                      <span>{fee}</span>
+                      <span>{net}</span>
+                      <span className="pill">{status}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-3 text-sm text-[#999]">
+                    <strong>{locale === "zh" ? "暂无已入账发布者收入。" : "No posted publisher revenue yet"}</strong>
+                  </div>
+                )}
+              </div>
+            </article>
+          ) : (
+            <WorkspaceLockedCard
+              body={locale === "zh" ? "收入、分账、退款和争议属于发布者或运营权限。普通账号不会看到可操作财务队列。" : "Revenue, splits, refunds, and disputes require publisher or operator access. General accounts do not see finance operation queues."}
+              ctaHref="/account"
+              ctaLabel={locale === "zh" ? "检查账号角色" : "Check account roles"}
+              locale={locale}
+              title={locale === "zh" ? "财务运营已按角色隐藏" : "Finance operations are role-gated"}
+            />
+          )}
 
           <aside className="flex flex-col gap-5">
-            <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
+            {canUsePublisher ? (
+              <PublisherAccountManager account={publisherAccount} locale={locale} returnUrl={dashboardReturnUrl} />
+            ) : null}
 
-            <PublisherPayoutManager locale={locale} summary={payoutSummary} />
+            {canUsePublisher ? (
+              <PublisherPayoutManager locale={locale} summary={payoutSummary} />
+            ) : null}
 
-            <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+            {canUseDeveloper ? (
+              <OrganizationBillingManager billing={organizationBilling} locale={locale} />
+            ) : null}
 
             <NotificationInboxManager
               locale={locale}
@@ -1135,45 +1177,47 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="max-w-[1200px] mx-auto px-6 py-8">
-        <article className="card">
-          <div className="eyebrow mb-4 flex items-center gap-2">
-            <RotateCcw size={16} aria-hidden="true" />
-            <span>{ops.adjustmentTitle}</span>
-          </div>
-          <div className="overflow-x-auto">
-            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
-              {ops.adjustmentHeaders.map((header) => (
-                <span key={header}>{header}</span>
-              ))}
+      {canUsePublisher || canUseAdmin ? (
+        <section className="max-w-[1200px] mx-auto px-6 py-8">
+          <article className="card">
+            <div className="eyebrow mb-4 flex items-center gap-2">
+              <RotateCcw size={16} aria-hidden="true" />
+              <span>{ops.adjustmentTitle}</span>
             </div>
-            {adjustmentRows.length > 0 ? (
-              adjustmentRows.map((adjustment) => {
-                const Icon = adjustment.typeKey === "refund" ? RotateCcw : ShieldAlert;
-
-                return (
-                  <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={`${adjustment.type}-${adjustment.id}`}>
-                    <strong className="flex items-center gap-1">
-                      <Icon size={15} aria-hidden="true" />
-                      <span>{adjustment.type}</span>
-                    </strong>
-                    <span>{adjustment.skill}</span>
-                    <span>{adjustment.project}</span>
-                    <span>{adjustment.amount}</span>
-                    <span className="pill" title={adjustment.reason}>
-                      {adjustment.status}
-                    </span>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="py-3 text-sm text-[#999]">
-                <strong>{ops.adjustmentEmpty}</strong>
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-[#999] py-2 border-b border-[rgba(255,255,255,0.08)]">
+                {ops.adjustmentHeaders.map((header) => (
+                  <span key={header}>{header}</span>
+                ))}
               </div>
-            )}
-          </div>
-        </article>
-      </section>
+              {adjustmentRows.length > 0 ? (
+                adjustmentRows.map((adjustment) => {
+                  const Icon = adjustment.typeKey === "refund" ? RotateCcw : ShieldAlert;
+
+                  return (
+                    <div className="grid grid-cols-5 gap-2 py-2 border-b border-[rgba(255,255,255,0.08)]" key={`${adjustment.type}-${adjustment.id}`}>
+                      <strong className="flex items-center gap-1">
+                        <Icon size={15} aria-hidden="true" />
+                        <span>{adjustment.type}</span>
+                      </strong>
+                      <span>{adjustment.skill}</span>
+                      <span>{adjustment.project}</span>
+                      <span>{adjustment.amount}</span>
+                      <span className="pill" title={adjustment.reason}>
+                        {adjustment.status}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-3 text-sm text-[#999]">
+                  <strong>{ops.adjustmentEmpty}</strong>
+                </div>
+              )}
+            </div>
+          </article>
+        </section>
+      ) : null}
 
       <section className="max-w-[1200px] mx-auto px-6 py-8">
         <article className="card">
@@ -1213,8 +1257,7 @@ function getDashboardCommandState(requiredRoles: string[], session: WorkspaceSes
     };
   }
 
-  const roleSet = new Set([session.subject.platformRole, ...session.subject.roles].filter(Boolean));
-  const hasRole = requiredRoles.some((role) => roleSet.has(role));
+  const hasRole = hasDashboardRole(dashboardRoleSet(session), requiredRoles);
 
   if (!hasRole) {
     return {
@@ -1227,6 +1270,47 @@ function getDashboardCommandState(requiredRoles: string[], session: WorkspaceSes
     kind: "available" as const,
     label: labels.status.available
   };
+}
+
+function WorkspaceLockedCard({
+  body,
+  ctaHref,
+  ctaLabel,
+  locale,
+  title
+}: {
+  body: string;
+  ctaHref: string;
+  ctaLabel: string;
+  locale: Locale;
+  title: string;
+}) {
+  return (
+    <article className="card mt-5">
+      <div className="eyebrow mb-4 flex items-center gap-2">
+        <LockKeyhole size={16} aria-hidden="true" />
+        <span>{locale === "zh" ? "角色门禁" : "Role gate"}</span>
+      </div>
+      <h3>{title}</h3>
+      <p className="text-sm text-[#999] mt-2">{body}</p>
+      <a className="btn-secondary inline-flex items-center gap-2 mt-4" href={localizedHref(ctaHref, locale)}>
+        <span>{ctaLabel}</span>
+        <ArrowRight size={15} aria-hidden="true" />
+      </a>
+    </article>
+  );
+}
+
+function dashboardRoleSet(session: WorkspaceSession) {
+  return new Set(
+    [session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(
+      (role): role is string => Boolean(role),
+    ),
+  );
+}
+
+function hasDashboardRole(roleSet: Set<string>, requiredRoles: string[]) {
+  return requiredRoles.some((role) => roleSet.has(role));
 }
 
 function getDashboardCommandHref(href: string, state: "available" | "blocked" | "forbidden") {

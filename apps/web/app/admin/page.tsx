@@ -320,6 +320,16 @@ export default async function AdminPage({ searchParams }: PageProps) {
   ).length;
   const visibleNavGroups = filterNavGroupsForRoles(roleSet);
   const shortcutItems = buildShortcutItems(adminPermissions);
+  const systemLine = adminPermissions.system
+    ? launchReadiness.summary.blocker > 0
+      ? text(`${launchReadiness.summary.blocker} 个上线阻断`, `${launchReadiness.summary.blocker} launch blockers`)
+      : launchReadiness.summary.warning > 0
+        ? text(`${launchReadiness.summary.warning} 个上线警告`, `${launchReadiness.summary.warning} launch warnings`)
+        : text("上线检查正常", "Launch checks clear")
+    : text("按当前角色显示运营模块", "Role-scoped operations view");
+  const environmentLabel = process.env.NODE_ENV === "production"
+    ? text("生产环境", "Production")
+    : text("预览/本地环境", "Preview / local");
 
   async function signOut() {
     "use server";
@@ -359,7 +369,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <p>{bilingual(text("开发者文档与 API 参考", "Developer docs and API reference"))}</p>
           <a href={localizedHref("/docs", locale)}>{linkWithArrow(text("查看文档", "View Documentation"))}</a>
         </section>
-        <p className="operator-system-line"><span /> {bilingual(text("所有系统运行正常", "All systems operational"))}</p>
+        <p className="operator-system-line"><span /> {bilingual(systemLine)}</p>
       </aside>
 
       <section className="operator-main" aria-labelledby="operator-title">
@@ -374,7 +384,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <div className="operator-topbar__actions">
             <a className="operator-launch-pill" href={localizedHref("/status", locale)}>{inlineBilingual(text("上线预览", "Launch Preview"))}</a>
             <span className="operator-env-button" role="status">
-              <span /> {inlineBilingual(text("生产环境", "Production"))}
+              <span /> {inlineBilingual(environmentLabel)}
             </span>
             {adminPermissions.system ? (
               <a className="operator-icon-button" href="#admin-notifications" aria-label="通知投递 / Notifications">
@@ -730,7 +740,7 @@ function buildShortcutItems(permissions: AdminPermissions): AdminShortcutItem[] 
     items.push({ href: "#admin-notifications", label: text("投递", "Delivery") });
   }
 
-  return items.slice(0, 3);
+  return items;
 }
 
 function operatorQueueTitle(permissions: AdminPermissions) {

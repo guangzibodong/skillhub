@@ -1,8 +1,29 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const authCookieName = "skillhub_user_token";
+const internalSessionHeader = "x-skillhub-session-token-b64";
+
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  const sessionCookie = request.cookies.get(authCookieName)?.value;
+
+  if (sessionCookie) {
+    requestHeaders.set(internalSessionHeader, encodeSessionToken(sessionCookie));
+    const strippedCookieHeader = stripCookie(requestHeaders.get("cookie"), authCookieName);
+
+    if (strippedCookieHeader) {
+      requestHeaders.set("cookie", strippedCookieHeader);
+    } else {
+      requestHeaders.delete("cookie");
+    }
+  }
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
   const isWorkspacePath = [
     "/account",
     "/admin",
@@ -30,6 +51,22 @@ export function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+function encodeSessionToken(token: string) {
+  return btoa(token).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function stripCookie(cookieHeader: string | null, name: string) {
+  if (!cookieHeader) {
+    return "";
+  }
+
+  return cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .filter((part) => part && !part.startsWith(`${name}=`))
+    .join("; ");
 }
 
 export const config = {

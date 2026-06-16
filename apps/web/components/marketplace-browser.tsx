@@ -52,7 +52,7 @@ type MarketplaceInitialFilters = {
 
 const labels = {
   en: {
-    search: "Search SEO, UI, content, sales, data, ops skills",
+    search: "Search SEO/GEO, UI, content, CRM, data, finance, research, API",
     results: "results",
     copy: "Copy inspect",
     copied: "Copied",
@@ -63,8 +63,8 @@ const labels = {
     by: "by",
     allPricing: "All pricing",
     free: "Free",
-    perCall: "Per-call intent",
-    subscription: "Subscription intent",
+    perCall: "Included in Pro",
+    subscription: "Included in Pro",
     success: "success",
     latency: "latency",
     feedback: "feedback",
@@ -76,7 +76,7 @@ const labels = {
     catalog: "Skill catalog",
     filters: "Refine results",
     category: "Use case",
-    pricing: "Pricing intent",
+    pricing: "Access plan",
     permissionRisk: "Permission risk",
     runtime: "Runtime",
     verification: "Verification",
@@ -86,11 +86,12 @@ const labels = {
     reset: "Reset filters",
     emptyTitle: "No skills match these filters",
     emptyBody:
-      "Try a broader use case like SEO, UI, content, sales, data, operations, or development.",
-    compare: "Compare",
+      "Try a broader use case like SEO/GEO, UI/UX, content, CRM, data, finance, research, automation, API, or security.",
+    compare: "Next step",
     detail: "Open details",
-    installReady: "Copy inspect command",
+    installReady: "Sign in to adopt",
     installLockedLabel: "Review required",
+    inspectCommand: "Inspect API contract",
     publisher: "Publisher",
     signals: "Signals",
     contract: "Contract checks",
@@ -135,7 +136,7 @@ const labels = {
     },
   },
   zh: {
-    search: "搜索 SEO、UI、内容、销售、数据、运营技能",
+    search: "搜索 SEO/GEO、UI、内容文案、CRM、数据、财务、研究、API",
     results: "个结果",
     copy: "复制查看命令",
     copied: "已复制",
@@ -144,10 +145,10 @@ const labels = {
     copySuccess: "API 查看命令已复制",
     details: "详情",
     by: "来自",
-    allPricing: "全部价格",
-    free: "免费",
-    perCall: "按次意向",
-    subscription: "订阅意向",
+    allPricing: "全部套餐",
+    free: "基础免费",
+    perCall: "Pro 全量计划内",
+    subscription: "Pro 全量计划内",
     success: "成功率",
     latency: "延迟",
     feedback: "反馈",
@@ -159,7 +160,7 @@ const labels = {
     catalog: "技能目录",
     filters: "筛选结果",
     category: "用途分类",
-    pricing: "定价意向",
+    pricing: "访问套餐",
     permissionRisk: "权限风险",
     runtime: "运行时",
     verification: "验证状态",
@@ -169,11 +170,12 @@ const labels = {
     reset: "重置筛选",
     emptyTitle: "没有符合条件的技能",
     emptyBody:
-      "可以换成 SEO、UI、内容、销售、数据、运营、开发等更宽的用途分类来找。",
-    compare: "对比",
+      "可以换成 SEO/GEO、UI/UX、内容文案、CRM、数据、财务、研究、自动化、API、安全等更宽的用途分类来找。",
+    compare: "下一步",
     detail: "查看详情",
-    installReady: "复制查看命令",
+    installReady: "登录后采用",
     installLockedLabel: "需要审核",
+    inspectCommand: "查看 API 合约",
     publisher: "发布者",
     signals: "信号",
     contract: "合约检查",
@@ -220,20 +222,14 @@ const labels = {
 } as const;
 
 const pricingOptions = [
-  { key: "all", label: { en: "All pricing", zh: "全部价格" } },
-  { key: "free", label: { en: "Free", zh: "免费" } },
-  { key: "per_call", label: { en: "Per-call intent", zh: "按次意向" } },
-  { key: "subscription", label: { en: "Subscription intent", zh: "订阅意向" } },
+  { key: "all", label: { en: "All plans", zh: "全部套餐" } },
+  { key: "free", label: { en: "Free basics", zh: "基础免费" } },
+  { key: "pro", label: { en: "Included in Pro", zh: "Pro 全量计划内" } },
 ] as const;
 
 const riskOptions = ["all", "low", "medium", "high"] as const;
 const runtimeOptions = ["all", "HTTP", "MCP", "Local"] as const;
-const verificationOptions = [
-  "all",
-  "verified",
-  "review",
-  "restricted",
-] as const;
+const verificationOptions = ["all", "verified", "review"] as const;
 const sortOptions = [
   "recommended",
   "adoption",
@@ -401,7 +397,9 @@ export function MarketplaceBrowser({
           normalizedQuery.length === 0 || text.includes(normalizedQuery);
         const categoryMatch =
           category === "all" || skill.categoryKey === category;
-        const pricingMatch = pricing === "all" || skill.billing === pricing;
+        const pricingMatch =
+          pricing === "all" ||
+          (pricing === "pro" ? skill.billing !== "free" : skill.billing === pricing);
         const riskMatch = risk === "all" || skill.risk === risk;
         const runtimeMatch = runtime === "all" || skill.runtime === runtime;
         const verificationMatch =
@@ -646,6 +644,10 @@ export function MarketplaceBrowser({
             const installState = getSkillInstallState(skill.verification.en);
             const isSkillInstallable = installState.installable;
             const isVerified = verificationKey(skill) === "verified";
+            const adoptHref = localizedHref(
+              `/login?returnTo=${encodeURIComponent(localizedHref(`/skills/${skill.slug}#install`, locale))}`,
+              locale,
+            );
             const handoffTitle = isVerified ? dictionary.handoff.verifiedTitle : dictionary.handoff.submittedTitle;
             const handoffBody = isVerified ? dictionary.handoff.verifiedBody : dictionary.handoff.submittedBody;
             const handoffItems = isVerified ? dictionary.handoff.verifiedItems : dictionary.handoff.submittedItems;
@@ -758,6 +760,13 @@ export function MarketplaceBrowser({
 
               {isSkillInstallable ? (
                 <div className="market-install-action">
+                  <div className="market-adopt-strip">
+                    <a className="btn-primary" href={adoptHref}>
+                      <PackageCheck size={16} aria-hidden="true" />
+                      <span>{dictionary.installReady}</span>
+                    </a>
+                    <span>{dictionary.inspectCommand}</span>
+                  </div>
                   <div
                     className="install-strip"
                     aria-label={`${dictionary.install}: ${localizeText(skill.name, locale)}`}
@@ -868,7 +877,7 @@ export function MarketplaceBrowser({
 function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
   return {
     category: normalizeCategory(filters.category),
-    pricing: normalizeOption(filters.pricing, pricingOptions.map((item) => item.key), "all"),
+    pricing: normalizePricing(filters.pricing),
     query: String(filters.query ?? "").trim().slice(0, 120),
     risk: normalizeOption(filters.risk, riskOptions, "all"),
     runtime: normalizeRuntime(filters.runtime),
@@ -877,9 +886,22 @@ function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
   };
 }
 
+function normalizePricing(value: string | undefined): PricingKey {
+  const normalized = String(value ?? "").trim();
+  const legacyMap: Record<string, PricingKey> = {
+    per_call: "pro",
+    subscription: "pro",
+  };
+
+  return normalizeOption(
+    legacyMap[normalized] ?? normalized,
+    pricingOptions.map((item) => item.key),
+    "all",
+  );
+}
+
 function normalizeCategory(value: string | undefined): CategoryKey {
   const legacyMap: Record<string, CategoryKey> = {
-    research: "content",
     support: "ops",
   };
   const normalized = String(value ?? "").trim();
@@ -1105,15 +1127,13 @@ function formatMarketplaceMetric(value: string, locale: Locale) {
 }
 
 function formatPublicPrice(skill: MarketplaceSkill, locale: Locale) {
-  const price = skill.price[locale];
-
   if (skill.billing === "free") {
-    return price;
+    return locale === "zh" ? "基础免费" : "Free basics";
   }
 
   return locale === "zh"
-    ? `${price}（预发布定价意向）`
-    : `${price} (prelaunch intent)`;
+    ? "Pro 全量计划内"
+    : "Included in Pro";
 }
 
 function buildRecommendationReasons(

@@ -90,9 +90,9 @@ type MarketplaceInitialFilterState = {
 const pageCopy = {
   en: {
     eyebrow: "Agent skill marketplace",
-    title: "Choose agent skills with the evidence teams need before adoption.",
+    title: "Find AI Agent Skills by job, category, risk, and plan.",
     description:
-      "Browse verified and in-review skills by use case, permission risk, publisher, runtime signal, and pricing intent. The marketplace helps people compare options; the registry keeps the inspectable contract behind each listing.",
+      "Browse skills across SEO/GEO, UI/UX, content, CRM, data, finance, research, support, automation, API, and security. Marketplace is for human comparison; the registry keeps the inspectable manifest, schema, runtime, and version contract behind each listing.",
     primary: "Browse skills",
     directory: "Publisher directory",
     console: "Developer workspace",
@@ -101,7 +101,7 @@ const pageCopy = {
     proof: ["Use case", "Permission risk", "Publisher trust", "Runtime evidence"],
     decisionTitle: "Marketplace vs registry",
     decisionRows: [
-      ["Marketplace", "A human-facing surface for discovery, comparison, pricing intent, and publisher trust."],
+      ["Marketplace", "A human-facing surface for discovery, category filtering, plan comparison, and publisher trust."],
       ["Registry", "The contract layer for manifest, schema, versions, runtime metadata, and API inspection."],
       ["After sign-in", "Verified skills can be attached to projects with policy, budget, and runtime evidence."],
       ["Public limit", "Public pages do not invoke production runtimes or execute operator actions."]
@@ -218,9 +218,9 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体技能市场",
-    title: "像选应用一样挑选 AI Agent 技能。",
+    title: "按任务和分类找到合适的 AI Agent 技能。",
     description:
-      "这里负责让团队快速看懂一个技能能做什么、谁发布的、权限风险多大、有没有验证和运行证据。市场用于挑选和比较，注册表负责保存可检查的 manifest、schema 和版本契约。",
+      "技能市场按 SEO/GEO、UI/UX、内容文案、CRM、数据、财务后台、研究浏览器、客服运营、自动化流程、API、安全合规来组织。市场负责让客户找技能、比套餐、看风险；注册表负责保存可检查的 manifest、schema、运行时和版本契约。",
     primary: "浏览技能",
     directory: "发布者目录",
     console: "开发者工作台",
@@ -229,7 +229,7 @@ const pageCopy = {
     proof: ["用途清楚", "权限清楚", "发布者清楚", "证据清楚"],
     decisionTitle: "市场和注册表的区别",
     decisionRows: [
-      ["技能市场", "给人选技能、看卡片、比用途、比风险、看发布者和价格意向。"],
+      ["技能市场", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
       ["技能注册表", "给系统和 API 查 manifest、schema、版本、运行时和检索结果。"],
       ["登录后可做", "把已验证技能加入项目，配置策略、预算并查看运行证据。"],
       ["公开页不做", "不直接调用生产运行时，也不执行后台运营操作。"]
@@ -842,13 +842,16 @@ function parseMarketplaceQuery(value: string | undefined) {
 function parseMarketplaceCategory(
   value: string | undefined,
 ): PublicMarketplaceSearchOptions["category"] {
-  const normalized = value === "research" ? "content" : value === "support" ? "ops" : value;
+  const normalized = value === "support" ? "ops" : value;
 
   if (
+    normalized === "automation" ||
     normalized === "content" ||
     normalized === "data" ||
     normalized === "dev" ||
+    normalized === "finance" ||
     normalized === "ops" ||
+    normalized === "research" ||
     normalized === "sales" ||
     normalized === "security" ||
     normalized === "seo" ||
@@ -863,6 +866,10 @@ function parseMarketplaceCategory(
 function parseMarketplaceBilling(
   value: string | undefined,
 ): PublicMarketplaceSearchOptions["billingModel"] {
+  if (value === "pro") {
+    return "pro";
+  }
+
   if (value === "free" || value === "per_call" || value === "subscription") {
     return value;
   }

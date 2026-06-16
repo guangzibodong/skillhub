@@ -383,7 +383,7 @@ export function PublisherSkillManager({ locale, skills }: PublisherSkillManagerP
 
       {skills.length > 0 ? (
         <div className="publisher-skill-list">
-          {skills.slice(0, 8).map((skill) => (
+          {skills.map((skill) => (
             <PublisherSkillCard key={skill.id} labels={labels} locale={locale} skill={skill} />
           ))}
         </div>
