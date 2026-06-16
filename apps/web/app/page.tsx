@@ -27,6 +27,7 @@ import {
   localizedHref,
 } from "@/lib/i18n";
 import { PublicEventLink } from "@/components/public-event-link";
+import { ParticleField } from "@/components/home/particle-field";
 import { getSkills } from "@/lib/registry";
 
 export const dynamic = "force-dynamic";
@@ -644,6 +645,19 @@ export default async function Home({ searchParams }: PageProps) {
         </div>
 
         <section className="home-hero-grid reveal-scope">
+          <div className="home-tech-field" aria-hidden="true">
+            <ParticleField />
+            <span className="home-tech-field__scan home-tech-field__scan--a" />
+            <span className="home-tech-field__scan home-tech-field__scan--b" />
+            <span className="home-tech-field__orbit home-tech-field__orbit--a" />
+            <span className="home-tech-field__orbit home-tech-field__orbit--b" />
+            <span className="home-tech-field__node home-tech-field__node--a" />
+            <span className="home-tech-field__node home-tech-field__node--b" />
+            <span className="home-tech-field__node home-tech-field__node--c" />
+            <span className="home-tech-field__data home-tech-field__data--a" />
+            <span className="home-tech-field__data home-tech-field__data--b" />
+            <span className="home-tech-field__data home-tech-field__data--c" />
+          </div>
           <div className="hero-copy home-hero-copy reveal-item">
             <div className="eyebrow">
               <span>{landing.eyebrow}</span>
@@ -656,9 +670,9 @@ export default async function Home({ searchParams }: PageProps) {
                 </>
               ) : (
                 <>
-                  把 Agent Skills 作为
+                  把 Agent Skills
                   <br />
-                  <span>生产基础设施</span>
+                  作为<span>生产基础设施</span>
                   <br />
                   运行。
                 </>

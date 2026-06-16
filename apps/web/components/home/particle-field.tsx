@@ -27,7 +27,7 @@ export function ParticleField() {
 
     let animationId: number;
     const particles: Particle[] = [];
-    const particleCount = 40;
+    const particleCount = 54;
     const connectionDistance = 150;
 
     const resize = () => {
@@ -44,11 +44,11 @@ export function ParticleField() {
       particles.push({
         x: Math.random() * canvas.offsetWidth,
         y: Math.random() * canvas.offsetHeight,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        size: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.4 + 0.05,
-        hue: Math.random() > 0.5 ? 260 : 190, // purple or cyan
+        vx: (Math.random() - 0.5) * 0.24,
+        vy: (Math.random() - 0.5) * 0.18,
+        size: Math.random() * 1.35 + 0.45,
+        opacity: Math.random() * 0.36 + 0.08,
+        hue: [110, 178, 42][Math.floor(Math.random() * 3)],
       });
     }
 
@@ -70,7 +70,6 @@ export function ParticleField() {
         ctx.fill();
       }
 
-      // Connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -78,7 +77,7 @@ export function ParticleField() {
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < connectionDistance) {
-            const opacity = (1 - dist / connectionDistance) * 0.08;
+            const opacity = (1 - dist / connectionDistance) * 0.1;
             const hue = (particles[i].hue + particles[j].hue) / 2;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
