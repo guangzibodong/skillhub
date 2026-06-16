@@ -3,11 +3,8 @@ import type { SkillSummary } from "@useskillhub/schema";
 import {
   ArrowRight,
   BarChart3,
-  Bot,
   Boxes,
-  BrainCircuit,
   CheckCircle2,
-  Code2,
   FileJson,
   KeyRound,
   LockKeyhole,
@@ -17,7 +14,6 @@ import {
   ShieldCheck,
   ShoppingCart,
   Terminal,
-  Workflow,
   Zap,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -74,7 +70,7 @@ const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
 const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
 const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
 const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
-const footerTrustIcons = [Bot, Workflow, BrainCircuit, Code2] as const;
+const footerTrustBrands = ["openai", "claude", "gemini", "copilot"] as const;
 
 const fallbackFeaturedSkills: SkillSummary[] = [
   {
@@ -251,10 +247,10 @@ const homeLandingCopy = {
     readDocs: "Read Docs",
     footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
     footerTrust: [
-      ["GPT-style agents", "Expose approved Skills through governed REST APIs or MCP tools for internal GPT and custom agent workflows.", "REST / MCP"],
-      ["Claude / MCP workspaces", "Keep manifest, schema, and permission metadata visible so MCP-capable agents can inspect before calling.", "Manifest-aware"],
-      ["Gemini workflow agents", "Combine research, SEO, UI, data, and ops Skills into repeatable multi-step agent workflows.", "Workflow-ready"],
-      ["Code and ops agents", "Give builder, support, and operations agents versioned Skills with Project Keys, logs, and revocation controls.", "Governed calls"],
+      ["ChatGPT / OpenAI", "Expose approved Skills through governed REST or MCP paths for GPT-style custom agent workflows.", "Compatible workflow"],
+      ["Claude / MCP", "Keep manifest, schema, and permission metadata visible before MCP-capable agents call a Skill.", "MCP-ready"],
+      ["Gemini", "Combine research, SEO, UI, data, and ops Skills into repeatable multi-step agent workflows.", "Workflow-ready"],
+      ["GitHub Copilot", "Give coding and ops agents versioned Skills with Project Keys, logs, and revocation controls.", "Developer-ready"],
     ],
     footerGroups: [
       {
@@ -438,10 +434,10 @@ const homeLandingCopy = {
     readDocs: "阅读文档",
     footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
     footerTrust: [
-      ["GPT 类智能体", "通过受治理 REST API 或 MCP tools，把已批准 Skill 接入企业内部 GPT 和自定义 Agent 工作流。", "REST / MCP"],
-      ["Claude / MCP 工作台", "保留 manifest、schema 和权限信息，让支持 MCP 的智能体在调用前先检查。", "合约可读"],
-      ["Gemini 流程智能体", "把研究、SEO、UI、数据和运营类 Skill 组合成可重复的多步骤 Agent 工作流。", "流程可编排"],
-      ["代码与运营 Agent", "为开发、客服和运营 Agent 提供版本化 Skill、Project Key、日志和撤销控制。", "受治理调用"],
+      ["ChatGPT / OpenAI", "通过受治理 REST 或 MCP 路径，把已批准 Skill 接入 GPT 类自定义 Agent 工作流。", "兼容工作流"],
+      ["Claude / MCP", "保留 manifest、schema 和权限信息，让支持 MCP 的智能体在调用前先检查。", "MCP 就绪"],
+      ["Gemini", "把研究、SEO、UI、数据和运营类 Skill 组合成可重复的多步骤 Agent 工作流。", "流程可编排"],
+      ["GitHub Copilot", "为代码和运营 Agent 提供版本化 Skill、Project Key、日志和撤销控制。", "开发者就绪"],
     ],
     footerGroups: [
       {
@@ -1078,12 +1074,12 @@ export default async function Home({ searchParams }: PageProps) {
           </nav>
           <section className="home-footer__trust-strip" aria-label={locale === "zh" ? "页脚智能体接入信号" : "Footer agent integration signals"}>
             {landing.footerTrust.map(([title, body, meta], index) => {
-              const Icon = footerTrustIcons[index] ?? ShieldCheck;
+              const brand = footerTrustBrands[index] ?? "openai";
 
               return (
                 <article className="home-footer__trust-card" key={title}>
-                  <span className="home-footer__trust-icon">
-                    <Icon size={16} aria-hidden="true" />
+                  <span className={`home-footer__trust-logo home-footer__trust-logo--${brand}`} aria-hidden="true">
+                    {title.slice(0, 1)}
                   </span>
                   <div>
                     <strong>{title}</strong>
