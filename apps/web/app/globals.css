@@ -15817,6 +15817,15 @@ a {
   line-height: 1.15;
 }
 
+.market-skill-card h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.market-skill-card h2 a:hover {
+  color: var(--signal);
+}
+
 .market-skill-card p {
   min-height: 54px;
   margin: 0;

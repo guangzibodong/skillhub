@@ -127,6 +127,12 @@ export async function getPublicPublisherProfile(
     // Static fallback below keeps public pages available when the API is not reachable.
   }
 
+  const productionProfile = productionPublisherProfile(normalizedSlug);
+
+  if (productionProfile) {
+    return productionProfile;
+  }
+
   const fallbackProfiles = fallbackPublicPublishers();
   const fallbackProfile =
     fallbackProfiles.find((profile) => profile.slug === normalizedSlug) ??
@@ -264,6 +270,32 @@ function fallbackPublicPublishers(): PublicPublisherProfile[] {
       updatedAt: "demo",
     };
   });
+}
+
+function productionPublisherProfile(slug: string): PublicPublisherProfile | null {
+  if (slug !== "skillhub") {
+    return null;
+  }
+
+  const skill = marketplaceSkills.find((item) => item.slug === "browser-research");
+
+  if (!skill) {
+    return null;
+  }
+
+  const publicSkills = [marketplaceSkillToPublisherSkill(skill)];
+
+  return {
+    createdAt: "2026-06-07T14:35:15.995Z",
+    displayName: "SkillHub",
+    metrics: publisherMetrics(publicSkills),
+    payoutStatus: "not_configured",
+    skills: publicSkills,
+    slug: "skillhub",
+    status: "active",
+    trustLevel: "active",
+    updatedAt: "2026-06-07T14:35:15.995Z",
+  };
 }
 
 function marketplaceSkillToPublisherSkill(

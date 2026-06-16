@@ -29,6 +29,7 @@ import {
   localizedHref,
   localizedHrefWithReturnTo,
 } from "@/lib/i18n";
+import { marketplaceSkills } from "@/lib/marketplace-data";
 import {
   getOverviewMetric,
   getPlatformOverview,
@@ -39,6 +40,7 @@ import {
   type PublicMarketplaceSearchOptions,
 } from "@/lib/public-marketplace";
 import { getPublicPublishers } from "@/lib/public-publishers";
+import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 
 export const dynamic = "force-dynamic";
 
@@ -549,6 +551,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     getPlatformOverview(),
   ]);
   const publicStats = await getPublicPlatformStats({ publishers });
+  const publicSkillLinkIndex = mergeSkillLinkIndex(skills);
   const metrics = [
     [labels.catalogMetric, String(publicStats.publicSkills)],
     [labels.publisherMetric, String(publicStats.publicPublishers)],
@@ -740,6 +743,18 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
       {/* Catalog */}
       <div id="catalog">
+        <nav
+          aria-label={
+            locale === "zh" ? "公开技能详情链接" : "Public skill detail links"
+          }
+          className="visually-hidden"
+        >
+          {publicSkillLinkIndex.map((skill) => (
+            <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug}>
+              {skill.name[locale]}
+            </a>
+          ))}
+        </nav>
         <MarketplaceBrowser
           initialFilters={initialFilters}
           locale={locale}
@@ -1067,6 +1082,22 @@ function firstSearchParam(params: SearchParamRecord, key: string) {
   }
 
   return value;
+}
+
+function mergeSkillLinkIndex(skills: typeof marketplaceSkills) {
+  const merged = new Map<string, (typeof marketplaceSkills)[number]>();
+
+  for (const skill of marketplaceSkills) {
+    if (isVerifiedSkillStatus(skill.verification.en)) {
+      merged.set(skill.slug, skill);
+    }
+  }
+
+  for (const skill of skills) {
+    merged.set(skill.slug, skill);
+  }
+
+  return Array.from(merged.values());
 }
 
 function toPublicMarketplaceSearchOptions(

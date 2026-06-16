@@ -662,7 +662,11 @@ export function MarketplaceBrowser({
                 </div>
                 <div className="market-skill-card__title">
                   <span>{localizeText(skill.category, locale)} / {skill.runtime}</span>
-                  <h2>{localizeText(skill.name, locale)}</h2>
+                  <h2>
+                    <a href={localizedHref(`/skills/${skill.slug}`, locale)}>
+                      {localizeText(skill.name, locale)}
+                    </a>
+                  </h2>
                   {hasPublisherProfile ? (
                     <a
                       className="market-skill-card__publisher"
