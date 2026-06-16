@@ -8,8 +8,8 @@ type Props = {
 };
 
 const tabLabels = {
-  en: ["Registry", "Manifest", "Gateway"],
-  zh: ["注册表", "Manifest", "网关"],
+  en: ["Skill API", "Manifest", "Gateway"],
+  zh: ["技能 API", "Manifest", "网关"],
 };
 
 export function PlatformPreview({ locale }: Props) {
@@ -26,7 +26,7 @@ export function PlatformPreview({ locale }: Props) {
           </div>
           <span className="text-[13px] text-[#999]">SkillHub</span>
           <span className="text-[13px] text-[#525252]">/</span>
-          <span className="text-[13px] text-white">Registry</span>
+          <span className="text-[13px] text-white">Skill API</span>
         </div>
         <div className="flex items-center gap-3">
           {/* User avatar */}

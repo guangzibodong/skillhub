@@ -165,9 +165,9 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: text("注册表", "REGISTRY"),
+    label: text("技能 API", "SKILL API"),
     items: [
-      { label: text("技能市场", "Skills"), href: "/marketplace", permission: "operator" },
+      { label: text("找技能", "Find Skills"), href: "/marketplace", permission: "operator" },
       { label: text("审核队列", "Review Queue"), href: "#admin-reviews", permission: "review" },
       { label: text("市场排序", "Marketplace Curation"), href: "#admin-curation", permission: "curation" },
       { label: text("发布者目录", "Publishers"), href: "/publishers", permission: "operator" },
@@ -206,7 +206,7 @@ const statusStrip = [
   {
     label: text("发现", "DISCOVERY"),
     state: text("已上线", "Live"),
-    title: text("公开注册表", "Public Registry"),
+    title: text("公开技能 API", "Public Skill API"),
     detail: text("可用", "Available"),
     tone: "green",
   },

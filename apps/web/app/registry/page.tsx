@@ -33,15 +33,15 @@ const registryProtocolCopy = {
       marketplace: "Compare in marketplace",
       submit: "Submit a skill"
     },
-    contractTitle: "What the registry records",
+    contractTitle: "What the Skill API records",
     evidence: {
-      calls: "Registry calls",
+      calls: "Skill API calls",
       highRisk: "High-risk contracts",
       mcp: "MCP contracts",
       verified: "Verified contracts"
     },
     heroProof: [
-      ["Contract first", "Every skill starts as a versioned manifest before it becomes a marketplace listing."],
+      ["Contract first", "Every skill starts as a versioned manifest before it becomes a public listing."],
       ["Gateway governed", "REST, MCP, SDK, and console tests all resolve the same version and policy state."],
       ["Audit ready", "Review, signed-in adoption, runtime, prelaunch ledger, delivery, and audit records stay connected."]
     ],
@@ -63,12 +63,12 @@ const registryProtocolCopy = {
       ["Trust", "review status, checks, incidents, feedback, deprecation and replacement path"]
     ],
     notes: [
-      "Public registry rows are live API results; production-like runtimes do not fill fake supply unless demo fallback is explicitly enabled.",
-      "The registry explains contracts. Marketplace pages explain discovery, buyer comparison, pricing, and publisher trust.",
-      "This page intentionally stays browse-only. Use marketplace filters or the public API endpoint when you need search."
+      "Public Skill API rows are live API results; production-like runtimes do not fill fake supply unless demo fallback is explicitly enabled.",
+      "The Skill API explains contracts. Find Skills pages explain discovery, buyer comparison, pricing, and publisher trust.",
+      "This page intentionally stays browse-only. Use Find Skills filters or the public API endpoint when you need search."
     ],
-    protocolEyebrow: "Registry protocol",
-    protocolTitle: "The registry is the contract layer behind the marketplace.",
+    protocolEyebrow: "Skill API protocol",
+    protocolTitle: "The Skill API is the contract layer behind Find Skills.",
     protocolBody:
       "SkillHub records the exact skill contract an AI agent can inspect publicly and adopt after sign-in: manifest, version, runtime, permissions, schemas, review state, pricing intent, and governance links.",
     runtimeTitle: "Runtime resolution",
@@ -79,24 +79,24 @@ const registryProtocolCopy = {
       "Gateway checks approval, budget, rate limit, subscription, and risk.",
       "Invocation, usage, notification, ledger, and audit records preserve the outcome."
     ],
-    tableEyebrow: "Live registry",
+    tableEyebrow: "Live Skill API",
     tableTitle: "Versioned contracts available through the API"
   },
   zh: {
     actions: {
       api: "阅读 API 文档",
-      marketplace: "去市场对比",
+      marketplace: "去找技能页对比",
       submit: "提交技能"
     },
-    contractTitle: "注册表记录什么",
+    contractTitle: "技能 API 记录什么",
     evidence: {
-      calls: "注册表调用",
+      calls: "技能 API 调用",
       highRisk: "高风险合约",
       mcp: "MCP 合约",
       verified: "已验证合约"
     },
     heroProof: [
-      ["合约优先", "每个技能先成为带版本的 manifest，再进入市场展示。"],
+      ["合约优先", "每个技能先成为带版本的 manifest，再进入公开展示。"],
       ["网关治理", "REST、MCP、SDK 和控制台测试都会解析同一套版本和策略状态。"],
       ["可审计", "审核、登录后采用、运行、预发布账本、投递和审计记录保持连贯。"]
     ],
@@ -118,12 +118,12 @@ const registryProtocolCopy = {
       ["信任", "审核状态、检查、事故、反馈、废弃和替代路径"]
     ],
     notes: [
-      "公开注册表只展示实时 API 结果；生产类环境不会用假供给填充，除非显式启用 demo fallback。",
-      "注册表解释技能合约；市场页面负责发现、买方对比、定价和发布者信任。",
-      "这里刻意保持浏览型页面；需要搜索或筛选时，请使用市场筛选或公开 API endpoint。"
+      "公开技能 API 只展示实时 API 结果；生产类环境不会用假供给填充，除非显式启用 demo fallback。",
+      "技能 API 解释技能合约；找技能页面负责发现、买方对比、定价和发布者信任。",
+      "这里刻意保持浏览型页面；需要搜索或筛选时，请使用找技能筛选或公开 API endpoint。"
     ],
-    protocolEyebrow: "注册表协议",
-    protocolTitle: "注册表是市场背后的技能合约层。",
+    protocolEyebrow: "技能 API 协议",
+    protocolTitle: "技能 API 是找技能页面背后的合约层。",
     protocolBody:
       "SkillHub 记录 AI 智能体可以安装和调用的精确技能合约：manifest、版本、运行时、权限、schema、审核状态、定价意图和治理链路。",
     runtimeTitle: "运行解析路径",
@@ -134,7 +134,7 @@ const registryProtocolCopy = {
       "网关检查审批、预算、限流、订阅和风险。",
       "调用、用量、通知、账本和审计记录保留结果。"
     ],
-    tableEyebrow: "实时注册表",
+    tableEyebrow: "实时技能 API",
     tableTitle: "可通过 API 获取的版本化技能合约"
   }
 } as const;
@@ -351,10 +351,10 @@ export default async function RegistryPage({ searchParams }: PageProps) {
         <div className="section-inner">
           <Reveal>
             <h2 className="heading-lg mb-4">{locale === "zh" ? "开始构建" : "Start building"}</h2>
-            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "浏览技能市场或发布你自己的技能。" : "Explore the marketplace or publish your own skill."}</p>
+            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "去找技能页面浏览，或发布你自己的技能。" : "Find skills or publish your own skill."}</p>
             <div className="flex items-center justify-center gap-3">
               <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
-                <span>{locale === "zh" ? "市场" : "Marketplace"}</span>
+                <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
                 <ArrowRight size={14} aria-hidden="true" />
               </a>
               <a className="btn-secondary" href={localizedHref("/publish", locale)}>

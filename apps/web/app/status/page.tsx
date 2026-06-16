@@ -41,7 +41,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     zh: {
       title: "SkillHub 状态 - 平台健康信号",
       description:
-        "查看 SkillHub 公开网站、API 网关、注册表、运行时网关、CDN 和认证服务的健康状态。"
+        "查看 SkillHub 公开网站、API 网关、技能 API、运行时网关、CDN 和认证服务的健康状态。"
     }
   });
 }
@@ -112,7 +112,7 @@ const copy = {
     services: [
       { icon: "globe", name: "公开网站", status: "operational", desc: "useskillhub.com — 发现、文档、市场、发布者资料", uptime: "监控中" },
       { icon: "server", name: "API 网关", status: "operational", desc: "api.useskillhub.com — REST 端点、技能搜索、MCP 元数据", uptime: "监控中" },
-      { icon: "database", name: "注册表", status: "operational", desc: "技能合约、版本、manifest、发布者状态", uptime: "监控中" },
+      { icon: "database", name: "技能 API", status: "operational", desc: "技能合约、版本、manifest、发布者状态", uptime: "监控中" },
       { icon: "network", name: "运行时网关", status: "operational", desc: "认证后技能调用、项目级执行", uptime: "需登录" },
       { icon: "cloud", name: "CDN 与资源", status: "operational", desc: "全球分发的静态文件、图片和客户端包", uptime: "监控中" },
       { icon: "shield", name: "认证服务", status: "operational", desc: "登录、会话管理、API Key 验证", uptime: "监控中" }
@@ -121,7 +121,7 @@ const copy = {
     metricsTitle: "平台指标",
     metrics: [
       { label: "API 响应时间", value: "健康检查", desc: "公开 API 健康端点可用于运行确认" },
-      { label: "注册表查询", value: "已观测", desc: "技能搜索和 manifest 检查纳入公开可用性监控" },
+      { label: "技能 API 查询", value: "已观测", desc: "技能搜索和 manifest 检查纳入公开可用性监控" },
       { label: "运行时网关", value: "需登录", desc: "运行时检查需要认证后的项目上下文" },
       { label: "静态资源", value: "CDN", desc: "静态资源交付纳入部署验证" }
     ],
@@ -136,7 +136,7 @@ const copy = {
     scopePublicItems: [
       "Web 应用可用性和响应时间",
       "公开 API 健康和搜索延迟",
-      "注册表发现和检查",
+      "技能 API 发现和检查",
       "CDN 和静态资源分发",
       "DNS 解析和 TLS 证书状态"
     ],

@@ -38,24 +38,20 @@ type NavProps = {
 
 const navLinks = {
   en: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "Skills" },
-    { href: "/registry", page: "registry" as NavPage, label: "Registry API" },
-    { href: "/quickstart", page: "quickstart" as NavPage, label: "Quickstart" },
-    { href: "/docs", page: "docs" as NavPage, label: "Docs" },
-    { href: "/mcp", page: "mcp" as NavPage, label: "MCP" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "Find Skills" },
+    { href: "/registry", page: "registry" as NavPage, label: "Skill API" },
+    { href: "/docs", page: "docs" as NavPage, label: "Docs & Guides" },
     { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
-    { href: "/security", page: "security" as NavPage, label: "Security" },
-    { href: "/pricing", page: "pricing" as NavPage, label: "Pricing" },
+    { href: "/security", page: "security" as NavPage, label: "Security & Trust" },
+    { href: "/pricing", page: "pricing" as NavPage, label: "Plans" },
   ],
   zh: [
-    { href: "/marketplace", page: "marketplace" as NavPage, label: "技能市场" },
-    { href: "/registry", page: "registry" as NavPage, label: "技能注册表" },
-    { href: "/quickstart", page: "quickstart" as NavPage, label: "快速开始" },
-    { href: "/docs", page: "docs" as NavPage, label: "文档" },
-    { href: "/mcp", page: "mcp" as NavPage, label: "MCP" },
+    { href: "/marketplace", page: "marketplace" as NavPage, label: "找技能" },
+    { href: "/registry", page: "registry" as NavPage, label: "技能 API" },
+    { href: "/docs", page: "docs" as NavPage, label: "使用文档" },
     { href: "/publish", page: "publish" as NavPage, label: "发布技能" },
-    { href: "/security", page: "security" as NavPage, label: "安全" },
-    { href: "/pricing", page: "pricing" as NavPage, label: "价格" },
+    { href: "/security", page: "security" as NavPage, label: "安全合规" },
+    { href: "/pricing", page: "pricing" as NavPage, label: "价格方案" },
   ],
 };
 
@@ -193,7 +189,7 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
               href={localizedHref("/publish", locale)}
               className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-3 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] text-center"
             >
-              {locale === "zh" ? "发布" : "Publish"}
+              {locale === "zh" ? "发布技能" : "Publish Skill"}
             </a>
           </div>
         </div>

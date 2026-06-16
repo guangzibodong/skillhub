@@ -16,16 +16,16 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const labels =
     locale === "zh"
       ? {
-          body: "页面渲染时遇到可恢复的应用错误。你可以重试，或先回到公开技能市场；我们会继续根据服务日志排查。",
+          body: "页面渲染时遇到可恢复的应用错误。你可以重试，或先回到找技能页面；我们会继续根据服务日志排查。",
           eyebrow: "运行恢复",
-          marketplace: "返回技能市场",
+          marketplace: "返回找技能",
           retry: "重试",
           title: "SkillHub 暂时无法渲染这个页面。",
         }
       : {
-          body: "The page hit a recoverable application error. Try again, or return to the public marketplace while the team reviews the server logs.",
+          body: "The page hit a recoverable application error. Try again, or return to Find Skills while the team reviews the server logs.",
           eyebrow: "Runtime recovery",
-          marketplace: "Marketplace",
+          marketplace: "Find Skills",
           retry: "Try again",
           title: "SkillHub could not render this view.",
         };

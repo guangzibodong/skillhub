@@ -1084,7 +1084,7 @@ export const marketplaceSkills: MarketplaceSkill[] = [
         author: "PlatformSec",
         quote: {
           en: "High-risk, but exactly the kind of tool that needs explicit registry permissions.",
-          zh: "风险较高，但正是需要明确注册表权限控制的工具。"
+          zh: "风险较高，但正是需要明确技能 API 权限控制的工具。"
         }
       }
     ],

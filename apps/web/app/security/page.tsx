@@ -71,9 +71,9 @@ const copy = {
       { label: "Incident pipeline", status: "Active", desc: "Monitoring, alerting, and automated suspension triggers" }
     ],
     ctaTitle: "Need help with something else?",
-    ctaBody: "Explore the registry or read the docs to learn more about the platform.",
-    ctaPrimary: "Explore registry",
-    ctaSecondary: "Read docs"
+    ctaBody: "Explore the Skill API or read Docs & Guides to learn more about the platform.",
+    ctaPrimary: "Explore Skill API",
+    ctaSecondary: "Docs & Guides"
   },
   zh: {
     eyebrow: "安全",
@@ -124,9 +124,9 @@ const copy = {
       { label: "事件管道", status: "运行中", desc: "监控、告警和自动暂停触发器" }
     ],
     ctaTitle: "还有其他问题？",
-    ctaBody: "浏览注册表或阅读文档了解更多平台信息。",
-    ctaPrimary: "浏览注册表",
-    ctaSecondary: "阅读文档"
+    ctaBody: "查看技能 API 或阅读使用文档了解更多平台信息。",
+    ctaPrimary: "查看技能 API",
+    ctaSecondary: "使用文档"
   }
 } as const;
 

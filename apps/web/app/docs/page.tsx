@@ -165,10 +165,10 @@ const copy: Record<Locale, DocsCopy> = {
     ],
     quickstart: {
       body:
-        "These public calls let an evaluator confirm the registry shape. Real runtime invoke is intentionally not anonymous.",
+        "These public calls let an evaluator confirm the Skill API contract shape. Real runtime invoke is intentionally not anonymous.",
       cards: [
-        ["Marketplace", "Human-facing discovery: compare skills, pricing intent, publisher trust, and adoption risk."],
-        ["Registry", "Inspectable contract: slug, version, manifest, schemas, permissions, and review state."],
+        ["Find Skills", "Human-facing discovery: compare skills, pricing intent, publisher trust, and adoption risk."],
+        ["Skill API", "Machine-readable contract: slug, version, manifest, schemas, permissions, and review state."],
         ["Project Key", "Runtime credential: created after sign-in, scoped to a project, and required for real invocation."],
       ],
       codeLabel: "public inspect",
@@ -177,8 +177,8 @@ const copy: Record<Locale, DocsCopy> = {
     terms: [
       ["Skill", "A versioned AI Agent capability with manifest, schema, permissions, runtime, publisher, and review state."],
       ["Manifest", "The skillhub.json contract that tells humans and agents what the skill does and what it can access."],
-      ["Marketplace", "The page for human discovery and comparison."],
-      ["Registry", "The underlying list of inspectable skill contracts."],
+      ["Find Skills", "The page for human discovery and comparison."],
+      ["Skill API", "The underlying machine-readable list of inspectable skill contracts."],
       ["Project", "A signed-in workspace container for installs, keys, policy, logs, and runtime tests."],
       ["Runtime gateway", "The governed path that checks project key, policy, budget, approval, rate limits, and logs."],
     ],
@@ -226,14 +226,14 @@ const copy: Record<Locale, DocsCopy> = {
       body:
         "先从公开市场发现技能，检查技能合约；只有在需要项目运行、Project Key、发布或后台运营时才进入登录工作台。",
       eyebrow: "使用文档",
-      primary: "从技能市场开始",
+      primary: "从找技能开始",
       secondary: "发布技能",
       tertiary: "查看 API 地图",
       title: "清楚知道哪些能公开看，哪些必须登录后操作。",
     },
     paths: [
       {
-        action: "浏览技能",
+        action: "开始找技能",
         body: "适合先比较能力、暂时不采用的用户。",
         href: "/marketplace",
         steps: ["按任务或分类搜索", "打开技能详情", "查看权限和发布者", "准备采用时再登录"],
@@ -256,7 +256,7 @@ const copy: Record<Locale, DocsCopy> = {
     ],
     quickstart: {
       body:
-        "这些公开调用用于确认注册表结构。真实运行调用故意不做匿名开放。",
+        "这些公开调用用于确认技能 API 结构。真实运行调用故意不做匿名开放。",
       cards: [
         ["公开 API 已可用", "可以匿名搜索技能、打开详情、检查 manifest、schema、权限和审核状态。"],
         ["MCP 使用 POST", "MCP 工具发现和资源读取通过 POST 请求进入同一个受治理网关。"],
@@ -268,8 +268,8 @@ const copy: Record<Locale, DocsCopy> = {
     terms: [
       ["Skill", "带版本的 AI Agent 能力，包含 manifest、schema、权限、运行时、发布者和审核状态。"],
       ["Manifest", "skillhub.json 合约，告诉人和智能体这个技能做什么、能访问什么。"],
-      ["技能市场", "给人做发现、比较和决策的页面。"],
-      ["注册表", "底层可检查的技能合约列表。"],
+      ["找技能", "给人做发现、比较和决策的页面。"],
+      ["技能 API", "底层可检查、可被系统读取的技能合约列表。"],
       ["项目", "登录后的工作台容器，用于安装、密钥、策略、日志和运行测试。"],
       ["运行网关", "检查 Project Key、策略、预算、审批、限流并记录日志的受治理路径。"],
     ],
@@ -295,7 +295,7 @@ function getInstallGuides(locale: Locale) {
       title: "按角色看下一步怎么做。",
       tracks: [
         {
-          action: "去技能市场",
+          action: "去找技能",
           href: "/marketplace",
           steps: ["按 SEO/GEO、UI、内容、CRM、数据、运营、API、安全分类筛选", "打开技能详情，检查权限、输入输出、运行时和发布者", "登录后在项目中安装已验证技能", "生成 Project Key，通过 REST 或 MCP 调用"],
           title: "客户 / 开发者如何安装",
@@ -601,7 +601,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
-                <span>{locale === "zh" ? "浏览技能市场" : "Browse marketplace"}</span>
+                <span>{locale === "zh" ? "开始找技能" : "Find skills"}</span>
               </a>
               <a className="btn-secondary" href={localizedHref("/login", locale)}>
                 <KeyRound size={16} aria-hidden="true" />

@@ -218,7 +218,7 @@ export function deriveBusinessHealth(input: BusinessHealthInput, locale: Locale)
 
   if (input.skillViewEventStatus === "not_connected") {
     blockers.push(locale === "zh" ? "技能浏览事件未接入" : "Skill browsing events are not connected");
-    impacts.push(locale === "zh" ? "无法判断技能市场浏览到安装的转化" : "Cannot judge marketplace view-to-install conversion");
+    impacts.push(locale === "zh" ? "无法判断找技能到安装的转化" : "Cannot judge Find Skills view-to-install conversion");
   }
 
   if (input.paymentWebhookStatus === "not_connected") {

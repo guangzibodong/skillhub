@@ -15,14 +15,14 @@ export const dictionaries = {
     common: {
       admin: "Admin",
       apiHealth: "API health",
-      backToRegistry: "Registry",
+      backToRegistry: "Skill API",
       dashboard: "Dashboard",
       gateway: "Gateway",
       github: "GitHub",
       health: "Health",
       language: "Language",
       live: "Live",
-      marketplace: "Marketplace",
+      marketplace: "Find Skills",
       mcp: "MCP",
       publish: "Publish",
       publishSkill: "Publish skill",
@@ -31,10 +31,10 @@ export const dictionaries = {
     },
     nav: {
       home: "Home",
-      marketplace: "Marketplace",
-      registry: "Registry",
+      marketplace: "Find Skills",
+      registry: "Skill API",
       agents: "Agents",
-      docs: "Docs",
+      docs: "Docs & Guides",
       dashboard: "Dashboard",
       developer: "Developers",
       publisher: "Publishers",
@@ -47,8 +47,8 @@ export const dictionaries = {
         "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Developer Preview: public discovery and inspection are live; runtime invocation requires a signed-in project key; paid marketplace features remain prelaunch.",
       publishCta: "Publish a skill",
       gatewayTitle: "Developer Preview gateway",
-      registryEyebrow: "Registry",
-      registryTitle: "Agent Skill Registry",
+      registryEyebrow: "Skill API",
+      registryTitle: "Agent Skill API Catalog",
       newSkill: "Submit a skill",
       searchPlaceholder: "Search skills, tags, runtimes",
       protocolEyebrow: "Protocol",
@@ -58,7 +58,7 @@ export const dictionaries = {
       manifestEyebrow: "skillhub.json",
       manifestTitle: "One manifest for humans, agents, and runtime gateways.",
       manifestBody:
-        "The registry accepts a compact JSON manifest. The same contract powers search results, trust review, SDK generation, billing, and MCP tool discovery.",
+        "The Skill API catalog accepts a compact JSON manifest. The same contract powers search results, trust review, SDK generation, billing, and MCP tool discovery.",
       trustEyebrow: "Trust layer",
       trustTitle: "Designed for agents that need guardrails.",
       status: {
@@ -113,7 +113,7 @@ export const dictionaries = {
       verifiedShare: "Verified share"
     },
     skillTable: {
-      aria: "Skill registry",
+      aria: "Skill API catalog",
       skill: "Skill",
       tags: "Tags",
       trust: "Trust",
@@ -123,7 +123,7 @@ export const dictionaries = {
       manifestChecked: "Manifest checked",
       openManifest: "Open manifest",
       emptyTitle: "No skills published",
-      emptyBody: "Publish a SkillHub manifest to populate the registry.",
+      emptyBody: "Publish a SkillHub manifest to populate the Skill API catalog.",
       riskLabels: {
         low: "Low risk",
         medium: "Medium risk",
@@ -139,11 +139,11 @@ export const dictionaries = {
       }
     },
     registryPage: {
-      eyebrow: "Public registry",
+      eyebrow: "Public Skill API",
       title: "Browse reusable skills for agent workflows.",
       description:
-        "Browse public registry contracts, inspect package risk, and open each manifest through the public API. Use Marketplace filters or the public API for search.",
-      filtersTitle: "Registry filters",
+        "Browse public skill contracts, inspect package risk, and open each manifest through the public API. Use Find Skills filters or the public API for search.",
+      filtersTitle: "Skill API filters",
       filters: ["Research", "Browser", "Schema", "Low risk"],
       endpointTitle: "Discovery endpoint",
       endpointBody: "Agents and apps can query SkillHub without scraping the interface.",
@@ -151,7 +151,7 @@ export const dictionaries = {
       packageBody: "Every listed skill includes trust status, tags, version, and permission risk."
     },
     marketplacePage: {
-      eyebrow: "Marketplace model",
+      eyebrow: "Find Skills model",
       title: "A skill marketplace built for publishers, developers, and agents.",
       description:
         "SkillHub separates discovery, governed execution, ledger modeling, and prelaunch payout operations so third-party skill authors can publish while buyers keep control of cost and risk.",
@@ -421,14 +421,14 @@ export const dictionaries = {
     common: {
       admin: "管理后台",
       apiHealth: "API 状态",
-      backToRegistry: "注册表",
+      backToRegistry: "技能 API",
       dashboard: "工作台",
       gateway: "网关",
       github: "GitHub",
       health: "健康状态",
       language: "语言",
       live: "在线",
-      marketplace: "市场",
+      marketplace: "找技能",
       mcp: "MCP",
       publish: "发布",
       publishSkill: "发布技能",
@@ -438,9 +438,9 @@ export const dictionaries = {
     nav: {
       home: "首页",
       marketplace: "市场",
-      registry: "注册表",
+      registry: "技能 API",
       agents: "智能体",
-      docs: "文档",
+      docs: "使用文档",
       dashboard: "工作台",
       developer: "开发者",
       publisher: "发布者",
@@ -448,13 +448,13 @@ export const dictionaries = {
     },
     home: {
       eyebrow: "智能体技能基础设施",
-      title: "给 AI Agent 使用的可信技能注册表。",
+      title: "给 AI Agent 使用的可信技能库。",
       description:
         "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。开发者预览版：公开发现和查看已上线；运行调用需要登录后的项目 Key；付费市场能力仍处于预发布阶段。",
       publishCta: "发布一个技能",
       gatewayTitle: "开发者预览版网关",
-      registryEyebrow: "技能库",
-      registryTitle: "智能体技能注册表",
+      registryEyebrow: "技能 API",
+      registryTitle: "智能体技能 API 清单",
       newSkill: "提交技能",
       searchPlaceholder: "搜索技能、标签、运行时",
       protocolEyebrow: "协议",
@@ -464,7 +464,7 @@ export const dictionaries = {
       manifestEyebrow: "skillhub.json",
       manifestTitle: "一份 manifest，同时服务人、智能体和运行网关。",
       manifestBody:
-        "注册表接受简洁的 JSON manifest；它会驱动搜索结果、信任审核、SDK 生成、计费和 MCP 工具发现。",
+        "技能 API 清单接受简洁的 JSON manifest；它会驱动搜索结果、信任审核、SDK 生成、计费和 MCP 工具发现。",
       trustEyebrow: "信任层",
       trustTitle: "为需要护栏的智能体而设计。",
       status: {
@@ -519,7 +519,7 @@ export const dictionaries = {
       verifiedShare: "验证占比"
     },
     skillTable: {
-      aria: "技能注册表",
+      aria: "技能 API 清单",
       skill: "技能",
       tags: "标签",
       trust: "信任",
@@ -529,7 +529,7 @@ export const dictionaries = {
       manifestChecked: "Manifest 已检查",
       openManifest: "打开 manifest",
       emptyTitle: "还没有发布技能",
-      emptyBody: "发布一个 SkillHub manifest 后，注册表会自动显示技能。",
+      emptyBody: "发布一个 SkillHub manifest 后，技能 API 清单会自动显示技能。",
       riskLabels: {
         low: "低风险",
         medium: "中风险",
@@ -545,10 +545,10 @@ export const dictionaries = {
       }
     },
     registryPage: {
-      eyebrow: "公开技能库",
+      eyebrow: "公开技能 API",
       title: "浏览可复用的智能体技能。",
-      description: "浏览公开注册表合约，查看技能包风险，并通过公开 API 打开每个 manifest。如需搜索，请使用市场筛选或公开 API。",
-      filtersTitle: "注册表筛选",
+      description: "浏览公开技能合约，查看技能包风险，并通过公开 API 打开每个 manifest。如需搜索，请使用找技能页面筛选或公开 API。",
+      filtersTitle: "技能 API 筛选",
       filters: ["研究", "浏览器", "Schema", "低风险"],
       endpointTitle: "发现端点",
       endpointBody: "智能体和应用可以直接查询 SkillHub，不需要抓取界面内容。",
@@ -557,7 +557,7 @@ export const dictionaries = {
     },
     marketplacePage: {
       eyebrow: "市场模型",
-      title: "给发布者、开发者和智能体使用的技能市场。",
+      title: "给发布者、开发者和智能体使用的找技能入口。",
       description:
         "SkillHub 把发现、执行、计费和提现运营拆开，让第三方技能作者可以发布技能，同时让购买方控制成本和风险。",
       ctaPrimary: "打开工作台",
@@ -771,7 +771,7 @@ export const dictionaries = {
     publishPage: {
       eyebrow: "发布流程",
       title: "注册一个技能包。",
-      description: "以发布者身份登录后，粘贴 SkillHub manifest，检查协议，然后发布到 useskillhub.com 后面的实时注册表。",
+      description: "以发布者身份登录后，粘贴 SkillHub manifest，检查协议，然后发布到 useskillhub.com 后面的实时技能 API。",
       badge: "skillhub.json",
       consoleSubtitle: "发布控制台"
     },
@@ -784,7 +784,7 @@ export const dictionaries = {
       publishSkill: "发布技能",
       publishing: "发布中",
       reviewTitle: "Manifest 预检",
-      reviewBody: "提交注册表前的协议检查。",
+      reviewBody: "提交到技能 API 前的协议检查。",
       package: "包",
       slug: "Slug",
       runtime: "运行时",

@@ -91,14 +91,14 @@ const descriptions: Record<string, Record<string, string>> = {
   en: {
     claude: "Add SkillHub as an MCP server. All verified skills become tools that Claude can call autonomously.",
     cursor: "Drop one JSON file into your workspace. Every skill is callable from Cursor's agent.",
-    windsurf: "Same MCP protocol. One config, instant access to the full registry.",
+    windsurf: "Same MCP protocol. One config, instant access to the full Skill API catalog.",
     chatgpt: "Use OpenAI function calling to route invocations through SkillHub's gateway.",
     rest: "Direct HTTP for any platform — custom agents, scripts, CI pipelines, no SDK required.",
   },
   zh: {
     claude: "添加 SkillHub 为 MCP 服务器。所有已验证技能自动成为 Claude 可调用的工具。",
     cursor: "放入一个 JSON 文件。所有技能可从 Cursor Agent 直接调用。",
-    windsurf: "相同的 MCP 协议。一个配置，即时访问完整注册表。",
+    windsurf: "相同的 MCP 协议。一个配置，即时访问完整技能 API 清单。",
     chatgpt: "使用 OpenAI function calling 通过 SkillHub 网关路由调用。",
     rest: "任何平台的直接 HTTP — 自定义 Agent、脚本、CI 管道，无需 SDK。",
   },

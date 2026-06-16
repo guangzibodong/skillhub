@@ -147,9 +147,9 @@ const homeLandingCopy = {
     },
     capabilities: [
       {
-        title: "Public registry",
+        title: "Skill API catalog",
         badge: "Available",
-        body: "Search public Skills and compare safe marketplace metadata.",
+        body: "Search public Skills and inspect safe contract metadata.",
         tone: "live",
       },
       {
@@ -374,7 +374,7 @@ const homeLandingCopy = {
       items: [
         [
           "免登录可用",
-          "技能市场、技能详情、发布者主页、文档、公开状态和支持入口可以直接查看。",
+          "找技能、技能详情、发布者主页、使用文档、公开状态和支持入口可以直接查看。",
         ],
         [
           "登录后可用",
@@ -605,8 +605,8 @@ export default async function Home({ searchParams }: PageProps) {
     <main className={`product-shell home-shell home-shell--${locale}`}>
       <p className="visually-hidden">
         {locale === "zh"
-          ? "SkillHub 首页。你可以浏览技能市场、查看文档、了解发布流程，并在登录后进入对应工作区。/docs?lang=zh#operating-reference 阅读运营参考 运营员使用单独链接 智能体技能基础设施"
-          : "SkillHub home. Browse the skill marketplace, read docs, review publishing paths, and sign in to open your workspace. /docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
+          ? "SkillHub 首页。你可以找技能、查看使用文档、了解发布流程，并在登录后进入对应工作区。/docs?lang=zh#operating-reference 阅读运营参考 运营员使用单独链接 智能体技能基础设施"
+          : "SkillHub home. Find skills, read docs and guides, review publishing paths, and sign in to open your workspace. /docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
       </p>
       <section className="home-frame" aria-labelledby="home-heading">
         <SiteHeader

@@ -48,7 +48,7 @@ const copy = {
     support: "支持中心",
     recoveryItems: [
       {
-        title: "回到技能市场",
+        title: "回到找技能",
         body: "重新搜索公开目录，比较信任信号，并打开有效的技能详情页。",
         icon: PackageSearch,
       },

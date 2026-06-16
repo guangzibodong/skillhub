@@ -23,25 +23,25 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "Product",
       links: [
-        { href: "/marketplace", label: "Marketplace" },
-        { href: "/registry", label: "Registry" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/marketplace", label: "Find Skills" },
+        { href: "/registry", label: "Skill API" },
+        { href: "/pricing", label: "Plans" },
         { href: "/what-is-a-skill", label: "What is a Skill?" },
       ],
     },
     {
       title: "Developers",
       links: [
-        { href: "/docs", label: "Docs" },
+        { href: "/docs", label: "Docs & Guides" },
         { href: "/api", label: "API" },
-        { href: "/mcp", label: "MCP" },
+        { href: "/mcp", label: "MCP Access" },
         { href: "/data-handling", label: "Data handling" },
       ],
     },
     {
       title: "Publishers",
       links: [
-        { href: "/publish", label: "Publish" },
+        { href: "/publish", label: "Publish Skill" },
         { href: "/publisher-review", label: "Review process" },
         { href: "/publishers", label: "Publisher directory" },
         { href: "/changelog", label: "Changelog" },
@@ -50,7 +50,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "Trust",
       links: [
-        { href: "/security", label: "Security" },
+        { href: "/security", label: "Security & Trust" },
         { href: "/data-handling", label: "Data handling" },
         { href: "/privacy", label: "Privacy" },
         { href: "/terms", label: "Terms" },
@@ -69,18 +69,18 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "产品",
       links: [
-        { href: "/marketplace", label: "技能市场" },
-        { href: "/registry", label: "技能注册表" },
-        { href: "/pricing", label: "价格" },
+        { href: "/marketplace", label: "找技能" },
+        { href: "/registry", label: "技能 API" },
+        { href: "/pricing", label: "价格方案" },
         { href: "/what-is-a-skill", label: "什么是 Skill" },
       ],
     },
     {
       title: "开发者",
       links: [
-        { href: "/docs", label: "文档" },
+        { href: "/docs", label: "使用文档" },
         { href: "/api", label: "API" },
-        { href: "/mcp", label: "MCP" },
+        { href: "/mcp", label: "MCP 接入" },
         { href: "/data-handling", label: "数据处理" },
       ],
     },
@@ -96,7 +96,7 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
     {
       title: "信任",
       links: [
-        { href: "/security", label: "安全" },
+        { href: "/security", label: "安全合规" },
         { href: "/data-handling", label: "数据处理" },
         { href: "/privacy", label: "隐私政策" },
         { href: "/terms", label: "服务条款" },
@@ -135,7 +135,7 @@ export function HomeFooter({ locale }: Props) {
           <p>
             {locale === "zh"
               ? "面向 AI Agent 的 Skill 注册、审核、运行治理和市场预览基础设施。"
-              : "Registry, review, runtime governance, and marketplace preview infrastructure for AI Agent Skills."}
+              : "Skill API catalog, review, runtime governance, and marketplace preview infrastructure for AI Agent Skills."}
           </p>
         </div>
 

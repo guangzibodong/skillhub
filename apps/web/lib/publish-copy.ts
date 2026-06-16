@@ -72,7 +72,7 @@ const publishCopy = {
     },
     form: {
       access: {
-        api: "Registry API",
+        api: "Skill API",
         body: "Publishing uses the httpOnly user session created by login. No raw admin, service, OAuth, webhook, or user token is collected in this form.",
         session: "Signed-in user session",
         sessionDetail: "Publisher, owner, admin, or super admin role required",
@@ -256,7 +256,7 @@ const publishCopy = {
     },
     form: {
       access: {
-        api: "注册表 API",
+        api: "技能 API",
         body: "发布动作使用登录后创建的 httpOnly 用户会话。本表单不会收集原始管理员 token、服务 token、OAuth 密钥、Webhook 密钥或用户 token。",
         session: "当前登录用户会话",
         sessionDetail: "需要发布权限、组织负责人或管理员协助",
@@ -305,7 +305,7 @@ const publishCopy = {
           ok: "输入和输出 object schema 已包含具体字段。"
         },
         validJson: {
-          action: "先修复语法；SkillHub 不能从无法解析的合约创建注册表状态。",
+          action: "先修复语法；SkillHub 不能从无法解析的合约创建技能 API 状态。",
           fail: "保存前请修复 JSON 语法。",
           label: "JSON 有效",
           ok: "解析器已就绪。"
@@ -328,7 +328,7 @@ const publishCopy = {
       manifestLabel: "skillhub.json",
       nextActionsTitle: "下一步运营动作",
       nextActions: [
-        ["草稿", "把协议保存成组织拥有的注册表状态。"],
+        ["草稿", "把协议保存成组织拥有的技能 API 状态。"],
         ["版本", "在 /publisher 创建或提交指定语义版本。"],
         ["审核", "审批前处理自动检查警告。"],
         ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
@@ -357,7 +357,7 @@ const publishCopy = {
         errorTitle: "草稿未保存",
         publisher: "打开发布者工作台",
         successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
-        successTitle: "草稿已保存到注册表"
+        successTitle: "草稿已保存到技能 API"
       },
       reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
       reviewTitle: "Manifest 预检",
@@ -441,7 +441,7 @@ const normalizedZhPublishCopy: PublishCopy = {
   },
   form: {
     access: {
-      api: "注册表 API",
+      api: "技能 API",
       body: "发布动作使用登录后创建的 httpOnly 用户会话。本表单不会收集原始管理员 token、服务 token、OAuth 密钥、Webhook 密钥或用户 token。",
       session: "当前登录用户会话",
       sessionDetail: "需要发布权限、组织负责人或管理员协助",
@@ -490,7 +490,7 @@ const normalizedZhPublishCopy: PublishCopy = {
         ok: "输入和输出 object schema 已包含具体字段。"
       },
       validJson: {
-        action: "先修复语法；SkillHub 不能从无法解析的合约创建注册表状态。",
+        action: "先修复语法；SkillHub 不能从无法解析的合约创建技能 API 状态。",
         fail: "保存前请修复 JSON 语法。",
         label: "JSON 有效",
         ok: "解析器已就绪。"
@@ -513,7 +513,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     manifestLabel: "skillhub.json",
     nextActionsTitle: "下一步运营动作",
     nextActions: [
-      ["草稿", "把合约保存成组织拥有的注册表状态。"],
+      ["草稿", "把合约保存成组织拥有的技能 API 状态。"],
       ["版本", "在 /publisher 创建或提交指定语义版本。"],
       ["审核", "审批前处理自动检查警告。"],
       ["定价", "记录定价意图；付费激活需要等待审核、条款和预发布付费准备批准。"]
@@ -542,7 +542,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       errorTitle: "草稿未保存",
       publisher: "打开发布者工作台",
       successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
-      successTitle: "草稿已保存到注册表"
+      successTitle: "草稿已保存到技能 API"
     },
     reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
     reviewTitle: "Manifest 预检",

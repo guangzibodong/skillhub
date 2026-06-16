@@ -81,7 +81,7 @@ const copy = {
       { icon: "report", title: "问题报告", desc: "发现 Bug、意外行为或文档错误？提交报告，我们的团队将在 24 小时内进行分类。", action: "报告问题", href: "/report" },
       { icon: "security", title: "安全披露", desc: "发现漏洞？使用我们的负责任披露流程安全地报告，不暴露敏感数据。", action: "安全联系", href: "/security" },
       { icon: "docs", title: "文档", desc: "大多数集成问题在我们的 API 文档、manifest 参考和入门指南中都有解答。", action: "阅读文档", href: "/docs" },
-      { icon: "status", title: "平台状态", desc: "查看注册表、API 和运行时网关的实时健康状况。包含历史正常运行时间数据。", action: "查看状态", href: "/status" }
+      { icon: "status", title: "平台状态", desc: "查看技能 API、公开 API 和运行时网关的实时健康状况。包含历史正常运行时间数据。", action: "查看状态", href: "/status" }
     ],
     guidelinesEyebrow: "报告指南",
     guidelinesTitle: "如何写出有效的报告",

@@ -407,8 +407,8 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       primaryCta: { href: "/docs", label: "Read full docs" },
       secondaryCta: { href: "/mcp", label: "Compare MCP" },
       sections: [
-        { title: "Authentication", body: "Public registry endpoints can be inspected without a Project Key. Runtime and workspace operations require signed-in context and scoped credentials." },
-        { title: "Public registry endpoints", body: "Use registry/search endpoints to list public Skills, filter by task, runtime, verification state, and permission profile." },
+        { title: "Authentication", body: "Public Skill API endpoints can be inspected without a Project Key. Runtime and workspace operations require signed-in context and scoped credentials." },
+        { title: "Public Skill API endpoints", body: "Use skill search endpoints to list public Skills, filter by task, runtime, verification state, and permission profile." },
         { title: "Manifest inspection", body: "Skill detail endpoints expose manifest, schema, permissions, version, publisher, and review state before adoption." },
         { title: "Project Key runtime endpoints", body: "Runtime invocation should authenticate with a Project Key created inside a signed-in project." },
         { title: "Errors and rate limits", body: "API clients should handle validation errors, unauthorized calls, policy blocks, rate limits, missing Project Keys, and prelaunch payment gates." },

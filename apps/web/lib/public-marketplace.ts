@@ -322,7 +322,7 @@ function manifestToMarketplaceSkill(
       {
         note: {
           en: `${summary.displayName} ${summary.version} is the latest registry version.`,
-          zh: `${summary.displayName} ${summary.version} 是当前注册表版本。`,
+          zh: `${summary.displayName} ${summary.version} 是当前技能 API 版本。`,
         },
         version: summary.version,
       },
@@ -352,10 +352,10 @@ function manifestToMarketplaceSkill(
     feedbackCount: isVerified ? (summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0) : 0,
     reviews: staticSkill?.reviews ?? [
       {
-        author: "SkillHub Registry",
+        author: "SkillHub Skill API",
         quote: {
           en: `Listed from the live registry with ${verificationLabel(summary.verificationStatus).en} trust status.`,
-          zh: `来自实时注册表，当前信任状态为${verificationLabel(summary.verificationStatus).zh}。`,
+          zh: `来自实时技能 API，当前信任状态为${verificationLabel(summary.verificationStatus).zh}。`,
         },
       },
     ],
@@ -686,7 +686,7 @@ function securityRows(
 ): MarketplaceSkill["securityReport"] {
   return [
     {
-      label: { en: "Registry status", zh: "注册表状态" },
+      label: { en: "Skill API status", zh: "技能 API 状态" },
       value: verificationLabel(summary.verificationStatus),
     },
     {

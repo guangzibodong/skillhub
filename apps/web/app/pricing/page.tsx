@@ -182,8 +182,8 @@ const copy: Record<Locale, PricingCopy> = {
     ],
     cta: {
       body:
-        "先在技能市场选第一批要用的技能，再登录创建项目、选择付款周期，并通过受治理的 Project Key 接入运行。",
-      primary: "浏览技能市场",
+        "先在找技能页面选第一批要用的技能，再登录创建项目、选择付款周期，并通过受治理的 Project Key 接入运行。",
+      primary: "开始找技能",
       secondary: "查看安装文档",
       title: "先用免费基础技能验证，再把真实业务放进 Pro。",
     },

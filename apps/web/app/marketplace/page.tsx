@@ -92,17 +92,17 @@ const pageCopy = {
     eyebrow: "Agent skill marketplace",
     title: "Find AI Agent Skills by job, category, risk, and plan.",
     description:
-      "Browse skills across SEO/GEO, UI/UX, content, CRM, data, finance, research, support, automation, API, and security. Marketplace is for human comparison; the registry keeps the inspectable manifest, schema, runtime, and version contract behind each listing.",
+      "Browse skills across SEO/GEO, UI/UX, content, CRM, data, finance, research, support, automation, API, and security. Find Skills is for human comparison; the Skill API keeps the inspectable manifest, schema, runtime, and version contract behind each listing.",
     primary: "Browse skills",
     directory: "Publisher directory",
     console: "Developer workspace",
     consoleTitle: "How to read this page",
     consoleSubtitle: "Start with the marketplace card, open the detail page for manifest evidence, then sign in only when a verified skill should become project state.",
     proof: ["Use case", "Permission risk", "Publisher trust", "Runtime evidence"],
-    decisionTitle: "Marketplace vs registry",
+    decisionTitle: "Find Skills vs Skill API",
     decisionRows: [
-      ["Marketplace", "A human-facing surface for discovery, category filtering, plan comparison, and publisher trust."],
-      ["Registry", "The contract layer for manifest, schema, versions, runtime metadata, and API inspection."],
+      ["Find Skills", "A human-facing surface for discovery, category filtering, plan comparison, and publisher trust."],
+      ["Skill API", "The machine-readable contract layer for manifest, schema, versions, runtime metadata, and API inspection."],
       ["After sign-in", "Verified skills can be attached to projects with policy, budget, and runtime evidence."],
       ["Public limit", "Public pages do not invoke production runtimes or execute operator actions."]
     ],
@@ -217,20 +217,20 @@ const pageCopy = {
     ]
   },
   zh: {
-    eyebrow: "智能体技能市场",
+    eyebrow: "智能体找技能",
     title: "按任务和分类找到合适的 AI Agent 技能。",
     description:
-      "技能市场按 SEO/GEO、UI/UX、内容文案、CRM、数据、财务后台、研究浏览器、客服运营、自动化流程、API、安全合规来组织。市场负责让客户找技能、比套餐、看风险；注册表负责保存可检查的 manifest、schema、运行时和版本契约。",
-    primary: "浏览技能",
+      "找技能页面按 SEO/GEO、UI/UX、内容文案、CRM、数据、财务后台、研究浏览器、客服运营、自动化流程、API、安全合规来组织。这里负责让客户找技能、比套餐、看风险；技能 API 负责保存可检查的 manifest、schema、运行时和版本契约。",
+    primary: "开始找技能",
     directory: "发布者目录",
     console: "开发者工作台",
     consoleTitle: "这个页面怎么用",
     consoleSubtitle: "先看市场卡片判断是否值得采用，再进详情页检查 manifest 和权限；只有确认要接入项目时，才需要登录进入工作台。",
     proof: ["用途清楚", "权限清楚", "发布者清楚", "证据清楚"],
-    decisionTitle: "市场和注册表的区别",
+    decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
-      ["技能市场", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
-      ["技能注册表", "给系统和 API 查 manifest、schema、版本、运行时和检索结果。"],
+      ["找技能", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
+      ["技能 API", "给系统和 API 查 manifest、schema、版本、运行时和检索结果。"],
       ["登录后可做", "把已验证技能加入项目，配置策略、预算并查看运行证据。"],
       ["公开页不做", "不直接调用生产运行时，也不执行后台运营操作。"]
     ],
@@ -244,18 +244,18 @@ const pageCopy = {
       ["验证", "状态、更新记录、运行证据和问题历史。"],
       ["发布者", "资料完整度、支持路径和响应速度。"]
     ],
-    moneyTitle: "市场和注册表的区别",
+    moneyTitle: "找技能和技能 API 的区别",
     moneyRows: [
-      ["技能市场", "给人选技能、看卡片、看发布者、看是否适合采用"],
-      ["技能注册表", "给系统和 API 查技能契约、版本和检索结果"],
+      ["找技能", "给人选技能、看卡片、看发布者、看是否适合采用"],
+      ["技能 API", "给系统和 API 查技能契约、版本和检索结果"],
       ["登录后可做什么", "把已验证技能加入项目，保存策略并看运行结果"],
       ["公开页不能做什么", "不在这里直接调用生产运行时，也不在这里执行后台操作"]
     ],
     overview: {
       eyebrow: "一眼看懂",
-      title: "先看市场，再进注册表。",
+      title: "先找技能，再看技能 API。",
       body:
-        "Marketplace 是给人看和挑的页面，Registry 是给开发者和 API 用的底层清单。两者不是重复按钮，而是两层不同的入口。",
+        "找技能是给人看和挑的页面，技能 API 是给开发者、Agent 和系统读取的底层合约清单。两者不是重复按钮，而是两层不同的入口。",
       metrics: {
         activeSubscriptions: "活跃订阅",
         paidPreview: "付费预览",
@@ -323,7 +323,7 @@ const pageCopy = {
     loopEyebrow: "已验证技能采用路径",
     loopTitle: "看清楚，再接入。",
     loopBody:
-      "先在市场里比对技能，再进入注册表查看合约细节。已验证技能可以在登录后进入项目策略和运行证据；未验证技能只能公开查看。",
+      "先在找技能页面比对技能，再进入技能 API 查看合约细节。已验证技能可以在登录后进入项目策略和运行证据；未验证技能只能公开查看。",
     loopSteps: [
       ["检查", "先看技能用途、权限、版本和发布者。", "公共合约"],
       ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server。", "项目关卡"],
@@ -341,7 +341,7 @@ const pageCopy = {
       ["买家视角", "采用轨迹", "权限画像和项目策略在登录后保持可检查。"],
       ["Agent 视角", "运行证据", "Agent 可在重复调用前校验 schema、延迟和成功历史。"],
       ["发布者视角", "行动队列", "评价、事故和更新压力会进入下一版本。"],
-      ["注册表视角", "底层清单", "用于检索契约、版本和可调用能力，而不是直接下单。"]
+      ["技能 API 视角", "底层清单", "用于检索契约、版本和可调用能力，而不是直接下单。"]
     ]
   }
 } as const;
