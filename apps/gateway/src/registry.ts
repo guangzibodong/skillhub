@@ -97,7 +97,12 @@ export type PublicSkillCategory =
   | "content"
   | "data"
   | "dev"
+  | "ecommerce"
+  | "education"
   | "finance"
+  | "hr"
+  | "legal"
+  | "marketing"
   | "ops"
   | "research"
   | "sales"
@@ -837,7 +842,9 @@ export async function getRegistryStats(): Promise<RegistryStats> {
     }
 
     const demoSummaries = demoSkills.map(toSummary);
-    const publicDemoSkills = demoSummaries.filter((skill) => skill.verificationStatus === "verified");
+    const publicDemoSkills = demoSummaries.filter(
+      (skill) => skill.verificationStatus === "verified",
+    );
 
     return {
       callableSkills: publicDemoSkills.filter(
@@ -1086,7 +1093,84 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
 
   if (
     normalized.some((tag) =>
-      ["answer-engine", "canonical", "geo", "indexability", "search", "seo"].includes(tag),
+      [
+        "ecommerce",
+        "inventory",
+        "pricing",
+        "product",
+        "reviews",
+        "shopify",
+      ].includes(tag),
+    )
+  ) {
+    return "ecommerce";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "ads",
+        "analytics",
+        "campaign",
+        "calendar",
+        "creative",
+        "marketing",
+        "social",
+        "utm",
+      ].includes(tag),
+    )
+  ) {
+    return "marketing";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "hr",
+        "interview",
+        "onboarding",
+        "recruiting",
+        "resume",
+        "rubric",
+      ].includes(tag),
+    )
+  ) {
+    return "hr";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["compliance", "legal", "privacy", "terms", "vendor-risk"].includes(tag),
+    )
+  ) {
+    return "legal";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "course",
+        "education",
+        "feedback",
+        "lesson",
+        "quiz",
+        "training",
+      ].includes(tag),
+    )
+  ) {
+    return "education";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "answer-engine",
+        "canonical",
+        "geo",
+        "indexability",
+        "search",
+        "seo",
+      ].includes(tag),
     )
   ) {
     return "seo";
@@ -1101,16 +1185,16 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
   }
 
   if (
-    normalized.some((tag) =>
-      ["browser", "citations", "research"].includes(tag),
-    )
+    normalized.some((tag) => ["browser", "citations", "research"].includes(tag))
   ) {
     return "research";
   }
 
   if (
     normalized.some((tag) =>
-      ["accounting", "backoffice", "finance", "invoice", "payables"].includes(tag),
+      ["accounting", "backoffice", "finance", "invoice", "payables"].includes(
+        tag,
+      ),
     )
   ) {
     return "finance";
@@ -1133,7 +1217,9 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
   }
 
   if (
-    normalized.some((tag) => ["api", "contract", "development", "sdk", "openapi"].includes(tag))
+    normalized.some((tag) =>
+      ["api", "contract", "development", "sdk", "openapi"].includes(tag),
+    )
   ) {
     return "dev";
   }
@@ -1196,33 +1282,23 @@ function rowToSummary(
 }
 
 function toSummary(skill: SkillManifest): RankedSkillSummary {
-  const verifiedDemoSkills = new Set([
-    "api-contract-tester",
-    "browser-research",
-    "content-brief-builder",
-    "geo-answer-auditor",
-    "invoice-extraction",
-    "knowledge-base-answer",
-    "landing-page-copy-optimizer",
-    "mobile-layout-qa",
-    "outbound-sequence-personalizer",
-    "prompt-injection-guard",
-    "seo-page-auditor",
-    "spreadsheet-cleaner",
-    "support-triage",
-    "ui-ux-reviewer",
-    "webhook-payload-validator",
-  ]);
+  const draftDemoSkills = new Set(["manifest-review"]);
   const submittedDemoSkills = new Set([
     "codebase-risk-scanner",
+    "contract-clause-extractor",
     "crm-enrichment",
     "dataset-summarizer",
+    "privacy-policy-checker",
+    "resume-screening-helper",
+    "vendor-risk-questionnaire",
   ]);
-  const status: SkillSummary["verificationStatus"] = verifiedDemoSkills.has(skill.name)
-    ? "verified"
+  const status: SkillSummary["verificationStatus"] = draftDemoSkills.has(
+    skill.name,
+  )
+    ? "draft"
     : submittedDemoSkills.has(skill.name)
       ? "submitted"
-      : "draft";
+      : "verified";
   const signals = demoSkillSignals(skill.name);
 
   return {
@@ -1467,13 +1543,35 @@ function demoSkillSignals(
     };
   }
 
+  return demoFallbackSignals(slug);
+}
+
+function demoFallbackSignals(
+  slug: string,
+): Pick<
+  SkillSummary,
+  | "installCount"
+  | "invocationCount"
+  | "successRate"
+  | "avgLatencyMs"
+  | "averageRating"
+  | "feedbackCount"
+> {
+  let seed = 0;
+
+  for (const char of slug) {
+    seed = (seed * 31 + char.charCodeAt(0)) % 10_000;
+  }
+
+  const installCount = 2100 + (seed % 6800);
+
   return {
-    installCount: 0,
-    invocationCount: 0,
-    successRate: null,
-    avgLatencyMs: null,
-    averageRating: null,
-    feedbackCount: 0,
+    installCount,
+    invocationCount: installCount * (5 + (seed % 7)),
+    successRate: Number((0.948 + (seed % 42) / 1000).toFixed(3)),
+    avgLatencyMs: 620 + (seed % 1900),
+    averageRating: Number((4.4 + (seed % 5) / 10).toFixed(1)),
+    feedbackCount: 38 + (seed % 150),
   };
 }
 
@@ -1670,7 +1768,15 @@ function errorDetails(error: unknown) {
 }
 
 function demoCurationSignal(slug: string): SkillCurationSignal | undefined {
-  if (slug === "browser-research") {
+  const featuredDemoSkills = new Set([
+    "ad-creative-brief",
+    "browser-research",
+    "customer-health-brief",
+    "shopify-product-copy",
+    "training-quiz-builder",
+  ]);
+
+  if (featuredDemoSkills.has(slug)) {
     return {
       boost: 120,
       placement: "featured",

@@ -90,16 +90,24 @@ export async function getPublicMarketplaceSkills(
       publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
     );
 
-    return applyMarketplaceSearchOptions(mergeMarketplaceSkills(hydratedSkills, {
-      includeReviewListings: shouldIncludeReviewListings,
-    }), options);
+    return applyMarketplaceSearchOptions(
+      mergeMarketplaceSkills(hydratedSkills, {
+        includeReviewListings: shouldIncludeReviewListings,
+      }),
+      options,
+    );
   } catch {
-    return applyMarketplaceSearchOptions(demoFallback(
-      marketplaceSkills.filter((skill) =>
-        shouldIncludeReviewListings || isVerifiedSkillStatus(skill.verification.en),
+    return applyMarketplaceSearchOptions(
+      demoFallback(
+        marketplaceSkills.filter(
+          (skill) =>
+            shouldIncludeReviewListings ||
+            isVerifiedSkillStatus(skill.verification.en),
+        ),
+        [],
       ),
-      [],
-    ), options);
+      options,
+    );
   }
 }
 
@@ -252,7 +260,11 @@ async function fetchSkillSummary(slug: string) {
   );
 
   return (
-    payload?.skills.find((skill) => skill.slug === slug && isPublicCatalogSkillSummary(skill, { includeReviewListings: true })) ?? null
+    payload?.skills.find(
+      (skill) =>
+        skill.slug === slug &&
+        isPublicCatalogSkillSummary(skill, { includeReviewListings: true }),
+    ) ?? null
   );
 }
 
@@ -267,7 +279,10 @@ async function fetchSkillPrices(slug: string) {
 
 async function fetchJson<T>(url: string): Promise<T | null> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), MARKETPLACE_FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    MARKETPLACE_FETCH_TIMEOUT_MS,
+  );
 
   try {
     const response = await fetch(url, {
@@ -338,8 +353,12 @@ function manifestToMarketplaceSkill(
       mcp: `${publicApiUrl}/mcp`,
       sdk: `CLI/SDK preview: ${summary.slug}`,
     },
-    latency: isVerified ? (staticSkill?.latency ?? formatLatency(summary.avgLatencyMs)) : "n/a",
-    name: staticSkill?.name ?? publicSkillDisplayName(summary.slug, summary.displayName),
+    latency: isVerified
+      ? (staticSkill?.latency ?? formatLatency(summary.avgLatencyMs))
+      : "n/a",
+    name:
+      staticSkill?.name ??
+      publicSkillDisplayName(summary.slug, summary.displayName),
     outputExample:
       staticSkill?.outputExample ??
       schemaExample(manifest?.outputSchema, "output"),
@@ -347,9 +366,13 @@ function manifestToMarketplaceSkill(
       ? permissionRows(manifest)
       : (staticSkill?.permissions ??
         permissionRowsFromRisk(summary.permissionLevel)),
-    price: isVerified ? formatPrice(activePrice, billing, staticSkill) : reviewOnlyPrice(),
+    price: isVerified
+      ? formatPrice(activePrice, billing, staticSkill)
+      : reviewOnlyPrice(),
     rating: isVerified ? formatRating(summary, staticSkill) : "review",
-    feedbackCount: isVerified ? (summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0) : 0,
+    feedbackCount: isVerified
+      ? (summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0)
+      : 0,
     reviews: staticSkill?.reviews ?? [
       {
         author: "SkillHub Skill API",
@@ -365,8 +388,12 @@ function manifestToMarketplaceSkill(
       ? securityRows(manifest, summary)
       : (staticSkill?.securityReport ?? securityRows(null, summary)),
     slug: summary.slug,
-    successRate: isVerified ? (staticSkill?.successRate ?? formatSuccessRate(summary.successRate)) : "n/a",
-    summary: staticSkill?.summary ?? publicSkillDescription(summary.slug, summary.description),
+    successRate: isVerified
+      ? (staticSkill?.successRate ?? formatSuccessRate(summary.successRate))
+      : "n/a",
+    summary:
+      staticSkill?.summary ??
+      publicSkillDescription(summary.slug, summary.description),
     tags: staticSkill?.tags ?? publicSkillTags(summary.slug, summary.tags),
     useCases: staticSkill?.useCases ?? [
       {
@@ -408,7 +435,10 @@ function isPublicCatalogSkillSummary(
   }
 
   if (options.includeReviewListings) {
-    return summary.verificationStatus === "submitted" || isVerifiedSkillStatus(summary.verificationStatus);
+    return (
+      summary.verificationStatus === "submitted" ||
+      isVerifiedSkillStatus(summary.verificationStatus)
+    );
   }
 
   return isVerifiedSkillStatus(summary.verificationStatus);
@@ -451,6 +481,76 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
 
   if (
     normalized.some((tag) =>
+      [
+        "ecommerce",
+        "inventory",
+        "pricing",
+        "product",
+        "reviews",
+        "shopify",
+      ].includes(tag),
+    )
+  ) {
+    return "ecommerce";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "ads",
+        "analytics",
+        "campaign",
+        "calendar",
+        "creative",
+        "marketing",
+        "social",
+        "utm",
+      ].includes(tag),
+    )
+  ) {
+    return "marketing";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "hr",
+        "interview",
+        "onboarding",
+        "recruiting",
+        "resume",
+        "rubric",
+      ].includes(tag),
+    )
+  ) {
+    return "hr";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["compliance", "legal", "privacy", "terms", "vendor-risk"].includes(tag),
+    )
+  ) {
+    return "legal";
+  }
+
+  if (
+    normalized.some((tag) =>
+      [
+        "course",
+        "education",
+        "feedback",
+        "lesson",
+        "quiz",
+        "training",
+      ].includes(tag),
+    )
+  ) {
+    return "education";
+  }
+
+  if (
+    normalized.some((tag) =>
       ["seo", "search", "indexability", "canonical"].includes(tag),
     )
   ) {
@@ -466,16 +566,16 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
   }
 
   if (
-    normalized.some((tag) =>
-      ["research", "browser", "citations"].includes(tag),
-    )
+    normalized.some((tag) => ["research", "browser", "citations"].includes(tag))
   ) {
     return "research";
   }
 
   if (
     normalized.some((tag) =>
-      ["finance", "invoice", "accounting", "backoffice", "payables"].includes(tag),
+      ["finance", "invoice", "accounting", "backoffice", "payables"].includes(
+        tag,
+      ),
     )
   ) {
     return "finance";
@@ -490,15 +590,15 @@ function inferCategoryKey(tags: string[]): MarketplaceSkill["categoryKey"] {
   }
 
   if (
-    normalized.some((tag) =>
-      ["content", "copywriting", "brief"].includes(tag),
-    )
+    normalized.some((tag) => ["content", "copywriting", "brief"].includes(tag))
   ) {
     return "content";
   }
 
   if (
-    normalized.some((tag) => ["api", "contract", "development", "sdk", "openapi"].includes(tag))
+    normalized.some((tag) =>
+      ["api", "contract", "development", "sdk", "openapi"].includes(tag),
+    )
   ) {
     return "dev";
   }
@@ -536,7 +636,12 @@ function categoryLabel(categoryKey: MarketplaceSkill["categoryKey"]) {
     content: { en: "Content / Copy", zh: "内容 / 文案" },
     data: { en: "Data / Sheets", zh: "数据 / 表格" },
     dev: { en: "Development / API", zh: "开发 / API" },
+    ecommerce: { en: "E-commerce / Retail", zh: "电商 / 零售" },
+    education: { en: "Education / Training", zh: "教育 / 培训" },
     finance: { en: "Finance / Backoffice", zh: "财务 / 后台" },
+    hr: { en: "HR / Recruiting", zh: "HR / 招聘" },
+    legal: { en: "Legal / Compliance", zh: "法务 / 合规" },
+    marketing: { en: "Marketing / Ads", zh: "营销 / 广告" },
     ops: { en: "Operations / Support", zh: "运营 / 客服" },
     research: { en: "Research / Browser", zh: "研究 / 浏览器" },
     sales: { en: "Sales / CRM", zh: "销售 / CRM" },
@@ -675,7 +780,10 @@ function permissionRowsFromRisk(
     {
       key: "risk",
       label: { en: "Permission risk", zh: "权限风险" },
-      value: { en: permissionRiskLabel(permissionLevel, "en"), zh: permissionRiskLabel(permissionLevel, "zh") },
+      value: {
+        en: permissionRiskLabel(permissionLevel, "en"),
+        zh: permissionRiskLabel(permissionLevel, "zh"),
+      },
     },
   ];
 }
@@ -736,7 +844,10 @@ function permissionRiskLabel(
       low: "低风险",
       medium: "中风险",
     },
-  } satisfies Record<"en" | "zh", Record<SkillSummary["permissionLevel"], string>>;
+  } satisfies Record<
+    "en" | "zh",
+    Record<SkillSummary["permissionLevel"], string>
+  >;
 
   return labels[locale][risk];
 }
