@@ -214,21 +214,11 @@ async function checkSkillCards() {
 
       const plain = decodeHtml(stripTags(text)).toLowerCase();
 
-      if (new URL(url).pathname.includes("dataset-summarizer")) {
-        const forbidden = [
-          "install to project",
-          "test invocation",
-          "open developer workspace",
-          "usage ledger",
-        ].filter((token) => plain.includes(token));
+      const submittedSkillFailure = validateSubmittedSkillSafety(plain);
 
-        const hasInspectionOnly =
-          plain.includes("inspection only") || plain.includes("\u4ec5\u53ef\u67e5\u770b");
-
-        if (!hasInspectionOnly || forbidden.length > 0) {
-          fail(name, `submitted skill is not inspection-only safe: ${forbidden.join(", ")}`);
-          continue;
-        }
+      if (submittedSkillFailure) {
+        fail(name, submittedSkillFailure);
+        continue;
       }
 
       pass(name, `status=${status}`);
@@ -354,23 +344,11 @@ function validatePageState(path, plain, html) {
     }
   }
 
-  if (path.includes("/skills/dataset-summarizer")) {
-    const forbidden = [
-      "publisher payout",
-      "install to project",
-      "test invocation",
-      "open developer workspace",
-      "usage ledger",
-      "runtime can be tested",
-      "\u53d1\u5e03\u8005\u63d0\u73b0",
-    ].filter((token) => plain.includes(token));
+  if (path.startsWith("/skills/")) {
+    const submittedSkillFailure = validateSubmittedSkillSafety(plain);
 
-    if (!plain.includes("inspection only") && !plain.includes("\u4ec5\u53ef\u67e5\u770b")) {
-      return "submitted skill page missing inspection-only marker";
-    }
-
-    if (forbidden.length > 0) {
-      return `submitted skill page exposes unavailable action markers: ${forbidden.join(", ")}`;
+    if (submittedSkillFailure) {
+      return submittedSkillFailure;
     }
   }
 
@@ -387,6 +365,50 @@ function validatePageState(path, plain, html) {
   }
 
   return "";
+}
+
+function validateSubmittedSkillSafety(plain) {
+  if (!isSubmittedSkillPage(plain)) {
+    return "";
+  }
+
+  const forbidden = [
+    "publisher payout",
+    "install to project",
+    "test invocation",
+    "open developer workspace",
+    "usage ledger",
+    "runtime can be tested",
+    "\u53d1\u5e03\u8005\u63d0\u73b0",
+  ].filter((token) => plain.includes(token));
+
+  if (!hasInspectionOnlyMarker(plain)) {
+    return "submitted skill page missing inspection-only marker";
+  }
+
+  if (forbidden.length > 0) {
+    return `submitted skill page exposes unavailable action markers: ${forbidden.join(", ")}`;
+  }
+
+  return "";
+}
+
+function isSubmittedSkillPage(plain) {
+  return (
+    plain.includes("submitted but not verified") ||
+    plain.includes("this skill is submitted") ||
+    plain.includes("not verified yet") ||
+    plain.includes("status submitted") ||
+    plain.includes("verification submitted") ||
+    plain.includes("\u5df2\u63d0\u4ea4\u4f46") ||
+    plain.includes("\u5c1a\u672a\u901a\u8fc7\u9a8c\u8bc1") ||
+    plain.includes("\u72b6\u6001 \u5df2\u63d0\u4ea4") ||
+    plain.includes("\u9a8c\u8bc1\u72b6\u6001 \u5df2\u63d0\u4ea4")
+  );
+}
+
+function hasInspectionOnlyMarker(plain) {
+  return plain.includes("inspection only") || plain.includes("\u4ec5\u53ef\u67e5\u770b");
 }
 
 function extractCurlUrls(html) {
