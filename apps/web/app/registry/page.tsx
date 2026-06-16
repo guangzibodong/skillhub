@@ -1,16 +1,20 @@
 import {
   ArrowRight,
+  BookOpenCheck,
   Boxes,
   Braces,
   Code2,
   Database,
   FileJson,
   GitBranch,
+  KeyRound,
   Network,
   Plus,
   RadioTower,
+  SearchCheck,
   ShieldCheck,
-  Terminal
+  Terminal,
+  Workflow
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
@@ -34,6 +38,15 @@ const registryProtocolCopy = {
       submit: "Submit a skill"
     },
     contractTitle: "What the Skill API records",
+    decisionTitle: "Where this page fits",
+    decisionHeading: "Know when to use Find Skills, Skill API, or workspace runtime.",
+    decisionBody:
+      "Use this page when you need the contract behind a Skill: the fields an agent, developer, publisher, and operator can inspect before runtime use.",
+    surfaces: [
+      ["Find Skills", "Human-facing discovery, category filters, pricing intent, examples, and publisher trust."],
+      ["Skill API", "Machine-readable contracts: slug, version, schemas, permissions, runtime, review state, and endpoint links."],
+      ["Workspace runtime", "Signed-in project adoption, Project Keys, policy approval, logs, usage, and billing-preview evidence."]
+    ],
     evidence: {
       calls: "Skill API calls",
       highRisk: "High-risk contracts",
@@ -54,6 +67,21 @@ const registryProtocolCopy = {
       ["Paid preview", "Paid-marketplace ledger, refund, dispute, and payout state remains prelaunch operating reference material."]
     ],
     manifestTitle: "Manifest quality bar",
+    quickstartTitle: "API quickstart",
+    quickstartBody:
+      "Start with public discovery, inspect one contract, then sign in only when you need to adopt a verified version into a project.",
+    quickstartSteps: [
+      ["Search contracts", "Use /v1/skills/search to list public Skill API records."],
+      ["Inspect manifest", "Open /v1/skills/:slug to review version, schema, permissions, runtime, and trust state."],
+      ["Adopt after sign-in", "Create a project, approve policy, generate a Project Key, and invoke through the governed gateway."]
+    ],
+    audienceTitle: "Who uses the Skill API",
+    audience: [
+      ["Developers", "Compare contracts and prepare project adoption without guessing what a Skill can access."],
+      ["Agent builders", "Let agents inspect stable metadata before choosing tools or MCP capabilities."],
+      ["Publishers", "Understand the fields needed before a Skill becomes trusted marketplace supply."],
+      ["Operators", "Review version, permissions, runtime evidence, incidents, feedback, and paid-readiness state."]
+    ],
     manifestFields: [
       ["Identity", "name, displayName, semantic version, category, tags, support, changelog"],
       ["Runtime", "http, mcp, or restricted local runtime with target, transport, and health posture"],
@@ -89,6 +117,15 @@ const registryProtocolCopy = {
       submit: "提交技能"
     },
     contractTitle: "技能 API 记录什么",
+    decisionTitle: "这个页面负责什么",
+    decisionHeading: "把“找技能、技能 API、工作台运行”的边界说清楚。",
+    decisionBody:
+      "当客户、开发者或 AI 需要看清一个 Skill 背后的合约时，就看这个页面：它解释可被检查、可被审核、可被项目采用的字段。",
+    surfaces: [
+      ["找技能", "给人看的发现页面：分类筛选、价格意图、案例、发布者信任和采用对比。"],
+      ["技能 API", "给系统和 AI 看的合约层：slug、版本、schema、权限、运行时、审核状态和端点。"],
+      ["登录工作台", "真实采用和运行：项目安装、Project Key、策略审批、日志、用量和账务预览证据。"]
+    ],
     evidence: {
       calls: "技能 API 调用",
       highRisk: "高风险合约",
@@ -109,6 +146,21 @@ const registryProtocolCopy = {
       ["付费预览", "付费市场账本、退款、争议和提现状态仍是预发布运营参考。"]
     ],
     manifestTitle: "Manifest 质量门槛",
+    quickstartTitle: "API 快速开始",
+    quickstartBody:
+      "先用公开端点发现 Skill，再检查一个具体合约；只有在需要项目采用和真实运行时，才进入登录后的工作台。",
+    quickstartSteps: [
+      ["搜索合约", "调用 /v1/skills/search 获取公开 Skill API 记录。"],
+      ["检查 manifest", "打开 /v1/skills/:slug，查看版本、schema、权限、运行时和信任状态。"],
+      ["登录后采用", "创建项目、审批策略、生成 Project Key，再通过治理网关调用。"]
+    ],
+    audienceTitle: "谁会使用技能 API",
+    audience: [
+      ["开发者", "不用猜测 Skill 能访问什么，先对比合约再接入项目。"],
+      ["Agent 构建者", "让智能体在选择工具或 MCP 能力前检查稳定元数据。"],
+      ["发布者", "明确 Skill 进入可信市场供给前必须补齐哪些字段。"],
+      ["运营审核", "查看版本、权限、运行证据、事故、反馈和付费准备状态。"]
+    ],
     manifestFields: [
       ["身份", "name、displayName、语义化版本、分类、标签、支持路径、变更记录"],
       ["运行时", "HTTP、MCP 或受限本地运行时，包含目标、传输和健康状态"],
@@ -171,6 +223,19 @@ export default async function RegistryPage({ searchParams }: PageProps) {
     { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
     { label: dictionary.metrics.callableSkills, value: String(publicStats.callableSkills) }
   ];
+  const apiQuickstartSnippet = locale === "zh"
+    ? `curl "${apiUrl}/v1/skills/search?limit=20"
+
+curl "${apiUrl}/v1/skills/browser-research"
+
+# 真实运行从登录后开始：
+# 创建项目 -> 审批策略 -> 生成 Project Key -> 调用`
+    : `curl "${apiUrl}/v1/skills/search?limit=20"
+
+curl "${apiUrl}/v1/skills/browser-research"
+
+# Runtime use starts only after sign-in:
+# create project -> approve policy -> generate Project Key -> invoke`;
 
   return (
     <AppShell active="registry" locale={locale}>
@@ -196,6 +261,34 @@ export default async function RegistryPage({ searchParams }: PageProps) {
               </a>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      <section className="section section-divider" aria-labelledby="registry-decision-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[84px]">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+            <div>
+              <div className="eyebrow">
+                <Workflow size={16} aria-hidden="true" />
+                <span>{labels.decisionTitle}</span>
+              </div>
+              <h2 id="registry-decision-heading" className="heading-lg mt-4">{labels.decisionHeading}</h2>
+              <p className="body-text mt-4 max-w-[560px]">{labels.decisionBody}</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {labels.surfaces.map(([title, body], index) => {
+                const Icon = index === 0 ? SearchCheck : index === 1 ? FileJson : KeyRound;
+
+                return (
+                  <article className="card" key={title}>
+                    <Icon size={18} aria-hidden="true" className="text-[#7fee64] mb-3" />
+                    <strong className="heading-sm">{title}</strong>
+                    <span className="body-text-sm mt-2 block">{body}</span>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -307,6 +400,71 @@ export default async function RegistryPage({ searchParams }: PageProps) {
                 </pre>
               </div>
             </aside>
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-divider" aria-labelledby="registry-quickstart-heading">
+        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 items-start">
+            <article className="card">
+              <div className="eyebrow">
+                <BookOpenCheck size={16} aria-hidden="true" />
+                <span>{labels.quickstartTitle}</span>
+              </div>
+              <h2 id="registry-quickstart-heading" className="heading-lg mt-4">{labels.quickstartTitle}</h2>
+              <p className="body-text mt-4">{labels.quickstartBody}</p>
+              <div className="mt-6 space-y-4">
+                {labels.quickstartSteps.map(([title, body], index) => (
+                  <div className="flex items-start gap-4" key={title}>
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(127,238,100,0.24)] bg-[rgba(127,238,100,0.08)] text-sm font-semibold text-[#7fee64]">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <strong className="text-white text-sm">{title}</strong>
+                      <p className="body-text-sm mt-1">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="card">
+              <div className="eyebrow">
+                <Terminal size={16} aria-hidden="true" />
+                <span>{dictionary.registryPage.endpointTitle}</span>
+              </div>
+              <pre className="code-block mt-5 overflow-x-auto text-sm">
+                <code>{apiQuickstartSnippet}</code>
+              </pre>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a className="btn-secondary inline-flex items-center gap-2" href={`${apiUrl}/v1/skills/search?limit=20`}>
+                  <Code2 size={15} aria-hidden="true" />
+                  <span>{dictionary.registryPage.endpointTitle}</span>
+                </a>
+                <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
+                  <BookOpenCheck size={15} aria-hidden="true" />
+                  <span>{labels.actions.api}</span>
+                </a>
+              </div>
+            </article>
+          </div>
+
+          <div className="mt-8">
+            <div className="mb-5">
+              <div className="eyebrow">
+                <ShieldCheck size={16} aria-hidden="true" />
+                <span>{labels.audienceTitle}</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              {labels.audience.map(([title, body]) => (
+                <article className="card" key={title}>
+                  <strong className="heading-sm">{title}</strong>
+                  <span className="body-text-sm mt-2 block">{body}</span>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
