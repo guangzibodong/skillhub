@@ -93,10 +93,13 @@ type PublishSkillOptions = {
 };
 
 export type PublicSkillCategory =
+  | "automation"
   | "content"
   | "data"
   | "dev"
+  | "finance"
   | "ops"
+  | "research"
   | "sales"
   | "security"
   | "seo"
@@ -1083,7 +1086,7 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
 
   if (
     normalized.some((tag) =>
-      ["seo", "search", "indexability", "canonical"].includes(tag),
+      ["answer-engine", "canonical", "geo", "indexability", "search", "seo"].includes(tag),
     )
   ) {
     return "seo";
@@ -1099,7 +1102,31 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
 
   if (
     normalized.some((tag) =>
-      ["content", "copywriting", "brief", "browser", "citations", "research"].includes(tag),
+      ["browser", "citations", "research"].includes(tag),
+    )
+  ) {
+    return "research";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["accounting", "backoffice", "finance", "invoice", "payables"].includes(tag),
+    )
+  ) {
+    return "finance";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["automation", "orchestration", "webhook", "workflow"].includes(tag),
+    )
+  ) {
+    return "automation";
+  }
+
+  if (
+    normalized.some((tag) =>
+      ["brief", "content", "conversion", "copywriting"].includes(tag),
     )
   ) {
     return "content";
@@ -1123,7 +1150,11 @@ function inferCategoryKeyFromTags(tags: string[]): PublicSkillCategory {
     return "ops";
   }
 
-  if (normalized.some((tag) => ["data", "analysis", "summary"].includes(tag))) {
+  if (
+    normalized.some((tag) =>
+      ["analysis", "cleaning", "data", "spreadsheet", "summary"].includes(tag),
+    )
+  ) {
     return "data";
   }
 
@@ -1169,13 +1200,27 @@ function toSummary(skill: SkillManifest): RankedSkillSummary {
     "api-contract-tester",
     "browser-research",
     "content-brief-builder",
+    "geo-answer-auditor",
+    "invoice-extraction",
+    "knowledge-base-answer",
+    "landing-page-copy-optimizer",
+    "mobile-layout-qa",
+    "outbound-sequence-personalizer",
+    "prompt-injection-guard",
     "seo-page-auditor",
+    "spreadsheet-cleaner",
     "support-triage",
     "ui-ux-reviewer",
+    "webhook-payload-validator",
+  ]);
+  const submittedDemoSkills = new Set([
+    "codebase-risk-scanner",
+    "crm-enrichment",
+    "dataset-summarizer",
   ]);
   const status: SkillSummary["verificationStatus"] = verifiedDemoSkills.has(skill.name)
     ? "verified"
-    : skill.name === "dataset-summarizer"
+    : submittedDemoSkills.has(skill.name)
       ? "submitted"
       : "draft";
   const signals = demoSkillSignals(skill.name);
@@ -1298,6 +1343,127 @@ function demoSkillSignals(
       avgLatencyMs: 760,
       averageRating: 4.3,
       feedbackCount: 9,
+    };
+  }
+
+  if (slug === "geo-answer-auditor") {
+    return {
+      installCount: 8800,
+      invocationCount: 45200,
+      successRate: 0.974,
+      avgLatencyMs: 1700,
+      averageRating: 4.8,
+      feedbackCount: 156,
+    };
+  }
+
+  if (slug === "landing-page-copy-optimizer") {
+    return {
+      installCount: 7600,
+      invocationCount: 48800,
+      successRate: 0.978,
+      avgLatencyMs: 980,
+      averageRating: 4.7,
+      feedbackCount: 141,
+    };
+  }
+
+  if (slug === "mobile-layout-qa") {
+    return {
+      installCount: 6900,
+      invocationCount: 39200,
+      successRate: 0.981,
+      avgLatencyMs: 1250,
+      averageRating: 4.8,
+      feedbackCount: 119,
+    };
+  }
+
+  if (slug === "knowledge-base-answer") {
+    return {
+      installCount: 10100,
+      invocationCount: 78400,
+      successRate: 0.988,
+      avgLatencyMs: 740,
+      averageRating: 4.7,
+      feedbackCount: 203,
+    };
+  }
+
+  if (slug === "webhook-payload-validator") {
+    return {
+      installCount: 3900,
+      invocationCount: 22400,
+      successRate: 0.972,
+      avgLatencyMs: 520,
+      averageRating: 4.5,
+      feedbackCount: 64,
+    };
+  }
+
+  if (slug === "prompt-injection-guard") {
+    return {
+      installCount: 9400,
+      invocationCount: 66800,
+      successRate: 0.983,
+      avgLatencyMs: 680,
+      averageRating: 4.8,
+      feedbackCount: 184,
+    };
+  }
+
+  if (slug === "spreadsheet-cleaner") {
+    return {
+      installCount: 8300,
+      invocationCount: 51600,
+      successRate: 0.976,
+      avgLatencyMs: 1050,
+      averageRating: 4.6,
+      feedbackCount: 126,
+    };
+  }
+
+  if (slug === "outbound-sequence-personalizer") {
+    return {
+      installCount: 4400,
+      invocationCount: 28600,
+      successRate: 0.965,
+      avgLatencyMs: 1300,
+      averageRating: 4.6,
+      feedbackCount: 73,
+    };
+  }
+
+  if (slug === "crm-enrichment") {
+    return {
+      installCount: 8400,
+      invocationCount: 59200,
+      successRate: 0.967,
+      avgLatencyMs: 2400,
+      averageRating: 4.7,
+      feedbackCount: 186,
+    };
+  }
+
+  if (slug === "codebase-risk-scanner") {
+    return {
+      installCount: 5100,
+      invocationCount: 31800,
+      successRate: 0.958,
+      avgLatencyMs: 3200,
+      averageRating: 4.7,
+      feedbackCount: 96,
+    };
+  }
+
+  if (slug === "invoice-extraction") {
+    return {
+      installCount: 4800,
+      invocationCount: 34400,
+      successRate: 0.961,
+      avgLatencyMs: 1900,
+      averageRating: 4.6,
+      feedbackCount: 118,
     };
   }
 
