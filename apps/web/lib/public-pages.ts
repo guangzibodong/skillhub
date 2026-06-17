@@ -55,29 +55,56 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     schema: "ContactPage",
     seo: {
       en: {
-        title: "Contact SkillHub - Product, Publisher, Security, and Team Evaluation",
+        title: "Contact SkillHub - Pro Onboarding, Custom Skills, Publisher, and Support",
         description:
-          "Contact the SkillHub team for product questions, publisher onboarding, security reports, support issues, or team evaluation during Launch Preview.",
+          "Contact SkillHub for Pro onboarding, custom Skill requests, publisher onboarding, technical support, security reports, or business cooperation.",
       },
       zh: {
-        title: "联系 SkillHub - 产品、发布者、安全与团队评估",
+        title: "联系 SkillHub - Pro 开通、定制技能、作者入驻与支持",
         description:
-          "联系 SkillHub 团队，咨询产品、发布 Skill、安全报告、支持问题或团队评估。公开预览阶段不提供假表单。",
+          "联系 SkillHub，处理 Pro 开通、定制 Skill 需求、发布者入驻、技术支持、安全报告和商务合作。",
       },
     },
     en: {
       eyebrow: "Contact",
-      title: "Contact SkillHub",
+      title: "Choose the right SkillHub contact path",
       lead:
-        "Reach the SkillHub team for product questions, publisher onboarding, security reports, support issues, or team evaluation.",
+        "Tell us what you want to do first: open Pro, request a custom Skill, publish as an author, fix a technical issue, report a security concern, or discuss cooperation.",
       quickAnswer:
-        "SkillHub uses clear fallback contact paths during Launch Preview. Product and support questions go through support, while sensitive security reports should request a secure disclosure channel before sharing details.",
-      primaryCta: { href: "/support", label: "Open support" },
+        `For Pro onboarding, custom Skills, and business cooperation, email ${companyInfo.businessEmail}. For account, login, Project Key, API/MCP, or publishing problems, email ${companyInfo.supportEmail}. Do not send secrets, tokens, OAuth credentials, or private customer data in the first message.`,
+      primaryCta: { href: companyLinks.businessMailto, label: "Email business team" },
       secondaryCta: { href: companyLinks.supportMailto, label: "Email support" },
       sections: [
         {
+          title: "Pro onboarding and team evaluation",
+          body: "Use this path when your team wants to evaluate Pro, choose a billing cycle, or start with one of the promoted workflow packages.",
+          bullets: [
+            `Email: ${companyInfo.businessEmail}`,
+            "Include company name, team size, target workflow, preferred billing cycle, and target launch date.",
+            { href: "/pricing", label: "Compare monthly, quarterly, and annual plans" },
+          ],
+        },
+        {
+          title: "Request a custom Skill",
+          body: "Use this path when the marketplace does not yet cover the workflow you need, or when you want a private internal Skill specification.",
+          bullets: [
+            `Email: ${companyInfo.businessEmail}`,
+            "Include the job to be done, input files or systems, expected output, risk level, and whether the Skill should be public or private.",
+            "Share examples only after sensitive fields have been removed.",
+          ],
+        },
+        {
+          title: "Publisher onboarding",
+          body: "Use this path when a third-party author wants to publish, maintain, or commercialize Skills inside the SkillHub catalog.",
+          bullets: [
+            `Email: ${companyInfo.supportEmail}`,
+            { href: "/publish", label: "Read the publishing guide" },
+            { href: "/publisher-review", label: "Understand review states and verification" },
+          ],
+        },
+        {
           title: "Technical support",
-          body: "Use this channel for account, login, Project Key, API/MCP invocation, Skill publishing, and admin workspace issues.",
+          body: "Use this channel for account, login, Project Key, API/MCP invocation, Skill publishing, and workspace issues.",
           bullets: [
             `Email: ${companyInfo.supportEmail}`,
             "Include account email, page URL, error screenshot, request time, and reproduction steps.",
@@ -85,40 +112,76 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
           ],
         },
         {
+          title: "Security reports",
+          body: `Security issues should request a secure disclosure channel first through ${companyInfo.supportEmail}. Public support reports must not include exploitable payloads or secrets.`,
+        },
+        {
           title: "Business cooperation",
-          body: "Use this channel for enterprise evaluation, channel partnerships, publisher cooperation, procurement, media, or ecosystem discussions.",
+          body: "Use this channel for enterprise evaluation, channel partnerships, procurement, media, ecosystem partnerships, or agency cooperation.",
           bullets: [
             `Email: ${companyInfo.businessEmail}`,
             "Include organization name, cooperation direction, contact person, and expected timeline.",
           ],
         },
         {
-          title: "Publisher onboarding",
-          body: "Publishers can ask about manifest requirements, review states, pricing preview, and support expectations before submitting a Skill.",
-          bullets: ["Start with the publishing guide.", "Use Publisher Review to understand verification and restricted states."],
-        },
-        {
-          title: "Security reports",
-          body: `Security issues should request a secure disclosure channel first through ${companyInfo.supportEmail}. Public support reports must not include exploitable payloads or secrets.`,
-        },
-        {
           title: "Company address",
           body: companyInfo.address,
+        },
+      ],
+      faq: [
+        {
+          question: "Which email should I use?",
+          answer: `Use ${companyInfo.businessEmail} for Pro, custom Skills, partnerships, procurement, and agency cooperation. Use ${companyInfo.supportEmail} for login, account, Project Key, API/MCP, publisher, and technical issues.`,
+        },
+        {
+          question: "What should I include in the first message?",
+          answer: "Include your goal, organization name, account email when relevant, page URL, screenshots, reproduction steps, desired timeline, and the first workflow package you want to evaluate.",
+        },
+        {
+          question: "Can I paste tokens or secrets?",
+          answer: "No. Do not send Project Keys, OAuth secrets, passwords, private keys, exploitable payloads, or customer private data in an initial email.",
         },
       ],
     },
     zh: {
       eyebrow: "联系",
-      title: "联系 SkillHub",
-      lead: "如需了解产品、发布 Skill、安全报告、支持问题或团队评估，请联系 SkillHub 团队。",
+      title: "选择正确的 SkillHub 联系路径",
+      lead: "先说明你要完成什么：开通 Pro、定制 Skill、作为作者发布、修复技术问题、报告安全问题，还是讨论商务合作。",
       quickAnswer:
-        "公开预览阶段，SkillHub 使用明确的联系路径而不是假表单。产品与支持问题走支持入口；敏感安全报告应先请求安全披露渠道，再共享细节。",
-      primaryCta: { href: "/support", label: "打开支持中心" },
+        `Pro 开通、定制 Skill 和商务合作请发 ${companyInfo.businessEmail}。账号、登录、Project Key、API/MCP、发布问题请发 ${companyInfo.supportEmail}。第一封邮件不要发送 secret、token、OAuth 凭据或客户隐私数据。`,
+      primaryCta: { href: companyLinks.businessMailto, label: "联系商务团队" },
       secondaryCta: { href: companyLinks.supportMailto, label: "邮件联系支持" },
       sections: [
         {
+          title: "Pro 开通与团队评估",
+          body: "团队想评估 Pro、选择月付/季付/年付，或先从某一组主推技能包开始，请走这条路径。",
+          bullets: [
+            `邮箱：${companyInfo.businessEmail}`,
+            "建议提供公司名称、团队规模、目标工作流、希望的付款周期和上线时间。",
+            { href: "/pricing", label: "查看月付、季付和年付价格" },
+          ],
+        },
+        {
+          title: "定制 Skill 需求",
+          body: "如果市场里暂时没有覆盖你的流程，或者你需要内部私有 Skill 规范，请走这条路径。",
+          bullets: [
+            `邮箱：${companyInfo.businessEmail}`,
+            "建议说明要完成的任务、输入文件或系统、期望输出、风险等级，以及 Skill 是公开还是私有。",
+            "示例数据请先移除敏感字段后再发送。",
+          ],
+        },
+        {
+          title: "发布者入驻",
+          body: "第三方作者想把 Skill 发布、维护或商业化到 SkillHub 目录里，请走这条路径。",
+          bullets: [
+            `邮箱：${companyInfo.supportEmail}`,
+            { href: "/publish", label: "查看发布指南" },
+            { href: "/publisher-review", label: "了解审核状态与验证规则" },
+          ],
+        },
+        {
           title: "技术支持",
-          body: "账号、登录、Project Key、API/MCP 调用、Skill 发布和后台使用问题，请走技术支持路径。",
+          body: "账号、登录、Project Key、API/MCP 调用、Skill 发布和工作台使用问题，请走技术支持路径。",
           bullets: [
             `邮箱：${companyInfo.supportEmail}`,
             "建议提供账号邮箱、页面 URL、错误截图、请求时间和复现步骤。",
@@ -126,25 +189,34 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
           ],
         },
         {
+          title: "安全报告",
+          body: `安全问题请先通过 ${companyInfo.supportEmail} 请求安全披露渠道。公开支持报告中不要包含可利用 payload、token 或 secret。`,
+        },
+        {
           title: "商务合作",
-          body: "企业评估、渠道合作、发布者合作、采购咨询、媒体或生态合作，请走商务合作路径。",
+          body: "企业评估、渠道合作、采购咨询、媒体、生态伙伴或服务商合作，请走商务合作路径。",
           bullets: [
             `邮箱：${companyInfo.businessEmail}`,
             "建议提供公司/组织名称、合作方向、联系人和时间要求。",
           ],
         },
         {
-          title: "发布者入驻",
-          body: "发布者可以在提交 Skill 前了解 manifest 要求、审核状态、价格预览和支持责任。",
-          bullets: ["先查看发布指南。", "通过发布审核页了解 verified、restricted、rejected 等状态。"],
-        },
-        {
-          title: "安全报告",
-          body: `安全问题请先通过 ${companyInfo.supportEmail} 请求安全披露渠道。公开支持报告中不要包含可利用 payload、token 或 secret。`,
-        },
-        {
           title: "公司地址",
           body: companyInfo.address,
+        },
+      ],
+      faq: [
+        {
+          question: "应该发哪个邮箱？",
+          answer: `Pro、定制 Skill、渠道合作、采购和服务商合作发 ${companyInfo.businessEmail}。登录、账号、Project Key、API/MCP、发布和技术问题发 ${companyInfo.supportEmail}。`,
+        },
+        {
+          question: "第一封邮件要写什么？",
+          answer: "写清楚目标、公司/组织名称、相关账号邮箱、页面 URL、截图、复现步骤、希望上线时间，以及你想先评估哪一组技能包。",
+        },
+        {
+          question: "能不能直接发 token 或 secret？",
+          answer: "不能。第一封邮件不要发送 Project Key、OAuth secret、密码、私钥、可利用 payload 或客户隐私数据。",
         },
       ],
     },

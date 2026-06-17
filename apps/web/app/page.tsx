@@ -26,6 +26,10 @@ import {
 import { PublicEventLink } from "@/components/public-event-link";
 import { ParticleField } from "@/components/home/particle-field";
 import { getSkills } from "@/lib/registry";
+import {
+  getPromotedSkillPackages,
+  promotedSkillPackageIntro,
+} from "@/lib/promoted-skill-packages";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +74,7 @@ const capabilityIcons = [Search, FileJson, Zap, ShoppingCart] as const;
 const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
 const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
 const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
+const packageIcons = [Search, ShoppingCart, BarChart3] as const;
 const footerTrustBrands = ["openai", "claude", "gemini", "copilot"] as const;
 
 const fallbackFeaturedSkills: SkillSummary[] = [
@@ -592,6 +597,8 @@ export default async function Home({ searchParams }: PageProps) {
     process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
   const skills = await getSkills();
   const landing = homeLandingCopy[locale];
+  const packageIntro = promotedSkillPackageIntro[locale];
+  const promotedPackages = getPromotedSkillPackages(locale);
   const seenSkillKeys = new Set<string>();
   const featuredSkills = [...skills, ...fallbackFeaturedSkills]
     .filter((skill) => routableSkillSlugs.has(skill.slug))
@@ -918,6 +925,72 @@ export default async function Home({ searchParams }: PageProps) {
               ))}
             </div>
           </article>
+        </section>
+
+        <section className="home-section home-package-section" aria-labelledby="home-package-heading">
+          <div className="home-section__head home-package-section__head">
+            <div>
+              <span className="home-package-section__eyebrow">{packageIntro.eyebrow}</span>
+              <h2 id="home-package-heading">{packageIntro.title}</h2>
+              <p>{packageIntro.body}</p>
+            </div>
+          </div>
+
+          <div className="home-package-grid">
+            {promotedPackages.map((item, index) => {
+              const Icon = packageIcons[index] ?? Boxes;
+
+              return (
+                <article className="home-package-card lift-card" key={item.key}>
+                  <div className="home-package-card__top">
+                    <div className="home-package-card__icon" aria-hidden="true">
+                      <Icon size={22} />
+                    </div>
+                    <div>
+                      <span>{item.eyebrow}</span>
+                      <h3>{item.title}</h3>
+                    </div>
+                  </div>
+                  <p>{item.body}</p>
+                  <div className="home-package-card__fit">{item.fit}</div>
+                  <div className="home-package-card__list">
+                    <strong>{locale === "zh" ? "交付结果" : "Outcomes"}</strong>
+                    {item.outcomes.map((outcome) => (
+                      <span key={outcome}>
+                        <CheckCircle2 size={14} aria-hidden="true" />
+                        {outcome}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="home-package-card__skills" aria-label={locale === "zh" ? "推荐技能" : "Recommended skills"}>
+                    {item.skills.map((skill) => (
+                      <span key={skill}>{skill}</span>
+                    ))}
+                  </div>
+                  <p className="home-package-card__path">{item.path}</p>
+                  <div className="home-package-card__actions">
+                    <PublicEventLink
+                      className="secondary-button"
+                      href={localizedHref(item.marketplaceHref, locale)}
+                      eventName="browse_skills_cta_click"
+                      eventProperties={{ surface: "home_package", track: item.key }}
+                    >
+                      {item.ctaPrimary}
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </PublicEventLink>
+                    <PublicEventLink
+                      className="ghost-button"
+                      href={localizedHref(item.contactHref, locale)}
+                      eventName="contact_cta_click"
+                      eventProperties={{ surface: "home_package", track: item.key }}
+                    >
+                      {item.ctaSecondary}
+                    </PublicEventLink>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </section>
 
         <section className="home-section home-trust-section" aria-labelledby="home-trust-heading">

@@ -18,6 +18,10 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import {
+  getPromotedSkillPackages,
+  promotedSkillPackageIntro,
+} from "@/lib/promoted-skill-packages";
 
 export const dynamic = "force-dynamic";
 
@@ -267,10 +271,13 @@ const copy: Record<Locale, PricingCopy> = {
 
 const planIcons = [PackageSearch, Sparkles, WalletCards, BadgeCheck] as const;
 const noteIcons = [ShieldCheck, CheckCircle2, FileJson] as const;
+const packageIcons = [PackageSearch, Sparkles, FileJson] as const;
 
 export default async function PricingPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(await searchParams);
   const labels = copy[locale];
+  const packageIntro = promotedSkillPackageIntro[locale];
+  const promotedPackages = getPromotedSkillPackages(locale);
 
   return (
     <AppShell active="pricing" locale={locale}>
@@ -314,6 +321,55 @@ export default async function PricingPage({ searchParams }: PageProps) {
               </article>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      <section className="section pb-[88px]" aria-labelledby="pricing-packages-heading">
+        <div className="section-inner flex flex-col gap-7">
+          <div className="max-w-[820px]">
+            <div className="eyebrow">
+              <PackageSearch size={16} aria-hidden="true" />
+              <span>{packageIntro.eyebrow}</span>
+            </div>
+            <h2 id="pricing-packages-heading" className="heading-lg mt-3">
+              {packageIntro.pricingTitle}
+            </h2>
+            <p className="body-text text-[#999] mt-3 max-w-[760px]">
+              {packageIntro.pricingBody}
+            </p>
+          </div>
+
+          <div className="pricing-package-grid">
+            {promotedPackages.map((item, index) => {
+              const Icon = packageIcons[index] ?? PackageSearch;
+
+              return (
+                <Reveal delay={index * 70} key={item.key}>
+                  <article className="pricing-package-card">
+                    <div className="pricing-package-card__head">
+                      <Icon size={21} aria-hidden="true" />
+                      <span>{item.eyebrow}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                    <div className="pricing-package-card__path">{item.path}</div>
+                    <ul>
+                      {item.outcomes.map((outcome) => (
+                        <li key={outcome}>
+                          <CheckCircle2 size={15} aria-hidden="true" />
+                          <span>{outcome}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a className="btn-secondary inline-flex items-center justify-center gap-2 mt-auto" href={localizedHref(item.contactHref, locale)}>
+                      <span>{item.ctaSecondary}</span>
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </a>
+                  </article>
+                </Reveal>
+              );
+            })}
+          </div>
         </div>
       </section>
 
