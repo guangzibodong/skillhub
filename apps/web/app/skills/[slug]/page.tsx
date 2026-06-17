@@ -31,7 +31,7 @@ import { SkillFeedbackForm } from "@/components/skill-feedback-form";
 import { SkillProjectActionPanel } from "@/components/skill-project-action-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
 import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo, type Locale } from "@/lib/i18n";
-import { localizeText } from "@/lib/marketplace-data";
+import { localizeText, type MarketplaceSkill } from "@/lib/marketplace-data";
 import { getDeveloperProjects } from "@/lib/ops-data";
 import { getPublicPublisherProfile, publisherSlugFromName } from "@/lib/public-publishers";
 import { getPublicMarketplaceSkill, getRelatedMarketplaceSkills } from "@/lib/public-marketplace";
@@ -343,6 +343,14 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
     skillActionState,
     skillAvailability,
   });
+  const adoptionProfile = getSkillAdoptionProfile({
+    developerAccessHref,
+    developerAccessLabel,
+    locale,
+    skill,
+    skillActionState,
+    skillAvailability,
+  });
 
   return (
     <AppShell active="skills" locale={locale}>
@@ -370,7 +378,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           </div>
         </div>
 
-        <aside className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 mt-8 max-w-[1200px] mx-auto px-6">
+        <aside className="skill-detail-status-card bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] mt-8">
           <div className="flex items-center gap-3 mb-4">
             <BadgeCheck size={20} aria-hidden="true" className="text-[#10b981]" />
             <div>
@@ -379,7 +387,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
             </div>
           </div>
           {showProductionMetrics ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="skill-detail-status-card__grid grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="stat-card">
                 <span className="text-[#999] text-xs">{labels.success}</span>
                 <strong className="text-white">{formatMetricValue(skill.successRate, locale)}</strong>
@@ -398,7 +406,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="skill-detail-status-card__grid grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="stat-card">
                 <span className="text-[#999] text-xs">{labels.runtime}</span>
                 <strong className="text-white">{skill.runtime}</strong>
@@ -437,6 +445,42 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
               </article>
             );
           })}
+        </div>
+
+        <div className="section-inner mt-5">
+          <section className="skill-adoption-panel" aria-labelledby="skill-adoption-title">
+            <div className="skill-adoption-panel__head">
+              <div>
+                <span className="skill-adoption-panel__eyebrow">
+                  <BookOpenCheck size={15} aria-hidden="true" />
+                  {adoptionProfile.kicker}
+                </span>
+                <h2 id="skill-adoption-title">{adoptionProfile.title}</h2>
+                <p>{adoptionProfile.body}</p>
+              </div>
+              <a className="btn-secondary skill-adoption-panel__action" href={adoptionProfile.actionHref}>
+                <span>{adoptionProfile.actionLabel}</span>
+                <ArrowRight size={15} aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className="skill-adoption-grid">
+              {adoptionProfile.items.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <article className="skill-adoption-item" key={item.label}>
+                    <span className="skill-adoption-item__icon">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                    <p>{item.body}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
         </div>
       </section>
       </Reveal>
@@ -912,6 +956,293 @@ function DeveloperHandoffPacket({
       </div>
     </div>
   );
+}
+
+function getSkillAdoptionProfile({
+  developerAccessHref,
+  developerAccessLabel,
+  locale,
+  skill,
+  skillActionState,
+  skillAvailability,
+}: {
+  developerAccessHref: string;
+  developerAccessLabel: string;
+  locale: Locale;
+  skill: MarketplaceSkill;
+  skillActionState: ReturnType<typeof getPublicSkillActionState>;
+  skillAvailability: ReturnType<typeof getSkillAvailability>;
+}) {
+  const firstUseCase = skill.useCases[0] ? localizeText(skill.useCases[0], locale) : "";
+  const isInspectionOnly = skillAvailability.kind === "inspection_only";
+  const labels = {
+    en: {
+      accessPlan: "Access plan",
+      bestFor: "Best for",
+      expectedOutput: "Expected output",
+      preparation: "Prepare before use",
+      publicInspection: "Public inspection",
+      title: "Adoption decision",
+      verifiedRuntime: "Verified runtime path",
+    },
+    zh: {
+      accessPlan: "可用套餐",
+      bestFor: "适合对象",
+      expectedOutput: "产出结果",
+      preparation: "使用前准备",
+      publicInspection: "公开检查",
+      title: "采用决策",
+      verifiedRuntime: "已验证运行路径",
+    },
+  } satisfies Record<Locale, Record<string, string>>;
+
+  return {
+    actionHref: skillActionState.canShowProjectHandoff ? localizedHref(developerAccessHref, locale) : "#install",
+    actionLabel: skillActionState.canShowProjectHandoff
+      ? developerAccessLabel
+      : locale === "zh"
+        ? "查看公开说明"
+        : "Inspect public details",
+    body: isInspectionOnly
+      ? locale === "zh"
+        ? "这个技能目前只适合做公开评估和替代方案比较，暂时不要接入真实项目。"
+        : "Use this listing for public evaluation and replacement comparison only until verification is complete."
+      : locale === "zh"
+        ? "先判断业务场景、套餐边界和接入准备，再进入项目安装或运行测试。"
+        : "Check the business fit, plan boundary, and setup requirements before installing or testing in a project.",
+    items: [
+      {
+        body: pricingPreviewBody(skill.billing, skillAvailability.kind, locale),
+        icon: WalletCards,
+        label: labels[locale].accessPlan,
+        value: isInspectionOnly ? skillAvailability.label[locale] : formatBillingModelLabel(skill.billing, locale),
+      },
+      {
+        body: getCategoryBuyerFitBody(skill.categoryKey, locale),
+        icon: MessageSquareText,
+        label: labels[locale].bestFor,
+        value: getCategoryBuyerFitTitle(skill.categoryKey, locale),
+      },
+      {
+        body: firstUseCase || getCategoryOutcomeBody(skill.categoryKey, locale),
+        icon: FileJson,
+        label: labels[locale].expectedOutput,
+        value: getCategoryOutcomeTitle(skill.categoryKey, locale),
+      },
+      {
+        body: getSkillPreparationBody(skill, locale, skillAvailability.kind),
+        icon: ListChecks,
+        label: labels[locale].preparation,
+        value: getSkillPreparationTitle(skill, locale, skillAvailability.kind),
+      },
+    ],
+    kicker: isInspectionOnly ? labels[locale].publicInspection : labels[locale].verifiedRuntime,
+    title: labels[locale].title,
+  };
+}
+
+function getCategoryBuyerFitTitle(
+  categoryKey: MarketplaceSkill["categoryKey"],
+  locale: Locale,
+) {
+  const labels = {
+    en: {
+      automation: "Ops teams automating repeat work",
+      content: "Content, growth, and product marketing",
+      data: "Data operators and spreadsheet owners",
+      dev: "API, platform, and engineering teams",
+      ecommerce: "E-commerce and marketplace operators",
+      education: "Training, enablement, and course teams",
+      finance: "Finance and back-office operators",
+      hr: "Recruiting and people teams",
+      legal: "Legal, compliance, and policy teams",
+      marketing: "Performance marketing teams",
+      ops: "Support and operations teams",
+      research: "Research and analyst teams",
+      sales: "Sales and CRM operators",
+      security: "Security and risk teams",
+      seo: "SEO, GEO, and content operators",
+      ui: "Product, design, and frontend teams",
+    },
+    zh: {
+      automation: "流程自动化和运营团队",
+      content: "内容、增长和产品营销团队",
+      data: "数据运营和表格负责人",
+      dev: "API、平台和工程团队",
+      ecommerce: "电商和平台运营团队",
+      education: "培训、课程和内部赋能团队",
+      finance: "财务和后台运营团队",
+      hr: "招聘和人力团队",
+      legal: "法务、合规和政策团队",
+      marketing: "投放和增长营销团队",
+      ops: "客服和业务运营团队",
+      research: "调研和分析团队",
+      sales: "销售和 CRM 运营团队",
+      security: "安全、风控和审核团队",
+      seo: "SEO、GEO 和内容运营团队",
+      ui: "产品、设计和前端团队",
+    },
+  } satisfies Record<Locale, Record<MarketplaceSkill["categoryKey"], string>>;
+
+  return labels[locale][categoryKey];
+}
+
+function getCategoryBuyerFitBody(
+  categoryKey: MarketplaceSkill["categoryKey"],
+  locale: Locale,
+) {
+  const labels = {
+    en: {
+      automation: "Best when the same judgment or routing step repeats across many tasks.",
+      content: "Use when draft quality, positioning, tone, and conversion clarity matter.",
+      data: "Use when messy operational data needs a repeatable cleanup or audit path.",
+      dev: "Use before agents touch APIs, manifests, webhooks, contracts, or releases.",
+      ecommerce: "Use for catalog, listing, pricing, inventory, and promotion workflows.",
+      education: "Use to turn materials into structured learning or enablement assets.",
+      finance: "Use when back-office teams need extracted, checked, or routed financial data.",
+      hr: "Use where recruiting or people workflows need consistent screening and summaries.",
+      legal: "Use for review support, policy checks, and structured compliance summaries.",
+      marketing: "Use when campaigns need repeatable checks, briefs, and performance actions.",
+      ops: "Use when support queues, knowledge bases, and internal operations need faster triage.",
+      research: "Use when evidence gathering, source review, or browser research must stay structured.",
+      sales: "Use when pipeline records, outreach, and account notes need sharper next actions.",
+      security: "Use when agent actions must be gated, reviewed, or risk-scored before execution.",
+      seo: "Use when pages need search intent, citation readiness, and crawlability checks.",
+      ui: "Use before release to catch hierarchy, layout, accessibility, and mobile issues.",
+    },
+    zh: {
+      automation: "适合把重复判断、分派、整理步骤变成稳定流程。",
+      content: "适合提升草稿质量、定位表达、语气和转化清晰度。",
+      data: "适合把混乱运营数据变成可复用的清洗和检查流程。",
+      dev: "适合在智能体触碰 API、manifest、Webhook、合约或发布前检查。",
+      ecommerce: "适合商品、Listing、价格、库存和促销运营场景。",
+      education: "适合把资料整理成结构化课程、培训或内部赋能内容。",
+      finance: "适合财务和后台团队提取、核对、分派财务数据。",
+      hr: "适合招聘和人力流程中的筛选、总结和一致性判断。",
+      legal: "适合法务审核支持、政策检查和合规摘要整理。",
+      marketing: "适合广告投放、营销简报、素材检查和效果动作生成。",
+      ops: "适合客服队列、知识库回答和内部运营分派提效。",
+      research: "适合证据搜集、来源核验和浏览器调研要结构化输出的场景。",
+      sales: "适合销售线索、CRM 记录、外联和客户下一步动作整理。",
+      security: "适合智能体执行前的风险评分、拦截和审核。",
+      seo: "适合检查搜索意图、AI 答案可见性、引用准备和收录问题。",
+      ui: "适合上线前检查层级、排版、可访问性和移动端问题。",
+    },
+  } satisfies Record<Locale, Record<MarketplaceSkill["categoryKey"], string>>;
+
+  return labels[locale][categoryKey];
+}
+
+function getCategoryOutcomeTitle(
+  categoryKey: MarketplaceSkill["categoryKey"],
+  locale: Locale,
+) {
+  const labels = {
+    en: {
+      automation: "Workflow decision or routed task",
+      content: "Publishable brief, copy, or rewrite",
+      data: "Cleaned records and repair plan",
+      dev: "Contract check and release notes",
+      ecommerce: "Listing, catalog, or promotion actions",
+      education: "Structured lesson or enablement asset",
+      finance: "Extracted fields and approval hints",
+      hr: "Screening summary and next step",
+      legal: "Review summary and risk notes",
+      marketing: "Campaign brief and optimization actions",
+      ops: "Triage result and support answer",
+      research: "Evidence summary and source list",
+      sales: "Account summary and next action",
+      security: "Allow, review, or block decision",
+      seo: "Prioritized SEO/GEO repair list",
+      ui: "Prioritized UX repair notes",
+    },
+    zh: {
+      automation: "流程判断或分派结果",
+      content: "可发布简报、文案或改写稿",
+      data: "清洗结果和修复计划",
+      dev: "合约检查和发布建议",
+      ecommerce: "Listing、商品或促销动作",
+      education: "结构化课程或培训材料",
+      finance: "字段提取和审批提示",
+      hr: "筛选摘要和下一步建议",
+      legal: "审核摘要和风险提示",
+      marketing: "营销简报和优化动作",
+      ops: "分派结果和客服回答",
+      research: "证据摘要和来源列表",
+      sales: "客户摘要和下一步动作",
+      security: "允许、复核或阻断决策",
+      seo: "有优先级的 SEO/GEO 修复清单",
+      ui: "有优先级的体验修复建议",
+    },
+  } satisfies Record<Locale, Record<MarketplaceSkill["categoryKey"], string>>;
+
+  return labels[locale][categoryKey];
+}
+
+function getCategoryOutcomeBody(
+  categoryKey: MarketplaceSkill["categoryKey"],
+  locale: Locale,
+) {
+  return locale === "zh"
+    ? `${getCategoryOutcomeTitle(categoryKey, locale)}，并保留输入、权限和运行边界，方便运营或开发团队复核。`
+    : `${getCategoryOutcomeTitle(categoryKey, locale)}, with input, permission, and runtime boundaries kept reviewable for operators or developers.`;
+}
+
+function getSkillPreparationTitle(
+  skill: MarketplaceSkill,
+  locale: Locale,
+  availabilityKind: ReturnType<typeof getSkillAvailability>["kind"],
+) {
+  if (availabilityKind === "inspection_only") {
+    return locale === "zh" ? "等待验证后再接入" : "Wait for verification";
+  }
+
+  if (skill.risk === "high") {
+    return locale === "zh" ? "先准备审批和权限" : "Prepare approval and policy";
+  }
+
+  if (skill.runtime === "Local") {
+    return locale === "zh" ? "准备本地文件或项目上下文" : "Prepare local files or project context";
+  }
+
+  if (skill.runtime === "MCP") {
+    return locale === "zh" ? "准备 MCP 连接和项目 Key" : "Prepare MCP connection and project key";
+  }
+
+  return locale === "zh" ? "准备输入和项目 Key" : "Prepare input and project key";
+}
+
+function getSkillPreparationBody(
+  skill: MarketplaceSkill,
+  locale: Locale,
+  availabilityKind: ReturnType<typeof getSkillAvailability>["kind"],
+) {
+  if (availabilityKind === "inspection_only") {
+    return locale === "zh"
+      ? "先查看 schema、权限、发布者和审核状态；验证通过前不要接入生产流程。"
+      : "Inspect schema, permissions, publisher, and review state first; do not connect it to production before approval.";
+  }
+
+  const permissionSummary = skill.permissions
+    .slice(0, 2)
+    .map((permission) => localizeText(permission.label, locale))
+    .join(locale === "zh" ? "、" : ", ");
+
+  if (skill.risk === "high") {
+    return locale === "zh"
+      ? `高风险技能需要负责人审批、项目策略和预算边界；重点确认${permissionSummary || "权限范围"}。`
+      : `High-risk skills require owner approval, project policy, and budget limits; review ${permissionSummary || "permissions"} first.`;
+  }
+
+  if (skill.billing === "free") {
+    return locale === "zh"
+      ? `准备示例输入和项目 Key；基础免费，但运行仍会经过${permissionSummary || "权限"}检查。`
+      : `Prepare sample input and a project key; the skill is free basics, but runtime still checks ${permissionSummary || "permissions"}.`;
+  }
+
+  return locale === "zh"
+    ? `确认 Pro 计划、项目 Key 和${permissionSummary || "权限范围"}，再进入运行测试。`
+    : `Confirm Pro access, project key, and ${permissionSummary || "permission scope"} before runtime testing.`;
 }
 
 function getSkillDecisionCards({
