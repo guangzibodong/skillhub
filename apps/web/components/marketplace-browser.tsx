@@ -38,10 +38,20 @@ import {
 } from "@/lib/skill-install-state";
 
 type MarketplaceBrowserProps = {
+  catalogSummary?: MarketplaceCatalogSummary;
+  catalogTotal?: number;
   initialFilters?: MarketplaceInitialFilters;
   locale: Locale;
   publisherProfiles?: PublicPublisherProfile[];
   skills: MarketplaceSkillCard[];
+};
+
+type MarketplaceCatalogSummary = {
+  categories: number;
+  free: number;
+  pro: number;
+  spotlightCounts: Record<string, number>;
+  total: number;
 };
 
 export type MarketplaceSkillCard = Pick<
@@ -548,6 +558,8 @@ const emptyCatalogCopy = {
 } as const;
 
 export function MarketplaceBrowser({
+  catalogSummary: providedCatalogSummary,
+  catalogTotal,
   initialFilters,
   locale,
   publisherProfiles = [],
@@ -588,31 +600,25 @@ export function MarketplaceBrowser({
     [publisherProfiles],
   );
   const catalogSummary = useMemo(
-    () => ({
-      categories: new Set(skills.map((skill) => skill.categoryKey)).size,
-      free: skills.filter((skill) => skill.billing === "free").length,
-      pro: skills.filter((skill) => skill.billing !== "free").length,
-      total: skills.length,
-    }),
-    [skills],
+    () =>
+      providedCatalogSummary ?? {
+        categories: new Set(skills.map((skill) => skill.categoryKey)).size,
+        free: skills.filter((skill) => skill.billing === "free").length,
+        pro: skills.filter((skill) => skill.billing !== "free").length,
+        spotlightCounts: buildSpotlightCounts(skills),
+        total: catalogTotal ?? skills.length,
+      },
+    [catalogTotal, providedCatalogSummary, skills],
   );
   const spotlightCards = useMemo(
     () =>
       categorySpotlights.map((spotlight) => {
-        if (spotlight.key === "free") {
-          return {
-            ...spotlight,
-            count: skills.filter((skill) => skill.billing === "free").length,
-          };
-        }
-
         return {
           ...spotlight,
-          count: skills.filter((skill) => skill.categoryKey === spotlight.key)
-            .length,
+          count: catalogSummary.spotlightCounts[spotlight.key] ?? 0,
         };
       }),
-    [skills],
+    [catalogSummary],
   );
   const hasActiveFilters =
     query.trim().length > 0 ||
@@ -1459,6 +1465,18 @@ function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
     sort: normalizeSort(filters.sort),
     verification: normalizeOption(filters.verification, verificationOptions, "all"),
   };
+}
+
+function buildSpotlightCounts(skills: MarketplaceSkillCard[]) {
+  return skills.reduce<Record<string, number>>((counts, skill) => {
+    counts[skill.categoryKey] = (counts[skill.categoryKey] ?? 0) + 1;
+
+    if (skill.billing === "free") {
+      counts.free = (counts.free ?? 0) + 1;
+    }
+
+    return counts;
+  }, {});
 }
 
 function normalizePricing(value: string | undefined): PricingKey {

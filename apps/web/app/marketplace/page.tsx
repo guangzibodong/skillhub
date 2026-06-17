@@ -106,6 +106,7 @@ type MarketplaceInitialFilterState = {
 };
 
 const PUBLIC_SKILL_LINK_INDEX_LIMIT = 240;
+const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
 
 const pageCopy = {
   en: {
@@ -559,7 +560,12 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     getPlatformOverview(),
   ]);
   const rawPublicStats = await getPublicPlatformStats({ publishers });
-  const publicSkillLinkIndex = mergeSkillLinkIndex(skills);
+  const catalogSummary = buildMarketplaceCatalogSummary(skills);
+  const pageSkills = selectMarketplacePageSkills(
+    skills,
+    MARKETPLACE_PAGE_SKILL_LIMIT,
+  );
+  const publicSkillLinkIndex = mergeSkillLinkIndex(pageSkills);
   const publicStats = reconcileMarketplacePageStats(
     rawPublicStats,
     publicSkillLinkIndex,
@@ -568,7 +574,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     0,
     PUBLIC_SKILL_LINK_INDEX_LIMIT,
   );
-  const skillCards = toMarketplaceSkillCards(skills);
+  const skillCards = toMarketplaceSkillCards(pageSkills);
   const metrics = [
     [labels.catalogMetric, String(publicStats.publicSkills)],
     [labels.publisherMetric, String(publicStats.publicPublishers)],
@@ -755,6 +761,8 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           ))}
         </nav>
         <MarketplaceBrowser
+          catalogSummary={catalogSummary}
+          catalogTotal={publicStats.publicSkills}
           initialFilters={initialFilters}
           locale={locale}
           publisherProfiles={publishers}
@@ -1176,6 +1184,75 @@ function toMarketplaceSkillCards(
     tags: skill.tags,
     verification: skill.verification,
   }));
+}
+
+function buildMarketplaceCatalogSummary(skills: typeof marketplaceSkills) {
+  const spotlightCounts: Record<string, number> = {};
+
+  for (const skill of skills) {
+    spotlightCounts[skill.categoryKey] =
+      (spotlightCounts[skill.categoryKey] ?? 0) + 1;
+
+    if (skill.billing === "free") {
+      spotlightCounts.free = (spotlightCounts.free ?? 0) + 1;
+    }
+  }
+
+  return {
+    categories: new Set(skills.map((skill) => skill.categoryKey)).size,
+    free: skills.filter((skill) => skill.billing === "free").length,
+    pro: skills.filter((skill) => skill.billing !== "free").length,
+    spotlightCounts,
+    total: skills.length,
+  };
+}
+
+function selectMarketplacePageSkills(
+  skills: typeof marketplaceSkills,
+  limit: number,
+) {
+  if (skills.length <= limit) {
+    return skills;
+  }
+
+  const buckets = new Map<string, typeof marketplaceSkills>();
+
+  for (const skill of skills) {
+    const bucket = buckets.get(skill.categoryKey) ?? [];
+    bucket.push(skill);
+    buckets.set(skill.categoryKey, bucket);
+  }
+
+  const selected: typeof marketplaceSkills = [];
+  const seen = new Set<string>();
+  const categoryKeys = Array.from(buckets.keys()).sort();
+
+  while (selected.length < limit) {
+    let added = false;
+
+    for (const categoryKey of categoryKeys) {
+      const bucket = buckets.get(categoryKey);
+      const skill = bucket?.shift();
+
+      if (!skill || seen.has(skill.slug)) {
+        continue;
+      }
+
+      selected.push(skill);
+      seen.add(skill.slug);
+      added = true;
+
+      if (selected.length >= limit) {
+        break;
+      }
+    }
+
+    if (!added) {
+      break;
+    }
+  }
+
+  return selected;
 }
 
 function toPublicMarketplaceSearchOptions(

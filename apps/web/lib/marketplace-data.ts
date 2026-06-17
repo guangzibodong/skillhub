@@ -718,6 +718,13 @@ type LaunchCatalogSkillSeed = {
   tags?: Record<Locale, string[]>;
 };
 
+type SkillScenarioVariant = {
+  en: string;
+  zh: string;
+  tag: string;
+  zhTag: string;
+};
+
 type LaunchCatalogGroup = {
   author: string;
   buyer: LocalizedText;
@@ -3046,6 +3053,15 @@ const expansionCatalogPacks: ExpansionCatalogPack[] = [
 
 const expansionLaunchCatalogGroups = buildExpansionLaunchCatalogGroups();
 
+const skillScenarioVariants = [
+  { en: "for SaaS Teams", zh: "SaaS 团队版", tag: "saas", zhTag: "SaaS" },
+  { en: "for Agencies", zh: "服务商版", tag: "agency", zhTag: "服务商" },
+  { en: "for E-commerce Brands", zh: "电商品牌版", tag: "ecommerce", zhTag: "电商" },
+  { en: "for Local Services", zh: "本地服务版", tag: "local services", zhTag: "本地服务" },
+  { en: "for Enterprise Ops", zh: "企业运营版", tag: "enterprise", zhTag: "企业" },
+  { en: "for Startups", zh: "创业团队版", tag: "startup", zhTag: "创业团队" },
+] satisfies SkillScenarioVariant[];
+
 function buildExpansionLaunchCatalogGroups(): LaunchCatalogGroup[] {
   return expansionCatalogPacks.map((pack) => ({
     author: pack.author,
@@ -3083,17 +3099,69 @@ function buildGeneratedLaunchSkills() {
     ...expansionLaunchCatalogGroups,
   ]) {
     for (const seed of group.skills) {
-      const slugBase = seed.slug ?? slugifySkillName(seed.name.en);
-      const slug = seen.has(slugBase)
-        ? `${slugBase}-${group.categoryKey}`
-        : slugBase;
-      seen.add(slug);
+      const baseSlug = seed.slug ?? slugifySkillName(seed.name.en);
+      const slug = uniqueSkillSlug(baseSlug, group.categoryKey, seen);
       skills.push(launchCatalogSkill(seed, group, slug, index));
       index += 1;
+
+      for (const variant of skillScenarioVariants) {
+        const scenarioSeed = scenarioSkillSeed(seed, variant);
+        const scenarioSlug = uniqueSkillSlug(
+          `${baseSlug}-${slugifySkillName(variant.tag)}`,
+          group.categoryKey,
+          seen,
+        );
+        skills.push(
+          launchCatalogSkill(scenarioSeed, group, scenarioSlug, index),
+        );
+        index += 1;
+      }
     }
   }
 
   return skills;
+}
+
+function uniqueSkillSlug(
+  slugBase: string,
+  categoryKey: MarketplaceCategoryKey,
+  seen: Set<string>,
+) {
+  let slug = slugBase;
+  let suffix = 2;
+
+  while (seen.has(slug)) {
+    slug = `${slugBase}-${categoryKey}-${suffix}`;
+    suffix += 1;
+  }
+
+  seen.add(slug);
+  return slug;
+}
+
+function scenarioSkillSeed(
+  seed: LaunchCatalogSkillSeed,
+  variant: SkillScenarioVariant,
+): LaunchCatalogSkillSeed {
+  return {
+    ...seed,
+    name: {
+      en: `${seed.name.en} ${variant.en}`,
+      zh: `${seed.name.zh} ${variant.zh}`,
+    },
+    summary: {
+      en:
+        seed.summary?.en ??
+        `${seed.name.en} tuned ${variant.en.toLowerCase()} so teams can turn recurring work into a governed, reviewable agent workflow.`,
+      zh:
+        seed.summary?.zh ??
+        `${seed.name.zh} ${variant.zh}面向对应团队的高频场景，把重复工作整理成可治理、可复核的智能体技能流程。`,
+    },
+    tags: {
+      en: uniqueStrings([...(seed.tags?.en ?? []), variant.tag]),
+      zh: uniqueStrings([...(seed.tags?.zh ?? []), variant.zhTag]),
+    },
+  };
 }
 
 function launchCatalogSkill(

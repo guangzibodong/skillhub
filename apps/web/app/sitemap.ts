@@ -4,8 +4,11 @@ import { indexablePublicPaths } from "@/lib/public-pages";
 import { localizedUrl, siteUrl } from "@/lib/seo";
 import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 
+const SITEMAP_SKILL_LIMIT = 240;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const skillPaths = marketplaceSkills
+    .slice(0, SITEMAP_SKILL_LIMIT)
     .filter((skill) => isVerifiedSkillStatus(skill.verification.en))
     .map((skill) => `/skills/${skill.slug}`);
   const paths = Array.from(new Set([...indexablePublicPaths, ...skillPaths]));
