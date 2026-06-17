@@ -312,7 +312,7 @@ function manifestToMarketplaceSkill(
   const isVerified = isVerifiedSkillStatus(summary.verificationStatus);
   const activePrice =
     prices.find((price) => price.status === "active") ?? prices[0];
-  const categoryKey = inferCategoryKey(summary.tags);
+  const categoryKey = staticSkill?.categoryKey ?? inferCategoryKey(summary.tags);
   const rawBilling =
     activePrice?.billingModel ??
     summary.billingModel ??
@@ -691,23 +691,58 @@ function formatPrice(
   billing: MarketplaceSkill["billing"],
   staticSkill?: MarketplaceSkill,
 ) {
-  if (billing !== "free") {
-    return { en: "Included in Pro", zh: "Pro 全量计划内" };
-  }
-
   if (!price) {
     if (staticSkill?.price) {
       return staticSkill.price;
     }
 
-    return { en: "Free", zh: "免费" };
+    return billing === "free"
+      ? { en: "Free", zh: "免费" }
+      : previewPriceLabel(billing);
   }
 
   if (price.billingModel === "free" || price.unitAmountCents <= 0) {
     return { en: "Free", zh: "免费" };
   }
 
+  const amount = formatCurrencyAmount(price);
+
+  if (price.billingModel === "per_call") {
+    return { en: `${amount} / call`, zh: `${amount} / 次` };
+  }
+
+  return { en: `${amount} / month`, zh: `${amount} / 月` };
+}
+
+function previewPriceLabel(billing: MarketplaceSkill["billing"]) {
+  if (billing === "per_call") {
+    return { en: "Paid preview / call", zh: "付费预览 / 次" };
+  }
+
+  if (billing === "subscription") {
+    return { en: "Paid preview / month", zh: "付费预览 / 月" };
+  }
+
   return { en: "Free", zh: "免费" };
+}
+
+function formatCurrencyAmount(price: SkillPriceRecord) {
+  const currency = price.currency || "USD";
+  const amount = price.unitAmountCents / 100;
+
+  try {
+    return new Intl.NumberFormat("en-US", {
+      currency,
+      maximumFractionDigits: amount < 1 ? 3 : 2,
+      minimumFractionDigits: amount < 1 ? 3 : 0,
+      style: "currency",
+    }).format(amount);
+  } catch {
+    return `${currency} ${new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: amount < 1 ? 3 : 2,
+      minimumFractionDigits: amount < 1 ? 3 : 0,
+    }).format(amount)}`;
+  }
 }
 
 function reviewOnlyPrice() {

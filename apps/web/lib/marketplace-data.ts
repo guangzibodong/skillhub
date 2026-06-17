@@ -3229,10 +3229,10 @@ export const marketplaceSkills: MarketplaceSkill[] = [
     },
     author: "SkillHub Labs",
     category: {
-      en: "Finance / Backoffice",
-      zh: "财务 / 后台",
+      en: "Operations / Support",
+      zh: "运营 / 客服",
     },
-    categoryKey: "finance",
+    categoryKey: "ops",
     tags: {
       en: ["operations", "support", "routing"],
       zh: ["运营", "客服", "路由"],

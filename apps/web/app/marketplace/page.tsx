@@ -107,21 +107,21 @@ type MarketplaceInitialFilterState = {
 
 const pageCopy = {
   en: {
-    eyebrow: "Agent skill marketplace",
-    title: "Find AI Agent Skills by job, category, risk, and plan.",
+    eyebrow: "AI agent skill marketplace",
+    title: "Find ready-to-use AI skills for real business workflows.",
     description:
-      "Browse skills across SEO/GEO, UI/UX, content, CRM, data, finance, research, support, automation, API, and security. Find Skills is for human comparison; the Skill API keeps the inspectable manifest, schema, runtime, and version contract behind each listing.",
-    primary: "Browse skills",
+      "Start from the job: SEO/GEO growth, e-commerce operations, data cleanup, customer support, sales CRM, UI QA, developer tools, automation, finance, and security. Compare free basics and Pro skills before adopting anything into a project.",
+    primary: "Browse the catalog",
     directory: "Publisher directory",
     console: "Developer workspace",
-    consoleTitle: "How to read this page",
+    consoleTitle: "How buyers should start",
     consoleSubtitle:
-      "Start with the marketplace card, open the detail page for manifest evidence, then sign in only when a verified skill should become project state.",
+      "Pick a workflow, try a free basic skill when available, open the detail page for permissions and expected output, then sign in only when the skill should become project state.",
     proof: [
-      "Use case",
-      "Permission risk",
-      "Publisher trust",
-      "Runtime evidence",
+      "Hundreds of public skills",
+      "16 business categories",
+      "Free basics + Pro",
+      "Permission checks",
     ],
     decisionTitle: "Find Skills vs Skill API",
     decisionRows: [
@@ -321,17 +321,17 @@ const pageCopy = {
     ],
   },
   zh: {
-    eyebrow: "智能体找技能",
-    title: "按任务和分类找到合适的 AI Agent 技能。",
+    eyebrow: "AI 智能体技能市场",
+    title: "按真实业务流程，找到可以直接采用的 AI 技能。",
     description:
-      "找技能页面按 SEO/GEO、UI/UX、内容文案、CRM、数据、财务后台、研究浏览器、客服运营、自动化流程、API、安全合规来组织。这里负责让客户找技能、比套餐、看风险；技能 API 负责保存可检查的 manifest、schema、运行时和版本契约。",
-    primary: "开始找技能",
+      "先从要解决的工作开始：SEO/GEO 增长、电商运营、数据清洗、客服支持、销售 CRM、UI 质检、开发工具、自动化、财务和安全。采用前先比较免费基础技能和 Pro 技能，再决定是否接入项目。",
+    primary: "浏览技能目录",
     directory: "发布者目录",
     console: "开发者工作台",
-    consoleTitle: "这个页面怎么用",
+    consoleTitle: "客户应该怎么开始",
     consoleSubtitle:
-      "先看市场卡片判断是否值得采用，再进详情页检查 manifest 和权限；只有确认要接入项目时，才需要登录进入工作台。",
-    proof: ["用途清楚", "权限清楚", "发布者清楚", "证据清楚"],
+      "先选业务流程，有免费基础技能就先试用；进入详情页查看权限、风险和预期产出；只有确认要接入项目时，才登录进入工作台。",
+    proof: ["数百个公开技能", "16 个业务分类", "免费基础 + Pro", "权限检查"],
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
       ["找技能", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
@@ -734,24 +734,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
       <div className="section-divider" />
 
-      <PublicAccessScope locale={locale} />
-
-      <div className="section-divider" />
-
-      <section
-        className="marketplace-ops-strip"
-        aria-label="Marketplace operating metrics"
-      >
-        {metrics.map(([label, value]) => (
-          <div key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </section>
-
-      <div className="section-divider" />
-
       {/* Catalog */}
       <div id="catalog">
         <nav
@@ -773,6 +755,24 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           skills={skillCards}
         />
       </div>
+
+      <div className="section-divider" />
+
+      <section
+        className="marketplace-ops-strip"
+        aria-label="Marketplace operating metrics"
+      >
+        {metrics.map(([label, value]) => (
+          <div key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </section>
+
+      <div className="section-divider" />
+
+      <PublicAccessScope locale={locale} />
 
       <div className="section-divider" />
 
@@ -1160,6 +1160,7 @@ function toMarketplaceSkillCards(
     latency: skill.latency,
     lastReviewed: skill.lastReviewed,
     name: skill.name,
+    price: skill.price,
     rating: skill.rating,
     risk: skill.risk,
     runtime: skill.runtime,

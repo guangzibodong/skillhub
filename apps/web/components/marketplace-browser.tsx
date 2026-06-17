@@ -55,6 +55,7 @@ export type MarketplaceSkillCard = Pick<
   | "latency"
   | "lastReviewed"
   | "name"
+  | "price"
   | "rating"
   | "risk"
   | "runtime"
@@ -79,7 +80,7 @@ type MarketplaceInitialFilters = {
 
 const labels = {
   en: {
-    search: "Search SEO/GEO, UI, content, CRM, data, finance, research, API",
+    search: "Search by workflow, category, or skill name",
     results: "results",
     copy: "Copy inspect",
     copied: "Copied",
@@ -114,6 +115,8 @@ const labels = {
     emptyTitle: "No skills match these filters",
     emptyBody:
       "Try a broader use case like SEO/GEO, UI/UX, content, CRM, data, finance, research, automation, API, or security.",
+    emptyRequest: "Request this skill",
+    emptySuggestionTitle: "Try these nearby paths",
     compare: "Next step",
     detail: "Open details",
     installReady: "Sign in to adopt",
@@ -126,17 +129,24 @@ const labels = {
     contract: "Contract checks",
     categoryPicks: "Popular starting points",
     categoryPicksBody:
-      "Choose by the job your team is trying to finish, then refine by plan, risk, runtime, and review status.",
+      "Start from the business problem, then refine by plan, permission risk, runtime, and review status.",
     operatingGuide: {
-      body: "Pick a business track first. Each track starts with free inspection skills, then moves into Pro skills for repeatable execution, audit evidence, and team adoption.",
+      body: "SkillHub already carries hundreds of public skills. The fastest way to use it is to start from a repeated workflow, try the free basics, then move recurring work into Pro.",
       demoCta: "Talk to Pro",
       filterCta: "View this track",
-      kicker: "Operating tracks",
+      kicker: "Buyer tracks",
       plan: "Suggested path",
       recommended: "Recommended skills",
       requestCta: "Request a skill",
-      title: "Start with one launch-ready workflow",
+      title: "Choose the workflow your team wants to improve first",
       tracks: {
+        builder: {
+          body: "Validate API contracts, webhook payloads, release checklists, prompt-injection risk, and codebase changes before agents ship work.",
+          eyebrow: "Developers / security",
+          outcomes: ["Check API and webhook contracts", "Reduce release risk", "Gate unsafe agent actions"],
+          plan: "Use free release checks first, then Pro for governed build and security QA.",
+          title: "Developer and security QA",
+        },
         data: {
           body: "Clean sheets, explain metrics, generate reports, and keep data handoffs understandable for operators.",
           eyebrow: "Data teams",
@@ -158,22 +168,42 @@ const labels = {
           plan: "Free diagnosis first, then Pro for all growth skills.",
           title: "Search and content growth",
         },
+        revenue: {
+          body: "Research accounts, personalize outbound, clean CRM data, summarize calls, and turn sales activity into the next best action.",
+          eyebrow: "Sales / CRM",
+          outcomes: ["Personalize outreach", "Enrich CRM records", "Summarize deal next steps"],
+          plan: "Use free scripts and objection helpers first, then Pro for recurring CRM workflows.",
+          title: "Sales and customer growth",
+        },
+        support: {
+          body: "Route tickets, answer from approved knowledge, summarize escalations, and turn support patterns into product and content fixes.",
+          eyebrow: "Support / operations",
+          outcomes: ["Triage tickets", "Draft grounded replies", "Find knowledge-base gaps"],
+          plan: "Free onboarding and SOP helpers first, then Pro for helpdesk and operations automation.",
+          title: "Support and operations",
+        },
       },
     },
     catalogSummary: {
       categories: "use-case categories",
       free: "free starter skills",
-      pro: "Pro-ready skills",
+      pro: "Pro / paid-preview skills",
       total: "public skills",
     },
     spotlight: {
       automation: "Workflow automation",
+      content: "Content operations",
       data: "Data and spreadsheets",
+      dev: "Developer tools",
       ecommerce: "E-commerce operations",
+      finance: "Finance ops",
       free: "Free starters",
       marketing: "Ads and growth",
       ops: "Support operations",
+      research: "Research and browser",
+      sales: "Sales and CRM",
       seo: "SEO / GEO visibility",
+      security: "Security and risk",
       ui: "UI/UX polish",
     },
     handoff: {
@@ -217,7 +247,7 @@ const labels = {
     },
   },
   zh: {
-    search: "搜索 SEO/GEO、UI、内容文案、CRM、数据、财务、研究、API",
+    search: "搜索工作流、分类或技能名",
     results: "个结果",
     copy: "复制查看命令",
     copied: "已复制",
@@ -252,6 +282,8 @@ const labels = {
     emptyTitle: "没有符合条件的技能",
     emptyBody:
       "可以换成 SEO/GEO、UI/UX、内容文案、CRM、数据、财务、研究、自动化、API、安全等更宽的用途分类来找。",
+    emptyRequest: "提交这个技能需求",
+    emptySuggestionTitle: "可以先试这些方向",
     compare: "下一步",
     detail: "查看详情",
     installReady: "登录后采用",
@@ -264,17 +296,24 @@ const labels = {
     contract: "合约检查",
     categoryPicks: "热门入口",
     categoryPicksBody:
-      "先按团队要完成的任务找，再用套餐、风险、运行时和验证状态细筛。",
+      "先从业务问题入手，再用套餐、权限风险、运行时和验证状态细筛。",
     operatingGuide: {
-      body: "客户先选一个真实业务场景，再从免费诊断技能开始，逐步进入 Pro 全量技能、审计证据和团队采用流程。",
+      body: "SkillHub 已经有数百个公开技能。最快的用法不是按技术名词乱找，而是先选一个重复发生的工作流，先用免费基础技能验证，再把长期任务放进 Pro。",
       demoCta: "咨询 Pro",
       filterCta: "查看这类技能",
-      kicker: "运营路线",
+      kicker: "买家场景",
       plan: "建议路径",
       recommended: "推荐技能",
       requestCta: "提交技能需求",
-      title: "先从一个可上线的工作流开始",
+      title: "先选团队最想改善的工作流",
       tracks: {
+        builder: {
+          body: "在智能体交付代码和自动化前，先检查 API 合约、Webhook 载荷、发布清单、提示注入风险和代码变更风险。",
+          eyebrow: "开发 / 安全",
+          outcomes: ["检查 API 和 Webhook 合约", "降低发布风险", "拦截不安全智能体动作"],
+          plan: "先用免费发布检查起步，构建和安全 QA 进入 Pro。",
+          title: "开发与安全质检",
+        },
         data: {
           body: "清洗表格、解释指标、生成周报，把数据交接变成运营同事也能看懂的流程。",
           eyebrow: "数据 / 报表团队",
@@ -296,22 +335,42 @@ const labels = {
           plan: "免费诊断先起步，完整增长技能进入 Pro 全量计划。",
           title: "搜索与内容增长",
         },
+        revenue: {
+          body: "调研客户、个性化外联、清理 CRM、总结销售电话，把销售动作转成清楚的下一步。",
+          eyebrow: "销售 / CRM",
+          outcomes: ["个性化触达", "补全 CRM 记录", "总结商机下一步"],
+          plan: "先用免费脚本和异议处理工具，周期性 CRM 流程进入 Pro。",
+          title: "销售与客户增长",
+        },
+        support: {
+          body: "分流工单、基于知识库回答、总结升级问题，并把客服高频问题变成产品和内容修复任务。",
+          eyebrow: "客服 / 运营",
+          outcomes: ["分流工单", "起草有依据的回复", "发现知识库缺口"],
+          plan: "先用免费 onboarding 和 SOP 辅助，客服与运营自动化进入 Pro。",
+          title: "客服与运营",
+        },
       },
     },
     catalogSummary: {
       categories: "个用途分类",
       free: "个免费入门技能",
-      pro: "个 Pro 技能",
+      pro: "个 Pro / 付费预览技能",
       total: "个公开技能",
     },
     spotlight: {
       automation: "流程自动化",
+      content: "内容运营",
       data: "数据和表格",
+      dev: "开发工具",
       ecommerce: "电商运营",
+      finance: "财务运营",
       free: "免费入门",
       marketing: "广告增长",
       ops: "客服运营",
+      research: "研究和浏览器",
+      sales: "销售 / CRM",
       seo: "SEO / GEO 可见度",
+      security: "安全风控",
       ui: "UI/UX 优化",
     },
     handoff: {
@@ -360,6 +419,8 @@ const pricingOptions = [
   { key: "all", label: { en: "All plans", zh: "全部套餐" } },
   { key: "free", label: { en: "Free basics", zh: "基础免费" } },
   { key: "pro", label: { en: "Included in Pro", zh: "Pro 全量计划内" } },
+  { key: "per_call", label: { en: "Paid preview / per call", zh: "付费预览 / 按次" } },
+  { key: "subscription", label: { en: "Paid preview / subscription", zh: "付费预览 / 订阅" } },
 ] as const;
 
 const riskOptions = ["all", "low", "medium", "high"] as const;
@@ -382,7 +443,13 @@ const categorySpotlights = [
   { key: "ecommerce", query: "" },
   { key: "ops", query: "" },
   { key: "data", query: "" },
+  { key: "sales", query: "" },
   { key: "ui", query: "" },
+  { key: "dev", query: "" },
+  { key: "security", query: "" },
+  { key: "research", query: "" },
+  { key: "content", query: "" },
+  { key: "finance", query: "" },
   { key: "automation", query: "" },
   { key: "free", query: "" },
 ] as const;
@@ -395,6 +462,17 @@ type VerificationKey = (typeof verificationOptions)[number];
 type SortKey = (typeof sortOptions)[number];
 
 const launchTracks = [
+  {
+    category: "dev",
+    key: "builder",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "api-contract-tester",
+      "webhook-payload-validator",
+      "prompt-injection-guard",
+    ],
+  },
   {
     category: "seo",
     key: "growth",
@@ -426,6 +504,28 @@ const launchTracks = [
       "spreadsheet-cleaner",
       "csv-cleaner",
       "data-dictionary-builder",
+    ],
+  },
+  {
+    category: "sales",
+    key: "revenue",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "crm-enrichment",
+      "cold-email-personalizer",
+      "meeting-notes-to-crm",
+    ],
+  },
+  {
+    category: "ops",
+    key: "support",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "support-triage",
+      "knowledge-base-answer",
+      "knowledge-base-gap-finder",
     ],
   },
 ] as const satisfies readonly {
@@ -637,15 +737,9 @@ export function MarketplaceBrowser({
           verificationMatch
         );
       })
-      .sort((first, second) => {
-        if (sort === "recommended") {
-          return (
-            getSkillOrder(first, skillOrder) - getSkillOrder(second, skillOrder)
-          );
-        }
-
-        return compareSkills(first, second, sort, normalizedQuery, locale);
-      });
+      .sort((first, second) =>
+        compareSkills(first, second, sort, normalizedQuery, locale, skillOrder),
+      );
   }, [
     category,
     locale,
@@ -659,8 +753,11 @@ export function MarketplaceBrowser({
   ]);
 
   const visibleSkills = useMemo(
-    () => filteredSkills.slice(0, visibleCount),
-    [filteredSkills, visibleCount],
+    () =>
+      sort === "recommended" && !query.trim()
+        ? diversifyRecommendedSkills(filteredSkills, visibleCount)
+        : filteredSkills.slice(0, visibleCount),
+    [filteredSkills, query, sort, visibleCount],
   );
   const hasMoreSkills = visibleCount < filteredSkills.length;
   const operatingTracks = useMemo(() => {
@@ -674,6 +771,16 @@ export function MarketplaceBrowser({
       }),
     }));
   }, [skills]);
+  const emptySuggestions = useMemo(
+    () => buildEmptySuggestions(skills, query, locale),
+    [locale, query, skills],
+  );
+  const emptyRequestHref = localizedHref(
+    `/contact?intent=request-skill${
+      query.trim() ? `&q=${encodeURIComponent(query.trim())}` : ""
+    }`,
+    locale,
+  );
 
   function copyInstall(skill: MarketplaceSkillCard) {
     void navigator.clipboard
@@ -1289,6 +1396,43 @@ export function MarketplaceBrowser({
           <Search size={26} aria-hidden="true" />
           <h3>{isEmptyCatalog ? emptyCatalog.title : dictionary.emptyTitle}</h3>
           <p>{isEmptyCatalog ? emptyCatalog.body : dictionary.emptyBody}</p>
+          {!isEmptyCatalog ? (
+            <div className="market-empty-state__actions">
+              <a
+                className="secondary-button secondary-button--compact"
+                href={emptyRequestHref}
+              >
+                <MessageSquarePlus size={15} aria-hidden="true" />
+                <span>{dictionary.emptyRequest}</span>
+              </a>
+            </div>
+          ) : null}
+          {!isEmptyCatalog && emptySuggestions.length > 0 ? (
+            <div className="market-empty-suggestions">
+              <strong>{dictionary.emptySuggestionTitle}</strong>
+              <div>
+                {emptySuggestions.map((suggestion) => (
+                  <button
+                    className="filter-button"
+                    key={suggestion.key}
+                    onClick={() => {
+                      setCategory(suggestion.key);
+                      setPricing("all");
+                      setRisk("all");
+                      setRuntime("all");
+                      setVerification("all");
+                      setSort("recommended");
+                      setQuery("");
+                    }}
+                    type="button"
+                  >
+                    {suggestion.label}
+                    <span>{suggestion.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           {!isEmptyCatalog && (
             <button
               className="secondary-button secondary-button--compact"
@@ -1402,10 +1546,12 @@ function searchableText(skill: MarketplaceSkillCard, locale: Locale) {
     skill.runtime,
     skill.billing,
     skill.risk,
+    localizeText(skill.price, locale),
     localizeText(skill.verification, locale),
     skill.verification.en,
     ...skill.tags[locale],
     ...skill.tags.en,
+    ...searchAliasesForSkill(skill, locale),
   ]
     .join(" ")
     .toLowerCase();
@@ -1444,7 +1590,16 @@ function compareSkills(
   sort: (typeof sortOptions)[number],
   query: string,
   locale: Locale,
+  skillOrder: Map<string, number>,
 ) {
+  if (sort === "recommended") {
+    return (
+      recommendedScore(second, query, locale) -
+        recommendedScore(first, query, locale) ||
+      getSkillOrder(first, skillOrder) - getSkillOrder(second, skillOrder)
+    );
+  }
+
   if (sort === "adoption") {
     return (
       parseCompactNumber(second.installs) -
@@ -1562,9 +1717,162 @@ function formatPublicPrice(skill: MarketplaceSkillCard, locale: Locale) {
     return locale === "zh" ? "基础免费" : "Free basics";
   }
 
+  if (skill.billing === "per_call") {
+    return locale === "zh"
+      ? `${localizeText(skill.price, locale)}，付费预览 / 按次`
+      : `${localizeText(skill.price, locale)}, paid preview / per call`;
+  }
+
+  if (skill.billing === "subscription") {
+    return locale === "zh"
+      ? `${localizeText(skill.price, locale)}，付费预览 / 订阅`
+      : `${localizeText(skill.price, locale)}, paid preview / subscription`;
+  }
+
   return locale === "zh"
     ? "Pro 全量计划内"
     : "Included in Pro";
+}
+
+function diversifyRecommendedSkills(
+  skills: MarketplaceSkillCard[],
+  visibleCount: number,
+) {
+  const categories = new Map<CategoryKey, MarketplaceSkillCard[]>();
+
+  for (const skill of skills) {
+    const queue = categories.get(skill.categoryKey) ?? [];
+    queue.push(skill);
+    categories.set(skill.categoryKey, queue);
+  }
+
+  const rankedCategories = Array.from(categories.entries())
+    .map(([categoryKey, queue]) => ({
+      categoryKey,
+      score: recommendedScore(queue[0] ?? skills[0], "", "en"),
+    }))
+    .sort((first, second) => second.score - first.score)
+    .map(({ categoryKey }) => categoryKey);
+
+  const result: MarketplaceSkillCard[] = [];
+
+  while (result.length < visibleCount) {
+    let advanced = false;
+
+    for (const categoryKey of rankedCategories) {
+      const queue = categories.get(categoryKey);
+      const next = queue?.shift();
+
+      if (next) {
+        result.push(next);
+        advanced = true;
+
+        if (result.length >= visibleCount) {
+          break;
+        }
+      }
+    }
+
+    if (!advanced) {
+      break;
+    }
+  }
+
+  if (result.length < visibleCount) {
+    const used = new Set(result.map((skill) => skill.slug));
+    result.push(
+      ...skills.filter((skill) => !used.has(skill.slug)).slice(0, visibleCount - result.length),
+    );
+  }
+
+  return result;
+}
+
+function buildEmptySuggestions(
+  skills: MarketplaceSkillCard[],
+  query: string,
+  locale: Locale,
+) {
+  const preferredCategories = categoriesForQuery(query.trim().toLowerCase());
+  const counts = new Map<CategoryKey, number>();
+
+  for (const skill of skills) {
+    counts.set(skill.categoryKey, (counts.get(skill.categoryKey) ?? 0) + 1);
+  }
+
+  return preferredCategories
+    .map((categoryKey) => {
+      const category = marketplaceCategories.find((item) => item.key === categoryKey);
+      return {
+        count: counts.get(categoryKey) ?? 0,
+        key: categoryKey,
+        label: category ? localizeText(category.label, locale) : categoryKey,
+      };
+    })
+    .filter((item) => item.count > 0)
+    .slice(0, 4);
+}
+
+function categoriesForQuery(query: string): CategoryKey[] {
+  const mapping: Array<[CategoryKey, string[]]> = [
+    ["data", ["excel", "spreadsheet", "csv", "sheet", "表格", "飞书表格"]],
+    ["ecommerce", ["shopify", "amazon", "listing", "sku", "商品", "电商"]],
+    ["sales", ["salesforce", "hubspot", "crm", "lead", "销售", "客户"]],
+    ["ops", ["slack", "zendesk", "ticket", "support", "客服", "工单", "钉钉", "飞书"]],
+    ["dev", ["github", "jira", "linear", "api", "webhook", "代码", "发布"]],
+    ["seo", ["seo", "geo", "google", "semrush", "ahrefs", "搜索", "曝光"]],
+    ["ui", ["figma", "ui", "ux", "design", "设计", "页面"]],
+    ["security", ["security", "risk", "合规", "安全", "漏洞"]],
+    ["finance", ["stripe", "invoice", "billing", "账单", "财务"]],
+    ["content", ["content", "blog", "copy", "文案", "内容"]],
+    ["research", ["research", "browser", "reddit", "调研", "研究"]],
+    ["automation", ["zapier", "make", "workflow", "自动化", "流程"]],
+  ];
+
+  const matched = mapping
+    .filter(([, tokens]) => tokens.some((token) => query.includes(token)))
+    .map(([categoryKey]) => categoryKey);
+
+  return matched.length > 0 ? matched : ["seo", "data", "ops", "dev"];
+}
+
+function searchAliasesForSkill(skill: MarketplaceSkillCard, locale: Locale) {
+  const categoryAliases: Record<CategoryKey, string[]> = {
+    all: [],
+    automation: ["zapier", "make", "workflow", "流程自动化", "自动化"],
+    content: ["blog", "copywriting", "copy", "内容", "文案"],
+    data: ["excel", "spreadsheet", "csv", "sheet", "表格", "数据清洗"],
+    dev: ["github", "jira", "linear", "api", "webhook", "release", "代码", "发布"],
+    ecommerce: ["shopify", "amazon", "listing", "sku", "商品", "电商"],
+    education: ["course", "training", "课程", "培训"],
+    finance: ["stripe", "invoice", "billing", "reconciliation", "账单", "财务"],
+    hr: ["recruiting", "resume", "ats", "招聘", "简历"],
+    legal: ["contract", "compliance", "policy", "合同", "合规"],
+    marketing: ["ads", "campaign", "google ads", "meta ads", "广告", "投放"],
+    ops: ["slack", "zendesk", "ticket", "support", "飞书", "钉钉", "客服", "工单"],
+    research: ["browser", "reddit", "news", "citations", "研究", "调研"],
+    sales: ["salesforce", "hubspot", "crm", "lead", "outbound", "销售", "线索"],
+    security: ["security", "risk", "prompt injection", "安全", "风控"],
+    seo: ["seo", "geo", "google", "semrush", "ahrefs", "搜索", "AI 搜索"],
+    ui: ["figma", "ui", "ux", "design", "accessibility", "设计", "可用性"],
+  };
+
+  const specific: string[] = [];
+  const name = localizeText(skill.name, locale).toLowerCase();
+
+  if (name.includes("crm")) {
+    specific.push("salesforce", "hubspot", "客户管理");
+  }
+
+  if (name.includes("spreadsheet") || name.includes("表格")) {
+    specific.push("excel", "google sheets", "飞书表格");
+  }
+
+  if (name.includes("ticket") || name.includes("工单")) {
+    specific.push("zendesk", "intercom", "slack");
+  }
+
+  return [...(categoryAliases[skill.categoryKey] ?? []), ...specific];
 }
 
 function buildRecommendationReasons(

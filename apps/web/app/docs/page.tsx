@@ -62,6 +62,15 @@ type DocsCopy = {
     }>;
     title: string;
   };
+  admin: {
+    body: string;
+    cards: Array<{
+      body: string;
+      items: string[];
+      title: string;
+    }>;
+    title: string;
+  };
   guardrails: {
     body: string;
     items: string[];
@@ -93,9 +102,31 @@ type DocsCopy = {
 
 const copy: Record<Locale, DocsCopy> = {
   en: {
+    admin: {
+      body:
+        "Admin pages are for operators who review submitted versions, verify launch readiness, audit sensitive activity, and keep commercial states honest before public adoption.",
+      cards: [
+        {
+          body: "Reviewers approve exact submitted versions, not mutable drafts. Public adoption only begins after review evidence passes.",
+          items: ["Version review queue", "Manifest and runtime evidence", "Return reasons for blocked submissions"],
+          title: "Review submissions",
+        },
+        {
+          body: "Launch checks confirm that permissions, support paths, pricing intent, and operational ownership are explicit before a skill becomes adoptable.",
+          items: ["Launch readiness", "Permission and trust signals", "Publisher support metadata"],
+          title: "Confirm readiness",
+        },
+        {
+          body: "Operators inspect audit logs, incident signals, finance readiness, and payout metadata without exposing customer secrets or Project Keys.",
+          items: ["Audit log review", "Incident and report triage", "Finance and payout readiness"],
+          title: "Operate safely",
+        },
+      ],
+      title: "Admin operations",
+    },
     api: {
       body:
-        "Use public endpoints for discovery and manifest inspection. Use signed-in workspace paths and Project Keys for runtime, installs, policy, logs, and commercial evidence.",
+        "Use public endpoints for discovery and manifest inspection, including public MCP metadata. Use signed-in workspace paths and Project Keys for installs, runtime calls, policy, logs, and commercial evidence.",
       groups: [
         {
           body: "Search public skills and inspect one skill before adoption.",
@@ -103,8 +134,8 @@ const copy: Record<Locale, DocsCopy> = {
           title: "Public discovery",
         },
         {
-          body: "Create project state, install verified skills, generate keys, and run console tests.",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys"],
+          body: "Create project state, install verified skills, generate Project Keys, and run governed runtime calls.",
+          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys", "POST /v1/runtime/invoke"],
           title: "Developer workspace",
         },
         {
@@ -165,14 +196,14 @@ const copy: Record<Locale, DocsCopy> = {
     ],
     quickstart: {
       body:
-        "These public calls let an evaluator confirm the Skill API contract shape. Real runtime invoke is intentionally not anonymous.",
+        "Follow the full adoption path: discover publicly, inspect the contract, sign in, install into a project, create a Project Key, then call runtime through the governed gateway.",
       cards: [
-        ["Find Skills", "Human-facing discovery: compare skills, pricing intent, publisher trust, and adoption risk."],
-        ["Skill API", "Machine-readable contract: slug, version, manifest, schemas, permissions, and review state."],
-        ["Project Key", "Runtime credential: created after sign-in, scoped to a project, and required for real invocation."],
+        ["Public discovery", "Search and inspect skills without credentials. Public MCP metadata only describes available tools and resources; it does not invoke customer runtime."],
+        ["Authenticated install", "Sign in, choose a project, and install a verified skill before any governed runtime call is available."],
+        ["Project Key runtime", "Create a scoped Project Key after install, then call REST or MCP runtime paths with policy, budget, rate limits, and logs."],
       ],
       codeLabel: "public inspect",
-      title: "Five-minute quickstart",
+      title: "Launch-ready quickstart",
     },
     terms: [
       ["Skill", "A versioned AI Agent capability with manifest, schema, permissions, runtime, publisher, and review state."],
@@ -184,6 +215,28 @@ const copy: Record<Locale, DocsCopy> = {
     ],
   },
   zh: {
+    admin: {
+      body:
+        "管理后台页面给运营和审核人员使用，用来查看已提交版本、确认上线准备度、审计敏感操作，并在公开采用前把商业状态说清楚。",
+      cards: [
+        {
+          body: "审核员只批准精确提交的版本，不批准可随意变动的草稿。只有审核证据通过后，才允许公开采用。",
+          items: ["版本审核队列", "Manifest 与运行证据", "退回原因说明"],
+          title: "审核提交",
+        },
+        {
+          body: "上线检查会确认权限、支持路径、定价意图和运营责任人都已经写清楚，再让技能进入可采用状态。",
+          items: ["上线准备度", "权限与信任信号", "发布者支持信息"],
+          title: "确认准备度",
+        },
+        {
+          body: "运营人员查看审计日志、事故信号、财务准备和结算信息，同时不能暴露客户密钥或 Project Key。",
+          items: ["审计日志查看", "事故与工单分流", "财务与结算准备"],
+          title: "安全运营",
+        },
+      ],
+      title: "管理后台操作",
+    },
     api: {
       body:
         "公开端点用于发现和检查 manifest；登录后的工作台与 Project Key 用于真实运行、安装、策略、日志和商业证据。",
@@ -283,8 +336,26 @@ curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 # Inspect a public skill manifest
 curl "https://api.useskillhub.com/v1/skills/browser-research"
 
-# Read public MCP metadata
-curl "https://api.useskillhub.com/mcp"`;
+# Read public MCP metadata; this is not runtime invocation
+curl "https://api.useskillhub.com/mcp"
+
+# Sign in, create or choose a project, then install the verified skill
+curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_ID/installed-skills" \\
+  -H "Authorization: Bearer $SESSION_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"slug":"browser-research","version":"1.4.2"}'
+
+# Create a scoped Project Key for runtime
+curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_ID/api-keys" \\
+  -H "Authorization: Bearer $SESSION_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"name":"local-dev","scopes":["runtime:invoke"]}'
+
+# Call governed runtime with the Project Key
+curl -X POST "https://api.useskillhub.com/v1/runtime/invoke" \\
+  -H "Authorization: Bearer $PROJECT_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"skill":"browser-research","input":{"query":"market map"}}'`;
 
 function getInstallGuides(locale: Locale) {
   if (locale === "zh") {
@@ -555,6 +626,42 @@ export default async function DocsPage({ searchParams }: PageProps) {
                     <code key={endpoint} className="text-xs font-mono text-[#7fee64] bg-[rgba(127,238,100,0.08)] rounded px-2 py-1 w-fit">
                       {endpoint}
                     </code>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" id="admin" aria-labelledby="docs-admin-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="max-w-[740px]">
+            <div className="eyebrow">
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{locale === "zh" ? "运营后台" : "Admin operations"}</span>
+            </div>
+            <h2 id="docs-admin-heading" className="heading-lg mt-3">{labels.admin.title}</h2>
+            <p className="body-text text-[#999] mt-3">{labels.admin.body}</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {labels.admin.cards.map((card) => (
+              <article className="card flex flex-col gap-4 h-full" key={card.title}>
+                <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
+                  <ClipboardCheck size={20} aria-hidden="true" className="text-[#7fee64]" />
+                </div>
+                <div>
+                  <h3 className="heading-sm">{card.title}</h3>
+                  <p className="body-text-sm text-[#999] mt-2">{card.body}</p>
+                </div>
+                <div className="flex flex-col gap-2 mt-auto">
+                  {card.items.map((item) => (
+                    <div className="flex items-start gap-2 text-sm text-[#999]" key={item}>
+                      <CheckCircle2 size={15} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </div>
                   ))}
                 </div>
               </article>

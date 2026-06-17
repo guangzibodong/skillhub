@@ -73,6 +73,9 @@ export default async function PublishPage({ searchParams }: PageProps) {
     hasSession: Boolean(session.subject),
     locale,
   });
+  const heroPrimaryLabel = hasPublisherAccess
+    ? pageLabels.publisherWorkspace
+    : accessNotice.actionLabel;
   const journeyActionHref = hasPublisherAccess
     ? "/publisher"
     : session.subject
@@ -111,11 +114,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
               <div className="mt-6 flex flex-wrap gap-3">
                 <a className="btn-primary btn-primary--large" href={accessNotice.actionHref}>
                   <UploadCloud size={18} aria-hidden="true" />
-                  <span>
-                    {hasPublisherAccess
-                      ? (locale === "zh" ? "进入发布者工作台" : "Open publisher workspace")
-                      : (locale === "zh" ? "先登录发布技能" : "Sign in to publish")}
-                  </span>
+                  <span>{heroPrimaryLabel}</span>
                 </a>
                 <a className="btn-secondary btn-secondary--large" href={localizedHref("/publisher-review", locale)}>
                   <ClipboardCheck size={18} aria-hidden="true" />
@@ -474,11 +473,14 @@ function getPublishAccessNotice({
   if (!hasSession) {
     return {
       actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
-      actionLabel: locale === "zh" ? "先登录" : "Sign in",
-    body:
-      locale === "zh"
-        ? "请先通过用户名/邮箱密码、已配置的 Google/GitHub OAuth，或邀请/恢复 token 登录。登录前表单会保持锁定，避免填完 manifest 才失败。"
-        : "Enter through username/email password, configured Google/GitHub OAuth, or an invite/recovery token first. The form stays locked so publishers do not fill a manifest only to fail at submit time.",
+      actionLabel:
+        locale === "zh"
+          ? "登录并申请发布权限"
+          : "Sign in to request publisher access",
+      body:
+        locale === "zh"
+          ? "当前还没有登录。请先登录，这样 SkillHub 才能把草稿、审核记录和发布权限申请绑定到真实账号。登录前表单会保持锁定，避免填完以后无法提交。"
+          : "You are not signed in. Sign in first so SkillHub can attach drafts, review history, and publisher access requests to a real account. The form stays locked until a session exists.",
       canSubmit: false,
       title: locale === "zh" ? "需要先登录" : "Sign-in required",
     };
@@ -486,11 +488,11 @@ function getPublishAccessNotice({
 
   return {
     actionHref: localizedHref("/account", locale),
-    actionLabel: locale === "zh" ? "查看账号权限" : "Check account access",
+    actionLabel: locale === "zh" ? "查看发布权限" : "Check publisher access",
     body:
       locale === "zh"
-        ? "当前账号已登录，但还没有发布权限。请到账号中心确认所在组织的权限，或让组织负责人开通发布权限后再保存草稿。"
-        : "You are signed in, but this account does not have publisher access yet. Check your organization access before saving a draft.",
+        ? "当前账号已登录，但还没有 publisher、owner、admin 或 super_admin 发布角色。请到账号中心查看权限，或让组织负责人先开通发布权限，再保存草稿。"
+        : "You are signed in, but this account is not assigned a publisher, owner, admin, or super_admin role. Check account access or ask an organization owner to grant publisher access before saving a draft.",
     canSubmit: false,
     title: locale === "zh" ? "需要发布权限" : "Publisher access required",
   };

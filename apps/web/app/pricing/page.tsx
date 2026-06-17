@@ -95,10 +95,10 @@ const copy: Record<Locale, PricingCopy> = {
     ],
     cta: {
       body:
-        "Start with the marketplace to pick the first skills. During Launch Preview, Pro is enabled through team onboarding while provider checkout and payment capture are being connected.",
+        "Start with the marketplace to pick the first skills. During Launch Preview, Pro access is enabled through team onboarding and contact review; payment capture is still prelaunch.",
       primary: "Browse skills",
       secondary: "Open docs",
-      title: "Use the free basics first, then move real work into Pro.",
+      title: "Free basics first, then Pro access through onboarding.",
     },
     faq: [
       ["What is free?", "Free is intentionally limited to basic SEO and basic operations skills. It is for evaluation, light workflow support, and understanding the platform."],
@@ -143,7 +143,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Request monthly onboarding",
+        actionLabel: "Request monthly access",
         billingCycle: "monthly",
         billingNote: "Manual onboarding during Launch Preview",
         body: "For teams that want flexible access to the full catalog without a long commitment.",
@@ -153,7 +153,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Request quarterly onboarding",
+        actionLabel: "Request quarterly access",
         badge: "10% off",
         billingCycle: "quarterly",
         billingNote: "$345.60 quarterly after onboarding",
@@ -164,7 +164,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "Request annual onboarding",
+        actionLabel: "Request annual access",
         badge: "20% off",
         billingCycle: "annual",
         billingNote: "$1,228.80 yearly after onboarding",
@@ -185,10 +185,10 @@ const copy: Record<Locale, PricingCopy> = {
     ],
     cta: {
       body:
-        "先在找技能页面选第一批要用的技能。公开预览期内，Pro 通过团队开通完成；支付渠道和自动扣款接入完成前，不展示成自助扣款流程。",
+        "先在找技能页面选第一批要用的技能。公开预览期内，Pro 通过团队开通和联系确认完成；支付渠道和自动扣款接入完成前，不展示成自助扣款流程。",
       primary: "开始找技能",
       secondary: "查看安装文档",
-      title: "先用免费基础技能验证，再把真实业务放进 Pro。",
+      title: "先用免费基础技能验证，再通过开通把真实业务放进 Pro。",
     },
     faq: [
       ["什么是免费？", "免费范围要保持克制，只包含基础 SEO、基础运营等低风险能力，用于试用、轻量流程和理解平台。"],
@@ -233,7 +233,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "申请月付开通",
+        actionLabel: "申请月付访问",
         billingCycle: "monthly",
         billingNote: "公开预览期人工开通",
         body: "适合希望灵活使用完整技能目录、暂时不做长期承诺的团队。",
@@ -243,7 +243,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "申请季付开通",
+        actionLabel: "申请季付访问",
         badge: "9 折",
         billingCycle: "quarterly",
         billingNote: "$345.60 / 季度，开通后生效",
@@ -254,7 +254,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
       {
         actionHref: "/login",
-        actionLabel: "申请年付开通",
+        actionLabel: "申请年付访问",
         badge: "8 折",
         billingCycle: "annual",
         billingNote: "$1,228.80 / 年，开通后生效",
@@ -265,7 +265,7 @@ const copy: Record<Locale, PricingCopy> = {
       },
     ],
     plansEyebrow: "套餐",
-    plansTitle: "按业务认真程度选择付款周期。",
+    plansTitle: "按业务认真程度选择访问周期。",
   },
 };
 
@@ -434,12 +434,12 @@ export default async function PricingPage({ searchParams }: PageProps) {
               <span>{locale === "zh" ? "上线口径" : "Launch positioning"}</span>
             </div>
             <h2 className="heading-lg">
-              {locale === "zh" ? "价格、权限和审核要说同一套话。" : "Pricing, permissions, and review need one shared story."}
+              {locale === "zh" ? "价格、权限和审核要说同一套话。" : "Pricing, access, and review need one shared story."}
             </h2>
             <p className="body-text text-[#999]">
               {locale === "zh"
-                ? "客户看到的是套餐，开发者操作的是项目和 Project Key，第三方作者进入的是审核和维护流程，运营后台看到的是质量、权限、财务和风险状态。四个视角必须一致。"
-                : "Customers see plans, developers operate projects and Project Keys, publishers enter review and maintenance, and operators watch quality, permission, finance, and risk state. Those four views must stay aligned."}
+                ? "客户看到的是访问周期和开通方式，开发者操作的是项目和 Project Key，第三方作者进入的是审核和维护流程，运营后台看到的是质量、权限、财务和风险状态。四个视角必须一致。"
+                : "Customers see access cycles and onboarding, developers operate projects and Project Keys, publishers enter review and maintenance, and operators watch quality, permission, finance, and risk state. Those four views must stay aligned."}
             </p>
           </div>
 
