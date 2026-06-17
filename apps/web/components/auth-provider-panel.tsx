@@ -57,19 +57,13 @@ export function AuthProviderPanel({
 
     return { action, providerConfig };
   });
-  const activeProviderItems = providerItems.filter((item) => Boolean(item.action.href));
-
-  if (activeProviderItems.length === 0) {
-    return null;
-  }
-
   return (
     <Wrapper className={className}>
       <div className="card-kicker auth-provider-panel__title">
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack" aria-label={labels.title}>
-        {activeProviderItems.map(({ action, providerConfig }) => {
+        {providerItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
           const buttonClass = [
             "oauth-provider-button",
@@ -117,6 +111,11 @@ export function AuthProviderPanel({
         })}
       </div>
       <p className="oauth-provider-note">{labels.helper}</p>
+      {providerItems.every((item) => !item.action.href) ? (
+        <p className="oauth-provider-note oauth-provider-note--muted">
+          {labels.empty}
+        </p>
+      ) : null}
     </Wrapper>
   );
 }

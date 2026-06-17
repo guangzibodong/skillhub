@@ -860,7 +860,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
               <div className="runtime-console" aria-label={locale === "zh" ? "示例 API 请求" : "Sample API request"}>
                 <span>{landing.control.request}</span>
-                <code>POST /v1/skills/browser-research/run</code>
+                <code>POST /v1/runtime/invoke</code>
                 <pre>{`{
   "query": "latest AI agent framework comparison",
   "max_results": 5
@@ -873,7 +873,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
               <div className="runtime-audit">
                 <span>{landing.control.audit}</span>
-                <strong>POST /run</strong>
+                <strong>/v1/runtime/invoke</strong>
                 <strong>200</strong>
               </div>
               <div className="control-pane__foot">

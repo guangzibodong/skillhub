@@ -135,7 +135,7 @@ const copy: Record<Locale, DocsCopy> = {
         },
         {
           body: "Create project state, install verified skills, generate Project Keys, and run governed runtime calls.",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys", "POST /v1/runtime/invoke"],
+          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectSlug/installed-skills", "POST /v1/projects/:projectSlug/api-keys", "POST /v1/runtime/invoke"],
           title: "Developer workspace",
         },
         {
@@ -242,13 +242,13 @@ const copy: Record<Locale, DocsCopy> = {
         "公开端点用于发现和检查 manifest；登录后的工作台与 Project Key 用于真实运行、安装、策略、日志和商业证据。",
       groups: [
         {
-          body: "搜索公开技能，并在采用前检查单个技能。",
+          body: "公开 API 已可用：搜索公开技能，并在采用前检查单个技能。",
           endpoints: ["GET /v1/skills/search", "GET /v1/skills/:slug"],
           title: "公开发现",
         },
         {
-          body: "创建项目状态、安装已验证技能、生成密钥，并运行控制台测试。",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys", "POST /v1/runtime/invoke"],
+          body: "MCP 使用 POST；创建项目状态、安装已验证技能、生成密钥，并运行控制台测试。",
+          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectSlug/installed-skills", "POST /v1/projects/:projectSlug/api-keys", "POST /v1/runtime/invoke"],
           title: "开发者工作台",
         },
         {
@@ -340,16 +340,16 @@ curl "https://api.useskillhub.com/v1/skills/browser-research"
 curl "https://api.useskillhub.com/mcp"
 
 # Sign in, create or choose a project, then install the verified skill
-curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_ID/installed-skills" \\
+curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_SLUG/installed-skills" \\
   -H "Authorization: Bearer $SESSION_TOKEN" \\
   -H "Content-Type: application/json" \\
-  -d '{"slug":"browser-research","version":"1.4.2"}'
+  -d '{"skillSlug":"browser-research","version":"1.4.2"}'
 
 # Create a scoped Project Key for runtime
-curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_ID/api-keys" \\
+curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_SLUG/api-keys" \\
   -H "Authorization: Bearer $SESSION_TOKEN" \\
   -H "Content-Type: application/json" \\
-  -d '{"name":"local-dev","scopes":["runtime:invoke"]}'
+  -d '{"name":"local-dev"}'
 
 # Call governed runtime with the Project Key
 curl -X POST "https://api.useskillhub.com/v1/runtime/invoke" \\
@@ -672,7 +672,9 @@ export default async function DocsPage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <PublicAccessScope locale={locale} />
+      <div id="operating-reference">
+        <PublicAccessScope locale={locale} />
+      </div>
 
       <div className="section-divider" />
 
