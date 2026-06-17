@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AlertCircle,
+  ArrowRight,
   BadgeCheck,
   CheckCircle2,
   Copy,
   Layers3,
   ExternalLink,
+  MessageSquarePlus,
   PackageCheck,
   RadioTower,
   RotateCcw,
@@ -16,6 +18,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Star,
+  Target,
   Timer,
   Zap,
 } from "lucide-react";
@@ -124,6 +127,39 @@ const labels = {
     categoryPicks: "Popular starting points",
     categoryPicksBody:
       "Choose by the job your team is trying to finish, then refine by plan, risk, runtime, and review status.",
+    operatingGuide: {
+      body: "Pick a business track first. Each track starts with free inspection skills, then moves into Pro skills for repeatable execution, audit evidence, and team adoption.",
+      demoCta: "Talk to Pro",
+      filterCta: "View this track",
+      kicker: "Operating tracks",
+      plan: "Suggested path",
+      recommended: "Recommended skills",
+      requestCta: "Request a skill",
+      title: "Start with one launch-ready workflow",
+      tracks: {
+        data: {
+          body: "Clean sheets, explain metrics, generate reports, and keep data handoffs understandable for operators.",
+          eyebrow: "Data teams",
+          outcomes: ["Clean messy spreadsheets", "Generate report narratives", "Standardize import handoffs"],
+          plan: "Free sheet cleanup first, then Pro automation for recurring reporting.",
+          title: "Data and spreadsheet automation",
+        },
+        ecommerce: {
+          body: "Improve product titles, listing quality, Shopify PDPs, review mining, and launch checklists before traffic lands.",
+          eyebrow: "Shopify / marketplaces",
+          outcomes: ["Fix product-page basics", "Find review pain points", "Prepare listings for launch"],
+          plan: "Free listing checks for basics, Pro for batch SKU operations.",
+          title: "E-commerce product operations",
+        },
+        growth: {
+          body: "Diagnose SEO/GEO visibility, turn findings into briefs, and build a repair list that content and dev teams can execute.",
+          eyebrow: "SEO / GEO growth",
+          outcomes: ["Audit AI-search visibility", "Create content briefs", "Prioritize page fixes"],
+          plan: "Free diagnosis first, then Pro for all growth skills.",
+          title: "Search and content growth",
+        },
+      },
+    },
     catalogSummary: {
       categories: "use-case categories",
       free: "free starter skills",
@@ -229,6 +265,39 @@ const labels = {
     categoryPicks: "热门入口",
     categoryPicksBody:
       "先按团队要完成的任务找，再用套餐、风险、运行时和验证状态细筛。",
+    operatingGuide: {
+      body: "客户先选一个真实业务场景，再从免费诊断技能开始，逐步进入 Pro 全量技能、审计证据和团队采用流程。",
+      demoCta: "咨询 Pro",
+      filterCta: "查看这类技能",
+      kicker: "运营路线",
+      plan: "建议路径",
+      recommended: "推荐技能",
+      requestCta: "提交技能需求",
+      title: "先从一个可上线的工作流开始",
+      tracks: {
+        data: {
+          body: "清洗表格、解释指标、生成周报，把数据交接变成运营同事也能看懂的流程。",
+          eyebrow: "数据 / 报表团队",
+          outcomes: ["清洗混乱表格", "生成报表解读", "规范导入交接"],
+          plan: "免费表格清理先试用，周期性报表自动化进 Pro。",
+          title: "数据与表格自动化",
+        },
+        ecommerce: {
+          body: "优化商品标题、Listing 质量、Shopify 商品页、评论痛点和上架检查，让流量进来前页面先站稳。",
+          eyebrow: "Shopify / 平台店铺",
+          outcomes: ["修复商品页基础", "挖掘评论痛点", "准备上架检查"],
+          plan: "免费 Listing 检查做基础，批量 SKU 运营进入 Pro。",
+          title: "电商商品运营",
+        },
+        growth: {
+          body: "诊断 SEO/GEO 可见度，把问题变成内容简报、页面修复清单和开发可执行任务。",
+          eyebrow: "SEO / GEO 增长",
+          outcomes: ["诊断 AI 搜索可见度", "生成内容简报", "排序页面修复优先级"],
+          plan: "免费诊断先起步，完整增长技能进入 Pro 全量计划。",
+          title: "搜索与内容增长",
+        },
+      },
+    },
     catalogSummary: {
       categories: "个用途分类",
       free: "个免费入门技能",
@@ -324,6 +393,48 @@ type RiskKey = (typeof riskOptions)[number];
 type RuntimeKey = (typeof runtimeOptions)[number];
 type VerificationKey = (typeof verificationOptions)[number];
 type SortKey = (typeof sortOptions)[number];
+
+const launchTracks = [
+  {
+    category: "seo",
+    key: "growth",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "geo-answer-auditor",
+      "seo-page-auditor",
+      "content-brief-builder",
+    ],
+  },
+  {
+    category: "ecommerce",
+    key: "ecommerce",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "product-title-optimizer",
+      "shopify-pdp-auditor",
+      "listing-qa-checklist",
+    ],
+  },
+  {
+    category: "data",
+    key: "data",
+    pricing: "all",
+    query: "",
+    skillSlugs: [
+      "spreadsheet-cleaner",
+      "csv-cleaner",
+      "data-dictionary-builder",
+    ],
+  },
+] as const satisfies readonly {
+  category: CategoryKey;
+  key: keyof (typeof labels)["en"]["operatingGuide"]["tracks"];
+  pricing: PricingKey;
+  query: string;
+  skillSlugs: readonly string[];
+}[];
 
 const emptyCatalogCopy = {
   en: {
@@ -552,6 +663,17 @@ export function MarketplaceBrowser({
     [filteredSkills, visibleCount],
   );
   const hasMoreSkills = visibleCount < filteredSkills.length;
+  const operatingTracks = useMemo(() => {
+    const skillMap = new Map(skills.map((skill) => [skill.slug, skill]));
+
+    return launchTracks.map((track) => ({
+      ...track,
+      recommendedSkills: track.skillSlugs.flatMap((slug) => {
+        const skill = skillMap.get(slug);
+        return skill ? [skill] : [];
+      }),
+    }));
+  }, [skills]);
 
   function copyInstall(skill: MarketplaceSkillCard) {
     void navigator.clipboard
@@ -619,6 +741,16 @@ export function MarketplaceBrowser({
     setQuery(spotlight.query);
   }
 
+  function applyLaunchTrack(track: (typeof launchTracks)[number]) {
+    setRisk("all");
+    setRuntime("all");
+    setVerification("all");
+    setSort("recommended");
+    setCategory(track.category);
+    setPricing(track.pricing);
+    setQuery(track.query);
+  }
+
   return (
     <section
       className="market-browser"
@@ -661,6 +793,90 @@ export function MarketplaceBrowser({
         <div>
           <strong>{catalogSummary.categories}</strong>
           <span>{dictionary.catalogSummary.categories}</span>
+        </div>
+      </div>
+
+      <div
+        className="market-operating-guide"
+        aria-labelledby="market-operating-guide-heading"
+      >
+        <div className="market-operating-guide__head">
+          <span>
+            <Target size={15} aria-hidden="true" />
+            {dictionary.operatingGuide.kicker}
+          </span>
+          <div>
+            <h2 id="market-operating-guide-heading">
+              {dictionary.operatingGuide.title}
+            </h2>
+            <p>{dictionary.operatingGuide.body}</p>
+          </div>
+        </div>
+
+        <div className="market-operating-track-grid">
+          {operatingTracks.map((track) => {
+            const trackCopy = dictionary.operatingGuide.tracks[track.key];
+            const contactHref = localizedHref(
+              `/contact?intent=pro&track=${track.key}`,
+              locale,
+            );
+            const requestHref = localizedHref(
+              `/contact?intent=request-skill&track=${track.key}`,
+              locale,
+            );
+
+            return (
+              <article className="market-operating-track" key={track.key}>
+                <span className="market-operating-track__eyebrow">
+                  {trackCopy.eyebrow}
+                </span>
+                <h3>{trackCopy.title}</h3>
+                <p>{trackCopy.body}</p>
+                <ul>
+                  {trackCopy.outcomes.map((outcome) => (
+                    <li key={outcome}>{outcome}</li>
+                  ))}
+                </ul>
+                <div className="market-operating-track__plan">
+                  <span>{dictionary.operatingGuide.plan}</span>
+                  <strong>{trackCopy.plan}</strong>
+                </div>
+                {track.recommendedSkills.length > 0 ? (
+                  <div className="market-operating-track__skills">
+                    <span>{dictionary.operatingGuide.recommended}</span>
+                    <div>
+                      {track.recommendedSkills.map((skill) => (
+                        <a
+                          href={localizedHref(`/skills/${skill.slug}`, locale)}
+                          key={skill.slug}
+                        >
+                          {localizeText(skill.name, locale)}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="market-operating-track__actions">
+                  <button
+                    className="secondary-button secondary-button--compact"
+                    onClick={() => applyLaunchTrack(track)}
+                    type="button"
+                  >
+                    <Target size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.filterCta}</span>
+                  </button>
+                  <a className="market-track-link" href={contactHref}>
+                    <ArrowRight size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.demoCta}</span>
+                  </a>
+                  <a className="market-track-link" href={requestHref}>
+                    <MessageSquarePlus size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.requestCta}</span>
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
 
