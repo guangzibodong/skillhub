@@ -16,6 +16,7 @@ export type SiteHeaderDictionary = {
     exploreSkills?: string;
     home: string;
     marketplace: string;
+    solutions?: string;
     registry: string;
     agents: string;
     docs: string;
@@ -33,6 +34,7 @@ type SiteHeaderClientProps = {
   active:
     | "home"
     | "marketplace"
+    | "solutions"
     | "registry"
     | "publishers"
     | "agents"
@@ -67,10 +69,10 @@ export function SiteHeaderClient({
   const productStage = getProductStageCopy(locale);
   const navItems = [
     { id: "marketplace", label: labels.nav.exploreSkills, href: "/marketplace" },
+    { id: "solutions", label: labels.nav.solutions, href: "/solutions" },
     { id: "registry", label: labels.nav.registry, href: "/registry" },
     { id: "docs", label: labels.nav.docs, href: "/docs" },
     { id: "publish", label: labels.nav.publish, href: "/publish" },
-    { id: "security", label: labels.nav.security, href: "/security" },
     { id: "pricing", label: labels.nav.pricing, href: "/pricing" },
   ] as const;
 
@@ -259,6 +261,7 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
         exploreSkills: "找技能",
         home: "首页",
         marketplace: "找技能",
+        solutions: "解决方案",
         registry: "技能 API",
         agents: "智能体",
         docs: "使用文档",
@@ -286,8 +289,8 @@ function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {
     nav: {
       ...dictionary.nav,
       exploreSkills: "Find Skills",
+      solutions: "Solutions",
       publish: "Publish Skill",
-      security: "Security & Trust",
       pricing: "Plans",
     },
   };

@@ -32,6 +32,7 @@ export const dictionaries = {
     nav: {
       home: "Home",
       marketplace: "Find Skills",
+      solutions: "Solutions",
       registry: "Skill API",
       agents: "Agents",
       docs: "Docs & Guides",
@@ -438,6 +439,7 @@ export const dictionaries = {
     nav: {
       home: "首页",
       marketplace: "市场",
+      solutions: "解决方案",
       registry: "技能 API",
       agents: "智能体",
       docs: "使用文档",

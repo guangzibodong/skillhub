@@ -262,6 +262,8 @@ const homeLandingCopy = {
         title: "Product",
         links: [
           ["Browse Skills", "/marketplace"],
+          ["Solutions", "/solutions"],
+          ["Use cases", "/use-cases"],
           ["What is a Skill?", "/what-is-a-skill"],
         ],
       },
@@ -269,8 +271,17 @@ const homeLandingCopy = {
         title: "Developers",
         links: [
           ["Docs", "/docs"],
+          ["Integrations", "/integrations"],
           ["MCP", "/mcp"],
           ["Project Keys", "/project-keys"],
+        ],
+      },
+      {
+        title: "Resources",
+        links: [
+          ["Blog", "/blog"],
+          ["Examples", "/examples"],
+          ["Status", "/status"],
         ],
       },
       {
@@ -449,6 +460,8 @@ const homeLandingCopy = {
         title: "产品",
         links: [
           ["浏览技能", "/marketplace"],
+          ["解决方案", "/solutions"],
+          ["使用场景", "/use-cases"],
           ["什么是 Skill", "/what-is-a-skill"],
         ],
       },
@@ -456,8 +469,17 @@ const homeLandingCopy = {
         title: "开发者",
         links: [
           ["文档", "/docs"],
+          ["集成方式", "/integrations"],
           ["MCP", "/mcp"],
           ["Project Key", "/project-keys"],
+        ],
+      },
+      {
+        title: "资源",
+        links: [
+          ["博客指南", "/blog"],
+          ["示例模板", "/examples"],
+          ["状态", "/status"],
         ],
       },
       {

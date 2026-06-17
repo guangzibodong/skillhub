@@ -5,6 +5,7 @@ type SiteHeaderProps = {
   active:
     | "home"
     | "marketplace"
+    | "solutions"
     | "registry"
     | "publishers"
     | "agents"
