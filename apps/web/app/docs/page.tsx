@@ -248,7 +248,7 @@ const copy: Record<Locale, DocsCopy> = {
         },
         {
           body: "创建项目状态、安装已验证技能、生成密钥，并运行控制台测试。",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys"],
+          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectId/installed-skills", "POST /v1/projects/:projectId/api-keys", "POST /v1/runtime/invoke"],
           title: "开发者工作台",
         },
         {
@@ -309,11 +309,11 @@ const copy: Record<Locale, DocsCopy> = {
     ],
     quickstart: {
       body:
-        "这些公开调用用于确认技能 API 结构。真实运行调用故意不做匿名开放。",
+        "完整采用路径是：先公开发现，检查技能合约；再登录项目，安装技能，创建 Project Key，最后通过受治理网关运行。",
       cards: [
-        ["公开 API 已可用", "可以匿名搜索技能、打开详情、检查 manifest、schema、权限和审核状态。"],
-        ["MCP 使用 POST", "MCP 工具发现和资源读取通过 POST 请求进入同一个受治理网关。"],
-        ["Project Key", "运行凭证：登录后在项目中创建，有作用域，真实调用必须使用。"],
+        ["公开发现", "不用登录也可以搜索技能、打开详情、检查 manifest、schema、权限和审核状态。公开 MCP metadata 只说明能力，不代表可匿名运行。"],
+        ["登录安装", "登录后选择项目，只有已验证技能安装到项目后，才会开放受治理的运行调用。"],
+        ["Project Key 运行", "安装后创建有作用域的 Project Key，再通过 REST 或 MCP 运行路径进入策略、预算、限流和日志。"],
       ],
       codeLabel: "公开检查",
       title: "开发者快速开始",
@@ -415,10 +415,231 @@ function getInstallGuides(locale: Locale) {
   };
 }
 
+function getCategoryGuides(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      body:
+        "客户不是来背技术名词的，他们通常只知道自己遇到的问题。先按业务场景选分类，再用搜索词缩小范围。",
+      eyebrow: "怎么选技能",
+      title: "按业务问题进入，不按工具名硬找。",
+      tracks: [
+        {
+          examples: ["AI 搜索可见度", "技术 SEO", "内容缺口", "内链规划"],
+          href: "/marketplace?category=seo",
+          title: "SEO / GEO 增长",
+          when: "网站想提升 Google、AI Overview、ChatGPT/Perplexity 等答案引擎里的可见度。",
+        },
+        {
+          examples: ["商品标题", "Listing 质检", "评论痛点", "退货原因"],
+          href: "/marketplace?category=ecommerce",
+          title: "电商 / 零售",
+          when: "店铺要批量优化商品页、平台 Listing、评价、Feed、库存和客服动作。",
+        },
+        {
+          examples: ["落地页文案", "博客大纲", "社媒日历", "品牌 FAQ"],
+          href: "/marketplace?category=content",
+          title: "内容 / 文案",
+          when: "团队要持续生产可审核的内容资产，而不是一次性让 AI 写一篇文章。",
+        },
+        {
+          examples: ["工单分流", "知识库回答", "SOP", "客户之声"],
+          href: "/marketplace?category=ops",
+          title: "运营 / 客服",
+          when: "客服、运营和客户成功团队要把重复问题变成标准流程和可追踪动作。",
+        },
+        {
+          examples: ["表格清洗", "KPI 解释", "SQL 说明", "周报生成"],
+          href: "/marketplace?category=data",
+          title: "数据 / 表格",
+          when: "Excel、CSV、BI 指标和导入数据需要清洗、解释、映射和自动化报告。",
+        },
+        {
+          examples: ["冷邮件", "CRM 更新", "商机总结", "续费风险"],
+          href: "/marketplace?category=sales",
+          title: "销售 / CRM",
+          when: "销售要调研客户、个性化触达、跟进商机、整理会议记录和续费风险。",
+        },
+        {
+          examples: ["响应式审查", "表单体验", "信任区块", "信息架构"],
+          href: "/marketplace?category=ui",
+          title: "UI/UX",
+          when: "页面能打开但不好用、排版松散、按钮不清楚、移动端体验不稳定。",
+        },
+        {
+          examples: ["API 合约", "Webhook", "CI 失败", "提示注入"],
+          href: "/marketplace?category=dev",
+          title: "开发 / 安全",
+          when: "开发者要检查接口、自动化、代码变更、发布风险和智能体安全边界。",
+        },
+      ],
+    };
+  }
+
+  return {
+    body:
+      "Buyers usually know the problem before they know the tool name. Start from the business workflow, then narrow with search, plan, runtime, and risk filters.",
+    eyebrow: "How to choose",
+    title: "Enter by business job, not by tool jargon.",
+    tracks: [
+      {
+        examples: ["AI search visibility", "technical SEO", "content gaps", "internal links"],
+        href: "/marketplace?category=seo",
+        title: "SEO / GEO growth",
+        when: "Use when a site needs better visibility in Google, AI Overviews, ChatGPT, Perplexity, and answer engines.",
+      },
+      {
+        examples: ["product titles", "listing QA", "review mining", "return reasons"],
+        href: "/marketplace?category=ecommerce",
+        title: "E-commerce / retail",
+        when: "Use when a store needs repeatable product page, listing, review, feed, inventory, or support workflows.",
+      },
+      {
+        examples: ["landing copy", "blog outlines", "social calendars", "brand FAQ"],
+        href: "/marketplace?category=content",
+        title: "Content / copy",
+        when: "Use when teams need reviewable content assets, not one-off AI drafts.",
+      },
+      {
+        examples: ["ticket triage", "knowledge answers", "SOPs", "voice of customer"],
+        href: "/marketplace?category=ops",
+        title: "Operations / support",
+        when: "Use when support, ops, and success teams need repeated questions turned into standard workflows.",
+      },
+      {
+        examples: ["sheet cleanup", "KPI explanation", "SQL notes", "weekly reports"],
+        href: "/marketplace?category=data",
+        title: "Data / sheets",
+        when: "Use when spreadsheets, CSVs, BI metrics, and imports need cleanup, mapping, explanation, or reporting.",
+      },
+      {
+        examples: ["cold email", "CRM updates", "deal summary", "renewal risk"],
+        href: "/marketplace?category=sales",
+        title: "Sales / CRM",
+        when: "Use when sales teams need account research, outreach, meeting notes, pipeline hygiene, or renewal playbooks.",
+      },
+      {
+        examples: ["responsive QA", "form UX", "trust section", "information architecture"],
+        href: "/marketplace?category=ui",
+        title: "UI/UX",
+        when: "Use when a page works technically but feels unclear, loose, hard to scan, or weak on mobile.",
+      },
+      {
+        examples: ["API contracts", "webhooks", "CI failures", "prompt injection"],
+        href: "/marketplace?category=dev",
+        title: "Development / security",
+        when: "Use when developers need API, automation, code-change, release, or agent-safety checks.",
+      },
+    ],
+  };
+}
+
+function getPricingDocs(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      body:
+        "公开页面要把钱说清楚，但不能假装付费市场已经全部上线。当前站点以 Pro 全量计划和免费基础技能做购买理解，真实收银、分账和发票仍按运营配置逐步开启。",
+      rows: [
+        ["免费基础技能", "适合试用和低风险基础任务，例如基础 SEO 检查、FAQ、表格清理、发布检查清单。"],
+        ["Pro 月付", "128 美金 / 月，可使用 Pro 全量技能，适合持续运营和团队试用。"],
+        ["Pro 季付", "按月价 9 折，适合已经明确要持续使用一个季度的团队。"],
+        ["Pro 年付", "按月价 8 折，适合稳定业务团队和代理商。"],
+        ["付费预览", "页面可展示定价意图、账本模型、退款争议和作者分成准备，但真实资金流转需运营确认。"],
+      ],
+      title: "免费、Pro 和付费预览怎么理解。",
+    };
+  }
+
+  return {
+    body:
+      "Public pages should make commercial intent clear without pretending the full paid marketplace is already live. The site explains Pro access and free starter skills while checkout, ledgers, payouts, and invoices remain operator-gated.",
+    rows: [
+      ["Free basics", "For trials and low-risk starter tasks such as basic SEO checks, FAQ, sheet cleanup, and release checklists."],
+      ["Pro monthly", "$128 / month for all Pro skills; best for recurring operations and team trials."],
+      ["Pro quarterly", "10% off the monthly rate; best when a team already expects to operate for a quarter."],
+      ["Pro annual", "20% off the monthly rate; best for stable teams and agencies."],
+      ["Paid preview", "Pages may show pricing intent, ledger model, refund/dispute, and publisher-share readiness, but real money movement remains operator-gated."],
+    ],
+    title: "Free, Pro, and paid-preview boundaries.",
+  };
+}
+
+function getTroubleshooting(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      body:
+        "客户最容易卡在登录、权限、Project Key、运行调用和审核状态。排查时先判断它属于公开页面、登录工作台、发布者流程还是运营后台。",
+      items: [
+        {
+          cause: "技能还未验证，或当前用户还没有项目权限。",
+          fix: "先打开技能详情确认验证状态；登录后进入开发者工作台，把已验证技能安装到项目。",
+          problem: "按钮显示“仅可查看”或无法安装",
+        },
+        {
+          cause: "没有在项目里生成 Project Key，或者使用了登录 token 代替运行 key。",
+          fix: "在项目中创建有 runtime:invoke 作用域的 Project Key，再用它调用 REST/MCP 运行端点。",
+          problem: "API 调用 401 / 403",
+        },
+        {
+          cause: "公开 MCP metadata 只说明工具和资源，不代表匿名运行权限。",
+          fix: "匿名只能检查 metadata；真实调用必须走登录项目、Project Key、策略和日志。",
+          problem: "MCP 看得到但跑不起来",
+        },
+        {
+          cause: "提交的是草稿，或者运行测试、权限、支持路径、价格意图缺少审核证据。",
+          fix: "发布者需要提交精确版本，补齐 manifest、示例、权限、运行证据和支持信息。",
+          problem: "发布技能一直在审核中",
+        },
+        {
+          cause: "服务器还在旧构建或 PM2 重启的不是域名访问的进程。",
+          fix: "确认 git hash、清理 .next、重新 build，并检查 3000 端口和反向代理是否指向同一个服务。",
+          problem: "代码已更新但线上没变化",
+        },
+      ],
+      title: "常见卡点怎么排查。",
+    };
+  }
+
+  return {
+    body:
+      "Most confusion comes from auth, project access, Project Keys, runtime calls, and review state. First decide whether the problem belongs to public pages, the signed-in workspace, publisher review, or admin operations.",
+    items: [
+      {
+        cause: "The skill is not verified yet, or the current user does not have project access.",
+        fix: "Open the skill detail to confirm verification state; sign in and install a verified skill into a project.",
+        problem: "The button says inspection only or install is locked",
+      },
+      {
+        cause: "No Project Key exists for the project, or a login token is being used as a runtime key.",
+        fix: "Create a Project Key with runtime:invoke scope, then use it for REST/MCP runtime endpoints.",
+        problem: "API returns 401 / 403",
+      },
+      {
+        cause: "Public MCP metadata describes tools and resources, but does not grant anonymous runtime access.",
+        fix: "Use anonymous metadata only for inspection; runtime requires project auth, policy, key, and logs.",
+        problem: "MCP is visible but cannot run",
+      },
+      {
+        cause: "The submission is still a draft, or runtime, permission, support, pricing, or example evidence is missing.",
+        fix: "Submit an exact version with manifest, examples, permissions, runtime evidence, and support metadata.",
+        problem: "A published skill stays in review",
+      },
+      {
+        cause: "The server is still serving an old build, or PM2 restarted a different process from the one behind the domain.",
+        fix: "Check git hash, clear .next, rebuild, and confirm port 3000 and the reverse proxy point to the same process.",
+        problem: "Code changed but production did not",
+      },
+    ],
+    title: "Troubleshooting common blockers.",
+  };
+}
+
 export default async function DocsPage({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(await searchParams);
   const labels = copy[locale];
   const installGuide = getInstallGuides(locale);
+  const categoryGuide = getCategoryGuides(locale);
+  const pricingDocs = getPricingDocs(locale);
+  const troubleshooting = getTroubleshooting(locale);
 
   return (
     <AppShell active="docs" locale={locale}>
@@ -503,6 +724,50 @@ export default async function DocsPage({ searchParams }: PageProps) {
 
       <div className="section-divider" />
 
+      <section className="section py-[96px]" aria-labelledby="docs-category-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="max-w-[780px]">
+            <div className="eyebrow">
+              <SearchCode size={16} aria-hidden="true" />
+              <span>{categoryGuide.eyebrow}</span>
+            </div>
+            <h2 id="docs-category-heading" className="heading-lg mt-3">
+              {categoryGuide.title}
+            </h2>
+            <p className="body-text text-[#999] mt-3">{categoryGuide.body}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            {categoryGuide.tracks.map((track) => (
+              <article className="card flex flex-col gap-4 h-full" key={track.title}>
+                <div>
+                  <h3 className="heading-sm">{track.title}</h3>
+                  <p className="body-text-sm text-[#999] mt-2">{track.when}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {track.examples.map((example) => (
+                    <span
+                      className="text-xs text-[#bdbdbd] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] rounded px-2 py-1"
+                      key={example}
+                    >
+                      {example}
+                    </span>
+                  ))}
+                </div>
+                <a
+                  className="btn-secondary inline-flex items-center gap-2 justify-center mt-auto"
+                  href={localizedHref(track.href, locale)}
+                >
+                  <span>{locale === "zh" ? "查看这类技能" : "View this category"}</span>
+                  <ArrowRight size={15} aria-hidden="true" />
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
       <section className="section py-[96px]" id="quickstart" aria-labelledby="docs-quickstart-heading">
         <div className="section-inner grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8">
           <div className="flex flex-col gap-5">
@@ -533,6 +798,31 @@ export default async function DocsPage({ searchParams }: PageProps) {
                   <h3 className="heading-sm">{title}</h3>
                   <p className="body-text-sm text-[#999] mt-1">{body}</p>
                 </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="docs-pricing-heading">
+        <div className="section-inner grid grid-cols-1 lg:grid-cols-[0.82fr_1.18fr] gap-8">
+          <div>
+            <div className="eyebrow">
+              <WalletCards size={16} aria-hidden="true" />
+              <span>{locale === "zh" ? "价格和权限边界" : "Pricing and access"}</span>
+            </div>
+            <h2 id="docs-pricing-heading" className="heading-lg mt-3">
+              {pricingDocs.title}
+            </h2>
+            <p className="body-text text-[#999] mt-3">{pricingDocs.body}</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {pricingDocs.rows.map(([label, value]) => (
+              <article className="card grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-start" key={label}>
+                <strong className="heading-sm">{label}</strong>
+                <p className="body-text-sm text-[#999]">{value}</p>
               </article>
             ))}
           </div>
@@ -663,6 +953,49 @@ export default async function DocsPage({ searchParams }: PageProps) {
                       <span>{item}</span>
                     </div>
                   ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="docs-troubleshooting-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="max-w-[800px]">
+            <div className="eyebrow">
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{locale === "zh" ? "排查手册" : "Troubleshooting"}</span>
+            </div>
+            <h2 id="docs-troubleshooting-heading" className="heading-lg mt-3">
+              {troubleshooting.title}
+            </h2>
+            <p className="body-text text-[#999] mt-3">{troubleshooting.body}</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {troubleshooting.items.map((item) => (
+              <article className="card flex flex-col gap-4" key={item.problem}>
+                <div>
+                  <span className="text-xs uppercase tracking-[0.12em] text-[#7fee64]">
+                    {locale === "zh" ? "问题" : "Problem"}
+                  </span>
+                  <h3 className="heading-sm mt-2">{item.problem}</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <strong className="text-sm text-white">
+                      {locale === "zh" ? "常见原因" : "Common cause"}
+                    </strong>
+                    <p className="body-text-sm text-[#999] mt-1">{item.cause}</p>
+                  </div>
+                  <div>
+                    <strong className="text-sm text-white">
+                      {locale === "zh" ? "处理方式" : "How to fix"}
+                    </strong>
+                    <p className="body-text-sm text-[#999] mt-1">{item.fix}</p>
+                  </div>
                 </div>
               </article>
             ))}
