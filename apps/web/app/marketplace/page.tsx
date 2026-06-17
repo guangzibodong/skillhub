@@ -105,6 +105,8 @@ type MarketplaceInitialFilterState = {
   verification?: string;
 };
 
+const PUBLIC_SKILL_LINK_INDEX_LIMIT = 240;
+
 const pageCopy = {
   en: {
     eyebrow: "AI agent skill marketplace",
@@ -118,7 +120,7 @@ const pageCopy = {
     consoleSubtitle:
       "Pick a workflow, try a free basic skill when available, open the detail page for permissions and expected output, then sign in only when the skill should become project state.",
     proof: [
-      "Hundreds of public skills",
+      "2,000+ public skills",
       "16 business categories",
       "Free basics + Pro",
       "Permission checks",
@@ -331,7 +333,7 @@ const pageCopy = {
     consoleTitle: "客户应该怎么开始",
     consoleSubtitle:
       "先选业务流程，有免费基础技能就先试用；进入详情页查看权限、风险和预期产出；只有确认要接入项目时，才登录进入工作台。",
-    proof: ["数百个公开技能", "16 个业务分类", "免费基础 + Pro", "权限检查"],
+    proof: ["2,000+ 个公开技能", "16 个业务分类", "免费基础 + Pro", "权限检查"],
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
       ["找技能", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
@@ -562,6 +564,10 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     rawPublicStats,
     publicSkillLinkIndex,
   );
+  const hiddenSkillLinks = publicSkillLinkIndex.slice(
+    0,
+    PUBLIC_SKILL_LINK_INDEX_LIMIT,
+  );
   const skillCards = toMarketplaceSkillCards(skills);
   const metrics = [
     [labels.catalogMetric, String(publicStats.publicSkills)],
@@ -742,7 +748,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           }
           className="visually-hidden"
         >
-          {publicSkillLinkIndex.map((skill) => (
+          {hiddenSkillLinks.map((skill) => (
             <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug}>
               {skill.name[locale]}
             </a>

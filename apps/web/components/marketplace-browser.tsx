@@ -131,7 +131,7 @@ const labels = {
     categoryPicksBody:
       "Start from the business problem, then refine by plan, permission risk, runtime, and review status.",
     operatingGuide: {
-      body: "SkillHub already carries hundreds of public skills. The fastest way to use it is to start from a repeated workflow, try the free basics, then move recurring work into Pro.",
+      body: "SkillHub already carries 2,000+ public skills. The fastest way to use it is to start from a repeated workflow, try the free basics, then move recurring work into Pro.",
       demoCta: "Talk to Pro",
       filterCta: "View this track",
       kicker: "Buyer tracks",
@@ -298,7 +298,7 @@ const labels = {
     categoryPicksBody:
       "先从业务问题入手，再用套餐、权限风险、运行时和验证状态细筛。",
     operatingGuide: {
-      body: "SkillHub 已经有数百个公开技能。最快的用法不是按技术名词乱找，而是先选一个重复发生的工作流，先用免费基础技能验证，再把长期任务放进 Pro。",
+      body: "SkillHub 已经有 2,000+ 个公开技能。最快的用法不是按技术名词乱找，而是先选一个重复发生的工作流，先用免费基础技能验证，再把长期任务放进 Pro。",
       demoCta: "咨询 Pro",
       filterCta: "查看这类技能",
       kicker: "买家场景",

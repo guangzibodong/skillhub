@@ -2695,6 +2695,381 @@ const supplementalLaunchCatalogGroups: LaunchCatalogGroup[] = [
   },
 ];
 
+type ExpansionVariant = {
+  en: string;
+  free?: boolean;
+  zh: string;
+};
+
+type ExpansionCatalogPack = {
+  author: string;
+  buyer: LocalizedText;
+  categoryKey: MarketplaceCategoryKey;
+  tags: Record<Locale, string[]>;
+  topics: LocalizedText[];
+};
+
+const expansionVariants = [
+  { en: "Brief", zh: "简报", free: true },
+  { en: "Checklist", zh: "清单", free: true },
+  { en: "Digest", zh: "摘要", free: true },
+  { en: "Planner", zh: "规划" },
+  { en: "Audit", zh: "审计" },
+  { en: "Builder", zh: "构建" },
+  { en: "Extractor", zh: "提取" },
+  { en: "Playbook", zh: "手册" },
+  { en: "Monitor", zh: "监控" },
+  { en: "Mapper", zh: "映射" },
+  { en: "Scorecard", zh: "评分卡" },
+  { en: "Blueprint", zh: "蓝图" },
+] satisfies ExpansionVariant[];
+
+const expansionCatalogPacks: ExpansionCatalogPack[] = [
+  {
+    author: "Search Intelligence Lab",
+    buyer: { en: "SEO and GEO teams", zh: "SEO 和 GEO 团队" },
+    categoryKey: "seo",
+    tags: { en: ["seo", "geo", "search"], zh: ["SEO", "GEO", "搜索"] },
+    topics: [
+      { en: "Search Console Drop", zh: "Search Console 下滑" },
+      { en: "AI Citation Gap", zh: "AI 引用缺口" },
+      { en: "Local Service Page", zh: "本地服务页" },
+      { en: "Programmatic SEO", zh: "程序化 SEO" },
+      { en: "Internal Link Mesh", zh: "内链网络" },
+      { en: "Entity Profile", zh: "实体档案" },
+      { en: "SERP Snippet", zh: "搜索摘要" },
+      { en: "Crawl Index Audit", zh: "爬取索引" },
+      { en: "Topic Authority", zh: "主题权威" },
+    ],
+  },
+  {
+    author: "Lifecycle Growth Lab",
+    buyer: { en: "marketing and acquisition teams", zh: "营销和获客团队" },
+    categoryKey: "marketing",
+    tags: {
+      en: ["marketing", "ads", "conversion"],
+      zh: ["营销", "广告", "转化"],
+    },
+    topics: [
+      { en: "Campaign Brief", zh: "活动简报" },
+      { en: "Audience Segment", zh: "受众分层" },
+      { en: "Creative Fatigue", zh: "素材疲劳" },
+      { en: "Lifecycle Email", zh: "生命周期邮件" },
+      { en: "Retargeting Plan", zh: "再营销计划" },
+      { en: "UTM Governance", zh: "UTM 规范" },
+      { en: "Webinar Promotion", zh: "Webinar 推广" },
+      { en: "Offer Test", zh: "Offer 测试" },
+      { en: "Landing Page CRO", zh: "落地页转化" },
+    ],
+  },
+  {
+    author: "EditorialOps AI",
+    buyer: { en: "content and brand teams", zh: "内容和品牌团队" },
+    categoryKey: "content",
+    tags: {
+      en: ["content", "copywriting", "brand"],
+      zh: ["内容", "文案", "品牌"],
+    },
+    topics: [
+      { en: "Blog Brief", zh: "博客简报" },
+      { en: "Landing Page Copy", zh: "落地页文案" },
+      { en: "Case Study", zh: "案例研究" },
+      { en: "Product FAQ", zh: "产品 FAQ" },
+      { en: "Social Calendar", zh: "社媒日历" },
+      { en: "Newsletter", zh: "邮件简报" },
+      { en: "Localization", zh: "本地化" },
+      { en: "Founder Story", zh: "创始人故事" },
+      { en: "Documentation Rewrite", zh: "文档重写" },
+    ],
+  },
+  {
+    author: "Commerce Growth Desk",
+    buyer: { en: "e-commerce and retail teams", zh: "电商和零售团队" },
+    categoryKey: "ecommerce",
+    tags: {
+      en: ["ecommerce", "shopify", "retail"],
+      zh: ["电商", "Shopify", "零售"],
+    },
+    topics: [
+      { en: "Product Title", zh: "商品标题" },
+      { en: "PDP Audit", zh: "商品详情页" },
+      { en: "Bundle Offer", zh: "捆绑方案" },
+      { en: "Review Mining", zh: "评论挖掘" },
+      { en: "Size Guide", zh: "尺码指南" },
+      { en: "Feed QA", zh: "Feed 质检" },
+      { en: "Return Reason", zh: "退货原因" },
+      { en: "Category Mapping", zh: "分类映射" },
+      { en: "Cross-sell", zh: "交叉销售" },
+    ],
+  },
+  {
+    author: "CX Operations Lab",
+    buyer: { en: "support and operations teams", zh: "客服和运营团队" },
+    categoryKey: "ops",
+    tags: {
+      en: ["support", "operations", "ticket"],
+      zh: ["客服", "运营", "工单"],
+    },
+    topics: [
+      { en: "Ticket Triage", zh: "工单分流" },
+      { en: "Help Center Answer", zh: "帮助中心回答" },
+      { en: "SOP Builder", zh: "SOP 构建" },
+      { en: "Onboarding Checklist", zh: "上线清单" },
+      { en: "Escalation Brief", zh: "升级摘要" },
+      { en: "Shift Handoff", zh: "交接" },
+      { en: "CSAT Analysis", zh: "CSAT 分析" },
+      { en: "Voice of Customer", zh: "客户声音" },
+      { en: "Knowledge Base Gap", zh: "知识库缺口" },
+    ],
+  },
+  {
+    author: "AnalyticsOps Bench",
+    buyer: { en: "data and analytics teams", zh: "数据和分析团队" },
+    categoryKey: "data",
+    tags: {
+      en: ["data", "spreadsheet", "analytics"],
+      zh: ["数据", "表格", "分析"],
+    },
+    topics: [
+      { en: "Spreadsheet Clean", zh: "表格清洗" },
+      { en: "CSV Mapping", zh: "CSV 映射" },
+      { en: "KPI Definition", zh: "指标定义" },
+      { en: "Dashboard Narrative", zh: "看板解读" },
+      { en: "Cohort Analysis", zh: "留存分析" },
+      { en: "Forecast Template", zh: "预测模板" },
+      { en: "Formula Fix", zh: "公式修复" },
+      { en: "SQL Explainer", zh: "SQL 解释" },
+      { en: "Duplicate Merge", zh: "重复合并" },
+    ],
+  },
+  {
+    author: "Finance Control Room",
+    buyer: { en: "finance and backoffice teams", zh: "财务和后台团队" },
+    categoryKey: "finance",
+    tags: {
+      en: ["finance", "invoice", "backoffice"],
+      zh: ["财务", "发票", "后台"],
+    },
+    topics: [
+      { en: "Invoice Fields", zh: "发票字段" },
+      { en: "Expense Coding", zh: "费用编码" },
+      { en: "Cash Flow", zh: "现金流" },
+      { en: "Budget Variance", zh: "预算偏差" },
+      { en: "Month Close", zh: "月结" },
+      { en: "Revenue Recognition", zh: "收入确认" },
+      { en: "AP Approval", zh: "应付审批" },
+      { en: "AR Reminder", zh: "应收催款" },
+      { en: "Vendor Quote", zh: "供应商报价" },
+    ],
+  },
+  {
+    author: "TalentOps Lab",
+    buyer: { en: "HR and recruiting teams", zh: "HR 和招聘团队" },
+    categoryKey: "hr",
+    tags: {
+      en: ["hr", "recruiting", "people"],
+      zh: ["HR", "招聘", "员工"],
+    },
+    topics: [
+      { en: "Job Description", zh: "JD" },
+      { en: "Resume Screen", zh: "简历筛选" },
+      { en: "Interview Questions", zh: "面试题" },
+      { en: "Candidate Scorecard", zh: "候选人评分表" },
+      { en: "Offer Letter", zh: "Offer" },
+      { en: "Onboarding Plan", zh: "入职计划" },
+      { en: "Survey Analysis", zh: "调研分析" },
+      { en: "Performance Review", zh: "绩效评语" },
+      { en: "Exit Interview", zh: "离职访谈" },
+    ],
+  },
+  {
+    author: "Enablement Studio",
+    buyer: { en: "education and enablement teams", zh: "教育和培训团队" },
+    categoryKey: "education",
+    tags: {
+      en: ["education", "training", "course"],
+      zh: ["教育", "培训", "课程"],
+    },
+    topics: [
+      { en: "Course Outline", zh: "课程大纲" },
+      { en: "Lesson Plan", zh: "教案" },
+      { en: "Quiz Generator", zh: "测验" },
+      { en: "Rubric Builder", zh: "评分 Rubric" },
+      { en: "Feedback Assistant", zh: "反馈助手" },
+      { en: "Training Script", zh: "培训脚本" },
+      { en: "Microlearning Card", zh: "微课卡片" },
+      { en: "Knowledge Check", zh: "知识检测" },
+      { en: "Study Plan", zh: "学习计划" },
+    ],
+  },
+  {
+    author: "Revenue Motion Lab",
+    buyer: { en: "sales and customer growth teams", zh: "销售和客户增长团队" },
+    categoryKey: "sales",
+    tags: {
+      en: ["sales", "crm", "revenue"],
+      zh: ["销售", "CRM", "营收"],
+    },
+    topics: [
+      { en: "Lead Research", zh: "线索调研" },
+      { en: "Cold Email", zh: "冷邮件" },
+      { en: "Discovery Call", zh: "需求挖掘" },
+      { en: "CRM Update", zh: "CRM 更新" },
+      { en: "Objection Handling", zh: "异议处理" },
+      { en: "Proposal Outline", zh: "提案大纲" },
+      { en: "Account Plan", zh: "大客户计划" },
+      { en: "Renewal Risk", zh: "续费风险" },
+      { en: "QBR Builder", zh: "QBR 报告" },
+    ],
+  },
+  {
+    author: "PolicyOps Desk",
+    buyer: { en: "legal and compliance teams", zh: "法务和合规团队" },
+    categoryKey: "legal",
+    tags: {
+      en: ["legal", "compliance", "policy"],
+      zh: ["法务", "合规", "政策"],
+    },
+    topics: [
+      { en: "Contract Clause", zh: "合同条款" },
+      { en: "NDA Checklist", zh: "NDA 清单" },
+      { en: "Privacy Policy", zh: "隐私政策" },
+      { en: "Terms QA", zh: "条款审查" },
+      { en: "Vendor Questionnaire", zh: "供应商问卷" },
+      { en: "DPA Summary", zh: "DPA 摘要" },
+      { en: "Policy Gap", zh: "政策缺口" },
+      { en: "Regulatory Change", zh: "法规变化" },
+      { en: "Records Retention", zh: "保留策略" },
+    ],
+  },
+  {
+    author: "DevEx Bench",
+    buyer: { en: "developers and API teams", zh: "开发者和 API 团队" },
+    categoryKey: "dev",
+    tags: {
+      en: ["development", "api", "mcp"],
+      zh: ["开发", "API", "MCP"],
+    },
+    topics: [
+      { en: "Config Debug", zh: "配置排错" },
+      { en: "Code Review", zh: "代码审查" },
+      { en: "Bug Hunt", zh: "Bug 排查" },
+      { en: "Test Generator", zh: "测试生成" },
+      { en: "Refactor Guide", zh: "重构指南" },
+      { en: "Dependency Upgrade", zh: "依赖升级" },
+      { en: "OpenAPI Generator", zh: "OpenAPI 生成" },
+      { en: "CI Failure Explainer", zh: "CI 失败解释" },
+      { en: "MCP Manifest", zh: "MCP 清单" },
+    ],
+  },
+  {
+    author: "Automation Control",
+    buyer: { en: "automation and workflow teams", zh: "自动化和流程团队" },
+    categoryKey: "automation",
+    tags: {
+      en: ["automation", "workflow", "orchestration"],
+      zh: ["自动化", "流程", "编排"],
+    },
+    topics: [
+      { en: "Slack Digest", zh: "Slack 摘要" },
+      { en: "Email to Task", zh: "邮件转任务" },
+      { en: "Sheet Sync", zh: "表格同步" },
+      { en: "Approval Reminder", zh: "审批提醒" },
+      { en: "Calendar Follow-up", zh: "日程跟进" },
+      { en: "Notion Automation", zh: "Notion 自动化" },
+      { en: "HubSpot Lead Assignment", zh: "HubSpot 分配" },
+      { en: "Shopify Order Alert", zh: "Shopify 订单提醒" },
+      { en: "Workflow Design", zh: "流程设计" },
+    ],
+  },
+  {
+    author: "Security Review Desk",
+    buyer: { en: "security and risk teams", zh: "安全和风控团队" },
+    categoryKey: "security",
+    tags: {
+      en: ["security", "risk", "compliance"],
+      zh: ["安全", "风控", "合规"],
+    },
+    topics: [
+      { en: "Security Baseline", zh: "安全基线" },
+      { en: "Compliance Checklist", zh: "合规清单" },
+      { en: "Audit Logging", zh: "审计日志" },
+      { en: "Risk Summary", zh: "风险摘要" },
+      { en: "Threat Modeling", zh: "威胁建模" },
+      { en: "Vulnerability Scan", zh: "漏洞扫描" },
+      { en: "Secret Leak", zh: "密钥泄露" },
+      { en: "PII Redaction", zh: "PII 脱敏" },
+      { en: "Permission Audit", zh: "权限审计" },
+    ],
+  },
+  {
+    author: "Evidence Research Lab",
+    buyer: { en: "research and analyst teams", zh: "研究和分析团队" },
+    categoryKey: "research",
+    tags: {
+      en: ["research", "browser", "citations"],
+      zh: ["研究", "浏览器", "引用"],
+    },
+    topics: [
+      { en: "Web Scrape", zh: "网页抓取" },
+      { en: "Fact Check", zh: "事实核查" },
+      { en: "PDF Summarizer", zh: "PDF 摘要" },
+      { en: "Citation Builder", zh: "引用整理" },
+      { en: "Multi-source Research", zh: "多源研究" },
+      { en: "Browser Automation", zh: "浏览器自动化" },
+      { en: "Competitor Research", zh: "竞品研究" },
+      { en: "News Tracker", zh: "新闻追踪" },
+      { en: "Evidence Pack", zh: "证据包" },
+    ],
+  },
+  {
+    author: "Product Experience Studio",
+    buyer: { en: "product and design teams", zh: "产品和设计团队" },
+    categoryKey: "ui",
+    tags: {
+      en: ["ui", "ux", "accessibility"],
+      zh: ["UI", "UX", "无障碍"],
+    },
+    topics: [
+      { en: "Homepage Audit", zh: "首页审查" },
+      { en: "Responsive Audit", zh: "响应式审查" },
+      { en: "Accessibility Audit", zh: "无障碍审查" },
+      { en: "Microcopy Rewrite", zh: "微文案重写" },
+      { en: "Empty State Design", zh: "空状态设计" },
+      { en: "Information Architecture", zh: "信息架构" },
+      { en: "Navigation Redesign", zh: "导航重构" },
+      { en: "Conversion Optimization", zh: "转化优化" },
+      { en: "Trust Section", zh: "信任区块" },
+    ],
+  },
+];
+
+const expansionLaunchCatalogGroups = buildExpansionLaunchCatalogGroups();
+
+function buildExpansionLaunchCatalogGroups(): LaunchCatalogGroup[] {
+  return expansionCatalogPacks.map((pack) => ({
+    author: pack.author,
+    buyer: pack.buyer,
+    categoryKey: pack.categoryKey,
+    skills: pack.topics.flatMap((topic) =>
+      expansionVariants.map((variant) =>
+        seedSkill(`${topic.en} ${variant.en}`, `${topic.zh}${variant.zh}`, {
+          free: variant.free,
+          summary: {
+            en: `Helps ${pack.buyer.en} turn ${topic.en.toLowerCase()} into a reviewable ${variant.en.toLowerCase()} with clear next steps and handoff notes.`,
+            zh: `帮助${pack.buyer.zh}把${topic.zh}整理成可复核的${variant.zh}，并保留下一步动作和交接信息。`,
+          },
+          tags: {
+            en: uniqueStrings([...pack.tags.en, topic.en, variant.en]),
+            zh: uniqueStrings([...pack.tags.zh, topic.zh, variant.zh]),
+          },
+        }),
+      ),
+    ),
+    tags: pack.tags,
+  }));
+}
+
 const generatedLaunchSkills = buildGeneratedLaunchSkills();
 
 function buildGeneratedLaunchSkills() {
@@ -2705,6 +3080,7 @@ function buildGeneratedLaunchSkills() {
   for (const group of [
     ...launchCatalogGroups,
     ...supplementalLaunchCatalogGroups,
+    ...expansionLaunchCatalogGroups,
   ]) {
     for (const seed of group.skills) {
       const slugBase = seed.slug ?? slugifySkillName(seed.name.en);

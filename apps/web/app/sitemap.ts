@@ -1,9 +1,14 @@
 import type { MetadataRoute } from "next";
+import { marketplaceSkills } from "@/lib/marketplace-data";
 import { indexablePublicPaths } from "@/lib/public-pages";
 import { localizedUrl, siteUrl } from "@/lib/seo";
+import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = Array.from(new Set(indexablePublicPaths));
+  const skillPaths = marketplaceSkills
+    .filter((skill) => isVerifiedSkillStatus(skill.verification.en))
+    .map((skill) => `/skills/${skill.slug}`);
+  const paths = Array.from(new Set([...indexablePublicPaths, ...skillPaths]));
 
   return paths.flatMap((path) =>
     (["en", "zh"] as const).map((locale) => ({
@@ -29,6 +34,10 @@ function getPriority(path: string): number {
 
   if (path === "/marketplace" || path === "/docs" || path === "/what-is-a-skill") {
     return 0.9;
+  }
+
+  if (path.startsWith("/skills/")) {
+    return 0.68;
   }
 
   return 0.78;
