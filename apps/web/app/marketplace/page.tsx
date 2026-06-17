@@ -37,7 +37,10 @@ import {
   getOverviewMetric,
   getPlatformOverview,
 } from "@/lib/platform-overview";
-import { getPublicPlatformStats } from "@/lib/public-platform-stats";
+import {
+  getPublicPlatformStats,
+  type PublicPlatformStats,
+} from "@/lib/public-platform-stats";
 import {
   getPublicMarketplaceSkills,
   type PublicMarketplaceSearchOptions,
@@ -553,8 +556,12 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     getPublicPublishers(),
     getPlatformOverview(),
   ]);
-  const publicStats = await getPublicPlatformStats({ publishers });
+  const rawPublicStats = await getPublicPlatformStats({ publishers });
   const publicSkillLinkIndex = mergeSkillLinkIndex(skills);
+  const publicStats = reconcileMarketplacePageStats(
+    rawPublicStats,
+    publicSkillLinkIndex,
+  );
   const skillCards = toMarketplaceSkillCards(skills);
   const metrics = [
     [labels.catalogMetric, String(publicStats.publicSkills)],
@@ -1102,6 +1109,39 @@ function mergeSkillLinkIndex(skills: typeof marketplaceSkills) {
   }
 
   return Array.from(merged.values());
+}
+
+function reconcileMarketplacePageStats(
+  stats: PublicPlatformStats,
+  skills: typeof marketplaceSkills,
+): PublicPlatformStats {
+  const publicSkills = skills.filter((skill) =>
+    isVerifiedSkillStatus(skill.verification.en),
+  );
+  const catalogAuthorCount = new Set(
+    publicSkills
+      .map((skill) => skill.author.trim())
+      .filter(Boolean),
+  ).size;
+  const feedbackSignals = publicSkills.reduce(
+    (sum, skill) => sum + (skill.feedbackCount ?? 0),
+    0,
+  );
+  const publicSkillCount = publicSkills.length;
+
+  return {
+    ...stats,
+    callableSkills: Math.max(stats.callableSkills, publicSkillCount),
+    feedbackSignals: Math.max(stats.feedbackSignals, feedbackSignals),
+    publicPublishers: Math.max(stats.publicPublishers, catalogAuthorCount),
+    publicSkills: Math.max(stats.publicSkills, publicSkillCount),
+    totalSkillRecords: Math.max(stats.totalSkillRecords, publicSkillCount),
+    verifiedPublishers: Math.max(
+      stats.verifiedPublishers,
+      catalogAuthorCount,
+    ),
+    verifiedSkills: Math.max(stats.verifiedSkills, publicSkillCount),
+  };
 }
 
 function toMarketplaceSkillCards(
