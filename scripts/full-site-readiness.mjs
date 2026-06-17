@@ -106,7 +106,12 @@ for (const marker of [".public-info-page", ".home-footer", ".admin-console-shell
 for (const route of ["account", "admin", "login", "dashboard", "developer", "publisher", "report", "role-landing"]) {
   const candidate = join(root, "apps/web/app", route, "page.tsx");
   if (existsSync(candidate)) {
-    assert.match(readFileSync(candidate, "utf8"), /buildNoIndexMetadata/, `${route} page should export noindex metadata`);
+    const source = readFileSync(candidate, "utf8");
+    assert.match(
+      source,
+      /buildNoIndexMetadata|noIndex:\s*true/,
+      `${route} page should export noindex metadata`,
+    );
   }
 }
 

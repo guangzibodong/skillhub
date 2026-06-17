@@ -16,6 +16,7 @@ import {
   Terminal,
   Workflow
 } from "lucide-react";
+import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
@@ -23,12 +24,35 @@ import { SkillTable } from "@/components/skill-table";
 import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { getSkills } from "@/lib/registry";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const locale = getLocaleFromSearchParams(params);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/registry",
+    en: {
+      title: "SkillHub Skill API - Public Contracts and Discovery",
+      description:
+        "Inspect public SkillHub skill contracts, manifests, schemas, permissions, runtime type, review status, and API discovery endpoints.",
+    },
+    zh: {
+      title: "SkillHub 技能 API - 公开合约与发现端点",
+      description:
+        "查看 SkillHub 公开技能合约、manifest、schema、权限、运行时类型、审核状态和 API 发现端点。",
+    },
+  });
+}
 
 const registryProtocolCopy = {
   en: {

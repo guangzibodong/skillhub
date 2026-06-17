@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -31,14 +32,36 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
-import { buildNoIndexMetadata } from "@/lib/seo";
+import { buildLocalizedMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-export const metadata = buildNoIndexMetadata("SkillHub Login");
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const locale = getLocaleFromSearchParams(params);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/login",
+    noIndex: true,
+    en: {
+      title: "SkillHub Login - Workspace Access",
+      description:
+        "Sign in to SkillHub to manage projects, Project Keys, publisher workflows, and governed REST or MCP runtime access.",
+    },
+    zh: {
+      title: "SkillHub 登录 - 工作区入口",
+      description:
+        "登录 SkillHub，管理项目、Project Key、发布者流程，以及受治理的 REST 或 MCP 运行调用。",
+    },
+  });
+}
 
 const copy = {
   en: {

@@ -83,7 +83,10 @@ export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, loc
                 href={`${apiUrl}/v1/skills/${skill.slug}`}
                 aria-label={`${labels.openManifest}: ${displayName}`}
               >
-                <ExternalLink size={16} />
+                <ExternalLink size={16} aria-hidden="true" />
+                <span className="visually-hidden">
+                  {labels.openManifest}: {displayName}
+                </span>
               </a>
             </div>
           </article>
