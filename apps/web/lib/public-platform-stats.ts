@@ -1,5 +1,16 @@
-import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
-import { getRegistryStats, getSkills, type RegistryStats } from "@/lib/registry";
+import {
+  getPublicPublishers,
+  type PublicPublisherProfile,
+} from "@/lib/public-publishers";
+import {
+  getRegistryStats,
+  getSkills,
+  type RegistryStats,
+} from "@/lib/registry";
+import {
+  marketplaceSkills,
+  type MarketplaceSkill,
+} from "@/lib/marketplace-data";
 import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 import type { SkillSummary } from "@useskillhub/schema";
 
@@ -25,67 +36,163 @@ type PublicPlatformStatsInput = {
   skills?: SkillSummary[];
 };
 
-export function derivePublicPlatformStats(skills: SkillSummary[]): Pick<
+export function derivePublicPlatformStats(
+  skills: SkillSummary[],
+): Pick<
   PublicPlatformStats,
-  "callableSkills" | "feedbackSignals" | "publicSkills" | "recordedCalls" | "submittedSkills" | "verifiedSkills"
+  | "callableSkills"
+  | "feedbackSignals"
+  | "publicSkills"
+  | "recordedCalls"
+  | "submittedSkills"
+  | "verifiedSkills"
 > {
-  const submittedSkills = skills.filter((skill) => skill.verificationStatus === "submitted" && !isQaSkillSummary(skill));
+  const submittedSkills = skills.filter(
+    (skill) =>
+      skill.verificationStatus === "submitted" && !isQaSkillSummary(skill),
+  );
   const publicSkills = skills.filter(isPublicSkillSummary);
-  const verifiedSkills = publicSkills.filter((skill) => isVerifiedSkillStatus(skill.verificationStatus));
+  const verifiedSkills = publicSkills.filter((skill) =>
+    isVerifiedSkillStatus(skill.verificationStatus),
+  );
 
   return {
     callableSkills: verifiedSkills.filter(isCallableSkillSummary).length,
-    feedbackSignals: publicSkills.reduce((sum, skill) => sum + (skill.feedbackCount ?? 0), 0),
+    feedbackSignals: publicSkills.reduce(
+      (sum, skill) => sum + (skill.feedbackCount ?? 0),
+      0,
+    ),
     publicSkills: publicSkills.length,
-    recordedCalls: publicSkills.reduce((sum, skill) => sum + (skill.invocationCount ?? 0), 0),
+    recordedCalls: publicSkills.reduce(
+      (sum, skill) => sum + (skill.invocationCount ?? 0),
+      0,
+    ),
     submittedSkills: submittedSkills.length,
     verifiedSkills: verifiedSkills.length,
   };
 }
 
-export async function getPublicPlatformStats(input: PublicPlatformStatsInput = {}): Promise<PublicPlatformStats> {
+export async function getPublicPlatformStats(
+  input: PublicPlatformStatsInput = {},
+): Promise<PublicPlatformStats> {
   const [skills, publishers, registryStats] = await Promise.all([
     input.skills ? Promise.resolve(input.skills) : getSkills(),
-    input.publishers ? Promise.resolve(input.publishers) : getPublicPublishers(),
-    input.registryStats ? Promise.resolve(input.registryStats) : getRegistryStats()
+    input.publishers
+      ? Promise.resolve(input.publishers)
+      : getPublicPublishers(),
+    input.registryStats
+      ? Promise.resolve(input.registryStats)
+      : getRegistryStats(),
   ]);
 
   const derived = derivePublicPlatformStats(skills);
+  const staticDerived = deriveStaticMarketplaceStats();
   const publisherDerived = derivePublisherPlatformStats(publishers);
   const statsAvailable = registryStats.publicSkills !== undefined;
   const publicSkills = statsAvailable
-    ? Math.max(registryStats.publicSkills ?? 0, publisherDerived.publicSkills)
-    : Math.max(derived.publicSkills, publisherDerived.publicSkills);
+    ? Math.max(
+        registryStats.publicSkills ?? 0,
+        publisherDerived.publicSkills,
+        staticDerived.publicSkills,
+      )
+    : Math.max(
+        derived.publicSkills,
+        publisherDerived.publicSkills,
+        staticDerived.publicSkills,
+      );
   const verifiedSkills = statsAvailable
-    ? Math.max(registryStats.verifiedSkills, publisherDerived.verifiedSkills)
-    : Math.max(derived.verifiedSkills, publisherDerived.verifiedSkills);
+    ? Math.max(
+        registryStats.verifiedSkills,
+        publisherDerived.verifiedSkills,
+        staticDerived.verifiedSkills,
+      )
+    : Math.max(
+        derived.verifiedSkills,
+        publisherDerived.verifiedSkills,
+        staticDerived.verifiedSkills,
+      );
   const submittedSkills = statsAvailable
-    ? registryStats.submittedSkills ?? 0
-    : derived.submittedSkills;
-  const callableSkills =
-    registryStats.callableSkills ??
-    (statsAvailable
+    ? Math.max(
+        registryStats.submittedSkills ?? 0,
+        staticDerived.submittedSkills,
+      )
+    : Math.max(derived.submittedSkills, staticDerived.submittedSkills);
+  const callableSkills = Math.max(
+    registryStats.callableSkills ?? 0,
+    statsAvailable
       ? verifiedSkills
-      : Math.max(derived.callableSkills, publisherDerived.verifiedSkills));
+      : Math.max(derived.callableSkills, publisherDerived.verifiedSkills),
+    staticDerived.callableSkills,
+  );
   const skillCallCount = derived.recordedCalls;
-  const publisherCallCount = publishers.reduce((sum, publisher) => sum + publisher.metrics.callCount, 0);
+  const publisherCallCount = publishers.reduce(
+    (sum, publisher) => sum + publisher.metrics.callCount,
+    0,
+  );
   const registryCallCount = registryStats.apiCalls ?? 0;
-  const totalSkillRecords = Math.max(registryStats.totalSkillRecords ?? publicSkills, publicSkills);
+  const totalSkillRecords = Math.max(
+    registryStats.totalSkillRecords ?? publicSkills,
+    publicSkills,
+  );
 
   return {
     avgLatencyMs: registryStats.avgLatencyMs,
     callableSkills,
-    feedbackSignals: derived.feedbackSignals,
-    hiddenOrPrelaunchSkillRecords: Math.max(totalSkillRecords - publicSkills, 0),
+    feedbackSignals: Math.max(
+      derived.feedbackSignals,
+      staticDerived.feedbackSignals,
+    ),
+    hiddenOrPrelaunchSkillRecords: Math.max(
+      totalSkillRecords - publicSkills,
+      0,
+    ),
     installEvidence: publisherDerived.installEvidence,
     publicPublishers: publishers.length,
     publicSkills,
-    recordedCalls: Math.max(skillCallCount, publisherCallCount, registryCallCount),
+    recordedCalls: Math.max(
+      skillCallCount,
+      publisherCallCount,
+      registryCallCount,
+    ),
     submittedSkills,
     totalSkillRecords,
-    verifiedPublishers: publishers.filter((publisher) => publisher.trustLevel === "verified").length,
+    verifiedPublishers: publishers.filter(
+      (publisher) => publisher.trustLevel === "verified",
+    ).length,
     verifiedSkills,
-    payoutReadyPublishers: publishers.filter((publisher) => publisher.payoutStatus === "verified").length
+    payoutReadyPublishers: publishers.filter(
+      (publisher) => publisher.payoutStatus === "verified",
+    ).length,
+  };
+}
+
+function deriveStaticMarketplaceStats(): Pick<
+  PublicPlatformStats,
+  | "callableSkills"
+  | "feedbackSignals"
+  | "publicSkills"
+  | "submittedSkills"
+  | "verifiedSkills"
+> {
+  const nonQaSkills = marketplaceSkills.filter(
+    (skill) => !isStaticQaSkill(skill),
+  );
+  const publicSkills = nonQaSkills.filter((skill) =>
+    isVerifiedSkillStatus(skill.verification.en),
+  );
+  const submittedSkills = nonQaSkills.filter(
+    (skill) => !isVerifiedSkillStatus(skill.verification.en),
+  );
+
+  return {
+    callableSkills: publicSkills.length,
+    feedbackSignals: publicSkills.reduce(
+      (sum, skill) => sum + (skill.feedbackCount ?? 0),
+      0,
+    ),
+    publicSkills: publicSkills.length,
+    submittedSkills: submittedSkills.length,
+    verifiedSkills: publicSkills.length,
   };
 }
 
@@ -94,7 +201,8 @@ function derivePublisherPlatformStats(publishers: PublicPublisherProfile[]) {
     (stats, publisher) => ({
       installEvidence: stats.installEvidence + publisher.metrics.installCount,
       publicSkills: stats.publicSkills + publisher.metrics.publicSkillCount,
-      verifiedSkills: stats.verifiedSkills + publisher.metrics.verifiedSkillCount,
+      verifiedSkills:
+        stats.verifiedSkills + publisher.metrics.verifiedSkillCount,
     }),
     {
       installEvidence: 0,
@@ -105,23 +213,55 @@ function derivePublisherPlatformStats(publishers: PublicPublisherProfile[]) {
 }
 
 export function isPublicSkillSummary(skill: SkillSummary) {
-  return isVerifiedSkillStatus(skill.verificationStatus) && !isQaSkillSummary(skill);
+  return (
+    isVerifiedSkillStatus(skill.verificationStatus) && !isQaSkillSummary(skill)
+  );
 }
 
 export function isCallableSkillSummary(skill: SkillSummary) {
-  return isPublicSkillSummary(skill) && isVerifiedSkillStatus(skill.verificationStatus);
+  return (
+    isPublicSkillSummary(skill) &&
+    isVerifiedSkillStatus(skill.verificationStatus)
+  );
 }
 
 function isQaSkillSummary(skill: SkillSummary) {
-  const haystack = [skill.slug, skill.displayName, skill.description].join(" ").toLowerCase();
-  return haystack.includes("acceptance-") || haystack.includes("qa-") || haystack.includes("acceptance partner");
+  const haystack = [skill.slug, skill.displayName, skill.description]
+    .join(" ")
+    .toLowerCase();
+  return (
+    haystack.includes("acceptance-") ||
+    haystack.includes("qa-") ||
+    haystack.includes("acceptance partner")
+  );
+}
+
+function isStaticQaSkill(skill: MarketplaceSkill) {
+  const haystack = [
+    skill.slug,
+    skill.name.en,
+    skill.name.zh,
+    skill.summary.en,
+    skill.summary.zh,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    haystack.includes("acceptance-") ||
+    haystack.includes("qa-") ||
+    haystack.includes("acceptance partner")
+  );
 }
 
 export function formatPublicPlatformLatency(value: number | null) {
   return value === null ? "--" : `${value}ms`;
 }
 
-export function formatPublicPlatformShare(numerator: number, denominator: number) {
+export function formatPublicPlatformShare(
+  numerator: number,
+  denominator: number,
+) {
   if (denominator <= 0) {
     return "0%";
   }
