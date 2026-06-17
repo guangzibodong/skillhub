@@ -15848,6 +15848,27 @@ a {
   margin-top: 18px;
 }
 
+.market-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(124, 199, 216, 0.09), transparent 42%),
+    rgba(12, 15, 11, 0.68);
+  padding: 14px;
+}
+
+.market-load-more p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 720;
+}
+
 .market-skill-card {
   display: grid;
   min-height: 390px;

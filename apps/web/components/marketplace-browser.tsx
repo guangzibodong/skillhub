@@ -38,7 +38,30 @@ type MarketplaceBrowserProps = {
   initialFilters?: MarketplaceInitialFilters;
   locale: Locale;
   publisherProfiles?: PublicPublisherProfile[];
-  skills: MarketplaceSkill[];
+  skills: MarketplaceSkillCard[];
+};
+
+export type MarketplaceSkillCard = Pick<
+  MarketplaceSkill,
+  | "author"
+  | "billing"
+  | "category"
+  | "categoryKey"
+  | "feedbackCount"
+  | "installs"
+  | "latency"
+  | "lastReviewed"
+  | "name"
+  | "rating"
+  | "risk"
+  | "runtime"
+  | "slug"
+  | "summary"
+  | "successRate"
+  | "tags"
+  | "verification"
+> & {
+  installsCommand: Pick<MarketplaceSkill["installsCommand"], "cli">;
 };
 
 type MarketplaceInitialFilters = {
@@ -93,6 +116,8 @@ const labels = {
     installReady: "Sign in to adopt",
     installLockedLabel: "Review required",
     inspectCommand: "Inspect API contract",
+    showMore: "Show more skills",
+    showing: "Showing {visible} of {total}",
     publisher: "Publisher",
     signals: "Signals",
     contract: "Contract checks",
@@ -196,6 +221,8 @@ const labels = {
     installReady: "登录后采用",
     installLockedLabel: "需要审核",
     inspectCommand: "查看 API 合约",
+    showMore: "加载更多技能",
+    showing: "已显示 {visible} / {total}",
     publisher: "发布者",
     signals: "信号",
     contract: "合约检查",
@@ -277,6 +304,9 @@ const sortOptions = [
   "recent",
 ] as const;
 
+const INITIAL_VISIBLE_SKILLS = 36;
+const LOAD_MORE_SKILLS = 36;
+
 const categorySpotlights = [
   { key: "seo", query: "" },
   { key: "marketing", query: "" },
@@ -331,6 +361,7 @@ export function MarketplaceBrowser({
     normalizedInitialFilters.verification,
   );
   const [sort, setSort] = useState<SortKey>(normalizedInitialFilters.sort);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_SKILLS);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copyFailedSlug, setCopyFailedSlug] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<{
@@ -461,6 +492,10 @@ export function MarketplaceBrowser({
     }
   }, [category, locale, pricing, query, risk, runtime, sort, verification]);
 
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_SKILLS);
+  }, [category, pricing, query, risk, runtime, sort, verification]);
+
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const skillOrder = new Map(
@@ -512,7 +547,13 @@ export function MarketplaceBrowser({
     verification,
   ]);
 
-  function copyInstall(skill: MarketplaceSkill) {
+  const visibleSkills = useMemo(
+    () => filteredSkills.slice(0, visibleCount),
+    [filteredSkills, visibleCount],
+  );
+  const hasMoreSkills = visibleCount < filteredSkills.length;
+
+  function copyInstall(skill: MarketplaceSkillCard) {
     void navigator.clipboard
       .writeText(skill.installsCommand.cli)
       .then(() => {
@@ -555,6 +596,7 @@ export function MarketplaceBrowser({
     setRuntime("all");
     setVerification("all");
     setSort("recommended");
+    setVisibleCount(INITIAL_VISIBLE_SKILLS);
   }
 
   function applySpotlight(
@@ -786,7 +828,7 @@ export function MarketplaceBrowser({
 
       {filteredSkills.length > 0 ? (
         <div className="market-card-grid">
-          {filteredSkills.map((skill) => {
+          {visibleSkills.map((skill) => {
             const installState = getSkillInstallState(skill.verification.en);
             const isSkillInstallable = installState.installable;
             const isVerified = verificationKey(skill) === "verified";
@@ -1003,7 +1045,30 @@ export function MarketplaceBrowser({
             );
           })}
         </div>
-      ) : (
+      ) : null}
+
+      {filteredSkills.length > 0 && hasMoreSkills ? (
+        <div className="market-load-more">
+          <p>
+            {dictionary.showing
+              .replace("{visible}", String(visibleSkills.length))
+              .replace("{total}", String(filteredSkills.length))}
+          </p>
+          <button
+            className="secondary-button secondary-button--compact"
+            onClick={() =>
+              setVisibleCount((current) =>
+                Math.min(current + LOAD_MORE_SKILLS, filteredSkills.length),
+              )
+            }
+            type="button"
+          >
+            <span>{dictionary.showMore}</span>
+          </button>
+        </div>
+      ) : null}
+
+      {filteredSkills.length === 0 ? (
         <div className="market-empty-state">
           <Search size={26} aria-hidden="true" />
           <h3>{isEmptyCatalog ? emptyCatalog.title : dictionary.emptyTitle}</h3>
@@ -1019,7 +1084,7 @@ export function MarketplaceBrowser({
             </button>
           )}
         </div>
-      )}
+      ) : null}
     </section>
   );
 }
@@ -1112,7 +1177,7 @@ function FilterGroup({
   );
 }
 
-function searchableText(skill: MarketplaceSkill, locale: Locale) {
+function searchableText(skill: MarketplaceSkillCard, locale: Locale) {
   return [
     localizeText(skill.name, locale),
     localizeText(skill.summary, locale),
@@ -1131,7 +1196,7 @@ function searchableText(skill: MarketplaceSkill, locale: Locale) {
 }
 
 function verificationKey(
-  skill: MarketplaceSkill,
+  skill: MarketplaceSkillCard,
 ): "verified" | "review" | "restricted" {
   const normalized = skill.verification.en.toLowerCase();
 
@@ -1151,15 +1216,15 @@ function verificationKey(
 }
 
 function getSkillOrder(
-  skill: MarketplaceSkill,
+  skill: MarketplaceSkillCard,
   skillOrder: Map<string, number>,
 ) {
   return skillOrder.get(skill.slug) ?? Number.MAX_SAFE_INTEGER;
 }
 
 function compareSkills(
-  first: MarketplaceSkill,
-  second: MarketplaceSkill,
+  first: MarketplaceSkillCard,
+  second: MarketplaceSkillCard,
   sort: (typeof sortOptions)[number],
   query: string,
   locale: Locale,
@@ -1204,7 +1269,7 @@ function compareSkills(
 }
 
 function recommendedScore(
-  skill: MarketplaceSkill,
+  skill: MarketplaceSkillCard,
   query: string,
   locale: Locale,
 ) {
@@ -1242,7 +1307,7 @@ function recommendedScore(
 }
 
 function formatFeedbackSignal(
-  skill: MarketplaceSkill,
+  skill: MarketplaceSkillCard,
   feedbackLabel: string,
   locale: Locale,
 ) {
@@ -1276,7 +1341,7 @@ function formatMarketplaceMetric(value: string, locale: Locale) {
   return value;
 }
 
-function formatPublicPrice(skill: MarketplaceSkill, locale: Locale) {
+function formatPublicPrice(skill: MarketplaceSkillCard, locale: Locale) {
   if (skill.billing === "free") {
     return locale === "zh" ? "基础免费" : "Free basics";
   }
@@ -1287,7 +1352,7 @@ function formatPublicPrice(skill: MarketplaceSkill, locale: Locale) {
 }
 
 function buildRecommendationReasons(
-  skill: MarketplaceSkill,
+  skill: MarketplaceSkillCard,
   dictionary: (typeof labels)[Locale],
 ) {
   const reasons: string[] = [];
@@ -1344,12 +1409,12 @@ function parseDate(value: string) {
   return Number.isFinite(time) ? time : 0;
 }
 
-function riskRank(risk: MarketplaceSkill["risk"]) {
+function riskRank(risk: MarketplaceSkillCard["risk"]) {
   const ranks = {
     high: 3,
     low: 1,
     medium: 2,
-  } satisfies Record<MarketplaceSkill["risk"], number>;
+  } satisfies Record<MarketplaceSkillCard["risk"], number>;
 
   return ranks[risk];
 }

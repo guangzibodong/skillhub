@@ -1,6 +1,5 @@
 import type { SkillManifest, SkillSummary } from "@useskillhub/schema";
 import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
-import { demoFallback } from "@/lib/demo-fallback";
 import {
   getMarketplaceSkill,
   marketplaceSkills,
@@ -98,14 +97,9 @@ export async function getPublicMarketplaceSkills(
     );
   } catch {
     return applyMarketplaceSearchOptions(
-      demoFallback(
-        marketplaceSkills.filter(
-          (skill) =>
-            shouldIncludeReviewListings ||
-            isVerifiedSkillStatus(skill.verification.en),
-        ),
-        [],
-      ),
+      staticMarketplaceCatalog({
+        includeReviewListings: shouldIncludeReviewListings,
+      }),
       options,
     );
   }
@@ -150,11 +144,7 @@ function mergeMarketplaceSkills(
   liveSkills: MarketplaceSkill[],
   options: { includeReviewListings?: boolean } = {},
 ) {
-  const staticSkills = marketplaceSkills.filter(
-    (skill) =>
-      options.includeReviewListings ||
-      isVerifiedSkillStatus(skill.verification.en),
-  );
+  const staticSkills = staticMarketplaceCatalog(options);
   const liveBySlug = new Map(liveSkills.map((skill) => [skill.slug, skill]));
   const merged = staticSkills.map(
     (staticSkill) => liveBySlug.get(staticSkill.slug) ?? staticSkill,
@@ -171,6 +161,16 @@ function mergeMarketplaceSkills(
   }
 
   return merged;
+}
+
+function staticMarketplaceCatalog(
+  options: { includeReviewListings?: boolean } = {},
+) {
+  return marketplaceSkills.filter(
+    (skill) =>
+      options.includeReviewListings ||
+      isVerifiedSkillStatus(skill.verification.en),
+  );
 }
 
 export async function getPublicMarketplaceSkill(

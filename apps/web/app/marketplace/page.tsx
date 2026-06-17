@@ -20,7 +20,10 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
-import { MarketplaceBrowser } from "@/components/marketplace-browser";
+import {
+  MarketplaceBrowser,
+  type MarketplaceSkillCard,
+} from "@/components/marketplace-browser";
 import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
 import { PublicAccessScope } from "@/components/public-access-scope";
 import {
@@ -552,6 +555,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   ]);
   const publicStats = await getPublicPlatformStats({ publishers });
   const publicSkillLinkIndex = mergeSkillLinkIndex(skills);
+  const skillCards = toMarketplaceSkillCards(skills);
   const metrics = [
     [labels.catalogMetric, String(publicStats.publicSkills)],
     [labels.publisherMetric, String(publicStats.publicPublishers)],
@@ -759,7 +763,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
           initialFilters={initialFilters}
           locale={locale}
           publisherProfiles={publishers}
-          skills={skills}
+          skills={skillCards}
         />
       </div>
 
@@ -1098,6 +1102,33 @@ function mergeSkillLinkIndex(skills: typeof marketplaceSkills) {
   }
 
   return Array.from(merged.values());
+}
+
+function toMarketplaceSkillCards(
+  skills: typeof marketplaceSkills,
+): MarketplaceSkillCard[] {
+  return skills.map((skill) => ({
+    author: skill.author,
+    billing: skill.billing,
+    category: skill.category,
+    categoryKey: skill.categoryKey,
+    feedbackCount: skill.feedbackCount,
+    installs: skill.installs,
+    installsCommand: {
+      cli: skill.installsCommand.cli,
+    },
+    latency: skill.latency,
+    lastReviewed: skill.lastReviewed,
+    name: skill.name,
+    rating: skill.rating,
+    risk: skill.risk,
+    runtime: skill.runtime,
+    slug: skill.slug,
+    summary: skill.summary,
+    successRate: skill.successRate,
+    tags: skill.tags,
+    verification: skill.verification,
+  }));
 }
 
 function toPublicMarketplaceSearchOptions(
