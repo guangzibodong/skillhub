@@ -8,6 +8,11 @@ import { localizedHref, type Locale } from "@/lib/i18n";
 export type NavPage =
   | "home"
   | "marketplace"
+  | "solutions"
+  | "use-cases"
+  | "examples"
+  | "integrations"
+  | "blog"
   | "registry"
   | "docs"
   | "quickstart"
@@ -39,18 +44,18 @@ type NavProps = {
 const navLinks = {
   en: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "Find Skills" },
+    { href: "/solutions", page: "solutions" as NavPage, label: "Solutions" },
     { href: "/registry", page: "registry" as NavPage, label: "Skill API" },
     { href: "/docs", page: "docs" as NavPage, label: "Docs & Guides" },
     { href: "/publish", page: "publish" as NavPage, label: "Publish Skill" },
-    { href: "/security", page: "security" as NavPage, label: "Security & Trust" },
     { href: "/pricing", page: "pricing" as NavPage, label: "Plans" },
   ],
   zh: [
     { href: "/marketplace", page: "marketplace" as NavPage, label: "找技能" },
+    { href: "/solutions", page: "solutions" as NavPage, label: "解决方案" },
     { href: "/registry", page: "registry" as NavPage, label: "技能 API" },
     { href: "/docs", page: "docs" as NavPage, label: "使用文档" },
     { href: "/publish", page: "publish" as NavPage, label: "发布技能" },
-    { href: "/security", page: "security" as NavPage, label: "安全合规" },
     { href: "/pricing", page: "pricing" as NavPage, label: "价格方案" },
   ],
 };

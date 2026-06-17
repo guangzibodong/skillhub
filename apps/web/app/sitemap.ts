@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { growthPaths } from "@/lib/growth-content";
 import { marketplaceSkills } from "@/lib/marketplace-data";
 import { indexablePublicPaths } from "@/lib/public-pages";
 import { localizedUrl, siteUrl } from "@/lib/seo";
@@ -11,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .slice(0, SITEMAP_SKILL_LIMIT)
     .filter((skill) => isVerifiedSkillStatus(skill.verification.en))
     .map((skill) => `/skills/${skill.slug}`);
-  const paths = Array.from(new Set([...indexablePublicPaths, ...skillPaths]));
+  const paths = Array.from(new Set([...indexablePublicPaths, ...growthPaths, ...skillPaths]));
 
   return paths.flatMap((path) =>
     (["en", "zh"] as const).map((locale) => ({
@@ -35,8 +36,24 @@ function getPriority(path: string): number {
     return 1;
   }
 
-  if (path === "/marketplace" || path === "/docs" || path === "/what-is-a-skill") {
+  if (
+    path === "/marketplace" ||
+    path === "/docs" ||
+    path === "/solutions" ||
+    path === "/use-cases" ||
+    path === "/what-is-a-skill"
+  ) {
     return 0.9;
+  }
+
+  if (
+    path === "/blog" ||
+    path === "/examples" ||
+    path === "/integrations" ||
+    path.startsWith("/solutions/") ||
+    path.startsWith("/use-cases/")
+  ) {
+    return 0.84;
   }
 
   if (path.startsWith("/skills/")) {

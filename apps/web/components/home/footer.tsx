@@ -35,7 +35,16 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/docs", label: "Docs & Guides" },
         { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP Access" },
-        { href: "/data-handling", label: "Data handling" },
+        { href: "/integrations", label: "Integrations" },
+      ],
+    },
+    {
+      title: "Resources",
+      links: [
+        { href: "/solutions", label: "Solutions" },
+        { href: "/use-cases", label: "Use cases" },
+        { href: "/examples", label: "Examples" },
+        { href: "/blog", label: "Blog" },
       ],
     },
     {
@@ -81,7 +90,16 @@ const footerColumns: Record<Locale, FooterColumn[]> = {
         { href: "/docs", label: "使用文档" },
         { href: "/api", label: "API" },
         { href: "/mcp", label: "MCP 接入" },
-        { href: "/data-handling", label: "数据处理" },
+        { href: "/integrations", label: "集成方式" },
+      ],
+    },
+    {
+      title: "资源",
+      links: [
+        { href: "/solutions", label: "解决方案" },
+        { href: "/use-cases", label: "使用场景" },
+        { href: "/examples", label: "示例模板" },
+        { href: "/blog", label: "博客指南" },
       ],
     },
     {
