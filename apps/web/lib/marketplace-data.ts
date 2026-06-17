@@ -1986,6 +1986,715 @@ const launchCatalogGroups: LaunchCatalogGroup[] = [
   },
 ];
 
+const supplementalLaunchCatalogGroups: LaunchCatalogGroup[] = [
+  {
+    author: "Search Growth Bench",
+    buyer: { en: "SEO, GEO, and content growth", zh: "SEO、GEO 和内容增长" },
+    categoryKey: "seo",
+    tags: { en: ["seo", "geo", "search"], zh: ["SEO", "GEO", "搜索"] },
+    skills: [
+      seedSkill("YouTube SEO Brief", "YouTube SEO 简报", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Forum Intent Miner", "论坛搜索意图挖掘", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Programmatic SEO Template", "程序化 SEO 模板", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Local Service Page Builder", "本地服务页生成", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("FAQ Schema QA", "FAQ 结构化数据质检", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Entity Profile Builder", "品牌实体画像生成", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("AI Citation Source Finder", "AI 引用来源发现", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Search Console Drop Triage", "搜索流量下跌分诊", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Sitemap Gap Checker", "站点地图缺口检查", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Image SEO Audit", "图片 SEO 诊断", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "AdOps Studio",
+    buyer: { en: "paid media and lifecycle marketing", zh: "广告投放和生命周期营销" },
+    categoryKey: "marketing",
+    tags: { en: ["ads", "marketing", "conversion"], zh: ["广告", "营销", "转化"] },
+    skills: [
+      seedSkill("LinkedIn Ads Angle Generator", "LinkedIn 广告角度生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("B2B Lead Magnet Builder", "B2B 获客资料生成", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Conversion Event Mapper", "转化事件映射", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Retargeting Audience Plan", "再营销受众规划", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Creative Fatigue Detector", "素材疲劳识别", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Webinar Promotion Plan", "Webinar 推广计划", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("App Store Copy Test", "应用商店文案测试", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Lifecycle Email Flow", "生命周期邮件流程", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "EditorialOps AI",
+    buyer: { en: "content, brand, and documentation", zh: "内容、品牌和文档" },
+    categoryKey: "content",
+    tags: { en: ["content", "copywriting", "brand"], zh: ["内容", "文案", "品牌"] },
+    skills: [
+      seedSkill("Product Comparison Article", "产品对比文章", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("How-to Guide Generator", "操作指南生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("X Thread Writer", "X 长帖生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Short Video Hook Library", "短视频钩子库", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Brand FAQ Knowledge Pack", "品牌 FAQ 知识包", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Translation QA", "翻译质量检查", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("Founder Story Draft", "创始人故事草稿", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Documentation Rewrite", "文档重写优化", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "Commerce Growth Desk",
+    buyer: { en: "marketplace and store operators", zh: "平台店铺和独立站运营" },
+    categoryKey: "ecommerce",
+    tags: { en: ["ecommerce", "shopify", "retail"], zh: ["电商", "Shopify", "零售"] },
+    skills: [
+      seedSkill("Shopify Collection SEO", "Shopify 集合页 SEO", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Amazon Review Reply", "Amazon 评论回复", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Etsy Listing Optimizer", "Etsy 商品优化", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Shopee Lazada Product Copy", "Shopee/Lazada 商品文案", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Cart Abandonment Email", "弃购邮件生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Size Guide Builder", "尺码指南生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Product Feed QA", "商品 Feed 质检", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Refund Reason Tagger", "退款原因标签", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "SupportOps Studio",
+    buyer: { en: "support, success, and operations", zh: "客服、客户成功和运营" },
+    categoryKey: "ops",
+    tags: { en: ["support", "operations", "ticket"], zh: ["客服", "运营", "工单"] },
+    skills: [
+      seedSkill("Customer Onboarding Checklist", "客户 onboarding 清单", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("SOP Change Summarizer", "SOP 变更总结", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Zendesk Macro Builder", "Zendesk 快捷回复生成", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Intercom Help Reply", "Intercom 帮助回复", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Order Delay Notice", "订单延迟通知", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Daily Standup Digest", "每日站会摘要", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Meeting Action Tracker", "会议行动项追踪", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Knowledge Base Gap Finder", "知识库缺口发现", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "DataOps Bench",
+    buyer: { en: "data, BI, and spreadsheet teams", zh: "数据、BI 和表格团队" },
+    categoryKey: "data",
+    tags: { en: ["data", "spreadsheet", "analytics"], zh: ["数据", "表格", "分析"] },
+    skills: [
+      seedSkill("Google Sheets Formula Fixer", "Google Sheets 公式修复", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("CSV Header Mapper", "CSV 表头映射", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("KPI Dashboard QA", "KPI 看板质检", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Cohort Table Builder", "留存 Cohort 表生成", {
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("SQL Query Explainer", "SQL 查询解释", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("Looker Metric Brief", "Looker 指标说明", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("GA4 Event QA", "GA4 事件质检", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Airtable Cleanup", "Airtable 清理", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "FinanceOps AI",
+    buyer: { en: "finance, accounting, and procurement", zh: "财务、会计和采购" },
+    categoryKey: "finance",
+    tags: { en: ["finance", "invoice", "backoffice"], zh: ["财务", "发票", "后台"] },
+    skills: [
+      seedSkill("Invoice Approval Checklist", "发票审批清单", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Receipt Policy Checker", "报销政策检查", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Vendor Payment Reminder", "供应商付款提醒", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Budget Request Reviewer", "预算申请复核", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Cash Burn Brief", "现金消耗简报", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Revenue Recognition Checklist", "收入确认清单", {
+        risk: "high",
+        runtime: "MCP",
+      }),
+      seedSkill("Tax Deduction Categorizer", "税务抵扣分类", {
+        risk: "high",
+        runtime: "HTTP",
+      }),
+      seedSkill("Purchase Order Matcher", "采购订单匹配", {
+        risk: "high",
+        runtime: "Local",
+      }),
+    ],
+  },
+  {
+    author: "PeopleOps Lab",
+    buyer: { en: "HR, recruiting, and training teams", zh: "HR、招聘和培训团队" },
+    categoryKey: "hr",
+    tags: { en: ["hr", "recruiting", "people"], zh: ["HR", "招聘", "员工"] },
+    skills: [
+      seedSkill("Interview Feedback Summarizer", "面试反馈总结", {
+        risk: "high",
+        runtime: "HTTP",
+      }),
+      seedSkill("Candidate Outreach Sequence", "候选人触达序列", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Onboarding Buddy Plan", "入职导师计划", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Employee Survey Theme Miner", "员工调研主题挖掘", {
+        risk: "high",
+        runtime: "HTTP",
+      }),
+      seedSkill("Performance Calibration Notes", "绩效校准记录", {
+        risk: "high",
+        runtime: "HTTP",
+      }),
+      seedSkill("HR FAQ Bot Starter", "HR FAQ 机器人入门", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Training Quiz Builder", "培训测验生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Recruiting Funnel Report", "招聘漏斗报告", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "LearningOps Studio",
+    buyer: { en: "education, enablement, and course teams", zh: "教育、培训和课程团队" },
+    categoryKey: "education",
+    tags: { en: ["education", "training", "course"], zh: ["教育", "培训", "课程"] },
+    skills: [
+      seedSkill("Course Landing Page Builder", "课程落地页生成", {
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Training Needs Survey", "培训需求问卷", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Lesson Slide Outline", "课件大纲生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Learning Path Recommender", "学习路径推荐", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Exam Item Reviewer", "考试题目复核", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Tutor Feedback Writer", "导师反馈撰写", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Workshop Agenda Builder", "工作坊议程生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Student FAQ Answer", "学员 FAQ 回复", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "Revenue Tools",
+    buyer: { en: "sales, CRM, and customer success", zh: "销售、CRM 和客户成功" },
+    categoryKey: "sales",
+    tags: { en: ["sales", "crm", "revenue"], zh: ["销售", "CRM", "营收"] },
+    skills: [
+      seedSkill("LinkedIn Prospect Brief", "LinkedIn 线索简报", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Sales Call QA", "销售电话质检", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Proposal Risk Review", "提案风险复核", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("RFP Response Outline", "RFP 回复大纲", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("CRM Next Step Generator", "CRM 下一步生成", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Renewal Email Sequence", "续费邮件序列", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Account Research Agent", "大客户研究助手", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Pricing Objection Reply", "价格异议回复", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "TrustOps Counsel",
+    buyer: { en: "legal, compliance, and trust teams", zh: "法务、合规和信任团队" },
+    categoryKey: "legal",
+    tags: { en: ["legal", "compliance", "policy"], zh: ["法务", "合规", "政策"] },
+    skills: [
+      seedSkill("Contract Renewal Checklist", "合同续约清单", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Marketing Claim Evidence Check", "营销宣称证据检查", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Data Privacy FAQ", "数据隐私 FAQ", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Vendor DPA Intake", "供应商 DPA 收集", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Accessibility Statement Draft", "无障碍声明草稿", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Records Deletion Checklist", "记录删除清单", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Consent Flow Reviewer", "授权流程复核", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Policy Change Summary", "政策变化摘要", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "Builder Tools",
+    buyer: { en: "developers, API teams, and builders", zh: "开发者、API 团队和构建者" },
+    categoryKey: "dev",
+    tags: { en: ["development", "api", "mcp"], zh: ["开发", "API", "MCP"] },
+    skills: [
+      seedSkill("README Quickstart Builder", "README 快速开始生成", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("API Error Explainer", "API 错误解释", {
+        free: true,
+        risk: "low",
+        runtime: "Local",
+      }),
+      seedSkill("Env Var Checklist", "环境变量清单", {
+        free: true,
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("Dockerfile Review", "Dockerfile 检查", {
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("Migration Plan Builder", "迁移计划生成", {
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("Log Triage Assistant", "日志分诊助手", {
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("MCP Tool Manifest Builder", "MCP 工具 Manifest 生成", {
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("Release Checklist", "发布检查清单", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "WorkflowOps Studio",
+    buyer: { en: "automation, ops, and no-code teams", zh: "自动化、运营和低代码团队" },
+    categoryKey: "automation",
+    tags: { en: ["automation", "workflow", "orchestration"], zh: ["自动化", "流程", "编排"] },
+    skills: [
+      seedSkill("Slack Digest Automation", "Slack 摘要自动化", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Email-to-Task Router", "邮件转任务路由", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Google Sheet Sync Plan", "Google Sheet 同步方案", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Approval Reminder Bot", "审批提醒机器人", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Calendar Follow-up Agent", "日历跟进助手", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Notion Database Automation", "Notion 数据库自动化", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("HubSpot Lead Assignment", "HubSpot 线索分配", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Shopify Order Alert", "Shopify 订单提醒", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+    ],
+  },
+  {
+    author: "PlatformSec",
+    buyer: { en: "security, IT, and risk teams", zh: "安全、IT 和风控团队" },
+    categoryKey: "security",
+    tags: { en: ["security", "risk", "compliance"], zh: ["安全", "风控", "合规"] },
+    skills: [
+      seedSkill("SOC2 Evidence Checklist", "SOC2 证据清单", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Access Review Starter", "访问复核入门", {
+        free: true,
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Phishing Report Triage", "钓鱼举报分诊", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Secure Prompt Checklist", "安全提示词清单", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Data Classification Tagger", "数据分级标签", {
+        risk: "high",
+        runtime: "Local",
+      }),
+      seedSkill("Incident Timeline Builder", "事故时间线生成", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+      seedSkill("Vendor Security Summary", "供应商安全摘要", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Backup Policy Review", "备份策略复核", {
+        risk: "medium",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "ResearchDesk AI",
+    buyer: { en: "research, strategy, and analyst teams", zh: "研究、战略和分析团队" },
+    categoryKey: "research",
+    tags: { en: ["research", "browser", "citations"], zh: ["研究", "浏览器", "引用"] },
+    skills: [
+      seedSkill("Competitor Pricing Tracker", "竞品价格追踪", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Academic Paper Brief", "论文简报", {
+        free: true,
+        risk: "medium",
+        runtime: "Local",
+      }),
+      seedSkill("Reddit Voice-of-Customer", "Reddit 客户声音挖掘", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("News-to-Brief Digest", "新闻转简报", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Source Credibility Score", "来源可信度评分", {
+        free: true,
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Procurement Vendor Shortlist", "采购供应商短名单", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Market Trend Scanner", "市场趋势扫描", {
+        risk: "medium",
+        runtime: "HTTP",
+      }),
+      seedSkill("Expert Interview Guide", "专家访谈提纲", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+  {
+    author: "Interface Works",
+    buyer: { en: "product, design, and conversion teams", zh: "产品、设计和转化团队" },
+    categoryKey: "ui",
+    tags: { en: ["ui", "ux", "accessibility"], zh: ["UI", "UX", "可访问性"] },
+    skills: [
+      seedSkill("SaaS Pricing Page Review", "SaaS 定价页评审", {
+        risk: "low",
+        runtime: "HTTP",
+      }),
+      seedSkill("Checkout Friction Finder", "结账阻力发现", {
+        risk: "low",
+        runtime: "HTTP",
+      }),
+      seedSkill("Form Error Copy", "表单错误文案", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Mobile Navigation QA", "移动导航质检", {
+        free: true,
+        risk: "low",
+        runtime: "HTTP",
+      }),
+      seedSkill("Dashboard Density Review", "仪表盘密度评审", {
+        risk: "low",
+        runtime: "HTTP",
+      }),
+      seedSkill("Icon Label Audit", "图标标签检查", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Trust Section Builder", "信任区块生成", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+      seedSkill("Onboarding Empty State", "新手空状态设计", {
+        free: true,
+        risk: "low",
+        runtime: "MCP",
+      }),
+    ],
+  },
+];
+
 const generatedLaunchSkills = buildGeneratedLaunchSkills();
 
 function buildGeneratedLaunchSkills() {
@@ -1993,7 +2702,10 @@ function buildGeneratedLaunchSkills() {
   const skills: MarketplaceSkill[] = [];
   let index = 0;
 
-  for (const group of launchCatalogGroups) {
+  for (const group of [
+    ...launchCatalogGroups,
+    ...supplementalLaunchCatalogGroups,
+  ]) {
     for (const seed of group.skills) {
       const slugBase = seed.slug ?? slugifySkillName(seed.name.en);
       const slug = seen.has(slugBase)

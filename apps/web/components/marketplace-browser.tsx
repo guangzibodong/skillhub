@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   CheckCircle2,
   Copy,
+  Layers3,
   ExternalLink,
   PackageCheck,
   RadioTower,
@@ -95,6 +96,25 @@ const labels = {
     publisher: "Publisher",
     signals: "Signals",
     contract: "Contract checks",
+    categoryPicks: "Popular starting points",
+    categoryPicksBody:
+      "Choose by the job your team is trying to finish, then refine by plan, risk, runtime, and review status.",
+    catalogSummary: {
+      categories: "use-case categories",
+      free: "free starter skills",
+      pro: "Pro-ready skills",
+      total: "public skills",
+    },
+    spotlight: {
+      automation: "Workflow automation",
+      data: "Data and spreadsheets",
+      ecommerce: "E-commerce operations",
+      free: "Free starters",
+      marketing: "Ads and growth",
+      ops: "Support operations",
+      seo: "SEO / GEO visibility",
+      ui: "UI/UX polish",
+    },
     handoff: {
       submittedBody: "Project install, runtime test, billing, and ledger actions may unlock only after review approval.",
       submittedItems: ["Project install", "Runtime test", "Billing", "Ledger actions"],
@@ -179,6 +199,25 @@ const labels = {
     publisher: "发布者",
     signals: "信号",
     contract: "合约检查",
+    categoryPicks: "热门入口",
+    categoryPicksBody:
+      "先按团队要完成的任务找，再用套餐、风险、运行时和验证状态细筛。",
+    catalogSummary: {
+      categories: "个用途分类",
+      free: "个免费入门技能",
+      pro: "个 Pro 技能",
+      total: "个公开技能",
+    },
+    spotlight: {
+      automation: "流程自动化",
+      data: "数据和表格",
+      ecommerce: "电商运营",
+      free: "免费入门",
+      marketing: "广告增长",
+      ops: "客服运营",
+      seo: "SEO / GEO 可见度",
+      ui: "UI/UX 优化",
+    },
     handoff: {
       submittedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
       submittedItems: ["\u9879\u76ee\u5b89\u88c5", "\u8fd0\u884c\u6d4b\u8bd5", "\u8ba1\u8d39", "\u8d26\u672c\u64cd\u4f5c"],
@@ -238,6 +277,17 @@ const sortOptions = [
   "recent",
 ] as const;
 
+const categorySpotlights = [
+  { key: "seo", query: "" },
+  { key: "marketing", query: "" },
+  { key: "ecommerce", query: "" },
+  { key: "ops", query: "" },
+  { key: "data", query: "" },
+  { key: "ui", query: "" },
+  { key: "automation", query: "" },
+  { key: "free", query: "" },
+] as const;
+
 type CategoryKey = (typeof marketplaceCategories)[number]["key"];
 type PricingKey = (typeof pricingOptions)[number]["key"];
 type RiskKey = (typeof riskOptions)[number];
@@ -294,6 +344,33 @@ export function MarketplaceBrowser({
   const publicPublisherSlugs = useMemo(
     () => new Set(publisherProfiles.map((publisher) => publisher.slug)),
     [publisherProfiles],
+  );
+  const catalogSummary = useMemo(
+    () => ({
+      categories: new Set(skills.map((skill) => skill.categoryKey)).size,
+      free: skills.filter((skill) => skill.billing === "free").length,
+      pro: skills.filter((skill) => skill.billing !== "free").length,
+      total: skills.length,
+    }),
+    [skills],
+  );
+  const spotlightCards = useMemo(
+    () =>
+      categorySpotlights.map((spotlight) => {
+        if (spotlight.key === "free") {
+          return {
+            ...spotlight,
+            count: skills.filter((skill) => skill.billing === "free").length,
+          };
+        }
+
+        return {
+          ...spotlight,
+          count: skills.filter((skill) => skill.categoryKey === spotlight.key)
+            .length,
+        };
+      }),
+    [skills],
   );
   const hasActiveFilters =
     query.trim().length > 0 ||
@@ -480,6 +557,26 @@ export function MarketplaceBrowser({
     setSort("recommended");
   }
 
+  function applySpotlight(
+    spotlight: (typeof categorySpotlights)[number],
+  ) {
+    setRisk("all");
+    setRuntime("all");
+    setVerification("all");
+    setSort("recommended");
+
+    if (spotlight.key === "free") {
+      setCategory("all");
+      setPricing("free");
+      setQuery("");
+      return;
+    }
+
+    setCategory(spotlight.key);
+    setPricing("all");
+    setQuery(spotlight.query);
+  }
+
   return (
     <section
       className="market-browser"
@@ -504,6 +601,55 @@ export function MarketplaceBrowser({
             placeholder={dictionary.search}
           />
         </label>
+      </div>
+
+      <div className="market-catalog-summary" aria-label={dictionary.catalog}>
+        <div>
+          <strong>{catalogSummary.total}</strong>
+          <span>{dictionary.catalogSummary.total}</span>
+        </div>
+        <div>
+          <strong>{catalogSummary.free}</strong>
+          <span>{dictionary.catalogSummary.free}</span>
+        </div>
+        <div>
+          <strong>{catalogSummary.pro}</strong>
+          <span>{dictionary.catalogSummary.pro}</span>
+        </div>
+        <div>
+          <strong>{catalogSummary.categories}</strong>
+          <span>{dictionary.catalogSummary.categories}</span>
+        </div>
+      </div>
+
+      <div className="market-spotlight-panel">
+        <div className="market-spotlight-panel__copy">
+          <span>
+            <Layers3 size={15} aria-hidden="true" />
+            {dictionary.categoryPicks}
+          </span>
+          <p>{dictionary.categoryPicksBody}</p>
+        </div>
+        <div className="market-spotlight-grid">
+          {spotlightCards.map((spotlight) => (
+            <button
+              className={
+                (spotlight.key === "free" && pricing === "free") ||
+                (spotlight.key !== "free" && category === spotlight.key)
+                  ? "market-spotlight-card market-spotlight-card--active"
+                  : "market-spotlight-card"
+              }
+              key={spotlight.key}
+              onClick={() => applySpotlight(spotlight)}
+              type="button"
+            >
+              <strong>{dictionary.spotlight[spotlight.key]}</strong>
+              <span>
+                {spotlight.count} {dictionary.results}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {hasActiveFilters ? (
