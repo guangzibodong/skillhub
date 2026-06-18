@@ -189,17 +189,24 @@ export async function getPublicMarketplaceSkill(
       fetchSkillSummary(slug),
     ]);
 
-    if (!manifest && !staticSkill) {
+    if (!manifest && !summary && !staticSkill) {
       return null;
     }
 
-    if (!manifest) {
+    if (!manifest && !summary) {
+      return staticSkill ?? null;
+    }
+
+    const resolvedSummary =
+      summary ?? (manifest ? manifestToSummary(manifest) : null);
+
+    if (!resolvedSummary) {
       return staticSkill ?? null;
     }
 
     return manifestToMarketplaceSkill(
       manifest,
-      summary ?? manifestToSummary(manifest),
+      resolvedSummary,
       prices,
       staticSkill,
     );
