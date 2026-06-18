@@ -76,12 +76,12 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     en: {
       title: "SkillHub Pricing - Free Basics and Pro Access",
       description:
-        "SkillHub pricing: free basic skills, $128 monthly Pro access to all skills, quarterly 10% discount, and annual 20% discount.",
+        "SkillHub pricing: free basic skills and Pro access opened through team onboarding during Launch Preview. Monthly Pro is $128, quarterly is 10% off, and annual is 20% off.",
     },
     zh: {
       title: "SkillHub 定价 - 免费基础技能与 Pro 全量套餐",
       description:
-        "SkillHub 定价：免费基础技能、每月 128 美金的 Pro 全量技能套餐、季度 9 折、年度 8 折。",
+        "SkillHub 定价：免费基础技能，以及 Launch Preview 期间通过团队入驻人工开通的 Pro。月付 128 美金，季度 9 折，年度 8 折。",
     },
   });
 }
@@ -108,11 +108,11 @@ const copy: Record<Locale, PricingCopy> = {
     ],
     hero: {
       body:
-        "SkillHub keeps pricing simple: free basics for evaluation, then one Pro access plan for all listed AI Agent Skills. Quarterly and annual billing reward teams that commit to ongoing use.",
+        "SkillHub keeps pricing simple: free basics for evaluation, then Pro access for all listed AI Agent Skills. During Launch Preview, Pro is opened through team onboarding and contact review; there is no public self-service checkout yet.",
       eyebrow: "Pricing",
-      primary: "Compare skills",
+      primary: "Request Pro access",
       secondary: "Read installation docs",
-      title: "One Pro plan for all skills, with free basics to start.",
+      title: "Free basics first. Pro access opens through onboarding.",
     },
     notes: [
       {
@@ -142,32 +142,32 @@ const copy: Record<Locale, PricingCopy> = {
         price: "$0",
       },
       {
-        actionHref: "/login",
-        actionLabel: "Request monthly access",
+        actionHref: "/contact?intent=pro&cycle=monthly",
+        actionLabel: "Contact sales for monthly",
         billingCycle: "monthly",
-        billingNote: "Manual onboarding during Launch Preview",
+        billingNote: "Manual onboarding, no self-service checkout yet",
         body: "For teams that want flexible access to the full catalog without a long commitment.",
         bullets: ["All listed skills", "Project Keys and runtime tests", "Version pinning and logs", "Publisher trust signals"],
         name: "Pro Monthly",
         price: "$128 / month",
       },
       {
-        actionHref: "/login",
-        actionLabel: "Request quarterly access",
+        actionHref: "/contact?intent=pro&cycle=quarterly",
+        actionLabel: "Contact sales for quarterly",
         badge: "10% off",
         billingCycle: "quarterly",
-        billingNote: "$345.60 quarterly after onboarding",
+        billingNote: "$345.60 quarterly after manual onboarding",
         body: "For teams already using SkillHub in recurring operations and content workflows.",
         bullets: ["All Pro Monthly features", "Effective $115.20 / month", "Quarterly budget cadence", "Same governance controls"],
         name: "Pro Quarterly",
         price: "$345.60 / quarter",
       },
       {
-        actionHref: "/login",
-        actionLabel: "Request annual access",
+        actionHref: "/contact?intent=pro&cycle=annual",
+        actionLabel: "Contact sales for annual",
         badge: "20% off",
         billingCycle: "annual",
-        billingNote: "$1,228.80 yearly after onboarding",
+        billingNote: "$1,228.80 yearly after manual onboarding",
         body: "For teams standardizing SkillHub as their AI skill layer across projects.",
         bullets: ["All Pro Monthly features", "Effective $102.40 / month", "Annual procurement friendly", "Best value for production use"],
         name: "Pro Annual",
@@ -198,11 +198,11 @@ const copy: Record<Locale, PricingCopy> = {
     ],
     hero: {
       body:
-        "SkillHub 定价保持简单：免费基础技能用于试用；真正使用时，一个 Pro 套餐覆盖全部已上架 AI Agent Skills。季度和年度付款给持续使用的团队更低单价。",
+        "SkillHub 定价保持简单：免费基础技能用于试用；真正使用时，Pro 覆盖全部已上架 AI Agent Skills。Launch Preview 期间，Pro 通过团队入驻和联系确认人工开通，暂不展示成公开自助扣款流程。",
       eyebrow: "定价",
-      primary: "比较技能",
+      primary: "申请 Pro 开通",
       secondary: "查看安装文档",
-      title: "一个 Pro 套餐使用全部技能，免费基础能力先上手。",
+      title: "先用免费基础技能验证，再人工开通 Pro。",
     },
     notes: [
       {
@@ -232,32 +232,32 @@ const copy: Record<Locale, PricingCopy> = {
         price: "$0",
       },
       {
-        actionHref: "/login",
-        actionLabel: "申请月付访问",
+        actionHref: "/contact?intent=pro&cycle=monthly",
+        actionLabel: "联系开通月付",
         billingCycle: "monthly",
-        billingNote: "公开预览期人工开通",
+        billingNote: "人工开通，暂不自助扣款",
         body: "适合希望灵活使用完整技能目录、暂时不做长期承诺的团队。",
         bullets: ["全部已上架技能", "Project Key 与运行测试", "版本固定和日志", "发布者信任信号"],
         name: "Pro 月付",
         price: "$128 / 月",
       },
       {
-        actionHref: "/login",
-        actionLabel: "申请季付访问",
+        actionHref: "/contact?intent=pro&cycle=quarterly",
+        actionLabel: "联系开通季付",
         badge: "9 折",
         billingCycle: "quarterly",
-        billingNote: "$345.60 / 季度，开通后生效",
+        billingNote: "$345.60 / 季度，人工开通后生效",
         body: "适合已经把 SkillHub 用在持续运营、内容和研发流程里的团队。",
         bullets: ["包含月付全部能力", "折合 $115.20 / 月", "符合季度预算节奏", "同样的治理控制"],
         name: "Pro 季付",
         price: "$345.60 / 季",
       },
       {
-        actionHref: "/login",
-        actionLabel: "申请年付访问",
+        actionHref: "/contact?intent=pro&cycle=annual",
+        actionLabel: "联系开通年付",
         badge: "8 折",
         billingCycle: "annual",
-        billingNote: "$1,228.80 / 年，开通后生效",
+        billingNote: "$1,228.80 / 年，人工开通后生效",
         body: "适合把 SkillHub 标准化为多个项目 AI 技能层的团队。",
         bullets: ["包含月付全部能力", "折合 $102.40 / 月", "更适合年度采购", "生产使用最划算"],
         name: "Pro 年付",
@@ -296,7 +296,7 @@ export default async function PricingPage({ searchParams }: PageProps) {
                 {labels.hero.body}
               </p>
               <div className="flex flex-wrap gap-3 mt-6">
-                <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
+                <a className="btn-primary btn-primary--large" href={localizedHref("/contact?intent=pro&cycle=monthly", locale)}>
                   <PackageSearch size={18} aria-hidden="true" />
                   <span>{labels.hero.primary}</span>
                 </a>
@@ -502,9 +502,5 @@ export default async function PricingPage({ searchParams }: PageProps) {
 }
 
 function pricingPlanHref(plan: PricingPlan, locale: Locale) {
-  if (!plan.billingCycle) {
-    return localizedHref(plan.actionHref, locale);
-  }
-
-  return localizedHref(`/contact?intent=pro&cycle=${plan.billingCycle}`, locale);
+  return localizedHref(plan.actionHref, locale);
 }

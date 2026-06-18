@@ -141,7 +141,7 @@ const labels = {
     categoryPicksBody:
       "Start from the business problem, then refine by plan, permission risk, runtime, and review status.",
     operatingGuide: {
-      body: "SkillHub already carries 2,000+ public skills. The fastest way to use it is to start from a repeated workflow, try the free basics, then move recurring work into Pro.",
+      body: "SkillHub is opening with a curated launch catalog across the workflows teams ask for most. Start from a repeated workflow, try free basics when available, then move recurring work into Pro through onboarding.",
       demoCta: "Talk to Pro",
       filterCta: "View this track",
       kicker: "Buyer tracks",
@@ -198,7 +198,7 @@ const labels = {
       categories: "use-case categories",
       free: "free starter skills",
       pro: "Pro / paid-preview skills",
-      total: "public skills",
+      total: "launch catalog skills",
     },
     spotlight: {
       automation: "Workflow automation",
@@ -308,7 +308,7 @@ const labels = {
     categoryPicksBody:
       "先从业务问题入手，再用套餐、权限风险、运行时和验证状态细筛。",
     operatingGuide: {
-      body: "SkillHub 已经有 2,000+ 个公开技能。最快的用法不是按技术名词乱找，而是先选一个重复发生的工作流，先用免费基础技能验证，再把长期任务放进 Pro。",
+      body: "SkillHub 先用精选上线目录覆盖团队最常问的工作流。最快的用法不是按技术名词乱找，而是先选一个重复发生的业务流程，有免费基础技能就先验证，再通过入驻把长期任务放进 Pro。",
       demoCta: "咨询 Pro",
       filterCta: "查看这类技能",
       kicker: "买家场景",
@@ -365,7 +365,7 @@ const labels = {
       categories: "个用途分类",
       free: "个免费入门技能",
       pro: "个 Pro / 付费预览技能",
-      total: "个公开技能",
+      total: "个精选目录技能",
     },
     spotlight: {
       automation: "流程自动化",

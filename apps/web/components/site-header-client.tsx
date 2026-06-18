@@ -162,11 +162,11 @@ export function SiteHeaderClient({
           </a>
           <a
             className="primary-button site-action-publish"
-            href={localizedHref("/publish", locale)}
-            onClick={() => trackPublicEvent("publish_click", { target: "publish" })}
+            href={localizedHref("/marketplace", locale)}
+            onClick={() => trackPublicEvent("find_skills_click", { target: "marketplace" })}
           >
             <KeyRound size={17} aria-hidden="true" />
-            <span>{labels.publish}</span>
+            <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
           </a>
         </div>
 
@@ -228,11 +228,11 @@ export function SiteHeaderClient({
             </a>
             <a
               className="primary-button"
-              href={localizedHref("/publish", locale)}
-              onClick={() => trackPublicEvent("publish_click", { target: "publish", surface: "mobile" })}
+              href={localizedHref("/marketplace", locale)}
+              onClick={() => trackPublicEvent("find_skills_click", { target: "marketplace", surface: "mobile" })}
             >
               <KeyRound size={17} aria-hidden="true" />
-              <span>{labels.publish}</span>
+              <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
             </a>
           </div>
         </div>

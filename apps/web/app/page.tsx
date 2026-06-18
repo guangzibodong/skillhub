@@ -644,11 +644,6 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <main className={`product-shell home-shell home-shell--${locale}`}>
-      <p className="visually-hidden">
-        {locale === "zh"
-          ? "SkillHub 首页。你可以找技能、查看使用文档、了解发布流程，并在登录后进入对应工作区。/docs?lang=zh#operating-reference 阅读运营参考 运营员使用单独链接 智能体技能基础设施"
-          : "SkillHub home. Find skills, read docs and guides, review publishing paths, and sign in to open your workspace. /docs?lang=en#operating-reference what works without login what requires login operator direct link only"}
-      </p>
       <section className="home-frame" aria-labelledby="home-heading">
         <SiteHeader
           active="home"
@@ -721,7 +716,7 @@ export default async function Home({ searchParams }: PageProps) {
                 className="secondary-button secondary-button--large"
                 eventName="docs_cta_click"
                 eventProperties={{ surface: "hero" }}
-                href={localizedHref("/docs#mcp", locale)}
+                href={localizedHref("/docs#api", locale)}
               >
                 <Terminal size={18} aria-hidden="true" />
                 <span>{landing.quickstartCta}</span>

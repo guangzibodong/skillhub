@@ -74,7 +74,7 @@ const copy = {
       "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
     currentBrowser: "Current browser session",
     environment: "Environment fallback",
-    eyebrow: "Developer Preview",
+    eyebrow: "Launch Preview",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
     footerPrivacy: "Privacy",
     footerSecurity: "Security",
@@ -89,7 +89,7 @@ const copy = {
     lastSignedIn: "Last signed in",
     noticeBody:
       "public discovery and inspection are live; runtime invocation requires a project key; paid marketplace remains prelaunch.",
-    noticeLabel: "Developer Preview",
+    noticeLabel: "Launch Preview",
     noticeLink: "Learn more",
     oauthConnected:
       "OAuth login completed. Your browser session is now connected to the workspace.",
@@ -165,7 +165,7 @@ const copy = {
       "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
     currentBrowser: "当前浏览器会话",
     environment: "环境变量兜底",
-    eyebrow: "开发者预览版",
+    eyebrow: "Launch Preview",
     footerCopyright: "© 2026 SkillHub. All rights reserved.",
     footerPrivacy: "隐私政策",
     footerSecurity: "安全",
@@ -180,7 +180,7 @@ const copy = {
     lastSignedIn: "登录时间",
     noticeBody:
       "公开发现与查看已上线；运行调用需要项目 Key；付费市场仍处于预发布阶段。",
-    noticeLabel: "开发者预览版",
+    noticeLabel: "Launch Preview",
     noticeLink: "了解详情",
     oauthConnected: "OAuth 登录已完成，浏览器会话已连接到工作区。",
     oauthConnectedTitle: "OAuth 已连接",

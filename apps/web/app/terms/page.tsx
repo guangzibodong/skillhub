@@ -36,7 +36,7 @@ const sectionIcons = [
 const pageCopy = {
   en: {
     eyebrow: "Operating terms",
-    title: "Developer Preview operating terms.",
+    title: "Launch Preview operating terms.",
     description:
       "These terms cover public discovery, inspection, review, runtime governance, and prelaunch paid-marketplace modeling. Payment capture and automated payouts are not generally available.",
     effective: "Current operating policy for public launch",
@@ -147,7 +147,7 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "运营条款",
-    title: "开发者预览版运营条款。",
+    title: "Launch Preview 运营条款。",
     description:
       "这些条款覆盖公开发现、查看、审核、运行治理和预发布付费市场建模。支付扣款和自动提现尚未面向公众通用开放。",
     effective: "当前上线运营政策",

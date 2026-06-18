@@ -147,10 +147,10 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
             {actionLabel}
           </a>
           <a
-            href={localizedHref("/publish", locale)}
+            href={localizedHref("/marketplace", locale)}
             className="bg-[#7fee64] hover:bg-[#a7ff8c] text-[#071207] text-[14px] font-semibold px-4 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] transition-colors"
           >
-            {locale === "zh" ? "发布技能" : "Publish Skill"}
+            {locale === "zh" ? "找技能" : "Find Skills"}
           </a>
         </div>
 
@@ -191,10 +191,10 @@ export function HomeNav({ active, locale, secondaryHref, secondaryLabel }: NavPr
               {actionLabel}
             </a>
             <a
-              href={localizedHref("/publish", locale)}
+              href={localizedHref("/marketplace", locale)}
               className="bg-[#7fee64] text-[#071207] text-[14px] font-semibold px-3 py-2 rounded-[6px] border border-[rgba(167,255,140,0.72)] text-center"
             >
-              {locale === "zh" ? "发布技能" : "Publish Skill"}
+              {locale === "zh" ? "找技能" : "Find Skills"}
             </a>
           </div>
         </div>

@@ -87,13 +87,13 @@ const copy: Record<
       marketplace: {
         body:
           "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated runtime governance, and prelaunch paid-marketplace modeling.",
-        eyebrow: "Operating reference - Developer Preview model",
+        eyebrow: "Operating reference - Launch Preview model",
         title: "The catalog points to the governed path behind it."
       },
       platform: {
         body:
           "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to governed runtime, and later to paid-marketplace ledger and audit states.",
-        eyebrow: "Architecture reference - Developer Preview model",
+        eyebrow: "Architecture reference - Launch Preview model",
         title: "One visible path from publisher supply to agent use."
       },
       publisher: {

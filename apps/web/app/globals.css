@@ -11733,6 +11733,31 @@ a {
   padding: 12px;
 }
 
+.notification-delivery-warning {
+  grid-column: 1 / -1;
+}
+
+.admin-payout-warning,
+.notification-delivery-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(215, 168, 76, 0.22);
+  border-radius: var(--radius);
+  background: rgba(215, 168, 76, 0.09);
+  color: var(--amber);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 9px 10px;
+}
+
+.admin-payout-warning svg,
+.notification-delivery-warning svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
 .notification-delivery-process-form label {
   display: grid;
   gap: 6px;
@@ -14824,9 +14849,9 @@ a {
   font-size: 60px;
   font-weight: 760;
   line-height: 0.98;
-  line-break: anywhere;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  line-break: strict;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .market-hero p,
@@ -24669,6 +24694,7 @@ a {
   .skill-detail-hero h1,
   .project-detail-hero h1 {
     font-size: 32px;
+    overflow-wrap: break-word;
   }
 
   .project-health-grid {

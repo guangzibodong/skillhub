@@ -1,4 +1,4 @@
-import { Github, LockKeyhole } from "lucide-react";
+import { Github } from "lucide-react";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import type { Locale } from "@/lib/i18n";
 
@@ -15,17 +15,17 @@ type ProviderId = "github" | "google";
 const copy = {
   en: {
     disabledAction: "Not configured",
-    empty: "Google and GitHub stay locked until their provider credentials and callback URLs are active. Use email or username/password below.",
-    helper: "OAuth redirects only appear active when the provider is configured.",
+    empty: "Google and GitHub sign-in are planned account options. Use email or username/password below while provider credentials and callback URLs are being finalized.",
+    helper: "Only configured providers are shown as sign-in buttons.",
     oauthAction: "Continue with",
-    title: "Use another sign-in method",
+    title: "Third-party sign-in",
   },
   zh: {
     disabledAction: "暂未配置",
-    empty: "Google 和 GitHub 在凭证与回调地址配置完成前会保持锁定。现在可以使用下方邮箱或用户名密码登录。",
-    helper: "第三方登录只有在完成配置后才会变成真实跳转。",
+    empty: "Google 和 GitHub 登录是计划中的账号方式。凭证和回调地址最终确认前，请先使用下方邮箱或用户名密码登录。",
+    helper: "这里只展示已经配置完成、可以真实跳转的第三方登录。",
     oauthAction: "继续使用",
-    title: "使用其他方式登录",
+    title: "第三方登录",
   },
 } as const;
 
@@ -57,18 +57,32 @@ export function AuthProviderPanel({
 
     return { action, providerConfig };
   });
+  const activeProviderItems = providerItems.filter((item) => item.action.href);
+
+  if (activeProviderItems.length === 0) {
+    return (
+      <Wrapper className={className}>
+        <div className="card-kicker auth-provider-panel__title">
+          <span>{labels.title}</span>
+        </div>
+        <p className="oauth-provider-note oauth-provider-note--muted">
+          {labels.empty}
+        </p>
+      </Wrapper>
+    );
+  }
+
   return (
     <Wrapper className={className}>
       <div className="card-kicker auth-provider-panel__title">
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack" aria-label={labels.title}>
-        {providerItems.map(({ action, providerConfig }) => {
+        {activeProviderItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
           const buttonClass = [
             "oauth-provider-button",
             `oauth-provider-button--${providerConfig.id}`,
-            action.href ? "" : "oauth-provider-button--disabled",
           ]
             .filter(Boolean)
             .join(" ");
@@ -79,43 +93,22 @@ export function AuthProviderPanel({
               <span className="oauth-provider-button__label">
                 {providerName}
               </span>
-              {!action.href ? (
-                <span className="oauth-provider-button__lock">
-                  <LockKeyhole size={14} aria-hidden="true" />
-                  <span>{labels.disabledAction}</span>
-                </span>
-              ) : null}
             </>
           );
 
-          return action.href ? (
+          return (
             <a
               aria-label={`${labels.oauthAction} ${providerName}`}
               className={buttonClass}
-              href={action.href}
+              href={action.href ?? "#"}
               key={providerConfig.id}
             >
               {content}
             </a>
-          ) : (
-            <button
-              aria-label={`${providerName} ${labels.disabledAction}`}
-              className={buttonClass}
-              disabled
-              key={providerConfig.id}
-              type="button"
-            >
-              {content}
-            </button>
           );
         })}
       </div>
       <p className="oauth-provider-note">{labels.helper}</p>
-      {providerItems.every((item) => !item.action.href) ? (
-        <p className="oauth-provider-note oauth-provider-note--muted">
-          {labels.empty}
-        </p>
-      ) : null}
     </Wrapper>
   );
 }

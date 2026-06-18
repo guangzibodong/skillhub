@@ -105,7 +105,6 @@ type MarketplaceInitialFilterState = {
   verification?: string;
 };
 
-const PUBLIC_SKILL_LINK_INDEX_LIMIT = 240;
 const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
 
 const pageCopy = {
@@ -121,7 +120,7 @@ const pageCopy = {
     consoleSubtitle:
       "Pick a workflow, try a free basic skill when available, open the detail page for permissions and expected output, then sign in only when the skill should become project state.",
     proof: [
-      "2,000+ public skills",
+      "Curated launch catalog",
       "16 business categories",
       "Free basics + Pro",
       "Permission checks",
@@ -180,7 +179,7 @@ const pageCopy = {
     moneyRows: [
       [
         "Current stage",
-        "Developer Preview catalog; payment capture is prelaunch",
+        "Launch Preview catalog; payment capture is prelaunch",
       ],
       [
         "Paid readiness",
@@ -199,7 +198,7 @@ const pageCopy = {
       eyebrow: "Architecture preview",
       title:
         "The catalog is tied to buyer, publisher, and operator state without claiming paid launch.",
-      body: "These preview signals come from the platform overview API. They explain the discovery-to-runtime architecture while paid marketplace operations remain prelaunch.",
+      body: "These launch signals explain the discovery-to-runtime architecture without inflating production API counts. Public pages may show curated launch examples while verified runtime inventory grows behind the API.",
       metrics: {
         activeSubscriptions: "Active subscriptions",
         paidPreview: "Paid preview",
@@ -256,7 +255,7 @@ const pageCopy = {
         ],
       },
     },
-    catalogMetric: "Public catalog preview",
+    catalogMetric: "Launch catalog",
     publisherMetric: "Public publishers",
     verifiedPublisherMetric: "Verified publishers",
     reviewMetric: "Review gates",
@@ -334,7 +333,7 @@ const pageCopy = {
     consoleTitle: "客户应该怎么开始",
     consoleSubtitle:
       "先选业务流程，有免费基础技能就先试用；进入详情页查看权限、风险和预期产出；只有确认要接入项目时，才登录进入工作台。",
-    proof: ["2,000+ 个公开技能", "16 个业务分类", "免费基础 + Pro", "权限检查"],
+    proof: ["精选上线目录", "16 个业务分类", "免费基础 + Pro", "权限检查"],
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
       ["找技能", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
@@ -432,7 +431,7 @@ const pageCopy = {
         ],
       },
     },
-    catalogMetric: "公开技能数",
+    catalogMetric: "精选上线目录",
     publisherMetric: "发布者数",
     verifiedPublisherMetric: "已验证发布者",
     reviewMetric: "审核关卡",
@@ -569,10 +568,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
   const publicStats = reconcileMarketplacePageStats(
     rawPublicStats,
     publicSkillLinkIndex,
-  );
-  const hiddenSkillLinks = publicSkillLinkIndex.slice(
-    0,
-    PUBLIC_SKILL_LINK_INDEX_LIMIT,
   );
   const skillCards = toMarketplaceSkillCards(pageSkills);
   const metrics = [
@@ -748,18 +743,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
       {/* Catalog */}
       <div id="catalog">
-        <nav
-          aria-label={
-            locale === "zh" ? "公开技能详情链接" : "Public skill detail links"
-          }
-          className="visually-hidden"
-        >
-          {hiddenSkillLinks.map((skill) => (
-            <a href={localizedHref(`/skills/${skill.slug}`, locale)} key={skill.slug}>
-              {skill.name[locale]}
-            </a>
-          ))}
-        </nav>
         <MarketplaceBrowser
           catalogSummary={catalogSummary}
           catalogTotal={publicStats.publicSkills}
@@ -1145,8 +1128,8 @@ function reconcileMarketplacePageStats(
 
   return {
     ...stats,
-    callableSkills: Math.max(stats.callableSkills, publicSkillCount),
-    feedbackSignals: Math.max(stats.feedbackSignals, feedbackSignals),
+    callableSkills: stats.callableSkills,
+    feedbackSignals: stats.feedbackSignals,
     publicPublishers: Math.max(stats.publicPublishers, catalogAuthorCount),
     publicSkills: Math.max(stats.publicSkills, publicSkillCount),
     totalSkillRecords: Math.max(stats.totalSkillRecords, publicSkillCount),
@@ -1154,7 +1137,7 @@ function reconcileMarketplacePageStats(
       stats.verifiedPublishers,
       catalogAuthorCount,
     ),
-    verifiedSkills: Math.max(stats.verifiedSkills, publicSkillCount),
+    verifiedSkills: stats.verifiedSkills,
   };
 }
 

@@ -220,15 +220,37 @@ const manifestSnippet = `{
   "name": "support-triage",
   "displayName": "Support Triage",
   "version": "0.1.0",
-  "runtime": { "type": "http" },
+  "description": "Classifies inbound support tickets by priority, topic, and recommended next response.",
+  "tags": ["support", "triage", "operations"],
+  "runtime": {
+    "type": "http",
+    "entrypoint": "https://api.example.com/skillhub/support-triage"
+  },
   "permissions": {
     "network": false,
     "browser": false,
     "filesystem": "none",
     "secrets": []
   },
-  "inputSchema": { "type": "object" },
-  "outputSchema": { "type": "object" }
+  "inputSchema": {
+    "type": "object",
+    "required": ["ticketText"],
+    "properties": {
+      "ticketText": {
+        "type": "string",
+        "description": "Customer message or support ticket body."
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "required": ["priority", "category", "recommendedReply"],
+    "properties": {
+      "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+      "category": { "type": "string" },
+      "recommendedReply": { "type": "string" }
+    }
+  }
 }`;
 
 export default async function RegistryPage({ searchParams }: PageProps) {
@@ -275,13 +297,17 @@ curl "${apiUrl}/v1/skills/browser-research"
               <p className="body-text mt-4 max-w-[640px]">{dictionary.registryPage.description}</p>
             </div>
             <div className="flex gap-4 mt-8">
-              <a className="btn-primary btn-primary--large" href={localizedHref("/publish", locale)}>
-                <Plus size={18} aria-hidden="true" />
-                <span>{labels.actions.submit}</span>
+              <a className="btn-primary btn-primary--large" href={localizedHref("/docs#api", locale)}>
+                <BookOpenCheck size={18} aria-hidden="true" />
+                <span>{labels.actions.api}</span>
               </a>
               <a className="btn-secondary btn-secondary--large" href={localizedHref("/marketplace", locale)}>
                 <ArrowRight size={18} aria-hidden="true" />
                 <span>{labels.actions.marketplace}</span>
+              </a>
+              <a className="btn-text" href={localizedHref("/publish", locale)}>
+                <Plus size={17} aria-hidden="true" />
+                <span>{labels.actions.submit}</span>
               </a>
             </div>
           </Reveal>

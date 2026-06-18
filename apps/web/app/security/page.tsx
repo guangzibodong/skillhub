@@ -39,7 +39,7 @@ const copy = {
     ],
     disclosureEyebrow: "Responsible disclosure",
     disclosureTitle: "Report security issues without exposing secrets.",
-    disclosureBody: "Use the public support path to request a secure disclosure channel during Developer Preview. Do not put sensitive data into public reports.",
+    disclosureBody: "Use the public support path to request a secure disclosure channel during Launch Preview. Do not put sensitive data into public reports.",
     includeTitle: "What to include",
     includeItems: [
       "Affected public URL or skill slug",
@@ -92,7 +92,7 @@ const copy = {
     ],
     disclosureEyebrow: "负责任披露",
     disclosureTitle: "报告安全问题时不要暴露密钥。",
-    disclosureBody: "开发者预览版期间，请通过公开支持路径请求安全披露渠道。不要在公开报告中包含敏感数据。",
+    disclosureBody: "Launch Preview 期间，请通过公开支持路径请求安全披露渠道。不要在公开报告中包含敏感数据。",
     includeTitle: "应该包含",
     includeItems: [
       "受影响的公开 URL 或技能 slug",

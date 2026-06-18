@@ -88,11 +88,11 @@ export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchRead
   const labels = copy[locale];
   const visibleSections = readiness.sections.filter((section) => section.items.length > 0);
   const credibilityItems = visibleSections.find((section) => section.key === "launch_credibility")?.items ?? [];
-  const priorityItems = visibleSections
+  const allPriorityItems = visibleSections
     .flatMap((section) => section.items.map((item) => ({ item, sectionKey: section.key, sectionTitle: sectionTitleFor(section.key, section.title, labels) })))
     .filter(({ item }) => item.status !== "ready")
-    .sort((a, b) => priorityOrder[a.item.status] - priorityOrder[b.item.status])
-    .slice(0, 3);
+    .sort((a, b) => priorityOrder[a.item.status] - priorityOrder[b.item.status]);
+  const priorityItems = allPriorityItems.slice(0, 3);
   const checkedAt = formatDate(readiness.checkedAt, locale);
 
   return (
@@ -126,7 +126,7 @@ export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchRead
               <strong>{labels.proofTitle}</strong>
               <p>{labels.proofBody}</p>
             </div>
-            <a className="launch-readiness-target-link" href={localizedHref("/dashboard#dashboard-proof-chain", locale)}>
+            <a className="launch-readiness-target-link" href={localizedHref("/admin#launch-readiness", locale)}>
               <span>{labels.evidenceCta}</span>
               <ArrowRight size={14} aria-hidden="true" />
             </a>
@@ -157,8 +157,8 @@ export function AdminLaunchReadinessPanel({ locale, readiness }: AdminLaunchRead
         <div className="launch-readiness-priority__head">
           <strong>{labels.priorityTitle}</strong>
           <span>
-            {priorityItems.length > 0
-              ? labels.priorityCount.replace("{count}", String(priorityItems.length))
+            {allPriorityItems.length > 0
+              ? labels.priorityCount.replace("{count}", String(allPriorityItems.length))
               : labels.priorityEmpty}
           </span>
         </div>
@@ -294,24 +294,24 @@ function evidenceTargetFor(item: LaunchReadinessItem, sectionKey: string, locale
 
 const readinessTargets: Record<string, { href: string; scope: Record<Locale, string> }> = {
   active_projects_threshold: {
-    href: "/developer",
+    href: "/admin#launch-readiness",
     scope: {
-      en: "Developer projects, installs, keys, and runtime activity",
-      zh: "\u5f00\u53d1\u8005\u9879\u76ee\u3001\u5b89\u88c5\u3001Key \u548c\u8fd0\u884c\u6d3b\u52a8"
+      en: "Admin launch evidence for projects, installs, keys, and runtime activity",
+      zh: "\u7ba1\u7406\u540e\u53f0\u590d\u6838\u9879\u76ee\u3001\u5b89\u88c5\u3001Key \u548c\u8fd0\u884c\u6d3b\u52a8"
     }
   },
   active_publishers_threshold: {
-    href: "/publishers",
+    href: "/admin#admin-curation",
     scope: {
-      en: "Public publisher directory and supply diversity",
-      zh: "\u516c\u5f00\u53d1\u5e03\u8005\u76ee\u5f55\u548c\u4f9b\u7ed9\u591a\u6837\u6027"
+      en: "Admin curation review for publisher supply diversity",
+      zh: "\u7ba1\u7406\u540e\u53f0\u590d\u6838\u53d1\u5e03\u8005\u4f9b\u7ed9\u591a\u6837\u6027"
     }
   },
   api_key_salt: {
-    href: "/developer",
+    href: "/admin#admin-identities",
     scope: {
-      en: "Project runtime key governance",
-      zh: "\u9879\u76ee\u8fd0\u884c Key \u6cbb\u7406"
+      en: "Admin identity and runtime key governance posture",
+      zh: "\u7ba1\u7406\u540e\u53f0\u8eab\u4efd\u4e0e\u8fd0\u884c Key \u6cbb\u7406\u59ff\u6001"
     }
   },
   app_url: {
@@ -329,10 +329,10 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   buyer_request_delivery_package: {
-    href: "/publisher",
+    href: "/admin#admin-feedback",
     scope: {
-      en: "Publisher buyer-request delivery package",
-      zh: "\u53d1\u5e03\u8005\u4e70\u5bb6\u9700\u6c42\u4ea4\u4ed8\u5305"
+      en: "Admin review of buyer demand and delivery evidence",
+      zh: "\u7ba1\u7406\u540e\u53f0\u590d\u6838\u4e70\u5bb6\u9700\u6c42\u4e0e\u4ea4\u4ed8\u8bc1\u636e"
     }
   },
   commission_rules: {
@@ -350,10 +350,10 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   demo_fallback: {
-    href: "/marketplace",
+    href: "/admin#launch-readiness",
     scope: {
-      en: "Production catalog without bundled demo rows",
-      zh: "\u4e0d\u4f9d\u8d56\u5185\u7f6e\u6f14\u793a\u884c\u7684\u751f\u4ea7\u76ee\u5f55"
+      en: "Admin verification that launch data is not demo fallback",
+      zh: "\u7ba1\u7406\u540e\u53f0\u786e\u8ba4\u4e0a\u7ebf\u6570\u636e\u4e0d\u662f demo fallback"
     }
   },
   email_auth_secret: {
@@ -532,17 +532,17 @@ const readinessTargets: Record<string, { href: string; scope: Record<Locale, str
     }
   },
   successful_invocations_threshold: {
-    href: "/developer",
+    href: "/admin#admin-audit",
     scope: {
-      en: "Governed runtime tests and invocation logs",
-      zh: "\u53d7\u6cbb\u7406\u8fd0\u884c\u6d4b\u8bd5\u4e0e\u8c03\u7528\u65e5\u5fd7"
+      en: "Admin audit trail for governed runtime tests and invocation logs",
+      zh: "\u7ba1\u7406\u540e\u53f0\u5ba1\u8ba1\u53d7\u6cbb\u7406\u8fd0\u884c\u6d4b\u8bd5\u4e0e\u8c03\u7528\u65e5\u5fd7"
     }
   },
   verified_skills_threshold: {
-    href: "/marketplace?verification=verified&sort=recommended",
+    href: "/admin#admin-curation",
     scope: {
-      en: "Verified public marketplace supply",
-      zh: "\u5df2\u9a8c\u8bc1\u516c\u5f00\u5e02\u573a\u4f9b\u7ed9"
+      en: "Admin curation review for verified public supply",
+      zh: "\u7ba1\u7406\u540e\u53f0\u590d\u6838\u5df2\u9a8c\u8bc1\u516c\u5f00\u4f9b\u7ed9"
     }
   },
   webhook_retry_cap: {
@@ -598,10 +598,10 @@ const sectionTargets: Record<string, { href: string; scope: Record<Locale, strin
     }
   },
   launch_credibility: {
-    href: "/dashboard#dashboard-proof-chain",
+    href: "/admin#launch-readiness",
     scope: {
-      en: "Customer demo proof chain",
-      zh: "\u5ba2\u6237\u6f14\u793a\u8bc1\u636e\u94fe"
+      en: "Admin launch-readiness evidence chain",
+      zh: "\u7ba1\u7406\u540e\u53f0\u4e0a\u7ebf\u5c31\u7eea\u8bc1\u636e\u94fe"
     }
   },
   marketplace_operations: {

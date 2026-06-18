@@ -158,6 +158,7 @@ const copy = {
     runtime: "Runtime",
     sdk: "SDK",
     apiInspect: "API inspect",
+    viewAdoptionRequirements: "View adoption requirements",
     security: "Security review",
     success: "Success rate",
     support: "Support and operations",
@@ -242,6 +243,7 @@ const copy = {
     runtime: "运行时",
     sdk: "SDK",
     apiInspect: "API 查看",
+    viewAdoptionRequirements: "查看采用要求",
     security: "安全审核",
     success: "成功率",
     support: "支持和运营",
@@ -369,7 +371,7 @@ export default async function SkillDetailPage({ params, searchParams }: PageProp
           <div className="flex items-center gap-3 mt-6 flex-wrap">
             <a className="btn-primary btn-primary--large" href="#install">
               <Terminal size={18} aria-hidden="true" />
-              <span>{skillActionState.sectionTitle[locale]}</span>
+              <span>{labels.viewAdoptionRequirements}</span>
             </a>
             <a className="btn-secondary btn-secondary--large" href={localizedHref(developerAccessHref, locale)}>
               <DeveloperAccessIcon size={18} aria-hidden="true" />

@@ -7,10 +7,6 @@ import {
   getSkills,
   type RegistryStats,
 } from "@/lib/registry";
-import {
-  marketplaceSkills,
-  type MarketplaceSkill,
-} from "@/lib/marketplace-data";
 import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 import type { SkillSummary } from "@useskillhub/schema";
 
@@ -86,43 +82,34 @@ export async function getPublicPlatformStats(
   ]);
 
   const derived = derivePublicPlatformStats(skills);
-  const staticDerived = deriveStaticMarketplaceStats();
   const publisherDerived = derivePublisherPlatformStats(publishers);
   const statsAvailable = registryStats.publicSkills !== undefined;
   const publicSkills = statsAvailable
     ? Math.max(
         registryStats.publicSkills ?? 0,
         publisherDerived.publicSkills,
-        staticDerived.publicSkills,
       )
     : Math.max(
         derived.publicSkills,
         publisherDerived.publicSkills,
-        staticDerived.publicSkills,
       );
   const verifiedSkills = statsAvailable
     ? Math.max(
         registryStats.verifiedSkills,
         publisherDerived.verifiedSkills,
-        staticDerived.verifiedSkills,
       )
     : Math.max(
         derived.verifiedSkills,
         publisherDerived.verifiedSkills,
-        staticDerived.verifiedSkills,
       );
   const submittedSkills = statsAvailable
-    ? Math.max(
-        registryStats.submittedSkills ?? 0,
-        staticDerived.submittedSkills,
-      )
-    : Math.max(derived.submittedSkills, staticDerived.submittedSkills);
+    ? registryStats.submittedSkills ?? 0
+    : derived.submittedSkills;
   const callableSkills = Math.max(
     registryStats.callableSkills ?? 0,
     statsAvailable
       ? verifiedSkills
       : Math.max(derived.callableSkills, publisherDerived.verifiedSkills),
-    staticDerived.callableSkills,
   );
   const skillCallCount = derived.recordedCalls;
   const publisherCallCount = publishers.reduce(
@@ -138,10 +125,7 @@ export async function getPublicPlatformStats(
   return {
     avgLatencyMs: registryStats.avgLatencyMs,
     callableSkills,
-    feedbackSignals: Math.max(
-      derived.feedbackSignals,
-      staticDerived.feedbackSignals,
-    ),
+    feedbackSignals: derived.feedbackSignals,
     hiddenOrPrelaunchSkillRecords: Math.max(
       totalSkillRecords - publicSkills,
       0,
@@ -163,36 +147,6 @@ export async function getPublicPlatformStats(
     payoutReadyPublishers: publishers.filter(
       (publisher) => publisher.payoutStatus === "verified",
     ).length,
-  };
-}
-
-function deriveStaticMarketplaceStats(): Pick<
-  PublicPlatformStats,
-  | "callableSkills"
-  | "feedbackSignals"
-  | "publicSkills"
-  | "submittedSkills"
-  | "verifiedSkills"
-> {
-  const nonQaSkills = marketplaceSkills.filter(
-    (skill) => !isStaticQaSkill(skill),
-  );
-  const publicSkills = nonQaSkills.filter((skill) =>
-    isVerifiedSkillStatus(skill.verification.en),
-  );
-  const submittedSkills = nonQaSkills.filter(
-    (skill) => !isVerifiedSkillStatus(skill.verification.en),
-  );
-
-  return {
-    callableSkills: publicSkills.length,
-    feedbackSignals: publicSkills.reduce(
-      (sum, skill) => sum + (skill.feedbackCount ?? 0),
-      0,
-    ),
-    publicSkills: publicSkills.length,
-    submittedSkills: submittedSkills.length,
-    verifiedSkills: publicSkills.length,
   };
 }
 
@@ -229,24 +183,6 @@ function isQaSkillSummary(skill: SkillSummary) {
   const haystack = [skill.slug, skill.displayName, skill.description]
     .join(" ")
     .toLowerCase();
-  return (
-    haystack.includes("acceptance-") ||
-    haystack.includes("qa-") ||
-    haystack.includes("acceptance partner")
-  );
-}
-
-function isStaticQaSkill(skill: MarketplaceSkill) {
-  const haystack = [
-    skill.slug,
-    skill.name.en,
-    skill.name.zh,
-    skill.summary.en,
-    skill.summary.zh,
-  ]
-    .join(" ")
-    .toLowerCase();
-
   return (
     haystack.includes("acceptance-") ||
     haystack.includes("qa-") ||

@@ -45,9 +45,9 @@ export const dictionaries = {
       eyebrow: "Agent skill infrastructure",
       title: "Trusted skills for AI agents.",
       description:
-        "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Developer Preview: public discovery and inspection are live; runtime invocation requires a signed-in project key; paid marketplace features remain prelaunch.",
+        "Search reusable agent skills, inspect permissions, and prepare verified capabilities for governed REST/MCP runtime use. Launch Preview: public discovery and inspection are live; runtime invocation requires a signed-in project key; Pro access is opened through onboarding.",
       publishCta: "Publish a skill",
-      gatewayTitle: "Developer Preview gateway",
+      gatewayTitle: "Launch Preview gateway",
       registryEyebrow: "Skill API",
       registryTitle: "Agent Skill API Catalog",
       newSkill: "Submit a skill",
@@ -452,9 +452,9 @@ export const dictionaries = {
       eyebrow: "智能体技能基础设施",
       title: "给 AI Agent 使用的可信技能库。",
       description:
-        "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。开发者预览版：公开发现和查看已上线；运行调用需要登录后的项目 Key；付费市场能力仍处于预发布阶段。",
+        "搜索可复用技能、查看权限和审核状态，并将已验证能力接入受治理的 REST/MCP 运行路径。Launch Preview：公开发现和查看已上线；运行调用需要登录后的项目 Key；Pro 通过团队入驻开通。",
       publishCta: "发布一个技能",
-      gatewayTitle: "开发者预览版网关",
+      gatewayTitle: "Launch Preview 网关",
       registryEyebrow: "技能 API",
       registryTitle: "智能体技能 API 清单",
       newSkill: "提交技能",

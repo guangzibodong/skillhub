@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { CheckCircle2, MailCheck, RefreshCw, Send, SkipForward, Webhook, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, MailCheck, RefreshCw, Send, SkipForward, Webhook, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import {
   decideNotificationDeliveryAction,
@@ -40,6 +40,8 @@ const copy = {
     processMode: "Mode",
     processLimit: "Limit",
     processSummary: "{{fanoutMode}} fanout {{fanout}} (email {{fanoutEmail}}, webhook {{fanoutWebhook}}) / processed {{processed}} / sent {{sent}} / failed {{failed}} / skipped {{skipped}}",
+    processWarning:
+      "Default to dry run. Deliver can send real email or webhooks; use it only after the preview count, provider, and recipient scope are correct.",
     retry: "Retry",
     saving: "Updating",
     skip: "Skip",
@@ -87,6 +89,8 @@ const copy = {
     processMode: "\u6a21\u5f0f",
     processLimit: "\u6570\u91cf",
     processSummary: "{{fanoutMode}}\u6247\u51fa {{fanout}}\uff08\u90ae\u4ef6 {{fanoutEmail}}\uff0cWebhook {{fanoutWebhook}}\uff09/ \u5df2\u5904\u7406 {{processed}} / \u5df2\u53d1 {{sent}} / \u5931\u8d25 {{failed}} / \u8df3\u8fc7 {{skipped}}",
+    processWarning:
+      "\u9ed8\u8ba4\u5148\u6f14\u7ec3\u3002\u201c\u6295\u9012\u201d\u53ef\u80fd\u53d1\u9001\u771f\u5b9e\u90ae\u4ef6\u6216 webhook\uff1b\u53ea\u6709\u5728\u9884\u89c8\u6570\u91cf\u3001\u670d\u52a1\u5546\u548c\u6536\u4ef6\u8303\u56f4\u786e\u8ba4\u540e\u624d\u4f7f\u7528\u3002",
     retry: "\u91cd\u8bd5",
     saving: "\u66f4\u65b0\u4e2d",
     skip: "\u8df3\u8fc7",
@@ -139,6 +143,10 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
       </div>
 
       <form action={processAction} className="notification-delivery-process-form">
+        <div className="notification-delivery-warning" role="note">
+          <AlertTriangle size={15} aria-hidden="true" />
+          <span>{labels.processWarning}</span>
+        </div>
         <label>
           <span>{labels.processMode}</span>
           <select defaultValue="dry_run" name="mode">

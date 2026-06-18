@@ -53,7 +53,7 @@ const copy = {
       { icon: "clock", label: "General support", value: "Email", desc: "For account, login, docs, onboarding, and Pro questions, contact Support@useskillhub.com with the page URL and reproduction steps." },
       { icon: "triage", label: "Skill-specific reports", value: "Signed-in", desc: "Reports tied to a specific skill should be filed from that skill page after sign-in so the issue keeps skill and account context." },
       { icon: "update", label: "Security issues", value: "Private path", desc: "Start from the security contact path and request a secure disclosure channel before sharing exploit details or sensitive data." },
-      { icon: "resolve", label: "Preview limitation", value: "No SLA", desc: "Developer Preview does not promise production SLA, automated refunds, or self-serve payment dispute handling yet." }
+      { icon: "resolve", label: "Preview limitation", value: "No SLA", desc: "Launch Preview does not promise production SLA, automated refunds, or self-serve payment dispute handling yet." }
     ],
     faqEyebrow: "Common questions",
     faqTitle: "Before you write in",
@@ -97,7 +97,7 @@ const copy = {
       { icon: "clock", label: "通用支持", value: "邮件", desc: "账号、登录、文档、开通和 Pro 咨询，请发送页面 URL、复现步骤和截图到 Support@useskillhub.com。" },
       { icon: "triage", label: "技能级举报", value: "登录后", desc: "和具体技能相关的举报，应从登录后的技能页发起，这样能保留技能和账号上下文。" },
       { icon: "update", label: "安全问题", value: "私密通道", desc: "先走安全联系路径，并在分享漏洞细节或敏感数据前请求安全披露通道。" },
-      { icon: "resolve", label: "预览限制", value: "无 SLA", desc: "开发者预览期暂不承诺生产 SLA、自动退款或自助支付争议处理。" }
+      { icon: "resolve", label: "预览限制", value: "无 SLA", desc: "Launch Preview 期间暂不承诺生产 SLA、自动退款或自助支付争议处理。" }
     ],
     faqEyebrow: "常见问题",
     faqTitle: "在提交之前",
@@ -137,8 +137,8 @@ export default async function SupportPage({ searchParams }: PageProps) {
     <AppShell active="support" locale={locale}>
       <p className="visually-hidden">
         {locale === "zh"
-          ? "开发者预览版支持 不要提交密钥 报告问题"
-          : "Developer Preview support No secrets Report an issue"}
+          ? "Launch Preview 支持 不要提交密钥 报告问题"
+          : "Launch Preview support No secrets Report an issue"}
       </p>
       {/* ===== Hero ===== */}
       <section className="pt-[120px] pb-[96px]">

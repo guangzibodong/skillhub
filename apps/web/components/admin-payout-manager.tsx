@@ -18,7 +18,7 @@ const copy = {
     accountHolder: "Account holder",
     action: "Action",
     amount: "Amount",
-    approve: "Approve",
+    approve: "Approve manual transfer",
     balanceCount: "Reserved balances",
     block: "Block",
     chooseAction: "Choose finance action",
@@ -30,7 +30,7 @@ const copy = {
     },
     empty: "No payouts require finance review.",
     fail: "Fail",
-    markPaid: "Mark paid",
+    markPaid: "Record completed transfer",
     manualMethod: "Method",
     nextAction: "Next action",
     paid: "Paid",
@@ -42,6 +42,8 @@ const copy = {
     saving: "Saving",
     status: "Status",
     title: "Manual payout review queue",
+    workflowWarning:
+      "No money is sent automatically. Approve only moves the request into manual transfer; record completed transfer only after PayPal, Alipay, or bank evidence exists.",
     transferReference: "Transfer reference",
     manualMethods: {
       alipay: "Alipay",
@@ -69,7 +71,7 @@ const copy = {
     accountHolder: "\u6536\u6b3e\u4eba",
     action: "\u52a8\u4f5c",
     amount: "\u91d1\u989d",
-    approve: "\u6279\u51c6",
+    approve: "\u6279\u51c6\u8fdb\u5165\u624b\u5de5\u8f6c\u8d26",
     balanceCount: "\u9501\u5b9a\u4f59\u989d",
     block: "\u963b\u65ad",
     chooseAction: "\u8bf7\u9009\u62e9\u8d22\u52a1\u52a8\u4f5c",
@@ -81,7 +83,7 @@ const copy = {
     },
     empty: "\u5f53\u524d\u6ca1\u6709\u9700\u8981\u8d22\u52a1\u5ba1\u6838\u7684\u63d0\u73b0\u3002",
     fail: "\u5931\u8d25",
-    markPaid: "\u6807\u8bb0\u5df2\u6253\u6b3e",
+    markPaid: "\u8bb0\u5f55\u5916\u90e8\u8f6c\u8d26\u5df2\u5b8c\u6210",
     manualMethod: "\u6536\u6b3e\u65b9\u5f0f",
     nextAction: "\u4e0b\u4e00\u6b65",
     paid: "\u5df2\u6253\u6b3e",
@@ -93,6 +95,8 @@ const copy = {
     saving: "\u4fdd\u5b58\u4e2d",
     status: "\u72b6\u6001",
     title: "\u624b\u5de5\u6253\u6b3e\u5ba1\u6838\u961f\u5217",
+    workflowWarning:
+      "\u7cfb\u7edf\u4e0d\u4f1a\u81ea\u52a8\u6253\u6b3e\u3002\u201c\u6279\u51c6\u201d\u53ea\u662f\u8fdb\u5165\u624b\u5de5\u8f6c\u8d26\u9636\u6bb5\uff1b\u53ea\u6709\u5728 PayPal\u3001Alipay \u6216\u94f6\u884c\u8f6c\u8d26\u51ed\u8bc1\u5df2\u5b58\u5728\u65f6\uff0c\u624d\u80fd\u8bb0\u5f55\u5df2\u6253\u6b3e\u3002",
     transferReference: "\u8f6c\u8d26\u51ed\u8bc1/\u6d41\u6c34\u53f7",
     manualMethods: {
       alipay: "Alipay",
@@ -134,6 +138,10 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
           <span>{labels.title}</span>
         </div>
         <span className="status-chip status-chip--neutral">{payouts.length}</span>
+      </div>
+      <div className="admin-payout-warning" role="note">
+        <AlertTriangle size={15} aria-hidden="true" />
+        <span>{labels.workflowWarning}</span>
       </div>
 
       <div className="admin-payout-list">

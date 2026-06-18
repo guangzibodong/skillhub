@@ -623,33 +623,33 @@ function getReviewDecisionCopy(locale: Locale) {
   if (locale === "zh") {
     return {
       buttons: {
-        approved: "批准并记录",
+        approved: "批准为已验证",
         blocked: "阻断审核",
         rejected: "拒绝版本"
       },
       choose: "请选择审核决定",
       confirm: {
-        approved: "确认批准 {skill}？该版本可能在上线检查通过后进入公开市场上架路径。",
+        approved: "确认批准 {skill}？后端会把该版本置为 verified；如果仍有 warning，请确认你已经接受这些风险。",
         blocked: "确认阻断 {skill}？发布者需要先修复当前证据问题，审核才能继续。",
         rejected: "确认拒绝 {skill}？该版本会作为未通过审核返回给发布者。"
       },
-      help: "请明确选择动作。批准可能进入公开上架路径；拒绝或阻断会把修复任务返回给发布者。"
+      help: "请明确选择动作。批准后该版本会变成已验证；拒绝或阻断会把修复任务返回给发布者。"
     };
   }
 
   return {
     buttons: {
-      approved: "Approve and record",
+      approved: "Approve as verified",
       blocked: "Block review",
       rejected: "Reject version"
     },
     choose: "Choose decision",
     confirm: {
-      approved: "Approve {skill}? This can make the version eligible for public marketplace listing after launch checks.",
+      approved: "Approve {skill}? The backend will mark this version verified; if warnings remain, confirm you accept them.",
       blocked: "Block {skill}? The publisher will need to repair the listed evidence before review can continue.",
       rejected: "Reject {skill}? The version will return to the publisher as not approved."
     },
-    help: "Choose deliberately. Approval can make the version eligible for public listing; rejection or blocking returns work to the publisher."
+    help: "Choose deliberately. Approval marks the version verified; rejection or blocking returns work to the publisher."
   };
 }
 

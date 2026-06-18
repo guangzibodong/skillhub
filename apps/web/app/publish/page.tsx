@@ -79,7 +79,7 @@ export default async function PublishPage({ searchParams }: PageProps) {
   const journeyActionHref = hasPublisherAccess
     ? "/publisher"
     : session.subject
-      ? "/account"
+      ? "/contact?intent=publisher"
       : hrefWithReturnTo("/login", "/publish", locale);
   const signalIcons = [ClipboardCheck, ShieldCheck, Gauge, HandCoins];
   const stepIcons = [
@@ -293,15 +293,15 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
       ...fallback,
       badge: "skillhub.json",
       description:
-        "把一个 AI 能力整理成可检查、可审核、可维护的 Skill。先通过 manifest 预检保存草稿，再提交精确版本进入审核；付费信息只作为预发布准备，不会直接收款。",
+        "把一个 AI 能力整理成可检查、可审核、可维护的 Skill。新作者先申请发布权限；通过后再通过 manifest 预检保存草稿、提交精确版本进入审核。付费信息只作为预发布准备，不会直接收款。",
       eyebrow: "发布者入口",
       openWorkspace: "进入发布者工作台",
       operatingBody:
-        "发布页的目标不是让作者随便上传文件，而是提前把审核、运行、权限、支持和后续维护说清楚。这样技能上架后，客户、发布者和运营后台看到的是同一套状态。",
+        "发布页的目标不是让作者随便上传文件，而是把入驻、审核、运行、权限、支持和后续维护说清楚。这样技能上架后，客户、发布者和运营后台看到的是同一套状态。",
       operatingEyebrow: "发布前准备",
       operatingTitle: "一个可上线的技能，需要先回答这三件事。",
       pipelineBody:
-        "从 manifest 草稿开始，经过预检、版本提交、自动检查、人工审核和上架维护。任何会影响真实调用的变更都应该走新版本，而不是偷偷改已验证版本。",
+        "从发布权限申请开始，再进入 manifest 草稿、预检、版本提交、自动检查、人工审核和上架维护。任何会影响真实调用的变更都应该走新版本，而不是偷偷改已验证版本。",
       pipelineEyebrow: "发布者工作流",
       pipelineTitle: "上传只是第一步，可信上架靠完整证据。",
       publisherWorkspace: "发布者工作台",
@@ -316,6 +316,10 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
       ] as Array<[string, string]>,
       title: "发布一个可以被客户信任的 Skill。",
       pipelineSteps: [
+        {
+          body: "新作者先说明团队、能力来源、维护负责人、支持邮箱和计划发布的技能类型。运营确认后再开放发布者工作台。",
+          title: "申请发布权限",
+        },
         {
           body: "准备 skillhub.json：名称、版本、分类、描述、运行入口、权限、输入输出 schema、示例和支持路径都要完整。",
           title: "准备 manifest",
@@ -340,10 +344,6 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
           body: "审核通过后才进入公开可采用状态；被退回时需要按问题修复并重新提交。",
           title: "人工审核",
         },
-        {
-          body: "定价意图、条款、收款资料和分佣规则是预发布准备，不能代替最终付费市场审核。",
-          title: "付费准备",
-        },
       ],
     };
   }
@@ -352,15 +352,15 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
     ...fallback,
     badge: "skillhub.json",
     description:
-      "Turn an AI capability into an inspectable, reviewable, and maintainable Skill. Save a draft after manifest preflight, then submit an exact version for review. Paid fields are readiness metadata, not live checkout.",
+      "Turn an AI capability into an inspectable, reviewable, and maintainable Skill. New authors request publisher access first; approved publishers save a draft after manifest preflight, then submit an exact version for review. Paid fields are readiness metadata, not live checkout.",
     eyebrow: "Publisher entry",
     openWorkspace: "Open publisher workspace",
     operatingBody:
-      "This page is not a blind upload form. It helps authors make review, runtime, permissions, support, and maintenance explicit so buyers, publishers, and operators read the same state after listing.",
+      "This page is not a blind upload form. It makes publisher access, review, runtime, permissions, support, and maintenance explicit so buyers, publishers, and operators read the same state after listing.",
     operatingEyebrow: "Before publishing",
     operatingTitle: "A production-ready skill must answer three questions first.",
     pipelineBody:
-      "Start from a manifest draft, then move through preflight, version submission, automated checks, human review, and listing maintenance. Any behavior-changing update should become a new version.",
+      "Start with publisher access, then move through manifest draft, preflight, version submission, automated checks, human review, and listing maintenance. Any behavior-changing update should become a new version.",
     pipelineEyebrow: "Review pipeline",
     pipelineTitle: "Upload starts the process; evidence earns trust.",
     publisherWorkspace: "Publisher workspace",
@@ -375,6 +375,10 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
     ] as Array<[string, string]>,
     title: "Publish a Skill customers can trust.",
     pipelineSteps: [
+      {
+        body: "New authors share the team, capability source, maintenance owner, support email, and intended skill category. Operators open the publisher workspace after review.",
+        title: "Request publisher access",
+      },
       {
         body: "Prepare skillhub.json with identity, version, category, description, runtime entrypoint, permissions, schemas, examples, and support path.",
         title: "Prepare manifest",
@@ -398,10 +402,6 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
       {
         body: "Only approved versions become publicly adoptable. Returned versions must be repaired and resubmitted.",
         title: "Human review",
-      },
-      {
-        body: "Pricing intent, terms, payout profile, and commission rules are readiness metadata until paid-marketplace approval is complete.",
-        title: "Paid readiness",
       },
     ],
   };
@@ -475,8 +475,8 @@ function getPublishAccessNotice({
       actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
       actionLabel:
         locale === "zh"
-          ? "登录并申请发布权限"
-          : "Sign in to request publisher access",
+          ? "登录后继续申请发布权限"
+          : "Sign in, then request publisher access",
       body:
         locale === "zh"
           ? "当前还没有登录。请先登录，这样 SkillHub 才能把草稿、审核记录和发布权限申请绑定到真实账号。登录前表单会保持锁定，避免填完以后无法提交。"
@@ -487,12 +487,12 @@ function getPublishAccessNotice({
   }
 
   return {
-    actionHref: localizedHref("/account", locale),
-    actionLabel: locale === "zh" ? "查看发布权限" : "Check publisher access",
+    actionHref: localizedHref("/contact?intent=publisher", locale),
+    actionLabel: locale === "zh" ? "申请发布权限" : "Request publisher access",
     body:
       locale === "zh"
-        ? "当前账号已登录，但还没有 publisher、owner、admin 或 super_admin 发布角色。请到账号中心查看权限，或让组织负责人先开通发布权限，再保存草稿。"
-        : "You are signed in, but this account is not assigned a publisher, owner, admin, or super_admin role. Check account access or ask an organization owner to grant publisher access before saving a draft.",
+        ? "当前账号已登录，但还没有 publisher、owner、admin 或 super_admin 发布角色。请先申请发布权限，说明团队、维护负责人、支持邮箱和计划发布的技能类型；运营确认后再保存草稿。"
+        : "You are signed in, but this account is not assigned a publisher, owner, admin, or super_admin role. Request publisher access first with your team, maintenance owner, support email, and intended skill category; operators will open the workspace after review.",
     canSubmit: false,
     title: locale === "zh" ? "需要发布权限" : "Publisher access required",
   };
