@@ -91,7 +91,7 @@ type MarketplaceInitialFilters = {
 const labels = {
   en: {
     search: "Search by workflow, category, or skill name",
-    results: "results",
+    results: "results in this view",
     copy: "Copy inspect",
     copied: "Copied",
     copyFailed: "Copy failed",
@@ -198,7 +198,7 @@ const labels = {
       categories: "use-case categories",
       free: "free starter skills",
       pro: "Pro / paid-preview skills",
-      total: "launch catalog skills",
+      total: "total indexed skills",
     },
     spotlight: {
       automation: "Workflow automation",
@@ -258,7 +258,7 @@ const labels = {
   },
   zh: {
     search: "搜索工作流、分类或技能名",
-    results: "个结果",
+    results: "个当前可浏览结果",
     copy: "复制查看命令",
     copied: "已复制",
     copyFailed: "复制失败",
@@ -365,7 +365,7 @@ const labels = {
       categories: "个用途分类",
       free: "个免费入门技能",
       pro: "个 Pro / 付费预览技能",
-      total: "个精选目录技能",
+      total: "个全站目录技能",
     },
     spotlight: {
       automation: "流程自动化",
