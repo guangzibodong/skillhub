@@ -199,6 +199,30 @@ export const growthContentItems: GrowthContentItem[] = [
     "Use Skills for account research, CRM cleanup, outbound personalization, call summaries, objection handling, and next-step recommendations.",
     "用 Skill 做客户研究、CRM 清洗、外联个性化、通话总结、异议处理和下一步建议。",
   ]),
+  makeItem("solutions", "content-ops", "Content operations", "内容运营", [
+    "Content operations solution",
+    "内容运营解决方案",
+    "Plan topics, build briefs, draft channel-specific content, review brand consistency, and keep approval handoffs clear before publishing.",
+    "规划选题、生成内容简报、起草不同渠道内容、检查品牌一致性，并在发布前保留清晰的审批交接。",
+  ]),
+  makeItem("solutions", "data-automation", "Data automation", "数据自动化", [
+    "Data and spreadsheet automation solution",
+    "数据与表格自动化解决方案",
+    "Clean messy spreadsheets, normalize imports, explain metrics, detect anomalies, and turn reports into repeatable operator workflows.",
+    "清理混乱表格、规范导入字段、解释指标变化、发现异常，并把报表工作变成可重复的运营流程。",
+  ]),
+  makeItem("solutions", "ui-ux-qa", "UI / UX QA", "UI / UX 质检", [
+    "UI and UX quality solution",
+    "UI 与体验质检解决方案",
+    "Check responsive layouts, copy hierarchy, empty states, tap targets, and conversion friction before public pages or product screens ship.",
+    "在公开页面或产品界面上线前，检查响应式排版、文案层级、空状态、点击区域和转化阻力。",
+  ]),
+  makeItem("solutions", "developer-security", "Developer / security", "开发 / 安全", [
+    "Developer and security review solution",
+    "开发与安全审查解决方案",
+    "Review API contracts, release notes, permission scope, generated-code risk, and runtime evidence before automation reaches production.",
+    "在自动化进入生产前，检查 API 合约、发布说明、权限范围、生成代码风险和运行证据。",
+  ]),
   makeItem("use-cases", "spreadsheet-cleanup", "Data", "数据", [
     "Clean messy spreadsheets before automation",
     "自动化前先清理混乱表格",
