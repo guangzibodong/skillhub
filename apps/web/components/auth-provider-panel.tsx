@@ -14,16 +14,14 @@ type ProviderId = "github" | "google";
 
 const copy = {
   en: {
-    disabledAction: "Not configured",
-    empty: "Google and GitHub sign-in are planned account options. Use email or username/password below while provider credentials and callback URLs are being finalized.",
-    helper: "Only configured providers are shown as sign-in buttons.",
+    disabledAction: "Configuring",
+    helper: "Google and GitHub stay visible. Available providers open immediately; providers still being configured are clearly marked.",
     oauthAction: "Continue with",
     title: "Third-party sign-in",
   },
   zh: {
-    disabledAction: "暂未配置",
-    empty: "Google 和 GitHub 登录是计划中的账号方式。凭证和回调地址最终确认前，请先使用下方邮箱或用户名密码登录。",
-    helper: "这里只展示已经配置完成、可以真实跳转的第三方登录。",
+    disabledAction: "配置中",
+    helper: "Google 和 GitHub 入口会一直显示；可用时直接登录，配置中时会明确灰显。",
     oauthAction: "继续使用",
     title: "第三方登录",
   },
@@ -57,32 +55,18 @@ export function AuthProviderPanel({
 
     return { action, providerConfig };
   });
-  const activeProviderItems = providerItems.filter((item) => item.action.href);
-
-  if (activeProviderItems.length === 0) {
-    return (
-      <Wrapper className={className}>
-        <div className="card-kicker auth-provider-panel__title">
-          <span>{labels.title}</span>
-        </div>
-        <p className="oauth-provider-note oauth-provider-note--muted">
-          {labels.empty}
-        </p>
-      </Wrapper>
-    );
-  }
-
   return (
     <Wrapper className={className}>
       <div className="card-kicker auth-provider-panel__title">
         <span>{labels.title}</span>
       </div>
       <div className="oauth-provider-stack" aria-label={labels.title}>
-        {activeProviderItems.map(({ action, providerConfig }) => {
+        {providerItems.map(({ action, providerConfig }) => {
           const providerName = providerConfig.label;
           const buttonClass = [
             "oauth-provider-button",
             `oauth-provider-button--${providerConfig.id}`,
+            action.href ? null : "oauth-provider-button--disabled",
           ]
             .filter(Boolean)
             .join(" ");
@@ -96,11 +80,28 @@ export function AuthProviderPanel({
             </>
           );
 
+          if (!action.href) {
+            return (
+              <button
+                aria-label={action.label}
+                className={buttonClass}
+                disabled
+                key={providerConfig.id}
+                type="button"
+              >
+                {content}
+                <span className="oauth-provider-button__lock">
+                  {labels.disabledAction}
+                </span>
+              </button>
+            );
+          }
+
           return (
             <a
               aria-label={`${labels.oauthAction} ${providerName}`}
               className={buttonClass}
-              href={action.href ?? "#"}
+              href={action.href}
               key={providerConfig.id}
             >
               {content}
