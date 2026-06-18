@@ -99,7 +99,9 @@ type SolutionTrack = {
   marketplaceHref: string;
   contactHref: string;
   fit: Record<Locale, string>;
+  pains: Record<Locale, string[]>;
   outcomes: Record<Locale, string[]>;
+  deliverables: Record<Locale, string[]>;
   starter: Record<Locale, string>;
   pro: Record<Locale, string>;
   skills: Record<Locale, string[]>;
@@ -114,9 +116,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For founders, SEO teams, content operators, and agencies that need weekly growth actions.",
       zh: "适合创始人、SEO 团队、内容运营和需要每周交付增长动作的服务商。",
     },
+    pains: {
+      en: ["Traffic is flat but the team does not know which pages to repair", "AI answers do not mention the brand or cite the right sources"],
+      zh: ["流量没有增长，但团队不知道先修哪些页面", "AI 答案不提品牌，也没有引用正确来源"],
+    },
     outcomes: {
       en: ["AI-search visibility audit", "Content brief generation", "Technical SEO repair queue"],
       zh: ["AI 搜索可见性诊断", "内容简报生成", "技术 SEO 修复队列"],
+    },
+    deliverables: {
+      en: ["Visibility report", "Content brief", "Repair priority list"],
+      zh: ["可见性诊断报告", "内容简报", "修复优先级清单"],
     },
     starter: { en: "Free: page SEO checks and basic brief generation.", zh: "免费起步：页面 SEO 检查和基础内容简报。" },
     pro: { en: "Pro: recurring GEO audits, citation gaps, and team repair workflow.", zh: "Pro 扩展：周期 GEO 审计、引用缺口和团队修复流程。" },
@@ -133,9 +143,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For Shopify stores, Amazon sellers, DTC teams, and agencies preparing campaign launches.",
       zh: "适合 Shopify 店铺、Amazon 卖家、DTC 团队和准备投放/上新的服务商。",
     },
+    pains: {
+      en: ["Product pages are live but titles, claims, and reviews are not converted into selling points", "Batch SKU launches are slow and easy to miss QA details"],
+      zh: ["商品页上线了，但标题、卖点和评论没有转成成交表达", "批量 SKU 上新慢，而且容易漏掉质检细节"],
+    },
     outcomes: {
       en: ["Product-page quality fixes", "Review pain-point mining", "Launch QA checklist"],
       zh: ["商品页质量修复", "评论痛点挖掘", "上架前质检清单"],
+    },
+    deliverables: {
+      en: ["Listing QA report", "Review insight summary", "Launch checklist"],
+      zh: ["Listing 质检报告", "评论洞察总结", "上架检查清单"],
     },
     starter: { en: "Free: listing quality check and title improvement.", zh: "免费起步：Listing 质量检查和标题优化。" },
     pro: { en: "Pro: batch SKU optimization, review mining, Shopify handoff, and launch QA.", zh: "Pro 扩展：批量 SKU 优化、评论挖掘、Shopify 交接和上架质检。" },
@@ -152,9 +170,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For support teams that need faster replies without losing human approval on sensitive issues.",
       zh: "适合想提升响应速度、但敏感问题仍需要人工把关的客服和运营团队。",
     },
+    pains: {
+      en: ["Support replies are slow because agents keep searching old articles", "Repeated tickets reveal knowledge-base gaps but nobody turns them into fixes"],
+      zh: ["客服回复慢，因为每次都要翻旧文档", "重复工单暴露知识库缺口，但没人整理成修复动作"],
+    },
     outcomes: {
       en: ["Ticket routing", "Grounded reply drafts", "Knowledge-base gap reports"],
       zh: ["工单分流", "有依据的回复草稿", "知识库缺口报告"],
+    },
+    deliverables: {
+      en: ["Reply draft", "Escalation summary", "Knowledge-base gap list"],
+      zh: ["回复草稿", "升级问题总结", "知识库缺口清单"],
     },
     starter: { en: "Free: summarize tickets and detect missing knowledge.", zh: "免费起步：工单总结和知识缺口识别。" },
     pro: { en: "Pro: approved knowledge replies, escalation summaries, and support QA loops.", zh: "Pro 扩展：基于已审知识的回复、升级总结和客服质检闭环。" },
@@ -171,9 +197,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For sales, customer success, and founders who need account research and cleaner CRM follow-up.",
       zh: "适合销售、客户成功和需要客户研究、CRM 跟进更清晰的创始团队。",
     },
+    pains: {
+      en: ["CRM notes are messy, so next steps depend on memory", "Outbound messages are generic and account research takes too long"],
+      zh: ["CRM 记录混乱，下一步跟进靠记忆", "外联内容太泛，客户研究耗时太长"],
+    },
     outcomes: {
       en: ["Account research", "CRM cleanup", "Call summary and next action"],
       zh: ["客户研究", "CRM 清洗", "通话总结和下一步动作"],
+    },
+    deliverables: {
+      en: ["Account brief", "CRM cleanup notes", "Next-step recommendation"],
+      zh: ["客户研究简报", "CRM 清洗备注", "下一步建议"],
     },
     starter: { en: "Free: basic lead research and meeting summary.", zh: "免费起步：基础线索研究和会议总结。" },
     pro: { en: "Pro: pipeline hygiene, outbound personalization, objection handling, and renewal risk signals.", zh: "Pro 扩展：销售管道清理、外联个性化、异议处理和续约风险识别。" },
@@ -190,9 +224,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For content, social, and brand teams that need repeatable briefs, calendars, and review handoffs.",
       zh: "适合内容、社媒和品牌团队，把选题、日历、审稿和交付变成可复用流程。",
     },
+    pains: {
+      en: ["Content ideas are scattered and every campaign starts from a blank page", "Drafts move across channels without a clear review standard"],
+      zh: ["内容选题分散，每次活动都从空白开始", "草稿跨渠道流转，但缺少清晰审稿标准"],
+    },
     outcomes: {
       en: ["Editorial calendar", "Brief-to-draft workflow", "Brand review checklist"],
       zh: ["选题日历", "从简报到初稿的流程", "品牌审稿清单"],
+    },
+    deliverables: {
+      en: ["Topic map", "Campaign brief", "Review checklist"],
+      zh: ["选题地图", "活动简报", "审稿清单"],
     },
     starter: { en: "Free: topic clustering and first-draft outlines.", zh: "免费起步：选题聚类和初稿大纲。" },
     pro: { en: "Pro: multi-channel calendars, evidence-backed drafts, and approval handoff.", zh: "Pro 扩展：多渠道内容日历、有依据的草稿和审批交接。" },
@@ -209,9 +251,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For operations, finance assistants, analysts, and teams still moving work through spreadsheets.",
       zh: "适合运营、财务助理、分析师，以及仍然依赖表格流转工作的团队。",
     },
+    pains: {
+      en: ["CSV exports and reports need manual cleanup before anyone can trust them", "Metric changes are visible but the reason and next action are unclear"],
+      zh: ["CSV 导出和报表每次都要人工清洗，才敢使用", "指标变化看得见，但原因和下一步动作不清楚"],
+    },
     outcomes: {
       en: ["Messy sheet cleanup", "Data dictionary handoff", "Report narrative generation"],
       zh: ["混乱表格清理", "数据字典交接", "报表解读生成"],
+    },
+    deliverables: {
+      en: ["Cleaned table", "Data dictionary", "Operator summary"],
+      zh: ["清洗后的表格", "数据字典", "运营解读总结"],
     },
     starter: { en: "Free: CSV cleanup and duplicate checks.", zh: "免费起步：CSV 清洗和重复项检查。" },
     pro: { en: "Pro: recurring imports, report explanations, anomaly notes, and operator-ready summaries.", zh: "Pro 扩展：周期导入、报表解释、异常备注和面向运营的总结。" },
@@ -228,9 +278,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For product, design, and frontend teams that want to catch layout issues before users see them.",
       zh: "适合产品、设计和前端团队，在用户看到之前发现排版、移动端和转化问题。",
     },
+    pains: {
+      en: ["Pages look acceptable on desktop but break on mobile or in real content states", "Buttons, copy, empty states, and layout hierarchy do not guide users clearly"],
+      zh: ["桌面端看着还行，但移动端或真实内容状态容易崩", "按钮、文案、空状态和层级没有把用户引导清楚"],
+    },
     outcomes: {
       en: ["Responsive layout QA", "Copy and hierarchy review", "Conversion friction notes"],
       zh: ["响应式排版质检", "文案和层级检查", "转化阻力提示"],
+    },
+    deliverables: {
+      en: ["Screenshot evidence", "Issue list", "Polish recommendations"],
+      zh: ["截图证据", "问题清单", "优化建议"],
     },
     starter: { en: "Free: single-page layout and copy QA.", zh: "免费起步：单页排版和文案质检。" },
     pro: { en: "Pro: release screenshots, browser QA, issue evidence, and design-system review.", zh: "Pro 扩展：发布截图、浏览器质检、问题证据和设计系统检查。" },
@@ -247,9 +305,17 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
       en: "For developer, security, and platform teams adopting AI-generated code or workflow automation.",
       zh: "适合开发、安全和平台团队，在采用 AI 生成代码或自动化流程前加一层发布把关。",
     },
+    pains: {
+      en: ["AI-generated changes move fast but review evidence is not consistent", "API, permission, and release risks are discovered too late"],
+      zh: ["AI 生成变更很快，但审查证据不稳定", "API、权限和发布风险经常发现得太晚"],
+    },
     outcomes: {
       en: ["API contract review", "Release risk checklist", "Security and permission notes"],
       zh: ["API 合约检查", "发布风险清单", "安全和权限备注"],
+    },
+    deliverables: {
+      en: ["Contract review notes", "Permission risk summary", "Release gate checklist"],
+      zh: ["合约审查备注", "权限风险总结", "发布门禁清单"],
     },
     starter: { en: "Free: release notes and API checklist review.", zh: "免费起步：发布说明和 API 清单检查。" },
     pro: { en: "Pro: policy gates, runtime evidence, permission review, and incident handoff.", zh: "Pro 扩展：策略门禁、运行证据、权限审查和事故交接。" },
@@ -310,6 +376,22 @@ function SolutionsHubPage({
           </aside>
         </section>
 
+        <section className="solutions-section" aria-labelledby="solutions-definition-heading">
+          <div className="solutions-section__heading">
+            <p className="eyebrow">{copy.definitionEyebrow}</p>
+            <h2 id="solutions-definition-heading">{copy.definitionTitle}</h2>
+            <p>{copy.definitionBody}</p>
+          </div>
+          <div className="solutions-definition-grid">
+            {copy.definitionCards.map((card) => (
+              <article className="solutions-definition-card" key={card.title}>
+                <strong>{card.title}</strong>
+                <p>{card.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="solutions-section" aria-labelledby="solutions-track-heading">
           <div className="solutions-section__heading">
             <p className="eyebrow">{copy.trackEyebrow}</p>
@@ -332,6 +414,16 @@ function SolutionsHubPage({
                   </h3>
                   <p className="solutions-track-card__intro">{item.content[locale].intro}</p>
                   <p className="solutions-track-card__fit">{track.fit[locale]}</p>
+                  <div className="solutions-track-card__block solutions-track-card__block--muted">
+                    <strong>{copy.painLabel}</strong>
+                    <ul>
+                      {track.pains[locale].map((pain) => (
+                        <li key={pain}>
+                          <span>{pain}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   <div className="solutions-track-card__block">
                     <strong>{copy.outcomeLabel}</strong>
                     <ul>
@@ -342,6 +434,14 @@ function SolutionsHubPage({
                         </li>
                       ))}
                     </ul>
+                  </div>
+                  <div className="solutions-track-card__deliverables">
+                    <strong>{copy.deliverableLabel}</strong>
+                    <div>
+                      {track.deliverables[locale].map((deliverable) => (
+                        <span key={deliverable}>{deliverable}</span>
+                      ))}
+                    </div>
                   </div>
                   <div className="solutions-track-card__block">
                     <strong>{copy.skillLabel}</strong>
@@ -417,11 +517,31 @@ const solutionPageCopy = {
       { value: "Free", label: "starter path" },
       { value: "Pro", label: "team runtime" },
     ],
+    definitionEyebrow: "What a solution means",
+    definitionTitle: "A SkillHub solution is a managed workflow, not a single prompt.",
+    definitionBody:
+      "Each solution packages the business problem, recommended Skills, adoption rules, review evidence, and a clear path from free inspection to Pro runtime.",
+    definitionCards: [
+      {
+        title: "Problem diagnosis",
+        body: "Clarify the pain, the role affected, the data involved, and the business result the team is trying to improve.",
+      },
+      {
+        title: "Skill bundle",
+        body: "Point buyers to the right category and starter Skills instead of making them search hundreds of listings from zero.",
+      },
+      {
+        title: "Governed adoption",
+        body: "Move from public inspection to signed-in projects, Project Keys, runtime logs, and human review when the workflow becomes operational.",
+      },
+    ],
     trackEyebrow: "Solution library",
     trackTitle: "Choose by the work that is blocked today.",
     trackBody:
       "Every track connects the problem, the expected outcome, starter Skills, Pro adoption path, and a filtered marketplace entry.",
+    painLabel: "Common pain",
     outcomeLabel: "What it improves",
+    deliverableLabel: "Typical deliverables",
     skillLabel: "Typical Skills",
     findSkills: "Open filtered marketplace",
     viewPlan: "View solution plan",
@@ -459,11 +579,31 @@ const solutionPageCopy = {
       { value: "免费", label: "低风险起步" },
       { value: "Pro", label: "团队运行路径" },
     ],
+    definitionEyebrow: "什么是解决方案",
+    definitionTitle: "SkillHub 的解决方案不是单个提示词，而是一套可落地工作流。",
+    definitionBody:
+      "每个方案都把业务问题、推荐技能、采用规则、审核证据和从免费检查到 Pro 运行的路径放在一起，让客户知道为什么用、先用什么、怎么安全上线。",
+    definitionCards: [
+      {
+        title: "问题诊断",
+        body: "先说清楚业务痛点、影响角色、涉及数据，以及团队到底想改善哪个结果。",
+      },
+      {
+        title: "技能组合",
+        body: "直接把客户带到正确分类和起步技能，而不是让客户在几百个技能里从零搜索。",
+      },
+      {
+        title: "受控采用",
+        body: "从公开检查进入登录项目，再接 Project Key、运行日志和人工复核，让工作流能被团队运营。",
+      },
+    ],
     trackEyebrow: "方案库",
     trackTitle: "按今天卡住的工作来选择。",
     trackBody:
       "每个方案都要讲清楚：解决什么问题、改善什么结果、先用哪些技能、什么时候升级 Pro，以及去市场哪里找。",
+    painLabel: "常见痛点",
     outcomeLabel: "改善结果",
+    deliverableLabel: "典型交付物",
     skillLabel: "常用技能",
     findSkills: "打开筛选后的市场",
     viewPlan: "查看方案说明",

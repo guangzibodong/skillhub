@@ -35650,6 +35650,7 @@ textarea:focus {
 }
 
 .solutions-track-card,
+.solutions-definition-card,
 .solutions-step,
 .solutions-decision-row {
   border: 1px solid rgba(221, 255, 220, 0.1);
@@ -35657,6 +35658,32 @@ textarea:focus {
   background:
     linear-gradient(180deg, rgba(22, 29, 22, 0.92), rgba(8, 12, 9, 0.88));
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
+}
+
+.solutions-definition-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.solutions-definition-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 20px;
+}
+
+.solutions-definition-card strong {
+  color: #f8f7f0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.solutions-definition-card p {
+  margin: 0;
+  color: rgba(248, 247, 240, 0.64);
+  font-size: 14px;
+  line-height: 1.68;
 }
 
 .solutions-track-card {
@@ -35747,6 +35774,40 @@ textarea:focus {
   flex: 0 0 auto;
   margin-top: 4px;
   color: #9be28d;
+}
+
+.solutions-track-card__block--muted li {
+  border-left: 2px solid rgba(155, 226, 141, 0.24);
+  padding-left: 10px;
+}
+
+.solutions-track-card__deliverables {
+  display: grid;
+  gap: 10px;
+}
+
+.solutions-track-card__deliverables strong {
+  color: rgba(248, 247, 240, 0.88);
+  font-size: 13px;
+}
+
+.solutions-track-card__deliverables div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.solutions-track-card__deliverables span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(221, 255, 220, 0.11);
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(248, 247, 240, 0.74);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .solutions-track-card__path {
@@ -35849,6 +35910,7 @@ textarea:focus {
   }
 
   .solutions-track-grid,
+  .solutions-definition-grid,
   .solutions-decision-row {
     grid-template-columns: 1fr;
   }
@@ -35908,6 +35970,7 @@ textarea:focus {
   }
 
   .solutions-track-card,
+  .solutions-definition-card,
   .solutions-step,
   .solutions-decision-row {
     padding: 18px;
