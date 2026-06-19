@@ -507,6 +507,33 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "Project Key runtime endpoints", body: "Runtime invocation should authenticate with a Project Key created inside a signed-in project." },
         { title: "Errors and rate limits", body: "API clients should handle validation errors, unauthorized calls, policy blocks, rate limits, missing Project Keys, and prelaunch payment gates." },
         { title: "Example request", body: "POST /v1/runtime/invoke with Authorization: Bearer PROJECT_KEY and a Skill slug plus typed input payload." },
+        {
+          title: "Which path should developers use first?",
+          body: "Start with public discovery when you are evaluating Skills, then move to project runtime only after the team has chosen a workflow and reviewed permissions.",
+          bullets: [
+            "Discovery: browse categories, compare publishers, and inspect manifest metadata without a key.",
+            "Adoption: sign in, create a project, and save the Skill only when the team plans to reuse it.",
+            "Runtime: call REST only from a trusted server or approved automation environment with a scoped Project Key.",
+          ],
+        },
+        {
+          title: "Request and response contract",
+          body: "A production client should treat each Skill as a typed contract: validate input before sending, handle structured output, and store invocation IDs for audit follow-up.",
+          bullets: [
+            "Send the Skill slug, version preference when needed, and a typed payload that matches the manifest schema.",
+            "Expect policy blocks, validation errors, rate limits, and unavailable runtime states as normal client branches.",
+            "Record request time, project id, Skill slug, response status, and returned invocation id without logging secrets.",
+          ],
+        },
+        {
+          title: "Operational checklist before production",
+          body: "Before running the API in a customer-facing workflow, check ownership, key scope, retry behavior, logs, and manual fallback.",
+          bullets: [
+            "Keep Project Keys server-side and rotate them when owners or environments change.",
+            "Use idempotency or job identifiers for workflows that can be retried.",
+            "Keep a human review step for high-risk permissions, customer data, billing, or external writes.",
+          ],
+        },
       ],
     },
     zh: {
@@ -524,6 +551,33 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "Project Key 运行端点", body: "运行调用应使用登录后项目中创建的 Project Key 认证。" },
         { title: "错误与限流", body: "API 客户端应处理校验错误、未授权调用、策略阻断、限流、缺少 Project Key 和预发布支付门禁。" },
         { title: "请求示例", body: "POST /v1/runtime/invoke，使用 Authorization: Bearer PROJECT_KEY，并传入 Skill slug 与类型化输入。" },
+        {
+          title: "开发者应该先用哪条路径？",
+          body: "评估 Skill 时先走公开发现；团队确认要复用某个工作流并检查权限后，再进入项目运行。",
+          bullets: [
+            "发现：免密浏览分类、对比发布者，并检查 manifest 元数据。",
+            "采用：登录后创建项目，只有团队计划长期复用时才保存 Skill。",
+            "运行：只在可信服务端或已批准自动化环境中，用有作用域的 Project Key 调用 REST。",
+          ],
+        },
+        {
+          title: "请求与响应契约",
+          body: "生产客户端应把每个 Skill 当成类型化合约：发送前校验输入，处理结构化输出，并保存 invocation id 便于审计追踪。",
+          bullets: [
+            "发送 Skill slug、必要时指定版本偏好，并提交符合 manifest schema 的类型化 payload。",
+            "策略阻断、校验错误、限流和运行时不可用都应作为正常分支处理。",
+            "记录请求时间、项目、Skill slug、响应状态和 invocation id，但不要记录 secret。",
+          ],
+        },
+        {
+          title: "生产前运营检查清单",
+          body: "把 API 接入客户可见流程前，要确认负责人、Key 作用域、重试行为、日志和人工兜底。",
+          bullets: [
+            "Project Key 保留在服务端；负责人或环境变化时要轮换。",
+            "可重试工作流应使用幂等键或任务 id。",
+            "涉及高风险权限、客户数据、账务或外部写入时，保留人工复核。",
+          ],
+        },
       ],
     },
   },
@@ -558,6 +612,33 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "Runtime invocation boundary", body: "MCP invocation still resolves through project policy, approval state, rate limits, and runtime governance." },
         { title: "Permission and policy checks", body: "High-risk permissions, billing preview gates, and restricted states must remain visible before invocation." },
         { title: "REST vs MCP", body: "REST is direct and simple for backends. MCP is stronger when an Agent client needs dynamic tool discovery and structured tool calls." },
+        {
+          title: "When MCP is the right choice",
+          body: "Use MCP when an Agent workbench needs to list approved Skills, understand schemas, and call tools dynamically during a task.",
+          bullets: [
+            "Good fit: internal agent workbenches, coding copilots, research agents, support copilots, and operator consoles.",
+            "Use REST instead when the caller is a predictable backend job or a fixed product workflow.",
+            "Do not expose private credentials or unreviewed Skills through MCP metadata.",
+          ],
+        },
+        {
+          title: "Configuration shape",
+          body: "A typical MCP setup points the Agent client at a SkillHub endpoint and passes a project-scoped credential from a trusted configuration store.",
+          bullets: [
+            "Keep Project Keys outside public browser bundles and prompt text.",
+            "Scope the key to the project and approved Skills needed by the Agent.",
+            "Name tools clearly so the Agent can choose by business task, not vague internal labels.",
+          ],
+        },
+        {
+          title: "Runtime evidence",
+          body: "MCP calls should remain auditable. Operators need to see which Agent called which Skill, which policy allowed it, and what result or failure was returned.",
+          bullets: [
+            "Track tool name, project, caller, timestamp, policy decision, and invocation id.",
+            "Surface policy blocks and permission warnings to the human operator.",
+            "Keep sensitive payload fields redacted in logs and support reports.",
+          ],
+        },
       ],
     },
     zh: {
@@ -574,6 +655,33 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "运行调用边界", body: "MCP 调用仍然通过项目策略、批准状态、限流和运行治理解析。" },
         { title: "权限与策略检查", body: "高风险权限、账务预览门禁和受限状态在调用前必须可见。" },
         { title: "REST 与 MCP 的区别", body: "REST 对后端直接调用更简单。MCP 更适合 Agent 客户端需要动态工具发现和结构化工具调用的场景。" },
+        {
+          title: "什么时候应该用 MCP",
+          body: "当 Agent 工作台需要列出已批准 Skills、理解 schema，并在任务执行过程中动态调用工具时，MCP 更合适。",
+          bullets: [
+            "适合：内部 Agent 工作台、代码助手、研究 Agent、客服助手和运营控制台。",
+            "如果调用方是固定后端任务或固定产品流程，优先使用 REST。",
+            "不要通过 MCP 元数据暴露私有凭据或未审核 Skill。",
+          ],
+        },
+        {
+          title: "配置形态",
+          body: "典型 MCP 配置会把 Agent 客户端指向 SkillHub 端点，并从可信配置存储中传入项目级凭据。",
+          bullets: [
+            "Project Key 不应放在公开浏览器包或提示词文本里。",
+            "Key 应限制在项目和该 Agent 需要的已批准 Skills 范围内。",
+            "工具命名要清楚，让 Agent 按业务任务选择，而不是按模糊内部代号选择。",
+          ],
+        },
+        {
+          title: "运行证据",
+          body: "MCP 调用也要可审计。运营人员需要知道哪个 Agent 调用了哪个 Skill、哪条策略允许调用，以及返回了什么结果或失败。",
+          bullets: [
+            "记录工具名、项目、调用方、时间、策略决策和 invocation id。",
+            "把策略阻断和权限警告展示给人工操作员。",
+            "日志和支持报告中要脱敏敏感 payload 字段。",
+          ],
+        },
       ],
     },
   },
@@ -654,6 +762,41 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "Why it exists", body: "Agent teams need more than prompts and tool lists. They need inspectable contracts, permission boundaries, version pins, review state, logs, and operational controls." },
         { title: "Who it serves", body: "Developers, Agent builders, publishers, operators, and teams evaluating governed AI capability adoption." },
         { title: "Current Launch Preview status", body: "Discovery, inspection, docs, review paths, and workspace gates are visible. Paid marketplace provider flows remain preview/prelaunch unless explicitly configured." },
+        {
+          title: "What buyers can do first",
+          body: "A buyer can browse the marketplace, compare categories, inspect Skill details, evaluate publisher trust, and start with free or low-risk workflows before requesting Pro onboarding.",
+          bullets: [
+            { href: "/solutions", label: "Choose a solution by business workflow" },
+            { href: "/marketplace", label: "Browse the Skill marketplace" },
+            { href: "/pricing", label: "Review free and Pro paths" },
+          ],
+        },
+        {
+          title: "What publishers can do first",
+          body: "A third-party author can prepare a Skill manifest, examples, permission notes, support path, and paid-readiness metadata before submitting for review.",
+          bullets: [
+            { href: "/publish", label: "Read the publishing guide" },
+            { href: "/publisher-review", label: "Understand review states" },
+            { href: "/publishers", label: "Browse public publisher profiles" },
+          ],
+        },
+        {
+          title: "What operators control",
+          body: "Operators need clear review queues, abuse handling, incident notes, notification templates, billing-preview records, and launch-readiness evidence so the marketplace can be run responsibly.",
+        },
+        {
+          title: "What SkillHub is not",
+          body: "SkillHub is not a place to paste secrets, bypass review, run anonymous production calls, or claim final compliance certifications that have not been issued.",
+        },
+        {
+          title: "How to evaluate SkillHub",
+          body: "Start with one concrete workflow, inspect the relevant Skills, test with sample data, then decide whether the team needs Pro, custom Skills, or publisher onboarding.",
+          bullets: [
+            "Pick one workflow such as SEO/GEO, e-commerce, data cleanup, support, sales, UI QA, or developer/security review.",
+            "Check manifest, permissions, examples, publisher, review status, and support path before adoption.",
+            `Contact ${companyInfo.businessEmail} for Pro onboarding or custom workflow evaluation.`,
+          ],
+        },
       ],
     },
     zh: {
@@ -669,6 +812,41 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "为什么需要它", body: "Agent 团队需要的不只是提示词和工具列表，还需要可检查合约、权限边界、版本固定、审核状态、日志和运营控制。" },
         { title: "服务谁", body: "开发者、Agent 构建者、发布者、运营人员，以及评估受治理 AI 能力采用的团队。" },
         { title: "当前公开预览状态", body: "发现、检查、文档、审核路径和工作台门禁已可见。付费市场渠道流程在明确配置前仍是预览/预发布。" },
+        {
+          title: "购买方可以先做什么",
+          body: "购买方可以先浏览市场、对比分类、检查 Skill 详情、评估发布者可信度，并从免费或低风险工作流开始，再决定是否开通 Pro。",
+          bullets: [
+            { href: "/solutions", label: "按业务工作流选择解决方案" },
+            { href: "/marketplace", label: "浏览技能市场" },
+            { href: "/pricing", label: "查看免费与 Pro 路径" },
+          ],
+        },
+        {
+          title: "发布者可以先做什么",
+          body: "第三方作者可以准备 Skill manifest、示例、权限说明、支持路径和付费准备资料，然后提交审核。",
+          bullets: [
+            { href: "/publish", label: "阅读发布指南" },
+            { href: "/publisher-review", label: "了解审核状态" },
+            { href: "/publishers", label: "浏览公开发布者档案" },
+          ],
+        },
+        {
+          title: "运营人员要控制什么",
+          body: "运营人员需要清晰的审核队列、滥用处理、事故备注、通知模板、账务预览记录和上线准备证据，才能负责任地运营技能市场。",
+        },
+        {
+          title: "SkillHub 不是什么",
+          body: "SkillHub 不是粘贴 secret、绕过审核、匿名运行生产调用，或声明尚未取得最终合规认证的地方。",
+        },
+        {
+          title: "如何评估 SkillHub",
+          body: "先选一个具体工作流，检查相关 Skills，用样例数据测试，然后决定团队是否需要 Pro、定制 Skill 或发布者入驻。",
+          bullets: [
+            "选择一个工作流：SEO/GEO、电商、数据清洗、客服、销售、UI 质检或开发/安全审核。",
+            "采用前检查 manifest、权限、示例、发布者、审核状态和支持路径。",
+            `Pro 开通或定制工作流评估请联系 ${companyInfo.businessEmail}。`,
+          ],
+        },
       ],
     },
   },

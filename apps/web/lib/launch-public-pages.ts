@@ -116,6 +116,43 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "4. Call the REST API", body: "Invoke the Skill through the runtime endpoint with Authorization: Bearer PROJECT_KEY and a typed input payload." },
         { title: "5. Configure MCP", body: "Add SkillHub MCP to your Agent workbench so approved Skills appear as callable tools." },
         { title: "6. Review logs", body: "Check runtime logs, policy blocks, rate limits, and preview billing signals after test calls." },
+        {
+          title: "Before you start",
+          body: "Choose one low-risk workflow first, such as SEO page review, listing QA, CSV cleanup, or support ticket summary. Avoid customer secrets and production writes during the first test.",
+          bullets: [
+            "Pick a verified or low-risk Skill.",
+            "Use sample or redacted data for the first invocation.",
+            "Decide who reviews the output before it reaches customers or internal systems.",
+          ],
+        },
+        {
+          title: "First REST test",
+          body: "A first REST test should prove that authentication, input schema, response shape, policy checks, and logs all work before you automate anything.",
+          bullets: [
+            "Send Authorization: Bearer PROJECT_KEY from a trusted environment.",
+            "Use a payload that exactly matches the Skill manifest.",
+            "Save the returned invocation id and verify it appears in logs.",
+          ],
+        },
+        {
+          title: "First MCP test",
+          body: "A first MCP test should show that the Agent workbench can discover approved tools, read tool descriptions, and call only the Skills allowed by project policy.",
+          bullets: [
+            "Confirm the tool list shows only approved project Skills.",
+            "Check that tool names and descriptions are understandable to both humans and Agents.",
+            "Trigger one safe call and verify the policy decision and result.",
+          ],
+        },
+        {
+          title: "Common setup problems",
+          body: "Most early failures come from missing Project Keys, wrong environment variables, schema mismatch, policy blocks, or calling a preview-only Skill as if it were production-ready.",
+          bullets: [
+            "401 or 403: check login state, Project Key scope, and project membership.",
+            "422: compare your payload with the manifest input schema.",
+            "429: slow down retries and check project rate limits.",
+            "Preview block: confirm the Skill review state and paid-readiness boundary.",
+          ],
+        },
       ],
     },
     zh: {
@@ -133,6 +170,43 @@ export const launchPublicPages: Record<LaunchPublicPageKey, PublicPageDefinition
         { title: "4. 调用 REST API", body: "使用 Authorization: Bearer PROJECT_KEY 和类型化输入调用运行端点。" },
         { title: "5. 配置 MCP", body: "把 SkillHub MCP 加入 Agent 工作台，使已批准 Skill 以工具形式出现。" },
         { title: "6. 查看日志", body: "测试调用后检查运行日志、策略阻断、限流和账务预览信号。" },
+        {
+          title: "开始前先选一个低风险流程",
+          body: "第一次测试建议选 SEO 页面检查、Listing 质检、CSV 清洗或客服工单摘要这类低风险工作。不要在第一次测试中使用客户 secret 或生产写入动作。",
+          bullets: [
+            "优先选择已验证或低风险 Skill。",
+            "第一次调用使用样例数据或脱敏数据。",
+            "先确定谁来复核输出，再让结果进入客户或内部系统。",
+          ],
+        },
+        {
+          title: "第一次 REST 测试",
+          body: "第一次 REST 测试要证明认证、输入 schema、响应结构、策略检查和日志都能跑通，再考虑自动化。",
+          bullets: [
+            "从可信环境发送 Authorization: Bearer PROJECT_KEY。",
+            "payload 必须与 Skill manifest 输入 schema 匹配。",
+            "保存返回的 invocation id，并确认日志里能看到。",
+          ],
+        },
+        {
+          title: "第一次 MCP 测试",
+          body: "第一次 MCP 测试要确认 Agent 工作台能发现已批准工具、读懂工具描述，并且只能调用项目策略允许的 Skills。",
+          bullets: [
+            "确认工具列表只展示项目已批准 Skills。",
+            "检查工具名称和描述是否同时让人和 Agent 看得懂。",
+            "触发一次安全调用，并确认策略决策和返回结果。",
+          ],
+        },
+        {
+          title: "常见配置问题",
+          body: "早期失败通常来自缺少 Project Key、环境变量错误、schema 不匹配、策略阻断，或把预览 Skill 当成生产能力调用。",
+          bullets: [
+            "401 或 403：检查登录状态、Project Key 作用域和项目成员关系。",
+            "422：对照 manifest input schema 检查 payload。",
+            "429：降低重试频率，并检查项目限流。",
+            "预览阻断：确认 Skill 审核状态和付费准备边界。",
+          ],
+        },
       ],
     },
   },

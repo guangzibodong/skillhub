@@ -35,6 +35,7 @@ type GrowthDetailPageProps = {
 
 export function GrowthHubPage({ hub, hubKey, items, locale }: GrowthHubPageProps) {
   const itemNoun = locale === "zh" ? "内容" : "resources";
+  const guide = hub.guide;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -73,6 +74,31 @@ export function GrowthHubPage({ hub, hubKey, items, locale }: GrowthHubPageProps
             <p>{locale === "zh" ? "每个页面都会连接到技能市场、文档、发布路径和联系入口。" : "Every page connects discovery, docs, publishing paths, and contact routes."}</p>
           </aside>
         </section>
+
+        {guide ? (
+          <section className="growth-guide" aria-labelledby={`${hubKey}-guide-heading`}>
+            <div className="growth-guide__heading">
+              <p className="eyebrow">{guide.eyebrow[locale]}</p>
+              <h2 id={`${hubKey}-guide-heading`}>{guide.title[locale]}</h2>
+              <p>{guide.intro[locale]}</p>
+            </div>
+            <div className="growth-guide-grid">
+              {guide.cards.map((card) => (
+                <article className="growth-guide-card lift-card" key={card.title[locale]}>
+                  <h3>{card.title[locale]}</h3>
+                  <p>{card.body[locale]}</p>
+                  {card.bullets ? (
+                    <ul>
+                      {card.bullets[locale].map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="growth-card-grid" aria-label={hub.title[locale]}>
           {items.map((item) => (

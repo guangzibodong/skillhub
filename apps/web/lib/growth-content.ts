@@ -31,6 +31,16 @@ export type GrowthContentBody = {
 export type GrowthHub = {
   active?: NavPage;
   eyebrow: Record<Locale, string>;
+  guide?: {
+    eyebrow: Record<Locale, string>;
+    title: Record<Locale, string>;
+    intro: Record<Locale, string>;
+    cards: Array<{
+      title: Record<Locale, string>;
+      body: Record<Locale, string>;
+      bullets?: Record<Locale, string[]>;
+    }>;
+  };
   intro: Record<Locale, string>;
   path: string;
   seo: Record<Locale, LocalizedSeo>;
@@ -41,6 +51,37 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
   blog: {
     active: "blog",
     eyebrow: { en: "SkillHub resources", zh: "SkillHub 资源" },
+    guide: {
+      eyebrow: { en: "Reading path", zh: "阅读路径" },
+      title: { en: "Use the blog as an operating guide, not a news feed.", zh: "把博客当成运营指南，而不是资讯列表。" },
+      intro: {
+        en: "These articles explain how to adopt AI Agent Skills safely: what to inspect, how runtime should be governed, and when a team should move from free evaluation to Pro operations.",
+        zh: "这些文章解释团队如何安全采用 AI Agent Skill：先检查什么、运行怎么治理，以及什么时候从免费评估进入 Pro 运营。",
+      },
+      cards: [
+        {
+          title: { en: "For buyers", zh: "购买方先看" },
+          body: {
+            en: "Compare concepts like MCP, Project Keys, publisher review, pricing gates, and marketplace trust before adopting a Skill into a project.",
+            zh: "先理解 MCP、Project Key、发布者审核、价格门禁和市场可信度，再把 Skill 接入项目。",
+          },
+        },
+        {
+          title: { en: "For operators", zh: "运营方先看" },
+          body: {
+            en: "Use the articles to decide review rules, support handoff, abuse handling, and what evidence must exist before a Skill becomes operational.",
+            zh: "用这些文章决定审核规则、客服交接、滥用处理，以及 Skill 进入运营前必须具备哪些证据。",
+          },
+        },
+        {
+          title: { en: "Next action", zh: "下一步动作" },
+          body: {
+            en: "After reading, move to a solution page, marketplace category, docs page, or contact path instead of stopping at the article.",
+            zh: "读完后要进入解决方案页、技能分类、文档或联系入口，不要停留在文章本身。",
+          },
+        },
+      ],
+    },
     intro: {
       en: "Practical explainers for teams adopting AI Agent Skills, MCP, governed runtime, SEO/GEO automation, and marketplace operations.",
       zh: "面向团队采用 AI Agent Skill、MCP、运行治理、SEO/GEO 自动化和技能市场运营的实用文章。",
@@ -85,6 +126,37 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
   "use-cases": {
     active: "use-cases",
     eyebrow: { en: "Use cases", zh: "使用场景" },
+    guide: {
+      eyebrow: { en: "Choose by job", zh: "按任务选择" },
+      title: { en: "Start from the work that is blocked today.", zh: "从今天被卡住的工作开始。" },
+      intro: {
+        en: "Use-case pages show a concrete way to solve an existing business job with Skills. They are most useful when the team already knows the pain and needs a repeatable operating pattern.",
+        zh: "使用场景页展示如何用 Skill 解决一个已经存在的业务任务。团队已经知道痛点、只需要可复用的操作模式时，这类页面最有用。",
+      },
+      cards: [
+        {
+          title: { en: "Good fit", zh: "适合什么" },
+          body: {
+            en: "Choose a page when you need a concrete playbook for SEO repair, Shopify QA, CRM cleanup, support handoff, or content planning.",
+            zh: "当你需要 SEO 修复、Shopify 质检、CRM 清理、客服交接或内容规划的具体打法时，先看这里。",
+          },
+        },
+        {
+          title: { en: "Compare outputs", zh: "对比输出" },
+          body: {
+            en: "Each use case should make the expected output obvious so the buyer can compare it with the team's real task.",
+            zh: "每个场景都要把预期输出讲清楚，让客户能和自己团队的真实任务做对比。",
+          },
+        },
+        {
+          title: { en: "Move forward", zh: "继续推进" },
+          body: {
+            en: "Open the matching solution page or marketplace listing once the job, owner, and outcome are clear.",
+            zh: "当任务、负责人和结果都明确后，就进入对应的解决方案页或技能市场页面。",
+          },
+        },
+      ],
+    },
     intro: {
       en: "Concrete workflow pages for buyers who know the job they need to improve but do not yet know which Skill to adopt.",
       zh: "给已经知道要改善哪类工作、但还不知道采用哪个 Skill 的客户看的具体场景页。",
@@ -107,6 +179,37 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
   examples: {
     active: "examples",
     eyebrow: { en: "Examples", zh: "示例" },
+    guide: {
+      eyebrow: { en: "How to use examples", zh: "示例怎么用" },
+      title: { en: "Use examples as templates, not as customer claims.", zh: "把示例当模板，而不是客户背书。" },
+      intro: {
+        en: "These pages are designed to help teams understand structure and handoff. They should make the workflow easy to copy, while still making it clear that the examples are operating patterns.",
+        zh: "这些页面用来帮助团队理解结构和交接方式。它们要足够像可复制的操作模板，但也要清楚说明这只是运营模式，不是客户案例。",
+      },
+      cards: [
+        {
+          title: { en: "Structure", zh: "结构" },
+          body: {
+            en: "Show what a good manifest, checklist, template, or handoff note should contain.",
+            zh: "说明一份好的 manifest、清单、模板或交接备注应该包含什么。",
+          },
+        },
+        {
+          title: { en: "Verification", zh: "验证" },
+          body: {
+            en: "Use the examples to check permissions, runtime evidence, and support readiness before launch.",
+            zh: "通过示例去检查权限、运行证据和发布前支持准备度。",
+          },
+        },
+        {
+          title: { en: "Expectation", zh: "预期" },
+          body: {
+            en: "Make it obvious that examples are reference workflows, not promises of customer scale or production guarantees.",
+            zh: "要明确告诉读者：这是参考工作流，不是客户规模承诺，也不是生产保证。",
+          },
+        },
+      ],
+    },
     intro: {
       en: "Reference workflows and templates. These are example operating patterns, not claims about real customer deployments.",
       zh: "参考工作流和模板。这些是示例运营模式，不是假客户案例，也不声称是真实客户部署。",
@@ -129,6 +232,37 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
   integrations: {
     active: "integrations",
     eyebrow: { en: "Integrations", zh: "集成" },
+    guide: {
+      eyebrow: { en: "Integration boundary", zh: "集成边界" },
+      title: { en: "Show where the system connects, and where humans still approve.", zh: "说明系统接入哪里，以及哪里还要人来审批。" },
+      intro: {
+        en: "Integration pages should make it clear how SkillHub fits into real systems like REST, MCP, Webhooks, CRM, Shopify, GitHub, Notion, and Sheets.",
+        zh: "集成页要让人看明白 SkillHub 如何接入真实系统，比如 REST、MCP、Webhook、CRM、Shopify、GitHub、Notion 和表格。",
+      },
+      cards: [
+        {
+          title: { en: "Name the stack", zh: "讲清技术栈" },
+          body: {
+            en: "Use plain system names so buyers can map the integration to their own environment quickly.",
+            zh: "直接写明系统名称，让购买方能快速映射到自己的环境。",
+          },
+        },
+        {
+          title: { en: "Define control", zh: "定义控制权" },
+          body: {
+            en: "Explain what can be read, what can be written back, and what still needs project approval.",
+            zh: "说明哪些能读、哪些能写回、哪些还需要项目审批。",
+          },
+        },
+        {
+          title: { en: "Plan the handoff", zh: "规划交接" },
+          body: {
+            en: "Make sure every integration page points to docs, marketplace, or contact paths for implementation help.",
+            zh: "每个集成页都要指向文档、市场或联系入口，方便继续落地。",
+          },
+        },
+      ],
+    },
     intro: {
       en: "Integration guidance for REST, MCP, webhooks, project keys, and common business systems that teams connect to SkillHub workflows.",
       zh: "面向 REST、MCP、Webhook、Project Key 以及团队常见业务系统接入 SkillHub 工作流的集成说明。",
@@ -174,6 +308,24 @@ export const growthContentItems: GrowthContentItem[] = [
     "什么样的技能市场值得信任",
     "A trustworthy marketplace exposes manifest contracts, permissions, publisher profile, review state, support path, version history, runtime boundaries, and clear paid-access rules.",
     "可信技能市场需要公开合约、权限、发布者档案、审核状态、支持路径、版本历史、运行边界和清晰的付费权限规则。",
+  ]),
+  makeItem("blog", "project-key-governance", "Runtime", "运行治理", [
+    "How Project Keys keep Skill runtime controlled",
+    "Project Key 如何让 Skill 运行可控",
+    "Project Keys separate public inspection from real invocation. Teams should scope keys by project, rotate them when owners change, and review logs after runtime calls.",
+    "Project Key 把公开检查和真实调用分开。团队应按项目设置作用域，在负责人变化时轮换，并在运行调用后检查日志。",
+  ]),
+  makeItem("blog", "publisher-review-operations", "Publisher ops", "发布者运营", [
+    "How to review third-party Skills before adoption",
+    "采用第三方 Skill 前如何审核",
+    "Before adopting a third-party Skill, buyers should inspect publisher identity, examples, support path, review state, permissions, runtime contract, and version history.",
+    "采用第三方 Skill 前，购买方应检查发布者身份、示例、支持路径、审核状态、权限、运行契约和版本历史。",
+  ]),
+  makeItem("blog", "free-vs-pro-skill-adoption", "Pricing", "定价", [
+    "Free vs Pro: how teams should adopt SkillHub",
+    "免费与 Pro：团队应该如何采用 SkillHub",
+    "Free workflows should prove low-risk value first. Pro becomes useful when a team needs recurring audits, project policies, runtime logs, and shared operating control.",
+    "免费工作流应先验证低风险价值。当团队需要周期审计、项目策略、运行日志和共享运营控制时，再进入 Pro。",
   ]),
   makeItem("solutions", "seo-geo", "SEO / GEO", "SEO / GEO", [
     "SEO and GEO growth solution",
@@ -247,6 +399,30 @@ export const growthContentItems: GrowthContentItem[] = [
     "Ground support drafts in approved articles, flag missing information, suggest escalation, and keep final messages reviewable.",
     "基于已审核文章起草客服回复，标记缺失信息，建议升级，并让最终消息可复核。",
   ]),
+  makeItem("use-cases", "seo-page-repair-queue", "SEO / GEO", "SEO / GEO", [
+    "Turn SEO audits into a repair queue",
+    "把 SEO 审计变成修复队列",
+    "Use Skills to move from page diagnosis to prioritized fixes, content briefs, internal-link tasks, and developer handoff notes.",
+    "用 Skill 从页面诊断走到优先级修复、内容简报、内链任务和开发交接备注。",
+  ]),
+  makeItem("use-cases", "shopify-launch-qa", "E-commerce", "电商", [
+    "Run Shopify launch QA before traffic arrives",
+    "流量进入前做 Shopify 上线质检",
+    "Check product titles, PDP copy, review insights, SKU fields, pricing notes, and launch blockers before campaigns start.",
+    "在活动开始前检查商品标题、详情页文案、评论洞察、SKU 字段、价格备注和上线阻塞项。",
+  ]),
+  makeItem("use-cases", "crm-follow-up-cleanup", "Sales / CRM", "销售 / CRM", [
+    "Clean CRM follow-up after calls",
+    "通话后清理 CRM 跟进动作",
+    "Summarize sales calls, extract objections, update next steps, and prepare account notes that a team can review.",
+    "总结销售通话、提取异议、更新下一步，并准备团队可复核的客户备注。",
+  ]),
+  makeItem("use-cases", "content-calendar-planning", "Content", "内容", [
+    "Plan a content calendar from one campaign brief",
+    "从一份活动简报规划内容日历",
+    "Turn campaign goals into topics, channel variants, review checklists, and a weekly publishing plan.",
+    "把活动目标转成选题、渠道版本、审稿清单和每周发布计划。",
+  ]),
   makeItem("examples", "manifest-review-template", "Template", "模板", [
     "Manifest review template",
     "Manifest 审核模板",
@@ -264,6 +440,24 @@ export const growthContentItems: GrowthContentItem[] = [
     "发布者上线检查清单",
     "A publisher can use this checklist before submitting a Skill for review: schema, runtime evidence, pricing intent, support path, and changelog must be clear.",
     "发布者提交审核前可用这份清单检查：schema、运行证据、定价意图、支持路径和更新记录必须清楚。",
+  ]),
+  makeItem("examples", "project-key-runtime-test", "Runtime", "运行", [
+    "Project Key runtime test template",
+    "Project Key 运行测试模板",
+    "Use this template to verify authentication, input schema, policy decision, response shape, logs, and redaction before connecting a Skill to production work.",
+    "用这个模板在接入生产工作前验证认证、输入 schema、策略决策、响应结构、日志和脱敏。",
+  ]),
+  makeItem("examples", "mcp-tool-description-template", "MCP", "MCP", [
+    "MCP tool description template",
+    "MCP 工具描述模板",
+    "A good MCP tool description tells an Agent what the Skill does, when to use it, required input, permission risk, and when to ask a human.",
+    "好的 MCP 工具描述要告诉 Agent：这个 Skill 做什么、什么时候用、需要什么输入、权限风险，以及什么时候询问人工。",
+  ]),
+  makeItem("examples", "support-escalation-template", "Support", "客服", [
+    "Support escalation handoff template",
+    "客服升级交接模板",
+    "Use this template to summarize customer context, missing knowledge, suggested reply, escalation reason, and follow-up owner.",
+    "用这个模板总结客户上下文、缺失知识、建议回复、升级原因和跟进负责人。",
   ]),
   makeItem("integrations", "rest-api", "REST", "REST", [
     "REST API integration path",
@@ -288,6 +482,30 @@ export const growthContentItems: GrowthContentItem[] = [
     "把 SkillHub 接入业务系统",
     "Plan connectors for Sheets, CRM, Shopify, GitHub, Notion, support tools, and internal systems around least privilege and human approval.",
     "围绕最小权限和人工审批，规划表格、CRM、Shopify、GitHub、Notion、客服工具和内部系统连接器。",
+  ]),
+  makeItem("integrations", "shopify", "Shopify", "Shopify", [
+    "Shopify integration planning",
+    "Shopify 集成规划",
+    "Plan product-page QA, SKU launch checks, review mining, catalog cleanup, and human approval before writing back to Shopify.",
+    "规划商品页质检、SKU 上线检查、评论挖掘、目录清理，并在写回 Shopify 前保留人工审批。",
+  ]),
+  makeItem("integrations", "crm", "CRM", "CRM", [
+    "CRM integration planning",
+    "CRM 集成规划",
+    "Use SkillHub with CRM workflows for account research, call summaries, field cleanup, next-step notes, and renewal risk signals.",
+    "把 SkillHub 接入 CRM 工作流，用于客户研究、通话总结、字段清洗、下一步备注和续约风险信号。",
+  ]),
+  makeItem("integrations", "github", "GitHub", "GitHub", [
+    "GitHub integration planning",
+    "GitHub 集成规划",
+    "Use Skills for release QA, API contract review, changelog drafting, issue triage, and permission-risk review around code changes.",
+    "用 Skill 做发布质检、API 合约审查、更新日志起草、问题分流和代码变更权限风险检查。",
+  ]),
+  makeItem("integrations", "notion-sheets", "Notion / Sheets", "Notion / 表格", [
+    "Notion and Sheets integration planning",
+    "Notion 与表格集成规划",
+    "Use Skills to clean spreadsheet exports, summarize docs, prepare data dictionaries, and turn operator notes into repeatable workflows.",
+    "用 Skill 清洗表格导出、总结文档、准备数据字典，并把运营备注转成可复用工作流。",
   ]),
 ];
 
