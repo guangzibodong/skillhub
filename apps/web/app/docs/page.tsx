@@ -330,6 +330,7 @@ const copy: Record<Locale, DocsCopy> = {
 };
 
 const pathIcons = [SearchCode, Code2, FileJson] as const;
+const actionGuideIcons = [PackageCheck, WalletCards, ClipboardCheck] as const;
 const quickstartSnippet = `# Search public skills
 curl "https://api.useskillhub.com/v1/skills/search?tag=research"
 
@@ -533,6 +534,76 @@ function getCategoryGuides(locale: Locale) {
   };
 }
 
+function getMarketplaceActionGuide(locale: Locale) {
+  if (locale === "zh") {
+    return {
+      body:
+        "客户看完分类后，下一步应该很明确：先用免费基础验证，真实业务进 Pro，市场没有的流程提交需求。不要让用户在市场、价格、联系页之间来回猜。",
+      cards: [
+        {
+          action: "查看免费技能",
+          body:
+            "免费基础技能用于低风险试用和理解平台，适合基础 SEO、基础运营、表格清理和简单检查。",
+          href: "/marketplace?pricing=free",
+          steps: ["筛选免费基础", "打开详情看权限", "用低风险流程验证输出"],
+          title: "先用免费基础验证",
+        },
+        {
+          action: "申请 Pro",
+          body:
+            "长期、高级或批量工作流进入 Pro。月付 128 美金，季付 9 折，年付 8 折，当前通过人工入驻开通。",
+          href: "/contact?intent=pro",
+          steps: ["写清付款周期", "列出前 3 个技能", "确认工作区和管理员"],
+          title: "真实业务进入 Pro",
+        },
+        {
+          action: "提交技能需求",
+          body:
+            "如果目录里没有合适技能，把业务流程、工具、输入输出、频率和权限需求发给运营。",
+          href: "/contact?intent=request-skill",
+          steps: ["描述业务问题", "给出输入输出示例", "说明免费或 Pro 期望"],
+          title: "缺失技能直接提交",
+        },
+      ],
+      eyebrow: "市场下一步",
+      title: "找不到或拿不准时，按这三条路走。",
+    };
+  }
+
+  return {
+    body:
+      "After category discovery, the next action should be obvious: start with free basics, move real work into Pro, or request the missing workflow. Buyers should not have to guess between marketplace, pricing, and contact pages.",
+    cards: [
+      {
+        action: "View free skills",
+        body:
+          "Free basics are for low-risk evaluation and understanding the platform, such as basic SEO, operations, sheet cleanup, and simple checks.",
+        href: "/marketplace?pricing=free",
+        steps: ["Filter free basics", "Open details and permissions", "Validate output with a low-risk workflow"],
+        title: "Validate with free basics",
+      },
+      {
+        action: "Request Pro",
+        body:
+          "Recurring, advanced, or batch workflows belong in Pro. Monthly is $128, quarterly is 10% off, annual is 20% off, and onboarding is manual during Launch Preview.",
+        href: "/contact?intent=pro",
+        steps: ["Choose billing cycle", "List the first 3 skills", "Confirm workspace owner and admin"],
+        title: "Move real work into Pro",
+      },
+      {
+        action: "Request a skill",
+        body:
+          "If the catalog does not have the right skill, send the workflow, tools, input/output, frequency, and permission needs to operations.",
+        href: "/contact?intent=request-skill",
+        steps: ["Describe the business problem", "Add input/output examples", "State free or Pro expectation"],
+        title: "Submit missing skill demand",
+      },
+    ],
+    eyebrow: "Marketplace next step",
+    title: "If you cannot find the right skill, use these three paths.",
+  };
+}
+
 function getPricingDocs(locale: Locale) {
   if (locale === "zh") {
     return {
@@ -638,6 +709,7 @@ export default async function DocsPage({ searchParams }: PageProps) {
   const labels = copy[locale];
   const installGuide = getInstallGuides(locale);
   const categoryGuide = getCategoryGuides(locale);
+  const marketplaceActionGuide = getMarketplaceActionGuide(locale);
   const pricingDocs = getPricingDocs(locale);
   const troubleshooting = getTroubleshooting(locale);
 
@@ -764,6 +836,52 @@ export default async function DocsPage({ searchParams }: PageProps) {
                 </a>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider" />
+
+      <section className="section py-[96px]" aria-labelledby="docs-action-heading">
+        <div className="section-inner flex flex-col gap-8">
+          <div className="max-w-[780px]">
+            <div className="eyebrow">
+              <ClipboardCheck size={16} aria-hidden="true" />
+              <span>{marketplaceActionGuide.eyebrow}</span>
+            </div>
+            <h2 id="docs-action-heading" className="heading-lg mt-3">
+              {marketplaceActionGuide.title}
+            </h2>
+            <p className="body-text text-[#999] mt-3">{marketplaceActionGuide.body}</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {marketplaceActionGuide.cards.map((card, index) => {
+              const Icon = actionGuideIcons[index] ?? ClipboardCheck;
+
+              return (
+                <article className="card flex flex-col gap-4 h-full" key={card.title}>
+                  <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
+                    <Icon size={20} aria-hidden="true" className="text-[#7fee64]" />
+                  </div>
+                  <div>
+                    <h3 className="heading-sm">{card.title}</h3>
+                    <p className="body-text-sm text-[#999] mt-2">{card.body}</p>
+                  </div>
+                  <div className="flex flex-col gap-2 mt-auto">
+                    {card.steps.map((step) => (
+                      <div className="flex items-start gap-2 text-sm text-[#999]" key={step}>
+                        <CheckCircle2 size={15} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
+                        <span>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <a className="btn-secondary inline-flex items-center gap-2 justify-center" href={localizedHref(card.href, locale)}>
+                    <span>{card.action}</span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </a>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>

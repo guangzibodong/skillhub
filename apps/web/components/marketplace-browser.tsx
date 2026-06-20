@@ -140,6 +140,30 @@ const labels = {
     categoryPicks: "Popular starting points",
     categoryPicksBody:
       "Start from the business problem, then refine by plan, permission risk, runtime, and review status.",
+    selectionGuide: {
+      body:
+        "A good marketplace choice should be easy for a buyer to understand and safe for an agent to inspect. Use these signals before adopting a skill into a project.",
+      items: [
+        {
+          body: "Match the skill to a repeated workflow, not a vague department name.",
+          title: "Workflow fit",
+        },
+        {
+          body: "Free basics are for lightweight evaluation; recurring or advanced work belongs in Pro.",
+          title: "Plan fit",
+        },
+        {
+          body: "Prefer verified skills with clear publisher, feedback, runtime, and review evidence.",
+          title: "Trust signal",
+        },
+        {
+          body: "Read permissions, runtime type, and detail page examples before connecting a project key.",
+          title: "Runtime risk",
+        },
+      ],
+      kicker: "Selection rules",
+      title: "Choose skills by fit, trust, and runtime risk.",
+    },
     operatingGuide: {
       body: "SkillHub is opening with a curated launch catalog across the workflows teams ask for most. Start from a repeated workflow, try free basics when available, then move recurring work into Pro through onboarding.",
       demoCta: "Talk to Pro",
@@ -307,6 +331,30 @@ const labels = {
     categoryPicks: "热门入口",
     categoryPicksBody:
       "先从业务问题入手，再用套餐、权限风险、运行时和验证状态细筛。",
+    selectionGuide: {
+      body:
+        "一个可采用的技能，既要让客户看得懂，也要让 Agent 能检查边界。采用前先看这几个信号，别只看名字。",
+      items: [
+        {
+          body: "先确认它对应一个会重复发生的业务流程，而不是宽泛部门名。",
+          title: "场景匹配",
+        },
+        {
+          body: "免费基础用于轻量验证；长期、高级或批量流程应进入 Pro。",
+          title: "套餐匹配",
+        },
+        {
+          body: "优先选择已验证、有发布者、反馈、运行时和审核证据的技能。",
+          title: "信任信号",
+        },
+        {
+          body: "接入项目 Key 前，先看权限、运行时类型和详情页示例。",
+          title: "运行风险",
+        },
+      ],
+      kicker: "选择标准",
+      title: "按场景、信任和运行风险选择技能。",
+    },
     operatingGuide: {
       body: "SkillHub 先用精选上线目录覆盖团队最常问的工作流。最快的用法不是按技术名词乱找，而是先选一个重复发生的业务流程，有免费基础技能就先验证，再通过入驻把长期任务放进 Pro。",
       demoCta: "咨询 Pro",
@@ -463,6 +511,8 @@ const categorySpotlights = [
   { key: "automation", query: "" },
   { key: "free", query: "" },
 ] as const;
+
+const qualityGuideIcons = [Target, BadgeCheck, ShieldCheck, Route] as const;
 
 type CategoryKey = (typeof marketplaceCategories)[number]["key"];
 type PricingKey = (typeof pricingOptions)[number]["key"];
@@ -908,6 +958,37 @@ export function MarketplaceBrowser({
           <span>{dictionary.catalogSummary.categories}</span>
         </div>
       </div>
+
+      <section
+        className="market-quality-guide"
+        aria-label={dictionary.selectionGuide.title}
+      >
+        <div className="market-quality-guide__head">
+          <span>
+            <ShieldCheck size={15} aria-hidden="true" />
+            {dictionary.selectionGuide.kicker}
+          </span>
+          <div>
+            <h2>{dictionary.selectionGuide.title}</h2>
+            <p>{dictionary.selectionGuide.body}</p>
+          </div>
+        </div>
+        <div className="market-quality-grid">
+          {dictionary.selectionGuide.items.map((item, index) => {
+            const Icon = qualityGuideIcons[index] ?? BadgeCheck;
+
+            return (
+              <article className="market-quality-card" key={item.title}>
+                <span>
+                  <Icon size={16} aria-hidden="true" />
+                </span>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       <div
         className="market-operating-guide"
