@@ -32,7 +32,8 @@ test("homepage footer presents the agent ecosystem with production-safe copy", (
   assert.match(pageSource, /谁可以浏览，谁可以调用/);
   assert.match(pageSource, /home-footer__agent-logo--\$\{agent\.logoKey\}/);
   assert.match(stylesheet, /home-footer__agent-logo--hermes/);
-  assert.match(stylesheet, /--agent-logo-bg/);
+  assert.match(stylesheet, /background: transparent/);
+  assert.match(stylesheet, /filter: invert\(1\) grayscale\(1\) brightness\(1\.22\)/);
   assert.match(packageSource, /先选择要交付的结果，再接入对应 Skill/);
   assert.doesNotMatch(packageSource, /直接丢给客户一堆技能/);
   assert.match(pageSource, /Registry/);
