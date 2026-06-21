@@ -28366,10 +28366,10 @@ a {
 .home-footer__trust-card {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 10px;
+  gap: 12px;
   align-items: start;
   min-width: 0;
-  min-height: 116px;
+  min-height: 128px;
   padding: 14px;
   border: 1px solid rgba(221, 255, 220, 0.1);
   border-radius: 12px;
@@ -28394,41 +28394,38 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 760;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(221, 255, 220, 0.14);
+  border-radius: 11px;
+  color: var(--home-ink);
   line-height: 1;
+  background: rgba(255, 255, 255, 0.035);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 12px 28px rgba(0, 0, 0, 0.24);
 }
 
+.home-footer__trust-logo svg {
+  width: 21px;
+  height: 21px;
+  fill: currentColor;
+}
+
 .home-footer__trust-logo--openai {
-  background:
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.28), transparent 28%),
-    linear-gradient(135deg, #10a37f, #057a66);
+  color: #10a37f;
 }
 
 .home-footer__trust-logo--claude {
-  background:
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.26), transparent 28%),
-    linear-gradient(135deg, #d97757, #8f4d32);
+  color: #d97757;
 }
 
 .home-footer__trust-logo--gemini {
-  background:
-    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.26), transparent 28%),
-    linear-gradient(135deg, #4285f4 0%, #7b61ff 48%, #ea4335 100%);
+  color: #8ab4f8;
 }
 
 .home-footer__trust-logo--copilot {
-  background:
-    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.26), transparent 28%),
-    linear-gradient(135deg, #5765f2, #24292f);
+  color: #ffffff;
 }
 
 .home-footer__trust-card strong {
@@ -28443,7 +28440,7 @@ a {
   margin: 0;
   color: var(--home-muted);
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .home-footer__trust-card em {
