@@ -765,8 +765,8 @@ export default async function Home({ searchParams }: PageProps) {
                 </h1>
                 <p>
                   {locale === "zh"
-                    ? "发现可复用 Skill，检查 manifest、schema、权限和发布者，再通过 Project Key、REST API 或 MCP 接入真实 Agent 工作流。"
-                    : "Discover reusable Skills, inspect manifests, schemas, permissions, and publishers, then connect them to real agent workflows through Project Keys, REST APIs, or MCP."}
+                    ? "SkillHub 的 Skill 不是给人手动打开的应用，而是给智能体调用的能力单元。团队可以先检查 manifest、schema、权限和发布者，再通过 Project Key、MCP 或 REST 接入真实 Agent 工作流。"
+                    : "SkillHub Skills are not standalone apps for people to open manually. They are callable capability units for agents, reviewed through manifests, schemas, permissions, and publishers before MCP or REST runtime access."}
                 </p>
                 <div className="hero-actions home-v2-actions">
                   <PublicEventLink
@@ -788,19 +788,53 @@ export default async function Home({ searchParams }: PageProps) {
                     {locale === "zh" ? "查看运行文档" : "View runtime docs"}
                   </PublicEventLink>
                 </div>
+                <section className="home-v2-agent-support" aria-label={locale === "zh" ? "支持的智能体运行环境" : "Supported agent runtimes"}>
+                  <div className="home-v2-agent-support__head">
+                    <strong>{locale === "zh" ? "支持的 Agent 环境" : "Supported agent environments"}</strong>
+                    <span>
+                      {locale === "zh"
+                        ? "Skill 通过 MCP 或 REST 被 Agent 调用，并由 Project Key 控制运行权限。"
+                        : "Skills are callable by agents through MCP or REST, gated by Project Key."}
+                    </span>
+                  </div>
+                  <div className="home-v2-agent-badge-grid">
+                    {landing.footerAgentEcosystem.map((agent) => (
+                      <span className={`home-v2-agent-badge home-v2-agent-badge--${agent.logoKey}`} key={agent.name}>
+                        <img src={agent.logo} alt="" aria-hidden="true" />
+                        <strong>{agent.name}</strong>
+                      </span>
+                    ))}
+                  </div>
+                </section>
               </div>
               <aside className="home-v2-preview-note" role="status">
                 <span>{locale === "zh" ? "公开预览" : "Launch Preview"}</span>
                 <strong>
                   {locale === "zh"
-                    ? "公开目录可浏览；真实运行需要登录后的 Project Key。"
-                    : "The public catalog is browsable; real runtime calls require a signed-in Project Key."}
+                    ? "Skill 只能被 Agent 调用；真实运行必须绑定登录后的 Project Key。"
+                    : "Skills are agent-callable only; real runtime calls require a signed-in Project Key."}
                 </strong>
                 <p>
                   {locale === "zh"
-                    ? "访客可以查看目录和 Skill 详情；开发者登录后管理项目、Project Key、运行调用和审计记录。"
-                    : "Visitors can inspect catalog details; signed-in developers manage projects, Project Keys, runtime calls, and audit evidence."}
+                    ? "访客可以查看 Skill 契约和发布者信息。Agent 真正调用前，需要经过项目密钥、权限策略、运行日志和审计记录。"
+                    : "Visitors can inspect Skill contracts and publishers. Before an agent can call a Skill, the request passes through project keys, policy checks, runtime logs, and audit records."}
                 </p>
+                <div className="home-v2-agent-call-rail" aria-hidden="true">
+                  <div className="home-v2-agent-call-node">
+                    <small>Agent</small>
+                    <strong>Codex / Claude / Gemini</strong>
+                  </div>
+                  <span className="home-v2-agent-call-arrow" />
+                  <div className="home-v2-agent-call-node">
+                    <small>SkillHub</small>
+                    <strong>Manifest + Policy Gate</strong>
+                  </div>
+                  <span className="home-v2-agent-call-arrow" />
+                  <div className="home-v2-agent-call-node">
+                    <small>Skill</small>
+                    <strong>Runtime result + Audit</strong>
+                  </div>
+                </div>
               </aside>
             </div>
 

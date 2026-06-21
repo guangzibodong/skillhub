@@ -13,7 +13,7 @@ test("homepage uses the approved agent registry workbench design", () => {
   assert.match(pageSource, /home-v2-footer-agent/);
 
   assert.match(pageSource, /SkillHub：Agent Skill 的注册与运行层。/);
-  assert.match(pageSource, /公开目录可浏览；真实运行需要登录后的 Project Key。/);
+  assert.match(pageSource, /Skill 只能被 Agent 调用；真实运行必须绑定登录后的 Project Key。/);
   assert.match(pageSource, /开发者、团队和发布者共用一条 Skill 采用流程。/);
   assert.match(pageSource, /公开发现、登录运行、项目治理分层清楚。/);
   assert.match(pageSource, /Manifest verified · runtime gated/);
@@ -55,4 +55,25 @@ test("homepage wide gutters are designed product atmosphere instead of floating 
   assert.match(stylesheet, /home-v2-workbench__ambient/);
   assert.match(stylesheet, /@keyframes home-v2-edge-breathe/);
   assert.match(stylesheet, /@media \(min-width: 1800px\)/);
+});
+
+test("homepage explains skills are for agent runtimes and shows supported agents", () => {
+  assert.match(pageSource, /home-v2-agent-support/);
+  assert.match(pageSource, /home-v2-agent-badge/);
+  assert.match(pageSource, /home-v2-agent-call-rail/);
+  assert.match(pageSource, /home-v2-agent-call-node/);
+  assert.match(pageSource, /Skills are callable by agents through MCP or REST/);
+  assert.match(pageSource, /codex-color\.svg/);
+  assert.match(pageSource, /claudecode-color\.svg/);
+  assert.match(pageSource, /geminicli-color\.svg/);
+  assert.match(pageSource, /copilot-color\.svg/);
+  assert.match(pageSource, /openclaw-color\.svg/);
+  assert.match(pageSource, /hermesagent\.svg/);
+
+  assert.match(stylesheet, /home-v2-agent-support/);
+  assert.match(stylesheet, /home-v2-agent-badge/);
+  assert.match(stylesheet, /home-v2-agent-call-rail/);
+  assert.match(stylesheet, /@keyframes home-v2-runtime-sweep/);
+  assert.match(stylesheet, /@keyframes home-v2-workspace-flow/);
+  assert.match(stylesheet, /@keyframes home-v2-code-scan/);
 });
