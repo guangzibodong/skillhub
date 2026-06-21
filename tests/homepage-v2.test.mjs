@@ -31,15 +31,28 @@ test("homepage uses the approved agent registry workbench design", () => {
 test("homepage workbench has restrained infrastructure motion", () => {
   assert.match(pageSource, /home-v2-motion-field/);
   assert.match(pageSource, /home-v2-ambient-rail/);
-  assert.match(pageSource, /home-v2-floating-chip/);
   assert.match(pageSource, /home-v2-workbench__scan/);
   assert.match(pageSource, /home-v2-flow-line/);
   assert.match(pageSource, /home-v2-runtime-pulse/);
 
   assert.match(stylesheet, /@keyframes home-v2-rail-flow/);
-  assert.match(stylesheet, /@keyframes home-v2-chip-drift/);
   assert.match(stylesheet, /@keyframes home-v2-workbench-scan/);
   assert.match(stylesheet, /@keyframes home-v2-flow-sweep/);
   assert.match(stylesheet, /@keyframes home-v2-audit-pulse/);
   assert.match(stylesheet, /prefers-reduced-motion: reduce/);
+});
+
+test("homepage wide gutters are designed product atmosphere instead of floating decoration", () => {
+  assert.match(pageSource, /home-v2-edge-atmosphere/);
+  assert.match(pageSource, /home-v2-edge-panel/);
+  assert.match(pageSource, /home-v2-edge-thread/);
+  assert.match(pageSource, /home-v2-workbench__ambient/);
+  assert.doesNotMatch(pageSource, /home-v2-floating-chip/);
+
+  assert.match(stylesheet, /width: min\(2160px, calc\(100% - 56px\)\)/);
+  assert.match(stylesheet, /home-v2-edge-atmosphere/);
+  assert.match(stylesheet, /home-v2-edge-panel/);
+  assert.match(stylesheet, /home-v2-workbench__ambient/);
+  assert.match(stylesheet, /@keyframes home-v2-edge-breathe/);
+  assert.match(stylesheet, /@media \(min-width: 1800px\)/);
 });

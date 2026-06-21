@@ -732,6 +732,16 @@ export default async function Home({ searchParams }: PageProps) {
         />
 
         <section className="home-v2-root" aria-labelledby="home-heading">
+          <div className="home-v2-edge-atmosphere" aria-hidden="true">
+            <span className="home-v2-edge-panel home-v2-edge-panel--left">
+              <span className="home-v2-edge-thread home-v2-edge-thread--a" />
+              <span className="home-v2-edge-thread home-v2-edge-thread--b" />
+            </span>
+            <span className="home-v2-edge-panel home-v2-edge-panel--right">
+              <span className="home-v2-edge-thread home-v2-edge-thread--a" />
+              <span className="home-v2-edge-thread home-v2-edge-thread--b" />
+            </span>
+          </div>
           <section className="home-v2-hero">
             <div className="home-v2-motion-field" aria-hidden="true">
               <span className="home-v2-ambient-rail home-v2-ambient-rail--left">
@@ -744,10 +754,6 @@ export default async function Home({ searchParams }: PageProps) {
                 <span />
                 <span />
               </span>
-              <span className="home-v2-floating-chip home-v2-floating-chip--schema">schema locked</span>
-              <span className="home-v2-floating-chip home-v2-floating-chip--policy">policy checked</span>
-              <span className="home-v2-floating-chip home-v2-floating-chip--mcp">mcp route</span>
-              <span className="home-v2-floating-chip home-v2-floating-chip--project">project key</span>
             </div>
             <div className="home-v2-hero__head">
               <div className="home-v2-hero__copy">
@@ -799,6 +805,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
 
             <section className="home-v2-workbench" aria-label={locale === "zh" ? "SkillHub 工作台预览" : "SkillHub workbench preview"}>
+              <span className="home-v2-workbench__ambient" aria-hidden="true" />
               <span className="home-v2-workbench__scan" aria-hidden="true" />
               <span className="home-v2-flow-line home-v2-flow-line--catalog" aria-hidden="true" />
               <span className="home-v2-flow-line home-v2-flow-line--runtime" aria-hidden="true" />

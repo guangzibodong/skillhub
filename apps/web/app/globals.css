@@ -37608,13 +37608,18 @@ textarea:focus {
   --home-v2-amber: #d9ad59;
   --home-v2-radius: 8px;
   --home-v2-shadow: 0 32px 110px rgba(0, 0, 0, 0.42);
-  width: min(1760px, calc(100% - 72px));
+  width: min(2160px, calc(100% - 56px));
   margin: 0 auto;
   background:
+    radial-gradient(circle at 2% 18%, rgba(95, 191, 106, 0.11), transparent 32%),
+    radial-gradient(circle at 98% 28%, rgba(117, 200, 216, 0.085), transparent 34%),
+    radial-gradient(circle at 50% 520px, rgba(152, 232, 137, 0.09), transparent 40%),
     linear-gradient(rgba(248, 245, 235, 0.028) 1px, transparent 1px),
     linear-gradient(90deg, rgba(248, 245, 235, 0.022) 1px, transparent 1px),
     linear-gradient(180deg, #050706 0%, #08110b 44%, #040604 100%);
-  background-size: 48px 48px, 48px 48px, 100% 100%;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px, 100% 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .home-frame--v2 > .home-preview-banner,
@@ -37629,6 +37634,90 @@ textarea:focus {
   display: grid;
   gap: 68px;
   padding: 54px 0 0;
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+.home-v2-edge-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-v2-edge-atmosphere::before {
+  position: absolute;
+  inset: 84px 0 auto;
+  height: 790px;
+  background:
+    linear-gradient(90deg, rgba(152, 232, 137, 0.08), transparent 18% 82%, rgba(117, 200, 216, 0.06)),
+    radial-gradient(circle at 8% 38%, rgba(95, 191, 106, 0.14), transparent 26%),
+    radial-gradient(circle at 92% 48%, rgba(117, 200, 216, 0.11), transparent 28%);
+  opacity: 0.72;
+  content: "";
+}
+
+.home-v2-edge-panel {
+  position: absolute;
+  top: 96px;
+  bottom: 38%;
+  width: clamp(120px, 9vw, 210px);
+  border: 1px solid rgba(248, 245, 235, 0.055);
+  background:
+    linear-gradient(rgba(152, 232, 137, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(152, 232, 137, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(16, 35, 22, 0.22), rgba(4, 7, 5, 0));
+  background-size: 38px 38px, 38px 38px, 100% 100%;
+  filter: blur(0.1px);
+  opacity: 0.68;
+  animation: home-v2-edge-breathe 9s ease-in-out infinite;
+}
+
+.home-v2-edge-panel--left {
+  left: 18px;
+  border-left: 0;
+  mask-image: linear-gradient(90deg, #000 0%, #000 54%, transparent 100%);
+}
+
+.home-v2-edge-panel--right {
+  right: 18px;
+  border-right: 0;
+  animation-delay: -4.5s;
+  mask-image: linear-gradient(270deg, #000 0%, #000 54%, transparent 100%);
+}
+
+.home-v2-edge-thread {
+  position: absolute;
+  width: 1px;
+  height: 44%;
+  background: linear-gradient(180deg, transparent, rgba(152, 232, 137, 0.46), transparent);
+  opacity: 0.75;
+  animation: home-v2-rail-flow 8.8s linear infinite;
+}
+
+.home-v2-edge-panel--left .home-v2-edge-thread--a {
+  left: 28px;
+  top: -28%;
+}
+
+.home-v2-edge-panel--left .home-v2-edge-thread--b {
+  right: 34px;
+  top: -44%;
+  animation-delay: -4s;
+}
+
+.home-v2-edge-panel--right .home-v2-edge-thread--a {
+  right: 28px;
+  top: -34%;
+  animation-delay: -2s;
+}
+
+.home-v2-edge-panel--right .home-v2-edge-thread--b {
+  left: 34px;
+  top: -52%;
+  animation-delay: -5.8s;
 }
 
 .home-v2-hero {
@@ -37835,66 +37924,40 @@ textarea:focus {
   left: -4px;
 }
 
-.home-v2-floating-chip {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
-  border: 1px solid rgba(248, 245, 235, 0.14);
-  border-radius: var(--home-v2-radius);
-  background: rgba(8, 14, 10, 0.72);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.18);
-  color: rgba(248, 245, 235, 0.72);
-  font-size: 11px;
-  font-weight: 860;
-  letter-spacing: 0;
-  padding: 0 10px;
-  text-transform: uppercase;
-  animation: home-v2-chip-drift 9s ease-in-out infinite;
-  backdrop-filter: blur(14px);
-}
-
-.home-v2-floating-chip::before {
-  width: 6px;
-  height: 6px;
-  margin-right: 7px;
-  border-radius: 999px;
-  background: var(--home-v2-green);
-  box-shadow: 0 0 16px rgba(152, 232, 137, 0.3);
-  content: "";
-}
-
-.home-v2-floating-chip--schema {
-  top: 86px;
-  right: 30%;
-}
-
-.home-v2-floating-chip--policy {
-  top: 154px;
-  right: 7%;
-  animation-delay: -2.2s;
-}
-
-.home-v2-floating-chip--mcp {
-  top: 246px;
-  left: 54%;
-  animation-delay: -4.4s;
-}
-
-.home-v2-floating-chip--project {
-  top: 286px;
-  right: 20%;
-  animation-delay: -6.1s;
-}
-
 .home-v2-workbench {
   overflow: hidden;
   border: 1px solid rgba(248, 245, 235, 0.16);
   border-radius: 12px;
   background: var(--home-v2-paper);
   color: var(--home-v2-ink);
-  box-shadow: var(--home-v2-shadow);
+  box-shadow:
+    0 0 0 1px rgba(152, 232, 137, 0.035),
+    0 30px 120px rgba(0, 0, 0, 0.44),
+    0 0 120px rgba(95, 191, 106, 0.1);
   position: relative;
+}
+
+.home-v2-workbench::before {
+  position: absolute;
+  inset: -36px -42px auto;
+  z-index: 0;
+  height: 118px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(152, 232, 137, 0.14), transparent 68%);
+  opacity: 0.72;
+  content: "";
+  pointer-events: none;
+}
+
+.home-v2-workbench__ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(35, 88, 43, 0.1), transparent 14% 86%, rgba(20, 106, 122, 0.08)),
+    linear-gradient(180deg, rgba(255, 250, 240, 0.16), transparent 18%);
+  opacity: 0.45;
+  content: "";
+  pointer-events: none;
 }
 
 .home-v2-workbench__top {
@@ -37907,13 +37970,13 @@ textarea:focus {
   background: var(--home-v2-paper-2);
   padding: 0 20px;
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .home-v2-workbench__scan {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 5;
   background:
     linear-gradient(100deg, transparent 0 40%, rgba(117, 200, 216, 0.1) 47%, rgba(152, 232, 137, 0.12) 50%, transparent 58%),
     linear-gradient(180deg, transparent 0 63%, rgba(18, 23, 18, 0.05) 63.2%, transparent 63.6%);
@@ -37926,7 +37989,7 @@ textarea:focus {
 
 .home-v2-flow-line {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   height: 1px;
   overflow: hidden;
   background: rgba(38, 137, 157, 0.16);
@@ -38003,7 +38066,7 @@ textarea:focus {
   grid-template-columns: 310px minmax(460px, 1fr) 360px;
   min-height: 520px;
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .home-v2-pane {
@@ -38438,16 +38501,16 @@ textarea:focus {
   }
 }
 
-@keyframes home-v2-chip-drift {
+@keyframes home-v2-edge-breathe {
   0%,
   100% {
-    transform: translate3d(0, 0, 0);
-    opacity: 0.64;
+    opacity: 0.46;
+    transform: translateY(0);
   }
 
   50% {
-    transform: translate3d(0, -10px, 0);
-    opacity: 0.94;
+    opacity: 0.78;
+    transform: translateY(-8px);
   }
 }
 
@@ -38495,9 +38558,10 @@ textarea:focus {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-v2-edge-panel,
+  .home-v2-edge-thread,
   .home-v2-ambient-rail::before,
   .home-v2-ambient-rail span,
-  .home-v2-floating-chip,
   .home-v2-workbench__scan,
   .home-v2-flow-line::after,
   .home-v2-skill-row--active::after,
@@ -38505,6 +38569,43 @@ textarea:focus {
   .home-v2-runtime-pulse,
   .home-v2-trace::before {
     animation: none !important;
+  }
+}
+
+@media (min-width: 1800px) {
+  .home-v2-root {
+    gap: 76px;
+  }
+
+  .home-v2-hero__head {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+  }
+
+  .home-v2-hero__copy {
+    max-width: 1240px;
+  }
+
+  .home-v2-hero h1 {
+    max-width: 1240px;
+    font-size: clamp(68px, 5.2vw, 102px);
+  }
+
+  .home-v2-hero__copy p {
+    max-width: 900px;
+  }
+
+  .home-v2-workbench__grid {
+    grid-template-columns: 330px minmax(620px, 1fr) 390px;
+  }
+
+  .home-v2-flow-line--catalog {
+    left: 330px;
+    width: calc(100% - 720px);
+  }
+
+  .home-v2-flow-line--runtime {
+    right: 390px;
+    width: calc(100% - 720px);
   }
 }
 
@@ -39004,6 +39105,10 @@ textarea:focus {
     width: min(100% - 44px, 1280px);
   }
 
+  .home-v2-edge-atmosphere {
+    display: none;
+  }
+
   .home-v2-flow-line {
     display: none;
   }
@@ -39073,27 +39178,6 @@ textarea:focus {
 
   .home-v2-ambient-rail {
     width: 44px;
-  }
-
-  .home-v2-floating-chip {
-    min-height: 27px;
-    font-size: 10px;
-  }
-
-  .home-v2-floating-chip--policy,
-  .home-v2-floating-chip--project {
-    display: none;
-  }
-
-  .home-v2-floating-chip--schema {
-    top: 42px;
-    right: 8px;
-  }
-
-  .home-v2-floating-chip--mcp {
-    top: 228px;
-    right: 16px;
-    left: auto;
   }
 
   .home-v2-workbench__top,
