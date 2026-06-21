@@ -24,6 +24,13 @@ test("homepage footer presents the agent ecosystem with production-safe copy", (
   assert.match(pageSource, /接入主流 Agent 执行环境/);
   assert.match(stylesheet, /home-footer__agent-panel/);
   assert.match(stylesheet, /home-footer__agent-grid/);
+  assert.match(stylesheet, /home-footer__main/);
+  assert.match(stylesheet, /home-footer__contact-row/);
+  assert.match(stylesheet, /home-footer__status-pill/);
+  assert.match(stylesheet, /home-footer__bottom/);
+  assert.match(pageSource, /Registry/);
+  assert.match(pageSource, /Runtime/);
+  assert.match(pageSource, /Governance/);
 
   const unsafeClaims = ["官方合作", "官方认证", "certified partner", "official partner"];
   for (const claim of unsafeClaims) {

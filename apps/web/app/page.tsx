@@ -1214,39 +1214,61 @@ export default async function Home({ searchParams }: PageProps) {
               ))}
             </div>
           </section>
-          <div className="home-footer__brand">
-            <strong>SkillHub</strong>
-            <span>{landing.footerBody}</span>
-            <span>
-              {locale === "zh" ? "技术支持：" : "Technical support: "}
-              <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
-            </span>
-            <span>
-              {locale === "zh" ? "商务合作：" : "Business cooperation: "}
-              <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
-            </span>
-            <span>{locale === "zh" ? "公司地址：" : "Address: "}{companyInfo.address}</span>
-            <PublicEventLink href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
-              {landing.systemStatus} · {landing.viewStatus}
-            </PublicEventLink>
-          </div>
-          <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
-            {landing.footerGroups.map((group) => (
-              <section className="home-footer__group" key={group.title}>
-                <h2>{group.title}</h2>
-                {group.links.map(([label, href]) => (
-                  <PublicEventLink
-                    href={localizedHref(href, locale)}
-                    eventName="footer_link_click"
-                    eventProperties={{ target: href }}
-                    key={`${group.title}-${label}`}
-                  >
-                    {label}
-                  </PublicEventLink>
+          <div className="home-footer__main">
+            <div className="home-footer__brand">
+              <div className="home-footer__brand-head">
+                <span className="home-footer__brand-mark" aria-hidden="true">S</span>
+                <strong>SkillHub</strong>
+              </div>
+              <p>{landing.footerBody}</p>
+              <div className="home-footer__contact-list">
+                <div className="home-footer__contact-row">
+                  <span>{locale === "zh" ? "技术支持" : "Support"}</span>
+                  <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
+                </div>
+                <div className="home-footer__contact-row">
+                  <span>{locale === "zh" ? "商务合作" : "Business"}</span>
+                  <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
+                </div>
+                <div className="home-footer__contact-row">
+                  <span>{locale === "zh" ? "公司地址" : "Address"}</span>
+                  <span>{companyInfo.address}</span>
+                </div>
+              </div>
+              <PublicEventLink className="home-footer__status-pill" href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
+                <span aria-hidden="true" />
+                {landing.systemStatus} · {landing.viewStatus}
+              </PublicEventLink>
+            </div>
+            <div className="home-footer__link-panel">
+              <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
+                {landing.footerGroups.map((group) => (
+                  <section className="home-footer__group" key={group.title}>
+                    <h2>{group.title}</h2>
+                    {group.links.map(([label, href], index) => (
+                      <PublicEventLink
+                        className={index === 0 ? "home-footer__link--featured" : undefined}
+                        href={localizedHref(href, locale)}
+                        eventName="footer_link_click"
+                        eventProperties={{ target: href }}
+                        key={`${group.title}-${label}`}
+                      >
+                        {label}
+                      </PublicEventLink>
+                    ))}
+                  </section>
                 ))}
-              </section>
-            ))}
-          </nav>
+              </nav>
+            </div>
+            <div className="home-footer__bottom">
+              <span className="home-footer__copyright">© 2026 SkillHub. All rights reserved.</span>
+              <span className="home-footer__signature" aria-label="Registry Runtime Governance">
+                <span>Registry</span>
+                <span>Runtime</span>
+                <span>Governance</span>
+              </span>
+            </div>
+          </div>
         </footer>
       </section>
     </main>
