@@ -737,9 +737,25 @@ export default async function Home({ searchParams }: PageProps) {
               <span className="home-v2-edge-thread home-v2-edge-thread--a" />
               <span className="home-v2-edge-thread home-v2-edge-thread--b" />
             </span>
+            <span className="home-v2-runtime-rails home-v2-runtime-rails--left">
+              {["Codex request", "manifest parse", "policy gate", "audit write"].map((item, index) => (
+                <span className={`home-v2-edge-packet home-v2-edge-packet--${index + 1}`} key={item}>
+                  <small>invoke</small>
+                  <strong>{item}</strong>
+                </span>
+              ))}
+            </span>
             <span className="home-v2-edge-panel home-v2-edge-panel--right">
               <span className="home-v2-edge-thread home-v2-edge-thread--a" />
               <span className="home-v2-edge-thread home-v2-edge-thread--b" />
+            </span>
+            <span className="home-v2-runtime-rails home-v2-runtime-rails--right">
+              {["schema ok", "REST / MCP", "runtime 200", "Audit locked"].map((item, index) => (
+                <span className={`home-v2-edge-packet home-v2-edge-packet--${index + 1}`} key={item}>
+                  <small>trace</small>
+                  <strong>{item}</strong>
+                </span>
+              ))}
             </span>
           </div>
           <section className="home-v2-hero">
@@ -852,6 +868,29 @@ export default async function Home({ searchParams }: PageProps) {
                   <span>{leadSkill.slug}</span>
                 </div>
                 <span className="home-v2-workbench__status">Manifest verified · runtime gated</span>
+              </div>
+
+              <div className="home-v2-workbench-live-strip" aria-hidden="true">
+                <div className="home-v2-invocation-timeline">
+                  {[
+                    ["01", "Agent request", "Codex asks for browser-research"],
+                    ["02", "Manifest parse", "Schema and scopes resolved"],
+                    ["03", "Policy gate", "Project Key + permission check"],
+                    ["04", "Runtime result", "REST / MCP returns structured data"],
+                    ["05", "Audit locked", "Trace saved for the team"],
+                  ].map(([step, title, body]) => (
+                    <span className="home-v2-invocation-step" key={title}>
+                      <small>{step}</small>
+                      <strong>{title}</strong>
+                      <em>{body}</em>
+                    </span>
+                  ))}
+                </div>
+                <div className="home-v2-runtime-meter">
+                  <span />
+                  <strong>live invoke</strong>
+                  <small>p95 1.23s</small>
+                </div>
               </div>
 
               <div className="home-v2-workbench__grid">

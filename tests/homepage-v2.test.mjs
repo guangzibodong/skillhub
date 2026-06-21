@@ -77,3 +77,24 @@ test("homepage explains skills are for agent runtimes and shows supported agents
   assert.match(stylesheet, /@keyframes home-v2-workspace-flow/);
   assert.match(stylesheet, /@keyframes home-v2-code-scan/);
 });
+
+test("homepage hero has live invocation rails instead of static screenshot framing", () => {
+  assert.match(pageSource, /home-v2-runtime-rails/);
+  assert.match(pageSource, /home-v2-edge-packet/);
+  assert.match(pageSource, /home-v2-invocation-timeline/);
+  assert.match(pageSource, /home-v2-invocation-step/);
+  assert.match(pageSource, /home-v2-workbench-live-strip/);
+  assert.match(pageSource, /home-v2-runtime-meter/);
+  assert.match(pageSource, /Agent request/);
+  assert.match(pageSource, /Policy gate/);
+  assert.match(pageSource, /Audit locked/);
+
+  assert.match(stylesheet, /home-v2-runtime-rails/);
+  assert.match(stylesheet, /home-v2-edge-packet/);
+  assert.match(stylesheet, /home-v2-invocation-timeline/);
+  assert.match(stylesheet, /home-v2-workbench-live-strip/);
+  assert.match(stylesheet, /home-v2-runtime-meter/);
+  assert.match(stylesheet, /@keyframes home-v2-edge-packet-flow/);
+  assert.match(stylesheet, /@keyframes home-v2-timeline-step/);
+  assert.match(stylesheet, /@keyframes home-v2-panel-shift/);
+});
