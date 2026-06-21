@@ -90,7 +90,7 @@ type MarketplaceInitialFilters = {
 
 const labels = {
   en: {
-    search: "Search by workflow, category, or skill name",
+    search: "Search task, agent, tool, category, or skill name",
     results: "results in this view",
     copy: "Copy inspect",
     copied: "Copied",
@@ -111,7 +111,7 @@ const labels = {
     install: "API inspect",
     installLocked: "Inspection only",
     installLockedBody: "Verified review is required before install and runtime actions unlock.",
-    catalog: "Skill catalog",
+    catalog: "Agent Skill directory",
     filters: "Refine results",
     category: "Use case",
     pricing: "Access plan",
@@ -137,9 +137,9 @@ const labels = {
     publisher: "Publisher",
     signals: "Signals",
     contract: "Contract checks",
-    categoryPicks: "Popular starting points",
+    categoryPicks: "Browse by agent workflow",
     categoryPicksBody:
-      "Start from the business problem, then refine by plan, permission risk, runtime, and review status.",
+      "Choose a common workflow first, then refine by plan, permission risk, runtime, and review status.",
     selectionGuide: {
       body:
         "A good marketplace choice should be easy for a buyer to understand and safe for an agent to inspect. Use these signals before adopting a skill into a project.",
@@ -162,7 +162,7 @@ const labels = {
         },
       ],
       kicker: "Selection rules",
-      title: "Choose skills by fit, trust, and runtime risk.",
+      title: "Choose Agent Skills by fit, trust, and runtime risk.",
     },
     operatingGuide: {
       body: "SkillHub is opening with a curated launch catalog across the workflows teams ask for most. Start from a repeated workflow, try free basics when available, then move recurring work into Pro through onboarding.",
@@ -281,7 +281,7 @@ const labels = {
     },
   },
   zh: {
-    search: "搜索工作流、分类或技能名",
+    search: "搜索任务、Agent、工具、分类或技能名",
     results: "个当前可浏览结果",
     copy: "复制查看命令",
     copied: "已复制",
@@ -302,7 +302,7 @@ const labels = {
     install: "API 查看",
     installLocked: "仅可查看",
     installLockedBody: "需要完成 verified 审核后才会开放安装和运行操作。",
-    catalog: "技能目录",
+    catalog: "Agent Skill 目录",
     filters: "筛选结果",
     category: "用途分类",
     pricing: "访问套餐",
@@ -328,9 +328,9 @@ const labels = {
     publisher: "发布者",
     signals: "信号",
     contract: "合约检查",
-    categoryPicks: "热门入口",
+    categoryPicks: "按 Agent 工作流浏览",
     categoryPicksBody:
-      "先从业务问题入手，再用套餐、权限风险、运行时和验证状态细筛。",
+      "先选常见工作流，再用套餐、权限风险、运行时和验证状态细筛。",
     selectionGuide: {
       body:
         "一个可采用的技能，既要让客户看得懂，也要让 Agent 能检查边界。采用前先看这几个信号，别只看名字。",
@@ -353,7 +353,7 @@ const labels = {
         },
       ],
       kicker: "选择标准",
-      title: "按场景、信任和运行风险选择技能。",
+      title: "按场景、信任和运行风险选择 Agent Skill。",
     },
     operatingGuide: {
       body: "SkillHub 先用精选上线目录覆盖团队最常问的工作流。最快的用法不是按技术名词乱找，而是先选一个重复发生的业务流程，有免费基础技能就先验证，再通过入驻把长期任务放进 Pro。",
@@ -959,121 +959,6 @@ export function MarketplaceBrowser({
         </div>
       </div>
 
-      <section
-        className="market-quality-guide"
-        aria-label={dictionary.selectionGuide.title}
-      >
-        <div className="market-quality-guide__head">
-          <span>
-            <ShieldCheck size={15} aria-hidden="true" />
-            {dictionary.selectionGuide.kicker}
-          </span>
-          <div>
-            <h2>{dictionary.selectionGuide.title}</h2>
-            <p>{dictionary.selectionGuide.body}</p>
-          </div>
-        </div>
-        <div className="market-quality-grid">
-          {dictionary.selectionGuide.items.map((item, index) => {
-            const Icon = qualityGuideIcons[index] ?? BadgeCheck;
-
-            return (
-              <article className="market-quality-card" key={item.title}>
-                <span>
-                  <Icon size={16} aria-hidden="true" />
-                </span>
-                <strong>{item.title}</strong>
-                <p>{item.body}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <div
-        className="market-operating-guide"
-        aria-labelledby="market-operating-guide-heading"
-      >
-        <div className="market-operating-guide__head">
-          <span>
-            <Target size={15} aria-hidden="true" />
-            {dictionary.operatingGuide.kicker}
-          </span>
-          <div>
-            <h2 id="market-operating-guide-heading">
-              {dictionary.operatingGuide.title}
-            </h2>
-            <p>{dictionary.operatingGuide.body}</p>
-          </div>
-        </div>
-
-        <div className="market-operating-track-grid">
-          {operatingTracks.map((track) => {
-            const trackCopy = dictionary.operatingGuide.tracks[track.key];
-            const contactHref = localizedHref(
-              `/contact?intent=pro&track=${track.key}`,
-              locale,
-            );
-            const requestHref = localizedHref(
-              `/contact?intent=request-skill&track=${track.key}`,
-              locale,
-            );
-
-            return (
-              <article className="market-operating-track" key={track.key}>
-                <span className="market-operating-track__eyebrow">
-                  {trackCopy.eyebrow}
-                </span>
-                <h3>{trackCopy.title}</h3>
-                <p>{trackCopy.body}</p>
-                <ul>
-                  {trackCopy.outcomes.map((outcome) => (
-                    <li key={outcome}>{outcome}</li>
-                  ))}
-                </ul>
-                <div className="market-operating-track__plan">
-                  <span>{dictionary.operatingGuide.plan}</span>
-                  <strong>{trackCopy.plan}</strong>
-                </div>
-                {track.recommendedSkills.length > 0 ? (
-                  <div className="market-operating-track__skills">
-                    <span>{dictionary.operatingGuide.recommended}</span>
-                    <div>
-                      {track.recommendedSkills.map((skill) => (
-                        <a
-                          href={localizedHref(`/skills/${skill.slug}`, locale)}
-                          key={skill.slug}
-                        >
-                          {localizeText(skill.name, locale)}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-                <div className="market-operating-track__actions">
-                  <button
-                    className="secondary-button secondary-button--compact"
-                    onClick={() => applyLaunchTrack(track)}
-                    type="button"
-                  >
-                    <Target size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.filterCta}</span>
-                  </button>
-                  <a className="market-track-link" href={contactHref}>
-                    <ArrowRight size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.demoCta}</span>
-                  </a>
-                  <a className="market-track-link" href={requestHref}>
-                    <MessageSquarePlus size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.requestCta}</span>
-                  </a>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="market-spotlight-panel">
         <div className="market-spotlight-panel__copy">
           <span>
@@ -1103,25 +988,6 @@ export function MarketplaceBrowser({
           ))}
         </div>
       </div>
-
-      {hasActiveFilters ? (
-        <div className="market-active-filters" aria-label={dictionary.activeFilters}>
-          <span>{dictionary.activeFilters}</span>
-          <div>
-            {activeFilterPills.map((pill) => (
-              <strong key={pill}>{pill}</strong>
-            ))}
-          </div>
-          <button
-            className="filter-reset-button"
-            onClick={resetFilters}
-            type="button"
-          >
-            <RotateCcw size={14} aria-hidden="true" />
-            {dictionary.reset}
-          </button>
-        </div>
-      ) : null}
 
       <div className="market-filter-panel" aria-label={dictionary.filters}>
         <div className="market-filter-panel__head">
@@ -1235,6 +1101,25 @@ export function MarketplaceBrowser({
           ))}
         </FilterGroup>
       </div>
+
+      {hasActiveFilters ? (
+        <div className="market-active-filters" aria-label={dictionary.activeFilters}>
+          <span>{dictionary.activeFilters}</span>
+          <div>
+            {activeFilterPills.map((pill) => (
+              <strong key={pill}>{pill}</strong>
+            ))}
+          </div>
+          <button
+            className="filter-reset-button"
+            onClick={resetFilters}
+            type="button"
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+            {dictionary.reset}
+          </button>
+        </div>
+      ) : null}
 
       {filteredSkills.length > 0 ? (
         <div className="market-card-grid">
@@ -1532,6 +1417,121 @@ export function MarketplaceBrowser({
           )}
         </div>
       ) : null}
+
+      <section
+        className="market-quality-guide"
+        aria-label={dictionary.selectionGuide.title}
+      >
+        <div className="market-quality-guide__head">
+          <span>
+            <ShieldCheck size={15} aria-hidden="true" />
+            {dictionary.selectionGuide.kicker}
+          </span>
+          <div>
+            <h2>{dictionary.selectionGuide.title}</h2>
+            <p>{dictionary.selectionGuide.body}</p>
+          </div>
+        </div>
+        <div className="market-quality-grid">
+          {dictionary.selectionGuide.items.map((item, index) => {
+            const Icon = qualityGuideIcons[index] ?? BadgeCheck;
+
+            return (
+              <article className="market-quality-card" key={item.title}>
+                <span>
+                  <Icon size={16} aria-hidden="true" />
+                </span>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <div
+        className="market-operating-guide"
+        aria-labelledby="market-operating-guide-heading"
+      >
+        <div className="market-operating-guide__head">
+          <span>
+            <Target size={15} aria-hidden="true" />
+            {dictionary.operatingGuide.kicker}
+          </span>
+          <div>
+            <h2 id="market-operating-guide-heading">
+              {dictionary.operatingGuide.title}
+            </h2>
+            <p>{dictionary.operatingGuide.body}</p>
+          </div>
+        </div>
+
+        <div className="market-operating-track-grid">
+          {operatingTracks.map((track) => {
+            const trackCopy = dictionary.operatingGuide.tracks[track.key];
+            const contactHref = localizedHref(
+              `/contact?intent=pro&track=${track.key}`,
+              locale,
+            );
+            const requestHref = localizedHref(
+              `/contact?intent=request-skill&track=${track.key}`,
+              locale,
+            );
+
+            return (
+              <article className="market-operating-track" key={track.key}>
+                <span className="market-operating-track__eyebrow">
+                  {trackCopy.eyebrow}
+                </span>
+                <h3>{trackCopy.title}</h3>
+                <p>{trackCopy.body}</p>
+                <ul>
+                  {trackCopy.outcomes.map((outcome) => (
+                    <li key={outcome}>{outcome}</li>
+                  ))}
+                </ul>
+                <div className="market-operating-track__plan">
+                  <span>{dictionary.operatingGuide.plan}</span>
+                  <strong>{trackCopy.plan}</strong>
+                </div>
+                {track.recommendedSkills.length > 0 ? (
+                  <div className="market-operating-track__skills">
+                    <span>{dictionary.operatingGuide.recommended}</span>
+                    <div>
+                      {track.recommendedSkills.map((skill) => (
+                        <a
+                          href={localizedHref(`/skills/${skill.slug}`, locale)}
+                          key={skill.slug}
+                        >
+                          {localizeText(skill.name, locale)}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="market-operating-track__actions">
+                  <button
+                    className="secondary-button secondary-button--compact"
+                    onClick={() => applyLaunchTrack(track)}
+                    type="button"
+                  >
+                    <Target size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.filterCta}</span>
+                  </button>
+                  <a className="market-track-link" href={contactHref}>
+                    <ArrowRight size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.demoCta}</span>
+                  </a>
+                  <a className="market-track-link" href={requestHref}>
+                    <MessageSquarePlus size={15} aria-hidden="true" />
+                    <span>{dictionary.operatingGuide.requestCta}</span>
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }

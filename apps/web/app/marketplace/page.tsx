@@ -110,15 +110,15 @@ const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
 const pageCopy = {
   en: {
     eyebrow: "AI agent skill marketplace",
-    title: "Find ready-to-use AI skills for real business workflows.",
+    title: "Find Agent Skills by task, category, and runtime risk.",
     description:
-      "Start from the job: SEO/GEO growth, e-commerce operations, data cleanup, customer support, sales CRM, UI QA, developer tools, automation, finance, and security. Compare free basics and Pro skills before adopting anything into a project.",
-    primary: "Browse the catalog",
+      "Search the catalog by workflow, tool, agent use case, publisher, or permission boundary. Filter by category, plan, runtime, verification, and risk before adopting a Skill into a project.",
+    primary: "Search the catalog",
     directory: "Publisher directory",
     console: "Developer workspace",
-    consoleTitle: "How buyers should start",
+    consoleTitle: "Find the right Skill faster",
     consoleSubtitle:
-      "Pick a workflow, try a free basic skill when available, open the detail page for permissions and expected output, then sign in only when the skill should become project state.",
+      "Search by the job to be done, narrow by category and risk, then open the detail page for permissions, expected output, publisher, and API contract.",
     proof: [
       "Curated launch catalog",
       "16 business categories",
@@ -324,15 +324,15 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体找技能",
-    title: "按真实业务流程，找到可以直接采用的 AI 技能。",
+    title: "按任务、分类和运行风险找到 Agent Skill。",
     description:
-      "先从要解决的工作开始：SEO/GEO 增长、电商运营、数据清洗、客服支持、销售 CRM、UI 质检、开发工具、自动化、财务和安全。采用前先比较免费基础技能和 Pro 技能，再决定是否接入项目。",
-    primary: "浏览技能目录",
+      "用工作流、工具、Agent 场景、发布者或权限边界搜索目录，再按分类、套餐、运行时、验证状态和风险筛选。确认适合后，再进入详情页查看合约并决定是否接入项目。",
+    primary: "搜索技能目录",
     directory: "发布者目录",
     console: "开发者工作台",
-    consoleTitle: "客户应该怎么开始",
+    consoleTitle: "更快找到合适的 Skill",
     consoleSubtitle:
-      "先选业务流程，有免费基础技能就先试用；进入详情页查看权限、风险和预期产出；只有确认要接入项目时，才登录进入工作台。",
+      "先按要完成的任务搜索，再用分类和风险筛选；进入详情页看权限、预期产出、发布者和 API 合约，确认后再接入项目。",
     proof: ["精选上线目录", "16 个业务分类", "免费基础 + Pro", "权限检查"],
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
