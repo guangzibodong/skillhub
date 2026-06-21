@@ -110,15 +110,15 @@ const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
 const pageCopy = {
   en: {
     eyebrow: "AI agent skill marketplace",
-    title: "Find Agent Skills by task, category, and runtime risk.",
+    title: "Find Agent Skills that complete real business tasks.",
     description:
-      "Search the catalog by workflow, tool, agent use case, publisher, or permission boundary. Filter by category, plan, runtime, verification, and risk before adopting a Skill into a project.",
+      "Search by task, tool, publisher, or workflow. Compare what each Skill delivers, which permissions it needs, which agents it fits, and whether the contract is ready before adopting it into a project.",
     primary: "Search the catalog",
     directory: "Publisher directory",
     console: "Developer workspace",
     consoleTitle: "Find the right Skill faster",
     consoleSubtitle:
-      "Search by the job to be done, narrow by category and risk, then open the detail page for permissions, expected output, publisher, and API contract.",
+      "Search by the job to be done, narrow by category and risk, then compare permissions, expected output, publisher, and Skill contract before adoption.",
     proof: [
       "Curated launch catalog",
       "16 business categories",
@@ -324,15 +324,15 @@ const pageCopy = {
   },
   zh: {
     eyebrow: "智能体找技能",
-    title: "按任务、分类和运行风险找到 Agent Skill。",
+    title: "找到能完成业务任务的 Agent Skill。",
     description:
-      "用工作流、工具、Agent 场景、发布者或权限边界搜索目录，再按分类、套餐、运行时、验证状态和风险筛选。确认适合后，再进入详情页查看合约并决定是否接入项目。",
+      "按任务、工具、发布者或工作流搜索目录。先比较每个 Skill 能交付什么、需要哪些权限、适配哪些 Agent、合约是否完整，再接入项目。",
     primary: "搜索技能目录",
     directory: "发布者目录",
     console: "开发者工作台",
     consoleTitle: "更快找到合适的 Skill",
     consoleSubtitle:
-      "先按要完成的任务搜索，再用分类和风险筛选；进入详情页看权限、预期产出、发布者和 API 合约，确认后再接入项目。",
+      "先按要完成的任务搜索，再用分类和风险筛选；比较权限、预期产出、发布者和技能合约，确认后再接入项目。",
     proof: ["精选上线目录", "16 个业务分类", "免费基础 + Pro", "权限检查"],
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
@@ -559,11 +559,11 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     getPlatformOverview(),
   ]);
   const rawPublicStats = await getPublicPlatformStats({ publishers });
-  const catalogSummary = buildMarketplaceCatalogSummary(skills);
   const pageSkills = selectMarketplacePageSkills(
     skills,
     MARKETPLACE_PAGE_SKILL_LIMIT,
   );
+  const catalogSummary = buildMarketplaceCatalogSummary(pageSkills);
   const publicSkillLinkIndex = mergeSkillLinkIndex(pageSkills);
   const publicStats = reconcileMarketplacePageStats(
     rawPublicStats,
@@ -680,7 +680,7 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="marketplace" locale={locale}>
-      <section className="market-hero" aria-labelledby="marketplace-heading">
+      <section className="market-hero market-hero--compact" aria-labelledby="marketplace-heading">
         <Reveal>
           <div className="market-hero__copy">
             <div className="eyebrow">
@@ -711,32 +711,6 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
             </div>
           </div>
         </Reveal>
-        <aside className="market-hero-panel" aria-label={labels.consoleTitle}>
-          <div className="market-hero-panel__head">
-            <span>
-              <Terminal size={16} aria-hidden="true" />
-              {labels.consoleTitle}
-            </span>
-            <strong>{labels.reviewMetricValue}</strong>
-          </div>
-          <p>{labels.consoleSubtitle}</p>
-          <div className="market-decision-list">
-            {labels.decisionRows.map(([label, value]) => (
-              <div key={label}>
-                <strong>{label}</strong>
-                <span>{value}</span>
-              </div>
-            ))}
-          </div>
-          <div className="proof-grid">
-            {labels.proof.map((item) => (
-              <span key={item}>
-                <BadgeCheck size={14} aria-hidden="true" />
-                {item}
-              </span>
-            ))}
-          </div>
-        </aside>
       </section>
 
       <div className="section-divider" />

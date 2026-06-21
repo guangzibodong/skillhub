@@ -14751,6 +14751,26 @@ a {
   max-width: 100%;
 }
 
+.market-hero--compact {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  padding: 34px 0 18px;
+}
+
+.market-hero--compact .market-hero__copy {
+  max-width: 900px;
+}
+
+.market-hero--compact h1 {
+  max-width: 820px;
+  font-size: 46px;
+  line-height: 1.04;
+}
+
+.market-hero--compact p {
+  max-width: 820px;
+}
+
 .market-hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -16611,6 +16631,333 @@ a {
 .risk-badge--high {
   background: rgba(255, 133, 111, 0.14);
   color: var(--coral);
+}
+
+.market-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.market-search-button {
+  min-width: 108px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--signal);
+  color: #081008;
+  font-size: 14px;
+  font-weight: 860;
+  padding: 0 18px;
+}
+
+.market-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.market-trust-strip span {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(255, 255, 255, 0.028);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  padding: 9px 10px;
+}
+
+.market-directory-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.market-directory-layout .market-filter-panel {
+  position: sticky;
+  top: 84px;
+  margin-top: 0;
+}
+
+.market-filter-reset-link {
+  border: 0;
+  background: transparent;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.market-filter-advanced {
+  display: grid;
+  gap: 10px;
+}
+
+.market-filter-advanced summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.market-results-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.market-results-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+}
+
+.market-results-toolbar h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.22;
+}
+
+.market-results-toolbar p {
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.market-toolbar-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.market-mobile-filter-bar {
+  display: none;
+}
+
+.market-card-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 0;
+}
+
+.market-skill-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(126px, auto);
+  min-height: 0;
+  gap: 14px;
+  border-radius: calc(var(--radius) + 2px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), transparent),
+    rgba(12, 15, 11, 0.78);
+  padding: 14px;
+}
+
+.market-skill-card__body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.market-skill-card__title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.market-skill-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.market-skill-card p {
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.market-skill-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-items: start;
+}
+
+.market-decision-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.market-decision-grid span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(255, 255, 255, 0.026);
+  padding: 9px;
+}
+
+.market-decision-grid small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  line-height: 1.2;
+}
+
+.market-decision-grid strong {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.market-skill-card__meta a,
+.market-skill-card__meta span,
+.market-adoption-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.032);
+  color: #d8d0c0;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  padding: 0 9px;
+}
+
+.market-skill-card__meta a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.market-adoption-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.market-contract-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: calc(var(--radius) - 2px);
+  background: #0b0e0a;
+  padding: 8px 9px 8px 11px;
+}
+
+.market-contract-preview code {
+  min-width: 0;
+  overflow: hidden;
+  color: #cce7c2;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.market-contract-preview button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid rgba(155, 226, 141, 0.2);
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(155, 226, 141, 0.1);
+  color: var(--signal);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
+.market-skill-card__actions {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 128px;
+}
+
+.market-primary-link,
+.market-secondary-link,
+.market-tertiary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 13px;
+  font-weight: 820;
+  line-height: 1.2;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.market-primary-link {
+  border: 1px solid rgba(155, 226, 141, 0.32);
+  background: var(--signal);
+  color: #081008;
+}
+
+.market-secondary-link {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.038);
+  color: var(--ink);
+}
+
+.market-tertiary-link {
+  color: var(--cyan);
+}
+
+.market-skill-card__actions small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.market-publisher-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid rgba(124, 199, 216, 0.13);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.04);
+  padding: 14px;
+}
+
+.market-publisher-callout strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.market-publisher-callout span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .market-operations-layout {
@@ -36410,5 +36757,145 @@ textarea:focus {
   .solutions-card-actions {
     display: grid;
     gap: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .market-search-form,
+  .market-browser__top,
+  .market-directory-layout,
+  .market-results-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .market-browser__top,
+  .market-results-toolbar {
+    display: grid;
+  }
+
+  .market-search-button {
+    min-height: 46px;
+  }
+
+  .market-trust-strip {
+    display: none;
+  }
+
+  .market-hero--compact .market-hero__actions,
+  .market-catalog-summary {
+    display: none;
+  }
+
+  .market-directory-layout .market-filter-panel {
+    display: none;
+  }
+
+  .market-mobile-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.095);
+    border-radius: var(--radius);
+    background: rgba(8, 11, 8, 0.78);
+    padding: 10px;
+  }
+
+  .market-mobile-filter-bar span {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 760;
+    overflow-wrap: anywhere;
+  }
+
+  .market-mobile-filter-bar button {
+    flex: 0 0 auto;
+    min-height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: calc(var(--radius) - 2px);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 820;
+    padding: 0 12px;
+  }
+
+  .market-toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .market-results-panel > .market-spotlight-grid,
+  .market-results-panel > .market-active-filters {
+    display: none;
+  }
+
+  .market-spotlight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .market-skill-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .market-skill-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .market-primary-link,
+  .market-secondary-link,
+  .market-tertiary-link {
+    flex: 1 1 130px;
+  }
+
+  .market-decision-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .market-contract-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .market-contract-preview code {
+    white-space: normal;
+  }
+
+  .market-publisher-callout {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .market-browser {
+    padding: 12px;
+  }
+
+  .market-search {
+    min-height: 54px;
+    padding: 0 12px;
+  }
+
+  .market-catalog-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .market-spotlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-spotlight-card:nth-child(n + 4) {
+    display: none;
+  }
+
+  .market-decision-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-active-filters {
+    grid-template-columns: 1fr;
   }
 }
