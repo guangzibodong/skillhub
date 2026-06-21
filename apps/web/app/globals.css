@@ -36899,3 +36899,135 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Marketplace directory final polish */
+.market-hero--compact,
+.market-browser {
+  width: min(1640px, calc(100% - 96px));
+}
+
+.market-hero--compact {
+  padding-top: 26px;
+  padding-bottom: 12px;
+}
+
+.market-hero--compact .market-hero__copy {
+  max-width: 960px;
+}
+
+.market-hero--compact h1 {
+  max-width: 920px;
+  font-size: 44px;
+}
+
+.market-hero--compact p {
+  max-width: 800px;
+  line-height: 1.55;
+}
+
+.market-browser {
+  padding: 16px;
+}
+
+@media (min-width: 1280px) {
+  .market-browser__top {
+    grid-template-columns: minmax(260px, 0.42fr) minmax(640px, 1fr);
+  }
+
+  .market-directory-layout {
+    grid-template-columns: 242px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .market-results-toolbar p {
+    max-width: 960px;
+  }
+
+  .market-skill-card {
+    grid-template-columns: auto minmax(0, 1fr) minmax(150px, auto);
+  }
+
+  .market-decision-grid {
+    grid-template-columns: repeat(4, minmax(132px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .market-hero--compact,
+  .market-browser {
+    width: min(100% - 28px, 1220px);
+  }
+
+  .market-hero--compact {
+    padding-top: 18px;
+    padding-bottom: 8px;
+  }
+
+  .market-hero--compact h1 {
+    font-size: 38px;
+    line-height: 1.02;
+  }
+
+  .market-hero--compact p {
+    line-height: 1.55;
+  }
+
+  .market-browser {
+    padding: 12px;
+  }
+
+  .market-search {
+    min-height: 50px;
+  }
+
+  .market-mobile-filter-bar {
+    padding: 8px 10px;
+  }
+
+  .market-skill-card {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .market-skill-card__icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .market-skill-card p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .market-results-toolbar p,
+  .market-adoption-row,
+  .market-contract-preview {
+    display: none;
+  }
+
+  .market-decision-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .market-decision-grid span:nth-child(n + 3),
+  .market-skill-card__meta a:nth-child(n + 4),
+  .market-skill-card__meta span:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .market-hero--compact h1 {
+    font-size: 31px;
+  }
+
+  .market-search {
+    min-height: 48px;
+  }
+}

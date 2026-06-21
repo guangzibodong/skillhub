@@ -137,6 +137,7 @@ const labels = {
     publisher: "Publisher",
     signals: "Signals",
     contract: "Skill contract",
+    allSkills: "All Agent Skills",
     categoryPicks: "Browse by workflow",
     categoryPicksBody:
       "Choose a common workflow first, then refine by plan, permission risk, runtime, and review status.",
@@ -282,7 +283,7 @@ const labels = {
   },
   zh: {
     search: "搜索任务、工具、发布者或 Skill 名称",
-    results: "个当前可浏览结果",
+    results: "个可浏览结果",
     copy: "复制查看命令",
     copied: "已复制",
     copyFailed: "复制失败",
@@ -328,6 +329,7 @@ const labels = {
     publisher: "发布者",
     signals: "信号",
     contract: "技能合约",
+    allSkills: "全部技能",
     categoryPicks: "按工作流浏览",
     categoryPicksBody:
       "先选常见工作流，再用套餐、权限风险、运行时和验证状态细筛。",
@@ -1104,7 +1106,7 @@ export function MarketplaceBrowser({
             <div>
               <h2>
                 {category === "all"
-                  ? dictionary.categoryPicks
+                  ? dictionary.allSkills
                   : marketplaceCategories.find((item) => item.key === category)
                     ? localizeText(
                         marketplaceCategories.find((item) => item.key === category)!.label,
