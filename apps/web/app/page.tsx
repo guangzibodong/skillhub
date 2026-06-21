@@ -733,6 +733,22 @@ export default async function Home({ searchParams }: PageProps) {
 
         <section className="home-v2-root" aria-labelledby="home-heading">
           <section className="home-v2-hero">
+            <div className="home-v2-motion-field" aria-hidden="true">
+              <span className="home-v2-ambient-rail home-v2-ambient-rail--left">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="home-v2-ambient-rail home-v2-ambient-rail--right">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="home-v2-floating-chip home-v2-floating-chip--schema">schema locked</span>
+              <span className="home-v2-floating-chip home-v2-floating-chip--policy">policy checked</span>
+              <span className="home-v2-floating-chip home-v2-floating-chip--mcp">mcp route</span>
+              <span className="home-v2-floating-chip home-v2-floating-chip--project">project key</span>
+            </div>
             <div className="home-v2-hero__head">
               <div className="home-v2-hero__copy">
                 <span className="home-v2-eyebrow">Registry · Runtime · Governance</span>
@@ -783,6 +799,9 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
 
             <section className="home-v2-workbench" aria-label={locale === "zh" ? "SkillHub 工作台预览" : "SkillHub workbench preview"}>
+              <span className="home-v2-workbench__scan" aria-hidden="true" />
+              <span className="home-v2-flow-line home-v2-flow-line--catalog" aria-hidden="true" />
+              <span className="home-v2-flow-line home-v2-flow-line--runtime" aria-hidden="true" />
               <div className="home-v2-workbench__top">
                 <div className="home-v2-crumbs">
                   <strong>SkillHub Workbench</strong>
@@ -934,11 +953,13 @@ export default async function Home({ searchParams }: PageProps) {
                   </div>
                   <div className="home-v2-runtime-route">
                     <article>
+                      <i className="home-v2-runtime-pulse" aria-hidden="true" />
                       <span>REST</span>
                       <code>POST /v1/runtime/invoke</code>
                       <strong>Authorization: Bearer sk_proj_***</strong>
                     </article>
                     <article>
+                      <i className="home-v2-runtime-pulse" aria-hidden="true" />
                       <span>MCP</span>
                       <code>@useskillhub/mcp-server</code>
                       <strong>Expose approved Skills as callable tools.</strong>

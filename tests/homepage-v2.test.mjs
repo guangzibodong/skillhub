@@ -27,3 +27,19 @@ test("homepage uses the approved agent registry workbench design", () => {
   assert.match(stylesheet, /home-v2-agent-card--hermes/);
   assert.match(stylesheet, /@media \(max-width: 840px\)/);
 });
+
+test("homepage workbench has restrained infrastructure motion", () => {
+  assert.match(pageSource, /home-v2-motion-field/);
+  assert.match(pageSource, /home-v2-ambient-rail/);
+  assert.match(pageSource, /home-v2-floating-chip/);
+  assert.match(pageSource, /home-v2-workbench__scan/);
+  assert.match(pageSource, /home-v2-flow-line/);
+  assert.match(pageSource, /home-v2-runtime-pulse/);
+
+  assert.match(stylesheet, /@keyframes home-v2-rail-flow/);
+  assert.match(stylesheet, /@keyframes home-v2-chip-drift/);
+  assert.match(stylesheet, /@keyframes home-v2-workbench-scan/);
+  assert.match(stylesheet, /@keyframes home-v2-flow-sweep/);
+  assert.match(stylesheet, /@keyframes home-v2-audit-pulse/);
+  assert.match(stylesheet, /prefers-reduced-motion: reduce/);
+});
