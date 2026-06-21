@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Store,
   Terminal,
-  WalletCards,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
@@ -109,10 +108,10 @@ const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
 
 const pageCopy = {
   en: {
-    eyebrow: "AI agent skill marketplace",
-    title: "Find Agent Skills that complete real business tasks.",
+    eyebrow: "Curated agent skill marketplace",
+    title: "Find the right Skill for your Agent workflow.",
     description:
-      "Search by task, tool, publisher, or workflow. Compare what each Skill delivers, which permissions it needs, which agents it fits, and whether the contract is ready before adopting it into a project.",
+      "Start from the business task, compare output, permissions, review status, and publisher trust, then adopt the Skill into a governed project workspace.",
     primary: "Search the catalog",
     directory: "Publisher directory",
     console: "Developer workspace",
@@ -125,6 +124,24 @@ const pageCopy = {
       "Free basics + Pro",
       "Permission checks",
     ],
+    adoptionPath: {
+      eyebrow: "Adoption path",
+      title: "Confirm boundaries before adoption",
+      steps: [
+        [
+          "Discover Skills",
+          "Find candidates by task, team workflow, agent runtime, and tool context.",
+        ],
+        [
+          "Compare contract and permission",
+          "Check input, output, runtime, risk level, review state, and publisher details.",
+        ],
+        [
+          "Adopt into a project",
+          "After sign-in, install with policy context and keep runtime evidence reviewable.",
+        ],
+      ],
+    },
     decisionTitle: "Find Skills vs Skill API",
     decisionRows: [
       [
@@ -323,10 +340,10 @@ const pageCopy = {
     ],
   },
   zh: {
-    eyebrow: "智能体找技能",
-    title: "找到能完成业务任务的 Agent Skill。",
+    eyebrow: "Agent Skill Marketplace",
+    title: "为你的 Agent 工作流找到合适的 Skill。",
     description:
-      "按任务、工具、发布者或工作流搜索目录。先比较每个 Skill 能交付什么、需要哪些权限、适配哪些 Agent、合约是否完整，再接入项目。",
+      "从真实业务任务出发，比较每个 Skill 的输出、权限、验证状态和发布者信息，再把它接入项目工作台。",
     primary: "搜索技能目录",
     directory: "发布者目录",
     console: "开发者工作台",
@@ -334,6 +351,21 @@ const pageCopy = {
     consoleSubtitle:
       "先按要完成的任务搜索，再用分类和风险筛选；比较权限、预期产出、发布者和技能合约，确认后再接入项目。",
     proof: ["精选上线目录", "16 个业务分类", "免费基础 + Pro", "权限检查"],
+    adoptionPath: {
+      eyebrow: "采用路径",
+      title: "从发现到接入，先确认边界",
+      steps: [
+        ["发现 Skill", "按任务、团队工作流、Agent 运行时和工具上下文找到候选技能。"],
+        [
+          "比较合约和权限",
+          "确认输入输出、运行时、风险等级、验证状态和发布者信息。",
+        ],
+        [
+          "接入项目工作台",
+          "登录后安装到项目，配置策略，并保留可复核的运行证据。",
+        ],
+      ],
+    },
     decisionTitle: "找技能和技能 API 的区别",
     decisionRows: [
       ["找技能", "给人选技能、按分类筛选、比套餐、比风险、看发布者信任。"],
@@ -680,51 +712,87 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
 
   return (
     <AppShell active="marketplace" locale={locale}>
-      <section className="market-hero market-hero--compact" aria-labelledby="marketplace-heading">
-        <Reveal>
-          <div className="market-hero__copy">
-            <div className="eyebrow">
-              <Store size={16} aria-hidden="true" />
-              <span>{labels.eyebrow}</span>
+      <div className="market-curated-shell">
+        <section
+          className="market-curated-hero market-hero market-hero--compact"
+          aria-labelledby="marketplace-heading"
+        >
+          <Reveal>
+            <div className="market-curated-hero__copy market-hero__copy">
+              <div className="eyebrow">
+                <Store size={16} aria-hidden="true" />
+                <span>{labels.eyebrow}</span>
+              </div>
+              <h1 id="marketplace-heading">
+                {locale === "zh" ? (
+                  <>
+                    为你的 Agent 工作流
+                    <br />
+                    找到合适的 Skill。
+                  </>
+                ) : (
+                  labels.title
+                )}
+              </h1>
+              <p>{labels.description}</p>
+              <div className="market-curated-proof" aria-label={labels.eyebrow}>
+                {labels.proof.map((item) => (
+                  <span key={item}>
+                    <BadgeCheck size={14} aria-hidden="true" />
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
-            <h1 id="marketplace-heading">{labels.title}</h1>
-            <p>{labels.description}</p>
-            <div className="market-hero__actions">
-              <a className="btn-primary--large" href="#catalog">
-                <PackageSearch size={18} aria-hidden="true" />
-                <span>{labels.primary}</span>
-              </a>
-              <a
-                className="btn-secondary--large"
-                href={localizedHref("/publishers", locale)}
-              >
-                <Building2 size={18} aria-hidden="true" />
-                <span>{labels.directory}</span>
-              </a>
-              <a
-                className="btn-text"
-                href={localizedHrefWithReturnTo("/login", locale, "/developer")}
-              >
-                <WalletCards size={17} aria-hidden="true" />
-                <span>{labels.console}</span>
-              </a>
+          </Reveal>
+
+          <aside
+            className="market-adoption-path"
+            aria-label={labels.adoptionPath.title}
+          >
+            <div className="market-adoption-path__head">
+              <span>{labels.adoptionPath.eyebrow}</span>
+              <strong>{labels.adoptionPath.title}</strong>
             </div>
-          </div>
-        </Reveal>
-      </section>
+            <div className="market-adoption-path__stats">
+              <span>
+                <strong>{catalogSummary.total}</strong>
+                {labels.catalogMetric}
+              </span>
+              <span>
+                <strong>{catalogSummary.categories}</strong>
+                {locale === "zh" ? "业务分类" : "categories"}
+              </span>
+              <span>
+                <strong>{catalogSummary.free}</strong>
+                {locale === "zh" ? "免费入门" : "free starters"}
+              </span>
+            </div>
+            <ol>
+              {labels.adoptionPath.steps.map(([title, detail], index) => (
+                <li key={title}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{title}</strong>
+                    <p>{detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        </section>
 
-      <div className="section-divider" />
-
-      {/* Catalog */}
-      <div id="catalog">
-        <MarketplaceBrowser
-          catalogSummary={catalogSummary}
-          catalogTotal={publicStats.publicSkills}
-          initialFilters={initialFilters}
-          locale={locale}
-          publisherProfiles={publishers}
-          skills={skillCards}
-        />
+        {/* Catalog */}
+        <div id="catalog">
+          <MarketplaceBrowser
+            catalogSummary={catalogSummary}
+            catalogTotal={publicStats.publicSkills}
+            initialFilters={initialFilters}
+            locale={locale}
+            publisherProfiles={publishers}
+            skills={skillCards}
+          />
+        </div>
       </div>
 
       <div className="section-divider" />

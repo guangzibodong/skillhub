@@ -29,9 +29,22 @@ test("marketplace prioritizes searchable Agent Skill discovery before guides", (
   assert.match(browserSource, /market-adoption-row/);
   assert.match(browserSource, /market-mobile-filter-bar/);
   assert.match(browserSource, /推荐排序/);
-  assert.match(marketplacePage, /找到能完成业务任务的 Agent Skill/);
+  assert.match(marketplacePage, /为你的 Agent 工作流找到合适的 Skill/);
   assert.match(stylesheet, /\.market-directory-layout/);
   assert.match(stylesheet, /\.market-mobile-filter-bar/);
   assert.match(stylesheet, /\.market-search:focus-within/);
   assert.doesNotMatch(browserSource, /官方认证|官方合作/);
+});
+
+test("marketplace uses the curated agent marketplace layout", () => {
+  assert.match(marketplacePage, /market-curated-shell/);
+  assert.match(marketplacePage, /market-adoption-path/);
+  assert.match(browserSource, /market-workflow-section/);
+  assert.match(browserSource, /market-workflow-grid/);
+  assert.match(browserSource, /market-featured-strip/);
+  assert.match(browserSource, /market-skill-score/);
+  assert.match(browserSource, /market-skill-logo/);
+  assert.match(stylesheet, /\.market-curated-shell/);
+  assert.match(stylesheet, /\.market-workflow-card/);
+  assert.match(stylesheet, /\.market-skill-score/);
 });

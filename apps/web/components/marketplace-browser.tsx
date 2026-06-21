@@ -7,11 +7,9 @@ import {
   BadgeCheck,
   CheckCircle2,
   Copy,
-  Layers3,
   ExternalLink,
   MessageSquarePlus,
   PackageCheck,
-  RadioTower,
   RotateCcw,
   Route,
   Search,
@@ -19,8 +17,6 @@ import {
   SlidersHorizontal,
   Star,
   Target,
-  Timer,
-  Zap,
 } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import {
@@ -823,12 +819,18 @@ export function MarketplaceBrowser({
 
     return launchTracks.map((track) => ({
       ...track,
+      count: skills.filter((skill) => skill.categoryKey === track.category)
+        .length,
       recommendedSkills: track.skillSlugs.flatMap((slug) => {
         const skill = skillMap.get(slug);
         return skill ? [skill] : [];
       }),
     }));
   }, [skills]);
+  const featuredSkills = useMemo(
+    () => filteredSkills.slice(0, 3),
+    [filteredSkills],
+  );
   const emptySuggestions = useMemo(
     () => buildEmptySuggestions(skills, query, locale),
     [locale, query, skills],
@@ -979,6 +981,51 @@ export function MarketplaceBrowser({
         <span>{locale === "zh" ? "技能合约：manifest、输入输出 schema、运行时、版本" : "Skill contract: manifest, schemas, runtime, version"}</span>
         <span>{locale === "zh" ? "权限说明：网络、浏览器、文件、密钥、写入动作" : "Permission signals: network, browser, files, secrets, write actions"}</span>
       </div>
+
+      <section
+        className="market-workflow-section"
+        aria-labelledby="market-workflow-heading"
+      >
+        <div className="market-workflow-section__head">
+          <span>
+            <Target size={15} aria-hidden="true" />
+            {dictionary.operatingGuide.kicker}
+          </span>
+          <div>
+            <h2 id="market-workflow-heading">
+              {dictionary.operatingGuide.title}
+            </h2>
+            <p>{dictionary.operatingGuide.body}</p>
+          </div>
+        </div>
+        <div className="market-workflow-grid">
+          {operatingTracks.map((track) => {
+            const trackCopy = dictionary.operatingGuide.tracks[track.key];
+            const isActive = category === track.category && pricing === track.pricing;
+
+            return (
+              <button
+                aria-pressed={isActive}
+                className={
+                  isActive
+                    ? "market-workflow-card market-workflow-card--active"
+                    : "market-workflow-card"
+                }
+                key={track.key}
+                onClick={() => applyLaunchTrack(track)}
+                type="button"
+              >
+                <span>{trackCopy.eyebrow}</span>
+                <strong>{trackCopy.title}</strong>
+                <p>{trackCopy.body}</p>
+                <small>
+                  {track.count} {dictionary.results}
+                </small>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="market-directory-layout">
         <aside className="market-filter-panel" aria-label={dictionary.filters}>
@@ -1139,6 +1186,25 @@ export function MarketplaceBrowser({
             </div>
           </div>
 
+          <div className="market-featured-strip">
+            <span>
+              {locale === "zh"
+                ? "当前精选"
+                : "Featured in this view"}
+            </span>
+            <div>
+              {featuredSkills.map((skill) => (
+                <a
+                  href={localizedHref(`/skills/${skill.slug}`, locale)}
+                  key={skill.slug}
+                >
+                  <strong>{localizeText(skill.name, locale)}</strong>
+                  <small>{localizeText(skill.category, locale)}</small>
+                </a>
+              ))}
+            </div>
+          </div>
+
           <div className="market-spotlight-grid">
             {spotlightCards.slice(0, 4).map((spotlight) => (
               <button
@@ -1214,8 +1280,13 @@ export function MarketplaceBrowser({
                     data-verification={verificationKey(skill)}
                     key={skill.slug}
                   >
-                    <div className="market-skill-card__icon" aria-hidden="true">
-                      <Zap size={18} />
+                    <div
+                      className="market-skill-logo market-skill-card__icon"
+                      aria-hidden="true"
+                    >
+                      <span>
+                        {localizeText(skill.name, locale).slice(0, 1)}
+                      </span>
                     </div>
                     <div className="market-skill-card__body">
                       <div className="market-skill-card__title">
@@ -1272,6 +1343,38 @@ export function MarketplaceBrowser({
                         ) : (
                           <span>{dictionary.reviewOnlyMetric}</span>
                         )}
+                      </div>
+
+                      <div
+                        className="market-skill-score"
+                        aria-label={dictionary.signals}
+                      >
+                        <span>
+                          <strong>
+                            {(skill.feedbackCount ?? 0) > 0
+                              ? skill.rating
+                              : "—"}
+                          </strong>
+                          <small>
+                            {(skill.feedbackCount ?? 0) > 0
+                              ? `${skill.feedbackCount} ${dictionary.feedback}`
+                              : dictionary.reviewOnlyMetric}
+                          </small>
+                        </span>
+                        <span>
+                          <strong>
+                            {isVerified
+                              ? formatMarketplaceMetric(skill.successRate, locale)
+                              : "—"}
+                          </strong>
+                          <small>{dictionary.success}</small>
+                        </span>
+                        <span>
+                          <strong>
+                            {formatMarketplaceMetric(skill.latency, locale)}
+                          </strong>
+                          <small>{dictionary.latency}</small>
+                        </span>
                       </div>
 
                       <div className="market-adoption-row">
