@@ -28575,22 +28575,68 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(6, 10, 8, 0.08);
-  border-radius: 9px;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border: 1px solid var(--agent-logo-border, rgba(221, 255, 220, 0.13));
+  border-radius: 10px;
+  color: rgba(232, 255, 229, 0.92);
   line-height: 1;
-  background: rgba(255, 255, 255, 0.035);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    var(--agent-logo-bg, rgba(6, 10, 8, 0.2));
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
     0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .home-footer__agent-logo img {
   display: block;
-  width: 23px;
-  height: 23px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
+  object-position: center;
+  transform-origin: 50% 50%;
+}
+
+.home-footer__agent-logo--codex,
+.home-footer__agent-logo--gemini,
+.home-footer__agent-logo--copilot {
+  --agent-logo-bg: rgba(255, 255, 255, 0.045);
+}
+
+.home-footer__agent-logo--claude {
+  --agent-logo-bg: rgba(217, 119, 87, 0.1);
+  --agent-logo-border: rgba(217, 119, 87, 0.24);
+}
+
+.home-footer__agent-logo--openclaw {
+  --agent-logo-bg: rgba(239, 68, 68, 0.1);
+  --agent-logo-border: rgba(239, 68, 68, 0.22);
+}
+
+.home-footer__agent-logo--hermes {
+  --agent-logo-bg: rgba(238, 244, 235, 0.88);
+  --agent-logo-border: rgba(238, 244, 235, 0.42);
+}
+
+.home-footer__agent-logo--codex img,
+.home-footer__agent-logo--gemini img,
+.home-footer__agent-logo--copilot img,
+.home-footer__agent-logo--openclaw img,
+.home-footer__agent-logo--hermes img {
+  width: 25px;
+  height: 25px;
+}
+
+.home-footer__agent-logo--claude img {
+  transform: translateY(1px);
+}
+
+.home-footer__agent-logo--openclaw img,
+.home-footer__agent-logo--hermes img {
+  transform: translateY(0.5px);
 }
 
 .home-footer__agent-card strong {

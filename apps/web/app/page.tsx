@@ -80,6 +80,7 @@ type FooterAgentItem = {
   name: string;
   body: string;
   logo: string;
+  logoKey: "codex" | "claude" | "gemini" | "copilot" | "openclaw" | "hermes";
 };
 
 const fallbackFeaturedSkills: SkillSummary[] = [
@@ -265,31 +266,37 @@ const homeLandingCopy = {
         name: "Codex",
         body: "Reuse Skill contracts for repo analysis, code fixes, release checks, and developer handoffs.",
         logo: "/brand/agents/codex-color.svg",
+        logoKey: "codex",
       },
       {
         name: "Claude Code / MCP",
         body: "Expose approved Skills through MCP while keeping schemas, scopes, and project controls visible.",
         logo: "/brand/agents/claudecode-color.svg",
+        logoKey: "claude",
       },
       {
         name: "Gemini CLI",
         body: "Turn research, data, SEO, and operations steps into repeatable workflows for CLI-driven agents.",
         logo: "/brand/agents/geminicli-color.svg",
+        logoKey: "gemini",
       },
       {
         name: "GitHub Copilot",
         body: "Give engineering teams reusable checks and workflow context before issues, pull requests, and releases.",
         logo: "/brand/agents/copilot-color.svg",
+        logoKey: "copilot",
       },
       {
         name: "OpenClaw",
         body: "Route open agent orchestration through reviewed Skill manifests instead of one-off tool setup.",
         logo: "/brand/agents/openclaw-color.svg",
+        logoKey: "openclaw",
       },
       {
         name: "Hermes Agent",
         body: "Capture repeatable agent operations as governed templates teams can inspect and run again.",
         logo: "/brand/agents/hermesagent.svg",
+        logoKey: "hermes",
       },
     ] satisfies FooterAgentItem[],
     footerGroups: [
@@ -348,9 +355,9 @@ const homeLandingCopy = {
     title: "把 Agent Skills 作为生产基础设施运行。",
     mobileTitle: "面向 AI Agent 的生产级 Skill 基础设施。",
     description:
-      "SkillHub 是面向 AI Agent 的 Skill 注册中心与治理运行层。你可以浏览可复用 Skill，检查权限和 manifest，再通过受控 API 或 MCP 安全调用。",
+      "SkillHub 帮团队把可复用 Skill 收进统一目录，先检查来源、权限和 manifest，再通过受控 API 或 MCP 接入真实 Agent 工作流。",
     previewNote:
-      "SkillHub 当前处于公开预览：Skill 发现与检查已开放；运行调用需登录并使用 Project Key。",
+      "当前为公开预览：你可以直接浏览和检查 Skill；真实运行调用需登录后使用 Project Key。",
     whatIsSkillTitle: "什么是 Skill？",
     whatIsSkillBody:
       "Skill 是可被 Agent 调用的可复用能力组件，例如网页研究、数据分析、代码执行或文档问答。",
@@ -388,59 +395,59 @@ const homeLandingCopy = {
       {
         title: "公开 Skill 注册中心",
         badge: "可用",
-        body: "搜索公开 Skill，并对比安全的市场元数据。",
+        body: "搜索公开 Skill，查看来源、权限、版本和发布状态。",
         tone: "live",
       },
       {
         title: "Manifest 检查",
         badge: "可用",
-        body: "查看 schema、权限、运行目标和版本状态。",
+        body: "在接入前确认 schema、权限范围、运行目标和版本状态。",
         tone: "live",
       },
       {
         title: "运行调用",
         badge: "需要 Project Key",
-        body: "只有完成工作台项目设置和策略检查后，才能通过 REST / MCP 调用。",
+        body: "完成项目设置和策略检查后，再通过 REST / MCP 接入真实调用。",
         tone: "key",
       },
       {
         title: "付费市场",
         badge: "预览",
-        body: "付费上架、账单、退款和分账仍保持可见的预览闸门。",
+        body: "付费上架、账单、退款和分账能力仍处于可见预览。",
         tone: "preview",
       },
     ],
     audience: [
       [
         "面向开发者",
-        "浏览可复用 Skill，并在接入前检查 manifest。",
+        "浏览可复用 Skill，在接入前确认 manifest、权限和运行方式。",
       ],
       [
         "面向发布者",
-        "提交带有 manifest、权限说明和审核状态的 Skill。",
+        "提交带有 manifest、权限说明、示例和支持路径的 Skill。",
       ],
       [
         "面向团队",
-        "统一治理 Project Key、日志、限流和运行调用。",
+        "统一管理 Project Key、日志、限流和运行调用证据。",
       ],
     ],
     accessMap: {
       eyebrow: "上线访问说明",
-      title: "智能体技能基础设施访问地图",
-      body: "公开页面负责发现和了解，登录后才进入项目、密钥和运行调用；运营后台只给具备角色权限的人使用。",
+      title: "谁可以浏览，谁可以调用",
+      body: "访客可以浏览公开 Skill；开发者登录后管理项目、Project Key 和运行调用；运营后台仅向授权角色开放。",
       action: "阅读运营参考",
       items: [
         [
           "免登录可用",
-          "找技能、技能详情、发布者主页、使用文档、公开状态和支持入口可以直接查看。",
+          "公开技能、技能详情、发布者主页、使用文档、运行状态和支持入口可以直接查看。",
         ],
         [
           "登录后可用",
-          "项目配置、已保存技能、Project Key、运行调用、账单、发布草稿和账号设置需要登录。",
+          "项目配置、已保存技能、Project Key、运行调用、账单、发布草稿和账号设置需要登录后使用。",
         ],
         [
           "运营员使用单独链接",
-          "管理员后台不会出现在普通用户导航里，只向通过角色校验的运营账号开放。",
+          "管理后台不会出现在普通用户导航里，只向通过角色校验的运营账号开放。",
         ],
       ],
     },
@@ -448,19 +455,19 @@ const homeLandingCopy = {
     trustModules: [
       {
         title: "权限检查",
-        body: "在 Skill 进入项目之前，先看清声明能力和风险等级。",
+        body: "在 Skill 进入项目之前，先看清声明能力、数据范围和风险等级。",
         status: "权限可见",
         rows: ["web.search", "web.fetch", "data.store"],
       },
       {
         title: "运行治理",
-        body: "Project Key、策略、日志和限流一起约束真实运行。",
+        body: "Project Key、策略、日志和限流一起约束每次真实运行。",
         status: "策略已检查",
         rows: ["需要 Project Key", "限流：60 / 分钟", "允许：web.search, web.fetch"],
       },
       {
         title: "发布审核",
-        body: "提交审核把可上线 Skill、预览 Skill 和阻塞项清楚区分。",
+        body: "发布审核把可上线 Skill、预览 Skill 和阻塞项清楚区分。",
         status: "审核队列",
         rows: ["静态分析", "权限复核", "安全扫描"],
       },
@@ -474,14 +481,14 @@ const homeLandingCopy = {
     permissions: "权限",
     howTitle: "如何使用",
     howSteps: [
-      ["发现", "找到适合 Agent 的 Skill。"],
-      ["检查", "查看 manifest、权限和运行细节。"],
+      ["发现", "找到适合当前 Agent 工作流的 Skill。"],
+      ["检查", "确认 manifest、权限范围和运行方式。"],
       ["准备 Project Key", "登录开发者工作台，创建项目并获取 Project Key。"],
-      ["调用", "用 REST API 或 MCP 调用 Skill。"],
-      ["监控", "追踪用量、日志和性能。"],
+      ["调用", "通过 REST API 或 MCP 接入真实调用。"],
+      ["监控", "追踪用量、日志、延迟和调用结果。"],
     ],
     finalTitle: "从一个真实 Skill 契约开始",
-    finalBody: "先浏览公开技能，再在工作台项目设置就绪后接入真实运行调用。",
+    finalBody: "先浏览公开 Skill，再在工作台完成项目设置，接入可治理的真实调用。",
     readDocs: "阅读文档",
     footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
     footerAgentTitle: "接入主流 Agent 执行环境",
@@ -493,31 +500,37 @@ const homeLandingCopy = {
         name: "Codex",
         body: "复用 Skill 契约处理仓库分析、代码修复、发布检查和研发交接。",
         logo: "/brand/agents/codex-color.svg",
+        logoKey: "codex",
       },
       {
         name: "Claude Code / MCP",
         body: "通过 MCP 暴露已批准 Skill，同时保留 schema、权限范围和项目控制。",
         logo: "/brand/agents/claudecode-color.svg",
+        logoKey: "claude",
       },
       {
         name: "Gemini CLI",
         body: "把研究、数据、SEO 和运营步骤沉淀成 CLI Agent 可复跑流程。",
         logo: "/brand/agents/geminicli-color.svg",
+        logoKey: "gemini",
       },
       {
         name: "GitHub Copilot",
         body: "为 issue、Pull Request 和发布前检查提供可复用的流程上下文。",
         logo: "/brand/agents/copilot-color.svg",
+        logoKey: "copilot",
       },
       {
         name: "OpenClaw",
         body: "让开放 Agent 编排先经过已审核的 Skill manifest，减少一次性工具配置。",
         logo: "/brand/agents/openclaw-color.svg",
+        logoKey: "openclaw",
       },
       {
         name: "Hermes Agent",
         body: "把常用 Agent 操作沉淀为可检查、可治理、可重复运行的团队模板。",
         logo: "/brand/agents/hermesagent.svg",
+        logoKey: "hermes",
       },
     ] satisfies FooterAgentItem[],
     footerGroups: [
@@ -1203,7 +1216,7 @@ export default async function Home({ searchParams }: PageProps) {
             <div className="home-footer__agent-grid">
               {landing.footerAgentEcosystem.map((agent) => (
                 <article className="home-footer__agent-card" key={agent.name}>
-                  <span className="home-footer__agent-logo" aria-hidden="true">
+                  <span className={`home-footer__agent-logo home-footer__agent-logo--${agent.logoKey}`} aria-hidden="true">
                     <img src={agent.logo} alt="" />
                   </span>
                   <div>
