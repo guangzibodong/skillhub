@@ -37108,6 +37108,49 @@ textarea:focus {
   color: #7af06c;
 }
 
+.market-hero-search-form {
+  display: none;
+}
+
+.market-hero-search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid rgba(124, 199, 216, 0.2);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.045);
+  color: #7cc7d8;
+  padding: 0 13px;
+}
+
+.market-hero-search-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.market-hero-search-field input::placeholder {
+  color: rgba(233, 232, 220, 0.48);
+}
+
+.market-hero-search-form button {
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--radius);
+  background: #9beb8a;
+  color: #08220b;
+  font-size: 13px;
+  font-weight: 880;
+  padding: 0 18px;
+}
+
 .market-adoption-path {
   display: grid;
   gap: 16px;
@@ -37258,14 +37301,14 @@ textarea:focus {
 .market-workflow-card {
   display: grid;
   min-width: 0;
-  min-height: 178px;
-  gap: 9px;
+  min-height: 148px;
+  gap: 8px;
   align-content: start;
   border: 1px solid rgba(255, 255, 255, 0.085);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.035);
   color: inherit;
-  padding: 14px;
+  padding: 12px;
   text-align: left;
   transition:
     border-color 180ms ease,
@@ -37293,6 +37336,12 @@ textarea:focus {
   line-height: 1.22;
 }
 
+.market-workflow-card__body {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
 .market-workflow-card p {
   display: -webkit-box;
   overflow: hidden;
@@ -37301,10 +37350,10 @@ textarea:focus {
   font-size: 12px;
   line-height: 1.45;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 2;
 }
 
-.market-workflow-card small {
+.market-workflow-card__meta {
   align-self: end;
   color: #7af06c;
   font-size: 12px;
@@ -37453,6 +37502,13 @@ textarea:focus {
     font-size: 39px;
   }
 
+  .market-hero-search-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
   .market-adoption-path__stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -37463,7 +37519,7 @@ textarea:focus {
   }
 
   .market-workflow-grid {
-    grid-auto-columns: minmax(236px, 78vw);
+    grid-auto-columns: minmax(196px, 64vw);
     grid-auto-flow: column;
     grid-template-columns: none;
     overflow-x: auto;
@@ -37491,6 +37547,10 @@ textarea:focus {
 
   .market-curated-proof span {
     flex: 1 1 calc(50% - 8px);
+  }
+
+  .market-hero-search-form {
+    grid-template-columns: 1fr;
   }
 
   .market-adoption-path {

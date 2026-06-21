@@ -48,3 +48,13 @@ test("marketplace uses the curated agent marketplace layout", () => {
   assert.match(stylesheet, /\.market-workflow-card/);
   assert.match(stylesheet, /\.market-skill-score/);
 });
+
+test("marketplace exposes mobile-first search and compact workflow browsing", () => {
+  assert.match(marketplacePage, /market-hero-search-form/);
+  assert.match(marketplacePage, /name="q"/);
+  assert.match(browserSource, /market-workflow-card__body/);
+  assert.match(browserSource, /market-workflow-card__meta/);
+  assert.match(stylesheet, /\.market-hero-search-form/);
+  assert.match(stylesheet, /\.market-workflow-card__body/);
+  assert.match(stylesheet, /-webkit-line-clamp: 2/);
+});

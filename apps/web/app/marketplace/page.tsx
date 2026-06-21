@@ -743,6 +743,35 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
                   </span>
                 ))}
               </div>
+              <form
+                action="/marketplace"
+                className="market-hero-search-form"
+                method="get"
+                role="search"
+              >
+                <input name="lang" type="hidden" value={locale} />
+                <label className="market-hero-search-field">
+                  <PackageSearch size={16} aria-hidden="true" />
+                  <input
+                    aria-label={
+                      locale === "zh"
+                        ? "搜索任务、工具、发布者或 Skill 名称"
+                        : "Search tasks, tools, publishers, or Skill names"
+                    }
+                    defaultValue={initialFilters.query ?? ""}
+                    name="q"
+                    placeholder={
+                      locale === "zh"
+                        ? "搜索任务、工具、发布者或 Skill 名称"
+                        : "Search tasks, tools, publishers, or Skill names"
+                    }
+                    type="search"
+                  />
+                </label>
+                <button type="submit">
+                  {locale === "zh" ? "搜索 Skill" : "Search Skills"}
+                </button>
+              </form>
             </div>
           </Reveal>
 

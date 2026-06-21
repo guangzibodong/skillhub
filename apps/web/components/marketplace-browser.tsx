@@ -1016,9 +1016,11 @@ export function MarketplaceBrowser({
                 type="button"
               >
                 <span>{trackCopy.eyebrow}</span>
-                <strong>{trackCopy.title}</strong>
-                <p>{trackCopy.body}</p>
-                <small>
+                <div className="market-workflow-card__body">
+                  <strong>{trackCopy.title}</strong>
+                  <p>{trackCopy.body}</p>
+                </div>
+                <small className="market-workflow-card__meta">
                   {track.count} {dictionary.results}
                 </small>
               </button>
