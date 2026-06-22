@@ -140,3 +140,11 @@ test("homepage workbench leads with the animated runtime canvas", () => {
   assert.ok(liveStripIndex > -1);
   assert.ok(canvasIndex < liveStripIndex);
 });
+
+test("homepage first viewport is tightened across desktop and mobile", () => {
+  assert.match(stylesheet, /\.home-v2-hero h1\s*\{[^}]*font-size:\s*clamp\(50px,\s*5\.2vw,\s*82px\)[^}]*word-break:\s*keep-all/s);
+  assert.match(stylesheet, /@media \(min-width: 1800px\)\s*\{[\s\S]*?\.home-v2-hero h1\s*\{[^}]*font-size:\s*clamp\(58px,\s*4\.6vw,\s*88px\)/);
+  assert.match(stylesheet, /@media \(max-width: 840px\)\s*\{[\s\S]*?\.home-v2-workbench-live-strip\s*\{[^}]*display:\s*none/s);
+  assert.match(stylesheet, /@media \(max-width: 840px\)\s*\{[\s\S]*?\.home-v2-mobile-runtime-summary\s*\{[^}]*display:\s*grid/s);
+  assert.match(stylesheet, /@media \(max-width: 640px\)\s*\{[\s\S]*?\.home-v2-preview-note p,\s*\n\s*\.home-v2-agent-call-rail\s*\{[^}]*display:\s*none/s);
+});
