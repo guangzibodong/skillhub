@@ -129,6 +129,25 @@ test("homepage first screen uses a responsive runtime canvas instead of a full d
   assert.doesNotMatch(stylesheet, /\\.home-v2-runtime-canvas\\s*\\{[^}]*overflow-x:\\s*auto/s);
 });
 
+test("homepage runtime canvas tells a live agent invocation story", () => {
+  assert.match(pageSource, /home-v2-canvas-route/);
+  assert.match(pageSource, /home-v2-canvas-packet/);
+  assert.match(pageSource, /home-v2-canvas-core__signal/);
+  assert.match(pageSource, /home-v2-canvas-core__flow-step/);
+  assert.match(pageSource, /home-v2-canvas-panel__stream/);
+  assert.match(pageSource, /home-v2-canvas-evidence-row--live/);
+  assert.match(pageSource, /manifest checked/);
+  assert.match(pageSource, /policy allowed/);
+  assert.match(pageSource, /audit locked/);
+
+  assert.match(stylesheet, /@keyframes home-v2-canvas-packet-route/);
+  assert.match(stylesheet, /@keyframes home-v2-canvas-step-verify/);
+  assert.match(stylesheet, /@keyframes home-v2-canvas-evidence-refresh/);
+  assert.match(stylesheet, /@keyframes home-v2-canvas-signal-type/);
+  assert.match(stylesheet, /\.home-v2-canvas-core__flow-step:nth-child\(3\)/);
+  assert.match(stylesheet, /prefers-reduced-motion: reduce[\s\S]*?\.home-v2-canvas-packet/);
+});
+
 test("homepage runtime canvas responsive rules override the desktop canvas", () => {
   const baseCanvasIndex = stylesheet.indexOf(".home-v2-runtime-canvas {");
   const tabletCanvasIndex = stylesheet.lastIndexOf("@media (max-width: 1180px) {\n  .home-v2-runtime-canvas");

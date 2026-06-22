@@ -878,6 +878,14 @@ export default async function Home({ searchParams }: PageProps) {
                     </span>
                   ))}
                 </div>
+                <div className="home-v2-canvas-route" aria-hidden="true">
+                  <span className="home-v2-canvas-packet home-v2-canvas-packet--primary">
+                    <small>agent.invoke</small>
+                  </span>
+                  <span className="home-v2-canvas-packet home-v2-canvas-packet--secondary">
+                    <small>audit.write</small>
+                  </span>
+                </div>
                 <section className="home-v2-canvas-core">
                   <span>Agent Runtime Canvas</span>
                   <h2>SkillHub Policy Gate</h2>
@@ -886,9 +894,15 @@ export default async function Home({ searchParams }: PageProps) {
                       ? "Agent 发起调用后，SkillHub 先解析 manifest、校验 Project Key 和权限，再把结果写入运行证据。"
                       : "After an agent request, SkillHub resolves the manifest, checks Project Key and permissions, then writes runtime evidence."}
                   </p>
+                  <div className="home-v2-canvas-core__signal" aria-hidden="true">
+                    <span>POST /runtime/invoke</span>
+                    <code>manifest checked - policy allowed - audit locked</code>
+                  </div>
                   <div className="home-v2-canvas-core__flow" aria-hidden="true">
                     {["Agent", "Manifest", "Policy Gate", "Runtime Evidence"].map((item) => (
-                      <strong key={item}>{item}</strong>
+                      <strong className="home-v2-canvas-core__flow-step" key={item}>
+                        {item}
+                      </strong>
                     ))}
                   </div>
                 </section>
@@ -897,6 +911,11 @@ export default async function Home({ searchParams }: PageProps) {
                   <strong>{leadSkill.displayName}</strong>
                   <p>manifest v{leadSkill.version} · REST / MCP · 3 scopes</p>
                   <code>{`permissions: web.search + web.fetch`}</code>
+                  <div className="home-v2-canvas-panel__stream" aria-hidden="true">
+                    <span>schema ok</span>
+                    <span>manifest checked</span>
+                    <span>scopes matched</span>
+                  </div>
                 </aside>
                 <aside className="home-v2-canvas-panel home-v2-canvas-panel--evidence">
                   <span>Runtime Evidence</span>
@@ -905,11 +924,16 @@ export default async function Home({ searchParams }: PageProps) {
                     ["Policy Gate", "allowed"],
                     ["Audit trace", "locked"],
                   ].map(([label, value]) => (
-                    <div className="home-v2-canvas-evidence-row" key={label}>
+                    <div className={`home-v2-canvas-evidence-row${label === "Audit trace" ? " home-v2-canvas-evidence-row--live" : ""}`} key={label}>
                       <strong>{label}</strong>
                       <small>{value}</small>
                     </div>
                   ))}
+                  <div className="home-v2-canvas-panel__stream" aria-hidden="true">
+                    <span>project key bound</span>
+                    <span>policy allowed</span>
+                    <span>audit locked</span>
+                  </div>
                 </aside>
                 <div className="home-v2-mobile-runtime-summary" aria-hidden="true">
                   {[
