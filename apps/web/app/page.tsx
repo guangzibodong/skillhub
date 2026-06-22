@@ -721,8 +721,8 @@ export default async function Home({ searchParams }: PageProps) {
     : landing.control.runtime;
 
   return (
-    <main className={`product-shell home-shell home-shell--${locale}`}>
-      <section className="home-frame home-frame--v2" aria-labelledby="home-v2-heading">
+    <main className={`product-shell home-shell home-shell--infrastructure home-shell--${locale}`}>
+      <section className="home-frame home-frame--v2 home-frame--infrastructure" aria-labelledby="home-v3-heading">
         <SiteHeader
           active="home"
           apiUrl={apiUrl}
@@ -731,7 +731,7 @@ export default async function Home({ searchParams }: PageProps) {
           pathname="/"
         />
 
-        <section className="home-v2-root" aria-labelledby="home-heading">
+        <section className="home-v3-root home-v2-root" aria-labelledby="home-v3-heading">
           <div className="home-v2-edge-atmosphere" aria-hidden="true">
             <span className="home-v2-edge-panel home-v2-edge-panel--left">
               <span className="home-v2-edge-thread home-v2-edge-thread--a" />
@@ -739,7 +739,7 @@ export default async function Home({ searchParams }: PageProps) {
             </span>
             <span className="home-v2-runtime-rails home-v2-runtime-rails--left">
               {["Codex request", "manifest parse", "policy gate", "audit write"].map((item, index) => (
-                <span className={`home-v2-edge-packet home-v2-edge-packet--${index + 1}`} key={item}>
+                <span className={`home-v2-legacy-edge-packet home-v2-legacy-edge-packet--${index + 1}`} key={item}>
                   <small>invoke</small>
                   <strong>{item}</strong>
                 </span>
@@ -751,13 +751,250 @@ export default async function Home({ searchParams }: PageProps) {
             </span>
             <span className="home-v2-runtime-rails home-v2-runtime-rails--right">
               {["schema ok", "REST / MCP", "runtime 200", "Audit locked"].map((item, index) => (
-                <span className={`home-v2-edge-packet home-v2-edge-packet--${index + 1}`} key={item}>
+                <span className={`home-v2-legacy-edge-packet home-v2-legacy-edge-packet--${index + 1}`} key={item}>
                   <small>trace</small>
                   <strong>{item}</strong>
                 </span>
               ))}
             </span>
           </div>
+          <section className="home-v3-hero">
+            <div className="home-v3-hero__copy">
+              <span className="home-v3-eyebrow">Agent Skill Registry / Runtime Control Plane</span>
+              <h1 id="home-v3-heading">
+                {locale === "zh"
+                  ? "让 Agent 调用可信技能。"
+                  : "Let agents call trusted Skills."}
+              </h1>
+              <p>
+                {locale === "zh"
+                  ? "把 Skill 的发现、权限、Project Key、MCP / REST 调用和 audit log 放到同一个控制面。Codex、Claude Code、Gemini CLI、Copilot、OpenClaw、Hermes Agent 可以按项目策略调用，团队也能审查发布者、schema 和运行证据。"
+                  : "SkillHub turns Skill discovery, permissions, Project Keys, MCP / REST invocation, and audit logs into one control plane. Codex, Claude Code, Gemini CLI, Copilot, OpenClaw, and Hermes Agent can call skills by project policy while teams review publishers, schemas, and runtime evidence."}
+              </p>
+              <div className="home-v3-actions">
+                <PublicEventLink
+                  className="primary-button primary-button--large"
+                  eventName="browse_skills_cta_click"
+                  eventProperties={{ surface: "home_v3_hero" }}
+                  href={localizedHref("/marketplace", locale)}
+                >
+                  <Search size={18} aria-hidden="true" />
+                  {locale === "zh" ? "浏览 Skill Marketplace" : "Browse Skill Marketplace"}
+                </PublicEventLink>
+                <PublicEventLink
+                  className="secondary-button secondary-button--large"
+                  eventName="docs_cta_click"
+                  eventProperties={{ surface: "home_v3_hero" }}
+                  href={localizedHref("/docs#api", locale)}
+                >
+                  <Terminal size={18} aria-hidden="true" />
+                  {locale === "zh" ? "查看运行文档" : "View runtime docs"}
+                </PublicEventLink>
+              </div>
+              <div className="home-v3-proof-grid">
+                {(locale === "zh"
+                  ? [
+                      ["Discovery", "让人和 AI 都能准确找到可调用 Skill。"],
+                      ["Governance", "先校验 Project Key、权限、版本和发布者。"],
+                      ["Runtime", "每次 MCP / REST 调用都留下 audit log。"],
+                    ]
+                  : [
+                      ["Discovery", "Find callable Skills that users and AI can understand."],
+                      ["Governance", "Check Project Keys, permissions, versions, and publishers first."],
+                      ["Runtime", "Every MCP / REST call leaves an audit log."],
+                    ]
+                ).map(([label, body]) => (
+                  <article className="home-v3-proof" key={label}>
+                    <small>{label}</small>
+                    <strong>{body}</strong>
+                  </article>
+                ))}
+              </div>
+              <div className="home-v3-trace-card" aria-label={locale === "zh" ? "运行路径" : "Runtime path"}>
+                <div className="home-v3-trace-head">
+                  <small>Runtime path</small>
+                  <span>MCP / REST</span>
+                </div>
+                <div className="home-v3-trace-list">
+                  {(locale === "zh"
+                    ? [
+                        ["Agent request", "Codex / Claude Code 发起 Skill 调用"],
+                        ["Manifest", "校验输入输出、版本和运行协议"],
+                        ["Policy Gate", "Project Key 与权限策略通过"],
+                        ["Audit log", "结果、延迟和调用证据写入"],
+                      ]
+                    : [
+                        ["Agent request", "Codex / Claude Code starts the Skill call"],
+                        ["Manifest", "Inputs, outputs, versions, and protocols are checked"],
+                        ["Policy Gate", "Project Key and permissions pass policy"],
+                        ["Audit log", "Result, latency, and invocation evidence are written"],
+                      ]
+                  ).map(([label, body]) => (
+                    <div className="home-v3-trace-row" key={label}>
+                      <span className="home-v3-trace-dot" aria-hidden="true" />
+                      <strong>{label}</strong>
+                      <span>{body}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <section className="home-v3-product-preview" aria-label={locale === "zh" ? "SkillHub 产品预览" : "SkillHub product preview"}>
+              <div className="home-v3-product-head">
+                <div className="home-v3-crumbs">
+                  <strong>SkillHub</strong>
+                  <span>/</span>
+                  <span>Marketplace</span>
+                  <span>/</span>
+                  <span>{leadSkill.slug}</span>
+                </div>
+                <span className="home-v3-status-pill">runtime gated</span>
+              </div>
+              <div className="home-v3-product-grid">
+                <aside className="home-v3-skill-directory">
+                  <div className="home-v3-panel-title">
+                    <span>Skill directory</span>
+                    <small>248</small>
+                  </div>
+                  <div className="home-v3-search-box">
+                    <Search size={14} aria-hidden="true" />
+                    <span>browser, code, crm, invoice...</span>
+                  </div>
+                  <div className="home-v3-skill-list">
+                    <article className="home-v3-skill-row home-v3-skill-row--active">
+                      <span className="home-v3-skill-icon" aria-hidden="true">BR</span>
+                      <div>
+                        <strong>{leadSkill.displayName}</strong>
+                        <small>web.search · citations</small>
+                      </div>
+                    </article>
+                    {[
+                      ["CR", "Codebase Risk Scanner", "repo · policy · audit"],
+                      ["IE", "Invoice Extraction", "finance · schema"],
+                      ["DS", "Dataset Summarizer", "data · analysis"],
+                    ].map(([initial, title, meta]) => (
+                      <article className="home-v3-skill-row" key={title}>
+                        <span className="home-v3-skill-icon" aria-hidden="true">{initial}</span>
+                        <div>
+                          <strong>{title}</strong>
+                          <small>{meta}</small>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </aside>
+
+                <section className="home-v3-skill-detail">
+                  <div className="home-v3-agent-strip" aria-label={locale === "zh" ? "支持的 Agent 环境" : "Supported agent environments"}>
+                    {landing.footerAgentEcosystem.map((agent) => (
+                      <span className={`home-v3-agent-badge home-v3-agent-badge--${agent.logoKey}`} key={agent.name}>
+                        <img src={agent.logo} alt="" aria-hidden="true" />
+                        <strong>{agent.name}</strong>
+                      </span>
+                    ))}
+                  </div>
+
+                  <article className="home-v3-detail-card">
+                    <header>
+                      <div>
+                        <h2>{leadSkill.displayName}</h2>
+                        <p>
+                          {locale === "zh"
+                            ? "面向 Agent 的网页研究 Skill。接入前先看清输入输出、权限范围、运行方式、发布者和审核状态。"
+                            : "A web research Skill for agents. Inspect inputs, outputs, permissions, runtime protocols, publisher, and review state before adoption."}
+                        </p>
+                      </div>
+                      <span className="home-v3-verified">{landing.verified}</span>
+                    </header>
+                    <div className="home-v3-tabs" aria-hidden="true">
+                      {["Manifest", "Schema", "Permissions", "Examples"].map((item, index) => (
+                        <span className={index === 0 ? "home-v3-tab home-v3-tab--active" : "home-v3-tab"} key={item}>
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="home-v3-manifest">
+                      <div className="home-v3-code" aria-label={locale === "zh" ? "Manifest 示例" : "Manifest sample"}>
+                        <span>{"{"}</span>
+                        <span>{`  "name": "${leadSkill.slug}",`}</span>
+                        <span>{`  "version": "${leadSkill.version}",`}</span>
+                        <span>{`  "runtime": ["rest", "mcp"],`}</span>
+                        <span>{`  "permissions": ["web.search", "web.fetch"],`}</span>
+                        <span>{`  "requiresProjectKey": true`}</span>
+                        <span>{"}"}</span>
+                      </div>
+                      <div className="home-v3-check-grid">
+                        <div>
+                          <small>Manifest</small>
+                          <strong>schema checked</strong>
+                        </div>
+                        <div>
+                          <small>Policy</small>
+                          <strong>web.fetch allowed</strong>
+                        </div>
+                        <div>
+                          <small>Publisher</small>
+                          <strong>SkillHub Labs</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="home-v3-runtime-inline">
+                      <div>
+                        <small>Project Key</small>
+                        <strong>required</strong>
+                        <code>sk_live_project_••••••••••••</code>
+                      </div>
+                      <div>
+                        <small>Policy Gate</small>
+                        <strong>allowed</strong>
+                        <span>Audit trace locked</span>
+                      </div>
+                      <div>
+                        <small>Live invoke</small>
+                        <strong>p95 1.2s</strong>
+                        <span className="home-v3-meter"><i /></span>
+                      </div>
+                    </div>
+                    <div className="home-v3-audit-log" aria-label="Audit log">
+                      {[
+                        ["10:42", "Codex requested browser-research"],
+                        ["10:42", "Manifest and policy passed"],
+                        ["10:43", "Structured result returned"],
+                      ].map(([time, event]) => (
+                        <span key={`${time}-${event}`}>
+                          <time>{time}</time>
+                          <strong>{event}</strong>
+                        </span>
+                      ))}
+                    </div>
+                  </article>
+                </section>
+              </div>
+            </section>
+          </section>
+
+          <section className="home-v3-operating-grid">
+            {(locale === "zh"
+              ? [
+                  ["01 Marketplace", "给用户和 AI 都能找的 Skill 目录", "搜索、分类、权限、版本、发布者和示例都以结构化方式呈现。"],
+                  ["02 Governance", "Agent 调用前先经过项目治理", "Project Key、策略、预算、权限和审核状态决定 Skill 是否能被调用。"],
+                  ["03 Runtime", "真实运行结果留下证据链", "通过 MCP 或 REST 调用后，运行结果、延迟和 audit log 都可追踪。"],
+                ]
+              : [
+                  ["01 Marketplace", "A Skill directory users and AI can search", "Search, categories, permissions, versions, publishers, and examples are structured."],
+                  ["02 Governance", "Project controls before agent invocation", "Project Keys, policy, budget, permissions, and review state decide whether a Skill can run."],
+                  ["03 Runtime", "Runtime results leave an evidence chain", "MCP or REST calls produce traceable results, latency, and audit logs."],
+                ]
+            ).map(([label, title, body]) => (
+              <article className="home-v3-operating-card" key={label}>
+                <small>{label}</small>
+                <h2>{title}</h2>
+                <p>{body}</p>
+              </article>
+            ))}
+          </section>
+
           <section className="home-v2-hero">
             <div className="home-v2-motion-field" aria-hidden="true">
               <span className="home-v2-ambient-rail home-v2-ambient-rail--left">
@@ -870,8 +1107,8 @@ export default async function Home({ searchParams }: PageProps) {
                 <span className="home-v2-workbench__status">Manifest verified · runtime gated</span>
               </div>
 
-              <div className="home-v2-runtime-canvas" aria-label={locale === "zh" ? "Agent Runtime Canvas" : "Agent Runtime Canvas"}>
-                <div className="home-v2-canvas-orbit" aria-hidden="true">
+              <div className="home-v2-legacy-runtime-canvas" aria-label={locale === "zh" ? "Agent Runtime Canvas" : "Agent Runtime Canvas"}>
+                <div className="home-v2-legacy-canvas-orbit" aria-hidden="true">
                   {["Codex", "Claude", "Gemini", "MCP", "REST", "Audit"].map((node, index) => (
                     <span className={`home-v2-canvas-node home-v2-canvas-node--${index + 1}`} key={node}>
                       {node}
@@ -1259,16 +1496,16 @@ export default async function Home({ searchParams }: PageProps) {
 
           <section className="home-v2-agent-section">
             <div className="home-v2-agent-copy">
-              <span>Agent ecosystem</span>
+              <span>Agent runtime coverage</span>
               <h2>
                 {locale === "zh"
-                  ? "连接主流 Agent 环境，但 Skill 契约归 SkillHub 管。"
-                  : "Connect leading agent environments while Skill contracts stay governed in SkillHub."}
+                  ? "按项目策略接入主流 Agent。"
+                  : "Connect agent environments by project policy."}
               </h2>
               <p>
                 {locale === "zh"
-                  ? "Codex、Claude Code、Gemini CLI、GitHub Copilot、OpenClaw 和 Hermes Agent 可以通过 REST 或 MCP 使用经过审查的 Skill。"
-                  : "Codex, Claude Code, Gemini CLI, GitHub Copilot, OpenClaw, and Hermes Agent can use reviewed Skills through REST or MCP."}
+                  ? "Codex、Claude Code、Gemini CLI、GitHub Copilot、OpenClaw 和 Hermes Agent 可以通过 REST 或 MCP 调用已审核 Skill；manifest、权限、Project Key 和 audit log 仍由 SkillHub 统一治理。"
+                  : "Codex, Claude Code, Gemini CLI, GitHub Copilot, OpenClaw, and Hermes Agent can invoke reviewed Skills through REST or MCP while manifests, permissions, Project Keys, and audit logs stay governed in SkillHub."}
               </p>
             </div>
             <div className="home-v2-agent-grid">
