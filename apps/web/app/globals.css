@@ -26717,8 +26717,53 @@ a {
 }
 
 /* Homepage final composition based on the approved SkillHub design mockup. */
-.home-shell {
+.product-shell.home-shell {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
   padding: 16px 0 24px;
+  background:
+    radial-gradient(circle at 0% 20%, rgba(95, 191, 106, 0.16), transparent 30%),
+    radial-gradient(circle at 100% 24%, rgba(117, 200, 216, 0.13), transparent 32%),
+    radial-gradient(circle at 50% 18%, rgba(152, 232, 137, 0.08), transparent 42%),
+    linear-gradient(rgba(248, 245, 235, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 245, 235, 0.018) 1px, transparent 1px),
+    linear-gradient(180deg, #030504 0%, #07100a 44%, #020302 100%);
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px, 100% 100%;
+  animation: home-shell-stage-grid 28s linear infinite;
+}
+
+.product-shell.home-shell::before,
+.product-shell.home-shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.product-shell.home-shell::before {
+  background:
+    linear-gradient(90deg, rgba(152, 232, 137, 0.08), rgba(152, 232, 137, 0.12), transparent 22% 78%, rgba(117, 200, 216, 0.1), rgba(117, 200, 216, 0.07)),
+    linear-gradient(rgba(152, 232, 137, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(117, 200, 216, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 96px 96px, 96px 96px;
+  mask-image: linear-gradient(90deg, #000 0 22%, transparent 34% 66%, #000 78% 100%);
+  opacity: 0.88;
+  animation: home-shell-gutter-rail 18s ease-in-out infinite;
+}
+
+.product-shell.home-shell::after {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(152, 232, 137, 0.08), transparent 32%),
+    linear-gradient(90deg, rgba(3, 8, 5, 0.56), transparent 14% 86%, rgba(3, 8, 5, 0.56));
+  opacity: 0.64;
+}
+
+.product-shell.home-shell > .home-frame {
+  position: relative;
+  z-index: 1;
 }
 
 .home-frame {
@@ -37608,7 +37653,7 @@ textarea:focus {
   --home-v2-amber: #d9ad59;
   --home-v2-radius: 8px;
   --home-v2-shadow: 0 32px 110px rgba(0, 0, 0, 0.42);
-  width: min(2160px, calc(100% - 56px));
+  width: min(2400px, calc(100% - 44px));
   margin: 0 auto;
   background:
     radial-gradient(circle at 2% 18%, rgba(95, 191, 106, 0.11), transparent 32%),
@@ -39209,6 +39254,29 @@ textarea:focus {
   }
 }
 
+@keyframes home-shell-stage-grid {
+  0% {
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+
+  100% {
+    background-position: 0 0, 0 0, 0 0, 72px 72px, 72px 72px, 0 0;
+  }
+}
+
+@keyframes home-shell-gutter-rail {
+  0%,
+  100% {
+    opacity: 0.48;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.82;
+    transform: translateY(-16px);
+  }
+}
+
 @keyframes home-v2-edge-breathe {
   0%,
   100% {
@@ -39402,6 +39470,8 @@ textarea:focus {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-shell,
+  .home-shell::before,
   .home-v2-edge-panel,
   .home-v2-edge-thread,
   .home-v2-edge-packet,

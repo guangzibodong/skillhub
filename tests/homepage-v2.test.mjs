@@ -49,12 +49,21 @@ test("homepage wide gutters are designed product atmosphere instead of floating 
   assert.match(pageSource, /home-v2-workbench__ambient/);
   assert.doesNotMatch(pageSource, /home-v2-floating-chip/);
 
-  assert.match(stylesheet, /width: min\(2160px, calc\(100% - 56px\)\)/);
+  assert.match(stylesheet, /width: min\(2400px, calc\(100% - 44px\)\)/);
   assert.match(stylesheet, /home-v2-edge-atmosphere/);
   assert.match(stylesheet, /home-v2-edge-panel/);
   assert.match(stylesheet, /home-v2-workbench__ambient/);
   assert.match(stylesheet, /@keyframes home-v2-edge-breathe/);
   assert.match(stylesheet, /@media \(min-width: 1800px\)/);
+});
+
+test("homepage extends the product atmosphere beyond the central frame", () => {
+  assert.match(stylesheet, /\.product-shell\.home-shell\s*\{[^}]*background:[^}]*home-shell-stage-grid/s);
+  assert.match(stylesheet, /\.product-shell\.home-shell::before\s*\{[^}]*home-shell-gutter-rail/s);
+  assert.match(stylesheet, /\.product-shell\.home-shell::after\s*\{[^}]*radial-gradient\(circle at 50% 18%/s);
+  assert.match(stylesheet, /\.product-shell\.home-shell > \.home-frame\s*\{[^}]*z-index:\s*1/s);
+  assert.match(stylesheet, /@keyframes home-shell-stage-grid/);
+  assert.match(stylesheet, /@keyframes home-shell-gutter-rail/);
 });
 
 test("homepage explains skills are for agent runtimes and shows supported agents", () => {
