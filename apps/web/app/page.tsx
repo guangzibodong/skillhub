@@ -870,6 +870,62 @@ export default async function Home({ searchParams }: PageProps) {
                 <span className="home-v2-workbench__status">Manifest verified · runtime gated</span>
               </div>
 
+              <div className="home-v2-runtime-canvas" aria-label={locale === "zh" ? "Agent Runtime Canvas" : "Agent Runtime Canvas"}>
+                <div className="home-v2-canvas-orbit" aria-hidden="true">
+                  {["Codex", "Claude", "Gemini", "MCP", "REST", "Audit"].map((node, index) => (
+                    <span className={`home-v2-canvas-node home-v2-canvas-node--${index + 1}`} key={node}>
+                      {node}
+                    </span>
+                  ))}
+                </div>
+                <section className="home-v2-canvas-core">
+                  <span>Agent Runtime Canvas</span>
+                  <h2>SkillHub Policy Gate</h2>
+                  <p>
+                    {locale === "zh"
+                      ? "Agent 发起调用后，SkillHub 先解析 manifest、校验 Project Key 和权限，再把结果写入运行证据。"
+                      : "After an agent request, SkillHub resolves the manifest, checks Project Key and permissions, then writes runtime evidence."}
+                  </p>
+                  <div className="home-v2-canvas-core__flow" aria-hidden="true">
+                    {["Agent", "Manifest", "Policy Gate", "Runtime Evidence"].map((item) => (
+                      <strong key={item}>{item}</strong>
+                    ))}
+                  </div>
+                </section>
+                <aside className="home-v2-canvas-panel home-v2-canvas-panel--contract">
+                  <span>Skill Contract</span>
+                  <strong>{leadSkill.displayName}</strong>
+                  <p>manifest v{leadSkill.version} · REST / MCP · 3 scopes</p>
+                  <code>{`permissions: web.search + web.fetch`}</code>
+                </aside>
+                <aside className="home-v2-canvas-panel home-v2-canvas-panel--evidence">
+                  <span>Runtime Evidence</span>
+                  {[
+                    ["Project Key", "required"],
+                    ["Policy Gate", "allowed"],
+                    ["Audit trace", "locked"],
+                  ].map(([label, value]) => (
+                    <div className="home-v2-canvas-evidence-row" key={label}>
+                      <strong>{label}</strong>
+                      <small>{value}</small>
+                    </div>
+                  ))}
+                </aside>
+                <div className="home-v2-mobile-runtime-summary" aria-hidden="true">
+                  {[
+                    ["01", "Agent request"],
+                    ["02", "Manifest parse"],
+                    ["03", "Policy Gate"],
+                    ["04", "Runtime Evidence"],
+                  ].map(([step, title]) => (
+                    <span key={title}>
+                      <small>{step}</small>
+                      <strong>{title}</strong>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <div className="home-v2-workbench-live-strip" aria-hidden="true">
                 <div className="home-v2-invocation-timeline">
                   {[

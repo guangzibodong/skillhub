@@ -98,3 +98,45 @@ test("homepage hero has live invocation rails instead of static screenshot frami
   assert.match(stylesheet, /@keyframes home-v2-timeline-step/);
   assert.match(stylesheet, /@keyframes home-v2-panel-shift/);
 });
+
+test("homepage first screen uses a responsive runtime canvas instead of a full dashboard screenshot", () => {
+  assert.match(pageSource, /home-v2-runtime-canvas/);
+  assert.match(pageSource, /home-v2-canvas-core/);
+  assert.match(pageSource, /home-v2-canvas-orbit/);
+  assert.match(pageSource, /home-v2-canvas-node/);
+  assert.match(pageSource, /home-v2-mobile-runtime-summary/);
+  assert.match(pageSource, /Agent Runtime Canvas/);
+  assert.match(pageSource, /Policy Gate/);
+  assert.match(pageSource, /Runtime Evidence/);
+
+  assert.match(stylesheet, /home-v2-runtime-canvas/);
+  assert.match(stylesheet, /home-v2-canvas-core/);
+  assert.match(stylesheet, /home-v2-mobile-runtime-summary/);
+  assert.match(stylesheet, /@keyframes home-v2-canvas-orbit/);
+  assert.match(stylesheet, /@keyframes home-v2-canvas-pulse/);
+  assert.match(stylesheet, /@media \(max-width: 1180px\)/);
+  assert.match(stylesheet, /@media \(max-width: 1024px\)/);
+  assert.match(stylesheet, /@media \(max-width: 640px\)/);
+  assert.doesNotMatch(stylesheet, /\\.home-v2-runtime-canvas\\s*\\{[^}]*overflow-x:\\s*auto/s);
+});
+
+test("homepage runtime canvas responsive rules override the desktop canvas", () => {
+  const baseCanvasIndex = stylesheet.indexOf(".home-v2-runtime-canvas {");
+  const tabletCanvasIndex = stylesheet.lastIndexOf("@media (max-width: 1180px) {\n  .home-v2-runtime-canvas");
+  const stackedCanvasIndex = stylesheet.lastIndexOf("@media (max-width: 1024px) {\n  .home-v2-runtime-canvas");
+  const mobileCanvasIndex = stylesheet.lastIndexOf("@media (max-width: 640px) {\n  .home-frame--v2");
+
+  assert.ok(baseCanvasIndex > -1);
+  assert.ok(tabletCanvasIndex > baseCanvasIndex);
+  assert.ok(stackedCanvasIndex > baseCanvasIndex);
+  assert.ok(mobileCanvasIndex > baseCanvasIndex);
+});
+
+test("homepage workbench leads with the animated runtime canvas", () => {
+  const canvasIndex = pageSource.indexOf("home-v2-runtime-canvas");
+  const liveStripIndex = pageSource.indexOf("home-v2-workbench-live-strip");
+
+  assert.ok(canvasIndex > -1);
+  assert.ok(liveStripIndex > -1);
+  assert.ok(canvasIndex < liveStripIndex);
+});
