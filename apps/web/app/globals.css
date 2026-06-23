@@ -42542,6 +42542,83 @@ textarea:focus {
   max-width: 760px;
 }
 
+.solutions-v2 .registry-v2-shell {
+  width: min(100% - 48px, 1540px);
+}
+
+.solutions-v2 .registry-v2-hero {
+  padding-top: clamp(64px, 6.6vw, 104px);
+}
+
+.solutions-v2-hero__grid {
+  grid-template-columns: minmax(440px, 0.88fr) minmax(660px, 1.12fr);
+  gap: clamp(34px, 4.6vw, 72px);
+}
+
+.solutions-v2 .registry-v2-hero h1 {
+  max-width: 860px;
+  font-size: clamp(50px, 5vw, 86px);
+}
+
+.solutions-v2-console .registry-v2-console__body {
+  grid-template-columns: minmax(0, 1.12fr) minmax(250px, 0.72fr);
+}
+
+.solutions-v2 .registry-v2-code-preview pre {
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.solutions-v2-track-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.solutions-v2-track-card {
+  align-content: start;
+  min-height: 328px;
+}
+
+.solutions-v2-track-card small {
+  color: var(--registry-v2-cyan);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.solutions-v2-track-card p {
+  min-height: 104px;
+}
+
+.solutions-v2-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  color: var(--registry-v2-cyan);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.solutions-v2-link:hover {
+  color: var(--registry-v2-accent);
+}
+
+.solutions-v2-lane {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.solutions-v2-lane .registry-v2-lane-step {
+  min-height: 188px;
+}
+
+.solutions-v2-field-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 @keyframes registry-v2-scan {
   0%,
   38% {
@@ -42582,6 +42659,23 @@ textarea:focus {
 
   .registry-v2-lane-step::after {
     content: none;
+  }
+
+  .solutions-v2-hero__grid,
+  .solutions-v2-console .registry-v2-console__body {
+    grid-template-columns: 1fr;
+  }
+
+  .solutions-v2-track-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solutions-v2-track-card {
+    min-height: 0;
+  }
+
+  .solutions-v2-track-card p {
+    min-height: 0;
   }
 }
 
@@ -42650,6 +42744,14 @@ textarea:focus {
     line-height: 1.2;
     text-transform: uppercase;
     content: attr(data-label);
+  }
+
+  .solutions-v2 .registry-v2-shell {
+    width: min(100% - 28px, 900px);
+  }
+
+  .solutions-v2-track-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -42768,6 +42870,22 @@ textarea:focus {
 
   .registry-v2-closing .registry-v2-shell {
     padding: 24px 16px;
+  }
+
+  .solutions-v2 .registry-v2-shell {
+    width: min(100% - 18px, 640px);
+  }
+
+  .solutions-v2 .registry-v2-hero h1 {
+    font-size: clamp(36px, 10.7vw, 48px);
+  }
+
+  .solutions-v2 .registry-v2-hero__copy > p {
+    overflow-wrap: anywhere;
+  }
+
+  .solutions-v2-track-card {
+    gap: 12px;
   }
 }
 

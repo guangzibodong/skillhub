@@ -452,131 +452,196 @@ function SolutionsHubPage({
   return (
     <AppShell active={hub.active} locale={locale}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="growth-page solutions-page">
-        <section className="growth-hero solutions-hero" aria-labelledby={`${hubKey}-heading`}>
-          <div className="solutions-hero__copy">
-            <p className="solutions-kicker">{copy.heroEyebrow}</p>
-            <h1 id={`${hubKey}-heading`}>{hub.title[locale]}</h1>
-            <p>{hub.intro[locale]}</p>
-            <div className="growth-actions">
-              <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
-                <span>{copy.primaryCta}</span>
-                <ArrowRight size={17} aria-hidden="true" />
-              </a>
-              <a className="btn-secondary btn-secondary--large" href={localizedHref("/docs", locale)}>
-                <span>{copy.secondaryCta}</span>
-              </a>
-            </div>
-            <div className="solutions-proof-row" aria-label={copy.metricsLabel}>
-              {copy.metrics.map((metric) => (
-                <div className="solutions-proof" key={metric.label}>
-                  <strong>{metric.value}</strong>
-                  <span>{metric.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <aside className="solutions-command-panel" aria-label={copy.summaryLabel}>
-            <div className="solutions-command-panel__bar">
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-              <strong>{copy.consoleTitle}</strong>
-            </div>
-            <div className="solutions-command-panel__body">
-              <div className="solutions-task-card">
-                <span>{copy.currentTaskLabel}</span>
-                <strong>{copy.currentTask}</strong>
-              </div>
-              <div className="solutions-agent-flow">
-                {copy.consoleNodes.map((node, index) => (
-                  <div className="solutions-agent-node" key={node.title}>
-                    <b>{index + 1}</b>
-                    <small>{node.label}</small>
-                    <strong>{node.title}</strong>
-                  </div>
+      <main className="registry-v2 solutions-v2">
+        <section className="registry-v2-hero" aria-labelledby={`${hubKey}-heading`}>
+          <div className="registry-v2-shell registry-v2-hero__grid solutions-v2-hero__grid">
+            <div className="registry-v2-hero__copy">
+              <span className="registry-v2-eyebrow">
+                <span aria-hidden="true" />
+                {copy.heroEyebrow}
+              </span>
+              <h1 id={`${hubKey}-heading`}>
+                {copy.heroTitleLines.map((line) => (
+                  <span key={line}>{line}</span>
                 ))}
+              </h1>
+              <p>{hub.intro[locale]}</p>
+              <div className="registry-v2-actions">
+                <a className="registry-v2-button registry-v2-button--primary" href={localizedHref("/marketplace", locale)}>
+                  <Search size={16} aria-hidden="true" />
+                  <span>{copy.primaryCta}</span>
+                </a>
+                <a className="registry-v2-button" href={localizedHref("/docs", locale)}>
+                  <ArrowRight size={16} aria-hidden="true" />
+                  <span>{copy.secondaryCta}</span>
+                </a>
               </div>
-              <div className="solutions-code-panel" aria-label={copy.codeLabel}>
-                {copy.codeLines.map((line) => (
-                  <code key={line}>{line}</code>
+              <div className="registry-v2-proof" aria-label={copy.metricsLabel}>
+                {copy.metrics.map((metric) => (
+                  <article className="registry-v2-proof-card" key={metric.label}>
+                    <strong>{metric.value}</strong>
+                    <span>{metric.label}</span>
+                  </article>
                 ))}
               </div>
             </div>
-          </aside>
-        </section>
 
-        <section className="solutions-section solutions-workflow-section" aria-labelledby="solutions-track-heading">
-          <div className="solutions-section__heading solutions-section__heading--split">
-            <h2 id="solutions-track-heading">{copy.trackTitle}</h2>
-            <p>{copy.trackBody}</p>
-          </div>
-          <div className="solutions-workflow-layout">
-            <div className="solutions-lane-stack">
-            {solutionItems.map(({ item, track }) => {
-              const Icon = track.icon;
-              return (
-                <article className="solutions-lane-card" key={item.path}>
-                  <div className="solutions-lane-card__title">
-                    <small>{track.label[locale]}</small>
-                    <span className="solutions-lane-card__icon">
-                      <Icon size={18} aria-hidden="true" />
+            <aside className="registry-v2-console solutions-v2-console" aria-label={copy.summaryLabel}>
+              <div className="registry-v2-console__top">
+                <span className="registry-v2-window-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span>{copy.consolePath}</span>
+                <span>{copy.consoleTitle}</span>
+              </div>
+              <div className="registry-v2-console__body">
+                <div className="registry-v2-contract-main">
+                  <div className="registry-v2-contract-head">
+                    <div>
+                      <h2>{copy.currentTaskLabel}</h2>
+                      <p>{copy.currentTask}</p>
+                    </div>
+                    <span className="registry-v2-status-pill">
+                      <span aria-hidden="true" />
+                      {copy.consoleStatus}
                     </span>
-                    <h3>
-                      <a href={localizedHref(item.path, locale)}>{track.title[locale]}</a>
-                    </h3>
                   </div>
-                  <p>{track.body[locale]}</p>
-                  <div className="solutions-lane-card__tags">
-                    {track.tags[locale].map((tag) => (
-                      <span key={tag}>{tag}</span>
+                  <div className="registry-v2-api-line">
+                    <strong>{copy.consoleMethod}</strong>
+                    <span>{copy.consoleEndpoint}</span>
+                  </div>
+                  <div className="registry-v2-schema-grid">
+                    {copy.consoleNodes.map((node) => (
+                      <article className="registry-v2-schema-box" key={node.title}>
+                        <small>{node.label}</small>
+                        <strong>{node.title}</strong>
+                        <span>{node.body}</span>
+                      </article>
                     ))}
                   </div>
-                  <a className="solutions-lane-card__link" href={localizedHref(track.marketplaceHref, locale)}>
-                    {copy.findSkills}
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </a>
-                </article>
-              );
-            })}
-            </div>
-
-            <aside className="solutions-side-brief" aria-labelledby="solutions-definition-heading">
-              <div>
-                <p className="solutions-kicker">{copy.definitionEyebrow}</p>
-                <h2 id="solutions-definition-heading">{copy.definitionTitle}</h2>
-                <p>{copy.definitionBody}</p>
-              </div>
-              <div className="solutions-adoption-matrix" aria-label={copy.matrixLabel}>
-                {copy.matrix.map((row) => (
-                  <div className="solutions-adoption-row" key={row.stage}>
-                    <strong>{row.stage}</strong>
-                    <span>{row.scope}</span>
-                    <span>{row.control}</span>
+                  <div className="registry-v2-code-preview" aria-label={copy.codeLabel}>
+                    <pre>
+                      <code>{copy.codeLines.join("\n")}</code>
+                    </pre>
                   </div>
-                ))}
+                </div>
+                <div className="registry-v2-contract-side">
+                  {copy.consoleSideBlocks.map((block) => (
+                    <div className="registry-v2-side-block" key={block.title}>
+                      <h3>{block.title}</h3>
+                      <p>{block.body}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </aside>
           </div>
         </section>
 
-        <section className="solutions-section solutions-adoption-section" aria-labelledby="solutions-adoption-heading">
-          <div className="solutions-section__heading solutions-section__heading--split">
-            <h2 id="solutions-adoption-heading">{copy.pathTitle}</h2>
-            <p>{copy.pathBody}</p>
-          </div>
-          <div className="solutions-path-grid">
-            {copy.steps.map((step, index) => (
-              <article className="solutions-step" key={step.title}>
-                <span>{String(index + 1)}.</span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
+        <section className="registry-v2-section" aria-labelledby="solutions-track-heading">
+          <div className="registry-v2-shell">
+            <div className="registry-v2-section-heading">
+              <div>
+                <span className="registry-v2-eyebrow">
+                  <span aria-hidden="true" />
+                  {copy.trackEyebrow}
+                </span>
+                <h2 id="solutions-track-heading">{copy.trackTitle}</h2>
+              </div>
+              <p>{copy.trackBody}</p>
+            </div>
+            <div className="registry-v2-surface-grid solutions-v2-track-grid">
+              {solutionItems.map(({ track }) => {
+                const Icon = track.icon;
+                return (
+                  <article className="registry-v2-card solutions-v2-track-card" key={track.title[locale]}>
+                    <span className="registry-v2-card__icon">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <small>{track.label[locale]}</small>
+                    <h3>{track.title[locale]}</h3>
+                    <p>{track.body[locale]}</p>
+                    <div className="registry-v2-tags">
+                      {track.tags[locale].map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                    <a className="solutions-v2-link" href={localizedHref(track.marketplaceHref, locale)}>
+                      <span>{copy.findSkills}</span>
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </a>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         </section>
-      </div>
+
+        <section className="registry-v2-section" aria-labelledby="solutions-adoption-heading">
+          <div className="registry-v2-shell">
+            <div className="registry-v2-section-heading">
+              <div>
+                <span className="registry-v2-eyebrow">
+                  <span aria-hidden="true" />
+                  {copy.pathEyebrow}
+                </span>
+                <h2 id="solutions-adoption-heading">{copy.pathTitle}</h2>
+              </div>
+              <p>{copy.pathBody}</p>
+            </div>
+            <div className="registry-v2-lane-panel">
+              <div className="registry-v2-lane solutions-v2-lane">
+                {copy.steps.map((step, index) => (
+                  <article className="registry-v2-lane-step" key={step.title}>
+                    <span>{index + 1}</span>
+                    <strong>{step.title}</strong>
+                    <p>{step.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="registry-v2-section" aria-labelledby="solutions-definition-heading">
+          <div className="registry-v2-shell">
+            <div className="registry-v2-section-heading">
+              <div>
+                <span className="registry-v2-eyebrow">
+                  <span aria-hidden="true" />
+                  {copy.definitionEyebrow}
+                </span>
+                <h2 id="solutions-definition-heading">{copy.definitionTitle}</h2>
+              </div>
+              <p>{copy.definitionBody}</p>
+            </div>
+            <div className="registry-v2-manifest-layout">
+              <div className="registry-v2-field-grid solutions-v2-field-grid">
+                {copy.matrix.map((row) => (
+                  <article className="registry-v2-field" key={row.stage}>
+                    <small>{row.stage}</small>
+                    <strong>{row.scope}</strong>
+                    <p>{row.control}</p>
+                  </article>
+                ))}
+              </div>
+              <aside className="registry-v2-policy-stack">
+                {copy.policies.map((policy) => (
+                  <article className="registry-v2-policy" key={policy.title}>
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <div>
+                      <strong>{policy.title}</strong>
+                      <p>{policy.body}</p>
+                    </div>
+                  </article>
+                ))}
+              </aside>
+            </div>
+          </div>
+        </section>
+      </main>
     </AppShell>
   );
 }
@@ -584,24 +649,59 @@ function SolutionsHubPage({
 const solutionPageCopy = {
   en: {
     heroEyebrow: "Cross-border commerce / Agent Skill workflows",
+    heroTitleLines: ["Solve commerce work,", "with governed Skills."],
     primaryCta: "Find Skills by business problem",
-    secondaryCta: "View integration path",
+    secondaryCta: "Read adoption path",
     summaryLabel: "Agent workflow preview",
+    consolePath: "skillhub://solutions/commerce-launch",
     consoleTitle: "commerce.agent.run",
-    currentTaskLabel: "Current business task",
+    consoleStatus: "policy-ready",
+    consoleMethod: "POST",
+    consoleEndpoint: "/v1/projects/{projectKey}/runs/commerce-launch",
+    currentTaskLabel: "Launch QA",
     currentTask:
-      "A new product is preparing for paid traffic, so product-page conversion and AI-search visibility need to be checked first.",
+      "A new SKU line is going live across storefront, marketplace, and search. The Agent needs approved Skills for listing QA, review mining, and GEO checks before traffic is sent.",
     consoleNodes: [
-      { label: "Input", title: "Product page, reviews, keywords, SKU sheet" },
-      { label: "Select Skill", title: "Listing QA / GEO Auditor / Review Mining" },
-      { label: "Run", title: "Execute with permissions, schema, and project policy" },
-      { label: "Output", title: "Repair list, content brief, human review items" },
+      {
+        label: "Input",
+        title: "Commerce evidence",
+        body: "Product page, reviews, keyword set, SKU sheet, and launch checklist.",
+      },
+      {
+        label: "Select Skill",
+        title: "Match the blocked task",
+        body: "Listing QA, GEO Auditor, Review Mining, Support Reply, or Release QA.",
+      },
+      {
+        label: "Policy",
+        title: "Run with project rules",
+        body: "Permissions, schema, budget, logs, and human review stay visible.",
+      },
+      {
+        label: "Output",
+        title: "Operator-ready work",
+        body: "Repair list, content brief, support summary, release gate, or data cleanup.",
+      },
     ],
     codeLabel: "Agent invocation example",
     codeLines: [
       'agent.selectSkill({ category: "ecommerce", task: "launch QA" })',
       'run.withPolicy({ projectKey, permissions: ["read:pdp", "read:reviews"] })',
       'return ["title fixes", "trust gaps", "GEO citation ideas", "launch blockers"]',
+    ],
+    consoleSideBlocks: [
+      {
+        title: "Agent-readable",
+        body: "Each solution points Agents to contract-first Skills instead of loose prompts or manual tool guessing.",
+      },
+      {
+        title: "Business-owned",
+        body: "Operators keep the task, evidence, review point, and output standard clear before automation enters daily work.",
+      },
+      {
+        title: "Runtime-gated",
+        body: "Public pages explain the workflow; real execution uses Project Keys, policy approval, and audit records.",
+      },
     ],
     metricsLabel: "Solution proof points",
     metrics: [
@@ -619,10 +719,26 @@ const solutionPageCopy = {
       { stage: "Pro runtime", scope: "Project Keys, logs, policy gates", control: "Reusable team workflow" },
       { stage: "Human review", scope: "Writeback, customer promises, sensitive data", control: "Control business risk" },
     ],
+    policies: [
+      {
+        title: "Agent-readable is not automatically runnable",
+        body: "Agents can inspect the Skill contract, but project runtime still requires adoption, policy, and a valid key.",
+      },
+      {
+        title: "Write-back stays controlled",
+        body: "CRM updates, Shopify changes, customer replies, and release actions stay behind explicit approval boundaries.",
+      },
+      {
+        title: "Outputs must be operational",
+        body: "A solution should produce a repair queue, brief, checklist, summary, or handoff that a team can actually use.",
+      },
+    ],
+    trackEyebrow: "Solution tracks",
     trackTitle: "Do not start from a tool name. Start from the commerce workflow blocked today.",
     trackBody:
       "The page is organized around the real operating chain of cross-border teams so operations, growth, support, and engineering can each find the right entry point.",
     findSkills: "Open Skills",
+    pathEyebrow: "Adoption path",
     pathTitle: "Move from one low-risk check to a team-operated Skill workflow.",
     pathBody:
       "Use this path before entering the marketplace so buyers understand how discovery, contract inspection, and project runtime connect.",
@@ -643,23 +759,58 @@ const solutionPageCopy = {
   },
   zh: {
     heroEyebrow: "跨境电商 / Agent Skill 工作流",
+    heroTitleLines: ["跨境业务问题，", "交给可治理 Skill。"],
     primaryCta: "按业务问题找技能",
-    secondaryCta: "查看接入路径",
+    secondaryCta: "查看采用路径",
     summaryLabel: "Agent 工作流预览",
+    consolePath: "skillhub://solutions/commerce-launch",
     consoleTitle: "commerce.agent.run",
-    currentTaskLabel: "当前业务任务",
-    currentTask: "新款产品准备投放，商品页转化和 AI 搜索曝光都要先检查。",
+    consoleStatus: "策略就绪",
+    consoleMethod: "POST",
+    consoleEndpoint: "/v1/projects/{projectKey}/runs/commerce-launch",
+    currentTaskLabel: "上线前质检",
+    currentTask: "一批新 SKU 准备同步到独立站、平台和搜索渠道。Agent 需要先调用已审核的 Listing 质检、评论洞察和 GEO 检查 Skill，再进入投放。",
     consoleNodes: [
-      { label: "输入", title: "商品页、评论、关键词、SKU 表" },
-      { label: "选择 Skill", title: "Listing QA / GEO Auditor / Review Mining" },
-      { label: "运行", title: "按权限、输入 schema 和项目策略执行" },
-      { label: "输出", title: "修复清单、内容简报、人工复核项" },
+      {
+        label: "输入",
+        title: "业务证据",
+        body: "商品页、评论、关键词、SKU 表和上线检查清单。",
+      },
+      {
+        label: "选择 Skill",
+        title: "匹配被卡住的任务",
+        body: "Listing 质检、GEO 诊断、评论洞察、客服回复或发布 QA。",
+      },
+      {
+        label: "策略",
+        title: "按项目规则运行",
+        body: "权限、schema、预算、日志和人工复核保持可见。",
+      },
+      {
+        label: "输出",
+        title: "可交付结果",
+        body: "修复清单、内容简报、客服总结、发布门禁或数据清洗结果。",
+      },
     ],
     codeLabel: "Agent 调用示例",
     codeLines: [
       'agent.selectSkill({ category: "ecommerce", task: "launch QA" })',
       'run.withPolicy({ projectKey, permissions: ["read:pdp", "read:reviews"] })',
       'return ["标题优化", "信任缺口", "GEO 引用建议", "上线阻塞项"]',
+    ],
+    consoleSideBlocks: [
+      {
+        title: "Agent 可读",
+        body: "每个解决方案都把 Agent 指向合约清楚的 Skill，而不是松散提示词或人工猜工具。",
+      },
+      {
+        title: "业务可控",
+        body: "运营团队先明确任务、证据、复核点和输出标准，再把流程交给自动化。",
+      },
+      {
+        title: "运行受控",
+        body: "公开页面负责解释工作流；真实执行需要 Project Key、策略审批和审计记录。",
+      },
     ],
     metricsLabel: "解决方案要点",
     metrics: [
@@ -677,9 +828,25 @@ const solutionPageCopy = {
       { stage: "Pro 运行", scope: "Project Key、日志、策略门禁", control: "团队长期复用" },
       { stage: "人工复核", scope: "写回、客户承诺、敏感数据", control: "控制业务风险" },
     ],
+    policies: [
+      {
+        title: "Agent 可读不等于直接运行",
+        body: "Agent 可以检查 Skill 合约，但进入项目运行仍需要采用、策略和有效密钥。",
+      },
+      {
+        title: "写回动作必须受控",
+        body: "CRM 更新、Shopify 写回、客服回复和发布动作，都保留明确审批边界。",
+      },
+      {
+        title: "输出必须能进入运营",
+        body: "解决方案要产出修复队列、简报、清单、总结或交接内容，而不是泛泛的 AI 建议。",
+      },
+    ],
+    trackEyebrow: "解决方案主线",
     trackTitle: "不要从工具名开始，从今天卡住的业务环节开始。",
     trackBody: "页面主体按跨境团队真实工作链路组织，让运营、增长、客服和研发都能快速找到自己的入口。",
     findSkills: "打开技能",
+    pathEyebrow: "采用路径",
     pathTitle: "从一次低风险检查，走到团队可运营的 Skill 工作流。",
     pathBody: "这个区域帮助用户在进入市场前理解采用路线，减少不知道点哪里的犹豫。",
     steps: [
