@@ -105,23 +105,23 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
     active: "solutions",
     eyebrow: { en: "Solutions", zh: "解决方案" },
     intro: {
-      en: "Role and department pages that explain which SkillHub workflows to start with, what buyers should verify, and how teams move from discovery to governed runtime.",
-      zh: "按团队和业务部门说明应该从哪些 SkillHub 工作流开始、买家要检查什么，以及如何从发现技能走到受治理运行。",
+      en: "Turn cross-border commerce operations, SEO/GEO growth, support, data cleanup, and software delivery into governed Agent Skill workflows.",
+      zh: "把跨境电商运营、SEO/GEO 增长、客服售后、数据清理和软件交付，拆成可被智能体调用、可审计、可复用的 Skill 工作流。",
     },
     path: "/solutions",
     seo: {
       en: {
-        title: "SkillHub Solutions - AI Skills for SEO, E-commerce, Support, Sales, Data, and Security",
+        title: "SkillHub Solutions - Agent Skills for Cross-Border Commerce, SEO/GEO, Support, and Software Delivery",
         description:
-          "Explore SkillHub solution pages for SEO/GEO, e-commerce operations, support automation, sales CRM, data cleanup, UI QA, developer tools, and security review.",
+          "Use SkillHub to solve cross-border commerce operations, SEO/GEO growth, listing QA, support workflows, data cleanup, and software delivery with governed Agent Skills.",
       },
       zh: {
-        title: "SkillHub 解决方案 - SEO、电商、客服、销售、数据与安全 AI 技能",
+        title: "SkillHub 解决方案 - 跨境电商、SEO/GEO、客服与软件开发 Agent Skill",
         description:
-          "查看 SkillHub 面向 SEO/GEO、电商运营、客服自动化、销售 CRM、数据清洗、UI 质检、开发工具和安全审核的解决方案。",
+          "用 SkillHub 解决跨境电商运营、SEO/GEO 增长、Listing 质检、客服工作流、数据清洗和软件交付问题，并通过受治理的 Agent Skill 落地。",
       },
     },
-    title: { en: "Solutions by business workflow", zh: "按业务工作流选择解决方案" },
+    title: { en: "Agent Skill solutions for cross-border commerce teams", zh: "跨境电商团队的 Agent Skill 解决方案" },
   },
   "use-cases": {
     active: "use-cases",

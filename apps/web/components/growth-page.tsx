@@ -8,7 +8,6 @@ import {
   Layers3,
   MonitorCheck,
   PlugZap,
-  Route,
   Search,
   ShieldCheck,
   ShoppingBag,
@@ -352,6 +351,90 @@ const solutionTrackConfigs: Record<string, SolutionTrack> = {
   },
 };
 
+type CommerceSolutionTrack = {
+  icon: LucideIcon;
+  marketplaceHref: string;
+  label: Record<Locale, string>;
+  title: Record<Locale, string>;
+  body: Record<Locale, string>;
+  tags: Record<Locale, string[]>;
+};
+
+const commerceSolutionTrackOrder = ["seo-geo", "ecommerce", "data-automation", "support", "developer-security"];
+
+const commerceSolutionTrackConfigs: Record<string, CommerceSolutionTrack> = {
+  "seo-geo": {
+    icon: Search,
+    marketplaceHref: "/marketplace?category=seo",
+    label: { en: "01 / Traffic growth", zh: "01 / 流量增长" },
+    title: { en: "SEO / GEO and content growth", zh: "SEO / GEO 与内容增长" },
+    body: {
+      en: "Diagnose search and answer-engine visibility, then turn keywords, citation gaps, content briefs, and technical repairs into an execution queue.",
+      zh: "诊断搜索和 AI 答案可见度，把关键词、引用缺口、内容简报和技术修复排成可执行队列。",
+    },
+    tags: {
+      en: ["GEO audit", "SEO repair", "Content brief"],
+      zh: ["GEO 诊断", "SEO 修复", "内容简报"],
+    },
+  },
+  ecommerce: {
+    icon: ShoppingBag,
+    marketplaceHref: "/marketplace?category=ecommerce",
+    label: { en: "02 / Product operations", zh: "02 / 商品运营" },
+    title: { en: "Product page and listing QA", zh: "商品页与 Listing 质检" },
+    body: {
+      en: "Check titles, selling points, review insights, pricing notes, SKU fields, and launch blockers before paid traffic reaches the page.",
+      zh: "检查标题、卖点、评论洞察、价格备注、SKU 字段和上架阻塞项，减少投放前的运营遗漏。",
+    },
+    tags: {
+      en: ["Shopify", "Amazon", "Review mining"],
+      zh: ["Shopify", "Amazon", "评论洞察"],
+    },
+  },
+  "data-automation": {
+    icon: Database,
+    marketplaceHref: "/marketplace?category=data",
+    label: { en: "03 / Store operations", zh: "03 / 店铺运营" },
+    title: { en: "Sheets, inventory, and operating data", zh: "表格、库存与运营数据" },
+    body: {
+      en: "Clean exports, normalize fields, explain metric changes, and turn store reports into repeatable Agent workflows.",
+      zh: "清洗导出表、规范字段、解释指标变化，把运营报表变成可复用的 Agent 工作流。",
+    },
+    tags: {
+      en: ["CSV cleanup", "Inventory check", "Metric notes"],
+      zh: ["CSV 清洗", "库存检查", "指标解读"],
+    },
+  },
+  support: {
+    icon: Headphones,
+    marketplaceHref: "/marketplace?category=ops",
+    label: { en: "04 / Support conversion", zh: "04 / 客服转化" },
+    title: { en: "Support, after-sales, and knowledge base", zh: "客服、售后与知识库" },
+    body: {
+      en: "Summarize tickets, draft replies, identify knowledge gaps, and keep human review around sensitive customer outcomes.",
+      zh: "总结工单、生成回复草稿、发现知识库缺口，敏感客户结果保留人工审核。",
+    },
+    tags: {
+      en: ["Ticket routing", "Reply draft", "Knowledge gap"],
+      zh: ["工单分流", "回复草稿", "知识缺口"],
+    },
+  },
+  "developer-security": {
+    icon: ShieldCheck,
+    marketplaceHref: "/marketplace?category=dev",
+    label: { en: "05 / Technical delivery", zh: "05 / 技术交付" },
+    title: { en: "Software development and automated release", zh: "软件开发与自动化发布" },
+    body: {
+      en: "Review API contracts, release notes, permission scope, and agent-generated code risk so commerce systems can ship safely.",
+      zh: "面向开发团队检查 API 合约、发布说明、权限范围和 Agent 生成代码风险，支撑电商系统稳定迭代。",
+    },
+    tags: {
+      en: ["API contract", "Release QA", "Permission risk"],
+      zh: ["API 合约", "发布 QA", "权限风险"],
+    },
+  },
+};
+
 function SolutionsHubPage({
   hub,
   hubKey,
@@ -359,9 +442,10 @@ function SolutionsHubPage({
   jsonLd,
   locale,
 }: GrowthHubPageProps & { jsonLd: Record<string, unknown> }) {
-  const solutionItems = items.flatMap((item) => {
-    const track = solutionTrackConfigs[item.slug];
-    return track ? [{ item, track }] : [];
+  const solutionItems = commerceSolutionTrackOrder.flatMap((slug) => {
+    const item = items.find((candidate) => candidate.slug === slug);
+    const track = commerceSolutionTrackConfigs[slug];
+    return item && track ? [{ item, track }] : [];
   });
   const copy = solutionPageCopy[locale];
 
@@ -370,8 +454,8 @@ function SolutionsHubPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="growth-page solutions-page">
         <section className="growth-hero solutions-hero" aria-labelledby={`${hubKey}-heading`}>
-          <div>
-            <p className="eyebrow">{hub.eyebrow[locale]}</p>
+          <div className="solutions-hero__copy">
+            <p className="solutions-kicker">{copy.heroEyebrow}</p>
             <h1 id={`${hubKey}-heading`}>{hub.title[locale]}</h1>
             <p>{hub.intro[locale]}</p>
             <div className="growth-actions">
@@ -383,142 +467,111 @@ function SolutionsHubPage({
                 <span>{copy.secondaryCta}</span>
               </a>
             </div>
-          </div>
-          <aside className="growth-hero-panel solutions-command-panel" aria-label={copy.summaryLabel}>
-            <span>
-              <Route size={16} aria-hidden="true" />
-              {copy.summaryEyebrow}
-            </span>
-            <strong>{copy.summaryTitle}</strong>
-            <p>{copy.summaryBody}</p>
-            <div className="solutions-metrics" aria-label={copy.metricsLabel}>
+            <div className="solutions-proof-row" aria-label={copy.metricsLabel}>
               {copy.metrics.map((metric) => (
-                <div className="solutions-metric" key={metric.label}>
+                <div className="solutions-proof" key={metric.label}>
                   <strong>{metric.value}</strong>
                   <span>{metric.label}</span>
                 </div>
               ))}
             </div>
+          </div>
+
+          <aside className="solutions-command-panel" aria-label={copy.summaryLabel}>
+            <div className="solutions-command-panel__bar">
+              <span aria-hidden="true" />
+              <span aria-hidden="true" />
+              <span aria-hidden="true" />
+              <strong>{copy.consoleTitle}</strong>
+            </div>
+            <div className="solutions-command-panel__body">
+              <div className="solutions-task-card">
+                <span>{copy.currentTaskLabel}</span>
+                <strong>{copy.currentTask}</strong>
+              </div>
+              <div className="solutions-agent-flow">
+                {copy.consoleNodes.map((node, index) => (
+                  <div className="solutions-agent-node" key={node.title}>
+                    <b>{index + 1}</b>
+                    <small>{node.label}</small>
+                    <strong>{node.title}</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="solutions-code-panel" aria-label={copy.codeLabel}>
+                {copy.codeLines.map((line) => (
+                  <code key={line}>{line}</code>
+                ))}
+              </div>
+            </div>
           </aside>
         </section>
 
-        <section className="solutions-section" aria-labelledby="solutions-definition-heading">
-          <div className="solutions-section__heading">
-            <p className="eyebrow">{copy.definitionEyebrow}</p>
-            <h2 id="solutions-definition-heading">{copy.definitionTitle}</h2>
-            <p>{copy.definitionBody}</p>
-          </div>
-          <div className="solutions-definition-grid">
-            {copy.definitionCards.map((card) => (
-              <article className="solutions-definition-card" key={card.title}>
-                <strong>{card.title}</strong>
-                <p>{card.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="solutions-section" aria-labelledby="solutions-track-heading">
-          <div className="solutions-section__heading">
-            <p className="eyebrow">{copy.trackEyebrow}</p>
+        <section className="solutions-section solutions-workflow-section" aria-labelledby="solutions-track-heading">
+          <div className="solutions-section__heading solutions-section__heading--split">
             <h2 id="solutions-track-heading">{copy.trackTitle}</h2>
             <p>{copy.trackBody}</p>
           </div>
-          <div className="solutions-track-grid">
+          <div className="solutions-workflow-layout">
+            <div className="solutions-lane-stack">
             {solutionItems.map(({ item, track }) => {
               const Icon = track.icon;
               return (
-                <article className="solutions-track-card lift-card" key={item.path}>
-                  <div className="solutions-track-card__top">
-                    <span className="solutions-track-card__icon">
-                      <Icon size={22} aria-hidden="true" />
+                <article className="solutions-lane-card" key={item.path}>
+                  <div className="solutions-lane-card__title">
+                    <small>{track.label[locale]}</small>
+                    <span className="solutions-lane-card__icon">
+                      <Icon size={18} aria-hidden="true" />
                     </span>
-                    <span>{item.category[locale]}</span>
+                    <h3>
+                      <a href={localizedHref(item.path, locale)}>{track.title[locale]}</a>
+                    </h3>
                   </div>
-                  <h3>
-                    <a href={localizedHref(item.path, locale)}>{item.content[locale].title}</a>
-                  </h3>
-                  <p className="solutions-track-card__intro">{item.content[locale].intro}</p>
-                  <p className="solutions-track-card__fit">{track.fit[locale]}</p>
-                  <div className="solutions-track-card__block solutions-track-card__block--muted">
-                    <strong>{copy.painLabel}</strong>
-                    <ul>
-                      {track.pains[locale].map((pain) => (
-                        <li key={pain}>
-                          <span>{pain}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <p>{track.body[locale]}</p>
+                  <div className="solutions-lane-card__tags">
+                    {track.tags[locale].map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
                   </div>
-                  <div className="solutions-track-card__block">
-                    <strong>{copy.outcomeLabel}</strong>
-                    <ul>
-                      {track.outcomes[locale].map((outcome) => (
-                        <li key={outcome}>
-                          <CheckCircle2 size={14} aria-hidden="true" />
-                          <span>{outcome}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="solutions-track-card__deliverables">
-                    <strong>{copy.deliverableLabel}</strong>
-                    <div>
-                      {track.deliverables[locale].map((deliverable) => (
-                        <span key={deliverable}>{deliverable}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="solutions-track-card__block">
-                    <strong>{copy.skillLabel}</strong>
-                    <p>{track.skills[locale].join(" / ")}</p>
-                  </div>
-                  <div className="solutions-track-card__path">
-                    <span>{track.starter[locale]}</span>
-                    <span>{track.pro[locale]}</span>
-                  </div>
-                  <div className="solutions-card-actions">
-                    <a href={localizedHref(track.marketplaceHref, locale)}>
-                      {copy.findSkills}
-                      <ArrowRight size={15} aria-hidden="true" />
-                    </a>
-                    <a href={localizedHref(item.path, locale)}>{copy.viewPlan}</a>
-                  </div>
+                  <a className="solutions-lane-card__link" href={localizedHref(track.marketplaceHref, locale)}>
+                    {copy.findSkills}
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </a>
                 </article>
               );
             })}
+            </div>
+
+            <aside className="solutions-side-brief" aria-labelledby="solutions-definition-heading">
+              <div>
+                <p className="solutions-kicker">{copy.definitionEyebrow}</p>
+                <h2 id="solutions-definition-heading">{copy.definitionTitle}</h2>
+                <p>{copy.definitionBody}</p>
+              </div>
+              <div className="solutions-adoption-matrix" aria-label={copy.matrixLabel}>
+                {copy.matrix.map((row) => (
+                  <div className="solutions-adoption-row" key={row.stage}>
+                    <strong>{row.stage}</strong>
+                    <span>{row.scope}</span>
+                    <span>{row.control}</span>
+                  </div>
+                ))}
+              </div>
+            </aside>
           </div>
         </section>
 
-        <section className="solutions-section solutions-section--split" aria-labelledby="solutions-adoption-heading">
-          <div className="solutions-section__heading">
-            <p className="eyebrow">{copy.pathEyebrow}</p>
+        <section className="solutions-section solutions-adoption-section" aria-labelledby="solutions-adoption-heading">
+          <div className="solutions-section__heading solutions-section__heading--split">
             <h2 id="solutions-adoption-heading">{copy.pathTitle}</h2>
             <p>{copy.pathBody}</p>
           </div>
           <div className="solutions-path-grid">
             {copy.steps.map((step, index) => (
               <article className="solutions-step" key={step.title}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
+                <span>{String(index + 1)}.</span>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="solutions-section" aria-labelledby="solutions-decision-heading">
-          <div className="solutions-section__heading">
-            <p className="eyebrow">{copy.decisionEyebrow}</p>
-            <h2 id="solutions-decision-heading">{copy.decisionTitle}</h2>
-            <p>{copy.decisionBody}</p>
-          </div>
-          <div className="solutions-decision-grid">
-            {copy.decisions.map((row) => (
-              <article className="solutions-decision-row" key={row.team}>
-                <strong>{row.team}</strong>
-                <span>{row.start}</span>
-                <span>{row.upgrade}</span>
               </article>
             ))}
           </div>
@@ -530,130 +583,122 @@ function SolutionsHubPage({
 
 const solutionPageCopy = {
   en: {
-    primaryCta: "Find Skills by solution",
-    secondaryCta: "Read install docs",
-    summaryLabel: "Solution summary",
-    summaryEyebrow: "Operating map",
-    summaryTitle: "Pick the workflow first, then adopt the right Skill bundle.",
-    summaryBody:
-      "This page is for buyers who do not know which Skill name to search. Start from the business pain, compare free starters and Pro paths, then inspect the marketplace listing before runtime adoption.",
-    metricsLabel: "Solution coverage",
+    heroEyebrow: "Cross-border commerce / Agent Skill workflows",
+    primaryCta: "Find Skills by business problem",
+    secondaryCta: "View integration path",
+    summaryLabel: "Agent workflow preview",
+    consoleTitle: "commerce.agent.run",
+    currentTaskLabel: "Current business task",
+    currentTask:
+      "A new product is preparing for paid traffic, so product-page conversion and AI-search visibility need to be checked first.",
+    consoleNodes: [
+      { label: "Input", title: "Product page, reviews, keywords, SKU sheet" },
+      { label: "Select Skill", title: "Listing QA / GEO Auditor / Review Mining" },
+      { label: "Run", title: "Execute with permissions, schema, and project policy" },
+      { label: "Output", title: "Repair list, content brief, human review items" },
+    ],
+    codeLabel: "Agent invocation example",
+    codeLines: [
+      'agent.selectSkill({ category: "ecommerce", task: "launch QA" })',
+      'run.withPolicy({ projectKey, permissions: ["read:pdp", "read:reviews"] })',
+      'return ["title fixes", "trust gaps", "GEO citation ideas", "launch blockers"]',
+    ],
+    metricsLabel: "Solution proof points",
     metrics: [
-      { value: "8", label: "business workflows" },
-      { value: "Free", label: "starter path" },
-      { value: "Pro", label: "team runtime" },
+      { value: "5 tracks", label: "commerce operating lanes" },
+      { value: "Agent", label: "calls only authorized Skills" },
+      { value: "Pro", label: "logs, policies, and review" },
     ],
-    definitionEyebrow: "What a solution means",
-    definitionTitle: "A SkillHub solution is a managed workflow, not a single prompt.",
+    definitionEyebrow: "Core idea",
+    definitionTitle: "SkillHub is not a prompt-writing service. It is the governed business capability layer for Agents.",
     definitionBody:
-      "Each solution packages the business problem, recommended Skills, adoption rules, review evidence, and a clear path from free inspection to Pro runtime.",
-    definitionCards: [
-      {
-        title: "Problem diagnosis",
-        body: "Clarify the pain, the role affected, the data involved, and the business result the team is trying to improve.",
-      },
-      {
-        title: "Skill bundle",
-        body: "Point buyers to the right category and starter Skills instead of making them search hundreds of listings from zero.",
-      },
-      {
-        title: "Governed adoption",
-        body: "Move from public inspection to signed-in projects, Project Keys, runtime logs, and human review when the workflow becomes operational.",
-      },
+      "Each solution explains the business input, which Skills an Agent should call, the expected outputs, permission boundaries, and where human review stays in the loop.",
+    matrixLabel: "Adoption control matrix",
+    matrix: [
+      { stage: "Free start", scope: "Public pages, basic SEO, one listing", control: "Validate low-risk value" },
+      { stage: "Pro runtime", scope: "Project Keys, logs, policy gates", control: "Reusable team workflow" },
+      { stage: "Human review", scope: "Writeback, customer promises, sensitive data", control: "Control business risk" },
     ],
-    trackEyebrow: "Solution library",
-    trackTitle: "Choose by the work that is blocked today.",
+    trackTitle: "Do not start from a tool name. Start from the commerce workflow blocked today.",
     trackBody:
-      "Every track connects the problem, the expected outcome, starter Skills, Pro adoption path, and a filtered marketplace entry.",
-    painLabel: "Common pain",
-    outcomeLabel: "What it improves",
-    deliverableLabel: "Typical deliverables",
-    skillLabel: "Typical Skills",
-    findSkills: "Open filtered marketplace",
-    viewPlan: "View solution plan",
-    pathEyebrow: "Adoption path",
-    pathTitle: "A simple route from discovery to governed use.",
+      "The page is organized around the real operating chain of cross-border teams so operations, growth, support, and engineering can each find the right entry point.",
+    findSkills: "Open Skills",
+    pathTitle: "Move from one low-risk check to a team-operated Skill workflow.",
     pathBody:
-      "SkillHub should not feel like a pile of prompts. The buyer needs a safe path: inspect, try low-risk work, then connect project runtime when the team is ready.",
+      "Use this path before entering the marketplace so buyers understand how discovery, contract inspection, and project runtime connect.",
     steps: [
-      { title: "Pick a workflow", body: "Start from SEO, e-commerce, support, sales, content, data, UI, or developer/security." },
-      { title: "Inspect Skills", body: "Open the filtered marketplace, compare manifest, permissions, examples, publisher trust, and review state." },
-      { title: "Try free basics", body: "Use low-risk checks first so teams see value before connecting private systems or paid workflows." },
-      { title: "Adopt into Pro", body: "Move repeatable work into a signed-in project with policy gates, Project Keys, logs, and human review." },
-    ],
-    decisionEyebrow: "What to use first",
-    decisionTitle: "Give each team an obvious starting point.",
-    decisionBody: "The page should answer the first operator question: which workflow should my team open first?",
-    decisions: [
-      { team: "Marketing / SEO", start: "Start with SEO audit and content brief Skills.", upgrade: "Upgrade when weekly GEO monitoring and repair queues are needed." },
-      { team: "E-commerce", start: "Start with listing QA and product title optimization.", upgrade: "Upgrade for batch SKU launches and Shopify handoffs." },
-      { team: "Support / Ops", start: "Start with ticket summary and knowledge-gap checks.", upgrade: "Upgrade for approved replies, escalation summaries, and QA loops." },
-      { team: "Product / Engineering", start: "Start with UI QA, release notes, and API contract checks.", upgrade: "Upgrade for policy gates, runtime evidence, and permission review." },
+      {
+        title: "Choose the business problem",
+        body: "Pick a real task from SEO/GEO, product pages, SKU launches, support tickets, operating reports, or release work.",
+      },
+      {
+        title: "Inspect the Skill contract",
+        body: "Open the filtered marketplace and review manifest, inputs, outputs, permissions, examples, publisher profile, and review state.",
+      },
+      {
+        title: "Connect project runtime",
+        body: "After value is clear, use Project Keys, team policy, runtime logs, and human review to make the Skill part of daily operations.",
+      },
     ],
   },
   zh: {
-    primaryCta: "按方案找技能",
-    secondaryCta: "阅读安装文档",
-    summaryLabel: "解决方案摘要",
-    summaryEyebrow: "运营地图",
-    summaryTitle: "先选业务工作流，再采用合适的技能组合。",
-    summaryBody:
-      "这个页面是给不知道该搜哪个技能名的客户看的。先从业务痛点开始，比较免费起步和 Pro 路径，再进入市场检查清单、权限、示例和发布者。",
-    metricsLabel: "方案覆盖",
+    heroEyebrow: "跨境电商 / Agent Skill 工作流",
+    primaryCta: "按业务问题找技能",
+    secondaryCta: "查看接入路径",
+    summaryLabel: "Agent 工作流预览",
+    consoleTitle: "commerce.agent.run",
+    currentTaskLabel: "当前业务任务",
+    currentTask: "新款产品准备投放，商品页转化和 AI 搜索曝光都要先检查。",
+    consoleNodes: [
+      { label: "输入", title: "商品页、评论、关键词、SKU 表" },
+      { label: "选择 Skill", title: "Listing QA / GEO Auditor / Review Mining" },
+      { label: "运行", title: "按权限、输入 schema 和项目策略执行" },
+      { label: "输出", title: "修复清单、内容简报、人工复核项" },
+    ],
+    codeLabel: "Agent 调用示例",
+    codeLines: [
+      'agent.selectSkill({ category: "ecommerce", task: "launch QA" })',
+      'run.withPolicy({ projectKey, permissions: ["read:pdp", "read:reviews"] })',
+      'return ["标题优化", "信任缺口", "GEO 引用建议", "上线阻塞项"]',
+    ],
+    metricsLabel: "解决方案要点",
     metrics: [
-      { value: "8", label: "个业务工作流" },
-      { value: "免费", label: "低风险起步" },
-      { value: "Pro", label: "团队运行路径" },
+      { value: "5 条", label: "跨境业务主线" },
+      { value: "Agent", label: "只调用已授权 Skill" },
+      { value: "Pro", label: "日志、策略与人工复核" },
     ],
-    definitionEyebrow: "什么是解决方案",
-    definitionTitle: "SkillHub 的解决方案不是单个提示词，而是一套可落地工作流。",
+    definitionEyebrow: "页面核心信息",
+    definitionTitle: "SkillHub 不是替团队“写提示词”，而是给 Agent 提供可治理的业务能力层。",
     definitionBody:
-      "每个方案都把业务问题、推荐技能、采用规则、审核证据和从免费检查到 Pro 运行的路径放在一起，让客户知道为什么用、先用什么、怎么安全上线。",
-    definitionCards: [
-      {
-        title: "问题诊断",
-        body: "先说清楚业务痛点、影响角色、涉及数据，以及团队到底想改善哪个结果。",
-      },
-      {
-        title: "技能组合",
-        body: "直接把客户带到正确分类和起步技能，而不是让客户在几百个技能里从零搜索。",
-      },
-      {
-        title: "受控采用",
-        body: "从公开检查进入登录项目，再接 Project Key、运行日志和人工复核，让工作流能被团队运营。",
-      },
+      "每个解决方案都说明业务输入、适合调用的 Skill、典型输出、权限边界和什么时候需要人工复核。",
+    matrixLabel: "采用控制矩阵",
+    matrix: [
+      { stage: "免费起步", scope: "公开页面、基础 SEO、单个 Listing", control: "验证低风险价值" },
+      { stage: "Pro 运行", scope: "Project Key、日志、策略门禁", control: "团队长期复用" },
+      { stage: "人工复核", scope: "写回、客户承诺、敏感数据", control: "控制业务风险" },
     ],
-    trackEyebrow: "方案库",
-    trackTitle: "按今天卡住的工作来选择。",
-    trackBody:
-      "每个方案都要讲清楚：解决什么问题、改善什么结果、先用哪些技能、什么时候升级 Pro，以及去市场哪里找。",
-    painLabel: "常见痛点",
-    outcomeLabel: "改善结果",
-    deliverableLabel: "典型交付物",
-    skillLabel: "常用技能",
-    findSkills: "打开筛选后的市场",
-    viewPlan: "查看方案说明",
-    pathEyebrow: "落地路径",
-    pathTitle: "从发现到受控运行，客户要有清晰路线。",
-    pathBody:
-      "SkillHub 不能像一堆提示词。客户需要的是安全路径：先检查、先试低风险任务，团队准备好以后再接入项目运行。",
+    trackTitle: "不要从工具名开始，从今天卡住的业务环节开始。",
+    trackBody: "页面主体按跨境团队真实工作链路组织，让运营、增长、客服和研发都能快速找到自己的入口。",
+    findSkills: "打开技能",
+    pathTitle: "从一次低风险检查，走到团队可运营的 Skill 工作流。",
+    pathBody: "这个区域帮助用户在进入市场前理解采用路线，减少不知道点哪里的犹豫。",
     steps: [
-      { title: "选择工作流", body: "从 SEO、电商、客服、销售、内容、数据、UI 或开发/安全里选一个真实业务问题。" },
-      { title: "检查技能", body: "进入筛选后的市场，比较 manifest、权限、示例、发布者信任和审核状态。" },
-      { title: "先试免费基础项", body: "先跑低风险检查，让团队看到价值，再连接私有系统或付费工作流。" },
-      { title: "进入 Pro 运行", body: "把可重复工作接入登录项目，用策略门禁、Project Key、日志和人工复核控制风险。" },
-    ],
-    decisionEyebrow: "先用什么",
-    decisionTitle: "每个团队都要有一个明显的起点。",
-    decisionBody: "这个页面要回答运营最关心的问题：我的团队现在应该先打开哪个工作流？",
-    decisions: [
-      { team: "市场 / SEO", start: "先用 SEO 审计和内容简报技能。", upgrade: "需要每周 GEO 监控和修复队列时升级。" },
-      { team: "电商团队", start: "先用 Listing 质检和商品标题优化。", upgrade: "批量 SKU 上新、Shopify 交接时升级。" },
-      { team: "客服 / 运营", start: "先用工单总结和知识缺口检查。", upgrade: "需要审核回复、升级总结和质检闭环时升级。" },
-      { team: "产品 / 研发", start: "先用 UI 质检、发布说明和 API 合约检查。", upgrade: "需要策略门禁、运行证据和权限审查时升级。" },
+      {
+        title: "选择业务问题",
+        body: "从 SEO/GEO、商品页、SKU 上新、客服工单、运营报表或开发发布里选一个真实任务。",
+      },
+      {
+        title: "检查 Skill 合约",
+        body: "进入筛选后的市场，查看 manifest、输入输出、权限、示例、发布者和审核状态。",
+      },
+      {
+        title: "接入项目运行",
+        body: "确认价值后再使用 Project Key、团队策略、运行日志和人工复核，把 Skill 纳入日常流程。",
+      },
     ],
   },
 } as const;
+
 
 export function GrowthDetailPage({ item, locale, relatedItems }: GrowthDetailPageProps) {
   const copy = item.content[locale];
