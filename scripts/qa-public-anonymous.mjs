@@ -125,7 +125,7 @@ async function checkPublicCommands() {
         const payload = parseJson(text);
 
         if (payload?.ok !== true || payload?.stage !== "developer_preview") {
-          fail(name, "GET /mcp did not return safe Developer Preview metadata");
+          fail(name, "GET /mcp did not return safe Launch Preview metadata");
           continue;
         }
       }
@@ -279,7 +279,10 @@ function validatePageState(path, plain, html) {
       "default public install target",
       "can install and call",
       "project install pins",
-      "commercial",
+      "commercial ledger",
+      "commercial readiness and money movement state",
+      "process money",
+      "publisher payout",
       "\u65b0\u5efa\u6280\u80fd",
       "\u6253\u5f00 api \u6587\u6863",
       "\u9ed8\u8ba4\u516c\u5f00\u5b89\u88c5\u76ee\u6807",
@@ -353,8 +356,8 @@ function validatePageState(path, plain, html) {
   }
 
   if (path.startsWith("/terms")) {
-    if (!plain.includes("developer preview") && !plain.includes("\u5f00\u53d1\u8005\u9884\u89c8")) {
-      return "terms page is not framed as Developer Preview";
+    if (!plain.includes("launch preview")) {
+      return "terms page is not framed as Launch Preview";
     }
   }
 

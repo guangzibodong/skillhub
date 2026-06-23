@@ -157,7 +157,7 @@ const PAGE_ASSERTIONS = {
     "what works without login",
     "what requires login",
     "operator direct link only",
-    "developer preview",
+    "launch preview",
   ],
   "/?lang=zh": [
     "/marketplace?lang=zh",
@@ -170,7 +170,7 @@ const PAGE_ASSERTIONS = {
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
   "/marketplace?lang=zh": [
-    "\u667a\u80fd\u4f53\u627e\u6280\u80fd",
+    "\u4e3a\u4f60\u7684 agent \u5de5\u4f5c\u6d41",
     "\u53d1\u5e03\u8005\u76ee\u5f55",
     "API \u67e5\u770b",
   ],
@@ -180,11 +180,15 @@ const PAGE_ASSERTIONS = {
     "\u516c\u5f00\u53d1\u5e03\u8005",
     "\u4ee3\u8868\u6280\u80fd",
   ],
-  "/registry": ["skill api protocol", "live skill api", "manifest quality bar"],
+  "/registry": [
+    "contract registry",
+    "manifest quality bar",
+    "project keys",
+  ],
   "/registry?lang=zh": [
-    "\u516c\u5f00\u6280\u80fd API",
-    "\u53d1\u73b0\u7aef\u70b9",
-    "\u5b9e\u65f6\u6280\u80fd API",
+    "\u8ba9 agent \u5148\u8bfb\u5408\u7ea6",
+    "api quickstart",
+    "project key",
   ],
   "/agents?lang=zh": [
     "\u667a\u80fd\u4f53\u8fd0\u884c\u5c42",
@@ -281,12 +285,12 @@ const PAGE_ASSERTIONS = {
   ],
   "/terms?lang=zh": [
     "\u8fd0\u8425\u6761\u6b3e",
-    "\u5f00\u53d1\u8005\u9884\u89c8\u7248",
+    "Launch Preview",
     "\u6761\u6b3e\u6458\u8981",
   ],
-  "/support": ["Developer Preview support", "No secrets", "Report an issue"],
+  "/support": ["Launch Preview support", "No secrets", "Report an issue"],
   "/support?lang=zh": [
-    "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u652f\u6301",
+    "Launch Preview \u652f\u6301",
     "\u4e0d\u8981\u63d0\u4ea4\u5bc6\u94a5",
     "\u62a5\u544a\u95ee\u9898",
   ],
@@ -302,9 +306,9 @@ const PAGE_ASSERTIONS = {
     "\u4e0d\u8981\u5305\u542b",
     "OAuth secret",
   ],
-  "/status": ["Developer Preview status", "API health", "Gated operations"],
+  "/status": ["Launch Preview status", "API health", "Gated operations"],
   "/status?lang=zh": [
-    "\u5f00\u53d1\u8005\u9884\u89c8\u7248\u72b6\u6001",
+    "Launch Preview \u72b6\u6001",
     "API \u5065\u5eb7",
     "\u95e8\u63a7\u8fd0\u8425",
   ],
@@ -1960,7 +1964,7 @@ async function checkPublicMcpDescription({ apiUrl, timeoutMs }) {
       typeof json?.docs !== "string" ||
       !json.docs.includes("/docs#mcp")
     ) {
-      fail(name, "expected public Developer Preview MCP metadata with POST method, project-key runtime auth, and docs link");
+      fail(name, "expected public Launch Preview MCP metadata with POST method, project-key runtime auth, and docs link");
       return;
     }
 
@@ -2762,7 +2766,10 @@ function validatePublicLaunchPageState(path, html) {
       "default public install target",
       "can install and call",
       "project install pins",
-      "commercial",
+      "commercial ledger",
+      "commercial readiness and money movement state",
+      "process money",
+      "publisher payout",
       "\u65b0\u5efa\u6280\u80fd",
       "\u6253\u5f00 api \u6587\u6863",
       "\u9ed8\u8ba4\u516c\u5f00\u5b89\u88c5\u76ee\u6807",
