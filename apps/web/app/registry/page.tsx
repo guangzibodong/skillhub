@@ -1,28 +1,24 @@
 import {
   ArrowRight,
-  BookOpenCheck,
   Boxes,
-  Braces,
   Code2,
-  Database,
+  ExternalLink,
   FileJson,
-  GitBranch,
   KeyRound,
-  Network,
+  PackageCheck,
   Plus,
-  RadioTower,
   SearchCheck,
   ShieldCheck,
-  Terminal,
-  Workflow
 } from "lucide-react";
 import type { Metadata } from "next";
+import type { SkillSummary } from "@useskillhub/schema";
 import { AppShell } from "@/components/app-shell";
-import { Reveal } from "@/components/home/reveal";
-import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
-import { SkillTable } from "@/components/skill-table";
-import { getDictionary, getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
-import { getPublicPlatformStats } from "@/lib/public-platform-stats";
+import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import {
+  publicSkillDescription,
+  publicSkillDisplayName,
+  publicSkillTags,
+} from "@/lib/public-skill-localization";
 import { getSkills } from "@/lib/registry";
 import { buildLocalizedMetadata } from "@/lib/seo";
 
@@ -31,6 +27,8 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+type RegistryCopy = (typeof registryCopy)[Locale];
 
 export async function generateMetadata({
   searchParams,
@@ -54,524 +52,686 @@ export async function generateMetadata({
   });
 }
 
-const registryProtocolCopy = {
+const registryCopy = {
   en: {
     actions: {
-      api: "Read API docs",
-      marketplace: "Compare in marketplace",
-      submit: "Submit a skill"
+      api: "Open public API",
+      docs: "Read API docs",
+      marketplace: "Compare in Marketplace",
+      submit: "Submit Skill",
     },
-    contractTitle: "What the Skill API records",
-    decisionTitle: "Where this page fits",
-    decisionHeading: "Know when to use Find Skills, Skill API, or workspace runtime.",
-    decisionBody:
-      "Use this page when you need the contract behind a Skill: the fields an agent, developer, publisher, and operator can inspect before runtime use.",
-    surfaces: [
-      ["Find Skills", "Human-facing discovery, category filters, pricing intent, examples, and publisher trust."],
-      ["Skill API", "Machine-readable contracts: slug, version, schemas, permissions, runtime, review state, and endpoint links."],
-      ["Workspace runtime", "Signed-in project adoption, Project Keys, policy approval, logs, usage, and billing-preview evidence."]
-    ],
-    evidence: {
-      calls: "Skill API calls",
-      highRisk: "High-risk contracts",
-      mcp: "MCP contracts",
-      verified: "Verified contracts"
-    },
+    heroEyebrow: "Public Skill API · Contract Registry",
+    heroTitle: ["Let agents read contracts,", "then run safely."],
+    heroBody:
+      "Registry is not another search page. It records each Skill version, manifest, schema, permission, runtime, and review state so developers, publishers, and AI agents can inspect contract boundaries before invocation.",
     heroProof: [
-      ["Contract first", "Every skill starts as a versioned manifest before it becomes a public listing."],
-      ["Gateway governed", "REST, MCP, SDK, and console tests all resolve the same version and policy state."],
-      ["Audit ready", "Review, signed-in adoption, runtime, prelaunch ledger, delivery, and audit records stay connected."]
+      ["Contract first", "Versioned contracts come before public display and project adoption."],
+      ["Machine-readable", "Agents can inspect slug, schema, runtime, permissions, and status."],
+      ["Runtime gated", "Real calls require Project Keys, policy approval, and audit evidence."],
     ],
-    lifecycleTitle: "Contract lifecycle",
-    lifecycle: [
-      ["Draft", "Publisher saves identity, runtime, permissions, schemas, examples, and pricing intent."],
-      ["Review", "Automated manifest/runtime/example/security checks feed a human decision with SLA."],
-      ["Approved", "Verified versions become eligible for sign-in gated project adoption and are immutable."],
-      ["Runtime", "Signed-in projects pin versions, approve policy, create keys, and invoke through the governed gateway."],
-      ["Paid preview", "Paid-marketplace ledger, refund, dispute, and payout state remains prelaunch operating reference material."]
-    ],
-    manifestTitle: "Manifest quality bar",
-    quickstartTitle: "API quickstart",
-    quickstartBody:
-      "Start with public discovery, inspect one contract, then sign in only when you need to adopt a verified version into a project.",
-    quickstartSteps: [
-      ["Search contracts", "Use /v1/skills/search to list public Skill API records."],
-      ["Inspect manifest", "Open /v1/skills/:slug to review version, schema, permissions, runtime, and trust state."],
-      ["Adopt after sign-in", "Create a project, approve policy, generate a Project Key, and invoke through the governed gateway."]
-    ],
-    audienceTitle: "Who uses the Skill API",
-    audience: [
-      ["Developers", "Compare contracts and prepare project adoption without guessing what a Skill can access."],
-      ["Agent builders", "Let agents inspect stable metadata before choosing tools or MCP capabilities."],
-      ["Publishers", "Understand the fields needed before a Skill becomes trusted marketplace supply."],
-      ["Operators", "Review version, permissions, runtime evidence, incidents, feedback, and paid-readiness state."]
-    ],
-    manifestFields: [
-      ["Identity", "name, displayName, semantic version, category, tags, support, changelog"],
-      ["Runtime", "http, mcp, or restricted local runtime with target, transport, and health posture"],
-      ["Schemas", "inputSchema, outputSchema, examples, required fields, typed result shape"],
-      ["Permissions", "network, browser, filesystem, secrets, sensitive data, destructive/payment workflows"],
-      ["Paid preview", "billing model, paid-preview blockers, publisher terms, finance-reviewed paid readiness"],
-      ["Trust", "review status, checks, incidents, feedback, deprecation and replacement path"]
-    ],
-    notes: [
-      "Public Skill API rows are live API results; production-like runtimes do not fill fake supply unless demo fallback is explicitly enabled.",
-      "The Skill API explains contracts. Find Skills pages explain discovery, buyer comparison, pricing, and publisher trust.",
-      "This page intentionally stays browse-only. Use Find Skills filters or the public API endpoint when you need search."
-    ],
-    protocolEyebrow: "Skill API protocol",
-    protocolTitle: "The Skill API is the contract layer behind Find Skills.",
-    protocolBody:
-      "SkillHub records the exact skill contract an AI agent can inspect publicly and adopt after sign-in: manifest, version, runtime, permissions, schemas, review state, pricing intent, and governance links.",
-    runtimeTitle: "Runtime resolution",
-    runtimeSteps: [
-      "Agent or developer selects a public skill slug.",
-      "Signed-in project adoption pins an approved version and policy.",
-      "REST or MCP call authenticates a project key.",
-      "Gateway checks approval, budget, rate limit, subscription, and risk.",
-      "Invocation, usage, notification, ledger, and audit records preserve the outcome."
-    ],
-    tableEyebrow: "Live Skill API",
-    tableTitle: "Versioned contracts available through the API"
+    console: {
+      title: "support-triage · v0.1.0",
+      status: "verified contract",
+      body:
+        "Classifies support tickets by priority, topic, and recommended response. Public contract inspection is available; runtime requires project adoption.",
+      endpoint: "https://api.useskillhub.com/v1/skills/support-triage",
+      input: ["Input schema", "ticketText: string", "Customer message or support ticket body."],
+      output: ["Output schema", "priority · category · reply", "Structured output for the next agent step."],
+      permissions: ["Permissions", "network: false", "No browser, filesystem, or secrets."],
+      runtime: ["Runtime", "HTTP endpoint", "Resolved through the governed gateway after project adoption."],
+      signals:
+        "Public Skills, verified contracts, MCP contracts, and call records come from the live registry.",
+      runtimeBoundary:
+        "Public pages only inspect contracts. Project adoption, Project Keys, budgets, limits, and logs live in the signed-in workspace.",
+      marketplaceBoundary:
+        "Search, filters, pricing intent, examples, and publisher comparison belong to Marketplace; Registry keeps the API contract view.",
+      signalTitle: "Registry signals",
+      runtimeTitle: "Runtime boundary",
+      marketplaceTitle: "Marketplace boundary",
+      consoleLabel: "Registry contract console",
+      topPath: "skillhub://registry/contracts/support-triage",
+      liveApi: "live API",
+      get: "GET",
+      meterManifest: "manifest",
+      meterSchema: "schema",
+      meterRisk: "risk",
+      ok: "ok",
+      low: "low",
+    },
+    fit: {
+      eyebrow: "Where Registry Fits",
+      title: "Separate finding Skills, reading contracts, and running projects.",
+      body:
+        "Visitors should not see a duplicate marketplace here. This page explains SkillHub's protocol layer: what is public, what is reviewed, and what requires signed-in project runtime.",
+      cards: [
+        ["Marketplace", "Human discovery: categories, search, pricing intent, publisher trust, examples, and adoption comparison.", ["search", "pricing", "publisher"]],
+        ["Skill API", "Agent and system contract layer: slug, version, schema, runtime, permissions, review state, and endpoints.", ["manifest", "schema", "permissions"]],
+        ["Workspace runtime", "Real adoption and execution: project install, version pinning, Project Key, policy approval, logs, and usage.", ["project key", "policy", "logs"]],
+      ],
+    },
+    lifecycle: {
+      eyebrow: "Contract Lifecycle",
+      title: "Every step from publisher contract to agent call has state.",
+      body:
+        "Registry turns Skills into inspectable operating records, not marketing cards. Agents can call them only after the project path pins a version and applies policy.",
+      steps: [
+        ["Draft", "Publisher saves manifest, schema, permissions, runtime, examples, and support details."],
+        ["Review", "Automated checks and human review evaluate version, risk, examples, and runtime boundaries."],
+        ["Verified", "Approved versions become public contracts for developers and agents to inspect."],
+        ["Adopt", "Signed-in projects pin the version, approve policy, and create a Project Key."],
+        ["Invoke", "REST or MCP calls pass through the gateway and leave invocation, usage, and audit records."],
+      ],
+    },
+    manifest: {
+      eyebrow: "Manifest Quality Bar",
+      title: "Every Skill contract must answer six questions.",
+      body:
+        "This makes clear why a Skill can be read by agents, reviewed by teams, and adopted by projects.",
+      fields: [
+        ["Identity", "Who is it?", "name, displayName, semantic version, category, tags, support, and changelog."],
+        ["Runtime", "Where does it run?", "HTTP, MCP, or restricted local runtime, including target, transport, and health posture."],
+        ["Schema", "What are inputs and outputs?", "inputSchema, outputSchema, required fields, examples, and typed result shape."],
+        ["Permission", "What can it access?", "Network, browser, filesystem, secrets, sensitive data, and write/payment workflow boundaries."],
+        ["Trust", "Has it been reviewed?", "Review status, checks, incidents, feedback, deprecation, and replacement path."],
+        ["Commercial", "Can it enter paid preview?", "Billing model, price intent, publisher terms, and finance-reviewed readiness."],
+      ],
+      policies: [
+        ["Public pages do not fake supply", "Production-like environments show live API results. Missing core registry tables render an empty state, not fake Skills."],
+        ["High-risk actions require project policy", "CRM write-back, publishing, payment, file writes, and sensitive data handling need Project Keys, policy, and approval boundaries."],
+        ["Agent-readable is not automatically runnable", "Agents can inspect public contracts; runtime still goes through install, version pinning, budgets, limits, and logs."],
+      ],
+    },
+    quickstart: {
+      eyebrow: "API Quickstart",
+      title: "Inspect contracts first, then run inside a project.",
+      body:
+        "Public API endpoints are for discovery and inspection. Real runtime starts only after a team adopts a Skill into a project, pins a version, and creates a Project Key.",
+      tags: ["public discovery", "manifest inspection", "project-gated runtime"],
+      comment: "Runtime starts after sign-in:",
+      flow: "create project -> approve policy -> generate Project Key -> REST / MCP call",
+      terminal: "terminal",
+      endpoints: "public endpoints",
+    },
+    rows: {
+      eyebrow: "Live Skill API Rows",
+      title: "Versioned Skill contracts returned by the public API.",
+      body:
+        "The rows stay connected to live registry data while the page keeps search and comparison in Marketplace or API parameters.",
+      emptyTitle: "No public Skill contracts yet",
+      emptyBody:
+        "The public registry returned no Skills. Production-like deployments should show an empty state rather than fake supply.",
+      columns: ["Skill contract", "Runtime", "Review", "Risk", "Action"],
+      manifest: "manifest",
+      openManifest: "Open manifest",
+      aria: "Live Skill API contract rows",
+    },
+    closing: {
+      title: "Make Skills trusted contracts before they become runtime capabilities.",
+      body:
+        "Registry explains capability boundaries; Marketplace supports discovery and comparison; Workspace controls project adoption and runtime governance.",
+    },
+    metrics: {
+      publicSkills: "Public Skills",
+      totalSkillRecords: "Total records",
+      verifiedSkills: "Verified",
+      callableSkills: "Callable",
+    },
+    riskLabels: { high: "High", low: "Low", medium: "Medium" },
+    statusLabels: {
+      deprecated: "Deprecated",
+      draft: "Draft",
+      rejected: "Rejected",
+      submitted: "Submitted",
+      suspended: "Suspended",
+      verified: "Verified",
+    },
   },
   zh: {
     actions: {
-      api: "阅读 API 文档",
-      marketplace: "去找技能页对比",
-      submit: "提交技能"
+      api: "打开公开 API",
+      docs: "阅读 API 文档",
+      marketplace: "去 Marketplace 对比",
+      submit: "提交 Skill",
     },
-    contractTitle: "技能 API 记录什么",
-    decisionTitle: "这个页面负责什么",
-    decisionHeading: "把“找技能、技能 API、工作台运行”的边界说清楚。",
-    decisionBody:
-      "当客户、开发者或 AI 需要看清一个 Skill 背后的合约时，就看这个页面：它解释可被检查、可被审核、可被项目采用的字段。",
-    surfaces: [
-      ["找技能", "给人看的发现页面：分类筛选、价格意图、案例、发布者信任和采用对比。"],
-      ["技能 API", "给系统和 AI 看的合约层：slug、版本、schema、权限、运行时、审核状态和端点。"],
-      ["登录工作台", "真实采用和运行：项目安装、Project Key、策略审批、日志、用量和账务预览证据。"]
-    ],
-    evidence: {
-      calls: "技能 API 调用",
-      highRisk: "高风险合约",
-      mcp: "MCP 合约",
-      verified: "已验证合约"
-    },
+    heroEyebrow: "Public Skill API · Contract Registry",
+    heroTitle: ["让 Agent 先读合约，", "再安全运行。"],
+    heroBody:
+      "Registry 不是另一个搜索页。它记录每个 Skill 的版本、manifest、schema、权限、运行时和审核状态，让开发者、发布者和 AI Agent 在调用前先检查能力边界。",
     heroProof: [
-      ["合约优先", "每个技能先成为带版本的 manifest，再进入公开展示。"],
-      ["网关治理", "REST、MCP、SDK 和控制台测试都会解析同一套版本和策略状态。"],
-      ["可审计", "审核、登录后采用、运行、预发布账本、投递和审计记录保持连贯。"]
+      ["合约优先", "先有版本化合约，再进入公开展示和项目采用。"],
+      ["机器可读", "Agent 可以读取 slug、schema、runtime、权限和状态。"],
+      ["运行受控", "真实调用需要 Project Key、策略审批和审计记录。"],
     ],
-    lifecycleTitle: "合约生命周期",
-    lifecycle: [
-      ["草稿", "发布者保存身份、运行时、权限、schema、示例和定价意图。"],
-      ["审核", "manifest/runtime/example/security 自动检查进入带 SLA 的人工决策。"],
-      ["批准", "已验证版本会进入登录后项目采用路径，并且不可原地修改。"],
-      ["运行", "登录后的项目固定版本、审批策略、创建 Key，并通过治理网关调用。"],
-      ["付费预览", "付费市场账本、退款、争议和提现状态仍是预发布运营参考。"]
-    ],
-    manifestTitle: "Manifest 质量门槛",
-    quickstartTitle: "API 快速开始",
-    quickstartBody:
-      "先用公开端点发现 Skill，再检查一个具体合约；只有在需要项目采用和真实运行时，才进入登录后的工作台。",
-    quickstartSteps: [
-      ["搜索合约", "调用 /v1/skills/search 获取公开 Skill API 记录。"],
-      ["检查 manifest", "打开 /v1/skills/:slug，查看版本、schema、权限、运行时和信任状态。"],
-      ["登录后采用", "创建项目、审批策略、生成 Project Key，再通过治理网关调用。"]
-    ],
-    audienceTitle: "谁会使用技能 API",
-    audience: [
-      ["开发者", "不用猜测 Skill 能访问什么，先对比合约再接入项目。"],
-      ["Agent 构建者", "让智能体在选择工具或 MCP 能力前检查稳定元数据。"],
-      ["发布者", "明确 Skill 进入可信市场供给前必须补齐哪些字段。"],
-      ["运营审核", "查看版本、权限、运行证据、事故、反馈和付费准备状态。"]
-    ],
-    manifestFields: [
-      ["身份", "name、displayName、语义化版本、分类、标签、支持路径、变更记录"],
-      ["运行时", "HTTP、MCP 或受限本地运行时，包含目标、传输和健康状态"],
-      ["Schema", "inputSchema、outputSchema、示例、必填字段和类型化结果"],
-      ["权限", "网络、浏览器、文件系统、密钥、敏感数据、破坏性/支付流程"],
-      ["付费预览", "计费模型、付费预览阻断、发布者条款、财务复核元数据"],
-      ["信任", "审核状态、检查、事故、反馈、废弃和替代路径"]
-    ],
-    notes: [
-      "公开技能 API 只展示实时 API 结果；生产类环境不会用假供给填充，除非显式启用 demo fallback。",
-      "技能 API 解释技能合约；找技能页面负责发现、买方对比、定价和发布者信任。",
-      "这里刻意保持浏览型页面；需要搜索或筛选时，请使用找技能筛选或公开 API endpoint。"
-    ],
-    protocolEyebrow: "技能 API 协议",
-    protocolTitle: "技能 API 是找技能页面背后的合约层。",
-    protocolBody:
-      "SkillHub 记录 AI 智能体可以安装和调用的精确技能合约：manifest、版本、运行时、权限、schema、审核状态、定价意图和治理链路。",
-    runtimeTitle: "运行解析路径",
-    runtimeSteps: [
-      "Agent 或开发者选择公开 skill slug。",
-      "项目安装固定已批准版本和策略。",
-      "REST 或 MCP 调用验证项目 Key。",
-      "网关检查审批、预算、限流、订阅和风险。",
-      "调用、用量、通知、账本和审计记录保留结果。"
-    ],
-    tableEyebrow: "实时技能 API",
-    tableTitle: "可通过 API 获取的版本化技能合约"
-  }
+    console: {
+      title: "support-triage · v0.1.0",
+      status: "已验证合约",
+      body:
+        "将客服消息分类为优先级、主题和建议回复。公开页面可检查合约，真实运行需要项目接入。",
+      endpoint: "https://api.useskillhub.com/v1/skills/support-triage",
+      input: ["Input schema", "ticketText: string", "客户消息或工单正文，作为分类与回复建议的输入。"],
+      output: ["Output schema", "priority · category · reply", "输出结构化结果，方便 Agent 决定下一步动作。"],
+      permissions: ["Permissions", "network: false", "无浏览器、无文件系统、无 secret，风险边界可审查。"],
+      runtime: ["Runtime", "HTTP endpoint", "项目采用后通过治理网关解析版本和策略。"],
+      signals:
+        "公开 Skill、已验证合约、MCP 合约和调用记录来自 live registry，不用假数据填充。",
+      runtimeBoundary:
+        "公开页面只负责检查合约。项目采用、Project Key、预算、限流和调用日志在登录后的工作台完成。",
+      marketplaceBoundary:
+        "搜索、筛选、价格意图、示例和发布者对比属于 Marketplace；这里保留 API 合约视角。",
+      signalTitle: "Registry 信号",
+      runtimeTitle: "运行边界",
+      marketplaceTitle: "市场边界",
+      consoleLabel: "Registry 合约控制台",
+      topPath: "skillhub://registry/contracts/support-triage",
+      liveApi: "live API",
+      get: "GET",
+      meterManifest: "manifest",
+      meterSchema: "schema",
+      meterRisk: "risk",
+      ok: "ok",
+      low: "low",
+    },
+    fit: {
+      eyebrow: "Registry 的位置",
+      title: "把“找技能、读合约、接入运行”的边界讲清楚。",
+      body:
+        "用户来到 Registry 时，不应该再看到一个重复的筛选市场。这里解释 SkillHub 的协议层：哪些字段公开可读，哪些状态来自审核，哪些动作必须进入项目工作台。",
+      cards: [
+        ["Marketplace", "给人看的发现入口：分类、搜索、价格意图、发布者信任、示例和采用对比。", ["search", "pricing", "publisher"]],
+        ["Skill API", "给 Agent 和系统看的合约层：slug、version、schema、runtime、权限、审核状态和 endpoint。", ["manifest", "schema", "permissions"]],
+        ["Workspace runtime", "真实采用和运行：项目安装、版本固定、Project Key、策略审批、调用日志和用量记录。", ["project key", "policy", "logs"]],
+      ],
+    },
+    lifecycle: {
+      eyebrow: "合约生命周期",
+      title: "从发布合约到 Agent 调用，每一步都有状态。",
+      body:
+        "Registry 的价值不是展示更多卡片，而是让 Skill 从草稿、审核、批准、项目采用到运行调用都有可检查状态。这样 Agent 能调用，团队也能审查。",
+      steps: [
+        ["Draft", "发布者保存 manifest、schema、权限、运行时、示例和支持信息。"],
+        ["Review", "自动检查和人工审核确认版本、风险、示例和运行边界。"],
+        ["Verified", "已验证版本进入公开合约层，可供开发者和 Agent 检查。"],
+        ["Adopt", "登录后的项目固定版本，审批策略并生成 Project Key。"],
+        ["Invoke", "REST 或 MCP 调用经过网关，保留调用、用量和审计记录。"],
+      ],
+    },
+    manifest: {
+      eyebrow: "Manifest 质量线",
+      title: "每个 Skill 合约必须回答六个问题。",
+      body:
+        "这让页面真正解释 SkillHub 的规则：一个 Skill 为什么可以被 Agent 读取、被团队审查、被项目采用。",
+      fields: [
+        ["Identity", "它是谁？", "name、displayName、语义化版本、分类、标签、支持和变更记录。"],
+        ["Runtime", "在哪里运行？", "HTTP、MCP 或受限本地运行时，以及目标、传输和健康状态。"],
+        ["Schema", "输入输出是什么？", "inputSchema、outputSchema、必填字段、示例和类型化结果。"],
+        ["Permission", "能访问什么？", "网络、浏览器、文件系统、secret、敏感数据和写回动作边界。"],
+        ["Trust", "是否被审查？", "审核状态、检查结果、事件、反馈、弃用和替代路径。"],
+        ["Commercial", "能否进入付费预览？", "计费模型、价格意图、发布者条款和财务准备状态。"],
+      ],
+      policies: [
+        ["公开页面不会伪造供给", "生产类环境只展示 live API 结果。缺少核心 registry 表时显示空状态，而不是填充假 Skill。"],
+        ["高风险动作必须进入项目策略", "写回 CRM、发布内容、支付、文件写入和敏感数据处理，需要 Project Key、策略和人工审批边界。"],
+        ["Agent 可读不等于自动运行", "Agent 可以检查公开合约；真实调用仍经过安装、版本固定、预算、限流和日志。"],
+      ],
+    },
+    quickstart: {
+      eyebrow: "API Quickstart",
+      title: "先查合约，再进项目运行。",
+      body:
+        "公开 API 用于发现和检查，不需要登录。只有当团队要把 Skill 接入项目、固定版本、生成 Key 并运行时，才进入工作台。",
+      tags: ["public discovery", "manifest inspection", "project-gated runtime"],
+      comment: "真实运行从登录后开始：",
+      flow: "创建项目 -> 审批策略 -> 生成 Project Key -> REST / MCP 调用",
+      terminal: "terminal",
+      endpoints: "public endpoints",
+    },
+    rows: {
+      eyebrow: "Live Skill API Rows",
+      title: "公开 API 返回的版本化 Skill 合约。",
+      body:
+        "这里保留实时 registry 数据，但视觉上更像 API 输出而不是普通内容列表。搜索和筛选仍交给 Marketplace 或 API 参数。",
+      emptyTitle: "暂无公开 Skill 合约",
+      emptyBody:
+        "公开 registry 当前没有返回 Skill。生产类部署应显示空状态，而不是用假数据填充。",
+      columns: ["Skill contract", "Runtime", "Review", "Risk", "Action"],
+      manifest: "manifest",
+      openManifest: "打开 manifest",
+      aria: "实时 Skill API 合约行",
+    },
+    closing: {
+      title: "让 Skill 先成为可信合约，再成为可运行能力。",
+      body:
+        "Registry 负责把能力边界讲清楚；Marketplace 负责发现和比较；Workspace 负责项目采用与运行治理。",
+    },
+    metrics: {
+      publicSkills: "公开 Skill",
+      totalSkillRecords: "总记录",
+      verifiedSkills: "已验证",
+      callableSkills: "可调用",
+    },
+    riskLabels: { high: "高", low: "低", medium: "中" },
+    statusLabels: {
+      deprecated: "已弃用",
+      draft: "草稿",
+      rejected: "已拒绝",
+      submitted: "已提交",
+      suspended: "已暂停",
+      verified: "已验证",
+    },
+  },
 } as const;
 
 const manifestSnippet = `{
-  "schemaVersion": "0.1",
   "name": "support-triage",
-  "displayName": "Support Triage",
   "version": "0.1.0",
-  "description": "Classifies inbound support tickets by priority, topic, and recommended next response.",
-  "tags": ["support", "triage", "operations"],
-  "runtime": {
-    "type": "http",
-    "entrypoint": "https://api.example.com/skillhub/support-triage"
-  },
+  "runtime": { "type": "http" },
   "permissions": {
     "network": false,
     "browser": false,
     "filesystem": "none",
     "secrets": []
-  },
-  "inputSchema": {
-    "type": "object",
-    "required": ["ticketText"],
-    "properties": {
-      "ticketText": {
-        "type": "string",
-        "description": "Customer message or support ticket body."
-      }
-    }
-  },
-  "outputSchema": {
-    "type": "object",
-    "required": ["priority", "category", "recommendedReply"],
-    "properties": {
-      "priority": { "type": "string", "enum": ["low", "medium", "high"] },
-      "category": { "type": "string" },
-      "recommendedReply": { "type": "string" }
-    }
   }
 }`;
 
 export default async function RegistryPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const dictionary = getDictionary(locale);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const labels = registryProtocolCopy[locale];
+  const copy = registryCopy[locale];
   const skills = await getSkills();
-  const publicStats = await getPublicPlatformStats({ skills });
-  const highRiskSkills = skills.filter((skill) => skill.permissionLevel === "high").length;
-  const mcpSkills = skills.filter((skill) => skill.runtimeType === "mcp").length;
+  const registryMetrics = getRegistryMetrics(skills);
+
   const visibleMetrics = [
-    { label: dictionary.metrics.publishedSkills, value: String(publicStats.publicSkills) },
-    { label: dictionary.metrics.totalSkillRecords, value: String(publicStats.totalSkillRecords) },
-    { label: dictionary.metrics.verified, value: String(publicStats.verifiedSkills) },
-    { label: dictionary.metrics.callableSkills, value: String(publicStats.callableSkills) }
+    { label: copy.metrics.publicSkills, value: String(registryMetrics.publicSkills) },
+    { label: copy.metrics.totalSkillRecords, value: String(registryMetrics.totalSkillRecords) },
+    { label: copy.metrics.verifiedSkills, value: String(registryMetrics.verifiedSkills) },
+    { label: copy.metrics.callableSkills, value: String(registryMetrics.callableSkills) },
   ];
-  const apiQuickstartSnippet = locale === "zh"
-    ? `curl "${apiUrl}/v1/skills/search?limit=20"
-
-curl "${apiUrl}/v1/skills/browser-research"
-
-# 真实运行从登录后开始：
-# 创建项目 -> 审批策略 -> 生成 Project Key -> 调用`
-    : `curl "${apiUrl}/v1/skills/search?limit=20"
-
-curl "${apiUrl}/v1/skills/browser-research"
-
-# Runtime use starts only after sign-in:
-# create project -> approve policy -> generate Project Key -> invoke`;
 
   return (
     <AppShell active="registry" locale={locale}>
-      <section className="section">
-        <div className="section-inner hero-glow max-w-[1200px] mx-auto px-6 py-20">
-          <Reveal>
-            <div>
-              <div className="eyebrow">
-                <Boxes size={16} aria-hidden="true" />
-                <span>{dictionary.registryPage.eyebrow}</span>
+      <main className="registry-v2">
+        <section className="registry-v2-hero">
+          <div className="registry-v2-shell registry-v2-hero__grid">
+            <div className="registry-v2-hero__copy">
+              <span className="registry-v2-eyebrow">
+                <span aria-hidden="true" />
+                {copy.heroEyebrow}
+              </span>
+              <h1>
+                {copy.heroTitle.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </h1>
+              <p>{copy.heroBody}</p>
+              <div className="registry-v2-actions">
+                <a className="registry-v2-button registry-v2-button--primary" href={`${apiUrl}/v1/skills/search?limit=20`}>
+                  <Code2 size={16} aria-hidden="true" />
+                  <span>{copy.actions.api}</span>
+                </a>
+                <a className="registry-v2-button" href={localizedHref("/marketplace", locale)}>
+                  <ArrowRight size={16} aria-hidden="true" />
+                  <span>{copy.actions.marketplace}</span>
+                </a>
+                <a className="registry-v2-button registry-v2-button--quiet" href={localizedHref("/publish", locale)}>
+                  <Plus size={16} aria-hidden="true" />
+                  <span>{copy.actions.submit}</span>
+                </a>
               </div>
-              <h1 className="heading-xl mt-4">{dictionary.registryPage.title}</h1>
-              <p className="body-text mt-4 max-w-[640px]">{dictionary.registryPage.description}</p>
+              <div className="registry-v2-proof">
+                {copy.heroProof.map(([title, body]) => (
+                  <article className="registry-v2-proof-card" key={title}>
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </article>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-4 mt-8">
-              <a className="btn-primary btn-primary--large" href={localizedHref("/docs#api", locale)}>
-                <BookOpenCheck size={18} aria-hidden="true" />
-                <span>{labels.actions.api}</span>
-              </a>
-              <a className="btn-secondary btn-secondary--large" href={localizedHref("/marketplace", locale)}>
-                <ArrowRight size={18} aria-hidden="true" />
-                <span>{labels.actions.marketplace}</span>
-              </a>
-              <a className="btn-text" href={localizedHref("/publish", locale)}>
-                <Plus size={17} aria-hidden="true" />
-                <span>{labels.actions.submit}</span>
-              </a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
-      <section className="section section-divider" aria-labelledby="registry-decision-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[84px]">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
-            <div>
-              <div className="eyebrow">
-                <Workflow size={16} aria-hidden="true" />
-                <span>{labels.decisionTitle}</span>
-              </div>
-              <h2 id="registry-decision-heading" className="heading-lg mt-4">{labels.decisionHeading}</h2>
-              <p className="body-text mt-4 max-w-[560px]">{labels.decisionBody}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {labels.surfaces.map(([title, body], index) => {
+            <RegistryConsole apiUrl={apiUrl} copy={copy} />
+          </div>
+        </section>
+
+        <section className="registry-v2-section">
+          <div className="registry-v2-shell">
+            <SectionHeading body={copy.fit.body} eyebrow={copy.fit.eyebrow} title={copy.fit.title} />
+            <div className="registry-v2-surface-grid">
+              {copy.fit.cards.map(([title, body, tags], index) => {
                 const Icon = index === 0 ? SearchCheck : index === 1 ? FileJson : KeyRound;
 
                 return (
-                  <article className="card" key={title}>
-                    <Icon size={18} aria-hidden="true" className="text-[#7fee64] mb-3" />
-                    <strong className="heading-sm">{title}</strong>
-                    <span className="body-text-sm mt-2 block">{body}</span>
+                  <article className="registry-v2-card" key={title}>
+                    <span className="registry-v2-card__icon">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <h3>{title}</h3>
+                    <p>{body}</p>
+                    <div className="registry-v2-tags">
+                      {tags.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
                   </article>
                 );
               })}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section section-divider" aria-labelledby="registry-protocol-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
-          <div className="mb-10">
-            <div className="eyebrow">
-              <Database size={16} aria-hidden="true" />
-              <span>{labels.protocolEyebrow}</span>
-            </div>
-            <h2 id="registry-protocol-heading" className="heading-lg mt-4">{labels.protocolTitle}</h2>
-            <p className="body-text mt-4 max-w-[640px]">{labels.protocolBody}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {labels.heroProof.map(([title, body], index) => {
-              const Icon = index === 0 ? FileJson : index === 1 ? Network : ShieldCheck;
-
-              return (
-                <article className="card" key={title}>
-                  <Icon size={17} aria-hidden="true" className="text-[#7fee64] mb-3" />
-                  <strong className="heading-sm">{title}</strong>
-                  <span className="body-text-sm mt-2 block">{body}</span>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <OperatingEvidenceChain
-        focus="platform"
-        locale={locale}
-        stats={[
-          { label: labels.evidence.verified, tone: publicStats.verifiedSkills > 0 ? "good" : "attention", value: String(publicStats.verifiedSkills) },
-          { label: labels.evidence.highRisk, tone: highRiskSkills > 0 ? "attention" : "neutral", value: String(highRiskSkills) },
-          { label: labels.evidence.mcp, value: String(mcpSkills) },
-          { label: labels.evidence.calls, value: String(publicStats.recordedCalls) }
-        ]}
-      />
-
-      <section className="section section-divider" aria-labelledby="registry-contract-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
-            <article className="card">
-              <div className="eyebrow">
-                <Braces size={16} aria-hidden="true" />
-                <span>{labels.contractTitle}</span>
-              </div>
-              <h2 id="registry-contract-heading" className="heading-lg mt-4">{labels.manifestTitle}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                {labels.manifestFields.map(([title, body], i) => (
-                  <Reveal delay={i * 60} key={title}>
-                    <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4">
-                      <span className="text-[#7fee64] text-sm font-medium">{title}</span>
-                      <strong className="block text-white/80 text-sm mt-1 font-normal">{body}</strong>
-                    </div>
-                  </Reveal>
+        <section className="registry-v2-section">
+          <div className="registry-v2-shell">
+            <SectionHeading body={copy.lifecycle.body} eyebrow={copy.lifecycle.eyebrow} title={copy.lifecycle.title} />
+            <div className="registry-v2-lane-panel">
+              <div className="registry-v2-lane">
+                {copy.lifecycle.steps.map(([title, body], index) => (
+                  <article className="registry-v2-lane-step" key={title}>
+                    <span>{index + 1}</span>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </article>
                 ))}
               </div>
-              <Reveal>
-                <div className="mt-6 space-y-3">
-                  {labels.notes.map((note) => (
-                    <div className="flex items-start gap-3 text-[#999] text-sm" key={note}>
-                      <ShieldCheck size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-[#10b981]" />
-                      <span>{note}</span>
-                    </div>
-                  ))}
-                </div>
-              </Reveal>
-            </article>
-
-            <aside className="flex flex-col gap-6">
-              <div className="card">
-                <RadioTower size={20} aria-hidden="true" className="text-[#7fee64] mb-3" />
-                <h2 className="heading-sm">{dictionary.registryPage.endpointTitle}</h2>
-                <p className="body-text-sm mt-2">{dictionary.registryPage.endpointBody}</p>
-                <code className="code-block mt-4 block text-sm">{apiUrl}/v1/skills/search</code>
-                <a className="btn-secondary mt-4 inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
-                  <Terminal size={15} aria-hidden="true" />
-                  <span>{labels.actions.api}</span>
-                </a>
-              </div>
-
-              <div className="card">
-                <GitBranch size={20} aria-hidden="true" className="text-[#7fee64] mb-3" />
-                <h2 className="heading-sm">{labels.lifecycleTitle}</h2>
-                <div className="mt-4 space-y-3">
-                  {labels.lifecycle.map(([title, body], index) => (
-                    <Reveal delay={index * 60} key={title}>
-                      <div className="flex items-start gap-3">
-                        <span className="text-[#525252] text-xs font-mono mt-0.5">{String(index + 1).padStart(2, "0")}</span>
-                        <div>
-                          <strong className="text-white text-sm">{title}</strong>
-                          <small className="block text-[#666] text-xs mt-0.5">{body}</small>
-                        </div>
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
-                  <span>skillhub.json</span>
-                  <span>contract</span>
-                </div>
-                <pre className="p-4 overflow-x-auto text-sm text-[#999]">
-                  <code>{manifestSnippet}</code>
-                </pre>
-              </div>
-            </aside>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section section-divider" aria-labelledby="registry-quickstart-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
-          <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 items-start">
-            <article className="card">
-              <div className="eyebrow">
-                <BookOpenCheck size={16} aria-hidden="true" />
-                <span>{labels.quickstartTitle}</span>
+        <section className="registry-v2-section">
+          <div className="registry-v2-shell">
+            <SectionHeading body={copy.manifest.body} eyebrow={copy.manifest.eyebrow} title={copy.manifest.title} />
+            <div className="registry-v2-manifest-layout">
+              <div className="registry-v2-field-grid">
+                {copy.manifest.fields.map(([eyebrow, title, body]) => (
+                  <article className="registry-v2-field" key={eyebrow}>
+                    <small>{eyebrow}</small>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </article>
+                ))}
               </div>
-              <h2 id="registry-quickstart-heading" className="heading-lg mt-4">{labels.quickstartTitle}</h2>
-              <p className="body-text mt-4">{labels.quickstartBody}</p>
-              <div className="mt-6 space-y-4">
-                {labels.quickstartSteps.map(([title, body], index) => (
-                  <div className="flex items-start gap-4" key={title}>
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(127,238,100,0.24)] bg-[rgba(127,238,100,0.08)] text-sm font-semibold text-[#7fee64]">
-                      {index + 1}
-                    </span>
+              <aside className="registry-v2-policy-stack">
+                {copy.manifest.policies.map(([title, body]) => (
+                  <article className="registry-v2-policy" key={title}>
+                    <ShieldCheck size={16} aria-hidden="true" />
                     <div>
-                      <strong className="text-white text-sm">{title}</strong>
-                      <p className="body-text-sm mt-1">{body}</p>
+                      <strong>{title}</strong>
+                      <p>{body}</p>
                     </div>
-                  </div>
+                  </article>
+                ))}
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section className="registry-v2-section">
+          <div className="registry-v2-shell registry-v2-quickstart">
+            <article className="registry-v2-card registry-v2-quickstart__copy">
+              <span className="registry-v2-eyebrow">
+                <span aria-hidden="true" />
+                {copy.quickstart.eyebrow}
+              </span>
+              <h2>{copy.quickstart.title}</h2>
+              <p>{copy.quickstart.body}</p>
+              <div className="registry-v2-tags">
+                {copy.quickstart.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
                 ))}
               </div>
             </article>
-
-            <article className="card">
-              <div className="eyebrow">
-                <Terminal size={16} aria-hidden="true" />
-                <span>{dictionary.registryPage.endpointTitle}</span>
+            <article className="registry-v2-terminal">
+              <div className="registry-v2-terminal__head">
+                <span>{copy.quickstart.terminal}</span>
+                <span>{copy.quickstart.endpoints}</span>
               </div>
-              <pre className="code-block mt-5 overflow-x-auto text-sm">
-                <code>{apiQuickstartSnippet}</code>
+              <pre>
+                <code>{`curl "${apiUrl}/v1/skills/search?limit=20"\n\ncurl "${apiUrl}/v1/skills/browser-research"\n\n# ${copy.quickstart.comment}\n# ${copy.quickstart.flow}`}</code>
               </pre>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a className="btn-secondary inline-flex items-center gap-2" href={`${apiUrl}/v1/skills/search?limit=20`}>
-                  <Code2 size={15} aria-hidden="true" />
-                  <span>{dictionary.registryPage.endpointTitle}</span>
-                </a>
-                <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
-                  <BookOpenCheck size={15} aria-hidden="true" />
-                  <span>{labels.actions.api}</span>
-                </a>
-              </div>
             </article>
           </div>
+        </section>
 
-          <div className="mt-8">
-            <div className="mb-5">
-              <div className="eyebrow">
-                <ShieldCheck size={16} aria-hidden="true" />
-                <span>{labels.audienceTitle}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {labels.audience.map(([title, body]) => (
-                <article className="card" key={title}>
-                  <strong className="heading-sm">{title}</strong>
-                  <span className="body-text-sm mt-2 block">{body}</span>
-                </article>
+        <section className="registry-v2-section">
+          <div className="registry-v2-shell">
+            <SectionHeading body={copy.rows.body} eyebrow={copy.rows.eyebrow} title={copy.rows.title} />
+            <div className="registry-v2-metrics" aria-label={copy.rows.eyebrow}>
+              {visibleMetrics.map((metric) => (
+                <div className="registry-v2-metric" key={metric.label}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}</strong>
+                </div>
               ))}
             </div>
+            <RegistryRows apiUrl={apiUrl} copy={copy} locale={locale} skills={skills} />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="section section-divider" aria-labelledby="registry-page-heading">
-        <div className="section-inner max-w-[1200px] mx-auto px-6 py-[96px]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <section className="registry-v2-closing">
+          <div className="registry-v2-shell">
+            <h2>{copy.closing.title}</h2>
+            <p>{copy.closing.body}</p>
+            <div className="registry-v2-actions registry-v2-actions--center">
+              <a className="registry-v2-button registry-v2-button--primary" href={`${apiUrl}/v1/skills/search?limit=20`}>
+                <Code2 size={16} aria-hidden="true" />
+                <span>{copy.actions.api}</span>
+              </a>
+              <a className="registry-v2-button" href={localizedHref("/marketplace", locale)}>
+                <ArrowRight size={16} aria-hidden="true" />
+                <span>{copy.actions.marketplace}</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </AppShell>
+  );
+}
+
+function getRegistryMetrics(skills: SkillSummary[]) {
+  const publicSkills = skills.filter(
+    (skill) =>
+      skill.verificationStatus === "verified" ||
+      skill.verificationStatus === "submitted" ||
+      skill.verificationStatus === "deprecated",
+  );
+  const verifiedSkills = publicSkills.filter((skill) => skill.verificationStatus === "verified");
+
+  return {
+    callableSkills: verifiedSkills.length,
+    publicSkills: publicSkills.length,
+    totalSkillRecords: skills.length,
+    verifiedSkills: verifiedSkills.length,
+  };
+}
+
+function SectionHeading({
+  body,
+  eyebrow,
+  title,
+}: {
+  body: string;
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <div className="registry-v2-section-heading">
+      <div>
+        <span className="registry-v2-eyebrow">
+          <span aria-hidden="true" />
+          {eyebrow}
+        </span>
+        <h2>{title}</h2>
+      </div>
+      <p>{body}</p>
+    </div>
+  );
+}
+
+function RegistryConsole({
+  apiUrl,
+  copy,
+}: {
+  apiUrl: string;
+  copy: RegistryCopy;
+}) {
+  const endpoint = copy.console.endpoint.replace("https://api.useskillhub.com", apiUrl);
+
+  return (
+    <aside className="registry-v2-console" aria-label={copy.console.consoleLabel}>
+      <div className="registry-v2-console__top">
+        <span className="registry-v2-window-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span>{copy.console.topPath}</span>
+        <span>{copy.console.liveApi}</span>
+      </div>
+      <div className="registry-v2-console__body">
+        <div className="registry-v2-contract-main">
+          <div className="registry-v2-contract-head">
             <div>
-              <div className="eyebrow">
-                <Boxes size={16} aria-hidden="true" />
-                <span>{labels.tableEyebrow}</span>
-              </div>
-              <h2 id="registry-page-heading" className="heading-lg mt-2">{labels.tableTitle}</h2>
+              <h2>{copy.console.title}</h2>
+              <p>{copy.console.body}</p>
             </div>
-            <div className="flex gap-3">
-              <a className="btn-secondary inline-flex items-center gap-2" href={`${apiUrl}/v1/skills/search?limit=50`}>
-                <Code2 size={17} aria-hidden="true" />
-                <span>{dictionary.registryPage.endpointTitle}</span>
-              </a>
-              <a className="btn-secondary inline-flex items-center gap-2" href={localizedHref("/docs", locale)}>
-                <Code2 size={17} aria-hidden="true" />
-                <span>{dictionary.nav.docs}</span>
-              </a>
-            </div>
+            <span className="registry-v2-status-pill">
+              <span aria-hidden="true" />
+              {copy.console.status}
+            </span>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {visibleMetrics.map((item) => (
-              <div className="stat-card" key={item.label}>
-                <span className="body-text-sm">{item.label}</span>
-                <strong className="heading-md mt-1 block">{item.value}</strong>
-              </div>
+          <div className="registry-v2-api-line">
+            <strong>{copy.console.get}</strong>
+            <span>{endpoint}</span>
+          </div>
+          <div className="registry-v2-schema-grid">
+            {[copy.console.input, copy.console.output, copy.console.permissions, copy.console.runtime].map(([eyebrow, title, body]) => (
+              <article className="registry-v2-schema-box" key={eyebrow}>
+                <small>{eyebrow}</small>
+                <strong>{title}</strong>
+                <span>{body}</span>
+              </article>
             ))}
           </div>
-
-          <SkillTable apiUrl={apiUrl} labels={dictionary.skillTable} locale={locale} skills={skills} />
+          <div className="registry-v2-code-preview">
+            <pre>
+              <code>{manifestSnippet}</code>
+            </pre>
+          </div>
         </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="closing-cta">
-        <div className="section-inner">
-          <Reveal>
-            <h2 className="heading-lg mb-4">{locale === "zh" ? "开始构建" : "Start building"}</h2>
-            <p className="body-text max-w-[480px] mx-auto mb-8">{locale === "zh" ? "去找技能页面浏览，或发布你自己的技能。" : "Find skills or publish your own skill."}</p>
-            <div className="flex items-center justify-center gap-3">
-              <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
-                <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
-                <ArrowRight size={14} aria-hidden="true" />
-              </a>
-              <a className="btn-secondary" href={localizedHref("/publish", locale)}>
-                <span>{locale === "zh" ? "发布技能" : "Publish a skill"}</span>
-              </a>
+        <div className="registry-v2-contract-side">
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.signalTitle}</h3>
+            <p>{copy.console.signals}</p>
+            <div className="registry-v2-meter" aria-hidden="true">
+              <MeterRow label={copy.console.meterManifest} value={copy.console.ok} width="92%" />
+              <MeterRow label={copy.console.meterSchema} value={copy.console.ok} width="86%" />
+              <MeterRow label={copy.console.meterRisk} tone="warning" value={copy.console.low} width="34%" />
             </div>
-          </Reveal>
+          </div>
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.runtimeTitle}</h3>
+            <p>{copy.console.runtimeBoundary}</p>
+          </div>
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.marketplaceTitle}</h3>
+            <p>{copy.console.marketplaceBoundary}</p>
+          </div>
         </div>
-      </section>
-    </AppShell>
+      </div>
+    </aside>
+  );
+}
+
+function MeterRow({
+  label,
+  tone,
+  value,
+  width,
+}: {
+  label: string;
+  tone?: "warning";
+  value: string;
+  width: string;
+}) {
+  return (
+    <div className="registry-v2-meter-row">
+      <span>{label}</span>
+      <div>
+        <span
+          className={tone === "warning" ? "registry-v2-meter-row__bar registry-v2-meter-row__bar--warning" : "registry-v2-meter-row__bar"}
+          style={{ width }}
+        />
+      </div>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function RegistryRows({
+  apiUrl,
+  copy,
+  locale,
+  skills,
+}: {
+  apiUrl: string;
+  copy: RegistryCopy;
+  locale: Locale;
+  skills: SkillSummary[];
+}) {
+  if (skills.length === 0) {
+    return (
+      <div className="registry-v2-empty">
+        <Boxes size={22} aria-hidden="true" />
+        <h3>{copy.rows.emptyTitle}</h3>
+        <p>{copy.rows.emptyBody}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="registry-v2-rows-panel" aria-label={copy.rows.aria}>
+      <div className="registry-v2-row-head">
+        {copy.rows.columns.map((column) => (
+          <span key={column}>{column}</span>
+        ))}
+      </div>
+      {skills.slice(0, 8).map((skill) => {
+        const displayName = publicSkillDisplayName(skill.slug, skill.displayName)[locale];
+        const description = publicSkillDescription(skill.slug, skill.description)[locale];
+        const tags = publicSkillTags(skill.slug, skill.tags)[locale];
+        const runtime = skill.runtimeType ? skill.runtimeType.toUpperCase() : "HTTP";
+        const review = copy.statusLabels[skill.verificationStatus];
+        const risk = copy.riskLabels[skill.permissionLevel];
+
+        return (
+          <article className="registry-v2-skill-row" key={skill.id}>
+            <div className="registry-v2-skill-title">
+              <span className="registry-v2-skill-icon" aria-hidden="true">
+                <PackageCheck size={15} />
+              </span>
+              <div>
+                <strong>{displayName} · v{skill.version}</strong>
+                <p>{description}</p>
+                <div className="registry-v2-row-tags">
+                  {tags.slice(0, 3).map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <span data-label={copy.rows.columns[1]}>{runtime}</span>
+            <span data-label={copy.rows.columns[2]}>
+              <span className={`registry-v2-state registry-v2-state--${skill.verificationStatus}`}>{review}</span>
+            </span>
+            <span data-label={copy.rows.columns[3]}>{risk}</span>
+            <span data-label={copy.rows.columns[4]}>
+              <a href={`${apiUrl}/v1/skills/${skill.slug}`} aria-label={`${copy.rows.openManifest}: ${displayName}`}>
+                <span>{copy.rows.manifest}</span>
+                <ExternalLink size={14} aria-hidden="true" />
+              </a>
+            </span>
+          </article>
+        );
+      })}
+    </div>
   );
 }
