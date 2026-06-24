@@ -42619,6 +42619,148 @@ textarea:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.docs-v2 .registry-v2-shell {
+  width: min(100% - 48px, 1540px);
+}
+
+.docs-v2-hero__grid {
+  grid-template-columns: minmax(430px, 0.88fr) minmax(670px, 1.12fr);
+}
+
+.docs-v2 .registry-v2-hero {
+  padding-top: clamp(48px, 5.2vw, 82px);
+}
+
+.docs-v2 .registry-v2-hero h1 {
+  max-width: 900px;
+  font-size: clamp(48px, 4.8vw, 82px);
+}
+
+.docs-v2-console .registry-v2-console__body {
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.72fr);
+}
+
+.docs-v2 .registry-v2-code-preview pre,
+.docs-v2-terminal pre {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.docs-v2-map-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.docs-v2-map-card {
+  align-content: start;
+  min-height: 338px;
+}
+
+.docs-v2-check-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docs-v2-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.docs-v2-check-list svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--registry-v2-accent);
+}
+
+.docs-v2-inline-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  color: var(--registry-v2-cyan);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.docs-v2-inline-link:hover {
+  color: var(--registry-v2-accent);
+}
+
+.docs-v2-process-lane {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.docs-v2-process-lane .registry-v2-lane-step {
+  min-height: 196px;
+}
+
+.docs-v2-api-grid,
+.docs-v2-troubleshoot-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.docs-v2-api-card,
+.docs-v2-troubleshoot-card {
+  align-content: start;
+}
+
+.docs-v2-endpoint-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.docs-v2-endpoint-list code {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  border: 1px solid rgba(117, 230, 210, 0.18);
+  border-radius: 6px;
+  background: rgba(117, 230, 210, 0.075);
+  color: var(--registry-v2-cyan);
+  padding: 0 9px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.docs-v2-quickstart {
+  grid-template-columns: minmax(340px, 0.45fr) minmax(0, 1fr);
+}
+
+.docs-v2-terminal pre {
+  max-height: 560px;
+}
+
+.docs-v2-vocabulary-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.42fr);
+}
+
+.docs-v2-vocabulary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.docs-v2-vocabulary-grid .registry-v2-field {
+  min-height: 152px;
+}
+
+.docs-v2-guardrail-stack .registry-v2-policy:first-child {
+  background:
+    linear-gradient(135deg, rgba(159, 232, 112, 0.09), rgba(117, 230, 210, 0.045)),
+    rgba(255, 255, 255, 0.052);
+}
+
 @keyframes registry-v2-scan {
   0%,
   38% {
@@ -42675,6 +42817,19 @@ textarea:focus {
   }
 
   .solutions-v2-track-card p {
+    min-height: 0;
+  }
+
+  .docs-v2-map-grid,
+  .docs-v2-process-lane,
+  .docs-v2-api-grid,
+  .docs-v2-vocabulary-grid,
+  .docs-v2-troubleshoot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .docs-v2-map-card,
+  .docs-v2-process-lane .registry-v2-lane-step {
     min-height: 0;
   }
 }
@@ -42751,6 +42906,23 @@ textarea:focus {
   }
 
   .solutions-v2-track-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-v2 .registry-v2-shell {
+    width: min(100% - 28px, 900px);
+  }
+
+  .docs-v2-map-grid,
+  .docs-v2-process-lane,
+  .docs-v2-api-grid,
+  .docs-v2-vocabulary-grid,
+  .docs-v2-troubleshoot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-v2-console .registry-v2-console__body,
+  .docs-v2-vocabulary-layout {
     grid-template-columns: 1fr;
   }
 }
@@ -42886,6 +43058,32 @@ textarea:focus {
 
   .solutions-v2-track-card {
     gap: 12px;
+  }
+
+  .docs-v2 .registry-v2-shell {
+    width: min(100% - 18px, 640px);
+  }
+
+  .docs-v2 .registry-v2-hero h1 {
+    font-size: clamp(34px, 9.8vw, 46px);
+  }
+
+  .docs-v2-map-card,
+  .docs-v2-api-card,
+  .docs-v2-troubleshoot-card {
+    gap: 12px;
+  }
+
+  .docs-v2-endpoint-list code {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .docs-v2-terminal pre {
+    max-height: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 }
 

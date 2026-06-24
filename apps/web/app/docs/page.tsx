@@ -10,15 +10,12 @@ import {
   KeyRound,
   Network,
   PackageCheck,
-  Route,
   SearchCode,
   ShieldCheck,
   Terminal,
   WalletCards,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { Reveal } from "@/components/home/reveal";
-import { PublicAccessScope } from "@/components/public-access-scope";
 import {
   getLocaleFromSearchParams,
   localizedHref,
@@ -32,7 +29,9 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
   const locale = getLocaleFromSearchParams(await searchParams);
 
   return buildLocalizedMetadata({
@@ -40,1141 +39,1001 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     path: "/docs",
     type: "article",
     en: {
-      title: "SkillHub Docs - Quickstart, REST, MCP, and Project Keys",
+      title: "SkillHub Docs - Skill API, REST, MCP, and Project Keys",
       description:
-        "Start using SkillHub: browse skills, inspect manifests, create projects, use Project Keys, understand REST/MCP runtime boundaries, and publish skills for review.",
+        "Use SkillHub docs to discover agent skills, inspect contracts, install verified skills into projects, create Project Keys, call REST/MCP runtime, and publish skills for review.",
     },
     zh: {
-      title: "SkillHub 文档 - 快速开始、REST、MCP 与 Project Key",
+      title: "SkillHub 使用文档 - 技能 API、REST、MCP 与 Project Key",
       description:
-        "了解如何使用 SkillHub：浏览技能、检查 manifest、创建项目、使用 Project Key、理解 REST/MCP 运行边界，并发布技能进入审核。",
+        "通过 SkillHub 使用文档了解如何发现智能体技能、检查合约、安装已验证技能、创建 Project Key、调用 REST/MCP 运行时，并提交技能进入审核。",
     },
   });
 }
 
-type DocsCopy = {
-  api: {
-    body: string;
-    groups: Array<{
-      body: string;
-      endpoints: string[];
-      title: string;
-    }>;
-    title: string;
-  };
-  admin: {
-    body: string;
-    cards: Array<{
-      body: string;
-      items: string[];
-      title: string;
-    }>;
-    title: string;
-  };
-  guardrails: {
-    body: string;
-    items: string[];
-    title: string;
-  };
-  hero: {
-    body: string;
-    eyebrow: string;
-    primary: string;
-    secondary: string;
-    tertiary: string;
-    title: string;
-  };
-  paths: Array<{
-    action: string;
-    body: string;
-    href: string;
-    steps: string[];
-    title: string;
-  }>;
-  quickstart: {
-    body: string;
-    cards: Array<[string, string]>;
-    codeLabel: string;
-    title: string;
-  };
-  terms: Array<[string, string]>;
-};
-
-const copy: Record<Locale, DocsCopy> = {
+const docsCopy = {
   en: {
-    admin: {
-      body:
-        "Admin pages are for operators who review submitted versions, verify launch readiness, audit sensitive activity, and keep commercial states honest before public adoption.",
+    actions: {
+      api: "Open Skill API",
+      docs: "Read quickstart",
+      marketplace: "Find Skills",
+      publish: "Publish a Skill",
+      workspace: "Enter workspace",
+    },
+    heroEyebrow: "SkillHub Docs · Agent Skill API",
+    heroTitle: ["Read the Skill contract,", "then let agents run."],
+    heroBody:
+      "This page explains the production path for SkillHub: discover public Skills, inspect the Skill API contract, install a verified version into a project, create a scoped Project Key, then invoke REST or MCP through the governed runtime gateway.",
+    heroProof: [
+      [
+        "Public first",
+        "Marketplace and Skill API can be inspected before sign-in.",
+      ],
+      [
+        "Project gated",
+        "Runtime starts only after project install, version pin, and Project Key.",
+      ],
+      [
+        "Agent ready",
+        "Contracts expose schema, runtime, permissions, review state, and MCP metadata.",
+      ],
+    ],
+    console: {
+      consoleLabel: "SkillHub documentation console",
+      topPath: "skillhub://docs/adopt/browser-research",
+      live: "docs path",
+      status: "launch preview",
+      title: "browser-research · adoption path",
+      body: "A Skill is useful only when an agent can read what it does, what it needs, and where runtime is allowed. The docs keep discovery, install, and invocation separated.",
+      get: "GET",
+      endpoint: "/v1/skills/browser-research",
+      manifest: [
+        "Contract",
+        "skillhub.json",
+        "Identity, version, schemas, permissions, runtime, support, and review state.",
+      ],
+      install: [
+        "Install",
+        "project version pin",
+        "The workspace installs a verified version before any runtime call is available.",
+      ],
+      key: [
+        "Project Key",
+        "runtime:invoke",
+        "Scoped key used by an agent, server workflow, or MCP client.",
+      ],
+      runtime: [
+        "Runtime",
+        "REST / MCP gateway",
+        "Policy, budget, rate limit, approval, and logs stay attached to every call.",
+      ],
+      signalTitle: "Docs map",
+      signalBody:
+        "Use Marketplace for human discovery, Registry for machine-readable contracts, Workspace for runtime, and Publish for submitted versions.",
+      boundaryTitle: "Runtime boundary",
+      boundaryBody:
+        "Public MCP metadata describes available tools. It does not grant anonymous execution. Real calls require project context and a Project Key.",
+      commercialTitle: "Commercial boundary",
+      commercialBody:
+        "Free and Pro access can be explained publicly. Checkout, payout, tax/KYC, refund, and ledger operations remain operator-gated during Launch Preview.",
+      meterManifest: "contract",
+      meterInstall: "install",
+      meterRuntime: "runtime",
+      ok: "ready",
+      gated: "gated",
+    },
+    map: {
+      eyebrow: "Docs Map",
+      title: "Start from the job, then go to the right surface.",
+      body: "SkillHub has four surfaces because each one answers a different question: what exists, what is the contract, where can it run, and how does a publisher ship a verified version.",
       cards: [
         {
-          body: "Reviewers approve exact submitted versions, not mutable drafts. Public adoption only begins after review evidence passes.",
-          items: ["Version review queue", "Manifest and runtime evidence", "Return reasons for blocked submissions"],
-          title: "Review submissions",
+          action: "Browse Skills",
+          body: "For operators, marketers, founders, and AI agents comparing reusable capabilities before adoption.",
+          href: "/marketplace",
+          items: [
+            "Search by task",
+            "Compare publisher and risk",
+            "Open public detail",
+          ],
+          title: "Find Skills",
         },
         {
-          body: "Launch checks confirm that permissions, support paths, pricing intent, and operational ownership are explicit before a skill becomes adoptable.",
-          items: ["Launch readiness", "Permission and trust signals", "Publisher support metadata"],
-          title: "Confirm readiness",
+          action: "Inspect contracts",
+          body: "For developers and agents reading schemas, permission boundaries, runtime type, and review state.",
+          href: "/registry",
+          items: ["Read manifest", "Check endpoint", "Confirm review status"],
+          title: "Skill API",
         },
         {
-          body: "Operators inspect audit logs, incident signals, finance readiness, and payout metadata without exposing customer secrets or Project Keys.",
-          items: ["Audit log review", "Incident and report triage", "Finance and payout readiness"],
-          title: "Operate safely",
+          action: "Enter workspace",
+          body: "For teams installing verified Skills, creating Project Keys, and running governed calls.",
+          href: "/login",
+          items: ["Choose project", "Pin version", "Invoke REST or MCP"],
+          title: "Workspace runtime",
+        },
+        {
+          action: "Submit package",
+          body: "For authors packaging skillhub.json, submitting exact versions, and responding to review evidence.",
+          href: "/publish",
+          items: ["Prepare manifest", "Run preflight", "Submit version"],
+          title: "Publisher flow",
         },
       ],
-      title: "Admin operations",
+    },
+    adoption: {
+      eyebrow: "Adoption Flow",
+      title: "The safe path from public discovery to agent runtime.",
+      body: "The docs should make the order obvious. Do not start with a runtime token. Start by choosing the right Skill and understanding the contract.",
+      steps: [
+        [
+          "Discover",
+          "Search Marketplace or query the public Skill API by task, tag, category, runtime, or risk profile.",
+        ],
+        [
+          "Inspect",
+          "Read the manifest, input/output schema, permissions, examples, publisher, review state, and public MCP metadata.",
+        ],
+        [
+          "Install",
+          "Sign in, choose a project, install a verified Skill, and pin the version that your agent will use.",
+        ],
+        [
+          "Invoke",
+          "Create a scoped Project Key, then call REST or MCP through policy, budget, rate limit, and audit logging.",
+        ],
+      ],
     },
     api: {
-      body:
-        "Use public endpoints for discovery and manifest inspection, including public MCP metadata. Use signed-in workspace paths and Project Keys for installs, runtime calls, policy, logs, and commercial evidence.",
+      eyebrow: "REST / MCP Boundary",
+      title:
+        "Public inspection and real invocation are intentionally separate.",
+      body: "Agents may read contracts without credentials. Anything that can spend budget, touch customer data, write to tools, or run production workflow belongs behind project policy.",
       groups: [
         {
-          body: "Search public skills and inspect one skill before adoption.",
-          endpoints: ["GET /v1/skills/search", "GET /v1/skills/:slug"],
+          body: "Search public Skills and inspect a single public contract before adoption.",
+          endpoints: [
+            "GET /v1/skills/search",
+            "GET /v1/skills/:slug",
+            "GET /mcp",
+          ],
           title: "Public discovery",
         },
         {
-          body: "Create project state, install verified skills, generate Project Keys, and run governed runtime calls.",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectSlug/installed-skills", "POST /v1/projects/:projectSlug/api-keys", "POST /v1/runtime/invoke"],
+          body: "Create project state, install verified Skills, create scoped keys, and call the governed runtime gateway.",
+          endpoints: [
+            "GET /v1/developer/projects",
+            "POST /v1/projects/:projectSlug/installed-skills",
+            "POST /v1/projects/:projectSlug/api-keys",
+            "POST /v1/runtime/invoke",
+          ],
           title: "Developer workspace",
         },
         {
-          body: "Save drafts, submit exact versions, read review evidence, and maintain publisher metadata.",
-          endpoints: ["POST /v1/skills", "POST /v1/publisher/skills/:slug/versions", "POST /v1/publisher/skills/:slug/versions/:version/submit"],
+          body: "Save drafts, submit exact versions, and provide evidence for review before public adoption.",
+          endpoints: [
+            "POST /v1/skills",
+            "POST /v1/publisher/skills/:slug/versions",
+            "POST /v1/publisher/skills/:slug/versions/:version/submit",
+          ],
           title: "Publisher workflow",
         },
         {
-          body: "Review versions, manage trust, launch readiness, audit logs, finance records, and payout readiness.",
-          endpoints: ["GET /v1/admin/reviews", "GET /v1/admin/launch-readiness", "GET /v1/admin/audit-logs"],
+          body: "Review submissions, audit sensitive operations, confirm launch readiness, and keep paid-preview states honest.",
+          endpoints: [
+            "GET /v1/admin/reviews",
+            "GET /v1/admin/launch-readiness",
+            "GET /v1/admin/audit-logs",
+          ],
           title: "Operator console",
         },
       ],
-      title: "REST and MCP surfaces",
+    },
+    quickstart: {
+      body: "These commands show the mental model: public inspection first, authenticated project install second, Project Key runtime last.",
+      comment: "Runtime starts after project install:",
+      endpoints: "public + gated",
+      eyebrow: "Quickstart",
+      flow: "create project -> install verified version -> create Project Key -> REST / MCP invoke",
+      tags: ["public contract", "project install", "Project Key", "REST/MCP"],
+      terminal: "quickstart.sh",
+      title: "Copy the path, not just a token.",
+    },
+    vocabulary: {
+      eyebrow: "Shared Vocabulary",
+      title: "Use these words consistently across the product.",
+      body: "The docs page is also the source of truth for how SkillHub explains itself to users, developers, publishers, and AI agents.",
+      terms: [
+        [
+          "Skill",
+          "A versioned AI Agent capability with manifest, schema, permissions, runtime, publisher, and review state.",
+        ],
+        [
+          "Skill API",
+          "The machine-readable registry of public Skill contracts.",
+        ],
+        [
+          "Manifest",
+          "The skillhub.json contract that explains what a Skill does, what it can access, and how it returns output.",
+        ],
+        [
+          "Project",
+          "A signed-in workspace container for installs, version pins, policy, keys, logs, and runtime tests.",
+        ],
+        [
+          "Project Key",
+          "A scoped runtime credential for an installed Skill inside one project.",
+        ],
+        [
+          "Runtime gateway",
+          "The governed REST/MCP path that enforces policy, budget, rate limits, approval, and audit logs.",
+        ],
+      ],
+    },
+    troubleshooting: {
+      eyebrow: "Troubleshooting",
+      title: "Most issues come from crossing the wrong boundary.",
+      body: "Before debugging code, decide whether the issue belongs to public discovery, signed-in workspace, publisher review, or production deployment.",
+      items: [
+        [
+          "401 / 403 on runtime",
+          "Use a Project Key with runtime scope. A login session token is not the same as a runtime key.",
+        ],
+        [
+          "MCP is visible but cannot run",
+          "Public MCP metadata is inspection only. Invocation requires a project install and scoped Project Key.",
+        ],
+        [
+          "Install is locked",
+          "Confirm the Skill is verified and the current user has access to the target project.",
+        ],
+        [
+          "Skill remains in review",
+          "Submit an exact version and include manifest, examples, permissions, runtime evidence, support path, and commercial intent.",
+        ],
+        [
+          "Production still shows old UI",
+          "Confirm the server pulled the latest git hash, rebuilt the web app, and restarted the process behind the domain.",
+        ],
+      ],
     },
     guardrails: {
-      body:
-        "These rules keep public pages honest and keep production operations from turning into hidden magic.",
+      eyebrow: "Operational Guardrails",
+      title: "What the docs must never blur.",
+      body: "SkillHub should feel powerful because boundaries are clear. Public pages can educate and prove the contract; private operations stay private.",
       items: [
-        "Public pages can show manifests, permissions, publishers, and review state; they must not expose Project Keys, OAuth secrets, tokens, passwords, or private customer data.",
-        "Runtime calls require a signed-in workspace, project policy, a scoped Project Key, and logs.",
-        "Submitted skills are inspection-only until verified. Verified skills should be adopted with an explicit version pin.",
-        "Paid marketplace checkout, automated payouts, tax/KYC automation, and final compliance claims remain prelaunch unless the operator explicitly enables them.",
+        "Public pages may show manifests, schemas, permissions, publishers, review state, and public MCP metadata.",
+        "Public pages must not expose Project Keys, OAuth secrets, access tokens, passwords, or private customer data.",
+        "Submitted but unverified Skills are inspection-only until review evidence passes.",
+        "High-risk write actions, payments, file access, sensitive data, and production workflow require explicit project policy.",
+        "Paid checkout, automated payouts, tax/KYC automation, invoices, and final compliance claims stay operator-gated until enabled.",
       ],
-      title: "Operational guardrails",
     },
-    hero: {
-      body:
-        "Start with public discovery, inspect a skill contract, then sign in only when you need project runtime, Project Keys, publishing, or admin operations.",
-      eyebrow: "Developer guide",
-      primary: "Start with marketplace",
-      secondary: "Publish a skill",
-      tertiary: "View API map",
-      title: "Use SkillHub without guessing what is public and what is gated.",
+    closing: {
+      body: "Use Marketplace to choose a Skill, Skill API to inspect the contract, Workspace to install and invoke, and Publish to submit new verified capabilities.",
+      title: "Make every agent action start from a readable contract.",
     },
-    paths: [
-      {
-        action: "Browse skills",
-        body: "For users comparing capabilities before adopting anything.",
-        href: "/marketplace",
-        steps: ["Search by task or category", "Open skill detail", "Review permissions and publisher", "Sign in when ready to adopt"],
-        title: "I want to find a skill",
-      },
-      {
-        action: "Enter workspace",
-        body: "For developers connecting a verified skill to a real project.",
-        href: "/login",
-        steps: ["Create or choose a project", "Install a verified skill", "Generate a Project Key", "Run a governed REST/MCP test"],
-        title: "I want to run a skill",
-      },
-      {
-        action: "Open publishing guide",
-        body: "For authors preparing a skill package for review.",
-        href: "/publish",
-        steps: ["Prepare skillhub.json", "Run preflight", "Save draft", "Submit an exact version for review"],
-        title: "I want to publish a skill",
-      },
-    ],
-    quickstart: {
-      body:
-        "Follow the full adoption path: discover publicly, inspect the contract, sign in, install into a project, create a Project Key, then call runtime through the governed gateway.",
-      cards: [
-        ["Public discovery", "Search and inspect skills without credentials. Public MCP metadata only describes available tools and resources; it does not invoke customer runtime."],
-        ["Authenticated install", "Sign in, choose a project, and install a verified skill before any governed runtime call is available."],
-        ["Project Key runtime", "Create a scoped Project Key after install, then call REST or MCP runtime paths with policy, budget, rate limits, and logs."],
-      ],
-      codeLabel: "public inspect",
-      title: "Launch-ready quickstart",
-    },
-    terms: [
-      ["Skill", "A versioned AI Agent capability with manifest, schema, permissions, runtime, publisher, and review state."],
-      ["Manifest", "The skillhub.json contract that tells humans and agents what the skill does and what it can access."],
-      ["Find Skills", "The page for human discovery and comparison."],
-      ["Skill API", "The underlying machine-readable list of inspectable skill contracts."],
-      ["Project", "A signed-in workspace container for installs, keys, policy, logs, and runtime tests."],
-      ["Runtime gateway", "The governed path that checks project key, policy, budget, approval, rate limits, and logs."],
-    ],
   },
   zh: {
-    admin: {
-      body:
-        "管理后台页面给运营和审核人员使用，用来查看已提交版本、确认上线准备度、审计敏感操作，并在公开采用前把商业状态说清楚。",
+    actions: {
+      api: "打开技能 API",
+      docs: "看快速开始",
+      marketplace: "找技能",
+      publish: "发布技能",
+      workspace: "进入工作台",
+    },
+    heroEyebrow: "SkillHub Docs · 智能体技能 API",
+    heroTitle: ["先读懂 Skill 合约，", "再安全交给 Agent 运行。"],
+    heroBody:
+      "这里解释 SkillHub 的生产路径：先公开发现 Skill，检查技能 API 合约，再把已验证版本安装到项目，创建有作用域的 Project Key，最后通过受治理的 REST 或 MCP 网关运行。",
+    heroProof: [
+      ["先公开检查", "Marketplace 和技能 API 在登录前就可以查看。"],
+      ["项目内运行", "真实运行必须经过项目安装、版本固定和 Project Key。"],
+      [
+        "Agent 可读",
+        "合约公开 schema、runtime、权限、审核状态和 MCP metadata。",
+      ],
+    ],
+    console: {
+      consoleLabel: "SkillHub 文档控制台",
+      topPath: "skillhub://docs/adopt/browser-research",
+      live: "docs path",
+      status: "Launch Preview",
+      title: "browser-research · 接入路径",
+      body: "一个 Skill 真正有用，前提是 Agent 能读懂它做什么、需要什么权限、在哪里允许运行。文档要把发现、安装、调用分开说清楚。",
+      get: "GET",
+      endpoint: "/v1/skills/browser-research",
+      manifest: [
+        "Contract",
+        "skillhub.json",
+        "身份、版本、schema、权限、运行时、支持路径和审核状态。",
+      ],
+      install: [
+        "Install",
+        "项目版本固定",
+        "工作台先安装已验证版本，之后才允许真实运行。",
+      ],
+      key: [
+        "Project Key",
+        "runtime:invoke",
+        "给 Agent、服务端流程或 MCP 客户端使用的作用域 Key。",
+      ],
+      runtime: [
+        "Runtime",
+        "REST / MCP 网关",
+        "策略、预算、限流、审批和日志都会绑定到每次调用。",
+      ],
+      signalTitle: "文档地图",
+      signalBody:
+        "Marketplace 负责给人找技能，Registry 负责机器可读合约，Workspace 负责运行，Publish 负责提交审核版本。",
+      boundaryTitle: "运行边界",
+      boundaryBody:
+        "公开 MCP metadata 只描述可用工具，不代表匿名执行权限。真实调用必须有项目上下文和 Project Key。",
+      commercialTitle: "商业边界",
+      commercialBody:
+        "免费与 Pro 可以公开解释。收银、分账、税务/KYC、退款和账本操作在 Launch Preview 阶段仍由运营控制。",
+      meterManifest: "contract",
+      meterInstall: "install",
+      meterRuntime: "runtime",
+      ok: "ready",
+      gated: "gated",
+    },
+    map: {
+      eyebrow: "文档地图",
+      title: "先看你要完成的动作，再进入对应页面。",
+      body: "SkillHub 分成四个使用面，因为每个页面回答的问题不同：有什么技能、合约是什么、在哪里运行、发布者如何提交已验证版本。",
       cards: [
         {
-          body: "审核员只批准精确提交的版本，不批准可随意变动的草稿。只有审核证据通过后，才允许公开采用。",
-          items: ["版本审核队列", "Manifest 与运行证据", "退回原因说明"],
-          title: "审核提交",
+          action: "浏览技能",
+          body: "给运营、市场、创业者和 AI Agent 比较可复用能力，在采用前先判断是否合适。",
+          href: "/marketplace",
+          items: ["按任务搜索", "比较发布者和风险", "打开公开详情"],
+          title: "找技能",
         },
         {
-          body: "上线检查会确认权限、支持路径、定价意图和运营责任人都已经写清楚，再让技能进入可采用状态。",
-          items: ["上线准备度", "权限与信任信号", "发布者支持信息"],
-          title: "确认准备度",
+          action: "检查合约",
+          body: "给开发者和 Agent 读取 schema、权限边界、运行时类型和审核状态。",
+          href: "/registry",
+          items: ["读取 manifest", "检查 endpoint", "确认审核状态"],
+          title: "技能 API",
         },
         {
-          body: "运营人员查看审计日志、事故信号、财务准备和结算信息，同时不能暴露客户密钥或 Project Key。",
-          items: ["审计日志查看", "事故与工单分流", "财务与结算准备"],
-          title: "安全运营",
+          action: "进入工作台",
+          body: "给团队安装已验证 Skill、创建 Project Key，并运行受治理调用。",
+          href: "/login",
+          items: ["选择项目", "固定版本", "调用 REST 或 MCP"],
+          title: "工作台运行",
+        },
+        {
+          action: "提交技能包",
+          body: "给作者准备 skillhub.json、提交精确版本，并根据审核证据修正。",
+          href: "/publish",
+          items: ["准备 manifest", "执行预检", "提交版本"],
+          title: "发布者流程",
         },
       ],
-      title: "管理后台操作",
+    },
+    adoption: {
+      eyebrow: "接入流程",
+      title: "从公开发现到 Agent 运行，顺序必须清楚。",
+      body: "文档页最重要的是让用户知道下一步是什么。不要一上来找 token，先选对 Skill，再读懂合约。",
+      steps: [
+        [
+          "Discover",
+          "在 Marketplace 搜索，或通过公开技能 API 按任务、标签、分类、运行时和风险画像查询。",
+        ],
+        [
+          "Inspect",
+          "读取 manifest、输入输出 schema、权限、示例、发布者、审核状态和公开 MCP metadata。",
+        ],
+        [
+          "Install",
+          "登录后选择项目，安装已验证 Skill，并固定 Agent 要使用的版本。",
+        ],
+        [
+          "Invoke",
+          "创建有作用域的 Project Key，通过策略、预算、限流和审计日志调用 REST 或 MCP。",
+        ],
+      ],
     },
     api: {
-      body:
-        "公开端点用于发现和检查 manifest；登录后的工作台与 Project Key 用于真实运行、安装、策略、日志和商业证据。",
+      eyebrow: "REST / MCP 边界",
+      title: "公开检查和真实调用必须分开。",
+      body: "Agent 可以无登录读取合约；凡是会消耗预算、接触客户数据、写入工具或运行生产流程的动作，都必须进入项目策略。",
       groups: [
         {
-          body: "公开 API 已可用：搜索公开技能，并在采用前检查单个技能。",
-          endpoints: ["GET /v1/skills/search", "GET /v1/skills/:slug"],
+          body: "搜索公开 Skill，并在采用前检查单个公开合约。",
+          endpoints: [
+            "GET /v1/skills/search",
+            "GET /v1/skills/:slug",
+            "GET /mcp",
+          ],
           title: "公开发现",
         },
         {
-          body: "MCP 使用 POST；创建项目状态、安装已验证技能、生成密钥，并运行控制台测试。",
-          endpoints: ["GET /v1/developer/projects", "POST /v1/projects/:projectSlug/installed-skills", "POST /v1/projects/:projectSlug/api-keys", "POST /v1/runtime/invoke"],
+          body: "创建项目状态、安装已验证 Skill、创建作用域 Key，并调用受治理运行网关。",
+          endpoints: [
+            "GET /v1/developer/projects",
+            "POST /v1/projects/:projectSlug/installed-skills",
+            "POST /v1/projects/:projectSlug/api-keys",
+            "POST /v1/runtime/invoke",
+          ],
           title: "开发者工作台",
         },
         {
-          body: "保存草稿、提交精确版本、查看审核证据，并维护发布者资料。",
-          endpoints: ["POST /v1/skills", "POST /v1/publisher/skills/:slug/versions", "POST /v1/publisher/skills/:slug/versions/:version/submit"],
+          body: "保存草稿、提交精确版本，并提供审核证据后再进入公开采用。",
+          endpoints: [
+            "POST /v1/skills",
+            "POST /v1/publisher/skills/:slug/versions",
+            "POST /v1/publisher/skills/:slug/versions/:version/submit",
+          ],
           title: "发布者流程",
         },
         {
-          body: "审核版本、管理信任、上线准备、审计日志、财务记录和提现准备。",
-          endpoints: ["GET /v1/admin/reviews", "GET /v1/admin/launch-readiness", "GET /v1/admin/audit-logs"],
+          body: "审核提交、审计敏感操作、确认上线准备，并让付费预览状态保持诚实。",
+          endpoints: [
+            "GET /v1/admin/reviews",
+            "GET /v1/admin/launch-readiness",
+            "GET /v1/admin/audit-logs",
+          ],
           title: "运营后台",
         },
       ],
-      title: "REST 与 MCP 能力面",
+    },
+    quickstart: {
+      body: "这些命令展示的是接入思路：先公开检查，再登录项目安装，最后用 Project Key 运行。",
+      comment: "真实运行从项目安装后开始：",
+      endpoints: "public + gated",
+      eyebrow: "快速开始",
+      flow: "创建项目 -> 安装已验证版本 -> 创建 Project Key -> REST / MCP 调用",
+      tags: ["公开合约", "项目安装", "Project Key", "REST/MCP"],
+      terminal: "quickstart.sh",
+      title: "复制的是接入路径，不只是一段 token。",
+    },
+    vocabulary: {
+      eyebrow: "统一口径",
+      title: "这些词在全站必须含义一致。",
+      body: "使用文档也是 SkillHub 对用户、开发者、发布者和 AI Agent 解释自己的标准口径。",
+      terms: [
+        [
+          "Skill",
+          "带版本的 AI Agent 能力，包含 manifest、schema、权限、运行时、发布者和审核状态。",
+        ],
+        ["技能 API", "公开 Skill 合约的机器可读 registry。"],
+        [
+          "Manifest",
+          "skillhub.json 合约，说明 Skill 做什么、能访问什么、如何返回结果。",
+        ],
+        [
+          "项目",
+          "登录后的工作台容器，用于安装、版本固定、策略、密钥、日志和运行测试。",
+        ],
+        ["Project Key", "一个项目内针对已安装 Skill 的作用域运行凭证。"],
+        ["运行网关", "执行策略、预算、限流、审批和审计日志的 REST/MCP 路径。"],
+      ],
+    },
+    troubleshooting: {
+      eyebrow: "排查手册",
+      title: "大多数问题都来自跨错了边界。",
+      body: "排查代码前，先判断问题属于公开发现、登录工作台、发布审核，还是生产部署。",
+      items: [
+        [
+          "运行调用 401 / 403",
+          "使用带 runtime 作用域的 Project Key。登录 session token 不等于运行 key。",
+        ],
+        [
+          "MCP 看得到但跑不起来",
+          "公开 MCP metadata 只用于检查。真实调用需要项目安装和作用域 Project Key。",
+        ],
+        ["安装按钮被锁住", "先确认 Skill 已验证，并且当前用户有目标项目权限。"],
+        [
+          "技能一直在审核中",
+          "提交精确版本，并补齐 manifest、示例、权限、运行证据、支持路径和商业意图。",
+        ],
+        [
+          "线上还是旧页面",
+          "确认服务器拉到了最新 git hash，重新构建 web app，并重启域名背后的进程。",
+        ],
+      ],
     },
     guardrails: {
-      body:
-        "这些规则让公开页面保持诚实，也让生产运营不会变成看不见的黑箱。",
+      eyebrow: "运营边界",
+      title: "文档不能模糊这些事。",
+      body: "SkillHub 的高级感不是把东西说玄，而是边界清楚。公开页面负责教育和证明合约，私有操作必须保持私有。",
       items: [
-        "公开页面可以展示 manifest、权限、发布者和审核状态；不能暴露 Project Key、OAuth 密钥、token、密码或客户私有数据。",
-        "真实运行需要登录工作台、项目策略、有作用域的 Project Key 和运行日志。",
-        "已提交但未验证的技能只能检查，不能采用。已验证技能也应通过明确版本固定后再接入项目。",
-        "付费市场收银、自动分账、税务/KYC 自动化和最终合规声明，除非运营明确启用，否则仍属于预发布范围。",
+        "公开页面可以展示 manifest、schema、权限、发布者、审核状态和公开 MCP metadata。",
+        "公开页面不能暴露 Project Key、OAuth secret、access token、密码或客户私有数据。",
+        "已提交但未验证的 Skill 只能检查，审核证据通过后才能采用。",
+        "高风险写入、支付、文件访问、敏感数据和生产流程必须进入明确项目策略。",
+        "付费收银、自动分账、税务/KYC、发票和最终合规声明，在启用前都保持运营门控。",
       ],
-      title: "运营边界",
     },
-    hero: {
-      body:
-        "先从公开市场发现技能，检查技能合约；只有在需要项目运行、Project Key、发布或后台运营时才进入登录工作台。",
-      eyebrow: "使用文档",
-      primary: "从找技能开始",
-      secondary: "发布技能",
-      tertiary: "查看 API 地图",
-      title: "清楚知道哪些能公开看，哪些必须登录后操作。",
+    closing: {
+      body: "用 Marketplace 选择 Skill，用技能 API 检查合约，用工作台安装和调用，用发布流程提交新的可信能力。",
+      title: "让每一次 Agent 动作，都从可读合约开始。",
     },
-    paths: [
-      {
-        action: "开始找技能",
-        body: "适合先比较能力、暂时不采用的用户。",
-        href: "/marketplace",
-        steps: ["按任务或分类搜索", "打开技能详情", "查看权限和发布者", "准备采用时再登录"],
-        title: "我想找一个技能",
-      },
-      {
-        action: "进入工作台",
-        body: "适合把已验证技能接入真实项目的开发者。",
-        href: "/login",
-        steps: ["创建或选择项目", "安装已验证技能", "生成 Project Key", "运行受治理的 REST/MCP 测试"],
-        title: "我想运行一个技能",
-      },
-      {
-        action: "打开发布指南",
-        body: "适合准备把技能包提交审核的作者。",
-        href: "/publish",
-        steps: ["准备 skillhub.json", "执行预检", "保存草稿", "提交精确版本审核"],
-        title: "我想发布一个技能",
-      },
-    ],
-    quickstart: {
-      body:
-        "完整采用路径是：先公开发现，检查技能合约；再登录项目，安装技能，创建 Project Key，最后通过受治理网关运行。",
-      cards: [
-        ["公开发现", "不用登录也可以搜索技能、打开详情、检查 manifest、schema、权限和审核状态。公开 MCP metadata 只说明能力，不代表可匿名运行。"],
-        ["登录安装", "登录后选择项目，只有已验证技能安装到项目后，才会开放受治理的运行调用。"],
-        ["Project Key 运行", "安装后创建有作用域的 Project Key，再通过 REST 或 MCP 运行路径进入策略、预算、限流和日志。"],
-      ],
-      codeLabel: "公开检查",
-      title: "开发者快速开始",
-    },
-    terms: [
-      ["Skill", "带版本的 AI Agent 能力，包含 manifest、schema、权限、运行时、发布者和审核状态。"],
-      ["Manifest", "skillhub.json 合约，告诉人和智能体这个技能做什么、能访问什么。"],
-      ["找技能", "给人做发现、比较和决策的页面。"],
-      ["技能 API", "底层可检查、可被系统读取的技能合约列表。"],
-      ["项目", "登录后的工作台容器，用于安装、密钥、策略、日志和运行测试。"],
-      ["运行网关", "检查 Project Key、策略、预算、审批、限流并记录日志的受治理路径。"],
-    ],
   },
-};
+} as const;
 
-const pathIcons = [SearchCode, Code2, FileJson] as const;
-const actionGuideIcons = [PackageCheck, WalletCards, ClipboardCheck] as const;
-const quickstartSnippet = `# Search public skills
-curl "https://api.useskillhub.com/v1/skills/search?tag=research"
+type DocsCopy = (typeof docsCopy)[Locale];
 
-# Inspect a public skill manifest
-curl "https://api.useskillhub.com/v1/skills/browser-research"
+const docMapIcons = [SearchCode, FileJson, KeyRound, PackageCheck] as const;
 
-# Read public MCP metadata; this is not runtime invocation
-curl "https://api.useskillhub.com/mcp"
+export default async function DocsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const locale = getLocaleFromSearchParams(params);
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const copy = docsCopy[locale];
 
-# Sign in, create or choose a project, then install the verified skill
-curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_SLUG/installed-skills" \\
+  return (
+    <AppShell active="docs" locale={locale}>
+      <main className="registry-v2 docs-v2">
+        <section className="registry-v2-hero">
+          <div className="registry-v2-shell registry-v2-hero__grid docs-v2-hero__grid">
+            <div className="registry-v2-hero__copy">
+              <span className="registry-v2-eyebrow">
+                <span aria-hidden="true" />
+                {copy.heroEyebrow}
+              </span>
+              <h1 id="docs-heading">
+                {copy.heroTitle.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </h1>
+              <p>{copy.heroBody}</p>
+              <div className="registry-v2-actions">
+                <a
+                  className="registry-v2-button registry-v2-button--primary"
+                  href={localizedHref("/marketplace", locale)}
+                >
+                  <SearchCode size={16} aria-hidden="true" />
+                  <span>{copy.actions.marketplace}</span>
+                </a>
+                <a className="registry-v2-button" href="#quickstart">
+                  <Terminal size={16} aria-hidden="true" />
+                  <span>{copy.actions.docs}</span>
+                </a>
+                <a
+                  className="registry-v2-button registry-v2-button--quiet"
+                  href={localizedHref("/publish", locale)}
+                >
+                  <FileJson size={16} aria-hidden="true" />
+                  <span>{copy.actions.publish}</span>
+                </a>
+              </div>
+              <div className="registry-v2-proof">
+                {copy.heroProof.map(([title, body]) => (
+                  <article className="registry-v2-proof-card" key={title}>
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <DocsConsole apiUrl={apiUrl} copy={copy} />
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          aria-labelledby="docs-map-heading"
+        >
+          <div className="registry-v2-shell">
+            <SectionHeading
+              body={copy.map.body}
+              eyebrow={copy.map.eyebrow}
+              id="docs-map-heading"
+              title={copy.map.title}
+            />
+            <div className="registry-v2-surface-grid docs-v2-map-grid">
+              {copy.map.cards.map((card, index) => {
+                const Icon = docMapIcons[index] ?? BookOpen;
+
+                return (
+                  <article
+                    className="registry-v2-card docs-v2-map-card"
+                    key={card.title}
+                  >
+                    <span className="registry-v2-card__icon">
+                      <Icon size={17} aria-hidden="true" />
+                    </span>
+                    <h3>{card.title}</h3>
+                    <p>{card.body}</p>
+                    <ul className="docs-v2-check-list">
+                      {card.items.map((item) => (
+                        <li key={item}>
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a
+                      className="docs-v2-inline-link"
+                      href={localizedHref(card.href, locale)}
+                    >
+                      <span>{card.action}</span>
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </a>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          aria-labelledby="docs-adoption-heading"
+        >
+          <div className="registry-v2-shell">
+            <SectionHeading
+              body={copy.adoption.body}
+              eyebrow={copy.adoption.eyebrow}
+              id="docs-adoption-heading"
+              title={copy.adoption.title}
+            />
+            <div className="registry-v2-lane-panel">
+              <div className="registry-v2-lane docs-v2-process-lane">
+                {copy.adoption.steps.map(([title, body], index) => (
+                  <article className="registry-v2-lane-step" key={title}>
+                    <span>{index + 1}</span>
+                    <strong>{title}</strong>
+                    <p>{body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          aria-labelledby="docs-api-heading"
+          id="api"
+        >
+          <div className="registry-v2-shell">
+            <SectionHeading
+              body={copy.api.body}
+              eyebrow={copy.api.eyebrow}
+              id="docs-api-heading"
+              title={copy.api.title}
+            />
+            <div className="registry-v2-surface-grid docs-v2-api-grid">
+              {copy.api.groups.map((group) => (
+                <article
+                  className="registry-v2-card docs-v2-api-card"
+                  key={group.title}
+                >
+                  <span className="registry-v2-card__icon">
+                    <Network size={17} aria-hidden="true" />
+                  </span>
+                  <h3>{group.title}</h3>
+                  <p>{group.body}</p>
+                  <div className="docs-v2-endpoint-list">
+                    {group.endpoints.map((endpoint) => (
+                      <code key={endpoint}>{endpoint}</code>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          id="quickstart"
+          aria-labelledby="docs-quickstart-heading"
+        >
+          <div className="registry-v2-shell registry-v2-quickstart docs-v2-quickstart">
+            <article className="registry-v2-card registry-v2-quickstart__copy">
+              <span className="registry-v2-eyebrow">
+                <span aria-hidden="true" />
+                {copy.quickstart.eyebrow}
+              </span>
+              <h2 id="docs-quickstart-heading">{copy.quickstart.title}</h2>
+              <p>{copy.quickstart.body}</p>
+              <div className="registry-v2-tags">
+                {copy.quickstart.tags.map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
+              </div>
+            </article>
+            <article className="registry-v2-terminal docs-v2-terminal">
+              <div className="registry-v2-terminal__head">
+                <span>{copy.quickstart.terminal}</span>
+                <span>{copy.quickstart.endpoints}</span>
+              </div>
+              <pre>
+                <code>{getQuickstartSnippet(apiUrl, copy)}</code>
+              </pre>
+            </article>
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          aria-labelledby="docs-vocabulary-heading"
+        >
+          <div className="registry-v2-shell">
+            <SectionHeading
+              body={copy.vocabulary.body}
+              eyebrow={copy.vocabulary.eyebrow}
+              id="docs-vocabulary-heading"
+              title={copy.vocabulary.title}
+            />
+            <div className="registry-v2-manifest-layout docs-v2-vocabulary-layout">
+              <div className="registry-v2-field-grid docs-v2-vocabulary-grid">
+                {copy.vocabulary.terms.map(([term, definition]) => (
+                  <article className="registry-v2-field" key={term}>
+                    <small>{copy.vocabulary.eyebrow}</small>
+                    <strong>{term}</strong>
+                    <p>{definition}</p>
+                  </article>
+                ))}
+              </div>
+              <aside className="registry-v2-policy-stack docs-v2-guardrail-stack">
+                <article className="registry-v2-policy">
+                  <Braces size={16} aria-hidden="true" />
+                  <div>
+                    <strong>{copy.guardrails.title}</strong>
+                    <p>{copy.guardrails.body}</p>
+                  </div>
+                </article>
+                {copy.guardrails.items.map((item) => (
+                  <article className="registry-v2-policy" key={item}>
+                    <ShieldCheck size={16} aria-hidden="true" />
+                    <div>
+                      <strong>{copy.guardrails.eyebrow}</strong>
+                      <p>{item}</p>
+                    </div>
+                  </article>
+                ))}
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="registry-v2-section"
+          aria-labelledby="docs-troubleshooting-heading"
+        >
+          <div className="registry-v2-shell">
+            <SectionHeading
+              body={copy.troubleshooting.body}
+              eyebrow={copy.troubleshooting.eyebrow}
+              id="docs-troubleshooting-heading"
+              title={copy.troubleshooting.title}
+            />
+            <div className="registry-v2-surface-grid docs-v2-troubleshoot-grid">
+              {copy.troubleshooting.items.map(([problem, fix]) => (
+                <article
+                  className="registry-v2-card docs-v2-troubleshoot-card"
+                  key={problem}
+                >
+                  <span className="registry-v2-card__icon">
+                    <ClipboardCheck size={17} aria-hidden="true" />
+                  </span>
+                  <h3>{problem}</h3>
+                  <p>{fix}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="registry-v2-closing">
+          <div className="registry-v2-shell">
+            <h2>{copy.closing.title}</h2>
+            <p>{copy.closing.body}</p>
+            <div className="registry-v2-actions registry-v2-actions--center">
+              <a
+                className="registry-v2-button registry-v2-button--primary"
+                href={localizedHref("/registry", locale)}
+              >
+                <Code2 size={16} aria-hidden="true" />
+                <span>{copy.actions.api}</span>
+              </a>
+              <a
+                className="registry-v2-button"
+                href={localizedHref("/login", locale)}
+              >
+                <KeyRound size={16} aria-hidden="true" />
+                <span>{copy.actions.workspace}</span>
+              </a>
+              <a
+                className="registry-v2-button registry-v2-button--quiet"
+                href={localizedHref("/pricing", locale)}
+              >
+                <WalletCards size={16} aria-hidden="true" />
+                <span>Pro</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </AppShell>
+  );
+}
+
+function SectionHeading({
+  body,
+  eyebrow,
+  id,
+  title,
+}: {
+  body: string;
+  eyebrow: string;
+  id: string;
+  title: string;
+}) {
+  return (
+    <div className="registry-v2-section-heading">
+      <div>
+        <span className="registry-v2-eyebrow">
+          <span aria-hidden="true" />
+          {eyebrow}
+        </span>
+        <h2 id={id}>{title}</h2>
+      </div>
+      <p>{body}</p>
+    </div>
+  );
+}
+
+function DocsConsole({ apiUrl, copy }: { apiUrl: string; copy: DocsCopy }) {
+  return (
+    <aside
+      className="registry-v2-console docs-v2-console"
+      aria-label={copy.console.consoleLabel}
+    >
+      <div className="registry-v2-console__top">
+        <span className="registry-v2-window-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span>{copy.console.topPath}</span>
+        <span>{copy.console.live}</span>
+      </div>
+      <div className="registry-v2-console__body">
+        <div className="registry-v2-contract-main">
+          <div className="registry-v2-contract-head">
+            <div>
+              <h2>{copy.console.title}</h2>
+              <p>{copy.console.body}</p>
+            </div>
+            <span className="registry-v2-status-pill">
+              <span aria-hidden="true" />
+              {copy.console.status}
+            </span>
+          </div>
+          <div className="registry-v2-api-line">
+            <strong>{copy.console.get}</strong>
+            <span>
+              {apiUrl}
+              {copy.console.endpoint}
+            </span>
+          </div>
+          <div className="registry-v2-schema-grid">
+            {[
+              copy.console.manifest,
+              copy.console.install,
+              copy.console.key,
+              copy.console.runtime,
+            ].map(([eyebrow, title, body]) => (
+              <article className="registry-v2-schema-box" key={eyebrow}>
+                <small>{eyebrow}</small>
+                <strong>{title}</strong>
+                <span>{body}</span>
+              </article>
+            ))}
+          </div>
+          <div className="registry-v2-code-preview">
+            <pre>
+              <code>{`{
+  "skill": "browser-research",
+  "version": "1.4.2",
+  "runtime": "mcp",
+  "requires": ["project", "versionPin", "projectKey"],
+  "publicInspect": true
+}`}</code>
+            </pre>
+          </div>
+        </div>
+        <div className="registry-v2-contract-side">
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.signalTitle}</h3>
+            <p>{copy.console.signalBody}</p>
+            <div className="registry-v2-meter" aria-hidden="true">
+              <MeterRow
+                label={copy.console.meterManifest}
+                value={copy.console.ok}
+                width="94%"
+              />
+              <MeterRow
+                label={copy.console.meterInstall}
+                value={copy.console.gated}
+                width="62%"
+              />
+              <MeterRow
+                label={copy.console.meterRuntime}
+                tone="warning"
+                value={copy.console.gated}
+                width="42%"
+              />
+            </div>
+          </div>
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.boundaryTitle}</h3>
+            <p>{copy.console.boundaryBody}</p>
+          </div>
+          <div className="registry-v2-side-block">
+            <h3>{copy.console.commercialTitle}</h3>
+            <p>{copy.console.commercialBody}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function MeterRow({
+  label,
+  tone,
+  value,
+  width,
+}: {
+  label: string;
+  tone?: "warning";
+  value: string;
+  width: string;
+}) {
+  return (
+    <div className="registry-v2-meter-row">
+      <span>{label}</span>
+      <div>
+        <span
+          className={
+            tone === "warning"
+              ? "registry-v2-meter-row__bar registry-v2-meter-row__bar--warning"
+              : "registry-v2-meter-row__bar"
+          }
+          style={{ width }}
+        />
+      </div>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+function getQuickstartSnippet(apiUrl: string, copy: DocsCopy) {
+  return `# Search public Skills
+curl "${apiUrl}/v1/skills/search?tag=research"
+
+# Inspect the public Skill contract
+curl "${apiUrl}/v1/skills/browser-research"
+
+# Read public MCP metadata. This is inspection, not anonymous runtime.
+curl "${apiUrl}/mcp"
+
+# ${copy.quickstart.comment}
+# ${copy.quickstart.flow}
+
+curl -X POST "${apiUrl}/v1/projects/$PROJECT_SLUG/installed-skills" \\
   -H "Authorization: Bearer $SESSION_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"skillSlug":"browser-research","version":"1.4.2"}'
 
-# Create a scoped Project Key for runtime
-curl -X POST "https://api.useskillhub.com/v1/projects/$PROJECT_SLUG/api-keys" \\
+curl -X POST "${apiUrl}/v1/projects/$PROJECT_SLUG/api-keys" \\
   -H "Authorization: Bearer $SESSION_TOKEN" \\
   -H "Content-Type: application/json" \\
-  -d '{"name":"local-dev"}'
+  -d '{"name":"agent-runtime","scopes":["runtime:invoke"]}'
 
-# Call governed runtime with the Project Key
-curl -X POST "https://api.useskillhub.com/v1/runtime/invoke" \\
+curl -X POST "${apiUrl}/v1/runtime/invoke" \\
   -H "Authorization: Bearer $PROJECT_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"skill":"browser-research","input":{"query":"market map"}}'`;
-
-function getInstallGuides(locale: Locale) {
-  if (locale === "zh") {
-    return {
-      body:
-        "安装不是复制一行命令就结束。客户要先选技能，开发者要把技能放进项目，作者要提交审核，运营要确认质量和风险。",
-      eyebrow: "安装与运营路径",
-      title: "按角色看下一步怎么做。",
-      tracks: [
-        {
-          action: "去找技能",
-          href: "/marketplace",
-          steps: ["按 SEO/GEO、UI、内容、CRM、数据、运营、API、安全分类筛选", "打开技能详情，检查权限、输入输出、运行时和发布者", "登录后在项目中安装已验证技能", "生成 Project Key，通过 REST 或 MCP 调用"],
-          title: "客户 / 开发者如何安装",
-        },
-        {
-          action: "发布技能",
-          href: "/publish",
-          steps: ["准备 skillhub.json，写清 manifest、schema、权限和运行入口", "先跑预检，修复阻塞项", "提交精确版本进入审核", "上线后维护反馈、事故、版本和支持路径"],
-          title: "第三方作者如何发布",
-        },
-        {
-          action: "查看审核规则",
-          href: "/publisher-review",
-          steps: ["先理解上线就绪和审核队列的判断口径", "检查技能分类、价格套餐、权限风险和发布者信任", "处理反馈、举报、事故、通知和 Webhook 投递前确认职责边界", "财务只展示 Pro 套餐、退款争议、作者分成和预发布准备状态"],
-          title: "运营管理员如何审核",
-        },
-      ],
-    };
-  }
-
-  return {
-    body:
-      "Installation is not just copying a command. Buyers choose a skill, developers attach it to a project, publishers submit for review, and operators confirm quality and risk.",
-    eyebrow: "Install and operate",
-    title: "Next steps by role.",
-    tracks: [
-      {
-        action: "Open marketplace",
-        href: "/marketplace",
-        steps: ["Filter by SEO/GEO, UI, content, CRM, data, support, API, or security", "Open detail and inspect permissions, schema, runtime, and publisher", "Sign in and install a verified skill into a project", "Generate a Project Key and call through REST or MCP"],
-        title: "Buyer / developer install path",
-      },
-      {
-        action: "Publish skill",
-        href: "/publish",
-        steps: ["Prepare skillhub.json with manifest, schema, permissions, and runtime", "Run preflight and repair blockers", "Submit an exact version for review", "Maintain feedback, incidents, versions, and support after listing"],
-        title: "Third-party publisher path",
-      },
-      {
-        action: "Review requirements",
-        href: "/publisher-review",
-        steps: ["Understand launch readiness and review queue criteria first", "Check category, plan, permission risk, and publisher trust", "Confirm responsibility boundaries before handling feedback, reports, incidents, notifications, and webhook delivery", "Treat Pro plans, refunds, disputes, publisher share, and finance readiness as prelaunch operating states"],
-        title: "Operator review path",
-      },
-    ],
-  };
-}
-
-function getCategoryGuides(locale: Locale) {
-  if (locale === "zh") {
-    return {
-      body:
-        "客户不是来背技术名词的，他们通常只知道自己遇到的问题。先按业务场景选分类，再用搜索词缩小范围。",
-      eyebrow: "怎么选技能",
-      title: "按业务问题进入，不按工具名硬找。",
-      tracks: [
-        {
-          examples: ["AI 搜索可见度", "技术 SEO", "内容缺口", "内链规划"],
-          href: "/marketplace?category=seo",
-          title: "SEO / GEO 增长",
-          when: "网站想提升 Google、AI Overview、ChatGPT/Perplexity 等答案引擎里的可见度。",
-        },
-        {
-          examples: ["商品标题", "Listing 质检", "评论痛点", "退货原因"],
-          href: "/marketplace?category=ecommerce",
-          title: "电商 / 零售",
-          when: "店铺要批量优化商品页、平台 Listing、评价、Feed、库存和客服动作。",
-        },
-        {
-          examples: ["落地页文案", "博客大纲", "社媒日历", "品牌 FAQ"],
-          href: "/marketplace?category=content",
-          title: "内容 / 文案",
-          when: "团队要持续生产可审核的内容资产，而不是一次性让 AI 写一篇文章。",
-        },
-        {
-          examples: ["工单分流", "知识库回答", "SOP", "客户之声"],
-          href: "/marketplace?category=ops",
-          title: "运营 / 客服",
-          when: "客服、运营和客户成功团队要把重复问题变成标准流程和可追踪动作。",
-        },
-        {
-          examples: ["表格清洗", "KPI 解释", "SQL 说明", "周报生成"],
-          href: "/marketplace?category=data",
-          title: "数据 / 表格",
-          when: "Excel、CSV、BI 指标和导入数据需要清洗、解释、映射和自动化报告。",
-        },
-        {
-          examples: ["冷邮件", "CRM 更新", "商机总结", "续费风险"],
-          href: "/marketplace?category=sales",
-          title: "销售 / CRM",
-          when: "销售要调研客户、个性化触达、跟进商机、整理会议记录和续费风险。",
-        },
-        {
-          examples: ["响应式审查", "表单体验", "信任区块", "信息架构"],
-          href: "/marketplace?category=ui",
-          title: "UI/UX",
-          when: "页面能打开但不好用、排版松散、按钮不清楚、移动端体验不稳定。",
-        },
-        {
-          examples: ["API 合约", "Webhook", "CI 失败", "提示注入"],
-          href: "/marketplace?category=dev",
-          title: "开发 / 安全",
-          when: "开发者要检查接口、自动化、代码变更、发布风险和智能体安全边界。",
-        },
-      ],
-    };
-  }
-
-  return {
-    body:
-      "Buyers usually know the problem before they know the tool name. Start from the business workflow, then narrow with search, plan, runtime, and risk filters.",
-    eyebrow: "How to choose",
-    title: "Enter by business job, not by tool jargon.",
-    tracks: [
-      {
-        examples: ["AI search visibility", "technical SEO", "content gaps", "internal links"],
-        href: "/marketplace?category=seo",
-        title: "SEO / GEO growth",
-        when: "Use when a site needs better visibility in Google, AI Overviews, ChatGPT, Perplexity, and answer engines.",
-      },
-      {
-        examples: ["product titles", "listing QA", "review mining", "return reasons"],
-        href: "/marketplace?category=ecommerce",
-        title: "E-commerce / retail",
-        when: "Use when a store needs repeatable product page, listing, review, feed, inventory, or support workflows.",
-      },
-      {
-        examples: ["landing copy", "blog outlines", "social calendars", "brand FAQ"],
-        href: "/marketplace?category=content",
-        title: "Content / copy",
-        when: "Use when teams need reviewable content assets, not one-off AI drafts.",
-      },
-      {
-        examples: ["ticket triage", "knowledge answers", "SOPs", "voice of customer"],
-        href: "/marketplace?category=ops",
-        title: "Operations / support",
-        when: "Use when support, ops, and success teams need repeated questions turned into standard workflows.",
-      },
-      {
-        examples: ["sheet cleanup", "KPI explanation", "SQL notes", "weekly reports"],
-        href: "/marketplace?category=data",
-        title: "Data / sheets",
-        when: "Use when spreadsheets, CSVs, BI metrics, and imports need cleanup, mapping, explanation, or reporting.",
-      },
-      {
-        examples: ["cold email", "CRM updates", "deal summary", "renewal risk"],
-        href: "/marketplace?category=sales",
-        title: "Sales / CRM",
-        when: "Use when sales teams need account research, outreach, meeting notes, pipeline hygiene, or renewal playbooks.",
-      },
-      {
-        examples: ["responsive QA", "form UX", "trust section", "information architecture"],
-        href: "/marketplace?category=ui",
-        title: "UI/UX",
-        when: "Use when a page works technically but feels unclear, loose, hard to scan, or weak on mobile.",
-      },
-      {
-        examples: ["API contracts", "webhooks", "CI failures", "prompt injection"],
-        href: "/marketplace?category=dev",
-        title: "Development / security",
-        when: "Use when developers need API, automation, code-change, release, or agent-safety checks.",
-      },
-    ],
-  };
-}
-
-function getMarketplaceActionGuide(locale: Locale) {
-  if (locale === "zh") {
-    return {
-      body:
-        "客户看完分类后，下一步应该很明确：先用免费基础验证，真实业务进 Pro，市场没有的流程提交需求。不要让用户在市场、价格、联系页之间来回猜。",
-      cards: [
-        {
-          action: "查看免费技能",
-          body:
-            "免费基础技能用于低风险试用和理解平台，适合基础 SEO、基础运营、表格清理和简单检查。",
-          href: "/marketplace?pricing=free",
-          steps: ["筛选免费基础", "打开详情看权限", "用低风险流程验证输出"],
-          title: "先用免费基础验证",
-        },
-        {
-          action: "申请 Pro",
-          body:
-            "长期、高级或批量工作流进入 Pro。月付 128 美金，季付 9 折，年付 8 折，当前通过人工入驻开通。",
-          href: "/contact?intent=pro",
-          steps: ["写清付款周期", "列出前 3 个技能", "确认工作区和管理员"],
-          title: "真实业务进入 Pro",
-        },
-        {
-          action: "提交技能需求",
-          body:
-            "如果目录里没有合适技能，把业务流程、工具、输入输出、频率和权限需求发给运营。",
-          href: "/contact?intent=request-skill",
-          steps: ["描述业务问题", "给出输入输出示例", "说明免费或 Pro 期望"],
-          title: "缺失技能直接提交",
-        },
-      ],
-      eyebrow: "市场下一步",
-      title: "找不到或拿不准时，按这三条路走。",
-    };
-  }
-
-  return {
-    body:
-      "After category discovery, the next action should be obvious: start with free basics, move real work into Pro, or request the missing workflow. Buyers should not have to guess between marketplace, pricing, and contact pages.",
-    cards: [
-      {
-        action: "View free skills",
-        body:
-          "Free basics are for low-risk evaluation and understanding the platform, such as basic SEO, operations, sheet cleanup, and simple checks.",
-        href: "/marketplace?pricing=free",
-        steps: ["Filter free basics", "Open details and permissions", "Validate output with a low-risk workflow"],
-        title: "Validate with free basics",
-      },
-      {
-        action: "Request Pro",
-        body:
-          "Recurring, advanced, or batch workflows belong in Pro. Monthly is $128, quarterly is 10% off, annual is 20% off, and onboarding is manual during Launch Preview.",
-        href: "/contact?intent=pro",
-        steps: ["Choose billing cycle", "List the first 3 skills", "Confirm workspace owner and admin"],
-        title: "Move real work into Pro",
-      },
-      {
-        action: "Request a skill",
-        body:
-          "If the catalog does not have the right skill, send the workflow, tools, input/output, frequency, and permission needs to operations.",
-        href: "/contact?intent=request-skill",
-        steps: ["Describe the business problem", "Add input/output examples", "State free or Pro expectation"],
-        title: "Submit missing skill demand",
-      },
-    ],
-    eyebrow: "Marketplace next step",
-    title: "If you cannot find the right skill, use these three paths.",
-  };
-}
-
-function getPricingDocs(locale: Locale) {
-  if (locale === "zh") {
-    return {
-      body:
-        "公开页面要把钱说清楚，但不能假装付费市场已经全部上线。当前站点以 Pro 全量计划和免费基础技能做购买理解，真实收银、分账和发票仍按运营配置逐步开启。",
-      rows: [
-        ["免费基础技能", "适合试用和低风险基础任务，例如基础 SEO 检查、FAQ、表格清理、发布检查清单。"],
-        ["Pro 月付", "128 美金 / 月，可使用 Pro 全量技能，适合持续运营和团队试用。"],
-        ["Pro 季付", "按月价 9 折，适合已经明确要持续使用一个季度的团队。"],
-        ["Pro 年付", "按月价 8 折，适合稳定业务团队和代理商。"],
-        ["付费预览", "页面可展示定价意图、账本模型、退款争议和作者分成准备，但真实资金流转需运营确认。"],
-      ],
-      title: "免费、Pro 和付费预览怎么理解。",
-    };
-  }
-
-  return {
-    body:
-      "Public pages should make commercial intent clear without pretending the full paid marketplace is already live. The site explains Pro access and free starter skills while checkout, ledgers, payouts, and invoices remain operator-gated.",
-    rows: [
-      ["Free basics", "For trials and low-risk starter tasks such as basic SEO checks, FAQ, sheet cleanup, and release checklists."],
-      ["Pro monthly", "$128 / month for all Pro skills; best for recurring operations and team trials."],
-      ["Pro quarterly", "10% off the monthly rate; best when a team already expects to operate for a quarter."],
-      ["Pro annual", "20% off the monthly rate; best for stable teams and agencies."],
-      ["Paid preview", "Pages may show pricing intent, ledger model, refund/dispute, and publisher-share readiness, but real money movement remains operator-gated."],
-    ],
-    title: "Free, Pro, and paid-preview boundaries.",
-  };
-}
-
-function getTroubleshooting(locale: Locale) {
-  if (locale === "zh") {
-    return {
-      body:
-        "客户最容易卡在登录、权限、Project Key、运行调用和审核状态。排查时先判断它属于公开页面、登录工作台、发布者流程还是运营后台。",
-      items: [
-        {
-          cause: "技能还未验证，或当前用户还没有项目权限。",
-          fix: "先打开技能详情确认验证状态；登录后进入开发者工作台，把已验证技能安装到项目。",
-          problem: "按钮显示“仅可查看”或无法安装",
-        },
-        {
-          cause: "没有在项目里生成 Project Key，或者使用了登录 token 代替运行 key。",
-          fix: "在项目中创建有 runtime:invoke 作用域的 Project Key，再用它调用 REST/MCP 运行端点。",
-          problem: "API 调用 401 / 403",
-        },
-        {
-          cause: "公开 MCP metadata 只说明工具和资源，不代表匿名运行权限。",
-          fix: "匿名只能检查 metadata；真实调用必须走登录项目、Project Key、策略和日志。",
-          problem: "MCP 看得到但跑不起来",
-        },
-        {
-          cause: "提交的是草稿，或者运行测试、权限、支持路径、价格意图缺少审核证据。",
-          fix: "发布者需要提交精确版本，补齐 manifest、示例、权限、运行证据和支持信息。",
-          problem: "发布技能一直在审核中",
-        },
-        {
-          cause: "服务器还在旧构建或 PM2 重启的不是域名访问的进程。",
-          fix: "确认 git hash、清理 .next、重新 build，并检查 3000 端口和反向代理是否指向同一个服务。",
-          problem: "代码已更新但线上没变化",
-        },
-      ],
-      title: "常见卡点怎么排查。",
-    };
-  }
-
-  return {
-    body:
-      "Most confusion comes from auth, project access, Project Keys, runtime calls, and review state. First decide whether the problem belongs to public pages, the signed-in workspace, publisher review, or admin operations.",
-    items: [
-      {
-        cause: "The skill is not verified yet, or the current user does not have project access.",
-        fix: "Open the skill detail to confirm verification state; sign in and install a verified skill into a project.",
-        problem: "The button says inspection only or install is locked",
-      },
-      {
-        cause: "No Project Key exists for the project, or a login token is being used as a runtime key.",
-        fix: "Create a Project Key with runtime:invoke scope, then use it for REST/MCP runtime endpoints.",
-        problem: "API returns 401 / 403",
-      },
-      {
-        cause: "Public MCP metadata describes tools and resources, but does not grant anonymous runtime access.",
-        fix: "Use anonymous metadata only for inspection; runtime requires project auth, policy, key, and logs.",
-        problem: "MCP is visible but cannot run",
-      },
-      {
-        cause: "The submission is still a draft, or runtime, permission, support, pricing, or example evidence is missing.",
-        fix: "Submit an exact version with manifest, examples, permissions, runtime evidence, and support metadata.",
-        problem: "A published skill stays in review",
-      },
-      {
-        cause: "The server is still serving an old build, or PM2 restarted a different process from the one behind the domain.",
-        fix: "Check git hash, clear .next, rebuild, and confirm port 3000 and the reverse proxy point to the same process.",
-        problem: "Code changed but production did not",
-      },
-    ],
-    title: "Troubleshooting common blockers.",
-  };
-}
-
-export default async function DocsPage({ searchParams }: PageProps) {
-  const locale = getLocaleFromSearchParams(await searchParams);
-  const labels = copy[locale];
-  const installGuide = getInstallGuides(locale);
-  const categoryGuide = getCategoryGuides(locale);
-  const marketplaceActionGuide = getMarketplaceActionGuide(locale);
-  const pricingDocs = getPricingDocs(locale);
-  const troubleshooting = getTroubleshooting(locale);
-
-  return (
-    <AppShell active="docs" locale={locale}>
-      <section className="section pt-32 pb-16" aria-labelledby="docs-heading">
-        <div className="section-inner hero-glow">
-          <Reveal>
-            <div className="max-w-[780px]">
-              <div className="eyebrow">
-                <BookOpen size={16} aria-hidden="true" />
-                <span>{labels.hero.eyebrow}</span>
-              </div>
-              <h1 id="docs-heading" className="heading-xl mt-4">{labels.hero.title}</h1>
-              <p className="body-text text-[#999] mt-4 max-w-[700px]">{labels.hero.body}</p>
-              <div className="flex flex-wrap gap-3 mt-6">
-                <a className="btn-primary btn-primary--large" href={localizedHref("/marketplace", locale)}>
-                  <SearchCode size={18} aria-hidden="true" />
-                  <span>{labels.hero.primary}</span>
-                </a>
-                <a className="btn-secondary btn-secondary--large" href={localizedHref("/publish", locale)}>
-                  <FileJson size={18} aria-hidden="true" />
-                  <span>{labels.hero.secondary}</span>
-                </a>
-                <a className="btn-secondary btn-secondary--large" href="#api">
-                  <Terminal size={18} aria-hidden="true" />
-                  <span>{labels.hero.tertiary}</span>
-                </a>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      <div id="operating-reference">
-        <PublicAccessScope locale={locale} />
-      </div>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-path-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[720px]">
-            <div className="eyebrow">
-              <Route size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "按角色开始" : "Start by role"}</span>
-            </div>
-            <h2 id="docs-path-heading" className="heading-lg mt-3">
-              {locale === "zh" ? "先选择你现在要完成的动作。" : "Choose the job you are trying to finish."}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {labels.paths.map((path, index) => {
-              const Icon = pathIcons[index] ?? Route;
-
-              return (
-                <Reveal delay={index * 70} key={path.title}>
-                  <article className="card flex flex-col gap-4 h-full">
-                    <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
-                      <Icon size={20} aria-hidden="true" className="text-[#7fee64]" />
-                    </div>
-                    <div>
-                      <h3 className="heading-sm">{path.title}</h3>
-                      <p className="body-text-sm text-[#999] mt-2">{path.body}</p>
-                    </div>
-                    <div className="flex flex-col gap-2 mt-auto">
-                      {path.steps.map((step, stepIndex) => (
-                        <div className="flex items-start gap-3" key={step}>
-                          <span className="text-xs font-mono text-[#525252] mt-0.5">{String(stepIndex + 1).padStart(2, "0")}</span>
-                          <strong className="text-sm text-white font-medium">{step}</strong>
-                        </div>
-                      ))}
-                    </div>
-                    <a className="btn-secondary inline-flex items-center gap-2 justify-center" href={localizedHref(path.href, locale)}>
-                      <span>{path.action}</span>
-                      <ArrowRight size={15} aria-hidden="true" />
-                    </a>
-                  </article>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-category-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[780px]">
-            <div className="eyebrow">
-              <SearchCode size={16} aria-hidden="true" />
-              <span>{categoryGuide.eyebrow}</span>
-            </div>
-            <h2 id="docs-category-heading" className="heading-lg mt-3">
-              {categoryGuide.title}
-            </h2>
-            <p className="body-text text-[#999] mt-3">{categoryGuide.body}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-            {categoryGuide.tracks.map((track) => (
-              <article className="card flex flex-col gap-4 h-full" key={track.title}>
-                <div>
-                  <h3 className="heading-sm">{track.title}</h3>
-                  <p className="body-text-sm text-[#999] mt-2">{track.when}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {track.examples.map((example) => (
-                    <span
-                      className="text-xs text-[#bdbdbd] bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.08)] rounded px-2 py-1"
-                      key={example}
-                    >
-                      {example}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  className="btn-secondary inline-flex items-center gap-2 justify-center mt-auto"
-                  href={localizedHref(track.href, locale)}
-                >
-                  <span>{locale === "zh" ? "查看这类技能" : "View this category"}</span>
-                  <ArrowRight size={15} aria-hidden="true" />
-                </a>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-action-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[780px]">
-            <div className="eyebrow">
-              <ClipboardCheck size={16} aria-hidden="true" />
-              <span>{marketplaceActionGuide.eyebrow}</span>
-            </div>
-            <h2 id="docs-action-heading" className="heading-lg mt-3">
-              {marketplaceActionGuide.title}
-            </h2>
-            <p className="body-text text-[#999] mt-3">{marketplaceActionGuide.body}</p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {marketplaceActionGuide.cards.map((card, index) => {
-              const Icon = actionGuideIcons[index] ?? ClipboardCheck;
-
-              return (
-                <article className="card flex flex-col gap-4 h-full" key={card.title}>
-                  <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
-                    <Icon size={20} aria-hidden="true" className="text-[#7fee64]" />
-                  </div>
-                  <div>
-                    <h3 className="heading-sm">{card.title}</h3>
-                    <p className="body-text-sm text-[#999] mt-2">{card.body}</p>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-auto">
-                    {card.steps.map((step) => (
-                      <div className="flex items-start gap-2 text-sm text-[#999]" key={step}>
-                        <CheckCircle2 size={15} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
-                        <span>{step}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <a className="btn-secondary inline-flex items-center gap-2 justify-center" href={localizedHref(card.href, locale)}>
-                    <span>{card.action}</span>
-                    <ArrowRight size={15} aria-hidden="true" />
-                  </a>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" id="quickstart" aria-labelledby="docs-quickstart-heading">
-        <div className="section-inner grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8">
-          <div className="flex flex-col gap-5">
-            <div>
-              <div className="eyebrow">
-                <Terminal size={16} aria-hidden="true" />
-                <span>{labels.quickstart.codeLabel}</span>
-              </div>
-              <h2 id="docs-quickstart-heading" className="heading-lg mt-3">{labels.quickstart.title}</h2>
-              <p className="body-text text-[#999] mt-3">{labels.quickstart.body}</p>
-            </div>
-            <div className="code-block">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-[rgba(255,255,255,0.08)] text-xs text-[#666]">
-                <span>quickstart.sh</span>
-                <span>{labels.quickstart.codeLabel}</span>
-              </div>
-              <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
-                <code>{quickstartSnippet}</code>
-              </pre>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {labels.quickstart.cards.map(([title, body]) => (
-              <article className="card flex items-start gap-4" key={title}>
-                <PackageCheck size={20} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-1" />
-                <div>
-                  <h3 className="heading-sm">{title}</h3>
-                  <p className="body-text-sm text-[#999] mt-1">{body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-pricing-heading">
-        <div className="section-inner grid grid-cols-1 lg:grid-cols-[0.82fr_1.18fr] gap-8">
-          <div>
-            <div className="eyebrow">
-              <WalletCards size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "价格和权限边界" : "Pricing and access"}</span>
-            </div>
-            <h2 id="docs-pricing-heading" className="heading-lg mt-3">
-              {pricingDocs.title}
-            </h2>
-            <p className="body-text text-[#999] mt-3">{pricingDocs.body}</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            {pricingDocs.rows.map(([label, value]) => (
-              <article className="card grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 items-start" key={label}>
-                <strong className="heading-sm">{label}</strong>
-                <p className="body-text-sm text-[#999]">{value}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-install-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[760px]">
-            <div className="eyebrow">
-              <ClipboardCheck size={16} aria-hidden="true" />
-              <span>{installGuide.eyebrow}</span>
-            </div>
-            <h2 id="docs-install-heading" className="heading-lg mt-3">
-              {installGuide.title}
-            </h2>
-            <p className="body-text text-[#999] mt-3">{installGuide.body}</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {installGuide.tracks.map((track, index) => (
-              <Reveal delay={index * 70} key={track.title}>
-                <article className="card flex flex-col gap-4 h-full">
-                  <h3 className="heading-sm">{track.title}</h3>
-                  <div className="flex flex-col gap-3">
-                    {track.steps.map((step, stepIndex) => (
-                      <div className="flex items-start gap-3" key={step}>
-                        <span className="text-xs font-mono text-[#525252] mt-0.5">
-                          {String(stepIndex + 1).padStart(2, "0")}
-                        </span>
-                        <span className="body-text-sm text-[#999]">{step}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <a className="btn-secondary inline-flex items-center gap-2 justify-center mt-auto" href={localizedHref(track.href, locale)}>
-                    <span>{track.action}</span>
-                    <ArrowRight size={15} aria-hidden="true" />
-                  </a>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-terms-heading">
-        <div className="section-inner grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
-          <div>
-            <div className="eyebrow">
-              <Braces size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "统一口径" : "Shared vocabulary"}</span>
-            </div>
-            <h2 id="docs-terms-heading" className="heading-lg mt-3">
-              {locale === "zh" ? "这些词全站必须含义一致。" : "These words must mean the same thing everywhere."}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {labels.terms.map(([term, definition]) => (
-              <article className="card" key={term}>
-                <h3 className="heading-sm">{term}</h3>
-                <p className="body-text-sm text-[#999] mt-2">{definition}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" id="api" aria-labelledby="docs-api-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[740px]">
-            <div className="eyebrow">
-              <Network size={16} aria-hidden="true" />
-              <span>REST / MCP</span>
-            </div>
-            <h2 id="docs-api-heading" className="heading-lg mt-3">{labels.api.title}</h2>
-            <p className="body-text text-[#999] mt-3">{labels.api.body}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {labels.api.groups.map((group) => (
-              <article className="card flex flex-col gap-3" key={group.title}>
-                <h3 className="heading-sm">{group.title}</h3>
-                <p className="body-text-sm text-[#999]">{group.body}</p>
-                <div className="flex flex-col gap-1.5 mt-auto">
-                  {group.endpoints.map((endpoint) => (
-                    <code key={endpoint} className="text-xs font-mono text-[#7fee64] bg-[rgba(127,238,100,0.08)] rounded px-2 py-1 w-fit">
-                      {endpoint}
-                    </code>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" id="admin" aria-labelledby="docs-admin-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[740px]">
-            <div className="eyebrow">
-              <ShieldCheck size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "运营后台" : "Admin operations"}</span>
-            </div>
-            <h2 id="docs-admin-heading" className="heading-lg mt-3">{labels.admin.title}</h2>
-            <p className="body-text text-[#999] mt-3">{labels.admin.body}</p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {labels.admin.cards.map((card) => (
-              <article className="card flex flex-col gap-4 h-full" key={card.title}>
-                <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
-                  <ClipboardCheck size={20} aria-hidden="true" className="text-[#7fee64]" />
-                </div>
-                <div>
-                  <h3 className="heading-sm">{card.title}</h3>
-                  <p className="body-text-sm text-[#999] mt-2">{card.body}</p>
-                </div>
-                <div className="flex flex-col gap-2 mt-auto">
-                  {card.items.map((item) => (
-                    <div className="flex items-start gap-2 text-sm text-[#999]" key={item}>
-                      <CheckCircle2 size={15} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-troubleshooting-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="max-w-[800px]">
-            <div className="eyebrow">
-              <ShieldCheck size={16} aria-hidden="true" />
-              <span>{locale === "zh" ? "排查手册" : "Troubleshooting"}</span>
-            </div>
-            <h2 id="docs-troubleshooting-heading" className="heading-lg mt-3">
-              {troubleshooting.title}
-            </h2>
-            <p className="body-text text-[#999] mt-3">{troubleshooting.body}</p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {troubleshooting.items.map((item) => (
-              <article className="card flex flex-col gap-4" key={item.problem}>
-                <div>
-                  <span className="text-xs uppercase tracking-[0.12em] text-[#7fee64]">
-                    {locale === "zh" ? "问题" : "Problem"}
-                  </span>
-                  <h3 className="heading-sm mt-2">{item.problem}</h3>
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <strong className="text-sm text-white">
-                      {locale === "zh" ? "常见原因" : "Common cause"}
-                    </strong>
-                    <p className="body-text-sm text-[#999] mt-1">{item.cause}</p>
-                  </div>
-                  <div>
-                    <strong className="text-sm text-white">
-                      {locale === "zh" ? "处理方式" : "How to fix"}
-                    </strong>
-                    <p className="body-text-sm text-[#999] mt-1">{item.fix}</p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="docs-guardrails-heading">
-        <div className="section-inner">
-          <article className="card grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-8">
-            <div>
-              <div className="eyebrow">
-                <ShieldCheck size={16} aria-hidden="true" />
-                <span>{labels.guardrails.title}</span>
-              </div>
-              <h2 id="docs-guardrails-heading" className="heading-lg mt-3">{labels.guardrails.title}</h2>
-              <p className="body-text text-[#999] mt-3">{labels.guardrails.body}</p>
-            </div>
-            <div className="flex flex-col gap-3">
-              {labels.guardrails.items.map((item) => (
-                <div className="flex items-start gap-3" key={item}>
-                  <CheckCircle2 size={17} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
-                  <span className="body-text-sm text-[#999]">{item}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="closing-cta">
-        <div className="section-inner">
-          <Reveal>
-            <h2 className="heading-lg mb-4">
-              {locale === "zh" ? "下一步按你的角色进入。" : "Next step: enter by role."}
-            </h2>
-            <p className="body-text max-w-[560px] mx-auto mb-8">
-              {locale === "zh"
-                ? "找技能去市场，真实运行去登录工作台，发布技能走发布者流程。"
-                : "Use the marketplace for discovery, the workspace for runtime, and the publisher flow for submissions."}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <a className="btn-primary" href={localizedHref("/marketplace", locale)}>
-                <span>{locale === "zh" ? "开始找技能" : "Find skills"}</span>
-              </a>
-              <a className="btn-secondary" href={localizedHref("/login", locale)}>
-                <KeyRound size={16} aria-hidden="true" />
-                <span>{locale === "zh" ? "进入工作台" : "Enter workspace"}</span>
-              </a>
-              <a className="btn-secondary" href={localizedHref("/pricing", locale)}>
-                <WalletCards size={16} aria-hidden="true" />
-                <span>{locale === "zh" ? "查看价格边界" : "View pricing boundary"}</span>
-              </a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-    </AppShell>
-  );
+  -d '{"skill":"browser-research","input":{"query":"cross-border SEO gap"}}'`;
 }
