@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, RotateCw, Save, Webhook, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillCheckbox, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
@@ -119,35 +120,29 @@ export function OrganizationWebhookManager({ endpoints, locale }: OrganizationWe
       <form action={createAction} className="organization-webhook-form">
         <label>
           <span>{labels.url}</span>
-          <input name="url" placeholder="https://example.com/skillhub/webhooks" type="url" />
+          <SkillInput name="url" placeholder="https://example.com/skillhub/webhooks" type="url" />
         </label>
         <label>
           <span>{labels.description}</span>
-          <input name="description" placeholder="Ops automation receiver" />
+          <SkillInput name="description" placeholder="Ops automation receiver" />
         </label>
         <label>
           <span>{labels.status}</span>
-          <select defaultValue="active" name="status">
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {labels.statuses[status]}
-              </option>
-            ))}
-          </select>
+          <SkillSelect defaultValue="active" name="status" options={statusOptions(labels)} />
         </label>
         <fieldset>
           <legend>{labels.events}</legend>
           {eventOptions.map((event) => (
             <label key={event}>
-              <input defaultChecked={["skill.update", "runtime.incident", "account.security"].includes(event)} name="events" type="checkbox" value={event} />
+              <SkillCheckbox defaultChecked={["skill.update", "runtime.incident", "account.security"].includes(event)} name="events" value={event} />
               <span>{event}</span>
             </label>
           ))}
         </fieldset>
-        <button className="secondary-button secondary-button--compact" disabled={isCreating} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isCreating} htmlType="submit">
           <Webhook size={15} aria-hidden="true" />
           <span>{isCreating ? labels.saving : labels.create}</span>
-        </button>
+        </SkillButton>
       </form>
       {createState.status !== "idle" ? <ActionMessage labels={labels} state={createState} /> : null}
 
@@ -164,7 +159,7 @@ export function OrganizationWebhookManager({ endpoints, locale }: OrganizationWe
                     <strong>{endpoint.description ?? endpoint.url}</strong>
                     <span>{endpoint.url}</span>
                   </div>
-                  <span className={statusClass(endpoint.status)}>{labels.statuses[endpoint.status]}</span>
+                  <SkillStatusTag className={statusClass(endpoint.status)}>{labels.statuses[endpoint.status]}</SkillStatusTag>
                 </header>
 
                 <div className="organization-webhook-meta">
@@ -186,35 +181,29 @@ export function OrganizationWebhookManager({ endpoints, locale }: OrganizationWe
                   <input name="endpointId" type="hidden" value={endpoint.id} />
                   <label className="organization-webhook-update-form__wide">
                     <span>{labels.url}</span>
-                    <input defaultValue={endpoint.url} name="url" type="url" />
+                    <SkillInput defaultValue={endpoint.url} name="url" type="url" />
                   </label>
                   <label>
                     <span>{labels.description}</span>
-                    <input defaultValue={endpoint.description ?? ""} name="description" />
+                    <SkillInput defaultValue={endpoint.description ?? ""} name="description" />
                   </label>
                   <label>
                     <span>{labels.status}</span>
-                    <select defaultValue={endpoint.status} name="status">
-                      {statuses.map((status) => (
-                        <option key={status} value={status}>
-                          {labels.statuses[status]}
-                        </option>
-                      ))}
-                    </select>
+                    <SkillSelect defaultValue={endpoint.status} name="status" options={statusOptions(labels)} />
                   </label>
                   <fieldset>
                     <legend>{labels.events}</legend>
                     {eventOptions.map((event) => (
                       <label key={event}>
-                        <input defaultChecked={endpoint.events.includes(event)} name="events" type="checkbox" value={event} />
+                        <SkillCheckbox defaultChecked={endpoint.events.includes(event)} name="events" value={event} />
                         <span>{event}</span>
                       </label>
                     ))}
                   </fieldset>
-                  <button className="secondary-button secondary-button--compact" disabled={isUpdating} type="submit">
+                  <SkillButton className="secondary-button secondary-button--compact" disabled={isUpdating} htmlType="submit">
                     <Save size={15} aria-hidden="true" />
                     <span>{isUpdating && endpointUpdateState ? labels.saving : labels.save}</span>
-                  </button>
+                  </SkillButton>
                 </form>
 
                 <ProjectSensitiveActionForm
@@ -254,16 +243,24 @@ function ActionMessage({
   state: OrganizationWebhookActionState;
 }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>
-        {state.message}
-        {state.signingSecret ? (
-          <code aria-label={labels.secretHint}>{state.signingSecret}</code>
-        ) : null}
-      </span>
-    </div>
+    <SkillAlert
+      className="action-message"
+      icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+      message={
+        <span>
+          {state.message}
+          {state.signingSecret ? (
+            <code aria-label={labels.secretHint}>{state.signingSecret}</code>
+          ) : null}
+        </span>
+      }
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
+}
+
+function statusOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return statuses.map((status) => ({ label: labels.statuses[status], value: status }));
 }
 
 function statusClass(status: OrganizationWebhookEndpoint["status"]) {

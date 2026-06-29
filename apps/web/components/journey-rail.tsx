@@ -35,6 +35,7 @@ type JourneyCopy = {
   steps: JourneyStep[];
   title: string;
 };
+type JourneyRailVariant = "full" | "steps";
 
 const journeyIcons = {
   admin: ShieldCheck,
@@ -92,7 +93,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
     },
     developer: {
       body:
-        "The developer path proves SkillHub is more than a directory: public discovery can become authenticated project state, runtime governance, logs, cost, and updates after sign-in and policy checks.",
+        "The developer path proves SkillHub is more than a directory: public discovery can become authenticated project state, call permissions and logs, logs, cost, and updates after sign-in and policy checks.",
       current: "Current",
       next: "Next",
       steps: [
@@ -127,7 +128,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         {
           action: "Run governed test",
           detail: "Use REST or MCP through the same policy, budget, subscription, and log path.",
-          href: "/agents",
+          href: "/developer",
           id: "runtime",
           label: "Runtime test"
         }
@@ -149,7 +150,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "Open publisher",
-          detail: "Operate owned skills, versions, buyer demand, notifications, and paid-preview readiness signals.",
+          detail: "Operate owned skills, versions, buyer demand, notifications, and paid-marketplace readiness signals.",
           href: "/publisher",
           id: "publisher",
           label: "Publisher workspace"
@@ -170,7 +171,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         },
         {
           action: "Improve listing",
-          detail: "Respond to feedback, buyer requests, paid-preview signals, refund/dispute notices, and placement appeals.",
+          detail: "Respond to feedback, buyer requests, paid-marketplace signals, refund/dispute notices, and placement appeals.",
           href: "/publisher",
           id: "improve",
           label: "Improve and retain"
@@ -261,7 +262,7 @@ const copy: Record<Locale, Record<JourneyId, JourneyCopy>> = {
         {
           action: "\u8fd0\u884c\u6cbb\u7406\u6d4b\u8bd5",
           detail: "\u901a\u8fc7\u540c\u4e00\u6761\u7b56\u7565\u3001\u9884\u7b97\u3001\u8ba2\u9605\u548c\u65e5\u5fd7\u8def\u5f84\u8c03\u7528 REST \u6216 MCP\u3002",
-          href: "/agents",
+          href: "/developer",
           id: "runtime",
           label: "\u8fd0\u884c\u6d4b\u8bd5"
         }
@@ -414,7 +415,8 @@ export function JourneyRail({
   developerMode = "install",
   journey,
   locale,
-  publicSurface = false
+  publicSurface = false,
+  variant = "full"
 }: {
   actionHrefOverride?: string;
   actionLabelOverride?: string;
@@ -424,6 +426,7 @@ export function JourneyRail({
   journey: JourneyId;
   locale: Locale;
   publicSurface?: boolean;
+  variant?: JourneyRailVariant;
 }) {
   const labels =
     journey === "developer" && developerMode === "inspection"
@@ -441,6 +444,40 @@ export function JourneyRail({
   const actionLabel = actionLabelOverride ?? next.action;
   const operatorOnlyLabel =
     locale === "zh" ? "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5" : "Operator direct link only";
+  const statusLabels =
+    locale === "zh"
+      ? { current: "\u5f53\u524d", done: "\u5df2\u5b8c\u6210", upcoming: "\u540e\u7eed" }
+      : { current: "Current", done: "Done", upcoming: "Next" };
+
+  if (variant === "steps") {
+    return (
+      <section
+        className={["journey-rail", "journey-rail--steps", `journey-rail--${journey}`, className]
+          .filter(Boolean)
+          .join(" ")}
+        aria-label={labels.title}
+      >
+        <ol className="journey-rail__steps">
+          {labels.steps.map((step, index) => {
+            const Icon = stepIcons[index] ?? ListChecks;
+            const state = index < currentIndex ? "done" : index === currentIndex ? "current" : "upcoming";
+
+            return (
+              <li className={`journey-rail-step journey-rail-step--${state}`} key={step.id}>
+                <span className="journey-rail-step__icon" aria-hidden="true">
+                  {state === "done" ? <ClipboardCheck size={15} /> : <Icon size={15} />}
+                </span>
+                <div>
+                  <strong>{step.label}</strong>
+                  <small>{statusLabels[state]}</small>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    );
+  }
 
   return (
     <section className={["journey-rail", `journey-rail--${journey}`, className].filter(Boolean).join(" ")} aria-label={labels.title}>

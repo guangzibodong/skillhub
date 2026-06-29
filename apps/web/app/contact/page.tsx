@@ -74,7 +74,7 @@ function contactPageForIntent(
               "Support email and expected response time",
               "Planned skill categories and first 3 skill ideas",
               "Repository, demo URL, or sample output if available",
-              "Free basics, Pro catalog, or future paid-preview intent",
+              "Free basics, Pro catalog, or future paid-marketplace intent",
             ],
           },
           {
@@ -341,7 +341,7 @@ function contactPageForIntent(
               "Input example and the output you expect",
               "How often the team runs this workflow",
               "Permission needs such as network, browser, files, or secrets",
-              "Whether it should be free basics, Pro catalog, or future paid-preview",
+              "Whether it should be free basics, Pro catalog, or future paid-marketplace",
             ],
           },
           {
@@ -455,7 +455,7 @@ function publisherMailto(locale: "en" | "zh") {
   const body =
     locale === "zh"
       ? "SkillHub 账号邮箱：\n组织/团队名称：\n发布者展示名称：\n维护负责人：\n支持邮箱：\n计划技能分类：\n前 3 个技能想法：\nDemo/仓库链接：\n商业化意图（免费基础 / Pro 目录 / 未来付费预览）：\n预计上线时间："
-      : "SkillHub account email:\nOrganization:\nPublisher display name:\nMaintenance owner:\nSupport email:\nPlanned skill categories:\nFirst 3 skill ideas:\nDemo/repository link:\nCommercial intent (free basics / Pro catalog / future paid preview):\nTarget launch date:";
+      : "SkillHub account email:\nOrganization:\nPublisher display name:\nMaintenance owner:\nSupport email:\nPlanned skill categories:\nFirst 3 skill ideas:\nDemo/repository link:\nCommercial intent (free basics / Pro catalog / paid marketplace):\nTarget launch date:";
 
   return `${companyLinks.supportMailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
@@ -483,7 +483,7 @@ function requestSkillMailto(locale: "en" | "zh", track?: string) {
   const body =
     locale === "zh"
       ? `业务分类：${trackLabel}\n希望新增的技能名称：\n这个技能帮谁做什么：\n目前涉及的工具/数据源：\n输入示例：\n预期输出：\n使用频率：\n权限需求（网络/浏览器/文件/密钥）：\n希望属于免费基础 / Pro / 未来付费预览：\n补充说明：`
-      : `Workflow category: ${trackLabel}\nRequested skill name:\nWho this helps and what it should do:\nCurrent tools/data sources:\nInput example:\nExpected output:\nFrequency:\nPermission needs (network/browser/files/secrets):\nShould this be free basics / Pro / future paid preview:\nNotes:`;
+      : `Workflow category: ${trackLabel}\nRequested skill name:\nWho this helps and what it should do:\nCurrent tools/data sources:\nInput example:\nExpected output:\nFrequency:\nPermission needs (network/browser/files/secrets):\nShould this be free basics / Pro / paid marketplace:\nNotes:`;
 
   return `${companyLinks.supportMailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

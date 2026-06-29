@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { ArrowUpRight, CheckCircle2, FolderPlus, XCircle } from "lucide-react";
+import { Input } from "antd";
+import { ArrowUpRight, FolderPlus } from "lucide-react";
+import { SkillAlert, SkillButton } from "@/components/skill-antd";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { createDeveloperProjectAction, type ProjectCreateActionState } from "@/lib/project-create-actions";
 
@@ -50,27 +52,30 @@ export function ProjectCreateForm({ locale }: ProjectCreateFormProps) {
       <form action={action} className="project-create-form">
         <label>
           <span>{labels.name}</span>
-          <input name="name" placeholder={labels.namePlaceholder} required />
+          <Input name="name" placeholder={labels.namePlaceholder} required />
         </label>
         <label>
           <span>{labels.slug}</span>
-          <input name="slug" placeholder={labels.slugPlaceholder} />
+          <Input name="slug" placeholder={labels.slugPlaceholder} />
         </label>
-        <button className="primary-button" disabled={isPending} type="submit">
+        <SkillButton className="primary-button" disabled={isPending} htmlType="submit">
           <FolderPlus size={16} aria-hidden="true" />
           <span>{isPending ? labels.creating : labels.create}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {state.status !== "idle" ? (
-        <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-          {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-          <span>{state.message}</span>
+        <div className="project-create-result">
+          <SkillAlert
+            className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}
+            description={state.message}
+            type={state.status === "success" ? "success" : "error"}
+          />
           {state.project ? (
-            <a className="ghost-button ghost-button--inline" href={localizedHref(`/dashboard/projects/${state.project.slug}`, locale)}>
+            <SkillButton className="ghost-button ghost-button--inline" href={localizedHref(`/dashboard/projects/${state.project.slug}`, locale)} type="text">
               <ArrowUpRight size={15} aria-hidden="true" />
               <span>{labels.open}</span>
-            </a>
+            </SkillButton>
           ) : null}
         </div>
       ) : null}

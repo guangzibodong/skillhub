@@ -5,7 +5,7 @@ export const dynamic = "force-static";
 
 const priorityPages = [
   ["/", "SkillHub overview, Launch Preview scope, and primary discovery paths"],
-  ["/what-is-a-skill", "Definition of AI Agent Skills, manifests, permissions, and runtime governance"],
+  ["/what-is-a-skill", "Definition of AI Agent Skills, manifests, permissions, and call permissions and logs"],
   ["/marketplace", "Find Skills: public human-facing skill discovery, comparison, and inspection"],
   ["/registry", "Skill API catalog: machine-readable skill contracts, manifests, versions, permissions, and review state"],
   ["/docs", "Developer docs for manifests, REST, MCP, and Project Key runtime paths"],
@@ -21,7 +21,7 @@ export function GET() {
   const lines = [
     "# SkillHub",
     "",
-    "SkillHub is a Skill API catalog, review layer, runtime governance surface, and marketplace preview for reusable AI Agent Skills.",
+    "SkillHub is a Skill API catalog, review layer, call permissions and logs surface, and marketplace preview for reusable AI Agent Skills.",
     "",
     "Canonical site: https://useskillhub.com",
     "Languages: English and Simplified Chinese via ?lang=en and ?lang=zh",

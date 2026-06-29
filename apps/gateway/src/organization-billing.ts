@@ -74,55 +74,12 @@ type OrganizationRow = {
 const methodTypes: PaymentMethodType[] = ["bank_account", "card", "external", "invoice"];
 const paymentStatuses: PaymentMethodStatus[] = ["not_configured", "pending", "ready", "requires_action", "failed", "disabled"];
 
-const fallbackBillingSummary = {
-  billingProfile: {
-    id: "demo-billing-profile",
-    organizationId: "demo-org",
-    billingName: "SkillHub Demo Org",
-    billingEmail: "billing@example.com",
-    taxId: null,
-    country: "US",
-    addressLine1: "Demo billing address",
-    addressLine2: null,
-    city: "San Francisco",
-    region: "CA",
-    postalCode: "94105",
-    invoiceNotes: "Demo billing profile for local development.",
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  paymentMethods: [
-    {
-      id: "demo-payment-method",
-      organizationId: "demo-org",
-      provider: "manual",
-      providerCustomerId: null,
-      providerPaymentMethodId: null,
-      methodType: "invoice",
-      brand: "manual",
-      last4: null,
-      expMonth: null,
-      expYear: null,
-      status: "ready",
-      isDefault: true,
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  summary: {
-    defaultPaymentMethodStatus: "ready",
-    invoiceReady: true,
-    paymentMethodCount: 1,
-    profileComplete: true
-  }
-} as const;
-
 export async function getOrganizationBillingSummary(organizationId: string | null | undefined) {
   const scopedOrganizationId = requireOrganizationId(organizationId);
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackBillingSummary;
+    return toBillingSummary(null, []);
   }
 
   const [billingProfile, paymentMethods] = await Promise.all([

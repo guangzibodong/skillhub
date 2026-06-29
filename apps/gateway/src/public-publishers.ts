@@ -3,8 +3,6 @@ import {
   type SkillManifest,
   type SkillSummary,
 } from "@useskillhub/schema";
-import { demoFallback } from "./demo-fallback.js";
-import { demoSkills } from "./demo-skills.js";
 import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
@@ -99,13 +97,6 @@ export async function listPublicPublishers(
 ): Promise<PublicPublisherProfile[]> {
   const sql = await getSql();
 
-  if (!sql) {
-    return demoFallback(
-      fallbackPublicPublishers().slice(0, normalizeLimit(limit)),
-      [],
-    );
-  }
-
   const schema = await getPublicPublisherSchema(sql);
   const profiles = await listPublisherProfileRows(
     sql,
@@ -123,15 +114,6 @@ export async function getPublicPublisherProfile(
 ): Promise<PublicPublisherProfile | null> {
   const normalizedSlug = canonicalPublisherSlug(slug);
   const sql = await getSql();
-
-  if (!sql) {
-    return demoFallback(
-      fallbackPublicPublishers().find(
-        (profile) => profile.slug === normalizedSlug,
-      ) ?? null,
-      null,
-    );
-  }
 
   const schema = await getPublicPublisherSchema(sql);
   const profiles = await listPublisherProfileRows(sql, 100, schema);
@@ -228,8 +210,29 @@ async function listPublisherProfileRows(
         updatedAt: profile?.updatedAt ?? supply.latestSkillUpdatedAt,
       } satisfies PublisherProfileRow;
     })
+    .filter((profile) => !isPublicTestPublisher(profile))
     .sort(comparePublisherRows)
     .slice(0, limit);
+}
+
+function isPublicTestPublisher(profile: PublisherProfileRow) {
+  const text = [
+    profile.displayName,
+    profile.organizationName,
+    profile.organizationSlug,
+    profile.publicAuthorName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    text.includes("acceptance-") ||
+    text.includes("acceptance qa") ||
+    text.includes("acceptance partner") ||
+    text.includes("qa-") ||
+    text.includes("qa partner")
+  );
 }
 
 function hasPublicPublisherCoreSchema(schema: PublicPublisherSchema) {
@@ -576,46 +579,6 @@ async function listSkillPricesForPublisher(
   }>;
 
   return new Map(rows.map((row) => [row.slug, row]));
-}
-
-function fallbackPublicPublishers(): PublicPublisherProfile[] {
-  const groups = new Map<string, SkillManifest[]>();
-
-  demoSkills.forEach((skill) => {
-    const publisher = skill.author?.name?.trim() || "SkillHub Publisher";
-    const slug = canonicalPublisherSlug(publisher);
-    groups.set(slug, [...(groups.get(slug) ?? []), skill]);
-  });
-
-  return Array.from(groups.entries()).map(([slug, skills]) => {
-    const publicSkills: PublicPublisherSkill[] = skills.map((skill, index) => ({
-      billingModel: index === 0 ? "per_call" : "free",
-      callCount: index === 0 ? 12800 : 0,
-      description: skill.description,
-      displayName: skill.displayName,
-      installCount: index === 0 ? 46 : 12,
-      permissionLevel: getPermissionLevel(skill.permissions),
-      priceStatus: "active" as const,
-      slug: skill.name,
-      successRate: index === 0 ? 0.97 : null,
-      unitAmountCents: index === 0 ? 2 : 0,
-      verificationStatus:
-        index === 0 ? ("verified" as const) : ("submitted" as const),
-      version: skill.version,
-    }));
-
-    return {
-      createdAt: "demo",
-      displayName: skills[0]?.author?.name ?? "SkillHub Publisher",
-      metrics: publisherMetrics(publicSkills),
-      payoutStatus: "verified",
-      skills: publicSkills,
-      slug,
-      status: "active",
-      trustLevel: "verified",
-      updatedAt: "demo",
-    };
-  });
 }
 
 function publisherMetrics(skills: PublicPublisherSkill[]) {

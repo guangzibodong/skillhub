@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, Download, FileText, Plus, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectInvoiceRecord } from "@/lib/ops-data";
 import { formatMoney } from "@/lib/ops-format";
@@ -87,27 +88,24 @@ export function ProjectInvoiceManager({
       <form action={invoiceAction} className="project-invoice-generate-form">
         <label>
           <span>{labels.periodStart}</span>
-          <input defaultValue={defaultPeriod.start} name="periodStart" type="date" />
+          <SkillInput defaultValue={defaultPeriod.start} name="periodStart" type="date" />
         </label>
         <label>
           <span>{labels.periodEnd}</span>
-          <input defaultValue={defaultPeriod.end} name="periodEnd" type="date" />
+          <SkillInput defaultValue={defaultPeriod.end} name="periodEnd" type="date" />
         </label>
         <label>
           <span>{labels.currency}</span>
-          <input defaultValue="usd" maxLength={3} name="currency" />
+          <SkillInput defaultValue="usd" maxLength={3} name="currency" />
         </label>
-        <button className="primary-button" disabled={isInvoicePending} type="submit">
+        <SkillButton className="primary-button" disabled={isInvoicePending} htmlType="submit">
           <Plus size={16} aria-hidden="true" />
           <span>{isInvoicePending ? labels.generating : labels.generate}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {invoiceState.status !== "idle" ? (
-        <div className={invoiceState.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-          {invoiceState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-          <span>{invoiceState.message}</span>
-        </div>
+        <SkillAlert className="action-message" icon={invoiceState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={invoiceState.message} type={invoiceState.status === "success" ? "success" : "error"} />
       ) : null}
 
       <div className="project-invoice-list">
@@ -121,7 +119,7 @@ export function ProjectInvoiceManager({
                     {formatDateValue(invoice.periodStart, locale, noDateLabel)} - {formatDateValue(invoice.periodEnd, locale, noDateLabel)}
                   </small>
                 </strong>
-                <span className={statusChipClass(invoice.status)}>{formatInvoiceStatus(invoice.status, labels)}</span>
+                <SkillStatusTag className={statusChipClass(invoice.status)}>{formatInvoiceStatus(invoice.status, labels)}</SkillStatusTag>
               </header>
               <div className="project-invoice-card__meta">
                 <span>

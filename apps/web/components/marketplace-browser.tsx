@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   AlertCircle,
-  ArrowRight,
   BadgeCheck,
   CheckCircle2,
   Copy,
@@ -11,7 +10,6 @@ import {
   MessageSquarePlus,
   PackageCheck,
   RotateCcw,
-  Route,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -82,6 +80,7 @@ type MarketplaceInitialFilters = {
   runtime?: string;
   sort?: string;
   verification?: string;
+  view?: string;
 };
 
 const labels = {
@@ -106,7 +105,8 @@ const labels = {
     reviewOnlyPrice: "Review required before pricing",
     install: "Skill contract",
     installLocked: "Inspection only",
-    installLockedBody: "Verified review is required before install and runtime actions unlock.",
+    installLockedBody:
+      "Verified review is required before install and runtime actions unlock.",
     catalog: "Agent Skill marketplace",
     filters: "Refine results",
     category: "Use case",
@@ -114,7 +114,11 @@ const labels = {
     permissionRisk: "Permission risk",
     runtime: "Runtime",
     verification: "Verification",
+    view: "View",
+    compactView: "Compact",
+    comfortableView: "Comfortable",
     sort: "Sort",
+    closeFilters: "Close filters",
     activeFilters: "Active filters",
     queryFilter: "Search",
     reset: "Reset filters",
@@ -138,8 +142,7 @@ const labels = {
     categoryPicksBody:
       "Choose a common workflow first, then refine by plan, permission risk, runtime, and review status.",
     selectionGuide: {
-      body:
-        "A good marketplace choice should be easy for a buyer to understand and safe for an agent to inspect. Use these signals before adopting a skill into a project.",
+      body: "A good marketplace choice should be easy for a buyer to understand and safe for an agent to inspect. Use these signals before adopting a skill into a project.",
       items: [
         {
           body: "Match the skill to a repeated workflow, not a vague department name.",
@@ -174,42 +177,66 @@ const labels = {
         builder: {
           body: "Validate API contracts, webhook payloads, release checklists, prompt-injection risk, and codebase changes before agents ship work.",
           eyebrow: "Developers / security",
-          outcomes: ["Check API and webhook contracts", "Reduce release risk", "Gate unsafe agent actions"],
+          outcomes: [
+            "Check API and webhook contracts",
+            "Reduce release risk",
+            "Gate unsafe agent actions",
+          ],
           plan: "Use free release checks first, then Pro for governed build and security QA.",
           title: "Developer and security QA",
         },
         data: {
           body: "Clean sheets, explain metrics, generate reports, and keep data handoffs understandable for operators.",
           eyebrow: "Data teams",
-          outcomes: ["Clean messy spreadsheets", "Generate report narratives", "Standardize import handoffs"],
+          outcomes: [
+            "Clean messy spreadsheets",
+            "Generate report narratives",
+            "Standardize import handoffs",
+          ],
           plan: "Free sheet cleanup first, then Pro automation for recurring reporting.",
           title: "Data and spreadsheet automation",
         },
         ecommerce: {
           body: "Improve product titles, listing quality, Shopify PDPs, review mining, and launch checklists before traffic lands.",
           eyebrow: "Shopify / marketplaces",
-          outcomes: ["Fix product-page basics", "Find review pain points", "Prepare listings for launch"],
+          outcomes: [
+            "Fix product-page basics",
+            "Find review pain points",
+            "Prepare listings for launch",
+          ],
           plan: "Free listing checks for basics, Pro for batch SKU operations.",
           title: "E-commerce product operations",
         },
         growth: {
           body: "Diagnose SEO/GEO visibility, turn findings into briefs, and build a repair list that content and dev teams can execute.",
           eyebrow: "SEO / GEO growth",
-          outcomes: ["Audit AI-search visibility", "Create content briefs", "Prioritize page fixes"],
+          outcomes: [
+            "Audit AI-search visibility",
+            "Create content briefs",
+            "Prioritize page fixes",
+          ],
           plan: "Free diagnosis first, then Pro for all growth skills.",
           title: "Search and content growth",
         },
         revenue: {
           body: "Research accounts, personalize outbound, clean CRM data, summarize calls, and turn sales activity into the next best action.",
           eyebrow: "Sales / CRM",
-          outcomes: ["Personalize outreach", "Enrich CRM records", "Summarize deal next steps"],
+          outcomes: [
+            "Personalize outreach",
+            "Enrich CRM records",
+            "Summarize deal next steps",
+          ],
           plan: "Use free scripts and objection helpers first, then Pro for recurring CRM workflows.",
           title: "Sales and customer growth",
         },
         support: {
           body: "Route tickets, answer from approved knowledge, summarize escalations, and turn support patterns into product and content fixes.",
           eyebrow: "Support / operations",
-          outcomes: ["Triage tickets", "Draft grounded replies", "Find knowledge-base gaps"],
+          outcomes: [
+            "Triage tickets",
+            "Draft grounded replies",
+            "Find knowledge-base gaps",
+          ],
           plan: "Free onboarding and SOP helpers first, then Pro for helpdesk and operations automation.",
           title: "Support and operations",
         },
@@ -218,7 +245,7 @@ const labels = {
     catalogSummary: {
       categories: "use-case categories",
       free: "free starter skills",
-      pro: "Pro / paid-preview skills",
+      pro: "Pro / paid-marketplace skills",
       total: "total indexed skills",
     },
     spotlight: {
@@ -238,12 +265,24 @@ const labels = {
       ui: "UI/UX polish",
     },
     handoff: {
-      submittedBody: "Project install, runtime test, billing, and ledger actions may unlock only after review approval.",
-      submittedItems: ["Project install", "Runtime test", "Billing", "Ledger actions"],
+      submittedBody:
+        "Project install, runtime test, billing, and ledger actions may unlock only after review approval.",
+      submittedItems: [
+        "Project install",
+        "Runtime test",
+        "Billing",
+        "Ledger actions",
+      ],
       submittedTitle: "After verified approval",
-      verifiedBody: "Project install, policy gate, runtime log, and runtime evidence require sign-in and project policy checks.",
-      verifiedItems: ["Project install", "Policy gate", "Runtime log", "Runtime evidence"],
-      verifiedTitle: "After sign-in"
+      verifiedBody:
+        "Project install, policy gate, runtime log, and runtime evidence require sign-in and project policy checks.",
+      verifiedItems: [
+        "Project install",
+        "Policy gate",
+        "Runtime log",
+        "Runtime evidence",
+      ],
+      verifiedTitle: "After sign-in",
     },
     recommendation: {
       adoption: "Install evidence",
@@ -254,7 +293,7 @@ const labels = {
       runtimeObserved: "Runtime signal",
       strongRuntime: "Strong runtime success",
       title: "Recommendation reasons",
-      verified: "Verified review"
+      verified: "Verified review",
     },
     sortOptions: {
       adoption: "Most installed",
@@ -306,7 +345,11 @@ const labels = {
     permissionRisk: "权限风险",
     runtime: "运行时",
     verification: "验证状态",
+    view: "视图",
+    compactView: "紧凑",
+    comfortableView: "舒适",
     sort: "排序",
+    closeFilters: "关闭筛选",
     activeFilters: "当前筛选",
     queryFilter: "搜索",
     reset: "重置筛选",
@@ -330,8 +373,7 @@ const labels = {
     categoryPicksBody:
       "先选常见工作流，再用套餐、权限风险、运行时和验证状态细筛。",
     selectionGuide: {
-      body:
-        "一个可采用的技能，既要让客户看得懂，也要让 Agent 能检查边界。采用前先看这几个信号，别只看名字。",
+      body: "一个可采用的技能，既要让客户看得懂，也要让 Agent 能检查边界。采用前先看这几个信号，别只看名字。",
       items: [
         {
           body: "先确认它对应一个会重复发生的业务流程，而不是宽泛部门名。",
@@ -366,7 +408,11 @@ const labels = {
         builder: {
           body: "在智能体交付代码和自动化前，先检查 API 合约、Webhook 载荷、发布清单、提示注入风险和代码变更风险。",
           eyebrow: "开发 / 安全",
-          outcomes: ["检查 API 和 Webhook 合约", "降低发布风险", "拦截不安全智能体动作"],
+          outcomes: [
+            "检查 API 和 Webhook 合约",
+            "降低发布风险",
+            "拦截不安全智能体动作",
+          ],
           plan: "先用免费发布检查起步，构建和安全 QA 进入 Pro。",
           title: "开发与安全质检",
         },
@@ -387,7 +433,11 @@ const labels = {
         growth: {
           body: "诊断 SEO/GEO 可见度，把问题变成内容简报、页面修复清单和开发可执行任务。",
           eyebrow: "SEO / GEO 增长",
-          outcomes: ["诊断 AI 搜索可见度", "生成内容简报", "排序页面修复优先级"],
+          outcomes: [
+            "诊断 AI 搜索可见度",
+            "生成内容简报",
+            "排序页面修复优先级",
+          ],
           plan: "免费诊断先起步，完整增长技能进入 Pro 全量计划。",
           title: "搜索与内容增长",
         },
@@ -430,12 +480,24 @@ const labels = {
       ui: "UI/UX 优化",
     },
     handoff: {
-      submittedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
-      submittedItems: ["\u9879\u76ee\u5b89\u88c5", "\u8fd0\u884c\u6d4b\u8bd5", "\u8ba1\u8d39", "\u8d26\u672c\u64cd\u4f5c"],
+      submittedBody:
+        "\u9879\u76ee\u5b89\u88c5\u3001\u8fd0\u884c\u6d4b\u8bd5\u3001\u8ba1\u8d39\u548c\u8d26\u672c\u64cd\u4f5c\u53ea\u4f1a\u5728\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e\u89e3\u9501\u3002",
+      submittedItems: [
+        "\u9879\u76ee\u5b89\u88c5",
+        "\u8fd0\u884c\u6d4b\u8bd5",
+        "\u8ba1\u8d39",
+        "\u8d26\u672c\u64cd\u4f5c",
+      ],
       submittedTitle: "\u9a8c\u8bc1\u5ba1\u6838\u901a\u8fc7\u540e",
-      verifiedBody: "\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u7f51\u5173\u3001\u8fd0\u884c\u65e5\u5fd7\u548c\u8fd0\u884c\u8bc1\u636e\u90fd\u9700\u8981\u767b\u5f55\u5e76\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u68c0\u67e5\u3002",
-      verifiedItems: ["\u9879\u76ee\u5b89\u88c5", "\u7b56\u7565\u7f51\u5173", "\u8fd0\u884c\u65e5\u5fd7", "\u8fd0\u884c\u8bc1\u636e"],
-      verifiedTitle: "\u767b\u5f55\u540e"
+      verifiedBody:
+        "\u9879\u76ee\u5b89\u88c5\u3001\u7b56\u7565\u7f51\u5173\u3001\u8fd0\u884c\u65e5\u5fd7\u548c\u8fd0\u884c\u8bc1\u636e\u90fd\u9700\u8981\u767b\u5f55\u5e76\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u68c0\u67e5\u3002",
+      verifiedItems: [
+        "\u9879\u76ee\u5b89\u88c5",
+        "\u7b56\u7565\u7f51\u5173",
+        "\u8fd0\u884c\u65e5\u5fd7",
+        "\u8fd0\u884c\u8bc1\u636e",
+      ],
+      verifiedTitle: "\u767b\u5f55\u540e",
     },
     recommendation: {
       adoption: "已有安装证据",
@@ -446,7 +508,7 @@ const labels = {
       runtimeObserved: "已有运行信号",
       strongRuntime: "运行成功率强",
       title: "推荐理由",
-      verified: "已验证审核"
+      verified: "已验证审核",
     },
     sortOptions: {
       adoption: "安装最多",
@@ -475,8 +537,14 @@ const pricingOptions = [
   { key: "all", label: { en: "All plans", zh: "全部套餐" } },
   { key: "free", label: { en: "Free basics", zh: "基础免费" } },
   { key: "pro", label: { en: "Included in Pro", zh: "Pro 全量计划内" } },
-  { key: "per_call", label: { en: "Paid preview / per call", zh: "付费预览 / 按次" } },
-  { key: "subscription", label: { en: "Paid preview / subscription", zh: "付费预览 / 订阅" } },
+  {
+    key: "per_call",
+    label: { en: "Paid marketplace / per call", zh: "付费市场 / 按次" },
+  },
+  {
+    key: "subscription",
+    label: { en: "Paid marketplace / subscription", zh: "付费市场 / 订阅" },
+  },
 ] as const;
 
 const riskOptions = ["all", "low", "medium", "high"] as const;
@@ -489,6 +557,7 @@ const sortOptions = [
   "lowRisk",
   "recent",
 ] as const;
+const viewOptions = ["compact", "comfortable"] as const;
 
 const INITIAL_VISIBLE_SKILLS = 36;
 const LOAD_MORE_SKILLS = 36;
@@ -510,7 +579,6 @@ const categorySpotlights = [
   { key: "free", query: "" },
 ] as const;
 
-const qualityGuideIcons = [Target, BadgeCheck, ShieldCheck, Route] as const;
 
 type CategoryKey = (typeof marketplaceCategories)[number]["key"];
 type PricingKey = (typeof pricingOptions)[number]["key"];
@@ -518,6 +586,7 @@ type RiskKey = (typeof riskOptions)[number];
 type RuntimeKey = (typeof runtimeOptions)[number];
 type VerificationKey = (typeof verificationOptions)[number];
 type SortKey = (typeof sortOptions)[number];
+type ViewMode = (typeof viewOptions)[number];
 
 const launchTracks = [
   {
@@ -632,6 +701,8 @@ export function MarketplaceBrowser({
     normalizedInitialFilters.verification,
   );
   const [sort, setSort] = useState<SortKey>(normalizedInitialFilters.sort);
+  const [view, setView] = useState<ViewMode>(normalizedInitialFilters.view);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_SKILLS);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copyFailedSlug, setCopyFailedSlug] = useState<string | null>(null);
@@ -675,7 +746,8 @@ export function MarketplaceBrowser({
     risk !== "all" ||
     runtime !== "all" ||
     verification !== "all" ||
-    sort !== "recommended";
+    sort !== "recommended" ||
+    view !== "compact";
   const activeFilterPills = useMemo(() => {
     const pills: string[] = [];
     const trimmedQuery = query.trim();
@@ -685,13 +757,21 @@ export function MarketplaceBrowser({
     }
 
     if (category !== "all") {
-      const categoryLabel = marketplaceCategories.find((item) => item.key === category)?.label;
-      pills.push(`${dictionary.category}: ${categoryLabel ? localizeText(categoryLabel, locale) : category}`);
+      const categoryLabel = marketplaceCategories.find(
+        (item) => item.key === category,
+      )?.label;
+      pills.push(
+        `${dictionary.category}: ${categoryLabel ? localizeText(categoryLabel, locale) : category}`,
+      );
     }
 
     if (pricing !== "all") {
-      const pricingLabel = pricingOptions.find((item) => item.key === pricing)?.label;
-      pills.push(`${dictionary.pricing}: ${pricingLabel ? localizeText(pricingLabel, locale) : pricing}`);
+      const pricingLabel = pricingOptions.find(
+        (item) => item.key === pricing,
+      )?.label;
+      pills.push(
+        `${dictionary.pricing}: ${pricingLabel ? localizeText(pricingLabel, locale) : pricing}`,
+      );
     }
 
     if (risk !== "all") {
@@ -703,15 +783,32 @@ export function MarketplaceBrowser({
     }
 
     if (verification !== "all") {
-      pills.push(`${dictionary.verification}: ${dictionary.verificationLabels[verification]}`);
+      pills.push(
+        `${dictionary.verification}: ${dictionary.verificationLabels[verification]}`,
+      );
     }
 
     if (sort !== "recommended") {
       pills.push(`${dictionary.sort}: ${dictionary.sortOptions[sort]}`);
     }
 
+    if (view !== "compact") {
+      pills.push(`${dictionary.view}: ${dictionary.comfortableView}`);
+    }
+
     return pills;
-  }, [category, dictionary, locale, pricing, query, risk, runtime, sort, verification]);
+  }, [
+    category,
+    dictionary,
+    locale,
+    pricing,
+    query,
+    risk,
+    runtime,
+    sort,
+    verification,
+    view,
+  ]);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -746,7 +843,11 @@ export function MarketplaceBrowser({
     }
 
     if (sort !== "recommended") {
-      params.set("sort", sort);
+      params.set("sort", serializeSort(sort));
+    }
+
+    if (view !== "compact") {
+      params.set("view", view);
     }
 
     const nextPath = `/marketplace${params.toString() ? `?${params}` : ""}`;
@@ -755,11 +856,39 @@ export function MarketplaceBrowser({
     if (currentPath !== nextPath) {
       window.history.replaceState(null, "", nextPath);
     }
-  }, [category, locale, pricing, query, risk, runtime, sort, verification]);
+  }, [
+    category,
+    locale,
+    pricing,
+    query,
+    risk,
+    runtime,
+    sort,
+    verification,
+    view,
+  ]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_SKILLS);
   }, [category, pricing, query, risk, runtime, sort, verification]);
+
+  useEffect(() => {
+    if (!isMobileFiltersOpen) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMobileFiltersOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isMobileFiltersOpen]);
 
   const filteredSkills = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -776,7 +905,9 @@ export function MarketplaceBrowser({
           category === "all" || skill.categoryKey === category;
         const pricingMatch =
           pricing === "all" ||
-          (pricing === "pro" ? skill.billing !== "free" : skill.billing === pricing);
+          (pricing === "pro"
+            ? skill.billing !== "free"
+            : skill.billing === pricing);
         const riskMatch = risk === "all" || skill.risk === risk;
         const runtimeMatch = runtime === "all" || skill.runtime === runtime;
         const verificationMatch =
@@ -885,12 +1016,11 @@ export function MarketplaceBrowser({
     setRuntime("all");
     setVerification("all");
     setSort("recommended");
+    setView("compact");
     setVisibleCount(INITIAL_VISIBLE_SKILLS);
   }
 
-  function applySpotlight(
-    spotlight: (typeof categorySpotlights)[number],
-  ) {
+  function applySpotlight(spotlight: (typeof categorySpotlights)[number]) {
     setRisk("all");
     setRuntime("all");
     setVerification("all");
@@ -919,751 +1049,720 @@ export function MarketplaceBrowser({
   }
 
   return (
-    <section
-      className="market-browser"
-      aria-labelledby="market-browser-heading"
-    >
-      <div className="market-browser__top">
-        <div>
-          <div className="card-kicker">
-            <Search size={16} aria-hidden="true" />
-            <span id="market-browser-heading">{dictionary.catalog}</span>
-          </div>
-          <strong>
-            {filteredSkills.length} {dictionary.results}
-          </strong>
-        </div>
-        <form
-          action="/marketplace"
-          className="market-search-form"
-          method="get"
-          role="search"
-        >
-          {locale === "zh" ? <input name="lang" type="hidden" value="zh" /> : null}
-          <label className="market-search">
-            <Search size={17} aria-hidden="true" />
-            <input
-              aria-label={dictionary.search}
-              name="q"
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={dictionary.search}
-            />
-          </label>
-          <button className="market-search-button" type="submit">
-            {locale === "zh" ? "搜索" : "Search"}
-          </button>
-        </form>
-      </div>
-
-      <div className="market-catalog-summary" aria-label={dictionary.catalog}>
-        <div>
-          <strong>{catalogSummary.total}</strong>
-          <span>{dictionary.catalogSummary.total}</span>
-        </div>
-        <div>
-          <strong>{catalogSummary.free}</strong>
-          <span>{dictionary.catalogSummary.free}</span>
-        </div>
-        <div>
-          <strong>{catalogSummary.pro}</strong>
-          <span>{dictionary.catalogSummary.pro}</span>
-        </div>
-        <div>
-          <strong>{catalogSummary.categories}</strong>
-          <span>{dictionary.catalogSummary.categories}</span>
-        </div>
-      </div>
-
-      <div className="market-trust-strip">
-        <span>{locale === "zh" ? "推荐排序：相关性、已验证、低权限风险、合约完整度" : "Recommended: relevance, verification, low risk, contract completeness"}</span>
-        <span>{locale === "zh" ? "技能合约：manifest、输入输出 schema、运行时、版本" : "Skill contract: manifest, schemas, runtime, version"}</span>
-        <span>{locale === "zh" ? "权限说明：网络、浏览器、文件、密钥、写入动作" : "Permission signals: network, browser, files, secrets, write actions"}</span>
-      </div>
-
+    <>
       <section
-        className="market-workflow-section"
-        aria-labelledby="market-workflow-heading"
+        className="market-directory-section"
+        aria-label={dictionary.catalog}
       >
-        <div className="market-workflow-section__head">
-          <span>
-            <Target size={15} aria-hidden="true" />
-            {dictionary.operatingGuide.kicker}
-          </span>
-          <div>
-            <h2 id="market-workflow-heading">
-              {dictionary.operatingGuide.title}
-            </h2>
-            <p>{dictionary.operatingGuide.body}</p>
-          </div>
-        </div>
-        <div className="market-workflow-grid">
-          {operatingTracks.map((track) => {
-            const trackCopy = dictionary.operatingGuide.tracks[track.key];
-            const isActive = category === track.category && pricing === track.pricing;
-
-            return (
-              <button
-                aria-pressed={isActive}
-                className={
-                  isActive
-                    ? "market-workflow-card market-workflow-card--active"
-                    : "market-workflow-card"
-                }
-                key={track.key}
-                onClick={() => applyLaunchTrack(track)}
-                type="button"
-              >
-                <span>{trackCopy.eyebrow}</span>
-                <div className="market-workflow-card__body">
-                  <strong>{trackCopy.title}</strong>
-                  <p>{trackCopy.body}</p>
-                </div>
-                <small className="market-workflow-card__meta">
-                  {track.count} {dictionary.results}
-                </small>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <div className="market-directory-layout">
-        <aside className="market-filter-panel" aria-label={dictionary.filters}>
-          <div className="market-filter-panel__head">
-            <span>
-              <SlidersHorizontal size={15} aria-hidden="true" />
-              {dictionary.filters}
-            </span>
-            <button
-              className="market-filter-reset-link"
-              onClick={resetFilters}
-              type="button"
-            >
-              {dictionary.reset}
+        <div className="market-browser__top">
+          <form
+            action="/marketplace"
+            className="market-search-form"
+            method="get"
+            role="search"
+          >
+            {locale === "zh" ? (
+              <input name="lang" type="hidden" value="zh" />
+            ) : null}
+            {category !== "all" ? (
+              <input name="category" type="hidden" value={category} />
+            ) : null}
+            {pricing !== "all" ? (
+              <input name="pricing" type="hidden" value={pricing} />
+            ) : null}
+            {risk !== "all" ? (
+              <input name="permissionLevel" type="hidden" value={risk} />
+            ) : null}
+            {runtime !== "all" ? (
+              <input
+                name="runtime"
+                type="hidden"
+                value={runtime.toLowerCase()}
+              />
+            ) : null}
+            {verification !== "all" ? (
+              <input
+                name="verification"
+                type="hidden"
+                value={verification}
+              />
+            ) : null}
+            {sort !== "recommended" ? (
+              <input name="sort" type="hidden" value={serializeSort(sort)} />
+            ) : null}
+            {view !== "compact" ? (
+              <input name="view" type="hidden" value={view} />
+            ) : null}
+            <label className="market-search">
+              <Search size={17} aria-hidden="true" />
+              <input
+                aria-label={dictionary.search}
+                name="q"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={dictionary.search}
+              />
+            </label>
+            <button className="market-search-button" type="submit">
+              {locale === "zh" ? "搜索" : "Search"}
             </button>
-          </div>
+          </form>
+        </div>
 
-          <FilterGroup label={dictionary.category}>
-            {marketplaceCategories.map((item) => (
+        <div className="market-directory-layout">
+          <button
+            aria-label={dictionary.closeFilters}
+            className={
+              isMobileFiltersOpen
+                ? "market-filter-backdrop market-filter-backdrop--open"
+                : "market-filter-backdrop"
+            }
+            onClick={() => setIsMobileFiltersOpen(false)}
+            type="button"
+          />
+          <aside
+            className={
+              isMobileFiltersOpen
+                ? "market-filter-panel market-filter-panel--open"
+                : "market-filter-panel"
+            }
+            id="market-filter-panel"
+            aria-label={dictionary.filters}
+          >
+            <div className="market-filter-panel__head">
+              <span>
+                <SlidersHorizontal size={15} aria-hidden="true" />
+                {dictionary.filters}
+              </span>
               <button
-                aria-pressed={category === item.key}
-                className={
-                  category === item.key
-                    ? "filter-button filter-button--active"
-                    : "filter-button"
-                }
-                key={item.key}
-                onClick={() => setCategory(item.key)}
+                className="market-filter-reset-link"
+                onClick={resetFilters}
                 type="button"
               >
-                {localizeText(item.label, locale)}
+                {dictionary.reset}
               </button>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup label={dictionary.pricing}>
-            {pricingOptions.slice(0, 3).map((item) => (
               <button
-                aria-pressed={pricing === item.key}
-                className={
-                  pricing === item.key
-                    ? "filter-button filter-button--active"
-                    : "filter-button"
-                }
-                key={item.key}
-                onClick={() => setPricing(item.key)}
+                className="market-filter-close-button"
+                onClick={() => setIsMobileFiltersOpen(false)}
                 type="button"
               >
-                {localizeText(item.label, locale)}
+                {dictionary.closeFilters}
               </button>
-            ))}
-          </FilterGroup>
+            </div>
 
-          <FilterGroup label={dictionary.verification}>
-            {verificationOptions.map((item) => (
-              <button
-                aria-pressed={verification === item}
-                className={
-                  verification === item
-                    ? "filter-button filter-button--active"
-                    : "filter-button"
-                }
-                key={item}
-                onClick={() => setVerification(item)}
-                type="button"
-              >
-                {item === "all"
-                  ? dictionary.allVerification
-                  : dictionary.verificationLabels[item]}
-              </button>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup label={dictionary.permissionRisk}>
-            {riskOptions.map((item) => (
-              <button
-                aria-pressed={risk === item}
-                className={
-                  risk === item
-                    ? "filter-button filter-button--active"
-                    : "filter-button"
-                }
-                key={item}
-                onClick={() => setRisk(item)}
-                type="button"
-              >
-                {item === "all" ? dictionary.allRisk : dictionary.risk[item]}
-              </button>
-            ))}
-          </FilterGroup>
-
-          <details className="market-filter-advanced">
-            <summary>{locale === "zh" ? "高级：运行环境" : "Advanced: runtime"}</summary>
-            <FilterGroup label={dictionary.runtime}>
-              {runtimeOptions.map((item) => (
+            <FilterGroup label={dictionary.category}>
+              {marketplaceCategories.map((item) => (
                 <button
-                  aria-pressed={runtime === item}
+                  aria-pressed={category === item.key}
                   className={
-                    runtime === item
+                    category === item.key
+                      ? "filter-button filter-button--active"
+                      : "filter-button"
+                  }
+                  key={item.key}
+                  onClick={() => setCategory(item.key)}
+                  type="button"
+                >
+                  {localizeText(item.label, locale)}
+                </button>
+              ))}
+            </FilterGroup>
+
+            <FilterGroup label={dictionary.pricing}>
+              {pricingOptions.slice(0, 3).map((item) => (
+                <button
+                  aria-pressed={pricing === item.key}
+                  className={
+                    pricing === item.key
+                      ? "filter-button filter-button--active"
+                      : "filter-button"
+                  }
+                  key={item.key}
+                  onClick={() => setPricing(item.key)}
+                  type="button"
+                >
+                  {localizeText(item.label, locale)}
+                </button>
+              ))}
+            </FilterGroup>
+
+            <FilterGroup label={dictionary.verification}>
+              {verificationOptions.map((item) => (
+                <button
+                  aria-pressed={verification === item}
+                  className={
+                    verification === item
                       ? "filter-button filter-button--active"
                       : "filter-button"
                   }
                   key={item}
-                  onClick={() => setRuntime(item)}
+                  onClick={() => setVerification(item)}
                   type="button"
                 >
-                  {item === "all" ? dictionary.allRuntime : item}
+                  {item === "all"
+                    ? dictionary.allVerification
+                    : dictionary.verificationLabels[item]}
                 </button>
               ))}
             </FilterGroup>
-          </details>
-        </aside>
 
-        <div className="market-results-panel">
-          <div className="market-mobile-filter-bar">
-            <span>
-              {hasActiveFilters
-                ? activeFilterPills.slice(0, 2).join(" · ")
-                : `${dictionary.catalog}: ${filteredSkills.length}`}
-            </span>
-            <button type="button">{dictionary.filters}</button>
-          </div>
-
-          <div className="market-results-toolbar">
-            <div>
-              <h2>
-                {category === "all"
-                  ? dictionary.allSkills
-                  : marketplaceCategories.find((item) => item.key === category)
-                    ? localizeText(
-                        marketplaceCategories.find((item) => item.key === category)!.label,
-                        locale,
-                      )
-                    : dictionary.categoryPicks}{" "}
-                · {filteredSkills.length} {dictionary.results}
-              </h2>
-              <p>
-                {locale === "zh"
-                  ? "推荐排序优先展示相关性高、已验证、低权限风险、合约完整、维护活跃的 Skill。"
-                  : "Recommended ranking prioritizes relevance, verification, low permission risk, complete contracts, and active maintenance."}
-              </p>
-            </div>
-            <div className="market-toolbar-actions">
-              <button
-                className={
-                  sort === "recommended"
-                    ? "filter-button filter-button--active"
-                    : "filter-button"
-                }
-                onClick={() => setSort("recommended")}
-                type="button"
-              >
-                {locale === "zh" ? "排序：推荐" : "Sort: Recommended"}
-              </button>
-              <button className="filter-button" type="button">
-                {locale === "zh" ? "视图：紧凑" : "View: Compact"}
-              </button>
-            </div>
-          </div>
-
-          <div className="market-featured-strip">
-            <span>
-              {locale === "zh"
-                ? "当前精选"
-                : "Featured in this view"}
-            </span>
-            <div>
-              {featuredSkills.map((skill) => (
-                <a
-                  href={localizedHref(`/skills/${skill.slug}`, locale)}
-                  key={skill.slug}
+            <FilterGroup label={dictionary.permissionRisk}>
+              {riskOptions.map((item) => (
+                <button
+                  aria-pressed={risk === item}
+                  className={
+                    risk === item
+                      ? "filter-button filter-button--active"
+                      : "filter-button"
+                  }
+                  key={item}
+                  onClick={() => setRisk(item)}
+                  type="button"
                 >
-                  <strong>{localizeText(skill.name, locale)}</strong>
-                  <small>{localizeText(skill.category, locale)}</small>
-                </a>
+                  {item === "all" ? dictionary.allRisk : dictionary.risk[item]}
+                </button>
               ))}
-            </div>
-          </div>
+            </FilterGroup>
 
-          <div className="market-spotlight-grid">
-            {spotlightCards.slice(0, 4).map((spotlight) => (
-              <button
-                className={
-                  (spotlight.key === "free" && pricing === "free") ||
-                  (spotlight.key !== "free" && category === spotlight.key)
-                    ? "market-spotlight-card market-spotlight-card--active"
-                    : "market-spotlight-card"
-                }
-                key={spotlight.key}
-                onClick={() => applySpotlight(spotlight)}
-                type="button"
-              >
-                <strong>{dictionary.spotlight[spotlight.key]}</strong>
-                <span>
-                  {spotlight.count} {dictionary.results}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="market-active-filters" aria-label={dictionary.activeFilters}>
-            <span>{hasActiveFilters ? dictionary.activeFilters : locale === "zh" ? "推荐排序" : "Recommended ranking"}</span>
-            <div>
-              {(hasActiveFilters
-                ? activeFilterPills
-                : [
-                    locale === "zh" ? "排序优先：已验证" : "Priority: verified",
-                    locale === "zh" ? "排序优先：低权限风险" : "Priority: low risk",
-                    locale === "zh" ? "排序优先：合约完整" : "Priority: complete contract",
-                  ]
-              ).map((pill) => (
-                <strong key={pill}>{pill}</strong>
-              ))}
-            </div>
-            {hasActiveFilters ? (
-              <button
-                className="filter-reset-button"
-                onClick={resetFilters}
-                type="button"
-              >
-                <RotateCcw size={14} aria-hidden="true" />
-                {dictionary.reset}
-              </button>
-            ) : null}
-          </div>
-
-          {filteredSkills.length > 0 ? (
-            <div className="market-card-grid">
-              {visibleSkills.map((skill) => {
-                const installState = getSkillInstallState(skill.verification.en);
-                const isSkillInstallable = installState.installable;
-                const isVerified = verificationKey(skill) === "verified";
-                const publisherSlug = publisherSlugFromName(skill.author);
-                const hasPublisherProfile = publicPublisherSlugs.has(publisherSlug);
-                const skillProfile = buildSkillProfile(skill, locale);
-                const adoptionPacket = buildAdoptionPacket(skill, locale);
-                const contractHref = localizedHref(`/skills/${skill.slug}#install`, locale);
-                const adoptHref = localizedHref(
-                  `/login?returnTo=${encodeURIComponent(localizedHref(`/skills/${skill.slug}#install`, locale))}`,
-                  locale,
-                );
-
-                return (
-                  <article
-                    className="market-skill-card lift-card"
-                    data-category={skill.categoryKey}
-                    data-contract-url={`/skills/${skill.slug}#install`}
-                    data-publisher={publisherSlug}
-                    data-risk={skill.risk}
-                    data-runtime={skill.runtime}
-                    data-skill-slug={skill.slug}
-                    data-verification={verificationKey(skill)}
-                    key={skill.slug}
+            <details className="market-filter-advanced">
+              <summary>
+                {locale === "zh" ? "高级：运行环境" : "Advanced: runtime"}
+              </summary>
+              <FilterGroup label={dictionary.runtime}>
+                {runtimeOptions.map((item) => (
+                  <button
+                    aria-pressed={runtime === item}
+                    className={
+                      runtime === item
+                        ? "filter-button filter-button--active"
+                        : "filter-button"
+                    }
+                    key={item}
+                    onClick={() => setRuntime(item)}
+                    type="button"
                   >
-                    <div
-                      className="market-skill-logo market-skill-card__icon"
-                      aria-hidden="true"
-                    >
-                      <span>
-                        {localizeText(skill.name, locale).slice(0, 1)}
-                      </span>
-                    </div>
-                    <div className="market-skill-card__body">
-                      <div className="market-skill-card__title">
-                        <h2>
-                          <a href={localizedHref(`/skills/${skill.slug}`, locale)}>
-                            {localizeText(skill.name, locale)}
-                          </a>
-                        </h2>
-                        <div className="market-skill-card__badges">
-                          <span className={`risk-badge risk-badge--${skill.risk}`}>
-                            {dictionary.risk[skill.risk]}
-                          </span>
-                          <span className="market-verify-badge">
-                            {localizeText(skill.verification, locale)}
-                          </span>
-                        </div>
-                      </div>
+                    {item === "all" ? dictionary.allRuntime : item}
+                  </button>
+                ))}
+              </FilterGroup>
+            </details>
+          </aside>
 
-                      <p>{localizeText(skill.summary, locale)}</p>
-
-                      <div className="market-decision-grid">
-                        {skillProfile.map((item) => (
-                          <span key={item.label}>
-                            <small>{item.label}</small>
-                            <strong>{item.value}</strong>
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="market-skill-card__meta">
-                        <span>{localizeText(skill.category, locale)}</span>
-                        <span>{dictionary.runtime}: {skill.runtime}</span>
-                        {hasPublisherProfile ? (
-                          <a
-                            href={localizedHref(
-                              `/publishers/${publisherSlug}`,
-                              locale,
-                            )}
-                          >
-                            {dictionary.publisher}: {skill.author}
-                          </a>
-                        ) : (
-                          <span>{dictionary.publisher}: {skill.author}</span>
-                        )}
-                        <span>
-                          <Star size={14} aria-hidden="true" />
-                          {formatFeedbackSignal(skill, dictionary.feedback, locale)}
-                        </span>
-                        {isVerified ? (
-                          <span>
-                            <BadgeCheck size={14} aria-hidden="true" />
-                            {formatMarketplaceMetric(skill.successRate, locale)} {dictionary.success}
-                          </span>
-                        ) : (
-                          <span>{dictionary.reviewOnlyMetric}</span>
-                        )}
-                      </div>
-
-                      <div
-                        className="market-skill-score"
-                        aria-label={dictionary.signals}
-                      >
-                        <span>
-                          <strong>
-                            {(skill.feedbackCount ?? 0) > 0
-                              ? skill.rating
-                              : "—"}
-                          </strong>
-                          <small>
-                            {(skill.feedbackCount ?? 0) > 0
-                              ? `${skill.feedbackCount} ${dictionary.feedback}`
-                              : dictionary.reviewOnlyMetric}
-                          </small>
-                        </span>
-                        <span>
-                          <strong>
-                            {isVerified
-                              ? formatMarketplaceMetric(skill.successRate, locale)
-                              : "—"}
-                          </strong>
-                          <small>{dictionary.success}</small>
-                        </span>
-                        <span>
-                          <strong>
-                            {formatMarketplaceMetric(skill.latency, locale)}
-                          </strong>
-                          <small>{dictionary.latency}</small>
-                        </span>
-                      </div>
-
-                      <div className="market-adoption-row">
-                        {adoptionPacket.map((item) => (
-                          <span key={item}>{item}</span>
-                        ))}
-                      </div>
-
-                      <div
-                        className="market-contract-preview"
-                        aria-label={`${dictionary.contract}: ${localizeText(skill.name, locale)}`}
-                      >
-                        <code>{skill.installsCommand.cli}</code>
-                        <button
-                          aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
-                          onClick={() => copyInstall(skill)}
-                          type="button"
-                        >
-                          <Copy size={15} aria-hidden="true" />
-                          {copiedSlug === skill.slug
-                            ? dictionary.copied
-                            : copyFailedSlug === skill.slug
-                              ? dictionary.copyFailed
-                              : dictionary.copy}
-                        </button>
-                      </div>
-                      {copyStatus?.slug === skill.slug ? (
-                        <div
-                          aria-live={
-                            copyStatus.kind === "error" ? "assertive" : "polite"
-                          }
-                          className={`market-copy-status market-copy-status--${copyStatus.kind}`}
-                          role={copyStatus.kind === "error" ? "alert" : "status"}
-                        >
-                          {copyStatus.kind === "error" ? (
-                            <AlertCircle size={14} aria-hidden="true" />
-                          ) : (
-                            <CheckCircle2 size={14} aria-hidden="true" />
-                          )}
-                          <span>{copyStatus.message}</span>
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="market-skill-card__actions">
-                      <a
-                        className={isSkillInstallable ? "market-primary-link" : "market-secondary-link"}
-                        href={isSkillInstallable ? adoptHref : localizedHref(`/skills/${skill.slug}`, locale)}
-                      >
-                        <PackageCheck size={15} aria-hidden="true" />
-                        <span>
-                          {isSkillInstallable
-                            ? dictionary.installReady
-                            : dictionary.installLockedLabel}
-                        </span>
-                      </a>
-                      <a className="market-secondary-link" href={contractHref}>
-                        <ShieldCheck size={15} aria-hidden="true" />
-                        <span>{dictionary.contract}</span>
-                      </a>
-                      <a
-                        className="market-tertiary-link"
-                        href={localizedHref(`/skills/${skill.slug}`, locale)}
-                      >
-                        <span>{dictionary.detail}</span>
-                        <ExternalLink size={14} aria-hidden="true" />
-                      </a>
-                      {!isSkillInstallable ? (
-                        <small>{installState.reason[locale]}</small>
-                      ) : null}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
-
-          {filteredSkills.length > 0 && hasMoreSkills ? (
-            <div className="market-load-more">
-              <p>
-                {dictionary.showing
-                  .replace("{visible}", String(visibleSkills.length))
-                  .replace("{total}", String(filteredSkills.length))}
-              </p>
+          <div className="market-results-panel" id="market-results">
+            <div className="market-mobile-filter-bar">
+              <span>
+                {hasActiveFilters
+                  ? activeFilterPills.slice(0, 2).join(" · ")
+                  : `${dictionary.catalog}: ${filteredSkills.length}`}
+              </span>
               <button
-                className="secondary-button secondary-button--compact"
-                onClick={() =>
-                  setVisibleCount((current) =>
-                    Math.min(current + LOAD_MORE_SKILLS, filteredSkills.length),
-                  )
-                }
+                aria-controls="market-filter-panel"
+                aria-expanded={isMobileFiltersOpen}
+                onClick={() => setIsMobileFiltersOpen(true)}
                 type="button"
               >
-                <span>{dictionary.showMore}</span>
+                {dictionary.filters}
               </button>
             </div>
-          ) : null}
 
-          {filteredSkills.length === 0 ? (
-            <div className="market-empty-state">
-              <Search size={26} aria-hidden="true" />
-              <h3>{isEmptyCatalog ? emptyCatalog.title : dictionary.emptyTitle}</h3>
-              <p>{isEmptyCatalog ? emptyCatalog.body : dictionary.emptyBody}</p>
-              {!isEmptyCatalog ? (
-                <div className="market-empty-state__actions">
-                  <a
-                    className="secondary-button secondary-button--compact"
-                    href={emptyRequestHref}
-                  >
-                    <MessageSquarePlus size={15} aria-hidden="true" />
-                    <span>{dictionary.emptyRequest}</span>
-                  </a>
-                </div>
-              ) : null}
-              {!isEmptyCatalog && emptySuggestions.length > 0 ? (
-                <div className="market-empty-suggestions">
-                  <strong>{dictionary.emptySuggestionTitle}</strong>
+            <div className="market-results-toolbar">
+              <div>
+                <h2>
+                  {category === "all"
+                    ? dictionary.allSkills
+                    : marketplaceCategories.find(
+                          (item) => item.key === category,
+                        )
+                      ? localizeText(
+                          marketplaceCategories.find(
+                            (item) => item.key === category,
+                          )!.label,
+                          locale,
+                        )
+                      : dictionary.categoryPicks}{" "}
+                  · {filteredSkills.length} {dictionary.results}
+                </h2>
+              </div>
+              <div className="market-toolbar-actions">
+                <div className="market-segmented-control">
+                  <span>{dictionary.sort}</span>
                   <div>
-                    {emptySuggestions.map((suggestion) => (
+                    {sortOptions.map((option) => (
                       <button
-                        className="filter-button"
-                        key={suggestion.key}
-                        onClick={() => {
-                          setCategory(suggestion.key);
-                          setPricing("all");
-                          setRisk("all");
-                          setRuntime("all");
-                          setVerification("all");
-                          setSort("recommended");
-                          setQuery("");
-                        }}
+                        aria-pressed={sort === option}
+                        className={
+                          sort === option
+                            ? "filter-button filter-button--active"
+                            : "filter-button"
+                        }
+                        key={option}
+                        onClick={() => setSort(option)}
                         type="button"
                       >
-                        {suggestion.label}
-                        <span>{suggestion.count}</span>
+                        {dictionary.sortOptions[option]}
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : null}
-              {!isEmptyCatalog && (
+              </div>
+            </div>
+
+            <div
+              className="market-active-filters"
+              aria-label={dictionary.activeFilters}
+            >
+              <span>
+                {hasActiveFilters
+                  ? dictionary.activeFilters
+                  : locale === "zh"
+                    ? "推荐排序"
+                    : "Recommended ranking"}
+              </span>
+              <div>
+                {(hasActiveFilters
+                  ? activeFilterPills
+                  : [
+                      locale === "zh"
+                        ? "排序优先：已验证"
+                        : "Priority: verified",
+                      locale === "zh"
+                        ? "排序优先：低权限风险"
+                        : "Priority: low risk",
+                      locale === "zh"
+                        ? "排序优先：合约完整"
+                        : "Priority: complete contract",
+                    ]
+                ).map((pill) => (
+                  <strong key={pill}>{pill}</strong>
+                ))}
+              </div>
+              {hasActiveFilters ? (
                 <button
-                  className="secondary-button secondary-button--compact"
+                  className="filter-reset-button"
                   onClick={resetFilters}
                   type="button"
                 >
-                  <RotateCcw size={15} aria-hidden="true" />
-                  <span>{dictionary.reset}</span>
+                  <RotateCcw size={14} aria-hidden="true" />
+                  {dictionary.reset}
                 </button>
-              )}
+              ) : null}
             </div>
-          ) : null}
 
-          <div className="market-publisher-callout">
-            <div>
-              <strong>
-                {locale === "zh"
-                  ? "发布者可以被企业和 Agent 工作流发现"
-                  : "Publishers can be discovered by teams and agent workflows"}
-              </strong>
-              <span>
-                {locale === "zh"
-                  ? "提交后进入 manifest 扫描、权限分级、样例运行和人工复核；通过后获得验证徽章、合约托管、安装分析和付费分发准备。"
-                  : "Submit for manifest scanning, permission classification, sample runs, and human review; verified listings get contract hosting, adoption analytics, and paid distribution readiness."}
-              </span>
-            </div>
-            <a className="market-secondary-link" href={localizedHref("/publish", locale)}>
-              {locale === "zh" ? "了解发布流程" : "Learn publishing"}
-            </a>
-          </div>
-        </div>
-      </div>
+            {filteredSkills.length > 0 ? (
+              <div className={`market-card-grid market-card-grid--${view}`}>
+                {visibleSkills.map((skill) => {
+                  const installState = getSkillInstallState(
+                    skill.verification.en,
+                  );
+                  const isSkillInstallable = installState.installable;
+                  const isVerified = verificationKey(skill) === "verified";
+                  const publisherSlug = publisherSlugFromName(skill.author);
+                  const hasPublisherProfile =
+                    publicPublisherSlugs.has(publisherSlug);
+                  const skillProfile = buildSkillProfile(skill, locale);
+                  const adoptionPacket = buildAdoptionPacket(skill, locale);
+                  const contractHref = localizedHref(
+                    `/skills/${skill.slug}#install`,
+                    locale,
+                  );
+                  const adoptHref = localizedHref(
+                    `/login?returnTo=${encodeURIComponent(localizedHref(`/skills/${skill.slug}#install`, locale))}`,
+                    locale,
+                  );
 
-      <section
-        className="market-quality-guide"
-        aria-label={dictionary.selectionGuide.title}
-      >
-        <div className="market-quality-guide__head">
-          <span>
-            <ShieldCheck size={15} aria-hidden="true" />
-            {dictionary.selectionGuide.kicker}
-          </span>
-          <div>
-            <h2>{dictionary.selectionGuide.title}</h2>
-            <p>{dictionary.selectionGuide.body}</p>
-          </div>
-        </div>
-        <div className="market-quality-grid">
-          {dictionary.selectionGuide.items.map((item, index) => {
-            const Icon = qualityGuideIcons[index] ?? BadgeCheck;
-
-            return (
-              <article className="market-quality-card" key={item.title}>
-                <span>
-                  <Icon size={16} aria-hidden="true" />
-                </span>
-                <strong>{item.title}</strong>
-                <p>{item.body}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <div
-        className="market-operating-guide"
-        aria-labelledby="market-operating-guide-heading"
-      >
-        <div className="market-operating-guide__head">
-          <span>
-            <Target size={15} aria-hidden="true" />
-            {dictionary.operatingGuide.kicker}
-          </span>
-          <div>
-            <h2 id="market-operating-guide-heading">
-              {dictionary.operatingGuide.title}
-            </h2>
-            <p>{dictionary.operatingGuide.body}</p>
-          </div>
-        </div>
-
-        <div className="market-operating-track-grid">
-          {operatingTracks.map((track) => {
-            const trackCopy = dictionary.operatingGuide.tracks[track.key];
-            const contactHref = localizedHref(
-              `/contact?intent=pro&track=${track.key}`,
-              locale,
-            );
-            const requestHref = localizedHref(
-              `/contact?intent=request-skill&track=${track.key}`,
-              locale,
-            );
-
-            return (
-              <article className="market-operating-track" key={track.key}>
-                <span className="market-operating-track__eyebrow">
-                  {trackCopy.eyebrow}
-                </span>
-                <h3>{trackCopy.title}</h3>
-                <p>{trackCopy.body}</p>
-                <ul>
-                  {trackCopy.outcomes.map((outcome) => (
-                    <li key={outcome}>{outcome}</li>
-                  ))}
-                </ul>
-                <div className="market-operating-track__plan">
-                  <span>{dictionary.operatingGuide.plan}</span>
-                  <strong>{trackCopy.plan}</strong>
-                </div>
-                {track.recommendedSkills.length > 0 ? (
-                  <div className="market-operating-track__skills">
-                    <span>{dictionary.operatingGuide.recommended}</span>
-                    <div>
-                      {track.recommendedSkills.map((skill) => (
-                        <a
-                          href={localizedHref(`/skills/${skill.slug}`, locale)}
-                          key={skill.slug}
+                  return (
+                    <article
+                      className="market-skill-card lift-card"
+                      data-category={skill.categoryKey}
+                      data-contract-url={`/skills/${skill.slug}#install`}
+                      data-publisher={publisherSlug}
+                      data-risk={skill.risk}
+                      data-runtime={skill.runtime}
+                      data-skill-slug={skill.slug}
+                      data-verification={verificationKey(skill)}
+                      key={skill.slug}
+                    >
+                      <div className="market-skill-card__container">
+                        <div
+                          className="market-skill-logo market-skill-card__icon"
+                          aria-hidden="true"
                         >
-                          {localizeText(skill.name, locale)}
+                          <span>
+                            {localizeText(skill.name, locale).slice(0, 1)}
+                          </span>
+                        </div>
+                        <div className="market-skill-card__body">
+                          <div className="market-skill-card__title">
+                            <h2>
+                              <a
+                                href={localizedHref(
+                                  `/skills/${skill.slug}`,
+                                  locale,
+                                )}
+                              >
+                                {localizeText(skill.name, locale)}
+                              </a>
+                            </h2>
+                            <div className="market-skill-card__badges">
+                              <span
+                                className={`risk-badge risk-badge--${skill.risk}`}
+                              >
+                                {dictionary.risk[skill.risk]}
+                              </span>
+                              <span className="market-verify-badge">
+                                {localizeText(skill.verification, locale)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <p>{localizeText(skill.summary, locale)}</p>
+
+                          <div className="market-decision-grid">
+                            {skillProfile.map((item) => (
+                              <span key={item.label}>
+                                <small>{item.label}</small>
+                                <strong>{item.value}</strong>
+                              </span>
+                            ))}
+                          </div>
+
+                          <div className="market-skill-card__meta">
+                            <span>{localizeText(skill.category, locale)}</span>
+                            <span>
+                              {dictionary.runtime}: {skill.runtime}
+                            </span>
+                            {hasPublisherProfile ? (
+                              <a
+                                href={localizedHref(
+                                  `/publishers/${publisherSlug}`,
+                                  locale,
+                                )}
+                              >
+                                {dictionary.publisher}: {skill.author}
+                              </a>
+                            ) : (
+                              <span>
+                                {dictionary.publisher}: {skill.author}
+                              </span>
+                            )}
+                            <span>
+                              <Star size={14} aria-hidden="true" />
+                              {formatFeedbackSignal(
+                                skill,
+                                dictionary.feedback,
+                                locale,
+                              )}
+                            </span>
+                            {isVerified ? (
+                              <span>
+                                <BadgeCheck size={14} aria-hidden="true" />
+                                {formatMarketplaceMetric(
+                                  skill.successRate,
+                                  locale,
+                                )}{" "}
+                                {dictionary.success}
+                              </span>
+                            ) : (
+                              <span>{dictionary.reviewOnlyMetric}</span>
+                            )}
+                          </div>
+
+                          <div
+                            className="market-skill-score"
+                            aria-label={dictionary.signals}
+                          >
+                            <span>
+                              <strong>
+                                {(skill.feedbackCount ?? 0) > 0
+                                  ? skill.rating
+                                  : "—"}
+                              </strong>
+                              <small>
+                                {(skill.feedbackCount ?? 0) > 0
+                                  ? `${skill.feedbackCount} ${dictionary.feedback}`
+                                  : dictionary.reviewOnlyMetric}
+                              </small>
+                            </span>
+                            <span>
+                              <strong>
+                                {isVerified
+                                  ? formatMarketplaceMetric(
+                                      skill.successRate,
+                                      locale,
+                                    )
+                                  : "—"}
+                              </strong>
+                              <small>{dictionary.success}</small>
+                            </span>
+                            <span>
+                              <strong>
+                                {formatMarketplaceMetric(skill.latency, locale)}
+                              </strong>
+                              <small>{dictionary.latency}</small>
+                            </span>
+                          </div>
+
+                          <div className="market-adoption-row">
+                            {adoptionPacket.map((item) => (
+                              <span key={item}>{item}</span>
+                            ))}
+                          </div>
+
+                          <div
+                            className="market-contract-preview"
+                            aria-label={`${dictionary.contract}: ${localizeText(skill.name, locale)}`}
+                          >
+                            <code>{skill.installsCommand.cli}</code>
+                            <button
+                              aria-label={`${dictionary.copy}: ${localizeText(skill.name, locale)}`}
+                              onClick={() => copyInstall(skill)}
+                              type="button"
+                            >
+                              <Copy size={15} aria-hidden="true" />
+                              {copiedSlug === skill.slug
+                                ? dictionary.copied
+                                : copyFailedSlug === skill.slug
+                                  ? dictionary.copyFailed
+                                  : dictionary.copy}
+                            </button>
+                          </div>
+                          {copyStatus?.slug === skill.slug ? (
+                            <div
+                              aria-live={
+                                copyStatus.kind === "error"
+                                  ? "assertive"
+                                  : "polite"
+                              }
+                              className={`market-copy-status market-copy-status--${copyStatus.kind}`}
+                              role={
+                                copyStatus.kind === "error" ? "alert" : "status"
+                              }
+                            >
+                              {copyStatus.kind === "error" ? (
+                                <AlertCircle size={14} aria-hidden="true" />
+                              ) : (
+                                <CheckCircle2 size={14} aria-hidden="true" />
+                              )}
+                              <span>{copyStatus.message}</span>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                      <div className="market-skill-card__actions">
+                        <a
+                          className={
+                            isSkillInstallable
+                              ? "market-primary-link"
+                              : "market-secondary-link"
+                          }
+                          href={
+                            isSkillInstallable
+                              ? adoptHref
+                              : localizedHref(`/skills/${skill.slug}`, locale)
+                          }
+                        >
+                          <PackageCheck size={15} aria-hidden="true" />
+                          <span>
+                            {isSkillInstallable
+                              ? dictionary.installReady
+                              : dictionary.installLockedLabel}
+                          </span>
                         </a>
+                        <a
+                          className="market-secondary-link"
+                          href={contractHref}
+                        >
+                          <ShieldCheck size={15} aria-hidden="true" />
+                          <span>{dictionary.contract}</span>
+                        </a>
+                        <a
+                          className="market-tertiary-link"
+                          href={localizedHref(`/skills/${skill.slug}`, locale)}
+                        >
+                          <span>{dictionary.detail}</span>
+                          <ExternalLink size={14} aria-hidden="true" />
+                        </a>
+                        {!isSkillInstallable ? (
+                          <small>{installState.reason[locale]}</small>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            {filteredSkills.length > 0 && hasMoreSkills ? (
+              <div className="market-load-more">
+                <p>
+                  {dictionary.showing
+                    .replace("{visible}", String(visibleSkills.length))
+                    .replace("{total}", String(filteredSkills.length))}
+                </p>
+                <button
+                  className="secondary-button secondary-button--compact"
+                  onClick={() =>
+                    setVisibleCount((current) =>
+                      Math.min(
+                        current + LOAD_MORE_SKILLS,
+                        filteredSkills.length,
+                      ),
+                    )
+                  }
+                  type="button"
+                >
+                  <span>{dictionary.showMore}</span>
+                </button>
+              </div>
+            ) : null}
+
+            {filteredSkills.length === 0 ? (
+              <div className="market-empty-state">
+                <Search size={26} aria-hidden="true" />
+                <h3>
+                  {isEmptyCatalog ? emptyCatalog.title : dictionary.emptyTitle}
+                </h3>
+                <p>
+                  {isEmptyCatalog ? emptyCatalog.body : dictionary.emptyBody}
+                </p>
+                {!isEmptyCatalog ? (
+                  <div className="market-empty-state__actions">
+                    <a
+                      className="secondary-button secondary-button--compact"
+                      href={emptyRequestHref}
+                    >
+                      <MessageSquarePlus size={15} aria-hidden="true" />
+                      <span>{dictionary.emptyRequest}</span>
+                    </a>
+                  </div>
+                ) : null}
+                {!isEmptyCatalog && emptySuggestions.length > 0 ? (
+                  <div className="market-empty-suggestions">
+                    <strong>{dictionary.emptySuggestionTitle}</strong>
+                    <div>
+                      {emptySuggestions.map((suggestion) => (
+                        <button
+                          className="filter-button"
+                          key={suggestion.key}
+                          onClick={() => {
+                            setCategory(suggestion.key);
+                            setPricing("all");
+                            setRisk("all");
+                            setRuntime("all");
+                            setVerification("all");
+                            setSort("recommended");
+                            setQuery("");
+                          }}
+                          type="button"
+                        >
+                          {suggestion.label}
+                          <span>{suggestion.count}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
                 ) : null}
-                <div className="market-operating-track__actions">
+                {!isEmptyCatalog && (
                   <button
                     className="secondary-button secondary-button--compact"
-                    onClick={() => applyLaunchTrack(track)}
+                    onClick={resetFilters}
                     type="button"
                   >
-                    <Target size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.filterCta}</span>
+                    <RotateCcw size={15} aria-hidden="true" />
+                    <span>{dictionary.reset}</span>
                   </button>
-                  <a className="market-track-link" href={contactHref}>
-                    <ArrowRight size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.demoCta}</span>
-                  </a>
-                  <a className="market-track-link" href={requestHref}>
-                    <MessageSquarePlus size={15} aria-hidden="true" />
-                    <span>{dictionary.operatingGuide.requestCta}</span>
-                  </a>
-                </div>
-              </article>
-            );
-          })}
+                )}
+              </div>
+            ) : null}
+
+            <div className="market-publisher-callout market-directory-publisher-callout">
+              <div>
+                <strong>
+                  {locale === "zh"
+                    ? "发布者可以被企业和 Agent 工作流发现"
+                    : "Publishers can be discovered by teams and agent workflows"}
+                </strong>
+                <span>
+                  {locale === "zh"
+                    ? "提交后进入 manifest 扫描、权限分级、样例运行和人工复核；通过后获得验证徽章、合约托管、安装分析和付费分发准备。"
+                    : "Submit for manifest scanning, permission classification, sample runs, and human review; verified listings get contract hosting, adoption analytics, and paid distribution readiness."}
+                </span>
+              </div>
+              <a
+                className="market-secondary-link"
+                href={localizedHref("/publish", locale)}
+              >
+                {locale === "zh" ? "了解发布流程" : "Learn publishing"}
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="market-browser market-browser--compact-guides">
+        <details className="market-workflow-section">
+          <summary className="market-workflow-section__head">
+            <span>
+              <Target size={15} aria-hidden="true" />
+              {dictionary.operatingGuide.kicker}
+            </span>
+            <strong>{dictionary.operatingGuide.title}</strong>
+          </summary>
+          <div className="market-workflow-grid">
+            {operatingTracks.map((track) => {
+              const trackCopy = dictionary.operatingGuide.tracks[track.key];
+              const isActive =
+                category === track.category && pricing === track.pricing;
+
+              return (
+                <button
+                  aria-pressed={isActive}
+                  className={
+                    isActive
+                      ? "market-workflow-card market-workflow-card--active"
+                      : "market-workflow-card"
+                  }
+                  key={track.key}
+                  onClick={() => applyLaunchTrack(track)}
+                  type="button"
+                >
+                  <span>{trackCopy.eyebrow}</span>
+                  <div className="market-workflow-card__body">
+                    <strong>{trackCopy.title}</strong>
+                    <small>{trackCopy.outcomes.join(" · ")}</small>
+                  </div>
+                  <small className="market-workflow-card__meta">
+                    {track.count} {dictionary.results}
+                  </small>
+                </button>
+              );
+            })}
+          </div>
+        </details>
+
+        <details
+          className="market-quality-guide"
+          aria-label={dictionary.selectionGuide.title}
+        >
+          <summary className="market-quality-guide__head">
+            <span>
+              <ShieldCheck size={15} aria-hidden="true" />
+              {dictionary.selectionGuide.kicker}
+            </span>
+            <strong>{dictionary.selectionGuide.title}</strong>
+          </summary>
+          <ul className="market-compact-guide-list">
+            {dictionary.selectionGuide.items.map((item) => (
+              <li key={item.title}>
+                <strong>{item.title}</strong>
+                <span>{item.body}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </section>
+    </>
   );
 }
 
@@ -1700,8 +1799,12 @@ function buildAdoptionPacket(skill: MarketplaceSkillCard, locale: Locale) {
 
   return [
     review,
-    locale === "zh" ? "合约：manifest / schema / runtime" : "Contract: manifest / schema / runtime",
-    locale === "zh" ? `运行环境：${skill.runtime}` : `Runtime: ${skill.runtime}`,
+    locale === "zh"
+      ? "合约：manifest / schema / runtime"
+      : "Contract: manifest / schema / runtime",
+    locale === "zh"
+      ? `运行环境：${skill.runtime}`
+      : `Runtime: ${skill.runtime}`,
     locale === "zh" ? `价格：${price}` : `Plan: ${price}`,
   ];
 }
@@ -1837,11 +1940,15 @@ function outputForCategory(categoryKey: CategoryKey, locale: Locale) {
 
 function permissionSummary(skill: MarketplaceSkillCard, locale: Locale) {
   if (skill.risk === "low") {
-    return locale === "zh" ? "低权限，不写入账号" : "Low risk, no account write";
+    return locale === "zh"
+      ? "低权限，不写入账号"
+      : "Low risk, no account write";
   }
 
   if (skill.risk === "medium") {
-    return locale === "zh" ? "需复核浏览器/文件权限" : "Review browser/file access";
+    return locale === "zh"
+      ? "需复核浏览器/文件权限"
+      : "Review browser/file access";
   }
 
   return locale === "zh" ? "高风险，需负责人批准" : "High risk, owner approval";
@@ -1851,11 +1958,18 @@ function normalizeInitialFilters(filters: MarketplaceInitialFilters = {}) {
   return {
     category: normalizeCategory(filters.category),
     pricing: normalizePricing(filters.pricing),
-    query: String(filters.query ?? "").trim().slice(0, 120),
+    query: String(filters.query ?? "")
+      .trim()
+      .slice(0, 120),
     risk: normalizeOption(filters.risk, riskOptions, "all"),
     runtime: normalizeRuntime(filters.runtime),
     sort: normalizeSort(filters.sort),
-    verification: normalizeOption(filters.verification, verificationOptions, "all"),
+    verification: normalizeOption(
+      filters.verification,
+      verificationOptions,
+      "all",
+    ),
+    view: normalizeView(filters.view),
   };
 }
 
@@ -1907,7 +2021,9 @@ function normalizeOption<T extends string>(
 }
 
 function normalizeRuntime(value: string | undefined): RuntimeKey {
-  const normalized = String(value ?? "").trim().toLowerCase();
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
 
   if (normalized === "http") {
     return "HTTP";
@@ -1925,11 +2041,19 @@ function normalizeRuntime(value: string | undefined): RuntimeKey {
 }
 
 function normalizeSort(value: string | undefined): SortKey {
-  if (value === "low_risk") {
+  if (value === "lowRisk" || value === "low-risk" || value === "low_risk") {
     return "lowRisk";
   }
 
   return normalizeOption(value, sortOptions, "recommended");
+}
+
+function normalizeView(value: string | undefined): ViewMode {
+  return normalizeOption(value, viewOptions, "compact");
+}
+
+function serializeSort(sort: SortKey) {
+  return sort === "lowRisk" ? "low_risk" : sort;
 }
 
 function FilterGroup({
@@ -2129,19 +2253,17 @@ function formatPublicPrice(skill: MarketplaceSkillCard, locale: Locale) {
 
   if (skill.billing === "per_call") {
     return locale === "zh"
-      ? `${localizeText(skill.price, locale)}，付费预览 / 按次`
-      : `${localizeText(skill.price, locale)}, paid preview / per call`;
+      ? `${localizeText(skill.price, locale)}，付费市场 / 按次`
+      : `${localizeText(skill.price, locale)}, paid marketplace / per call`;
   }
 
   if (skill.billing === "subscription") {
     return locale === "zh"
-      ? `${localizeText(skill.price, locale)}，付费预览 / 订阅`
-      : `${localizeText(skill.price, locale)}, paid preview / subscription`;
+      ? `${localizeText(skill.price, locale)}，付费市场 / 订阅`
+      : `${localizeText(skill.price, locale)}, paid marketplace / subscription`;
   }
 
-  return locale === "zh"
-    ? "Pro 全量计划内"
-    : "Included in Pro";
+  return locale === "zh" ? "Pro 全量计划内" : "Included in Pro";
 }
 
 function diversifyRecommendedSkills(
@@ -2191,7 +2313,9 @@ function diversifyRecommendedSkills(
   if (result.length < visibleCount) {
     const used = new Set(result.map((skill) => skill.slug));
     result.push(
-      ...skills.filter((skill) => !used.has(skill.slug)).slice(0, visibleCount - result.length),
+      ...skills
+        .filter((skill) => !used.has(skill.slug))
+        .slice(0, visibleCount - result.length),
     );
   }
 
@@ -2212,7 +2336,9 @@ function buildEmptySuggestions(
 
   return preferredCategories
     .map((categoryKey) => {
-      const category = marketplaceCategories.find((item) => item.key === categoryKey);
+      const category = marketplaceCategories.find(
+        (item) => item.key === categoryKey,
+      );
       return {
         count: counts.get(categoryKey) ?? 0,
         key: categoryKey,
@@ -2228,7 +2354,10 @@ function categoriesForQuery(query: string): CategoryKey[] {
     ["data", ["excel", "spreadsheet", "csv", "sheet", "表格", "飞书表格"]],
     ["ecommerce", ["shopify", "amazon", "listing", "sku", "商品", "电商"]],
     ["sales", ["salesforce", "hubspot", "crm", "lead", "销售", "客户"]],
-    ["ops", ["slack", "zendesk", "ticket", "support", "客服", "工单", "钉钉", "飞书"]],
+    [
+      "ops",
+      ["slack", "zendesk", "ticket", "support", "客服", "工单", "钉钉", "飞书"],
+    ],
     ["dev", ["github", "jira", "linear", "api", "webhook", "代码", "发布"]],
     ["seo", ["seo", "geo", "google", "semrush", "ahrefs", "搜索", "曝光"]],
     ["ui", ["figma", "ui", "ux", "design", "设计", "页面"]],
@@ -2252,14 +2381,32 @@ function searchAliasesForSkill(skill: MarketplaceSkillCard, locale: Locale) {
     automation: ["zapier", "make", "workflow", "流程自动化", "自动化"],
     content: ["blog", "copywriting", "copy", "内容", "文案"],
     data: ["excel", "spreadsheet", "csv", "sheet", "表格", "数据清洗"],
-    dev: ["github", "jira", "linear", "api", "webhook", "release", "代码", "发布"],
+    dev: [
+      "github",
+      "jira",
+      "linear",
+      "api",
+      "webhook",
+      "release",
+      "代码",
+      "发布",
+    ],
     ecommerce: ["shopify", "amazon", "listing", "sku", "商品", "电商"],
     education: ["course", "training", "课程", "培训"],
     finance: ["stripe", "invoice", "billing", "reconciliation", "账单", "财务"],
     hr: ["recruiting", "resume", "ats", "招聘", "简历"],
     legal: ["contract", "compliance", "policy", "合同", "合规"],
     marketing: ["ads", "campaign", "google ads", "meta ads", "广告", "投放"],
-    ops: ["slack", "zendesk", "ticket", "support", "飞书", "钉钉", "客服", "工单"],
+    ops: [
+      "slack",
+      "zendesk",
+      "ticket",
+      "support",
+      "飞书",
+      "钉钉",
+      "客服",
+      "工单",
+    ],
     research: ["browser", "reddit", "news", "citations", "研究", "调研"],
     sales: ["salesforce", "hubspot", "crm", "lead", "outbound", "销售", "线索"],
     security: ["security", "risk", "prompt injection", "安全", "风控"],

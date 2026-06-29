@@ -1,5 +1,4 @@
 import { getServerApiUrl } from "@/lib/api-url";
-import { demoFallback } from "@/lib/demo-fallback";
 
 export type SkillFeedbackRecord = {
   id: string;
@@ -38,57 +37,6 @@ export type SkillFeedbackPayload = {
 
 const apiUrl = getServerApiUrl();
 
-const fallbackFeedback = [
-  {
-    id: "demo-feedback-browser-research-1",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: null,
-    reviewerDisplayName: "Research Agent Ops",
-    reviewerOrganizationName: "SkillHub Demo Org",
-    projectSlug: "research-agent",
-    rating: 5,
-    title: "Reliable source gathering for daily briefings",
-    body: "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
-    useCase: "Daily market and policy research briefings",
-    status: "published",
-    moderationReason: "Public demo feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody:
-      "Thanks for the production note. We are keeping output-shape changes behind reviewed versions so pinned projects stay stable.",
-    publisherRespondedAt: "demo",
-    publisherResponderDisplayName: "SkillHub Labs",
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-  {
-    id: "demo-feedback-browser-research-2",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: null,
-    reviewerDisplayName: "Automation Lead",
-    reviewerOrganizationName: "Builder Studio",
-    projectSlug: "content-agent",
-    rating: 4,
-    title: "Good contract, needs richer citation metadata",
-    body: "Works well for first-pass research. We would like source timestamps and confidence fields before using it in compliance-heavy workflows.",
-    useCase: "Long-form content research",
-    status: "published",
-    moderationReason: "Public demo feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody:
-      "Richer citation metadata is planned for the next reviewed release. We will keep the current contract pinned for existing installs.",
-    publisherRespondedAt: "demo",
-    publisherResponderDisplayName: "SkillHub Labs",
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-] satisfies SkillFeedbackRecord[];
-
 export async function getSkillFeedback(
   skillSlug: string,
   limit = 12,
@@ -107,29 +55,13 @@ export async function getSkillFeedback(
 
     return (await response.json()) as SkillFeedbackPayload;
   } catch {
-    const feedback = demoFallback(
-      fallbackFeedback
-        .filter((row) => feedbackMatchesSkill(row.skillSlug, skillSlug))
-        .slice(0, limit),
-      [],
-    );
+    const feedback: SkillFeedbackRecord[] = [];
 
     return {
       feedback,
       summary: summarizeFeedback(feedback),
     };
   }
-}
-
-function feedbackMatchesSkill(
-  rowSkillSlug: string,
-  requestedSkillSlug: string,
-) {
-  return (
-    rowSkillSlug === requestedSkillSlug ||
-    (requestedSkillSlug === "browser-research-pro" &&
-      rowSkillSlug === "browser-research")
-  );
 }
 
 function summarizeFeedback(

@@ -18,6 +18,7 @@ import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublishers, type PublicPublisherProfile } from "@/lib/public-publishers";
 import { getPublicPlatformStats } from "@/lib/public-platform-stats";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -37,14 +38,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     zh: {
       title: "SkillHub 发布者目录 - 可信 AI 技能供应方",
       description:
-        "浏览公开发布者档案、已验证技能库存、运行证据、安装信号和付费市场预览准备状态。"
+        "浏览公开发布者档案、已验证技能库存、调用记录、安装信号和付费市场准备状态。"
     }
   });
 }
 
 const copy = {
   en: {
-    activePaid: "Paid preview inventory",
+    activePaid: "Paid marketplace inventory",
     back: "Back to marketplace",
     calls: "Runtime calls",
     directory: "Public publishers",
@@ -58,7 +59,7 @@ const copy = {
     metricPublishers: "Publishers",
     metricVerifiedPublishers: "Verified publishers",
     notAvailable: "n/a",
-    payout: "Paid marketplace preview",
+    payout: "Paid marketplace",
     profile: "View profile",
     publisherWorkspace: "Sign in for publisher workspace",
     publicSkills: "Public skills",
@@ -90,11 +91,11 @@ const copy = {
     metricPublishers: "发布者",
     metricVerifiedPublishers: "已验证发布者",
     notAvailable: "暂无",
-    payout: "付费市场预览",
+    payout: "付费市场",
     profile: "查看档案",
     publisherWorkspace: "登录后进入发布者工作台",
     publicSkills: "公开技能",
-    sideBody: "目录会在最终支付接口接入前先把供应方质量显性化。发布者信任主要基于资料状态、已验证技能数、公开上架、审核状态、运行证据、安装证据、支持路径和问题记录。",
+    sideBody: "目录会在最终支付接口接入前先把供应方质量显性化。发布者信任主要基于资料状态、已验证技能数、公开上架、审核状态、调用记录、安装证据、支持路径和问题记录。",
     sideTitle: "如何阅读目录",
     status: "资料状态",
     success: "平均成功率",
@@ -105,7 +106,7 @@ const copy = {
     trustLevels: { active: "公开资料", blocked: "已阻断发布者", limited: "受限发布者", verified: "已验证发布者" },
     publisherStatuses: { active: "活跃", pending: "待完善", restricted: "受限", suspended: "已暂停" },
     payoutStatuses: { blocked: "已阻断", not_configured: "未配置", verification_required: "需要验证", verified: "已验证" },
-    checks: ["已验证技能会获得更高排序权重。", "付费市场准备仍属于预发布能力。", "运行证据体现真实采用情况。", "技能详情页展示 API 查看命令、可用状态和权限。"],
+    checks: ["已验证技能会获得更高排序权重。", "付费市场准备仍属于预发布能力。", "调用记录体现真实采用情况。", "技能详情页展示 API 查看命令、可用状态和权限。"],
   },
 } as const;
 
@@ -117,7 +118,7 @@ const emptyDirectoryCopy = {
 export default async function PublisherDirectoryPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const apiUrl = getPublicApiUrl();
   const labels = copy[locale];
   const emptyLabels = emptyDirectoryCopy[locale];
   const publishers = await getPublicPublishers();
@@ -158,12 +159,12 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
             </div>
           </div>
           </Reveal>
-          <aside className="card w-full lg:w-[360px] flex-shrink-0">
-            <div className="flex items-center gap-2 text-sm text-[#999] mb-3">
+          <details className="card w-full lg:w-[360px] flex-shrink-0">
+            <summary className="flex items-center gap-2 text-sm text-[#999] cursor-pointer">
               <ShieldCheck size={16} aria-hidden="true" />
               <span className="font-medium text-white">{labels.sideTitle}</span>
-            </div>
-            <p className="body-text-sm text-[#999] mb-4">{labels.sideBody}</p>
+            </summary>
+            <p className="body-text-sm text-[#999] my-4">{labels.sideBody}</p>
             <div className="flex flex-col gap-2">
               {labels.checks.map((check) => (
                 <span key={check} className="flex items-start gap-2 text-sm text-[#999]">
@@ -172,7 +173,7 @@ export default async function PublisherDirectoryPage({ searchParams }: PageProps
                 </span>
               ))}
             </div>
-          </aside>
+          </details>
         </div>
       </section>
 

@@ -242,7 +242,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       eyebrow: "Trust / Data Handling",
       title: "Data Handling",
       lead:
-        "SkillHub is a registry, governance layer, and runtime gateway. This page explains the operational data needed to support those jobs.",
+        "SkillHub is a registry, trust layer, and runtime gateway. This page explains the operational data needed to support those jobs.",
       quickAnswer:
         "SkillHub stores manifests, review state, workspace metadata, install state, runtime logs, audit trails, and billing-preview records when needed. It should not expose OAuth secrets, Project Keys, private keys, or sensitive user data in public pages, manifests, admin lists, or support reports.",
       primaryCta: { href: "/security", label: "Review security model" },
@@ -251,14 +251,14 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "What SkillHub stores", body: "Account profiles, workspace membership, Skill manifests, publisher information, review decisions, install state, policy state, notification preferences, runtime logs, and audit records." },
         { title: "What SkillHub does not store publicly", body: "Public pages must not expose Project Keys, OAuth secrets, private keys, raw prompts, private customer data, or unsupported compliance claims." },
         { title: "Project Keys and secrets", body: "Project Keys are used for signed-in runtime calls and should be scoped, revocable, and hidden after first reveal. Secrets are never part of public manifests." },
-        { title: "Runtime logs and audit trails", body: "Invocation logs exist to support governance, debugging, rate limits, abuse response, and future billing reconciliation." },
+        { title: "Runtime logs and audit trails", body: "Invocation logs exist to support policy checks, debugging, rate limits, abuse response, and future billing reconciliation." },
         { title: "Launch Preview retention", body: "Preview records are retained only as needed for security, auditability, support, and marketplace readiness. Deletion requests route through support." },
       ],
     },
     zh: {
       eyebrow: "信任 / 数据处理",
       title: "数据处理",
-      lead: "SkillHub 是 Skill 注册中心、治理层和运行网关。这里说明平台为了完成这些工作需要处理哪些运营数据。",
+      lead: "SkillHub 是 Skill 注册中心、信任层和运行网关。这里说明平台为了完成这些工作需要处理哪些运营数据。",
       quickAnswer:
         "SkillHub 会在需要时存储 manifest、审核状态、工作台元数据、安装状态、运行日志、审计轨迹和付费预览记录。公开页面、manifest、管理列表或支持报告中不应暴露 OAuth secret、Project Key、私钥或敏感用户数据。",
       primaryCta: { href: "/security", label: "查看安全模型" },
@@ -267,7 +267,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "SkillHub 会存储什么", body: "账号资料、工作台成员关系、Skill manifest、发布者信息、审核决策、安装状态、策略状态、通知偏好、运行日志和审计记录。" },
         { title: "SkillHub 不会公开存储什么", body: "公开页面不能暴露 Project Key、OAuth secret、私钥、原始提示词、客户私有数据或未经确认的合规声明。" },
         { title: "Project Key 与密钥", body: "Project Key 用于登录后的运行调用，应具备作用域、可撤销，并在首次显示后隐藏。密钥不是公开 manifest 的一部分。" },
-        { title: "运行日志与审计轨迹", body: "调用日志用于治理、调试、限流、滥用响应和未来账务核对。" },
+        { title: "运行日志与审计轨迹", body: "调用日志用于排查问题、执行限流、响应滥用和支持未来账务核对。" },
         { title: "公开预览阶段的数据保留", body: "预览阶段记录仅在安全、审计、支持和市场准备所需期间保留。删除请求通过支持入口处理。" },
       ],
     },
@@ -294,11 +294,11 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       title: "Publisher Review",
       lead: "Publisher Review is an operating queue, not a badge factory. Each state tells publishers what is blocked, who acts next, and whether buyers can safely adopt the Skill.",
       quickAnswer:
-        "Publisher Review moves a Skill through draft, submitted, in review, needs changes, verified, restricted, rejected, or paid-preview states. Operators check manifest quality, schemas, permissions, runtime behavior, support paths, security signals, and pricing intent before a listing can be treated as production-ready.",
+        "Publisher Review moves a Skill through draft, submitted, in review, needs changes, verified, restricted, rejected, or paid-marketplace states. Operators check manifest quality, schemas, permissions, runtime behavior, support paths, security signals, and pricing intent before a listing can be treated as production-ready.",
       primaryCta: { href: "/publish", label: "Publish a Skill" },
       secondaryCta: { href: "/publisher#publisher-skills", label: "Open skill workspace" },
       sections: [
-        { title: "Submission gate", body: "A submission must include publisher identity, version, runtime, input/output schemas, permission notes, examples, support path, changelog, and pricing intent when the Skill is paid-preview." },
+        { title: "Submission gate", body: "A submission must include publisher identity, version, runtime, input/output schemas, permission notes, examples, support path, changelog, and pricing intent when the Skill is paid-marketplace." },
         { title: "Operator checks", body: "SkillHub reviews JSON structure, required manifest fields, semantic versioning, schema shape, permission scope, runtime declarations, sample responses, support ownership, and marketplace placement." },
         { title: "Runtime readiness", body: "Runtime URLs, health checks, sample inputs, response shape, failure modes, timeout behavior, and rate-limit behavior must match the manifest before a Skill is marked verified." },
         {
@@ -313,7 +313,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
             "Restricted or rejected: distribution is blocked until the reason is resolved or appealed.",
           ],
         },
-        { title: "Prelaunch paid boundaries", body: "Paid-preview listings may show price intent or active price records, but checkout, automated refunds, commissions, taxes, and payouts remain prelaunch until provider flows are explicitly enabled." },
+        { title: "Prelaunch paid boundaries", body: "Paid marketplace listings may show price intent or active price records, but checkout, automated refunds, commissions, taxes, and payouts remain prelaunch until provider flows are explicitly enabled." },
         {
           title: "Change control",
           body: "Publishers should submit a new version or revise draft metadata rather than mutating verified behavior in place.",
@@ -329,7 +329,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     zh: {
       eyebrow: "发布者信任",
       title: "发布审核",
-      lead: "发布审核是运营队列，不只是发放徽章。每个状态都应说明卡点、下一步负责人，以及购买方是否可以安全采用该 Skill。",
+      lead: "发布审核是待处理事项，不只是发放徽章。每个状态都应说明卡点、下一步负责人，以及购买方是否可以安全采用该 Skill。",
       quickAnswer:
         "发布审核会让 Skill 经过草稿、已提交、审核中、需修改、已验证、受限、已拒绝或付费预览等状态。运营人员会检查 manifest 质量、schema、权限、运行行为、支持路径、安全信号和定价意图，再判断 listing 是否可被视为生产就绪。",
       primaryCta: { href: "/publish", label: "发布技能" },
@@ -340,7 +340,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "运行就绪", body: "运行 URL、健康检查、样例输入、响应结构、失败模式、超时行为和限流行为必须与 manifest 一致，之后才能标记为已验证。" },
         {
           title: "审核状态与下一步",
-          body: "审核状态应写成运营交接，让发布者和购买方都能判断下一步发生什么。",
+          body: "审核状态应写成下一步说明，让发布者和购买方都能判断下一步发生什么。",
           bullets: [
             "草稿：发布者补齐 manifest、示例、支持路径和权限说明。",
             "已提交：SkillHub 排队执行自动校验和运营审核。",
@@ -378,7 +378,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       zh: {
         title: "什么是 AI Agent Skill？- SkillHub 解释",
         description:
-          "了解 AI Agent Skill、manifest、权限、运行协议、Project Key，以及 SkillHub 如何治理可复用 Agent 能力。",
+          "了解 AI Agent Skill、manifest、权限、运行协议、Project Key，以及 SkillHub 如何管理可复用 Agent 能力。",
       },
     },
     en: {
@@ -392,7 +392,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       secondaryCta: { href: "/docs", label: "View Docs" },
       sections: [
         { title: "What a Skill contains", body: "A Skill contains a manifest, version, runtime entrypoint, input schema, output schema, permission declaration, publisher metadata, examples, review state, and support path." },
-        { title: "Skill vs prompt", body: "A prompt is text guidance. A Skill is a callable, versioned capability with a runtime boundary and governance metadata." },
+        { title: "Skill vs prompt", body: "A prompt is text guidance. A Skill is a callable, versioned capability with a runtime boundary and permission and logging metadata." },
         { title: "Skill vs plugin or tool", body: "Plugins often depend on one host. SkillHub Skills are designed to be inspected and adopted across Agent runtimes through REST or MCP boundaries." },
         { title: "Skill vs MCP server", body: "An MCP server exposes tools. A SkillHub Skill records the contract, review, publisher, permissions, and adoption state that can map to REST, MCP, or future runtimes." },
         { title: "How Agents call Skills", body: "Agents discover a Skill, inspect manifest and permissions, adopt it into a signed-in project, create a Project Key, and invoke through controlled REST or MCP." },
@@ -412,8 +412,8 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       secondaryCta: { href: "/docs", label: "查看文档" },
       sections: [
         { title: "Skill 包含什么", body: "Skill 包含 manifest、版本、运行入口、输入 schema、输出 schema、权限声明、发布者元数据、示例、审核状态和支持路径。" },
-        { title: "Skill 与 prompt 的区别", body: "Prompt 是文本指导。Skill 是可调用、带版本、带运行边界和治理元数据的能力。" },
-        { title: "Skill 与 plugin/tool 的区别", body: "插件通常依赖单一宿主。SkillHub Skill 设计为可被不同 Agent 运行时通过 REST 或 MCP 边界检查和采用。" },
+        { title: "Skill 与 prompt 的区别", body: "Prompt 是文本指导。Skill 是可调用、带版本、带运行边界和权限与记录信息的能力。" },
+        { title: "Skill 与 plugin/tool 的区别", body: "插件通常依赖单一平台。SkillHub Skill 设计为可被不同 Agent 运行时通过 REST 或 MCP 边界检查和采用。" },
         { title: "Skill 与 MCP server 的区别", body: "MCP server 暴露工具。SkillHub Skill 记录合约、审核、发布者、权限和采用状态，可映射到 REST、MCP 或未来运行时。" },
         { title: "Agent 如何调用 Skill", body: "Agent 先发现 Skill，检查 manifest 和权限，将其加入登录后的项目，创建 Project Key，再通过受控 REST 或 MCP 调用。" },
       ],
@@ -452,7 +452,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         { title: "Free today", body: "Browse public Skills, inspect manifests, read docs, review security/data handling pages, and evaluate publisher information without entering a payment flow." },
         { title: "Requires a workspace", body: "Saving Skills, creating projects, setting policies, and managing Project Keys require sign-in." },
         { title: "Requires a Project Key", body: "Runtime invocation through REST or MCP requires a signed-in project and scoped Project Key." },
-        { title: "Paid-preview listings", body: "A paid-preview Skill can show per-call or subscription pricing for evaluation, but that display is not a production charge by itself." },
+        { title: "Paid marketplace listings", body: "A paid-marketplace Skill can show per-call or subscription pricing for evaluation, but that display is not a production charge by itself." },
         { title: "Prelaunch payment boundary", body: "Checkout, subscriptions, refunds, disputes, commissions, taxes, and payouts are modeled as prelaunch operating flows until provider integrations are enabled for the listing." },
         { title: "No surprise billing", body: "Preview pages should not imply production billing unless the underlying provider flow is live, configured, and named in the buyer path." },
       ],
@@ -497,7 +497,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       title: "SkillHub API",
       lead: "The API is the programmatic path from public Skill discovery to signed-in runtime invocation.",
       quickAnswer:
-        "SkillHub API exposes public registry and manifest inspection endpoints, while runtime invocation requires project authentication through Project Keys. Governance checks, logs, policies, rate limits, and preview billing state attach to runtime activity.",
+        "SkillHub API exposes public registry and manifest inspection endpoints, while runtime invocation requires project authentication through Project Keys. Permission checks, logs, policies, rate limits, and preview billing state attach to runtime activity.",
       primaryCta: { href: "/docs", label: "Read full docs" },
       secondaryCta: { href: "/mcp", label: "Compare MCP" },
       sections: [
@@ -541,7 +541,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       title: "SkillHub API",
       lead: "API 是从公开 Skill 发现到登录后运行调用的程序化路径。",
       quickAnswer:
-        "SkillHub API 暴露公开注册中心和 manifest 检查端点；运行调用需要通过 Project Key 完成项目认证。治理检查、日志、策略、限流和预览账务状态会绑定到运行活动。",
+        "SkillHub API 暴露公开注册中心和 manifest 检查端点；运行调用需要通过 Project Key 完成项目认证。权限检查、日志、策略、限流和预览账务状态会绑定到运行活动。",
       primaryCta: { href: "/docs", label: "阅读完整文档" },
       secondaryCta: { href: "/mcp", label: "对比 MCP" },
       sections: [
@@ -593,7 +593,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
           "Learn what SkillHub exposes over MCP: metadata discovery, runtime invocation boundaries, permission checks, example configuration, and REST vs MCP tradeoffs.",
       },
       zh: {
-        title: "SkillHub MCP - 通过 MCP 暴露受治理的 AI Agent Skills",
+        title: "SkillHub MCP - 通过 MCP 暴露受控 AI Agent Skills",
         description:
           "了解 SkillHub 通过 MCP 暴露什么：元数据发现、运行调用边界、权限检查、配置示例，以及 REST 与 MCP 的区别。",
       },
@@ -601,7 +601,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     en: {
       eyebrow: "Agent integrations",
       title: "SkillHub MCP",
-      lead: "MCP gives Agent clients a tool discovery and invocation shape; SkillHub adds registry, review, Project Key, and governance context.",
+      lead: "MCP gives Agent clients a tool discovery and invocation shape; SkillHub adds registry, review, Project Key, and project policy context.",
       quickAnswer:
         "SkillHub MCP can expose project-approved Skills as MCP tools while preserving manifest metadata, permission checks, Project Key boundaries, runtime logs, and preview limitations. REST remains better for direct server-to-server invocation; MCP is better for Agent workbenches and tool discovery.",
       primaryCta: { href: "/docs", label: "Read MCP docs" },
@@ -609,7 +609,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       sections: [
         { title: "What SkillHub exposes over MCP", body: "Approved Skills can appear as MCP tools with names, descriptions, schemas, permissions, and runtime status." },
         { title: "Metadata discovery", body: "Agents can inspect tool metadata before selecting a Skill, reducing blind prompt-only execution." },
-        { title: "Runtime invocation boundary", body: "MCP invocation still resolves through project policy, approval state, rate limits, and runtime governance." },
+        { title: "Runtime invocation boundary", body: "MCP invocation still resolves through project policy, approval state, rate limits, and call permissions and logs." },
         { title: "Permission and policy checks", body: "High-risk permissions, billing preview gates, and restricted states must remain visible before invocation." },
         { title: "REST vs MCP", body: "REST is direct and simple for backends. MCP is stronger when an Agent client needs dynamic tool discovery and structured tool calls." },
         {
@@ -631,7 +631,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
           ],
         },
         {
-          title: "Runtime evidence",
+          title: "Call logs",
           body: "MCP calls should remain auditable. Operators need to see which Agent called which Skill, which policy allowed it, and what result or failure was returned.",
           bullets: [
             "Track tool name, project, caller, timestamp, policy decision, and invocation id.",
@@ -644,7 +644,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     zh: {
       eyebrow: "Agent 集成",
       title: "SkillHub MCP",
-      lead: "MCP 给 Agent 客户端提供工具发现和调用形态；SkillHub 增加注册中心、审核、Project Key 和治理上下文。",
+      lead: "MCP 给 Agent 客户端提供工具发现和调用形态；SkillHub 增加注册中心、审核、Project Key 和项目策略上下文。",
       quickAnswer:
         "SkillHub MCP 可以把项目已批准的 Skills 暴露为 MCP tools，同时保留 manifest 元数据、权限检查、Project Key 边界、运行日志和预览限制。REST 更适合服务端直接调用；MCP 更适合 Agent 工作台和工具发现。",
       primaryCta: { href: "/docs", label: "阅读 MCP 文档" },
@@ -652,7 +652,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       sections: [
         { title: "SkillHub 通过 MCP 暴露什么", body: "已批准的 Skills 可以作为 MCP tools 展示，包含名称、描述、schema、权限和运行状态。" },
         { title: "元数据发现", body: "Agent 可以在选择 Skill 前检查工具元数据，减少盲目的 prompt-only 执行。" },
-        { title: "运行调用边界", body: "MCP 调用仍然通过项目策略、批准状态、限流和运行治理解析。" },
+        { title: "运行调用边界", body: "MCP 调用仍然通过项目策略、批准状态、限流和调用权限与记录解析。" },
         { title: "权限与策略检查", body: "高风险权限、账务预览门禁和受限状态在调用前必须可见。" },
         { title: "REST 与 MCP 的区别", body: "REST 对后端直接调用更简单。MCP 更适合 Agent 客户端需要动态工具发现和结构化工具调用的场景。" },
         {
@@ -674,7 +674,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
           ],
         },
         {
-          title: "运行证据",
+          title: "调用记录",
           body: "MCP 调用也要可审计。运营人员需要知道哪个 Agent 调用了哪个 Skill、哪条策略允许调用，以及返回了什么结果或失败。",
           bullets: [
             "记录工具名、项目、调用方、时间、策略决策和 invocation id。",
@@ -738,12 +738,12 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     schema: "WebPage",
     seo: {
       en: {
-        title: "About SkillHub - Registry and Runtime Governance for AI Agent Skills",
+        title: "About SkillHub - Registry and Call Permissions for AI Agent Skills",
         description:
           "Learn what SkillHub is, why it exists, who it serves, and what is available during Launch Preview.",
       },
       zh: {
-        title: "关于 SkillHub - AI Agent Skill 注册中心与运行治理层",
+        title: "关于 SkillHub - AI Agent Skill 注册中心与调用权限与记录",
         description:
           "了解 SkillHub 是什么、为什么存在、服务谁，以及公开预览阶段已经开放哪些能力。",
       },
@@ -754,11 +754,11 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       lead:
         "SkillHub exists to make reusable AI Agent Skills inspectable, governable, and safer to adopt across teams and runtimes.",
       quickAnswer:
-        "SkillHub is a registry, governance layer, and runtime gateway for reusable AI Agent Skills. It helps developers and teams discover Skills, inspect manifests and permissions, evaluate publisher trust, and run approved Skills through controlled REST or MCP interfaces with Project Keys and audit logs.",
+        "SkillHub is a registry, trust layer, and runtime gateway for reusable AI Agent Skills. It helps developers and teams discover Skills, inspect manifests and permissions, evaluate publisher trust, and run approved Skills through controlled REST or MCP interfaces with Project Keys and audit logs.",
       primaryCta: { href: "/marketplace", label: "Browse Skills" },
       secondaryCta: { href: "/contact", label: "Contact the team" },
       sections: [
-        { title: "What SkillHub is", body: "A public Skill registry, trust review layer, and runtime governance surface for reusable Agent capabilities." },
+        { title: "What SkillHub is", body: "A public Skill registry, trust review layer, and surface for permissions, logs, and limits for reusable Agent capabilities." },
         { title: "Why it exists", body: "Agent teams need more than prompts and tool lists. They need inspectable contracts, permission boundaries, version pins, review state, logs, and operational controls." },
         { title: "Who it serves", body: "Developers, Agent builders, publishers, operators, and teams evaluating governed AI capability adoption." },
         { title: "Current Launch Preview status", body: "Discovery, inspection, docs, review paths, and workspace gates are visible. Paid marketplace provider flows remain preview/prelaunch unless explicitly configured." },
@@ -773,7 +773,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         },
         {
           title: "What publishers can do first",
-          body: "A third-party author can prepare a Skill manifest, examples, permission notes, support path, and paid-readiness metadata before submitting for review.",
+          body: "A third-party author can prepare a Skill manifest, examples, permission notes, support path, and paid-readiness information before submitting for review.",
           bullets: [
             { href: "/publish", label: "Read the publishing guide" },
             { href: "/publisher-review", label: "Understand review states" },
@@ -782,7 +782,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         },
         {
           title: "What operators control",
-          body: "Operators need clear review queues, abuse handling, incident notes, notification templates, billing-preview records, and launch-readiness evidence so the marketplace can be run responsibly.",
+          body: "Operators need clear review queues, abuse handling, incident notes, notification templates, billing-preview records, and launch-readiness check results so the marketplace can be run responsibly.",
         },
         {
           title: "What SkillHub is not",
@@ -802,15 +802,15 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
     zh: {
       eyebrow: "关于",
       title: "关于 SkillHub",
-      lead: "SkillHub 的目标是让可复用 AI Agent Skills 更可检查、更可治理、更适合团队采用。",
+      lead: "SkillHub 的目标是让可复用 AI Agent Skills 更可检查、更权限清楚、更适合团队采用。",
       quickAnswer:
-        "SkillHub 是面向可复用 AI Agent Skills 的注册中心、治理层与运行网关。它帮助开发者和团队发现 Skill，检查 manifest 与权限，评估发布者可信度，并通过 Project Key、REST 或 MCP 安全调用已批准的 Skill，同时保留日志和治理控制。",
+        "SkillHub 是面向可复用 AI Agent Skills 的注册中心、信任层与运行网关。它帮助开发者和团队发现 Skill，检查 manifest 与权限，评估发布者可信度，并通过 Project Key、REST 或 MCP 安全调用已批准的 Skill，同时保留日志和权限与记录控制。",
       primaryCta: { href: "/marketplace", label: "浏览 Skills" },
       secondaryCta: { href: "/contact", label: "联系团队" },
       sections: [
-        { title: "SkillHub 是什么", body: "一个公开 Skill 注册中心、信任审核层和运行治理界面，用于可复用 Agent 能力。" },
+        { title: "SkillHub 是什么", body: "一个公开 Skill 注册中心、信任审核层和调用权限与记录界面，用于可复用 Agent 能力。" },
         { title: "为什么需要它", body: "Agent 团队需要的不只是提示词和工具列表，还需要可检查合约、权限边界、版本固定、审核状态、日志和运营控制。" },
-        { title: "服务谁", body: "开发者、Agent 构建者、发布者、运营人员，以及评估受治理 AI 能力采用的团队。" },
+        { title: "服务谁", body: "开发者、Agent 构建者、发布者、运营人员，以及评估受控 AI 能力采用的团队。" },
         { title: "当前公开预览状态", body: "发现、检查、文档、审核路径和工作台门禁已可见。付费市场渠道流程在明确配置前仍是预览/预发布。" },
         {
           title: "购买方可以先做什么",
@@ -832,7 +832,7 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
         },
         {
           title: "运营人员要控制什么",
-          body: "运营人员需要清晰的审核队列、滥用处理、事故备注、通知模板、账务预览记录和上线准备证据，才能负责任地运营技能市场。",
+          body: "运营人员需要清晰的审核队列、滥用处理、事故备注、通知模板、账务预览记录和上线准备检查结果，才能负责任地运营技能市场。",
         },
         {
           title: "SkillHub 不是什么",
@@ -872,12 +872,12 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       title: "Roadmap",
       lead: "This roadmap clarifies maturity without promising dates that have not been confirmed.",
       quickAnswer:
-        "Available now: public discovery, manifest inspection, docs, review surfaces, login/workspace paths, and admin operation models. In preview: runtime governance, Project Key testing, billing ledger, publisher payout workflow, and marketplace trust loops. Not yet generally available: production payment capture, automated payouts, public SDK/CLI release, and final compliance certifications.",
+        "Available now: public discovery, manifest inspection, docs, review surfaces, login/workspace paths, and admin operation models. In preview: call permissions and logs, Project Key testing, billing ledger, publisher payout workflow, and marketplace trust loops. Not yet generally available: production payment capture, automated payouts, public SDK/CLI release, and final compliance certifications.",
       primaryCta: { href: "/status", label: "Check status" },
       secondaryCta: { href: "/contact", label: "Discuss evaluation" },
       sections: [
         { title: "Available now", body: "Public site, marketplace browsing, registry inspection, Skill details, docs, security, data handling, support, and role-aware workspaces." },
-        { title: "In preview", body: "Runtime invocation governance, Project Keys, billing ledger modeling, review queues, admin operations, publisher payout workflow, and paid marketplace readiness." },
+        { title: "In preview", body: "Call permission checks, Project Keys, billing ledger modeling, review queues, admin operations, publisher payout workflow, and paid marketplace readiness." },
         { title: "Planned next", body: "Provider-connected checkout, payout automation, stronger analytics, richer publisher trust profiles, and public package release paths." },
         { title: "Not yet available", body: "No general payment capture, automated payouts, tax/KYC automation, SOC 2/ISO claims, or public SDK/CLI production release unless explicitly announced." },
       ],
@@ -887,12 +887,12 @@ export const publicPages: Record<PublicPageKey, PublicPageDefinition> = {
       title: "路线图",
       lead: "这份路线图说明成熟度，不承诺尚未确认的具体日期。",
       quickAnswer:
-        "当前已开放：公开发现、manifest 检查、文档、审核界面、登录/工作台路径和管理员运营模型。预览中：运行治理、Project Key 测试、账本、发布者提现流程和市场信任闭环。尚未通用开放：生产支付扣款、自动提现、公开 SDK/CLI release 和最终合规认证。",
+        "当前已开放：公开发现、manifest 检查、文档、审核界面、登录/工作台路径和管理员运营模型。预览中：调用权限与记录、Project Key 测试、账本、发布者提现流程和市场信任闭环。尚未通用开放：生产支付扣款、自动提现、公开 SDK/CLI release 和最终合规认证。",
       primaryCta: { href: "/status", label: "查看状态" },
       secondaryCta: { href: "/contact", label: "讨论评估" },
       sections: [
         { title: "已开放", body: "公开站点、市场浏览、注册中心检查、Skill 详情、文档、安全、数据处理、支持和角色感知工作台。" },
-        { title: "预览中", body: "运行调用治理、Project Key、账本建模、审核队列、管理员运营、发布者提现工作流和付费市场准备。" },
+        { title: "预览中", body: "call permission checks、Project Key、账本建模、审核队列、管理员运营、发布者提现工作流和付费市场准备。" },
         { title: "下一步计划", body: "支付渠道收银、提现自动化、更强 analytics、更丰富发布者信任资料，以及公开 package release 路径。" },
         { title: "尚未开放", body: "除非明确公告，否则不提供通用支付扣款、自动提现、税务/KYC 自动化、SOC 2/ISO 声明或公开 SDK/CLI 生产 release。" },
       ],
@@ -905,7 +905,7 @@ export const indexablePublicPaths = [
   "/",
   "/marketplace",
   "/registry",
-  "/agents",
+  "/prompts",
   "/docs",
   "/publish",
   "/publisher-review",

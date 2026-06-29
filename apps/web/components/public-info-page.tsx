@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import type { PublicPageDefinition } from "@/lib/public-pages";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { siteName, localizedUrl } from "@/lib/seo";
+import styles from "./public-info-page.module.css";
 
 type Props = {
   locale: Locale;
@@ -20,12 +21,16 @@ export function PublicInfoPage({ locale, page }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className={`public-info-page ${isLegal ? "public-info-page--legal" : ""}`}>
+      <div
+        className={`public-info-page ${styles.pageStyles} ${isLegal ? "public-info-page--legal" : ""}`}
+      >
         <section className="public-info-hero">
           <div className="public-info-hero__copy">
             <p className="eyebrow">{copy.eyebrow}</p>
             <h1>{copy.title}</h1>
-            {copy.updated ? <span className="public-info-updated">{copy.updated}</span> : null}
+            {copy.updated ? (
+              <span className="public-info-updated">{copy.updated}</span>
+            ) : null}
             <p>{copy.lead}</p>
             <div className="public-info-actions">
               {copy.primaryCta ? (
@@ -60,8 +65,14 @@ export function PublicInfoPage({ locale, page }: Props) {
         </section>
 
         {isLegal ? (
-          <section className="public-info-legal" aria-label={locale === "zh" ? "政策正文" : "Policy content"}>
-            <aside className="public-info-toc" aria-label={locale === "zh" ? "本页目录" : "On this page"}>
+          <section
+            className="public-info-legal"
+            aria-label={locale === "zh" ? "政策正文" : "Policy content"}
+          >
+            <aside
+              className="public-info-toc"
+              aria-label={locale === "zh" ? "本页目录" : "On this page"}
+            >
               <strong>{locale === "zh" ? "本页内容" : "On this page"}</strong>
               {copy.sections.map((section, index) => (
                 <a href={`#section-${index + 1}`} key={section.title}>
@@ -88,11 +99,18 @@ export function PublicInfoPage({ locale, page }: Props) {
             </article>
           </section>
         ) : (
-          <section className="public-info-grid" aria-label={locale === "zh" ? "页面内容" : "Page content"}>
+          <section
+            className="public-info-grid"
+            aria-label={locale === "zh" ? "页面内容" : "Page content"}
+          >
             {copy.sections.map((section, index) => (
               <article className="public-info-card" key={section.title}>
                 <div className="public-info-card__icon" aria-hidden="true">
-                  {index % 3 === 0 ? <Info size={18} /> : <CheckCircle2 size={18} />}
+                  {index % 3 === 0 ? (
+                    <Info size={18} />
+                  ) : (
+                    <CheckCircle2 size={18} />
+                  )}
                 </div>
                 <h2>{section.title}</h2>
                 <p>{section.body}</p>
@@ -111,10 +129,15 @@ export function PublicInfoPage({ locale, page }: Props) {
         )}
 
         {copy.faq ? (
-          <section className="public-info-faq" aria-labelledby="public-info-faq-title">
+          <section
+            className="public-info-faq"
+            aria-labelledby="public-info-faq-title"
+          >
             <div>
               <p className="eyebrow">FAQ</p>
-              <h2 id="public-info-faq-title">{locale === "zh" ? "常见问题" : "Common questions"}</h2>
+              <h2 id="public-info-faq-title">
+                {locale === "zh" ? "常见问题" : "Common questions"}
+              </h2>
             </div>
             <div className="public-info-faq__items">
               {copy.faq.map((item) => (

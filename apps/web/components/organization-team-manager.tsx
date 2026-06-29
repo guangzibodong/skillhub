@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, KeyRound, Save, Trash2, UserPlus, UsersRound, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
@@ -120,26 +121,20 @@ export function OrganizationTeamManager({ locale, members }: OrganizationTeamMan
       <form action={addAction} className="organization-team-form">
         <label>
           <span>{labels.email}</span>
-          <input name="email" placeholder="operator@company.com" type="email" />
+          <SkillInput name="email" placeholder="operator@company.com" type="email" />
         </label>
         <label>
           <span>{labels.displayName}</span>
-          <input name="displayName" placeholder="Agent Operator" />
+          <SkillInput name="displayName" placeholder="Agent Operator" />
         </label>
         <label>
           <span>{labels.role}</span>
-          <select defaultValue="developer" name="role">
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {labels.roles[role]}
-              </option>
-            ))}
-          </select>
+          <SkillSelect defaultValue="developer" name="role" options={roleOptions(labels)} />
         </label>
-        <button className="secondary-button secondary-button--compact" disabled={isAdding} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isAdding} htmlType="submit">
           <UserPlus size={15} aria-hidden="true" />
           <span>{isAdding ? labels.saving : labels.addMember}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {addState.status !== "idle" ? <ActionMessage state={addState} /> : null}
@@ -158,7 +153,7 @@ export function OrganizationTeamManager({ locale, members }: OrganizationTeamMan
                     <strong>{member.displayName ?? member.email}</strong>
                     <span>{member.email}</span>
                   </div>
-                  <span className={roleClass(member.role)}>{labels.roles[member.role]}</span>
+                  <SkillStatusTag className={roleClass(member.role)}>{labels.roles[member.role]}</SkillStatusTag>
                 </header>
 
                 <div className="organization-team-meta">
@@ -186,30 +181,24 @@ export function OrganizationTeamManager({ locale, members }: OrganizationTeamMan
                     <input name="displayName" type="hidden" value={member.displayName ?? ""} />
                     <label>
                       <span>{labels.role}</span>
-                      <select defaultValue={member.role} name="role">
-                        {roles.map((role) => (
-                          <option key={role} value={role}>
-                            {labels.roles[role]}
-                          </option>
-                        ))}
-                      </select>
+                      <SkillSelect defaultValue={member.role} name="role" options={roleOptions(labels)} />
                     </label>
-                    <button className="secondary-button secondary-button--compact" disabled={isSaving} type="submit">
+                    <SkillButton className="secondary-button secondary-button--compact" disabled={isSaving} htmlType="submit">
                       <Save size={15} aria-hidden="true" />
                       <span>{isSaving && memberSaveState ? labels.saving : labels.save}</span>
-                    </button>
+                    </SkillButton>
                   </form>
 
                   <form action={tokenAction} className="organization-team-token-form">
                     <input name="userId" type="hidden" value={member.userId} />
                     <label>
                       <span>{labels.tokenName}</span>
-                      <input name="tokenName" placeholder={labels.tokenPlaceholder} />
+                      <SkillInput name="tokenName" placeholder={labels.tokenPlaceholder} />
                     </label>
-                    <button className="secondary-button secondary-button--compact" disabled={isCreatingToken} type="submit">
+                    <SkillButton className="secondary-button secondary-button--compact" disabled={isCreatingToken} htmlType="submit">
                       <KeyRound size={15} aria-hidden="true" />
                       <span>{isCreatingToken && memberTokenState ? labels.saving : labels.token}</span>
-                    </button>
+                    </SkillButton>
                   </form>
 
                   <ProjectSensitiveActionForm
@@ -244,14 +233,22 @@ export function OrganizationTeamManager({ locale, members }: OrganizationTeamMan
 
 function ActionMessage({ state }: { state: OrganizationTeamActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>
+    <SkillAlert
+      className="action-message"
+      icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+      message={
+        <span>
         {state.message}
         {state.accessToken?.token ? <code>{state.accessToken.token}</code> : null}
-      </span>
-    </div>
+        </span>
+      }
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
+}
+
+function roleOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return roles.map((role) => ({ label: labels.roles[role], value: role }));
 }
 
 function roleClass(role: OrganizationRole) {

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, MessageSquareText, Save, Star, XCircle } from "lucide-react";
+import { SkillButton, SkillInput, SkillSelect, useSkillModal } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { SkillFeedbackRecord } from "@/lib/skill-feedback";
 import {
@@ -193,6 +194,8 @@ function FeedbackDecisionForm({
 }) {
   const [selectedAction, setSelectedAction] = useState<FeedbackAction | "">("");
   const actionCopy = getFeedbackActionCopy(locale);
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (!selectedAction) {
@@ -200,9 +203,20 @@ function FeedbackDecisionForm({
       return;
     }
 
-    if (!window.confirm(actionCopy.confirm[selectedAction].replace("{title}", item.title))) {
-      event.preventDefault();
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
     }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    modal.confirm({
+      title: actionCopy.confirm[selectedAction].replace("{title}", item.title),
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
@@ -210,29 +224,26 @@ function FeedbackDecisionForm({
       <input name="feedbackId" type="hidden" value={item.id} />
       <label>
         <span>{labels.action}</span>
-        <select
+        <SkillSelect
           name="action"
-          onChange={(event) => setSelectedAction(event.target.value as FeedbackAction | "")}
+          onChange={(value) => setSelectedAction(value as FeedbackAction | "")}
+          options={[
+            { label: actionCopy.choose, value: "" },
+            ...Object.entries(labels.actions).map(([value, label]) => ({ label, value }))
+          ]}
           required
           value={selectedAction}
-        >
-          <option value="">{actionCopy.choose}</option>
-          {Object.entries(labels.actions).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
         <small>{actionCopy.help}</small>
       </label>
       <label>
         <span>{labels.reason}</span>
-        <input defaultValue={item.moderationReason ?? ""} name="reason" required />
+        <SkillInput defaultValue={item.moderationReason ?? ""} name="reason" required />
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{isPending && statusMessage ? labels.saving : labels.save}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }

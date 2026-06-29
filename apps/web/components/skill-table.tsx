@@ -1,6 +1,7 @@
 import { Box, ExternalLink, PackageCheck, ShieldCheck } from "lucide-react";
 import type { SkillSummary } from "@useskillhub/schema";
 import type { Dictionary } from "@/lib/i18n";
+import { getPublicApiUrl } from "@/lib/api-url";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import {
   publicSkillDescription,
@@ -16,7 +17,7 @@ type SkillTableProps = {
   locale?: Locale;
 };
 
-export function SkillTable({ apiUrl = "https://api.useskillhub.com", labels, locale = "en", skills }: SkillTableProps) {
+export function SkillTable({ apiUrl = getPublicApiUrl(), labels, locale = "en", skills }: SkillTableProps) {
   if (skills.length === 0) {
     return (
       <div className="empty-state">

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { BellRing, CheckCircle2, Circle, ExternalLink, MailCheck, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillStatusTag } from "@/components/skill-antd";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import {
   markAllNotificationsReadAction,
@@ -83,10 +84,10 @@ export function NotificationInboxManager({ locale, notifications, summary }: Not
           <span>{labels.title}</span>
         </div>
         <form action={markAllAction}>
-          <button className="secondary-button secondary-button--compact" disabled={inboxSummary.unread === 0 || isMarkAllPending} type="submit">
+          <SkillButton className="secondary-button secondary-button--compact" disabled={inboxSummary.unread === 0 || isMarkAllPending} htmlType="submit">
             <CheckCircle2 size={15} aria-hidden="true" />
             <span>{labels.markAllRead}</span>
-          </button>
+          </SkillButton>
         </form>
       </div>
 
@@ -119,10 +120,10 @@ export function NotificationInboxManager({ locale, notifications, summary }: Not
             return (
               <section className={unread ? "notification-inbox-card notification-inbox-card--unread" : "notification-inbox-card"} key={notification.id}>
                 <div className="notification-inbox-card__head">
-                  <span className={unread ? "status-chip status-chip--warning" : "status-chip status-chip--neutral"}>
+                  <SkillStatusTag className={unread ? "status-chip status-chip--warning" : "status-chip status-chip--neutral"} tone={unread ? "warning" : "neutral"}>
                     {unread ? <Circle size={10} aria-hidden="true" /> : <MailCheck size={13} aria-hidden="true" />}
                     {unread ? labels.unread : labels.read}
-                  </span>
+                  </SkillStatusTag>
                   <span>{topicLabel(notification.eventType, locale)}</span>
                 </div>
                 <strong>{notification.subject ?? notification.eventType}</strong>
@@ -138,10 +139,10 @@ export function NotificationInboxManager({ locale, notifications, summary }: Not
                   {unread ? (
                     <form action={action}>
                       <input name="notificationId" type="hidden" value={notification.id} />
-                      <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+                      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending} htmlType="submit">
                         <CheckCircle2 size={15} aria-hidden="true" />
                         <span>{labels.markRead}</span>
-                      </button>
+                      </SkillButton>
                     </form>
                   ) : null}
                 </div>
@@ -158,12 +159,7 @@ export function NotificationInboxManager({ locale, notifications, summary }: Not
 }
 
 function ActionMessage({ state }: { state: NotificationInboxActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }
 
 function topicLabel(value: string, locale: Locale) {

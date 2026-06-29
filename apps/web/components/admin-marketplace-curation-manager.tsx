@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, ListFilter, Save, Star, XCircle } from "lucide-react";
+import { SkillButton, SkillInput, SkillSelect, useSkillModal } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import {
   decideMarketplaceCurationAppealAction,
@@ -305,11 +306,29 @@ function AppealDecisionForm({
   labels: CurationLabels;
 }) {
   const [selectedAction, setSelectedAction] = useState("");
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!selectedAction || !window.confirm(labels.confirmAppealAction)) {
+    if (!selectedAction) {
       event.preventDefault();
+      return;
     }
+
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
+    }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    modal.confirm({
+      title: labels.confirmAppealAction,
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
@@ -317,38 +336,47 @@ function AppealDecisionForm({
       <input name="appealId" type="hidden" value={appeal.id} />
       <label>
         <span>{labels.targetPlacement}</span>
-        <select defaultValue={appeal.requestedPlacement} name="placement">
-          <option value="standard">{labels.placements.standard}</option>
-          <option value="featured">{labels.placements.featured}</option>
-        </select>
+        <SkillSelect
+          defaultValue={appeal.requestedPlacement}
+          name="placement"
+          options={[
+            { label: labels.placements.standard, value: "standard" },
+            { label: labels.placements.featured, value: "featured" }
+          ]}
+        />
       </label>
       <label>
         <span>{labels.boost}</span>
-        <input defaultValue={appeal.requestedPlacement === "featured" ? 100 : 0} max={250} min={-250} name="boost" step={1} type="number" />
+        <SkillInput defaultValue={appeal.requestedPlacement === "featured" ? 100 : 0} max={250} min={-250} name="boost" step={1} type="number" />
       </label>
       <label>
         <span>{labels.endsAt}</span>
-        <input name="endsAt" type="datetime-local" />
+        <SkillInput name="endsAt" type="datetime-local" />
       </label>
       <label className="marketplace-curation-form__wide">
         <span>{labels.appealReason}</span>
-        <input name="reason" required />
+        <SkillInput name="reason" required />
       </label>
       <label>
         <span>{labels.placement}</span>
-        <select name="action" onChange={(event) => setSelectedAction(event.target.value)} required value={selectedAction}>
-          <option value="">{labels.chooseAppealAction}</option>
-          {(["review", "approve", "reject", "close"] as const).map((item) => (
-            <option key={item} value={item}>
-              {labels.appealActions[item]}
-            </option>
-          ))}
-        </select>
+        <SkillSelect
+          name="action"
+          onChange={(value) => setSelectedAction(String(value))}
+          options={[
+            { label: labels.chooseAppealAction, value: "" },
+            ...(["review", "approve", "reject", "close"] as const).map((item) => ({
+              label: labels.appealActions[item],
+              value: item
+            }))
+          ]}
+          required
+          value={selectedAction}
+        />
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{isSaving ? labels.saving : labels.save}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }
@@ -366,10 +394,24 @@ function RankingControlForm({
   item: AdminMarketplaceCurationRecord;
   labels: CurationLabels;
 }) {
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!window.confirm(labels.confirmRanking)) {
-      event.preventDefault();
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
     }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    modal.confirm({
+      title: labels.confirmRanking,
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
@@ -377,30 +419,28 @@ function RankingControlForm({
       <input name="skillSlug" type="hidden" value={item.skillSlug} />
       <label>
         <span>{labels.placement}</span>
-        <select defaultValue={item.placement} name="placement">
-          {placements.map((placement) => (
-            <option key={placement} value={placement}>
-              {labels.placements[placement]}
-            </option>
-          ))}
-        </select>
+        <SkillSelect
+          defaultValue={item.placement}
+          name="placement"
+          options={placements.map((placement) => ({ label: labels.placements[placement], value: placement }))}
+        />
       </label>
       <label>
         <span>{labels.boost}</span>
-        <input defaultValue={item.boost} max={250} min={-250} name="boost" step={1} type="number" />
+        <SkillInput defaultValue={item.boost} max={250} min={-250} name="boost" step={1} type="number" />
       </label>
       <label>
         <span>{labels.endsAt}</span>
-        <input defaultValue={toDateTimeLocal(item.endsAt)} name="endsAt" type="datetime-local" />
+        <SkillInput defaultValue={toDateTimeLocal(item.endsAt)} name="endsAt" type="datetime-local" />
       </label>
       <label className="marketplace-curation-form__wide">
         <span>{labels.reason}</span>
-        <input defaultValue={item.reason ?? ""} name="reason" required />
+        <SkillInput defaultValue={item.reason ?? ""} name="reason" required />
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{isSaving ? labels.saving : labels.save}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }

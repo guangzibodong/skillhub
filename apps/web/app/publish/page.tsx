@@ -1,12 +1,8 @@
 import {
-  ArrowRight,
-  BadgeCheck,
-  BookOpenCheck,
   ClipboardCheck,
   FileJson,
   Gauge,
   HandCoins,
-  ListChecks,
   ShieldCheck,
   UploadCloud,
 } from "lucide-react";
@@ -14,13 +10,18 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { JourneyRail } from "@/components/journey-rail";
-import { FlowStepList, StatusChip } from "@/components/operational-status";
+import { InlineHelp } from "@/components/inline-help";
 import { PublishForm } from "@/components/publish-form";
-import { WorkspaceAccessPanel } from "@/components/workspace-access-panel";
 import { getWorkspaceSession } from "@/lib/auth-session";
-import { getLocaleFromSearchParams, hrefWithReturnTo, localizedHref, localizedHrefWithReturnTo } from "@/lib/i18n";
+import {
+  getLocaleFromSearchParams,
+  localizedHref,
+  localizedHrefWithReturnTo,
+} from "@/lib/i18n";
 import { getPublishCopy, type PublishPageCopy } from "@/lib/publish-copy";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import styles from "./publish.module.css";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,9 @@ type PageProps = {
 
 const publisherRoles = ["publisher", "owner", "admin", "super_admin"];
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
   const locale = getLocaleFromSearchParams(await searchParams);
 
   return buildLocalizedMetadata({
@@ -56,9 +59,8 @@ export default async function PublishPage({ searchParams }: PageProps) {
   const publishCopy = getPublishCopy(locale);
   const labels = publishCopy.page;
   const pageLabels = getPublishPageShellCopy(locale, labels);
-  const operationCards = getPublishOperationCards(locale);
   const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+    getPublicApiUrl();
   const session = await getWorkspaceSession();
   const roleSet = new Set(
     [session.subject?.platformRole, ...(session.subject?.roles ?? [])].filter(
@@ -76,218 +78,173 @@ export default async function PublishPage({ searchParams }: PageProps) {
   const heroPrimaryLabel = hasPublisherAccess
     ? pageLabels.publisherWorkspace
     : accessNotice.actionLabel;
-  const journeyActionHref = hasPublisherAccess
-    ? "/publisher"
-    : session.subject
-      ? "/contact?intent=publisher"
-      : hrefWithReturnTo("/login", "/publish", locale);
   const signalIcons = [ClipboardCheck, ShieldCheck, Gauge, HandCoins];
-  const stepIcons = [
-    FileJson,
-    ListChecks,
-    ClipboardCheck,
-    ShieldCheck,
-    Gauge,
-    BookOpenCheck,
-    HandCoins,
-  ];
+
 
   return (
     <AppShell active="publish" locale={locale}>
-      <section
-        className="section py-[96px]"
-        aria-labelledby="publish-heading"
-      >
-        <Reveal>
-          <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
-            <div className="flex-1 hero-glow">
-              <div className="eyebrow">
-                <UploadCloud size={16} aria-hidden="true" />
-                <span>{pageLabels.eyebrow}</span>
+      <div className={"publish-shell " + styles.pageStyles}>
+        <section
+          className="section py-[64px]"
+          aria-labelledby="publish-heading"
+        >
+          <Reveal>
+            <div className="section-inner flex flex-col lg:flex-row gap-10 items-start">
+              <div className="flex-1 hero-glow">
+                <div className="eyebrow">
+                  <UploadCloud size={16} aria-hidden="true" />
+                  <span>{pageLabels.eyebrow}</span>
+                </div>
+                <h1 id="publish-heading" className="heading-xl mt-4">
+                  {pageLabels.title}
+                </h1>
+                <p className="body-text mt-4 max-w-[600px]">
+                  {pageLabels.description}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <a
+                    className="btn-primary btn-primary--large"
+                    href={accessNotice.actionHref}
+                  >
+                    <UploadCloud size={18} aria-hidden="true" />
+                    <span>{heroPrimaryLabel}</span>
+                  </a>
+                  <a
+                    className="btn-secondary btn-secondary--large"
+                    href={localizedHref("/publisher-review", locale)}
+                  >
+                    <ClipboardCheck size={18} aria-hidden="true" />
+                    <span>
+                      {locale === "zh" ? "查看审核规则" : "Review requirements"}
+                    </span>
+                  </a>
+                </div>
               </div>
-              <h1 id="publish-heading" className="heading-xl mt-4">
-                {pageLabels.title}
-              </h1>
-              <p className="body-text mt-4 max-w-[600px]">
-                {pageLabels.description}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a className="btn-primary btn-primary--large" href={accessNotice.actionHref}>
-                  <UploadCloud size={18} aria-hidden="true" />
-                  <span>{heroPrimaryLabel}</span>
-                </a>
-                <a className="btn-secondary btn-secondary--large" href={localizedHref("/publisher-review", locale)}>
-                  <ClipboardCheck size={18} aria-hidden="true" />
-                  <span>{locale === "zh" ? "查看审核规则" : "Review requirements"}</span>
-                </a>
+              <div className="flex flex-col gap-4 items-start">
+                <div className="pill">
+                  <FileJson size={18} aria-hidden="true" />
+                  <span>{pageLabels.badge}</span>
+                </div>
+                <div
+                  className="grid grid-cols-2 gap-3"
+                  aria-label={pageLabels.signalLabel}
+                >
+                  {pageLabels.signals.map(([label, value], index) => {
+                    const Icon = signalIcons[index] ?? ClipboardCheck;
+
+                    return (
+                      <div
+                        key={label}
+                        className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
+                      >
+                        <Icon size={16} aria-hidden="true" />
+                        <span className="body-text-sm text-[#999]">
+                          {label}
+                        </span>
+                        <strong className="text-white text-sm">{value}</strong>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-4 items-start">
-              <div className="pill">
-                <FileJson size={18} aria-hidden="true" />
-                <span>{pageLabels.badge}</span>
-              </div>
-              <div
-                className="grid grid-cols-2 gap-3"
-                aria-label={pageLabels.signalLabel}
-              >
-                {pageLabels.signals.map(([label, value], index) => {
-                  const Icon = signalIcons[index] ?? ClipboardCheck;
+          </Reveal>
+        </section>
 
-                  return (
-                    <div
-                      key={label}
-                      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-4 flex flex-col gap-1"
-                    >
-                      <Icon size={16} aria-hidden="true" />
-                      <span className="body-text-sm text-[#999]">{label}</span>
-                      <strong className="text-white text-sm">{value}</strong>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
+        <div className="section-divider" />
 
-      <div className="section-divider" />
-
-      <Reveal delay={100}>
-        <JourneyRail
-          actionHrefOverride={journeyActionHref}
-          actionLabelOverride={accessNotice.actionLabel}
-          currentStep="publish"
-          journey="publisher"
-          locale={locale}
-        />
-      </Reveal>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="publish-ops-heading">
-        <div className="section-inner flex flex-col gap-8">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
-            <div className="max-w-[720px]">
-              <div className="eyebrow">
-                <BadgeCheck size={16} aria-hidden="true" />
-                <span>{pageLabels.operatingEyebrow}</span>
-              </div>
-              <h2 id="publish-ops-heading" className="heading-lg mt-3">
-                {pageLabels.operatingTitle}
-              </h2>
-              <p className="body-text mt-3">{pageLabels.operatingBody}</p>
-            </div>
-            <a className="btn-secondary" href={localizedHref("/publisher-review", locale)}>
-              <span>{pageLabels.reviewRules}</span>
-              <ArrowRight size={15} aria-hidden="true" />
-            </a>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {operationCards.map((card, index) => {
-              const Icon = stepIcons[index + 1] ?? ClipboardCheck;
-
-              return (
-                <Reveal delay={index * 70} key={card.title}>
-                  <article className="card flex flex-col gap-4 h-full">
-                    <div className="w-10 h-10 rounded-[8px] bg-[rgba(127,238,100,0.1)] flex items-center justify-center">
-                      <Icon size={20} aria-hidden="true" className="text-[#7fee64]" />
-                    </div>
-                    <div>
-                      <h3 className="heading-sm">{card.title}</h3>
-                      <p className="body-text-sm text-[#999] mt-2">{card.body}</p>
-                    </div>
-                    <ul className="flex flex-col gap-2 mt-auto">
-                      {card.items.map((item) => (
-                        <li className="flex items-start gap-2 text-sm text-[#999]" key={item}>
-                          <ClipboardCheck size={15} aria-hidden="true" className="text-[#7fee64] shrink-0 mt-0.5" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
-                </Reveal>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]">
-        <div className="section-inner">
-          <WorkspaceAccessPanel
+        <Reveal delay={70}>
+          <JourneyRail
+            className="publish-journey-steps"
+            currentStep="publish"
+            journey="publisher"
             locale={locale}
-            requiredRoles={publisherRoles}
-            returnTo="/publish"
-            session={session}
-            workspace="publisher"
+            variant="steps"
           />
-        </div>
-      </section>
+        </Reveal>
 
-      <div className="section-divider" />
+        <Reveal delay={90}>
+          <PublishForm
+            access={accessNotice}
+            apiUrl={apiUrl}
+            labels={publishCopy.form}
+            locale={locale}
+          />
+        </Reveal>
 
-      <Reveal delay={200}>
-        <PublishForm
-          access={accessNotice}
-          apiUrl={apiUrl}
-          labels={publishCopy.form}
-          locale={locale}
-        />
-      </Reveal>
-
-      <div className="section-divider" />
-
-      <section className="section py-[96px]" aria-labelledby="publish-pipeline-heading">
-        <div className="section-inner">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
-            <div>
-              <div className="eyebrow">
-                <BookOpenCheck size={16} aria-hidden="true" />
-                <span>{pageLabels.pipelineEyebrow}</span>
-              </div>
-              <h2
-                id="publish-pipeline-heading"
-                className="heading-lg mt-3"
-              >
-                {pageLabels.pipelineTitle}
-              </h2>
-              <p className="body-text mt-3 max-w-[560px]">
-                {pageLabels.pipelineBody}
-              </p>
+        <section className="publish-compact-help" aria-label={pageLabels.pipelineTitle}>
+          <div className="section-inner publish-compact-help__inner">
+            <div className="publish-compact-help__copy">
+              <strong>{pageLabels.pipelineTitle}</strong>
+              <InlineHelp
+                content={pageLabels.pipelineBody}
+                label={locale === "zh" ? "查看审核说明" : "View review guidance"}
+              />
             </div>
-            <a
-              className="btn-secondary"
-              href={accessNotice.actionHref}
-            >
-              <Gauge size={16} aria-hidden="true" />
-              <span>{hasPublisherAccess ? pageLabels.publisherWorkspace : accessNotice.actionLabel}</span>
-            </a>
+            <div className="publish-compact-help__actions">
+              <a className="secondary-button" href={localizedHref("/publisher-review", locale)}>
+                <ClipboardCheck size={15} aria-hidden="true" />
+                <span>{pageLabels.reviewRules}</span>
+              </a>
+            </div>
           </div>
-          <FlowStepList
-            ariaLabel={pageLabels.pipelineTitle}
-            steps={pageLabels.pipelineSteps.map((step, index) => {
-              const Icon = stepIcons[index] ?? ListChecks;
-
-              return {
-                body: step.body,
-                icon: <Icon size={16} aria-hidden="true" />,
-                title: step.title,
-              };
-            })}
-          />
-          <div className="mt-6">
-            <StatusChip tone="neutral">{pageLabels.badge}</StatusChip>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </AppShell>
   );
 }
 
-function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy) {
+function getPublishAccessNotice({
+  hasPublisherAccess,
+  hasSession,
+  locale,
+}: {
+  hasPublisherAccess: boolean;
+  hasSession: boolean;
+  locale: "en" | "zh";
+}) {
+  if (hasPublisherAccess) {
+    return {
+      actionHref: localizedHref("/publisher#publisher-skills", locale),
+      actionLabel: locale === "zh" ? "发布者工作台" : "Publisher workspace",
+      body:
+        locale === "zh"
+          ? "当前账号可以保存草稿并提交版本审核。"
+          : "This account can save drafts and submit versions for review.",
+      canSubmit: true,
+      title: locale === "zh" ? "发布权限已就绪" : "Publisher access ready",
+    };
+  }
+
+  if (hasSession) {
+    return {
+      actionHref: localizedHref("/account", locale),
+      actionLabel: locale === "zh" ? "查看账号权限" : "Check account access",
+      body:
+        locale === "zh"
+          ? "当前账号已登录，但还没有发布者权限。"
+          : "You are signed in, but this account does not have publisher access yet.",
+      canSubmit: false,
+      title: locale === "zh" ? "需要发布者权限" : "Publisher access required",
+    };
+  }
+
+  return {
+    actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
+    actionLabel: locale === "zh" ? "登录后发布" : "Sign in to publish",
+    body:
+      locale === "zh"
+        ? "登录后才能保存草稿、预检 manifest 并提交审核。"
+        : "Sign in before saving drafts, running preflight, and submitting for review.",
+    canSubmit: false,
+    title: locale === "zh" ? "需要先登录" : "Sign-in required",
+  };
+}
+
+function getPublishPageShellCopy(
+  locale: "en" | "zh",
+  fallback: PublishPageCopy,
+) {
   if (locale === "zh") {
     return {
       ...fallback,
@@ -358,7 +315,8 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
     operatingBody:
       "This page is not a blind upload form. It makes publisher access, review, runtime, permissions, support, and maintenance explicit so buyers, publishers, and operators read the same state after listing.",
     operatingEyebrow: "Before publishing",
-    operatingTitle: "A production-ready skill must answer three questions first.",
+    operatingTitle:
+      "A production-ready skill must answer three questions first.",
     pipelineBody:
       "Start with publisher access, then move through manifest draft, preflight, version submission, automated checks, human review, and listing maintenance. Any behavior-changing update should become a new version.",
     pipelineEyebrow: "Review pipeline",
@@ -404,96 +362,5 @@ function getPublishPageShellCopy(locale: "en" | "zh", fallback: PublishPageCopy)
         title: "Human review",
       },
     ],
-  };
-}
-
-function getPublishOperationCards(locale: "en" | "zh") {
-  if (locale === "zh") {
-    return [
-      {
-        body: "客户先看说明再决定是否采用，描述不能只写一句口号。",
-        items: ["解决什么问题", "适合哪些场景", "输出结果长什么样"],
-        title: "这个技能到底帮谁做什么？",
-      },
-      {
-        body: "Agent 调用技能前，团队必须知道它会访问什么资源。",
-        items: ["网络、浏览器、文件、密钥", "高风险权限说明", "失败和限流行为"],
-        title: "权限和运行边界是否清楚？",
-      },
-      {
-        body: "上架不是结束，发布者需要维护版本、反馈和支持路径。",
-        items: ["变更记录", "故障和废弃通知", "客户反馈与发布者回复"],
-        title: "上架后谁负责维护？",
-      },
-    ];
-  }
-
-  return [
-    {
-      body: "Buyers need a clear reason to adopt before they trust the manifest.",
-      items: ["What problem it solves", "Which use cases fit", "What output looks like"],
-      title: "Who does this skill help?",
-    },
-    {
-      body: "Teams must understand what the agent can access before runtime.",
-      items: ["Network, browser, files, secrets", "High-risk permission notes", "Failure and rate-limit behavior"],
-      title: "Are permissions and runtime boundaries clear?",
-    },
-    {
-      body: "Listing is not the finish line; publishers own version, feedback, and support follow-through.",
-      items: ["Changelog", "Incident and deprecation notices", "Feedback and publisher responses"],
-      title: "Who maintains it after listing?",
-    },
-  ];
-}
-
-function getPublishAccessNotice({
-  hasPublisherAccess,
-  hasSession,
-  locale,
-}: {
-  hasPublisherAccess: boolean;
-  hasSession: boolean;
-  locale: "en" | "zh";
-}) {
-  if (hasPublisherAccess) {
-    return {
-      actionHref: localizedHref("/publisher", locale),
-      actionLabel:
-        locale === "zh" ? "打开发布者工作台" : "Open publisher workspace",
-      body:
-        locale === "zh"
-          ? "当前账号已具备发布权限，可以保存草稿并继续提交审核。正式公开上架前仍需要完成版本审核、运行检查、条款确认、定价意图和收款资料准备。"
-          : "Your current session can save organization-scoped drafts. Public listing still requires version review and runtime checks; pricing and paid-readiness fields remain prelaunch metadata.",
-      canSubmit: true,
-      title: locale === "zh" ? "发布权限已就绪" : "Publisher access ready",
-    };
-  }
-
-  if (!hasSession) {
-    return {
-      actionHref: localizedHrefWithReturnTo("/login", locale, "/publish"),
-      actionLabel:
-        locale === "zh"
-          ? "登录后继续申请发布权限"
-          : "Sign in, then request publisher access",
-      body:
-        locale === "zh"
-          ? "当前还没有登录。请先登录，这样 SkillHub 才能把草稿、审核记录和发布权限申请绑定到真实账号。登录前表单会保持锁定，避免填完以后无法提交。"
-          : "You are not signed in. Sign in first so SkillHub can attach drafts, review history, and publisher access requests to a real account. The form stays locked until a session exists.",
-      canSubmit: false,
-      title: locale === "zh" ? "需要先登录" : "Sign-in required",
-    };
-  }
-
-  return {
-    actionHref: localizedHref("/contact?intent=publisher", locale),
-    actionLabel: locale === "zh" ? "申请发布权限" : "Request publisher access",
-    body:
-      locale === "zh"
-        ? "当前账号已登录，但还没有 publisher、owner、admin 或 super_admin 发布角色。请先申请发布权限，说明团队、维护负责人、支持邮箱和计划发布的技能类型；运营确认后再保存草稿。"
-        : "You are signed in, but this account is not assigned a publisher, owner, admin, or super_admin role. Request publisher access first with your team, maintenance owner, support email, and intended skill category; operators will open the workspace after review.",
-    canSubmit: false,
-    title: locale === "zh" ? "需要发布权限" : "Publisher access required",
   };
 }

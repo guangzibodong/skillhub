@@ -13,7 +13,8 @@ export function isProductionLike(env: RuntimeEnv = runtimeEnv()) {
 }
 
 export function allowDemoFallback(env: RuntimeEnv = runtimeEnv()) {
-  return !isProductionLike(env) || env.SKILLHUB_ENABLE_DEMO_FALLBACK === "true";
+  void env;
+  return false;
 }
 
 export function demoFallback<T>(

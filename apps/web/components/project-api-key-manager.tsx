@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { CheckCircle2, Copy, KeyRound, Plus, RotateCcw, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import { ProjectSensitiveActionForm } from "@/components/project-sensitive-action-form";
 import {
@@ -115,10 +116,10 @@ export function ProjectApiKeyManager({
           <KeyRound size={16} aria-hidden="true" />
           <span>{titleLabel}</span>
         </div>
-        <button className="secondary-button" onClick={() => setIsCreating((current) => !current)} type="button">
+        <SkillButton className="secondary-button" onClick={() => setIsCreating((current) => !current)} htmlType="button">
           {isCreating ? <XCircle size={16} aria-hidden="true" /> : keys.length === 0 ? <Plus size={16} aria-hidden="true" /> : <RotateCcw size={16} aria-hidden="true" />}
           <span>{isCreating ? labels.cancelRotation : keys.length === 0 ? labels.create : labels.rotate}</span>
-        </button>
+        </SkillButton>
       </div>
 
       <div className="rotation-note">
@@ -130,20 +131,17 @@ export function ProjectApiKeyManager({
         <form action={createAction} className="key-create-form">
           <label>
             <span>{labels.namePlaceholder}</span>
-            <input name="name" placeholder={labels.namePlaceholder} required />
+            <SkillInput name="name" placeholder={labels.namePlaceholder} required />
           </label>
-          <button className="primary-button" disabled={isCreatePending} type="submit">
+          <SkillButton className="primary-button" disabled={isCreatePending} htmlType="submit">
             <Plus size={16} aria-hidden="true" />
             <span>{isCreatePending ? labels.creating : labels.create}</span>
-          </button>
+          </SkillButton>
         </form>
       ) : null}
 
       {createState.status !== "idle" ? (
-        <div className={createState.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-          {createState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-          <span>{createState.message}</span>
-        </div>
+        <SkillAlert className="action-message" icon={createState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={createState.message} type={createState.status === "success" ? "success" : "error"} />
       ) : null}
 
       {createState.apiKey ? (
@@ -151,18 +149,15 @@ export function ProjectApiKeyManager({
           <span>{labels.newKey}</span>
           <code>{createState.apiKey.apiKey}</code>
           <small>{labels.revealOnce}</small>
-          <button className="secondary-button" onClick={() => copySecret(createState.apiKey!.apiKey)} type="button">
+          <SkillButton className="secondary-button" onClick={() => copySecret(createState.apiKey!.apiKey)} htmlType="button">
             <Copy size={16} aria-hidden="true" />
             <span>{copied ? labels.copied : labels.copy}</span>
-          </button>
+          </SkillButton>
         </div>
       ) : null}
 
       {revokeState.status !== "idle" ? (
-        <div className={revokeState.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-          {revokeState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-          <span>{revokeState.message}</span>
-        </div>
+        <SkillAlert className="action-message" icon={revokeState.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={revokeState.message} type={revokeState.status === "success" ? "success" : "error"} />
       ) : null}
 
       <div className="project-table project-table--compact">
@@ -177,9 +172,9 @@ export function ProjectApiKeyManager({
               <strong>{key.name}</strong>
               <code>{key.keyPrefix}...{key.keyLast4}</code>
               <span>{formatDateValue(key.lastUsedAt, locale, noDateLabel)}</span>
-              <span className={key.revokedAt ? "status-chip status-chip--danger" : "status-chip"}>
+              <SkillStatusTag className={key.revokedAt ? "status-chip status-chip--danger" : "status-chip"}>
                 {key.revokedAt ? revokedLabel : activeLabel}
-              </span>
+              </SkillStatusTag>
               {key.revokedAt ? (
                 <span>{revokedLabel}</span>
               ) : (

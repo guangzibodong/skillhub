@@ -1,7 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
-import { CheckCircle2, FlaskConical, PlayCircle, RadioTower, ShieldCheck, XCircle } from "lucide-react";
+import { useActionState, useState } from "react";
+import { Input, Select } from "antd";
+import TextArea from "antd/es/input/TextArea";
+import { FlaskConical, PlayCircle, ShieldCheck } from "lucide-react";
+import { SkillAlert, SkillButton, SkillEmpty, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectSkillRecord } from "@/lib/ops-data";
 import { submitProjectRuntimeTestAction, type ProjectRuntimeTestState } from "@/lib/project-runtime-test-actions";
@@ -65,6 +68,7 @@ export function ProjectRuntimeTestPanel({ locale, projectSlug, skills }: Project
     initialState
   );
   const hasSkills = skills.length > 0;
+  const [skillSlug, setSkillSlug] = useState(skills[0]?.skillSlug ?? "");
   const defaultInput = defaultTestInput(skills[0]?.skillSlug);
 
   return (
@@ -76,9 +80,9 @@ export function ProjectRuntimeTestPanel({ locale, projectSlug, skills }: Project
         </div>
         <div className="project-runtime-test-panel__badges">
           {labels.badges.map((badge) => (
-            <span className="status-chip status-chip--neutral" key={badge}>
+            <SkillStatusTag className="status-chip status-chip--neutral" key={badge} tone="neutral">
               {badge}
-            </span>
+            </SkillStatusTag>
           ))}
         </div>
       </div>
@@ -89,32 +93,31 @@ export function ProjectRuntimeTestPanel({ locale, projectSlug, skills }: Project
         <form action={action} className="project-runtime-test-form">
           <label>
             <span>{labels.skill}</span>
-            <select name="skillSlug" required>
-              {skills.map((skill) => (
-                <option key={skill.skillSlug} value={skill.skillSlug}>
-                  {skill.displayName} / {skill.skillSlug} / {skill.version ?? "latest"} / {skill.status}
-                </option>
-              ))}
-            </select>
+            <input name="skillSlug" type="hidden" value={skillSlug} />
+            <Select
+              onChange={setSkillSlug}
+              options={skills.map((skill) => ({
+                label: `${skill.displayName} / ${skill.skillSlug} / ${skill.version ?? "latest"} / ${skill.status}`,
+                value: skill.skillSlug,
+              }))}
+              value={skillSlug}
+            />
           </label>
           <label>
             <span>{labels.version}</span>
-            <input name="version" placeholder={labels.versionPlaceholder} />
+            <Input name="version" placeholder={labels.versionPlaceholder} />
           </label>
           <label className="project-runtime-test-form__wide">
             <span>{labels.input}</span>
-            <textarea defaultValue={defaultInput} name="testInput" placeholder={labels.inputPlaceholder} rows={7} />
+            <TextArea defaultValue={defaultInput} name="testInput" placeholder={labels.inputPlaceholder} rows={7} />
           </label>
-          <button className="primary-button" disabled={isPending} type="submit">
+          <SkillButton className="primary-button" disabled={isPending} htmlType="submit">
             <PlayCircle size={16} aria-hidden="true" />
             <span>{isPending ? labels.running : labels.run}</span>
-          </button>
+          </SkillButton>
         </form>
       ) : (
-        <div className="project-runtime-test-empty">
-          <RadioTower size={17} aria-hidden="true" />
-          <span>{labels.empty}</span>
-        </div>
+        <SkillEmpty className="project-runtime-test-empty" description={labels.empty} />
       )}
 
       {state.status !== "idle" ? <ActionMessage labels={labels} state={state} /> : null}
@@ -125,12 +128,15 @@ export function ProjectRuntimeTestPanel({ locale, projectSlug, skills }: Project
 
 function ActionMessage({ labels, state }: { labels: (typeof copy)[Locale]; state: ProjectRuntimeTestState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-      <b className={state.status === "success" ? "status-chip" : "status-chip status-chip--danger"}>
+    <div className="action-message">
+      <SkillAlert
+        className={state.status === "success" ? "action-message--success" : "action-message--error"}
+        description={state.message}
+        type={state.status === "success" ? "success" : "error"}
+      />
+      <SkillStatusTag className={state.status === "success" ? "status-chip" : "status-chip status-chip--danger"}>
         {state.status === "success" ? labels.successBadge : labels.blockedBadge}
-      </b>
+      </SkillStatusTag>
     </div>
   );
 }

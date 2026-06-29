@@ -20,6 +20,7 @@ import {
   getPublicPublisherProfile,
   listPublicPublishers,
 } from "./public-publishers.js";
+import { getPublicStatus } from "./public-status.js";
 import { getPlatformOverview } from "./platform-overview.js";
 import {
   decideReview,
@@ -107,6 +108,7 @@ import {
   markAllUserNotificationsRead,
   markUserNotificationRead,
   processNotificationDeliveries,
+  sendPlatformTestEmail,
 } from "./notifications.js";
 import {
   listNotificationTemplates,
@@ -138,8 +140,6 @@ import {
 } from "./payouts.js";
 import {
   acceptPublisherTerms,
-  completePayoutAccountOnboarding,
-  createPayoutAccountOnboarding,
   getPublisherAccountSummary,
   upsertPublisherProfile,
 } from "./publisher.js";
@@ -188,6 +188,8 @@ import {
   createPasswordLogin,
   createPasswordSignup,
   createSignupUserToken,
+  requestPasswordResetCode,
+  resetPasswordWithCode,
   oauthErrorRedirectUrl,
   oauthSuccessRedirectUrl,
   publicSubject,
@@ -205,6 +207,40 @@ import {
   listAccountSessions,
   revokeAccountSession,
 } from "./account.js";
+import {
+  generateAgentPrompt,
+  listAdminAgentModels,
+  listPublicAgentModels,
+  upsertAgentModelConfig,
+} from "./agent-prompts.js";
+import {
+  getAdminPlatformConfig,
+  getAdminPlatformProviderConfig,
+  getPublicPaymentProviderStatuses,
+  resolveRuntimeSettings,
+  saveAdminEmailProviderConfig,
+  saveAdminLaunchSettings,
+  saveAdminOAuthProviderConfig,
+  saveAdminPayPalConfig,
+  saveAdminPayoutSettings,
+  saveAdminRuntimeSettings,
+  saveAdminStripeConfig,
+  saveAdminWebhookSettings,
+  testPayPalConfig,
+  testStripeConfig,
+} from "./platform-config.js";
+import {
+  createStripeCheckoutSession,
+  createStripeConnectOnboarding,
+  createStripeRefund,
+  getStripeConnectStatus,
+  handleStripeWebhook,
+} from "./stripe-commerce.js";
+import {
+  capturePayPalOrder,
+  createPayPalCheckoutSession,
+  handlePayPalWebhook,
+} from "./paypal-commerce.js";
 
 type Env = {
   Bindings: {
@@ -216,6 +252,10 @@ type Env = {
     NEXT_PUBLIC_API_URL?: string;
     NEXT_PUBLIC_APP_URL?: string;
     NODE_ENV?: string;
+    PAYPAL_CLIENT_ID?: string;
+    PAYPAL_CLIENT_SECRET?: string;
+    PAYPAL_ENVIRONMENT?: string;
+    PAYPAL_WEBHOOK_ID?: string;
     RESEND_API_KEY?: string;
     SESSION_SECRET?: string;
     SKILLHUB_ADMIN_TOKEN?: string;
@@ -237,12 +277,23 @@ type Env = {
     SKILLHUB_SMTP_SECURE?: string;
     SKILLHUB_SMTP_USER?: string;
     SKILLHUB_OAUTH_STATE_SECRET?: string;
+    SKILLHUB_PAYPAL_CANCEL_URL?: string;
+    SKILLHUB_PAYPAL_RETURN_URL?: string;
     SKILLHUB_ENV: string;
+    SKILLHUB_CONFIG_ENCRYPTION_SECRET?: string;
     SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
     SKILLHUB_ENABLE_DEMO_FALLBACK?: string;
     SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN?: string;
+    SKILLHUB_AGENT_KEY_ENCRYPTION_SECRET?: string;
+    SKILLHUB_STRIPE_CANCEL_URL?: string;
+    SKILLHUB_STRIPE_REFRESH_URL?: string;
+    SKILLHUB_STRIPE_RETURN_URL?: string;
+    SKILLHUB_STRIPE_SUCCESS_URL?: string;
     SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
     SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
+    STRIPE_CONNECT_CLIENT_ID?: string;
+    STRIPE_SECRET_KEY?: string;
+    STRIPE_WEBHOOK_SECRET?: string;
     PACKAGES?: R2Bucket;
   };
 };
@@ -299,6 +350,12 @@ function canApproveOwnerReview(roles: AuthRole[]) {
   return roles.some((role) => organizationAdminRoles.includes(role));
 }
 const adminOperatorRoles: AuthRole[] = ["super_admin", "admin", "support"];
+const platformConfigAdminRoles: AuthRole[] = ["super_admin", "admin"];
+const platformConfigFinanceRoles: AuthRole[] = [
+  "super_admin",
+  "admin",
+  "finance",
+];
 const curationOperatorRoles: AuthRole[] = ["super_admin", "admin", "reviewer"];
 const trustOperatorRoles: AuthRole[] = [
   "super_admin",
@@ -338,6 +395,16 @@ app.use("*", async (c, next) => {
   await next();
 });
 
+app.onError((error, c) => {
+  return c.json(
+    {
+      code: errorCode(error),
+      error: error.message || "Internal server error.",
+    },
+    errorStatus(error),
+  );
+});
+
 app.get("/health", (c) =>
   c.json({
     ok: true,
@@ -345,6 +412,12 @@ app.get("/health", (c) =>
     env: c.env?.SKILLHUB_ENV ?? getProcessEnv("SKILLHUB_ENV") ?? "development",
   }),
 );
+
+app.get("/v1/status", async (c) => {
+  return c.json({
+    status: await getPublicStatus(c.env),
+  });
+});
 
 app.get("/mcp", (c) =>
   c.json({
@@ -379,10 +452,29 @@ app.get("/v1/auth/me", async (c) => {
   });
 });
 
-app.get("/v1/auth/providers", (c) => {
+app.get("/v1/auth/providers", async (c) => {
   return c.json({
-    providers: getAuthProviderStatuses(c.env),
+    providers: await getAuthProviderStatuses(c.env),
   });
+});
+
+app.get("/v1/payment/providers", async (c) => {
+  try {
+    return c.json({
+      providers: await getPublicPaymentProviderStatuses(c.env),
+    });
+  } catch (error) {
+    return c.json(
+      {
+        code: errorCode(error),
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to read payment provider status.",
+      },
+      errorStatus(error),
+    );
+  }
 });
 
 app.get("/v1/auth/oauth/:provider/start", async (c) => {
@@ -641,7 +733,7 @@ app.post("/v1/auth/email/request-code", async (c) => {
     unknown
   >;
 
-  if (isPublicSignupDisabled(c.env) && body.mode !== "login") {
+  if ((await isPublicSignupDisabled(c.env)) && body.mode !== "login") {
     return c.json(
       { error: "Public email access is disabled for this deployment." },
       403,
@@ -680,7 +772,7 @@ app.post("/v1/auth/email/verify-code", async (c) => {
 });
 
 app.post("/v1/auth/password/signup", async (c) => {
-  if (isPublicSignupDisabled(c.env)) {
+  if (await isPublicSignupDisabled(c.env)) {
     return c.json(
       { error: "Public signup is disabled for this deployment." },
       403,
@@ -719,8 +811,43 @@ app.post("/v1/auth/password/login", async (c) => {
   }
 });
 
+app.post("/v1/auth/password/reset/request", async (c) => {
+  try {
+    return c.json(
+      {
+        challenge: await requestPasswordResetCode(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      { error: emailAccessErrorMessage(error) },
+      emailAccessErrorStatus(error),
+    );
+  }
+});
+
+app.post("/v1/auth/password/reset/confirm", async (c) => {
+  try {
+    return c.json({
+      reset: await resetPasswordWithCode(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return c.json(
+      { error: emailAccessErrorMessage(error) },
+      emailAccessErrorStatus(error),
+    );
+  }
+});
+
 app.post("/v1/auth/signup", async (c) => {
-  if (isPublicSignupDisabled(c.env)) {
+  if (await isPublicSignupDisabled(c.env)) {
     return c.json(
       { error: "Public signup is disabled for this deployment." },
       403,
@@ -2047,6 +2174,144 @@ app.post("/v1/projects/:projectSlug/subscriptions", async (c) => {
   }
 });
 
+app.post("/v1/checkout/sessions", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    projectOperatorRoles,
+    {
+      requireOrganization: true,
+    },
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    const input = (await c.req.json().catch(() => ({}))) as Record<string, unknown>;
+    const provider = String(input.provider ?? "stripe").trim().toLowerCase();
+    if (provider !== "stripe" && provider !== "paypal") {
+      return c.json({ error: "Checkout provider must be stripe or paypal." }, 400);
+    }
+    const checkout =
+      provider === "paypal"
+        ? await createPayPalCheckoutSession(
+            input,
+            authorization.subject.organizationId,
+            c.env,
+          )
+        : await createStripeCheckoutSession(
+            input,
+            authorization.subject.organizationId,
+            c.env,
+          );
+
+    return c.json(
+      {
+        checkout,
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to create checkout session.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
+app.post("/v1/stripe/webhook", async (c) => {
+  try {
+    return c.json(
+      await handleStripeWebhook(
+        await c.req.text(),
+        c.req.header("Stripe-Signature") ?? null,
+        c.env,
+      ),
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to process Stripe webhook.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
+app.post("/v1/paypal/webhook", async (c) => {
+  try {
+    return c.json(
+      await handlePayPalWebhook(
+        await c.req.text(),
+        {
+          "paypal-auth-algo": c.req.header("Paypal-Auth-Algo") ?? c.req.header("PAYPAL-AUTH-ALGO"),
+          "paypal-cert-url": c.req.header("Paypal-Cert-Url") ?? c.req.header("PAYPAL-CERT-URL"),
+          "paypal-transmission-id": c.req.header("Paypal-Transmission-Id") ?? c.req.header("PAYPAL-TRANSMISSION-ID"),
+          "paypal-transmission-sig": c.req.header("Paypal-Transmission-Sig") ?? c.req.header("PAYPAL-TRANSMISSION-SIG"),
+          "paypal-transmission-time": c.req.header("Paypal-Transmission-Time") ?? c.req.header("PAYPAL-TRANSMISSION-TIME"),
+        },
+        c.env,
+      ),
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to process PayPal webhook.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
+app.post("/v1/paypal/orders/:orderId/capture", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    projectOperatorRoles,
+    {
+      requireOrganization: true,
+    },
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        capture: await capturePayPalOrder(
+          c.req.param("orderId"),
+          authorization.subject.organizationId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to capture PayPal order.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
 app.get("/v1/projects/:projectSlug/api-keys", async (c) => {
   const projectSlug = c.req.param("projectSlug");
   const authorization = await authorize(
@@ -2196,6 +2461,86 @@ app.post("/v1/runtime/invoke", async (c) => {
   }
 });
 
+app.get("/v1/prompts/models", async (c) => {
+  return c.json({
+    models: await listPublicAgentModels(),
+  });
+});
+
+app.get("/v1/agents/models", async (c) => {
+  return c.json({
+    models: await listPublicAgentModels(),
+  });
+});
+
+app.post("/v1/prompts/generate", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    anyAuthenticatedRole,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        result: await generateAgentPrompt(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to generate prompt suggestions.",
+      },
+      400,
+    );
+  }
+});
+
+app.post("/v1/agents/prompts", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    anyAuthenticatedRole,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        result: await generateAgentPrompt(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to generate prompt suggestions.",
+      },
+      400,
+    );
+  }
+});
+
 app.get("/v1/skills/:slug/prices", async (c) => {
   return c.json({
     prices: await listSkillPrices(c.req.param("slug")),
@@ -2222,6 +2567,7 @@ app.post("/v1/skills/:slug/prices", async (c) => {
           c.req.param("slug"),
           (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
           authorization.subject.organizationId,
+          c.env,
         ),
       },
       201,
@@ -2536,6 +2882,39 @@ app.post("/v1/admin/finance/refunds/:refundId/decision", async (c) => {
   }
 });
 
+app.post("/v1/admin/finance/stripe/refunds", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    financeOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        refund: await createStripeRefund(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to create Stripe refund.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
 app.get("/v1/admin/finance/disputes", async (c) => {
   const authorization = await authorize(
     c.req.header("Authorization"),
@@ -2635,6 +3014,340 @@ app.get("/v1/admin/launch-readiness", async (c) => {
       },
       400,
     );
+  }
+});
+
+app.get("/v1/admin/platform-providers", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      providers: await getAdminPlatformProviderConfig(c.env),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to read platform provider configuration.");
+  }
+});
+
+app.get("/v1/admin/platform-config", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      config: await getAdminPlatformConfig(c.env),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to read platform configuration.");
+  }
+});
+
+app.post("/v1/admin/platform-providers/oauth", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        provider: await saveAdminOAuthProviderConfig(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save OAuth provider configuration.");
+  }
+});
+
+app.put("/v1/admin/platform-config/oauth/:provider", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      provider: await saveAdminOAuthProviderConfig(
+        {
+          ...((await c.req.json().catch(() => ({}))) as Record<string, unknown>),
+          provider: c.req.param("provider"),
+        },
+        authorization.subject.userId,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save OAuth provider configuration.");
+  }
+});
+
+app.post("/v1/admin/platform-providers/email", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        provider: await saveAdminEmailProviderConfig(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save email provider configuration.");
+  }
+});
+
+app.put("/v1/admin/platform-config/email", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      provider: await saveAdminEmailProviderConfig(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save email provider configuration.");
+  }
+});
+
+app.post("/v1/admin/platform-config/email/test", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      delivery: await sendPlatformTestEmail(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        c.env,
+        authorization.subject.userId,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to send test email.");
+  }
+});
+
+app.put("/v1/admin/platform-config/stripe", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      stripe: await saveAdminStripeConfig(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save Stripe configuration.");
+  }
+});
+
+app.post("/v1/admin/platform-config/stripe/test", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      stripe: await testStripeConfig(c.env),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to verify Stripe configuration.");
+  }
+});
+
+app.put("/v1/admin/platform-config/paypal", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      paypal: await saveAdminPayPalConfig(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save PayPal configuration.");
+  }
+});
+
+app.post("/v1/admin/platform-config/paypal/test", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      paypal: await testPayPalConfig(c.env),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to verify PayPal configuration.");
+  }
+});
+
+app.put("/v1/admin/platform-config/webhooks", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      webhooks: await saveAdminWebhookSettings(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save webhook settings.");
+  }
+});
+
+app.put("/v1/admin/platform-config/payouts", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigFinanceRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      payouts: await saveAdminPayoutSettings(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save payout settings.");
+  }
+});
+
+app.put("/v1/admin/platform-config/launch", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      launch: await saveAdminLaunchSettings(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save launch settings.");
+  }
+});
+
+app.put("/v1/admin/platform-config/runtime", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    platformConfigAdminRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      runtime: await saveAdminRuntimeSettings(
+        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+        authorization.subject.userId,
+      ),
+    });
+  } catch (error) {
+    return platformConfigError(c, error, "Unable to save runtime settings.");
   }
 });
 
@@ -3033,6 +3746,104 @@ app.post("/v1/admin/notification-templates", async (c) => {
           error instanceof Error
             ? error.message
             : "Unable to save notification template.",
+      },
+      400,
+    );
+  }
+});
+
+app.get("/v1/admin/prompt-models", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    models: await listAdminAgentModels(Number(c.req.query("limit") ?? "50")),
+  });
+});
+
+app.get("/v1/admin/agent-models", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  return c.json({
+    models: await listAdminAgentModels(Number(c.req.query("limit") ?? "50")),
+  });
+});
+
+app.post("/v1/admin/prompt-models", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        model: await upsertAgentModelConfig(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to save agent model.",
+      },
+      400,
+    );
+  }
+});
+
+app.post("/v1/admin/agent-models", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    adminOperatorRoles,
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        model: await upsertAgentModelConfig(
+          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
+          authorization.subject.userId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to save prompt model.",
       },
       400,
     );
@@ -3542,8 +4353,78 @@ app.get("/v1/publisher/payouts", async (c) => {
     await getPublisherPayoutSummary(
       c.req.query("publisherProfileId") ?? undefined,
       authorization.subject.organizationId,
+      c.env,
     ),
   );
+});
+
+app.post("/v1/publisher/connect/onboarding", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    publisherOperatorRoles,
+    {
+      requireOrganization: true,
+    },
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json(
+      {
+        connect: await createStripeConnectOnboarding(
+          authorization.subject.organizationId,
+          c.env,
+        ),
+      },
+      201,
+    );
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to create Stripe Connect onboarding.",
+      },
+      errorStatus(error),
+    );
+  }
+});
+
+app.get("/v1/publisher/connect/status", async (c) => {
+  const authorization = await authorize(
+    c.req.header("Authorization"),
+    publisherOperatorRoles,
+    {
+      requireOrganization: true,
+    },
+  );
+
+  if (!authorization.ok) {
+    return c.json({ error: authorization.error }, authorization.status);
+  }
+
+  try {
+    return c.json({
+      connect: await getStripeConnectStatus(
+        authorization.subject.organizationId,
+        c.env,
+      ),
+    });
+  } catch (error) {
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to read Stripe Connect status.",
+      },
+      errorStatus(error),
+    );
+  }
 });
 
 app.get("/v1/publisher/skills", async (c) => {
@@ -3937,7 +4818,7 @@ app.post("/v1/publisher/payouts", async (c) => {
         payout: await requestPublisherPayout({
           ...body,
           organizationId: authorization.subject.organizationId,
-        }),
+        }, c.env),
       },
       201,
     );
@@ -4042,70 +4923,23 @@ app.post("/v1/publisher/terms/accept", async (c) => {
 });
 
 app.post("/v1/publisher/payout-account/onboarding", async (c) => {
-  const authorization = await authorize(
-    c.req.header("Authorization"),
-    publisherOperatorRoles,
+  return c.json(
     {
-      requireOrganization: true,
+      code: "endpoint_replaced",
+      error: "Manual payout onboarding has been replaced by Stripe Connect. Use /v1/publisher/connect/onboarding.",
     },
+    410,
   );
-
-  if (!authorization.ok) {
-    return c.json({ error: authorization.error }, authorization.status);
-  }
-
-  try {
-    return c.json(
-      {
-        onboarding: await createPayoutAccountOnboarding(
-          authorization.subject.organizationId,
-          (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
-        ),
-      },
-      201,
-    );
-  } catch (error) {
-    return c.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to submit manual payout details.",
-      },
-      400,
-    );
-  }
 });
 
 app.post("/v1/publisher/payout-account/onboarding/complete", async (c) => {
-  const authorization = await authorize(
-    c.req.header("Authorization"),
-    financeOperatorRoles,
+  return c.json(
+    {
+      code: "endpoint_replaced",
+      error: "Manual payout completion has been replaced by Stripe Connect webhook/status processing.",
+    },
+    410,
   );
-
-  if (!authorization.ok) {
-    return c.json({ error: authorization.error }, authorization.status);
-  }
-
-  try {
-    return c.json({
-      publisher: await completePayoutAccountOnboarding(
-        null,
-        (await c.req.json().catch(() => ({}))) as Record<string, unknown>,
-        authorization.subject.userId,
-      ),
-    });
-  } catch (error) {
-    return c.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to update payout readiness.",
-      },
-      400,
-    );
-  }
 });
 
 app.get("/v1/admin/payouts", async (c) => {
@@ -4705,14 +5539,8 @@ function getProcessEnv(key: string): string | undefined {
   return process.env[key];
 }
 
-function isPublicSignupDisabled(env: Env["Bindings"] | undefined) {
-  const value = (
-    env?.SKILLHUB_DISABLE_PUBLIC_SIGNUP ??
-    getProcessEnv("SKILLHUB_DISABLE_PUBLIC_SIGNUP")
-  )
-    ?.trim()
-    .toLowerCase();
-  return value === "1" || value === "true" || value === "yes";
+async function isPublicSignupDisabled(env: Env["Bindings"] | undefined) {
+  return (await resolveRuntimeSettings(env)).disablePublicSignup;
 }
 
 function isLegacySignupTokenEnabled(env: Env["Bindings"] | undefined) {
@@ -4788,6 +5616,61 @@ function emailAccessErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
   return 400;
 }
 
+function platformConfigError(
+  c: Parameters<Parameters<typeof app.onError>[0]>[1],
+  error: unknown,
+  fallback: string,
+) {
+  return c.json(
+    {
+      code: platformConfigErrorCode(error),
+      error: error instanceof Error ? error.message : fallback,
+    },
+    platformConfigErrorStatus(error),
+  );
+}
+
+function platformConfigErrorCode(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "bad_request";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("does not exist") || message.includes("migration")) {
+    return "migration_required";
+  }
+
+  if (
+    message.includes("database_url") ||
+    message.includes("not configured") ||
+    message.includes("configuration") ||
+    message.includes("secret")
+  ) {
+    return "configuration_required";
+  }
+
+  if (message.includes("permission") || message.includes("requires")) {
+    return "forbidden";
+  }
+
+  return "bad_request";
+}
+
+function platformConfigErrorStatus(error: unknown): 400 | 403 | 503 {
+  const code = platformConfigErrorCode(error);
+
+  if (code === "migration_required" || code === "configuration_required") {
+    return 503;
+  }
+
+  if (code === "forbidden") {
+    return 403;
+  }
+
+  return 400;
+}
+
 function accountSecurityErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
   if (!(error instanceof Error)) {
     return 400;
@@ -4812,6 +5695,71 @@ function accountSecurityErrorStatus(error: unknown): 400 | 403 | 404 | 503 {
   }
 
   return 400;
+}
+
+function errorStatus(error: unknown): 400 | 401 | 403 | 404 | 409 | 503 {
+  if (!(error instanceof Error)) {
+    return 400;
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (
+    message.includes("database_url") ||
+    message.includes("secret") ||
+    message.includes("not configured") ||
+    message.includes("configuration")
+  ) {
+    return 503;
+  }
+
+  if (message.includes("not found") || message.includes("no longer exists")) {
+    return 404;
+  }
+
+  if (message.includes("permission") || message.includes("requires")) {
+    return 403;
+  }
+
+  if (message.includes("already") || message.includes("conflict")) {
+    return 409;
+  }
+
+  return 400;
+}
+
+function errorCode(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "bad_request";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("database_url")) {
+    return "database_required";
+  }
+
+  if (
+    message.includes("secret") ||
+    message.includes("not configured") ||
+    message.includes("configuration")
+  ) {
+    return "configuration_required";
+  }
+
+  if (message.includes("not found") || message.includes("no longer exists")) {
+    return "not_found";
+  }
+
+  if (message.includes("permission") || message.includes("requires")) {
+    return "forbidden";
+  }
+
+  if (message.includes("already") || message.includes("conflict")) {
+    return "conflict";
+  }
+
+  return "bad_request";
 }
 
 function isManifestForSkill(value: unknown, skillSlug: string) {

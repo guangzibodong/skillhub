@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, Flag, LogIn, Send, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillTextArea } from "@/components/skill-antd";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { createSkillAbuseReportAction, type SkillAbuseReportActionState } from "@/lib/skill-abuse-report-actions";
 
@@ -115,49 +116,37 @@ export function SkillAbuseReportForm({ canSubmit = true, locale, loginHref, skil
       <form action={action} className="skill-report-form">
         <label className="skill-report-form__wide">
           <span>{labels.titleField}</span>
-          <input name="title" placeholder={labels.titlePlaceholder} required />
+          <SkillInput name="title" placeholder={labels.titlePlaceholder} required />
         </label>
         <label>
           <span>{labels.category}</span>
-          <select defaultValue="security" name="category">
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {labels.categories[category]}
-              </option>
-            ))}
-          </select>
+          <SkillSelect defaultValue="security" name="category" options={categories.map((category) => ({ label: labels.categories[category], value: category }))} />
         </label>
         <label>
           <span>{labels.severity}</span>
-          <select defaultValue="medium" name="severity">
-            {severities.map((severity) => (
-              <option key={severity} value={severity}>
-                {labels.severities[severity]}
-              </option>
-            ))}
-          </select>
+          <SkillSelect defaultValue="medium" name="severity" options={severities.map((severity) => ({ label: labels.severities[severity], value: severity }))} />
         </label>
         <label>
           <span>{labels.projectSlug}</span>
-          <input name="projectSlug" placeholder="research-agent" />
+          <SkillInput name="projectSlug" placeholder="research-agent" />
         </label>
         <label>
           <span>{labels.evidenceUrl}</span>
-          <input name="evidenceUrl" placeholder="https://example.com/evidence" type="url" />
+          <SkillInput name="evidenceUrl" placeholder="https://example.com/evidence" type="url" />
         </label>
         <label className="skill-report-form__wide">
           <span>{labels.description}</span>
-          <textarea
+          <SkillTextArea
             aria-label={`${labels.description}: ${skillName}`}
             name="description"
             placeholder={labels.descriptionPlaceholder}
             required
           />
         </label>
-        <button className="secondary-button" disabled={isPending} type="submit">
+        <SkillButton className="secondary-button" disabled={isPending} htmlType="submit">
           <Send size={15} aria-hidden="true" />
           <span>{isPending ? labels.submitting : labels.submit}</span>
-        </button>
+        </SkillButton>
       </form>
       )}
 
@@ -167,10 +156,5 @@ export function SkillAbuseReportForm({ canSubmit = true, locale, loginHref, skil
 }
 
 function ActionMessage({ state }: { state: SkillAbuseReportActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }

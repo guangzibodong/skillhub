@@ -14,6 +14,7 @@ import {
   Scale,
   XCircle
 } from "lucide-react";
+import { SkillAlert, SkillButton, SkillCheckbox, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import { decideAdminDisputeAction, decideAdminRefundAction, type AdminAdjustmentActionState } from "@/lib/admin-adjustment-actions";
 import type { Locale } from "@/lib/i18n";
 import type { DisputeRecord, RefundRecord } from "@/lib/ops-data";
@@ -122,8 +123,8 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
           <span>{labels.title}</span>
         </div>
         <div className="admin-adjustment-counts">
-          <span className="status-chip status-chip--warning">{refunds.length}</span>
-          <span className="status-chip status-chip--neutral">{disputes.length}</span>
+          <SkillStatusTag className="status-chip status-chip--warning" tone="warning">{refunds.length}</SkillStatusTag>
+          <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">{disputes.length}</SkillStatusTag>
         </div>
       </div>
 
@@ -134,7 +135,7 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
               <RotateCcw size={16} aria-hidden="true" />
               <strong>{labels.refunds}</strong>
             </div>
-            <span className="status-chip status-chip--warning">{refunds.length}</span>
+            <SkillStatusTag className="status-chip status-chip--warning" tone="warning">{refunds.length}</SkillStatusTag>
           </header>
 
           <div className="admin-adjustment-list">
@@ -168,25 +169,20 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
                       <input name="refundId" type="hidden" value={latest.id} />
                       <label>
                         <span>{labels.refundAction}</span>
-                        <select defaultValue={suggestedRefundAction(latest)} name="action">
-                          <option value="approve">{labels.approve}</option>
-                          <option value="reject">{labels.reject}</option>
-                          <option value="post">{labels.post}</option>
-                          <option value="fail">{labels.fail}</option>
-                        </select>
+                        <SkillSelect defaultValue={suggestedRefundAction(latest)} name="action" options={refundActionOptions(labels)} />
                       </label>
                       <label>
                         <span>{labels.reason}</span>
-                        <input defaultValue={defaultRefundReason(latest, locale)} name="reason" required />
+                        <SkillInput defaultValue={defaultRefundReason(latest, locale)} name="reason" required />
                       </label>
                       <label>
                         <span>{labels.providerReference}</span>
-                        <input defaultValue={latest.providerReference ?? ""} name="providerReference" />
+                        <SkillInput defaultValue={latest.providerReference ?? ""} name="providerReference" />
                       </label>
-                      <button className="secondary-button secondary-button--compact" disabled={isRefundPending || isRefundTerminal(latest.status)} type="submit">
+                      <SkillButton className="secondary-button secondary-button--compact" disabled={isRefundPending || isRefundTerminal(latest.status)} htmlType="submit">
                         <Save size={15} aria-hidden="true" />
                         <span>{isRefundPending && rowState ? labels.saving : labels.save}</span>
-                      </button>
+                      </SkillButton>
                     </form>
 
                     {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
@@ -205,7 +201,7 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
               <FileWarning size={16} aria-hidden="true" />
               <strong>{labels.disputes}</strong>
             </div>
-            <span className="status-chip status-chip--neutral">{disputes.length}</span>
+            <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">{disputes.length}</SkillStatusTag>
           </header>
 
           <div className="admin-adjustment-list">
@@ -240,12 +236,12 @@ export function AdminAdjustmentManager({ disputes, locale, refunds }: AdminAdjus
                       />
                       <label>
                         <span>{labels.disputeReason}</span>
-                        <input defaultValue={defaultDisputeReason(latest, locale)} name="reason" required />
+                        <SkillInput defaultValue={defaultDisputeReason(latest, locale)} name="reason" required />
                       </label>
-                      <button className="secondary-button secondary-button--compact" disabled={isDisputePending || isDisputeTerminal(latest.status)} type="submit">
+                      <SkillButton className="secondary-button secondary-button--compact" disabled={isDisputePending || isDisputeTerminal(latest.status)} htmlType="submit">
                         <Save size={15} aria-hidden="true" />
                         <span>{isDisputePending && rowState ? labels.saving : labels.save}</span>
-                      </button>
+                      </SkillButton>
                     </form>
 
                     {rowState && rowState.status !== "idle" ? <ActionMessage state={rowState} /> : null}
@@ -269,7 +265,7 @@ function AdjustmentHeader({ id, status, statusClassName, title }: { id: string; 
         <strong>{title}</strong>
         <span>{id}</span>
       </div>
-      <span className={statusClassName}>{status}</span>
+      <SkillStatusTag className={statusClassName}>{status}</SkillStatusTag>
     </header>
   );
 }
@@ -311,20 +307,16 @@ function DisputeStatusDecisionFields({
     <>
       <label>
         <span>{labels.disputeStatus}</span>
-        <select
+        <SkillSelect
           name="status"
-          onChange={(event) => setSelectedStatus(event.currentTarget.value as DisputeRecord["status"])}
+          onChange={(value) => setSelectedStatus(value as DisputeRecord["status"])}
+          options={disputeStatusOptions(labels)}
           required
           value={selectedStatus}
-        >
-          <option value="open">{labels.disputeStatuses.open}</option>
-          <option value="warning_needs_response">{labels.disputeStatuses.warning_needs_response}</option>
-          <option value="won">{labels.disputeStatuses.won}</option>
-          <option value="lost">{labels.disputeStatuses.lost}</option>
-        </select>
+        />
       </label>
       <label className="admin-adjustment-check" title={labels.postRefundHint}>
-        <input disabled={!canPostRefund} name="postRefund" type="checkbox" />
+        <SkillCheckbox disabled={!canPostRefund} name="postRefund" />
         <span>{labels.postRefund}</span>
       </label>
       <small className="body-text-sm text-[#999]">{labels.postRefundHint}</small>
@@ -333,12 +325,25 @@ function DisputeStatusDecisionFields({
 }
 
 function ActionMessage({ state }: { state: AdminAdjustmentActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
+}
+
+function refundActionOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return [
+    { label: labels.approve, value: "approve" },
+    { label: labels.reject, value: "reject" },
+    { label: labels.post, value: "post" },
+    { label: labels.fail, value: "fail" }
+  ];
+}
+
+function disputeStatusOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return [
+    { label: labels.disputeStatuses.open, value: "open" },
+    { label: labels.disputeStatuses.warning_needs_response, value: "warning_needs_response" },
+    { label: labels.disputeStatuses.won, value: "won" },
+    { label: labels.disputeStatuses.lost, value: "lost" }
+  ];
 }
 
 function suggestedRefundAction(refund: RefundRecord) {

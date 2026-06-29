@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, type FormEvent, type ReactNode } from "react";
+import { useActionState, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AlertTriangle, Banknote, CheckCircle2, Clock3, ReceiptText, RotateCcw, Save, UserRound, WalletCards, XCircle } from "lucide-react";
+import { SkillButton, SkillInput, SkillSelect, useSkillModal } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { PayoutRecord } from "@/lib/ops-data";
 import { formatMoney } from "@/lib/ops-format";
@@ -14,24 +15,24 @@ type AdminPayoutManagerProps = {
 
 const copy = {
   en: {
-    account: "Receiving account",
-    accountHolder: "Account holder",
+    account: "Stripe Connect account",
+    accountHolder: "Provider account",
     action: "Action",
     amount: "Amount",
-    approve: "Approve manual transfer",
+    approve: "Approve Stripe payout review",
     balanceCount: "Reserved balances",
     block: "Block",
     chooseAction: "Choose finance action",
     confirmActions: {
-      approve: "Approve this payout for manual transfer? No money is marked paid until a transfer reference is recorded.",
+      approve: "Approve this payout for Stripe processing review? Nothing is marked paid until a Stripe payout reference is recorded.",
       block: "Block this payout? The publisher must satisfy the retry condition before requesting again.",
       fail: "Mark this payout as failed? Reserved balances may be released according to the backend workflow.",
       mark_paid: "Mark this payout as paid? Confirm the transfer reference is correct before continuing."
     },
     empty: "No payouts require finance review.",
     fail: "Fail",
-    markPaid: "Record completed transfer",
-    manualMethod: "Method",
+    markPaid: "Record Stripe payout reference",
+    manualMethod: "Provider",
     nextAction: "Next action",
     paid: "Paid",
     reason: "Finance note",
@@ -41,13 +42,12 @@ const copy = {
     save: "Record decision",
     saving: "Saving",
     status: "Status",
-    title: "Manual payout review queue",
+    title: "Stripe payout review queue",
     workflowWarning:
-      "No money is sent automatically. Approve only moves the request into manual transfer; record completed transfer only after PayPal, Alipay, or bank evidence exists.",
-    transferReference: "Transfer reference",
+      "Approve only moves the request into Stripe payout reconciliation; record paid only after a Stripe payout, transfer, or balance reference exists.",
+    transferReference: "Stripe payout reference",
     manualMethods: {
-      alipay: "Alipay",
-      paypal: "PayPal"
+      stripe_connect: "Stripe Connect"
     },
     statuses: {
       blocked: "Blocked",
@@ -59,8 +59,8 @@ const copy = {
       verified: "Verified"
     },
     nextActions: {
-      await_finance_review: "Review account details, risk, and reserved balance items before manual transfer.",
-      await_provider_processing: "Manual transfer is approved; mark paid when the transfer reference is available.",
+      await_finance_review: "Review Connect account status, risk, and reserved balance items before payout reconciliation.",
+      await_provider_processing: "Stripe payout review is approved; mark paid when the Stripe reference is available.",
       complete: "No further finance action is available.",
       request_again_after_failure: "Balances were released; publisher can retry after the account or transfer issue is fixed.",
       resolve_blocker_before_retry: "Publisher must resolve the retry condition before a new payout request."
@@ -94,13 +94,12 @@ const copy = {
     save: "\u8bb0\u5f55\u51b3\u7b56",
     saving: "\u4fdd\u5b58\u4e2d",
     status: "\u72b6\u6001",
-    title: "\u624b\u5de5\u6253\u6b3e\u5ba1\u6838\u961f\u5217",
+    title: "Stripe 打款复核队列",
     workflowWarning:
-      "\u7cfb\u7edf\u4e0d\u4f1a\u81ea\u52a8\u6253\u6b3e\u3002\u201c\u6279\u51c6\u201d\u53ea\u662f\u8fdb\u5165\u624b\u5de5\u8f6c\u8d26\u9636\u6bb5\uff1b\u53ea\u6709\u5728 PayPal\u3001Alipay \u6216\u94f6\u884c\u8f6c\u8d26\u51ed\u8bc1\u5df2\u5b58\u5728\u65f6\uff0c\u624d\u80fd\u8bb0\u5f55\u5df2\u6253\u6b3e\u3002",
+      "Stripe Connect carries publisher payout accounts. Approve only moves the request into Stripe payout reconciliation; record paid only after a Stripe payout, transfer, or balance reference exists.",
     transferReference: "\u8f6c\u8d26\u51ed\u8bc1/\u6d41\u6c34\u53f7",
     manualMethods: {
-      alipay: "Alipay",
-      paypal: "PayPal"
+      stripe_connect: "Stripe Connect"
     },
     statuses: {
       blocked: "\u5df2\u963b\u65ad",
@@ -164,9 +163,9 @@ export function AdminPayoutManager({ locale, payouts }: AdminPayoutManagerProps)
                 <div className="admin-payout-metrics">
                   <StatusTile icon={<Banknote size={15} aria-hidden="true" />} label={labels.amount} value={formatMoney(latest.amountCents, latest.currency)} />
                   <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.balanceCount} value={String(latest.balanceCount)} />
-                  <StatusTile icon={<WalletCards size={15} aria-hidden="true" />} label={labels.manualMethod} value={formatManualMethod(latest.manualMethod, labels.manualMethods)} />
-                  <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.account} value={maskManualAccount(latest.manualAccount)} />
-                  <StatusTile icon={<UserRound size={15} aria-hidden="true" />} label={labels.accountHolder} value={latest.manualAccountHolder ?? "n/a"} />
+                  <StatusTile icon={<WalletCards size={15} aria-hidden="true" />} label={labels.manualMethod} value={formatProvider(latest.provider, labels.manualMethods)} />
+                  <StatusTile icon={<ReceiptText size={15} aria-hidden="true" />} label={labels.account} value={maskConnectAccount(latest.stripeAccountId ?? latest.providerAccountId)} />
+                  <StatusTile icon={<UserRound size={15} aria-hidden="true" />} label={labels.accountHolder} value={latest.providerAccountId ?? latest.stripeAccountId ?? "n/a"} />
                   <StatusTile icon={<Clock3 size={15} aria-hidden="true" />} label={labels.requested} value={formatDate(latest.requestedAt, locale)} />
                 </div>
 
@@ -219,7 +218,7 @@ function StatusTile({ icon, label, value }: { icon: ReactNode; label: string; va
   );
 }
 
-function maskManualAccount(value: string | null | undefined) {
+function maskConnectAccount(value: string | null | undefined) {
   const normalized = String(value ?? "").trim();
 
   if (!normalized) {
@@ -269,6 +268,8 @@ function PayoutDecisionForm({
   rowState: AdminPayoutActionState | null;
 }) {
   const [selectedAction, setSelectedAction] = useState<PayoutAction | "">("");
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (!selectedAction) {
@@ -276,9 +277,20 @@ function PayoutDecisionForm({
       return;
     }
 
-    if (!window.confirm(labels.confirmActions[selectedAction])) {
-      event.preventDefault();
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
     }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    modal.confirm({
+      title: labels.confirmActions[selectedAction],
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
@@ -286,26 +298,27 @@ function PayoutDecisionForm({
       <input name="payoutId" type="hidden" value={latest.id} />
       <label>
         <span>{labels.action}</span>
-        <select
+        <SkillSelect
           name="action"
-          onChange={(event) => setSelectedAction(event.target.value as PayoutAction | "")}
+          onChange={(value) => setSelectedAction(value as PayoutAction | "")}
+          options={[
+            { label: labels.chooseAction, value: "" },
+            { label: labels.approve, value: "approve" },
+            { label: labels.markPaid, value: "mark_paid" },
+            { label: labels.fail, value: "fail" },
+            { label: labels.block, value: "block" }
+          ]}
           required
           value={selectedAction}
-        >
-          <option value="">{labels.chooseAction}</option>
-          <option value="approve">{labels.approve}</option>
-          <option value="mark_paid">{labels.markPaid}</option>
-          <option value="fail">{labels.fail}</option>
-          <option value="block">{labels.block}</option>
-        </select>
+        />
       </label>
       <label>
         <span>{labels.reason}</span>
-        <input defaultValue={defaultReason(latest, locale)} name="reason" required />
+        <SkillInput defaultValue={defaultReason(latest, locale)} name="reason" required />
       </label>
       <label>
         <span>{labels.retryCondition}</span>
-        <input
+        <SkillInput
           aria-describedby={`retry-${latest.id}`}
           defaultValue={defaultRetryCondition(latest, locale)}
           name="retryCondition"
@@ -315,12 +328,12 @@ function PayoutDecisionForm({
       </label>
       <label>
         <span>{labels.transferReference}</span>
-        <input defaultValue={latest.providerReference ?? ""} name="providerReference" required={selectedAction === "mark_paid"} />
+        <SkillInput defaultValue={latest.providerReference ?? ""} name="providerReference" required={selectedAction === "mark_paid"} />
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={isPending || isTerminal(latest.status) || !selectedAction} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending || isTerminal(latest.status) || !selectedAction} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{isPending && rowState ? labels.saving : labels.save}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }
@@ -353,7 +366,7 @@ function defaultReason(payout: PayoutRecord, locale: Locale) {
   if (payout.status === "processing") {
     return locale === "zh"
       ? "\u624b\u5de5\u6253\u6b3e\u5b8c\u6210\uff0c\u51c6\u5907\u8bb0\u5f55\u8f6c\u8d26\u51ed\u8bc1\u3002"
-      : "Manual transfer completed; recording transfer reference.";
+      : "Stripe payout reference confirmed; recording finance reconciliation.";
   }
 
   return locale === "zh"
@@ -369,7 +382,7 @@ function defaultRetryCondition(payout: PayoutRecord, locale: Locale) {
   if (payout.status === "failed") {
     return locale === "zh"
       ? "\u6536\u6b3e\u8d26\u53f7\u6216\u8f6c\u8d26\u95ee\u9898\u4fee\u590d\u540e\uff0c\u4f59\u989d\u91ca\u653e\u4e3a\u53ef\u7528\u5373\u53ef\u91cd\u65b0\u7533\u8bf7\u3002"
-      : "Retry after the receiving-account or transfer issue is fixed and balances return to available.";
+      : "Retry after the Stripe Connect account or payout issue is fixed and balances return to available.";
   }
 
   if (payout.status === "blocked") {
@@ -421,7 +434,7 @@ function terminalLabel(status: PayoutRecord["status"], locale: Locale) {
     : "Blocked; publisher must satisfy the retry condition before retrying.";
 }
 
-function formatManualMethod(method: string | null | undefined, labels: Record<string, string>) {
+function formatProvider(method: string | null | undefined, labels: Record<string, string>) {
   return method ? (labels[method] ?? method.replaceAll("_", " ")) : "n/a";
 }
 
@@ -434,8 +447,8 @@ function formatNextAction(action: string | null | undefined, labels: Record<stri
 }
 
 function formatDate(value: string | null | undefined, locale: Locale) {
-  if (!value || value === "demo") {
-    return locale === "zh" ? "\u6f14\u793a\u65f6\u95f4" : "Demo time";
+  if (!value) {
+    return "n/a";
   }
 
   const date = new Date(value);

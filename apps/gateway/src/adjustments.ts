@@ -73,48 +73,11 @@ type RefundForPosting = {
   adjustmentTransactionId: string | null;
 };
 
-const fallbackRefunds = [
-  {
-    id: "demo-refund-request",
-    transactionId: "demo-usage-browser-research",
-    adjustmentTransactionId: null,
-    skillName: "Browser Research",
-    projectSlug: "research-agent",
-    amountCents: 9600,
-    currency: "usd",
-    status: "requested",
-    reason: "Buyer reported duplicate billable call.",
-    providerReference: null,
-    createdAt: "demo",
-    requestedAt: "demo",
-    decidedAt: null,
-    postedAt: null
-  }
-];
-
-const fallbackDisputes = [
-  {
-    id: "demo-dispute-warning",
-    transactionId: "demo-usage-support-triage",
-    skillName: "Support Triage",
-    projectSlug: "support-agent",
-    amountCents: 7600,
-    currency: "usd",
-    status: "warning_needs_response",
-    reason: "Card network warning needs evidence before deadline.",
-    externalReference: "dp_demo_warning",
-    dueAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
 export async function listAdminRefunds(limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackRefunds;
+    return [];
   }
 
   return listRefundRows(sql, limit);
@@ -124,7 +87,7 @@ export async function listPublisherRefunds(organizationId: string | null | undef
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackRefunds;
+    return [];
   }
 
   return listRefundRows(sql, limit, { publisherOrganizationId: organizationId });
@@ -134,7 +97,7 @@ export async function listProjectRefunds(projectSlug: string, organizationId: st
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackRefunds.filter((refund) => refund.projectSlug === projectSlug);
+    return [];
   }
 
   return listRefundRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });
@@ -264,7 +227,7 @@ export async function listAdminDisputes(limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDisputes;
+    return [];
   }
 
   return listDisputeRows(sql, limit);
@@ -274,7 +237,7 @@ export async function listPublisherDisputes(organizationId: string | null | unde
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDisputes;
+    return [];
   }
 
   return listDisputeRows(sql, limit, { publisherOrganizationId: organizationId });
@@ -284,7 +247,7 @@ export async function listProjectDisputes(projectSlug: string, organizationId: s
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDisputes.filter((dispute) => dispute.projectSlug === projectSlug);
+    return [];
   }
 
   return listDisputeRows(sql, limit, { projectOrganizationId: organizationId, projectSlug });

@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, Clock3, Percent, Save, Scale, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag, useSkillModal } from "@/components/skill-antd";
 import { createAdminCommissionRuleAction, type AdminCommissionRuleActionState } from "@/lib/admin-commission-rule-actions";
 import type { Locale } from "@/lib/i18n";
 import type { CommissionRuleRecord } from "@/lib/ops-data";
@@ -78,7 +79,7 @@ export function AdminCommissionRuleManager({ locale, rules }: AdminCommissionRul
           <Scale size={16} aria-hidden="true" />
           <span>{labels.title}</span>
         </div>
-        <span className="status-chip status-chip--neutral">{visibleRules.length}</span>
+        <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">{visibleRules.length}</SkillStatusTag>
       </div>
 
       {activeRule ? (
@@ -115,7 +116,7 @@ export function AdminCommissionRuleManager({ locale, rules }: AdminCommissionRul
                   {formatBps(rule.platformFeeBps)} / {formatBps(rule.publisherShareBps)}
                 </span>
               </div>
-              <span className={statusClass(rule)}>{statusLabel(rule, labels)}</span>
+              <SkillStatusTag className={statusClass(rule)}>{statusLabel(rule, labels)}</SkillStatusTag>
               <small>
                 {formatDate(rule.startsAt, locale)}
                 {rule.endsAt ? ` - ${formatDate(rule.endsAt, locale)}` : ""}
@@ -146,6 +147,8 @@ function CommissionRuleForm({
   locale: Locale;
 }) {
   const [platformFeePercent, setPlatformFeePercent] = useState(formatPercentInput(defaultPlatformFee));
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
   const platformFeeBps = percentInputToBps(platformFeePercent);
   const publisherShareBps = Math.max(0, 10000 - platformFeeBps);
 
@@ -156,30 +159,40 @@ function CommissionRuleForm({
 
     if (startsAt?.value && endsAt?.value && new Date(endsAt.value).getTime() <= new Date(startsAt.value).getTime()) {
       event.preventDefault();
-      window.alert(locale === "zh" ? "结束时间必须晚于生效时间。" : "End time must be later than start time.");
+      modal.error({ title: locale === "zh" ? "结束时间必须晚于生效时间。" : "End time must be later than start time." });
       return;
     }
 
     if (platformFeeBps < 0 || platformFeeBps > 10000 || Number.isNaN(platformFeeBps)) {
       event.preventDefault();
-      window.alert(locale === "zh" ? "平台佣金必须是 0 到 100 之间的百分比。" : "Platform fee must be a percentage between 0 and 100.");
+      modal.error({ title: locale === "zh" ? "平台佣金必须是 0 到 100 之间的百分比。" : "Platform fee must be a percentage between 0 and 100." });
       return;
     }
 
-    if (!window.confirm(labels.confirmSchedule)) {
-      event.preventDefault();
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
     }
+
+    event.preventDefault();
+    modal.confirm({
+      title: labels.confirmSchedule,
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
     <form action={action} className="admin-commission-form" onSubmit={handleSubmit}>
         <label>
           <span>{labels.ruleName}</span>
-          <input defaultValue={defaultRuleName(defaultPlatformFee, locale)} name="name" required />
+          <SkillInput defaultValue={defaultRuleName(defaultPlatformFee, locale)} name="name" required />
         </label>
         <label>
           <span>{labels.platformFee}</span>
-          <input
+          <SkillInput
             max={100}
             min={0}
             onChange={(event) => setPlatformFeePercent(event.target.value)}
@@ -196,21 +209,21 @@ function CommissionRuleForm({
         </label>
         <label>
           <span>{labels.startsAt}</span>
-          <input name="startsAt" type="datetime-local" />
+          <SkillInput name="startsAt" type="datetime-local" />
           <small>{labels.startsNow}</small>
         </label>
         <label>
           <span>{labels.endsAt}</span>
-          <input name="endsAt" type="datetime-local" />
+          <SkillInput name="endsAt" type="datetime-local" />
         </label>
         <label className="admin-commission-form__wide">
           <span>{labels.reason}</span>
-          <input name="reason" placeholder={labels.reasonPlaceholder} required />
+          <SkillInput name="reason" placeholder={labels.reasonPlaceholder} required />
         </label>
-        <button className="secondary-button secondary-button--compact" disabled={isPending} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isPending} htmlType="submit">
           <Save size={15} aria-hidden="true" />
           <span>{isPending ? labels.saving : labels.save}</span>
-        </button>
+        </SkillButton>
       </form>
   );
 }
@@ -226,12 +239,7 @@ function SplitTile({ icon, label, value }: { icon: ReactNode; label: string; val
 }
 
 function ActionMessage({ state }: { state: AdminCommissionRuleActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }
 
 function mergeCreatedRule(rules: CommissionRuleRecord[], createdRule?: CommissionRuleRecord) {

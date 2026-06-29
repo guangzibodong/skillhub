@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, Chrome, Github, KeyRound, Mail, Unlink, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillStatusTag } from "@/components/skill-antd";
 import type { AuthProviderStatus } from "@/lib/account-data";
 import {
   disconnectAccountIdentityAction,
@@ -93,7 +94,7 @@ function LoginMethodCard({
         <Icon size={18} aria-hidden="true" />
       </div>
       <strong>{providerLabel(method, locale)}</strong>
-      <span className={statusClass(method.status)}>{statusText(method.status, locale)}</span>
+      <SkillStatusTag className={statusClass(method.status)}>{statusText(method.status, locale)}</SkillStatusTag>
       <p>{emailLine}</p>
       {method.connectedAt ? <small>{`${labels.connectedAt}: ${formatDate(method.connectedAt, locale)}`}</small> : null}
       {method.lastLoginAt ? <small>{`${labels.lastLogin}: ${formatDate(method.lastLoginAt, locale)}`}</small> : null}
@@ -101,10 +102,10 @@ function LoginMethodCard({
       {canDisconnect ? (
         <form action={action} className="account-method-disconnect-form">
           <input name="provider" type="hidden" value={method.provider} />
-          <button className="ghost-button ghost-button--danger ghost-button--inline" disabled={isPending} type="submit">
+          <SkillButton className="ghost-button ghost-button--danger ghost-button--inline" disabled={isPending} htmlType="submit">
             <Unlink size={14} aria-hidden="true" />
             <span>{isPending && state ? labels.disconnecting : labels.disconnect}</span>
-          </button>
+          </SkillButton>
         </form>
       ) : null}
 
@@ -115,10 +116,7 @@ function LoginMethodCard({
 
 function ActionMessage({ state }: { state: AccountIdentityActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
+    <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />
   );
 }
 

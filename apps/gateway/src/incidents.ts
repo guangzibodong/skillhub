@@ -41,44 +41,11 @@ type IncidentRecord = {
 const severities: IncidentSeverity[] = ["low", "medium", "high", "critical"];
 const statuses: IncidentStatus[] = ["open", "monitoring", "resolved", "postmortem"];
 
-const fallbackIncidents = [
-  {
-    id: "demo-incident-browser-runtime",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    skillVersionId: "demo-version-browser-research",
-    status: "monitoring",
-    severity: "high",
-    title: "Citation runtime timeout spike",
-    summary: "Runtime p95 latency crossed the project policy threshold after a source parsing change.",
-    startedAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-incident-dataset-schema",
-    skillId: "demo-skill-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    skillName: "Dataset Summarizer",
-    skillVersionId: "demo-version-dataset-summarizer",
-    status: "open",
-    severity: "medium",
-    title: "Output schema mismatch for sparse rows",
-    summary: "A developer project reported missing anomaly fields when input rows contain sparse numeric columns.",
-    startedAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-] satisfies IncidentRecord[];
-
 export async function listAdminIncidents(limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackIncidents.slice(0, normalizeLimit(limit));
+    return [];
   }
 
   return listIncidentRows(sql, normalizeLimit(limit));

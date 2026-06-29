@@ -1,0 +1,2155 @@
+/* Docs page documentation layout */
+.pageStyles:global(.docs-page) {
+  --docs-page-width: min(1480px, calc(100% - 48px));
+  --docs-page-border: rgba(221, 255, 220, 0.12);
+  background:
+    linear-gradient(90deg, rgba(221, 255, 220, 0.026) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(3, 7, 5, 0.96), rgba(5, 10, 7, 0.98));
+  background-size:
+    56px 100%,
+    auto;
+}
+
+.pageStyles :global(.docs-page-layout) {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr) 230px;
+  gap: clamp(22px, 2.8vw, 34px);
+  align-items: start;
+  width: var(--docs-page-width);
+  margin: 0 auto;
+  padding: clamp(30px, 4.2vw, 54px) 0 clamp(62px, 7vw, 96px);
+}
+
+.pageStyles :global(.docs-page-sidebar),
+.pageStyles :global(.docs-page-toc) {
+  position: sticky;
+  top: 88px;
+  overflow: auto;
+  max-height: calc(100vh - 108px);
+  min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(159, 232, 112, 0.28) transparent;
+}
+
+.pageStyles :global(.docs-page-sidebar) nav,
+.pageStyles :global(.docs-page-toc) {
+  border: 1px solid var(--docs-page-border);
+  border-radius: var(--registry-v2-radius);
+  background: rgba(5, 12, 10, 0.58);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.18);
+}
+
+.pageStyles :global(.docs-page-sidebar) nav {
+  display: grid;
+  gap: 18px;
+  padding: 14px;
+}
+
+.pageStyles :global(.docs-page-sidebar__home) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 40px;
+  border-bottom: 1px solid var(--docs-page-border);
+  color: var(--registry-v2-text);
+  padding-bottom: 12px;
+  font-size: 13px;
+  font-weight: 860;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.pageStyles :global(.docs-page-sidebar__home) svg {
+  color: var(--registry-v2-accent);
+}
+
+.pageStyles :global(.docs-page-sidebar__home) span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pageStyles :global(.docs-page-nav-group) {
+  display: grid;
+  gap: 8px;
+}
+
+.pageStyles :global(.docs-page-nav-group) h2,
+.pageStyles :global(.docs-page-toc) h2 {
+  margin: 0;
+  color: var(--registry-v2-faint);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.pageStyles :global(.docs-page-nav-group) div,
+.pageStyles :global(.docs-page-toc) nav {
+  display: grid;
+  gap: 2px;
+}
+
+.pageStyles :global(.docs-page-nav-group) a,
+.pageStyles :global(.docs-page-toc) a {
+  display: block;
+  border-radius: 6px;
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 7px 8px;
+  text-decoration: none;
+}
+
+.pageStyles :global(.docs-page-nav-group) a:hover,
+.pageStyles :global(.docs-page-nav-group) a:focus-visible,
+.pageStyles :global(.docs-page-toc) a:hover,
+.pageStyles :global(.docs-page-toc) a:focus-visible {
+  background: rgba(159, 232, 112, 0.075);
+  color: var(--registry-v2-text);
+}
+
+.pageStyles :global(.docs-page-toc) {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.pageStyles :global(.docs-page-toc) a {
+  border-left: 1px solid rgba(221, 255, 220, 0.14);
+  border-radius: 0 6px 6px 0;
+  padding-left: 10px;
+}
+
+.pageStyles :global(.docs-page-article) {
+  min-width: 0;
+  border: 1px solid var(--docs-page-border);
+  border-radius: calc(var(--registry-v2-radius) + 2px);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.038),
+      rgba(221, 255, 220, 0.012)
+    ),
+    rgba(8, 15, 11, 0.72);
+  box-shadow: 0 24px 78px rgba(0, 0, 0, 0.24);
+}
+
+.pageStyles :global(.docs-page-hero),
+.pageStyles :global(.docs-page-section),
+.pageStyles :global(.docs-page-closing) {
+  scroll-margin-top: 92px;
+  padding: clamp(28px, 3.5vw, 44px);
+}
+
+.pageStyles :global(.docs-page-hero) {
+  display: grid;
+  gap: 22px;
+  border-bottom: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-hero__copy) {
+  display: grid;
+  gap: 16px;
+  max-width: 900px;
+}
+
+.pageStyles :global(.docs-page-hero) h1 {
+  display: grid;
+  gap: 2px;
+  max-width: 820px;
+  margin: 0;
+  color: var(--registry-v2-text);
+  font-size: clamp(40px, 4vw, 58px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.03;
+}
+
+.pageStyles :global(.docs-page-hero) p {
+  max-width: 820px;
+  margin: 0;
+  color: var(--registry-v2-muted);
+  font-size: 16px;
+  line-height: 1.72;
+}
+
+.pageStyles :global(.docs-page-actions) {
+  margin-top: 2px;
+}
+
+.pageStyles :global(.docs-page-proof) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 2px;
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-console) {
+  max-width: none;
+  box-shadow: none;
+}
+
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-console)
+  :global(.registry-v2-console__body) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pageStyles:global(.docs-page) :global(.registry-v2-contract-side) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-page-section) {
+  border-bottom: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-section) :global(.registry-v2-section-heading) {
+  grid-template-columns: minmax(0, 0.86fr) minmax(260px, 0.56fr);
+  gap: clamp(18px, 3vw, 42px);
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.pageStyles
+  :global(.docs-page-section)
+  :global(.registry-v2-section-heading)
+  h2,
+.pageStyles:global(.docs-page) :global(.registry-v2-quickstart) h2,
+.pageStyles :global(.docs-page-closing) h2 {
+  font-size: clamp(28px, 2.5vw, 38px);
+  line-height: 1.08;
+}
+
+.pageStyles
+  :global(.docs-page-section)
+  :global(.registry-v2-section-heading)
+  > p,
+.pageStyles:global(.docs-page) :global(.registry-v2-card) p,
+.pageStyles:global(.docs-page) :global(.registry-v2-quickstart) p,
+.pageStyles :global(.docs-page-closing) p {
+  font-size: 14px;
+  line-height: 1.68;
+}
+
+.pageStyles:global(.docs-page) :global(.registry-v2-card),
+.pageStyles:global(.docs-page) :global(.registry-v2-field),
+.pageStyles:global(.docs-page) :global(.registry-v2-policy),
+.pageStyles:global(.docs-page) :global(.registry-v2-lane-panel),
+.pageStyles:global(.docs-page) :global(.registry-v2-terminal),
+.pageStyles :global(.docs-page-closing) :global(.registry-v2-shell) {
+  box-shadow: none;
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-map-grid),
+.pageStyles:global(.docs-page) :global(.docs-v2-api-grid),
+.pageStyles:global(.docs-page) :global(.docs-v2-troubleshoot-grid),
+.pageStyles:global(.docs-page) :global(.docs-v2-vocabulary-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-map-card),
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-process-lane)
+  :global(.registry-v2-lane-step),
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-vocabulary-grid)
+  :global(.registry-v2-field) {
+  min-height: 0;
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-process-lane) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-quickstart) {
+  grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+}
+
+.pageStyles:global(.docs-page) :global(.docs-v2-vocabulary-layout) {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.46fr);
+}
+
+.pageStyles :global(.docs-page-closing) {
+  border-bottom: 0;
+}
+
+.pageStyles :global(.docs-page-closing) :global(.registry-v2-shell) {
+  width: 100%;
+  max-width: none;
+  padding: clamp(22px, 3.4vw, 36px);
+}
+
+@media (max-width: 1280px) {
+  .pageStyles :global(.docs-page-layout) {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-toc) {
+    display: none;
+  }
+
+  .pageStyles:global(.docs-page) :global(.registry-v2-contract-side),
+  .pageStyles:global(.docs-page) :global(.docs-v2-process-lane),
+  .pageStyles:global(.docs-page) :global(.docs-v2-quickstart),
+  .pageStyles:global(.docs-page) :global(.docs-v2-vocabulary-layout) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 920px) {
+  .pageStyles:global(.docs-page) {
+    --docs-page-width: min(100% - 28px, 900px);
+  }
+
+  .pageStyles :global(.docs-page-layout) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding-top: 18px;
+  }
+
+  .pageStyles :global(.docs-page-sidebar) {
+    z-index: 8;
+    top: 64px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .pageStyles :global(.docs-page-sidebar) nav {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px;
+    scroll-padding-inline: 10px;
+  }
+
+  .pageStyles :global(.docs-page-sidebar__home) {
+    flex: 0 0 220px;
+    border-right: 1px solid var(--docs-page-border);
+    border-bottom: 0;
+    padding-right: 10px;
+    padding-bottom: 0;
+  }
+
+  .pageStyles :global(.docs-page-nav-group) {
+    flex: 0 0 190px;
+  }
+
+  .pageStyles :global(.docs-page-section) :global(.registry-v2-section-heading),
+  .pageStyles:global(.docs-page) :global(.docs-v2-map-grid),
+  .pageStyles:global(.docs-page) :global(.docs-v2-api-grid),
+  .pageStyles:global(.docs-page) :global(.docs-v2-troubleshoot-grid),
+  .pageStyles:global(.docs-page) :global(.docs-v2-vocabulary-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles:global(.docs-page) {
+    --docs-page-width: min(100% - 20px, 640px);
+    background-size:
+      38px 100%,
+      auto;
+  }
+
+  .pageStyles :global(.docs-page-layout) {
+    padding-bottom: 48px;
+  }
+
+  .pageStyles :global(.docs-page-hero),
+  .pageStyles :global(.docs-page-section),
+  .pageStyles :global(.docs-page-closing) {
+    padding: 20px 16px;
+  }
+
+  .pageStyles :global(.docs-page-hero) h1 {
+    font-size: clamp(34px, 9.6vw, 44px);
+  }
+
+  .pageStyles :global(.docs-page-hero) p {
+    font-size: 14px;
+  }
+
+  .pageStyles :global(.docs-page-actions),
+  .pageStyles :global(.docs-page-proof),
+  .pageStyles:global(.docs-page) :global(.registry-v2-contract-side),
+  .pageStyles:global(.docs-page) :global(.registry-v2-schema-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles:global(.docs-page) :global(.registry-v2-button) {
+    width: 100%;
+  }
+
+  .pageStyles :global(.docs-page-sidebar__home) {
+    flex-basis: 190px;
+  }
+
+  .pageStyles :global(.docs-page-nav-group) {
+    flex-basis: 170px;
+  }
+
+  .pageStyles:global(.docs-page) :global(.docs-v2-terminal) pre {
+    max-height: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Docs page compact console refinement */
+@media (min-width: 1281px) {
+  .pageStyles:global(.docs-page)
+    :global(.docs-v2-console)
+    :global(.registry-v2-console__body) {
+    grid-template-columns: minmax(0, 1.08fr) minmax(220px, 0.58fr);
+  }
+
+  .pageStyles:global(.docs-page) :global(.registry-v2-contract-side) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles:global(.docs-page) :global(.registry-v2-contract-head) {
+    display: grid;
+  }
+
+  .pageStyles:global(.docs-page) :global(.registry-v2-code-preview) pre {
+    max-height: 190px;
+  }
+}
+
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-console)
+  :global(.registry-v2-code-preview) {
+  display: none;
+}
+
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-console)
+  :global(.registry-v2-contract-side) {
+  display: none;
+}
+
+.pageStyles:global(.docs-page)
+  :global(.docs-v2-console)
+  :global(.registry-v2-console__body) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 921px) {
+  .pageStyles:global(.docs-page)
+    :global(.docs-v2-console)
+    :global(.registry-v2-schema-grid) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-page-hero) :global(.docs-v2-console) {
+    display: none;
+  }
+}
+
+/* Docs page interactive tutorial layout */
+.pageStyles :global(.docs-page-layout--interactive) {
+  grid-template-columns: 250px minmax(0, 1fr) 218px;
+  gap: clamp(18px, 2.2vw, 30px);
+  max-width: 1400px;
+}
+
+.pageStyles :global(.docs-page-layout--interactive) :global(.docs-page-sidebar),
+.pageStyles :global(.docs-page-layout--interactive) :global(.docs-page-toc) {
+  top: 84px;
+  max-height: calc(100vh - 104px);
+}
+
+.pageStyles
+  :global(.docs-page-layout--interactive)
+  :global(.docs-page-sidebar)
+  nav,
+.pageStyles :global(.docs-page-layout--interactive) :global(.docs-page-toc) {
+  border-radius: 8px;
+  background: rgba(5, 12, 10, 0.5);
+  box-shadow: none;
+}
+
+.pageStyles
+  :global(.docs-page-layout--interactive)
+  :global(.docs-page-sidebar)
+  nav {
+  gap: 12px;
+  padding: 12px;
+}
+
+.pageStyles :global(.docs-page-section-switcher) {
+  display: grid;
+  gap: 4px;
+}
+
+.pageStyles :global(.docs-page-section-tab) {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  background: transparent;
+  color: var(--registry-v2-muted);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.35;
+  padding: 9px 10px;
+  text-align: left;
+}
+
+.pageStyles :global(.docs-page-section-tab) span {
+  color: var(--registry-v2-text);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.pageStyles :global(.docs-page-section-tab) small {
+  color: var(--registry-v2-faint);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.pageStyles :global(.docs-page-section-tab):hover,
+.pageStyles :global(.docs-page-section-tab):focus-visible,
+.pageStyles :global(.docs-page-section-tab--active) {
+  background: rgba(159, 232, 112, 0.075);
+  border-left-color: rgba(159, 232, 112, 0.74);
+  outline: none;
+}
+
+.pageStyles :global(.docs-page-section-tab--active) small,
+.pageStyles :global(.docs-page-section-tab):hover small,
+.pageStyles :global(.docs-page-section-tab):focus-visible small {
+  color: var(--registry-v2-muted);
+}
+
+.pageStyles :global(.docs-page-article--interactive) {
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(8, 15, 11, 0.66);
+}
+
+.pageStyles
+  :global(.docs-page-article--interactive)
+  :global(.docs-page-section):last-child,
+.pageStyles
+  :global(.docs-page-article--interactive)
+  :global(.docs-page-closing):last-child {
+  border-bottom: 0;
+}
+
+.pageStyles :global(.docs-page-hero--tutorial) {
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.78fr);
+  align-items: start;
+  gap: clamp(22px, 3vw, 42px);
+}
+
+.pageStyles :global(.docs-page-hero--tutorial) h1 {
+  font-size: clamp(36px, 3.4vw, 52px);
+}
+
+.pageStyles :global(.docs-page-hero--tutorial) :global(.docs-v2-console) {
+  position: sticky;
+  top: 86px;
+}
+
+.pageStyles :global(.docs-page-doc-list),
+.pageStyles :global(.docs-page-step-list),
+.pageStyles :global(.docs-page-reference-list),
+.pageStyles :global(.docs-page-definition-list),
+.pageStyles :global(.docs-page-check-list) {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.pageStyles :global(.docs-page-doc-row),
+.pageStyles :global(.docs-page-reference-row),
+.pageStyles :global(.docs-page-definition-list) > div,
+.pageStyles :global(.docs-page-step),
+.pageStyles :global(.docs-page-check-list) li {
+  border-top: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-doc-row) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 18px 0;
+}
+
+.pageStyles :global(.docs-page-doc-row) h3,
+.pageStyles :global(.docs-page-reference-row) h3,
+.pageStyles :global(.docs-page-step) h3,
+.pageStyles :global(.docs-page-note) strong,
+.pageStyles :global(.docs-page-definition-list) dt {
+  margin: 0;
+  color: var(--registry-v2-text);
+  font-size: 15px;
+  font-weight: 860;
+  line-height: 1.35;
+}
+
+.pageStyles :global(.docs-page-doc-row) p,
+.pageStyles :global(.docs-page-reference-row) p,
+.pageStyles :global(.docs-page-step) p,
+.pageStyles :global(.docs-page-note) p,
+.pageStyles :global(.docs-page-definition-list) dd,
+.pageStyles :global(.docs-page-check-list) span,
+.pageStyles :global(.docs-page-section) > p {
+  margin: 6px 0 0;
+  color: var(--registry-v2-muted);
+  font-size: 14px;
+  line-height: 1.66;
+}
+
+.pageStyles :global(.docs-page-doc-row) :global(.docs-v2-check-list) {
+  margin-top: 10px;
+}
+
+.pageStyles :global(.docs-page-doc-row) > :global(.docs-v2-inline-link) {
+  white-space: nowrap;
+}
+
+.pageStyles :global(.docs-page-step) {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  padding: 20px 0;
+}
+
+.pageStyles :global(.docs-page-step) > span {
+  color: var(--registry-v2-accent);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.pageStyles :global(.docs-page-reference-row) {
+  display: grid;
+  gap: 14px;
+  padding: 20px 0;
+}
+
+.pageStyles :global(.docs-page-reference-row) > div:first-child {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: start;
+}
+
+.pageStyles :global(.docs-page-reference-row) > div:first-child svg {
+  color: var(--registry-v2-accent);
+  margin-top: 2px;
+}
+
+.pageStyles :global(.docs-page-reference-row) > div:first-child p {
+  grid-column: 2;
+}
+
+.pageStyles :global(.docs-page-reference-row) :global(.docs-v2-endpoint-list) {
+  margin-left: 29px;
+}
+
+.pageStyles :global(.docs-page-definition-list) > div {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.28fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 0;
+}
+
+.pageStyles :global(.docs-page-definition-list) dd {
+  margin-top: 0;
+}
+
+.pageStyles :global(.docs-page-check-list) {
+  list-style: none;
+  margin-top: 16px;
+}
+
+.pageStyles :global(.docs-page-check-list) li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px 0;
+}
+
+.pageStyles :global(.docs-page-check-list) svg {
+  color: var(--registry-v2-accent);
+  margin-top: 4px;
+}
+
+.pageStyles :global(.docs-page-callout-grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-note) {
+  padding: 18px 18px 18px 0;
+}
+
+.pageStyles :global(.docs-page-note) + :global(.docs-page-note) {
+  border-left: 1px solid var(--docs-page-border);
+  padding-left: 18px;
+}
+
+.pageStyles :global(.docs-page-note--wide) {
+  margin-top: 18px;
+  border-top: 1px solid var(--docs-page-border);
+  padding-top: 18px;
+}
+
+.pageStyles :global(.docs-page-quickstart-panel) {
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.pageStyles
+  :global(.docs-page-quickstart-panel)
+  :global(.registry-v2-quickstart__copy) {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.pageStyles
+  :global(.docs-page-quickstart-panel)
+  :global(.registry-v2-terminal) {
+  border-radius: 8px;
+}
+
+.pageStyles :global(.docs-page-layout--interactive) :global(.docs-page-toc) a {
+  border-left-color: rgba(221, 255, 220, 0.18);
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
+@media (max-width: 1280px) {
+  .pageStyles :global(.docs-page-layout--interactive) {
+    grid-template-columns: 238px minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-hero--tutorial) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-hero--tutorial) :global(.docs-v2-console) {
+    position: static;
+  }
+}
+
+@media (max-width: 920px) {
+  .pageStyles :global(.docs-page-layout--interactive) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--interactive)
+    :global(.docs-page-sidebar) {
+    position: sticky;
+    top: 62px;
+    max-height: none;
+  }
+
+  .pageStyles :global(.docs-page-section-switcher) {
+    display: flex;
+    gap: 6px;
+    min-width: max-content;
+  }
+
+  .pageStyles :global(.docs-page-section-tab) {
+    flex: 0 0 180px;
+    border-left: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
+    padding: 8px 9px;
+  }
+
+  .pageStyles :global(.docs-page-section-tab--active),
+  .pageStyles :global(.docs-page-section-tab):hover,
+  .pageStyles :global(.docs-page-section-tab):focus-visible {
+    border-bottom-color: rgba(159, 232, 112, 0.74);
+  }
+
+  .pageStyles :global(.docs-page-doc-row),
+  .pageStyles :global(.docs-page-definition-list) > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-doc-row) > :global(.registry-v2-card__icon) {
+    display: none;
+  }
+
+  .pageStyles :global(.docs-page-doc-row) > :global(.docs-v2-inline-link) {
+    justify-self: start;
+  }
+
+  .pageStyles
+    :global(.docs-page-reference-row)
+    :global(.docs-v2-endpoint-list) {
+    margin-left: 0;
+  }
+
+  .pageStyles :global(.docs-page-callout-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-note) + :global(.docs-page-note) {
+    border-left: 0;
+    border-top: 1px solid var(--docs-page-border);
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles
+    :global(.docs-page-layout--interactive)
+    :global(.docs-page-sidebar)
+    nav {
+    padding: 8px;
+  }
+
+  .pageStyles :global(.docs-page-section-tab) {
+    flex-basis: 154px;
+  }
+
+  .pageStyles :global(.docs-page-section-tab) small {
+    display: none;
+  }
+
+  .pageStyles :global(.docs-page-step) {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-reference-row) > div:first-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-reference-row) > div:first-child p {
+    grid-column: 1;
+  }
+}
+
+/* Docs mobile code blocks should scroll inside the terminal, not reflow the page. */
+@media (max-width: 640px) {
+  .pageStyles:global(.docs-page)
+    :global(.docs-page-quickstart-panel)
+    :global(.docs-v2-terminal) {
+    overflow: hidden;
+  }
+
+  .pageStyles:global(.docs-page)
+    :global(.docs-page-quickstart-panel)
+    :global(.docs-v2-terminal)
+    pre {
+    overflow-x: auto;
+    overflow-wrap: normal;
+    white-space: pre;
+  }
+}
+
+/* Docs page two-column tutorial refinement */
+.pageStyles:global(.docs-page) {
+  --docs-page-width: min(1180px, calc(100% - 48px));
+}
+
+.pageStyles :global(.docs-page-layout--two-column),
+.pageStyles
+  :global(.docs-page-layout--interactive):global(
+    .docs-page-layout--two-column
+  ) {
+  grid-template-columns: 250px minmax(0, 1fr);
+  max-width: 1180px;
+}
+
+.pageStyles :global(.docs-page-layout--two-column) :global(.docs-page-toc) {
+  display: none !important;
+}
+
+.pageStyles :global(.docs-page-layout--two-column) :global(.docs-page-sidebar) {
+  top: 84px;
+  max-height: calc(100vh - 104px);
+}
+
+.pageStyles :global(.docs-page-layout--two-column) :global(.docs-page-article) {
+  max-width: 900px;
+}
+
+.pageStyles :global(.docs-page-section--first) {
+  border-top: 0;
+}
+
+.pageStyles :global(.docs-page-intro) {
+  display: grid;
+  gap: 18px;
+}
+
+.pageStyles :global(.docs-page-intro) h1 {
+  display: grid;
+  gap: 2px;
+  max-width: 760px;
+  margin: 0;
+  color: var(--registry-v2-text);
+  font-size: clamp(34px, 3vw, 48px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.06;
+}
+
+.pageStyles :global(.docs-page-intro) > p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--registry-v2-muted);
+  font-size: 15px;
+  line-height: 1.72;
+}
+
+.pageStyles :global(.docs-page-note-strip) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--docs-page-border);
+  border-radius: 8px;
+  background: rgba(5, 12, 10, 0.38);
+}
+
+.pageStyles :global(.docs-page-note-strip) > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.pageStyles :global(.docs-page-note-strip) > div + div {
+  border-left: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-note-strip) strong,
+.pageStyles :global(.docs-page-mini-checklist) strong,
+.pageStyles :global(.docs-page-screenshot) figcaption strong,
+.pageStyles :global(.docs-page-step-meta) dt,
+.pageStyles :global(.docs-page-term-meta) strong {
+  color: var(--registry-v2-text);
+  font-size: 12px;
+  font-weight: 880;
+  line-height: 1.35;
+}
+
+.pageStyles :global(.docs-page-note-strip) span,
+.pageStyles :global(.docs-page-mini-checklist) span,
+.pageStyles :global(.docs-page-screenshot) figcaption span,
+.pageStyles :global(.docs-page-step-meta) dd,
+.pageStyles :global(.docs-page-term-meta) span {
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.pageStyles :global(.docs-page-note-strip--stacked) {
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 18px;
+}
+
+.pageStyles :global(.docs-page-note-strip--stacked) > div {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+}
+
+.pageStyles :global(.docs-page-note-strip--stacked) > div + div {
+  border-top: 1px solid var(--docs-page-border);
+  border-left: 0;
+}
+
+.pageStyles :global(.docs-page-note-strip--stacked) svg {
+  color: var(--registry-v2-accent);
+  margin-top: 3px;
+}
+
+.pageStyles :global(.docs-page-note-strip--compact) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.pageStyles :global(.docs-page-note-strip--compact summary) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--registry-v2-text);
+  font-size: 13px;
+  font-weight: 860;
+  padding: 12px 14px;
+}
+
+.pageStyles :global(.docs-page-note-strip--compact summary::-webkit-details-marker) {
+  display: none;
+}
+
+.pageStyles :global(.docs-page-note-strip--compact summary::after) {
+  color: var(--registry-v2-muted);
+  content: "+";
+  font-size: 18px;
+  line-height: 1;
+}
+
+.pageStyles :global(.docs-page-note-strip--compact[open] summary::after) {
+  content: "-";
+}
+
+.pageStyles :global(.docs-page-note-strip--compact[open] summary) {
+  border-bottom: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-operation-step) {
+  position: relative;
+}
+
+.pageStyles :global(.docs-page-step-meta) {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.pageStyles :global(.docs-page-step-meta) > div {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.18fr) minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(221, 255, 220, 0.09);
+}
+
+.pageStyles :global(.docs-page-step-meta) dd {
+  margin: 0;
+}
+
+.pageStyles :global(.docs-page-check-list--compact) {
+  margin-top: 18px;
+  border-top: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-mini-checklist) {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--docs-page-border);
+}
+
+.pageStyles :global(.docs-page-mini-checklist--compact) {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.pageStyles :global(.docs-page-mini-checklist) ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pageStyles :global(.docs-page-mini-checklist) li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.pageStyles :global(.docs-page-mini-checklist) svg {
+  color: var(--registry-v2-accent);
+  margin-top: 3px;
+}
+
+.pageStyles :global(.docs-page-screenshot) {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0 0;
+}
+
+.pageStyles :global(.docs-page-screenshot) > div {
+  overflow: hidden;
+  border: 1px solid var(--docs-page-border);
+  border-radius: 8px;
+  background: rgba(3, 8, 6, 0.72);
+}
+
+.pageStyles :global(.docs-page-screenshot) img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pageStyles :global(.docs-page-screenshot) figcaption {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 2px;
+}
+
+.pageStyles :global(.docs-page-definition-list--tutorial) dd {
+  display: grid;
+  gap: 10px;
+}
+
+.pageStyles :global(.docs-page-definition-list--tutorial) dd > p {
+  margin: 0;
+}
+
+.pageStyles :global(.docs-page-term-meta) {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(221, 255, 220, 0.09);
+}
+
+.pageStyles :global(.docs-page-term-meta) span {
+  display: grid;
+  gap: 3px;
+}
+
+.pageStyles
+  :global(.docs-page-layout--two-column)
+  :global(.docs-page-quickstart-panel) {
+  grid-template-columns: minmax(230px, 0.42fr) minmax(0, 1fr);
+}
+
+@media (max-width: 1100px) {
+  .pageStyles:global(.docs-page) {
+    --docs-page-width: min(100% - 32px, 960px);
+  }
+
+  .pageStyles :global(.docs-page-layout--two-column),
+  .pageStyles
+    :global(.docs-page-layout--interactive):global(
+      .docs-page-layout--two-column
+    ) {
+    grid-template-columns: 232px minmax(0, 1fr);
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-quickstart-panel) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 920px) {
+  .pageStyles :global(.docs-page-layout--two-column),
+  .pageStyles
+    :global(.docs-page-layout--interactive):global(
+      .docs-page-layout--two-column
+    ) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-sidebar) {
+    top: 62px;
+    max-height: none;
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-article) {
+    max-width: none;
+  }
+
+  .pageStyles :global(.docs-page-note-strip) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pageStyles :global(.docs-page-note-strip) > div + div {
+    border-top: 1px solid var(--docs-page-border);
+    border-left: 0;
+  }
+
+  .pageStyles :global(.docs-page-step-meta) > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles:global(.docs-page) {
+    --docs-page-width: min(100% - 20px, 640px);
+  }
+
+  .pageStyles :global(.docs-page-intro) h1 {
+    font-size: clamp(30px, 8.8vw, 40px);
+  }
+
+  .pageStyles :global(.docs-page-screenshot) > div {
+    overflow-x: auto;
+  }
+
+  .pageStyles :global(.docs-page-screenshot) img {
+    min-width: 560px;
+  }
+}
+
+/* Docs sticky nav and rendered previews */
+@media (min-width: 921px) {
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-sidebar) {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-sidebar)
+    nav {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 116px);
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(159, 232, 112, 0.28) transparent;
+  }
+}
+
+.pageStyles :global(.docs-page-preview-window) {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--docs-page-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.04),
+      rgba(221, 255, 220, 0.01)
+    ),
+    rgba(3, 8, 6, 0.74);
+}
+
+.pageStyles :global(.docs-page-preview-window__bar) {
+  display: grid;
+  grid-template-columns: 8px 8px 8px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  border-bottom: 1px solid var(--docs-page-border);
+  padding: 10px 12px;
+}
+
+.pageStyles :global(.docs-page-preview-window__bar) span {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(221, 255, 220, 0.22);
+}
+
+.pageStyles :global(.docs-page-preview-window__bar) strong {
+  min-width: 0;
+  margin-left: 6px;
+  color: var(--registry-v2-faint);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 11px;
+  font-weight: 760;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pageStyles :global(.docs-page-preview-body) {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.pageStyles :global(.docs-page-preview-body) header {
+  display: grid;
+  gap: 6px;
+  max-width: 680px;
+}
+
+.pageStyles :global(.docs-page-preview-body) header span {
+  color: var(--registry-v2-accent);
+  font-size: 11px;
+  font-weight: 880;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pageStyles :global(.docs-page-preview-body) h3 {
+  margin: 0;
+  color: var(--registry-v2-text);
+  font-size: clamp(20px, 2vw, 30px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.pageStyles :global(.docs-page-preview-body) p {
+  margin: 0;
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.pageStyles :global(.docs-page-preview-search) {
+  border: 1px solid rgba(221, 255, 220, 0.13);
+  border-radius: 7px;
+  background: rgba(221, 255, 220, 0.045);
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  padding: 11px 12px;
+}
+
+.pageStyles :global(.docs-page-preview-grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pageStyles :global(.docs-page-preview-grid) article,
+.pageStyles :global(.docs-page-preview-contract),
+.pageStyles :global(.docs-page-preview-flow) li {
+  border: 1px solid rgba(221, 255, 220, 0.12);
+  border-radius: 7px;
+  background: rgba(5, 12, 10, 0.48);
+}
+
+.pageStyles :global(.docs-page-preview-grid) article {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.pageStyles :global(.docs-page-preview-grid) strong,
+.pageStyles :global(.docs-page-preview-contract) strong,
+.pageStyles :global(.docs-page-preview-flow) strong {
+  color: var(--registry-v2-text);
+  font-size: 13px;
+  font-weight: 840;
+  line-height: 1.35;
+}
+
+.pageStyles :global(.docs-page-preview-grid) article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pageStyles :global(.docs-page-preview-grid) article span {
+  border: 1px solid rgba(221, 255, 220, 0.12);
+  border-radius: 999px;
+  color: var(--registry-v2-faint);
+  font-size: 10px;
+  padding: 3px 7px;
+}
+
+.pageStyles :global(.docs-page-preview-contract) {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+.pageStyles :global(.docs-page-preview-contract) > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageStyles :global(.docs-page-preview-contract) code,
+.pageStyles :global(.docs-page-preview-endpoints) code {
+  border: 1px solid rgba(127, 238, 100, 0.16);
+  border-radius: 6px;
+  background: rgba(127, 238, 100, 0.055);
+  color: var(--registry-v2-cyan);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 11px;
+  padding: 5px 7px;
+}
+
+.pageStyles :global(.docs-page-preview-contract) ul,
+.pageStyles :global(.docs-page-preview-flow) {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pageStyles :global(.docs-page-preview-contract) li {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.28fr) minmax(0, 1fr);
+  gap: 10px;
+  border-top: 1px solid rgba(221, 255, 220, 0.08);
+  padding-top: 8px;
+}
+
+.pageStyles :global(.docs-page-preview-contract) li span,
+.pageStyles :global(.docs-page-preview-flow) li > span {
+  color: var(--registry-v2-faint);
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.pageStyles :global(.docs-page-preview-endpoints) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pageStyles :global(.docs-page-preview-flow) li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px;
+}
+
+.pageStyles :global(.docs-page-preview-flow) li > span {
+  color: var(--registry-v2-accent);
+}
+
+@media (max-width: 920px) {
+  .pageStyles :global(.docs-page-preview-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles
+    :global(.docs-page-screenshot)
+    > div:global(.docs-page-preview-window) {
+    overflow-x: auto;
+  }
+
+  .pageStyles :global(.docs-page-preview-body),
+  .pageStyles :global(.docs-page-preview-window__bar) {
+    min-width: 560px;
+  }
+}
+
+/* Let the sticky docs nav be constrained by the full article height, not its own content height. */
+@media (min-width: 921px) {
+  .pageStyles :global(.docs-page-layout--two-column),
+  .pageStyles
+    :global(.docs-page-layout--interactive):global(
+      .docs-page-layout--two-column
+    ) {
+    align-items: stretch;
+  }
+
+  .pageStyles
+    :global(.docs-page-layout--two-column)
+    :global(.docs-page-sidebar) {
+    align-self: stretch;
+  }
+}
+
+/* Sticky side navigation needs the docs shell to remain visible on the block axis. */
+.pageStyles:global(.registry-v2.docs-page) {
+  overflow: visible;
+}
+
+/* Additional docs route styles */
+.pageStyles :global(.docs-layout) {
+  width: min(1220px, calc(100% - 48px));
+  margin: 42px auto;
+}
+
+.pageStyles :global(.docs-layout) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 72px;
+}
+
+.pageStyles :global(.docs-endpoints) {
+  min-height: 100%;
+}
+
+.pageStyles :global(.docs-note) {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pageStyles :global(.docs-note svg) {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+.pageStyles :global(.docs-note--inline) {
+  margin-top: 18px;
+}
+
+.pageStyles :global(.docs-terms-link) {
+  justify-content: center;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.pageStyles :global(.docs-shell) {
+  padding-bottom: 74px;
+}
+
+.pageStyles :global(.docs-shell .code-panel pre) {
+  white-space: pre-wrap;
+}
+
+.pageStyles :global(.docs-shell .code-panel code) {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.pageStyles :global(.docs-hero) {
+  align-items: flex-start;
+}
+
+.pageStyles :global(.docs-hero .page-hero__actions) {
+  align-self: flex-end;
+}
+
+.pageStyles :global(.docs-journey-board),
+.pageStyles :global(.docs-quickstart-section),
+.pageStyles :global(.docs-reference-section),
+.pageStyles :global(.docs-api-section),
+.pageStyles :global(.docs-state-section),
+.pageStyles :global(.docs-operator-panel) {
+  width: min(1220px, calc(100% - 48px));
+  margin: 0 auto 34px;
+}
+
+.pageStyles :global(.docs-section-head) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: end;
+  min-width: 0;
+  margin-bottom: 18px;
+}
+
+.pageStyles :global(.docs-section-head--compact) {
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: 16px;
+}
+
+.pageStyles :global(.docs-section-head h2),
+.pageStyles :global(.docs-operator-panel h2) {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: var(--ink);
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.06;
+}
+
+.pageStyles :global(.docs-section-head p),
+.pageStyles :global(.docs-operator-panel p) {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.pageStyles :global(.docs-journey-grid),
+.pageStyles :global(.docs-quickstart-grid),
+.pageStyles :global(.docs-reference-grid),
+.pageStyles :global(.docs-api-grid),
+.pageStyles :global(.docs-state-grid) {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-journey-grid) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-quickstart-grid) {
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.8fr);
+}
+
+.pageStyles :global(.docs-quickstart-status) {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-quickstart-note) {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.pageStyles :global(.docs-quickstart-note strong) {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.pageStyles :global(.docs-quickstart-note span) {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.pageStyles :global(.docs-reference-grid) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-api-grid),
+.pageStyles :global(.docs-state-grid) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-journey-card),
+.pageStyles :global(.docs-reference-card),
+.pageStyles :global(.docs-api-card),
+.pageStyles :global(.docs-state-card),
+.pageStyles :global(.docs-manifest-panel),
+.pageStyles :global(.docs-runtime-panel),
+.pageStyles :global(.docs-operator-panel) {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.016)
+    ),
+    rgba(20, 24, 18, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.pageStyles :global(.docs-journey-card),
+.pageStyles :global(.docs-reference-card),
+.pageStyles :global(.docs-api-card),
+.pageStyles :global(.docs-state-card),
+.pageStyles :global(.docs-manifest-panel),
+.pageStyles :global(.docs-runtime-panel) {
+  padding: 18px;
+}
+
+.pageStyles :global(.docs-journey-card) {
+  display: grid;
+  gap: 16px;
+  min-height: 372px;
+}
+
+.pageStyles :global(.docs-journey-card__head),
+.pageStyles :global(.docs-reference-card__head),
+.pageStyles :global(.docs-state-card__head) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-journey-card__head span) {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.pageStyles :global(.docs-journey-card h3),
+.pageStyles :global(.docs-reference-card h3),
+.pageStyles :global(.docs-api-card h3),
+.pageStyles :global(.docs-state-card h3) {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.pageStyles :global(.docs-journey-card p),
+.pageStyles :global(.docs-reference-card p),
+.pageStyles :global(.docs-api-card p),
+.pageStyles :global(.docs-state-card p),
+.pageStyles :global(.docs-runtime-panel p) {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pageStyles :global(.docs-journey-steps),
+.pageStyles :global(.docs-runtime-steps) {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-journey-step),
+.pageStyles :global(.docs-runtime-step) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 10px;
+}
+
+.pageStyles :global(.docs-journey-step span),
+.pageStyles :global(.docs-runtime-step span) {
+  color: var(--cyan);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.pageStyles :global(.docs-journey-step strong),
+.pageStyles :global(.docs-runtime-step strong) {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.pageStyles :global(.docs-journey-card .secondary-button) {
+  align-self: end;
+  justify-self: start;
+}
+
+.pageStyles :global(.docs-reference-card) {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 274px;
+}
+
+.pageStyles :global(.docs-reference-card__head svg),
+.pageStyles :global(.docs-state-card__head svg) {
+  color: var(--signal);
+}
+
+.pageStyles :global(.docs-reference-card ul) {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pageStyles :global(.docs-reference-card li) {
+  position: relative;
+  min-width: 0;
+  color: #d8d0c0;
+  font-size: 12px;
+  line-height: 1.45;
+  padding-left: 16px;
+}
+
+.pageStyles :global(.docs-reference-card li::before) {
+  position: absolute;
+  top: 0.55em;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--signal);
+  content: "";
+}
+
+.pageStyles :global(.docs-layout--deep) {
+  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.72fr);
+  align-items: stretch;
+  margin-bottom: 42px;
+}
+
+.pageStyles :global(.docs-contract-stack) {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-manifest-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pageStyles :global(.docs-manifest-field) {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 12px;
+}
+
+.pageStyles :global(.docs-manifest-field span) {
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.pageStyles :global(.docs-manifest-field strong) {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.pageStyles :global(.docs-runtime-panel) {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.pageStyles :global(.docs-runtime-code) {
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-runtime-code pre) {
+  max-height: 320px;
+}
+
+.pageStyles :global(.docs-api-card),
+.pageStyles :global(.docs-state-card) {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 282px;
+  overflow: hidden;
+}
+
+.pageStyles :global(.docs-api-card .endpoint-list code) {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.pageStyles :global(.docs-state-values) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-state-values code) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border: 1px solid rgba(155, 226, 141, 0.16);
+  border-radius: 999px;
+  background: rgba(155, 226, 141, 0.08);
+  color: #d6edc9;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.25;
+  padding: 6px 8px;
+}
+
+.pageStyles :global(.docs-operator-panel) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.74fr) minmax(0, 1fr);
+  gap: 22px;
+  padding: 22px;
+}
+
+.pageStyles :global(.docs-operator-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.pageStyles :global(.docs-operator-list) {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pageStyles :global(.docs-operator-item) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 11px;
+}
+
+.pageStyles :global(.docs-operator-item svg) {
+  flex: 0 0 auto;
+  color: var(--signal);
+}
+
+@media (max-width: 1120px) {
+  .pageStyles :global(.docs-journey-grid),
+  .pageStyles :global(.docs-reference-grid),
+  .pageStyles :global(.docs-api-grid),
+  .pageStyles :global(.docs-state-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.docs-layout),
+  .pageStyles :global(.docs-journey-board),
+  .pageStyles :global(.docs-reference-section),
+  .pageStyles :global(.docs-api-section),
+  .pageStyles :global(.docs-state-section),
+  .pageStyles :global(.docs-operator-panel) {
+    width: min(100% - 28px, 1220px);
+  }
+}
+
+.pageStyles :global(.docs-v2 .registry-v2-shell) {
+  width: min(100% - 48px, 1540px);
+}
+
+.pageStyles :global(.docs-v2-hero__grid) {
+  grid-template-columns: minmax(430px, 0.88fr) minmax(670px, 1.12fr);
+}
+
+.pageStyles :global(.docs-v2 .registry-v2-hero) {
+  padding-top: clamp(48px, 5.2vw, 82px);
+}
+
+.pageStyles :global(.docs-v2 .registry-v2-hero h1) {
+  max-width: 900px;
+  font-size: clamp(48px, 4.8vw, 82px);
+}
+
+.pageStyles :global(.docs-v2-console .registry-v2-console__body) {
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.72fr);
+}
+
+.pageStyles :global(.docs-v2 .registry-v2-code-preview pre),
+.pageStyles :global(.docs-v2-terminal pre) {
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.pageStyles :global(.docs-v2-map-grid) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-v2-map-card) {
+  align-content: start;
+  min-height: 338px;
+}
+
+.pageStyles :global(.docs-v2-check-list) {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pageStyles :global(.docs-v2-check-list li) {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--registry-v2-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pageStyles :global(.docs-v2-check-list svg) {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--registry-v2-accent);
+}
+
+.pageStyles :global(.docs-v2-inline-link) {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  color: var(--registry-v2-cyan);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.pageStyles :global(.docs-v2-inline-link:hover) {
+  color: var(--registry-v2-accent);
+}
+
+.pageStyles :global(.docs-v2-process-lane) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-v2-process-lane .registry-v2-lane-step) {
+  min-height: 196px;
+}
+
+.pageStyles :global(.docs-v2-api-grid),
+.pageStyles :global(.docs-v2-troubleshoot-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-v2-api-card),
+.pageStyles :global(.docs-v2-troubleshoot-card) {
+  align-content: start;
+}
+
+.pageStyles :global(.docs-v2-endpoint-list) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.pageStyles :global(.docs-v2-endpoint-list code) {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  border: 1px solid rgba(117, 230, 210, 0.18);
+  border-radius: 6px;
+  background: rgba(117, 230, 210, 0.075);
+  color: var(--registry-v2-cyan);
+  padding: 0 9px;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.pageStyles :global(.docs-v2-quickstart) {
+  grid-template-columns: minmax(340px, 0.45fr) minmax(0, 1fr);
+}
+
+.pageStyles :global(.docs-v2-terminal pre) {
+  max-height: 560px;
+}
+
+.pageStyles :global(.docs-v2-vocabulary-layout) {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.42fr);
+}
+
+.pageStyles :global(.docs-v2-vocabulary-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pageStyles :global(.docs-v2-vocabulary-grid .registry-v2-field) {
+  min-height: 152px;
+}
+
+.pageStyles :global(.docs-v2-guardrail-stack .registry-v2-policy:first-child) {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(159, 232, 112, 0.09),
+      rgba(117, 230, 210, 0.045)
+    ),
+    rgba(255, 255, 255, 0.052);
+}
+
+@media (max-width: 1280px) {
+  .pageStyles :global(.docs-v2-map-grid),
+  .pageStyles :global(.docs-v2-process-lane),
+  .pageStyles :global(.docs-v2-api-grid),
+  .pageStyles :global(.docs-v2-vocabulary-grid),
+  .pageStyles :global(.docs-v2-troubleshoot-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1280px) {
+  .pageStyles :global(.docs-v2-map-card),
+  .pageStyles :global(.docs-v2-process-lane .registry-v2-lane-step) {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .pageStyles :global(.docs-v2 .registry-v2-shell) {
+    width: min(100% - 28px, 900px);
+  }
+}
+
+@media (max-width: 900px) {
+  .pageStyles :global(.docs-v2-map-grid),
+  .pageStyles :global(.docs-v2-process-lane),
+  .pageStyles :global(.docs-v2-api-grid),
+  .pageStyles :global(.docs-v2-vocabulary-grid),
+  .pageStyles :global(.docs-v2-troubleshoot-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .pageStyles :global(.docs-v2-console .registry-v2-console__body),
+  .pageStyles :global(.docs-v2-vocabulary-layout) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-v2 .registry-v2-shell) {
+    width: min(100% - 18px, 640px);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-v2 .registry-v2-hero h1) {
+    font-size: clamp(34px, 9.8vw, 46px);
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-v2-map-card),
+  .pageStyles :global(.docs-v2-api-card),
+  .pageStyles :global(.docs-v2-troubleshoot-card) {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-v2-endpoint-list code) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageStyles :global(.docs-v2-terminal pre) {
+    max-height: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}

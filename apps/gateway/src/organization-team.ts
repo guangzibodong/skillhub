@@ -38,47 +38,11 @@ export type OrganizationTeamAccessToken = {
 
 const organizationRoles: OrganizationRole[] = ["owner", "admin", "developer", "publisher", "reviewer", "finance"];
 
-const fallbackMembers: OrganizationTeamMember[] = [
-  {
-    userId: "demo-user-owner",
-    email: "owner@useskillhub.com",
-    displayName: "SkillHub Owner",
-    platformRole: "admin",
-    role: "owner",
-    tokenCount: 2,
-    activeTokenCount: 2,
-    lastTokenUsedAt: "demo",
-    memberSince: "demo"
-  },
-  {
-    userId: "demo-user-developer",
-    email: "developer@useskillhub.com",
-    displayName: "Agent Developer",
-    platformRole: "user",
-    role: "developer",
-    tokenCount: 1,
-    activeTokenCount: 1,
-    lastTokenUsedAt: "demo",
-    memberSince: "demo"
-  },
-  {
-    userId: "demo-user-finance",
-    email: "finance@useskillhub.com",
-    displayName: "Finance Operator",
-    platformRole: "finance",
-    role: "finance",
-    tokenCount: 1,
-    activeTokenCount: 0,
-    lastTokenUsedAt: null,
-    memberSince: "demo"
-  }
-];
-
 export async function listOrganizationTeamMembers(organizationId: string | null | undefined) {
   const sql = await getSql();
 
   if (!sql || !organizationId) {
-    return fallbackMembers;
+    return [];
   }
 
   return listTeamRows(sql, organizationId);

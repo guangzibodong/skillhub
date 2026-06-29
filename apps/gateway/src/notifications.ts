@@ -1,4 +1,8 @@
 import { getSql } from "./registry.js";
+import {
+  resolveEmailProviderConfig,
+  type PlatformConfigEnv,
+} from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -37,6 +41,10 @@ type NotificationDeliveryProcessInput = {
   mode?: unknown;
 };
 
+type PlatformTestEmailInput = {
+  to?: unknown;
+};
+
 type NotificationDeliveryProcessMode = "deliver" | "dry_run";
 
 type ProcessedDeliveryOutcome = {
@@ -54,7 +62,7 @@ type NotificationFanoutSummary = {
   webhookCount: number;
 };
 
-type NotificationDeliveryRuntimeEnv = {
+type NotificationDeliveryRuntimeEnv = PlatformConfigEnv & {
   NODE_ENV?: string;
   RESEND_API_KEY?: string;
   SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
@@ -126,100 +134,14 @@ type NotificationSummary = {
   unread: number;
 };
 
-const fallbackUserNotifications: NotificationRow[] = [
-  {
-    id: "demo-buyer-request-claimed",
-    eventType: "buyer_request.claimed",
-    channel: "in_app",
-    subject: "Your buyer request was claimed",
-    payload: {
-      title: "Figma change request to Linear issue",
-      requestId: "demo-request-figma-linear"
-    },
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  },
-  {
-    id: "demo-skill-update",
-    eventType: "skill.update",
-    channel: "in_app",
-    subject: "New citation freshness scoring available",
-    payload: {
-      projectSlug: "research-agent",
-      skillSlug: "browser-research"
-    },
-    status: "sent",
-    createdAt: "demo",
-    deliveredAt: "demo"
-  },
-  {
-    id: "demo-payout-review",
-    eventType: "publisher.payout",
-    channel: "in_app",
-    subject: "Payout request entered review",
-    payload: {
-      amountCents: 480000,
-      currency: "usd"
-    },
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  }
-];
-
-const fallbackAdminDeliveryQueue: NotificationDeliveryRecord[] = [
-  {
-    id: "demo-email-code",
-    eventType: "auth.email.code.requested",
-    channel: "email",
-    deliveryAttempts: 0,
-    deliveryProvider: "provider_deferred",
-    deliveredAt: null,
-    error: null,
-    lastAttemptedAt: null,
-    nextAttemptAt: null,
-    payloadSummary: {
-      challengeId: "demo-email-challenge",
-      code: "[redacted]",
-      email: "builder@example.com",
-      mode: "signup"
-    },
-    providerMessageId: null,
-    status: "queued",
-    subject: "SkillHub verification code",
-    createdAt: "demo"
-  },
-  {
-    id: "demo-webhook-delivery",
-    eventType: "runtime.incident.opened",
-    channel: "webhook",
-    deliveryAttempts: 2,
-    deliveryProvider: "webhook_worker",
-    deliveredAt: null,
-    error: "Endpoint returned 503.",
-    lastAttemptedAt: "demo",
-    nextAttemptAt: "demo",
-    payloadSummary: {
-      incidentId: "demo-incident",
-      skillSlug: "browser-research"
-    },
-    providerMessageId: "demo-msg-503",
-    status: "failed",
-    subject: "Runtime incident opened",
-    createdAt: "demo"
-  }
-];
-
 export async function listUserNotificationInbox(userId: string, organizationId: string | null | undefined, limit = 25) {
   const sql = await getSql();
   const safeLimit = normalizeLimit(limit);
 
   if (!sql) {
-    const notifications = fallbackUserNotifications.slice(0, safeLimit);
     return {
-      notifications,
-      summary: summarizeNotifications(fallbackUserNotifications)
+      notifications: [],
+      summary: summarizeNotifications([])
     };
   }
 
@@ -234,26 +156,7 @@ export async function listAdminNotifications(limit = 25) {
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
 
   if (!sql) {
-    return [
-      {
-        id: "demo-billing-posted",
-        eventType: "billing.usage_posted",
-        channel: "in_app",
-        subject: "Billable usage posted to ledger",
-        status: "queued",
-        createdAt: "demo",
-        deliveredAt: null
-      },
-      {
-        id: "demo-review-approved",
-        eventType: "skill.review.approved",
-        channel: "in_app",
-        subject: "Skill review approved",
-        status: "queued",
-        createdAt: "demo",
-        deliveredAt: null
-      }
-    ];
+    return [];
   }
 
   return sql`
@@ -279,7 +182,7 @@ export async function listAdminNotificationDeliveries(
   const safeLimit = normalizeLimit(limit);
 
   if (!sql) {
-    return fallbackAdminDeliveryQueue.slice(0, safeLimit);
+    return [];
   }
 
   const channel = normalizeOptionalDeliveryChannel(options.channel);
@@ -512,12 +415,67 @@ export async function processNotificationDeliveries(
   return summarizeProcessResult(mode, processed, fanout);
 }
 
+export async function sendPlatformTestEmail(
+  input: PlatformTestEmailInput,
+  env?: NotificationDeliveryRuntimeEnv,
+  actorUserId?: string | null
+) {
+  const sql = await requireSql();
+  const to = normalizeEmailAddress(String(input.to ?? ""));
+  const row: NotificationRow = {
+    id: `test-${Date.now()}`,
+    channel: "email",
+    createdAt: new Date().toISOString(),
+    deliveredAt: null,
+    eventType: "platform.email.test",
+    payload: {
+      email: to,
+      to
+    },
+    status: "queued",
+    subject: "SkillHub test email"
+  };
+  const emailConfig = await resolveEmailProviderConfig(env, { includeSecrets: false });
+
+  if (emailConfig.status !== "active" || emailConfig.provider === "unconfigured") {
+    throw new Error("Email provider is not configured in admin platform settings.");
+  }
+
+  const outcome = await processEmailDelivery(sql, row, env, "deliver");
+
+  await sql`
+    insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+    values (
+      ${actorUserId ?? null},
+      'platform_config.email.test',
+      'platform_provider_config',
+      'email',
+      ${outcome.action === "mark_sent" ? "Platform email test sent." : "Platform email test failed."},
+      ${sql.json({
+        provider: outcome.provider,
+        providerMessageId: outcome.providerMessageId,
+        status: outcome.action === "mark_sent" ? "sent" : "failed"
+      })}
+    )
+  `;
+
+  if (outcome.action !== "mark_sent") {
+    throw new Error(outcome.reason);
+  }
+
+  return {
+    provider: outcome.provider,
+    providerMessageId: outcome.providerMessageId,
+    status: "sent"
+  };
+}
+
 export async function listUserNotifications(userId: string, organizationId: string | null | undefined, limit = 25) {
   const sql = await getSql();
   const safeLimit = normalizeLimit(limit);
 
   if (!sql) {
-    return fallbackUserNotifications.slice(0, safeLimit);
+    return [];
   }
 
   return listUserNotificationsWithSql(sql, userId, organizationId, safeLimit);
@@ -938,6 +896,16 @@ function normalizeLimit(limit: number) {
   return Math.min(Math.max(Math.trunc(Number(limit) || 25), 1), 100);
 }
 
+function normalizeEmailAddress(value: string) {
+  const email = value.trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 320) {
+    throw new Error("A valid recipient email address is required.");
+  }
+
+  return email;
+}
+
 function normalizeProcessMode(value: unknown): NotificationDeliveryProcessMode {
   const mode = String(value ?? "dry_run").trim();
 
@@ -964,7 +932,8 @@ async function processEmailDelivery(
   env: NotificationDeliveryRuntimeEnv | undefined,
   mode: NotificationDeliveryProcessMode
 ): Promise<ProcessedDeliveryOutcome> {
-  const provider = normalizeEmailProvider(env);
+  const emailConfig = await resolveEmailProviderConfig(env, { includeSecrets: true });
+  const provider = emailConfig.provider === "unconfigured" ? normalizeEmailProvider(env) : emailConfig.provider;
   const recipient = getPayloadText(row.payload, "email") ?? getPayloadText(row.payload, "to");
   const renderedTemplate = await resolveRenderedNotificationTemplate(sql, row, "email");
 
@@ -1000,7 +969,7 @@ async function processEmailDelivery(
   }
 
   if (provider === "smtp") {
-    return processSmtpEmailDelivery(row, env, mode, recipient, renderedTemplate);
+    return processSmtpEmailDelivery(row, env, mode, recipient, renderedTemplate, emailConfig);
   }
 
   if (provider !== "resend") {
@@ -1014,8 +983,8 @@ async function processEmailDelivery(
     };
   }
 
-  const apiKey = getRuntimeEnv(env, "RESEND_API_KEY");
-  const from = getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
+  const apiKey = emailConfig.resendApiKey ?? getRuntimeEnv(env, "RESEND_API_KEY");
+  const from = emailConfig.from ?? getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
 
   if (!apiKey || !from) {
     return {
@@ -1076,15 +1045,16 @@ async function processSmtpEmailDelivery(
   env: NotificationDeliveryRuntimeEnv | undefined,
   mode: NotificationDeliveryProcessMode,
   recipient: string,
-  renderedTemplate: Awaited<ReturnType<typeof resolveRenderedNotificationTemplate>>
+  renderedTemplate: Awaited<ReturnType<typeof resolveRenderedNotificationTemplate>>,
+  emailConfig: Awaited<ReturnType<typeof resolveEmailProviderConfig>>
 ): Promise<ProcessedDeliveryOutcome> {
   const provider = "smtp";
-  const host = getRuntimeEnv(env, "SKILLHUB_SMTP_HOST");
-  const port = normalizeSmtpPort(getRuntimeEnv(env, "SKILLHUB_SMTP_PORT"));
-  const secure = normalizeSmtpSecure(getRuntimeEnv(env, "SKILLHUB_SMTP_SECURE"), port);
-  const username = getRuntimeEnv(env, "SKILLHUB_SMTP_USER");
-  const password = getRuntimeEnv(env, "SKILLHUB_SMTP_PASSWORD");
-  const from = getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
+  const host = emailConfig.smtpHost ?? getRuntimeEnv(env, "SKILLHUB_SMTP_HOST");
+  const port = normalizeSmtpPort(emailConfig.smtpPort ?? getRuntimeEnv(env, "SKILLHUB_SMTP_PORT"));
+  const secure = normalizeSmtpSecure(emailConfig.smtpSecure ?? getRuntimeEnv(env, "SKILLHUB_SMTP_SECURE"), port);
+  const username = emailConfig.smtpUser ?? getRuntimeEnv(env, "SKILLHUB_SMTP_USER");
+  const password = emailConfig.smtpPassword ?? getRuntimeEnv(env, "SKILLHUB_SMTP_PASSWORD");
+  const from = emailConfig.from ?? getRuntimeEnv(env, "SKILLHUB_EMAIL_FROM");
 
   if (!host || !username || !password || !from) {
     return {
@@ -1388,7 +1358,7 @@ function normalizeEmailProvider(env: NotificationDeliveryRuntimeEnv | undefined)
     return "debug_preview";
   }
 
-  return "provider_deferred";
+  return "unconfigured";
 }
 
 type SmtpSocket = import("node:net").Socket | import("node:tls").TLSSocket;
@@ -1840,12 +1810,12 @@ function normalizeDeliveryReason(value: unknown, action: NotificationDeliveryAct
 }
 
 function normalizeProvider(value: unknown) {
-  const provider = String(value ?? "provider_deferred")
+  const provider = String(value ?? "unconfigured")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, "_");
 
-  return (provider || "provider_deferred").slice(0, 80);
+  return (provider || "unconfigured").slice(0, 80);
 }
 
 function normalizeProviderMessageId(value: unknown, action: NotificationDeliveryAction) {

@@ -3,7 +3,12 @@
 import { getServerApiUrl } from "@/lib/api-url";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { clearSessionCookie, fetchSessionSubject, setSessionCookie, type SessionSubject } from "@/lib/auth-session";
+import {
+  clearSessionCookie,
+  fetchSessionSubject,
+  setSessionCookie,
+  type SessionSubject,
+} from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
 
@@ -30,31 +35,57 @@ export type SignupActionState = AuthActionState & {
   };
 };
 
+export type PasswordResetActionState = {
+  challenge?: {
+    challengeId: string;
+    deliveryPreviewCode?: string | null;
+    email: string;
+    expiresAt: string;
+    mode: "password_reset";
+  };
+  completed?: boolean;
+  message: string;
+  status: "idle" | "success" | "error";
+};
+
 const copy = {
   en: {
     codeRequired: "Enter the 6-digit email verification code.",
+    confirmPasswordRequired: "Confirm your password.",
     codeSent: "Verification code queued for email delivery.",
-    codeUsed: "This verification code has already been used. Request a new code.",
-    emailAlreadyRegistered: "This email is already registered. Sign in instead.",
+    codeUsed:
+      "This verification code has already been used. Request a new code.",
+    emailAlreadyRegistered:
+      "This email is already registered. Sign in instead.",
     emailRequired: "Enter a valid email address.",
     invalidCredentials: "Email/username or password is incorrect.",
     invalidToken: "Enter a valid SkillHub invite or recovery token.",
     organizationRequired: "Enter an organization or workspace name.",
     passwordRequired: "Enter a password with at least 8 characters.",
-    publicSignupDisabled: "Public email access is disabled for this deployment.",
+    passwordMismatch: "Passwords do not match.",
+    publicSignupDisabled:
+      "Public email access is disabled for this deployment.",
+    resetCodeSent:
+      "If this email has password access, a reset code has been queued for delivery.",
+    resetComplete:
+      "Password reset complete. You can sign in with the new password.",
     signedIn: "Workspace session connected.",
     signedOut: "Workspace session cleared.",
     signedUp: "Workspace session connected.",
     slugTaken: "This workspace slug is already taken.",
     tooManyAttempts: "Too many failed attempts. Please wait, then try again.",
     usernameTaken: "This username is already taken.",
-    usernameRequired: "Enter a username using letters, numbers, underscores, or hyphens.",
+    usernameRequired:
+      "Enter a username using letters, numbers, underscores, or hyphens.",
     unableEmail: "Unable to complete email verification.",
-    unablePasswordAuth: "Unable to complete password login.",
-    unableSignIn: "Unable to verify this token."
+    unablePasswordLogin: "Unable to complete password login.",
+    unablePasswordReset: "Unable to complete password reset.",
+    unablePasswordSignup: "Unable to complete password signup.",
+    unableSignIn: "Unable to verify this token.",
   },
   zh: {
     codeRequired: "请输入 6 位邮箱验证码。",
+    confirmPasswordRequired: "请再次输入密码。",
     codeSent: "验证码已进入邮件发送队列。",
     codeUsed: "这个验证码已经用过，请重新获取验证码。",
     emailAlreadyRegistered: "这个邮箱已经注册，请直接登录。",
@@ -63,7 +94,10 @@ const copy = {
     invalidToken: "请输入有效的 SkillHub 邀请或恢复 Token。",
     organizationRequired: "请输入组织或工作区名称。",
     passwordRequired: "请输入至少 8 位密码。",
+    passwordMismatch: "两次输入的密码不一致。",
     publicSignupDisabled: "当前部署已关闭公开邮箱访问。",
+    resetCodeSent: "如果这个邮箱开通过密码登录，重置验证码会进入发送队列。",
+    resetComplete: "密码已重置，可以使用新密码登录。",
     signedIn: "工作区会话已连接。",
     signedOut: "工作区会话已清除。",
     signedUp: "工作区会话已连接。",
@@ -72,15 +106,17 @@ const copy = {
     usernameTaken: "这个用户名已被使用。",
     usernameRequired: "请输入用户名，可使用字母、数字、下划线或连字符。",
     unableEmail: "无法完成邮箱验证。",
-    unablePasswordAuth: "无法完成密码登录。",
-    unableSignIn: "无法验证这个 token。"
-  }
+    unablePasswordLogin: "无法完成密码登录。",
+    unablePasswordReset: "无法完成密码重置。",
+    unablePasswordSignup: "无法完成密码注册。",
+    unableSignIn: "无法验证这个 token。",
+  },
 } as const;
 
 export async function signInAction(
   locale: Locale,
   _previousState: AuthActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthActionState> {
   const labels = copy[locale];
   const token = String(formData.get("token") ?? "").trim();
@@ -103,14 +139,14 @@ export async function signInAction(
     message: labels.signedIn,
     redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
     status: "success",
-    subject
+    subject,
   };
 }
 
 export async function signUpAction(
   locale: Locale,
   previousState: SignupActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<SignupActionState> {
   const intent = String(formData.get("intent") ?? "request").trim();
 
@@ -128,20 +164,55 @@ export async function signUpAction(
 export async function signOutAction(locale: Locale) {
   await clearSessionCookie();
   revalidateWorkspace();
-  redirect(locale === "zh" ? "/login?lang=zh" : "/login?lang=en");
+  redirect(signOutRedirectPath(locale));
 }
 
-async function passwordAuthAction(locale: Locale, formData: FormData): Promise<SignupActionState> {
+export async function signOutClientAction(locale: Locale) {
+  await clearSessionCookie();
+  revalidateWorkspace();
+
+  return { redirectTo: signOutRedirectPath(locale) };
+}
+
+export async function passwordResetAction(
+  locale: Locale,
+  previousState: PasswordResetActionState,
+  formData: FormData,
+): Promise<PasswordResetActionState> {
+  const intent = String(formData.get("intent") ?? "request").trim();
+
+  if (intent === "confirm") {
+    return confirmPasswordResetAction(locale, previousState, formData);
+  }
+
+  return requestPasswordResetAction(locale, formData);
+}
+
+async function passwordAuthAction(
+  locale: Locale,
+  formData: FormData,
+): Promise<SignupActionState> {
   const labels = copy[locale];
   const mode = normalizeEmailMode(formData.get("mode"));
-  const username = String(formData.get("username") ?? "").trim().toLowerCase();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const identifier = String(formData.get("identifier") ?? (email || username)).trim().toLowerCase();
+  const username = String(formData.get("username") ?? "")
+    .trim()
+    .toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const identifier = String(formData.get("identifier") ?? (email || username))
+    .trim()
+    .toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
   const remember = formData.get("remember") === "on";
   const displayName = String(formData.get("displayName") ?? "").trim();
-  const organizationName = String(formData.get("organizationName") ?? "").trim();
-  const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
+  const organizationName = String(
+    formData.get("organizationName") ?? "",
+  ).trim();
+  const organizationSlug = String(
+    formData.get("organizationSlug") ?? "",
+  ).trim();
   const role = String(formData.get("role") ?? "owner").trim();
   const requestedReturnTo = normalizeReturnTo(formData.get("returnTo"));
 
@@ -161,34 +232,45 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
     return { message: labels.passwordRequired, status: "error" };
   }
 
+  if (mode === "signup" && !confirmPassword) {
+    return { message: labels.confirmPasswordRequired, status: "error" };
+  }
+
+  if (mode === "signup" && password !== confirmPassword) {
+    return { message: labels.passwordMismatch, status: "error" };
+  }
+
   if (mode === "signup" && !organizationName) {
     return { message: labels.organizationRequired, status: "error" };
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/v1/auth/password/${mode === "signup" ? "signup" : "login"}`, {
-      body: JSON.stringify(
-        mode === "signup"
-          ? {
-              displayName,
-              email,
-              organizationName,
-              organizationSlug,
-              password,
-              role,
-              username
-            }
-          : {
-              identifier,
-              password
-            }
-      ),
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await fetch(
+      `${getApiUrl()}/v1/auth/password/${mode === "signup" ? "signup" : "login"}`,
+      {
+        body: JSON.stringify(
+          mode === "signup"
+            ? {
+                displayName,
+                email,
+                organizationName,
+                organizationSlug,
+                password,
+                role,
+                username,
+              }
+            : {
+                identifier,
+                password,
+              },
+        ),
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
       },
-      method: "POST"
-    });
+    );
     const payload = (await response.json().catch(() => ({}))) as {
       error?: string;
       login?: {
@@ -204,7 +286,10 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
     const token = payload.login?.accessToken?.token;
 
     if (!response.ok || !token) {
-      return { message: passwordErrorMessage(payload.error, labels), status: "error" };
+      return {
+        message: passwordErrorMessage(payload.error, labels, mode),
+        status: "error",
+      };
     }
 
     await setSessionCookie(token, { persistent: remember });
@@ -214,25 +299,190 @@ async function passwordAuthAction(locale: Locale, formData: FormData): Promise<S
     return {
       message: mode === "signup" ? labels.signedUp : labels.signedIn,
       organization: {
-        name: payload.login?.organization?.name ?? (organizationName || "SkillHub workspace"),
-        slug: payload.login?.organization?.slug ?? organizationSlug
+        name:
+          payload.login?.organization?.name ??
+          (organizationName || "SkillHub workspace"),
+        slug: payload.login?.organization?.slug ?? organizationSlug,
       },
       redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
       status: "success",
-      subject: subject ?? undefined
+      subject: subject ?? undefined,
     };
   } catch {
-    return { message: labels.unablePasswordAuth, status: "error" };
+    return { message: passwordFallbackMessage(labels, mode), status: "error" };
   }
 }
 
-async function requestEmailCodeAction(locale: Locale, formData: FormData): Promise<SignupActionState> {
+async function requestPasswordResetAction(
+  locale: Locale,
+  formData: FormData,
+): Promise<PasswordResetActionState> {
+  const labels = copy[locale];
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    return { message: labels.emailRequired, status: "error" };
+  }
+
+  try {
+    const response = await fetch(
+      `${getApiUrl()}/v1/auth/password/reset/request`,
+      {
+        body: JSON.stringify({ email }),
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      },
+    );
+    const payload = (await response.json().catch(() => ({}))) as {
+      challenge?: {
+        challengeId?: string;
+        deliveryPreviewCode?: string | null;
+        email?: string;
+        expiresAt?: string;
+        mode?: "password_reset";
+      };
+      error?: string;
+    };
+    const challenge = payload.challenge;
+
+    if (
+      !response.ok ||
+      !challenge?.challengeId ||
+      !challenge.email ||
+      !challenge.expiresAt ||
+      challenge.mode !== "password_reset"
+    ) {
+      return {
+        message: passwordResetErrorMessage(payload.error, labels),
+        status: "error",
+      };
+    }
+
+    return {
+      challenge: {
+        challengeId: challenge.challengeId,
+        deliveryPreviewCode: challenge.deliveryPreviewCode ?? null,
+        email: challenge.email,
+        expiresAt: challenge.expiresAt,
+        mode: challenge.mode,
+      },
+      message: labels.resetCodeSent,
+      status: "success",
+    };
+  } catch {
+    return { message: labels.unablePasswordReset, status: "error" };
+  }
+}
+
+async function confirmPasswordResetAction(
+  locale: Locale,
+  previousState: PasswordResetActionState,
+  formData: FormData,
+): Promise<PasswordResetActionState> {
+  const labels = copy[locale];
+  const challengeId = String(
+    formData.get("challengeId") ?? previousState.challenge?.challengeId ?? "",
+  ).trim();
+  const code = String(formData.get("code") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+
+  if (!challengeId || !/^\d{6}$/.test(code.replace(/\D/g, ""))) {
+    return {
+      ...previousState,
+      message: labels.codeRequired,
+      status: "error",
+    };
+  }
+
+  if (password.length < 8) {
+    return {
+      ...previousState,
+      message: labels.passwordRequired,
+      status: "error",
+    };
+  }
+
+  if (!confirmPassword) {
+    return {
+      ...previousState,
+      message: labels.confirmPasswordRequired,
+      status: "error",
+    };
+  }
+
+  if (password !== confirmPassword) {
+    return {
+      ...previousState,
+      message: labels.passwordMismatch,
+      status: "error",
+    };
+  }
+
+  try {
+    const response = await fetch(
+      `${getApiUrl()}/v1/auth/password/reset/confirm`,
+      {
+        body: JSON.stringify({
+          challengeId,
+          code,
+          password,
+        }),
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      },
+    );
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      reset?: { email?: string };
+    };
+
+    if (!response.ok || !payload.reset?.email) {
+      return {
+        ...previousState,
+        message: passwordResetErrorMessage(payload.error, labels),
+        status: "error",
+      };
+    }
+
+    return {
+      completed: true,
+      message: labels.resetComplete,
+      status: "success",
+    };
+  } catch {
+    return {
+      ...previousState,
+      message: labels.unablePasswordReset,
+      status: "error",
+    };
+  }
+}
+
+async function requestEmailCodeAction(
+  locale: Locale,
+  formData: FormData,
+): Promise<SignupActionState> {
   const labels = copy[locale];
   const mode = normalizeEmailMode(formData.get("mode"));
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   const displayName = String(formData.get("displayName") ?? "").trim();
-  const organizationName = String(formData.get("organizationName") ?? "").trim();
-  const organizationSlug = String(formData.get("organizationSlug") ?? "").trim();
+  const organizationName = String(
+    formData.get("organizationName") ?? "",
+  ).trim();
+  const organizationSlug = String(
+    formData.get("organizationSlug") ?? "",
+  ).trim();
   const role = String(formData.get("role") ?? "owner").trim();
 
   if (!email || !email.includes("@")) {
@@ -252,13 +502,13 @@ async function requestEmailCodeAction(locale: Locale, formData: FormData): Promi
         organizationName,
         organizationSlug,
         returnTo: locale === "zh" ? "/account?lang=zh" : "/account?lang=en",
-        role
+        role,
       }),
       cache: "no-store",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      method: "POST"
+      method: "POST",
     });
     const payload = (await response.json().catch(() => ({}))) as {
       challenge?: {
@@ -273,8 +523,17 @@ async function requestEmailCodeAction(locale: Locale, formData: FormData): Promi
     };
     const challenge = payload.challenge;
 
-    if (!response.ok || !challenge?.challengeId || !challenge.email || !challenge.expiresAt || !challenge.mode) {
-      return { message: emailErrorMessage(payload.error, labels), status: "error" };
+    if (
+      !response.ok ||
+      !challenge?.challengeId ||
+      !challenge.email ||
+      !challenge.expiresAt ||
+      !challenge.mode
+    ) {
+      return {
+        message: emailErrorMessage(payload.error, labels),
+        status: "error",
+      };
     }
 
     return {
@@ -285,10 +544,10 @@ async function requestEmailCodeAction(locale: Locale, formData: FormData): Promi
         expiresAt: challenge.expiresAt,
         mode: challenge.mode,
         organizationName,
-        organizationSlug: challenge.organizationSlug ?? organizationSlug
+        organizationSlug: challenge.organizationSlug ?? organizationSlug,
       },
       message: labels.codeSent,
-      status: "success"
+      status: "success",
     };
   } catch {
     return { message: labels.unableEmail, status: "error" };
@@ -298,10 +557,12 @@ async function requestEmailCodeAction(locale: Locale, formData: FormData): Promi
 async function verifyEmailCodeAction(
   locale: Locale,
   previousState: SignupActionState,
-  formData: FormData
+  formData: FormData,
 ): Promise<SignupActionState> {
   const labels = copy[locale];
-  const challengeId = String(formData.get("challengeId") ?? previousState.challenge?.challengeId ?? "").trim();
+  const challengeId = String(
+    formData.get("challengeId") ?? previousState.challenge?.challengeId ?? "",
+  ).trim();
   const code = String(formData.get("code") ?? "").trim();
   const requestedReturnTo = normalizeReturnTo(formData.get("returnTo"));
 
@@ -309,7 +570,7 @@ async function verifyEmailCodeAction(
     return {
       ...previousState,
       message: labels.codeRequired,
-      status: "error"
+      status: "error",
     };
   }
 
@@ -317,13 +578,13 @@ async function verifyEmailCodeAction(
     const response = await fetch(`${getApiUrl()}/v1/auth/email/verify-code`, {
       body: JSON.stringify({
         challengeId,
-        code
+        code,
       }),
       cache: "no-store",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      method: "POST"
+      method: "POST",
     });
     const payload = (await response.json().catch(() => ({}))) as {
       error?: string;
@@ -343,7 +604,7 @@ async function verifyEmailCodeAction(
       return {
         ...previousState,
         message: emailErrorMessage(payload.error, labels),
-        status: "error"
+        status: "error",
       };
     }
 
@@ -354,24 +615,31 @@ async function verifyEmailCodeAction(
     return {
       message: labels.signedUp,
       organization: {
-        name: payload.login?.organization?.name ?? previousState.challenge?.organizationName ?? "SkillHub workspace",
-        slug: payload.login?.organization?.slug ?? previousState.challenge?.organizationSlug ?? ""
+        name:
+          payload.login?.organization?.name ??
+          previousState.challenge?.organizationName ??
+          "SkillHub workspace",
+        slug:
+          payload.login?.organization?.slug ??
+          previousState.challenge?.organizationSlug ??
+          "",
       },
       redirectTo: resolveAuthRedirect(subject, requestedReturnTo, locale),
       status: "success",
-      subject: subject ?? undefined
+      subject: subject ?? undefined,
     };
   } catch {
     return {
       ...previousState,
       message: labels.unableEmail,
-      status: "error"
+      status: "error",
     };
   }
 }
 
 function revalidateWorkspace() {
   revalidatePath("/");
+  revalidatePath("/login");
   revalidatePath("/dashboard");
   revalidatePath("/developer");
   revalidatePath("/publisher");
@@ -380,7 +648,13 @@ function revalidateWorkspace() {
   revalidatePath("/publish");
 }
 
-function normalizeEmailMode(value: FormDataEntryValue | null): "login" | "signup" {
+function signOutRedirectPath(locale: Locale) {
+  return locale === "zh" ? "/login?lang=zh" : "/login?lang=en";
+}
+
+function normalizeEmailMode(
+  value: FormDataEntryValue | null,
+): "login" | "signup" {
   return value === "login" ? "login" : "signup";
 }
 
@@ -391,7 +665,12 @@ function normalizeReturnTo(value: FormDataEntryValue | null) {
 
   const candidate = value.trim();
 
-  if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//") || candidate.includes("://")) {
+  if (
+    !candidate ||
+    !candidate.startsWith("/") ||
+    candidate.startsWith("//") ||
+    candidate.includes("://")
+  ) {
     return null;
   }
 
@@ -401,13 +680,16 @@ function normalizeReturnTo(value: FormDataEntryValue | null) {
 function resolveAuthRedirect(
   subject: SessionSubject | null | undefined,
   requestedReturnTo: string | null,
-  locale: Locale
+  locale: Locale,
 ) {
   if (!subject) {
     return locale === "zh" ? "/role-landing?lang=zh" : "/role-landing?lang=en";
   }
 
-  if (requestedReturnTo && roleCanOpenRequestedPath(subject, requestedReturnTo)) {
+  if (
+    requestedReturnTo &&
+    roleCanOpenRequestedPath(subject, requestedReturnTo)
+  ) {
     return requestedReturnTo;
   }
 
@@ -418,21 +700,53 @@ function getApiUrl() {
   return getServerApiUrl();
 }
 
-function emailErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+function emailErrorMessage(
+  error: string | undefined,
+  labels: (typeof copy)[Locale],
+) {
   return sharedAuthErrorMessage(error, labels) ?? labels.unableEmail;
 }
 
-function passwordErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+function passwordErrorMessage(
+  error: string | undefined,
+  labels: (typeof copy)[Locale],
+  mode: "login" | "signup",
+) {
   const message = error?.toLowerCase() ?? "";
 
-  if (message.includes("email/username or password") || message.includes("password is incorrect")) {
+  if (
+    message.includes("email/username or password") ||
+    message.includes("password is incorrect")
+  ) {
     return labels.invalidCredentials;
   }
 
-  return sharedAuthErrorMessage(error, labels) ?? labels.unablePasswordAuth;
+  return (
+    sharedAuthErrorMessage(error, labels) ??
+    passwordFallbackMessage(labels, mode)
+  );
 }
 
-function sharedAuthErrorMessage(error: string | undefined, labels: (typeof copy)[Locale]) {
+function passwordFallbackMessage(
+  labels: (typeof copy)[Locale],
+  mode: "login" | "signup",
+) {
+  return mode === "signup"
+    ? labels.unablePasswordSignup
+    : labels.unablePasswordLogin;
+}
+
+function passwordResetErrorMessage(
+  error: string | undefined,
+  labels: (typeof copy)[Locale],
+) {
+  return sharedAuthErrorMessage(error, labels) ?? labels.unablePasswordReset;
+}
+
+function sharedAuthErrorMessage(
+  error: string | undefined,
+  labels: (typeof copy)[Locale],
+) {
   const message = error?.toLowerCase() ?? "";
 
   if (message.includes("slug") && message.includes("taken")) {

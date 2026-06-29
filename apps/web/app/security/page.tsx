@@ -1,9 +1,7 @@
 import {
-  AlertTriangle,
   ArrowRight,
   CheckCircle2,
   ExternalLink,
-  FileWarning,
   KeyRound,
   LifeBuoy,
   LockKeyhole,
@@ -86,7 +84,7 @@ const copy = {
     principlesTitle: "我们如何保护平台",
     principles: [
       { icon: "shield", title: "权限审查", desc: "每个技能声明所需权限。高风险权限（文件系统、网络、密钥）在公开上架前触发强制人工审核。" },
-      { icon: "lock", title: "运行治理", desc: "项目级 API Key、逐调用审计追踪、速率限制和预算执行。没有匿名调用能到达生产运行时。" },
+      { icon: "lock", title: "调用权限与记录", desc: "项目级 API Key、逐调用审计追踪、速率限制和预算执行。没有匿名调用能到达生产运行时。" },
       { icon: "key", title: "密钥隔离", desc: "OAuth secret、API token 和私钥永远不会出现在公开 manifest、日志或错误响应中。运行时密钥在执行时注入，不存储在合约中。" },
       { icon: "alert", title: "事件响应", desc: "严重漏洞触发立即暂停。受影响的开发者收到自动通知和缓解指导。" }
     ],
@@ -206,7 +204,7 @@ export default async function SecurityPage({ searchParams }: PageProps) {
       {/* ===== 3. RESPONSIBLE DISCLOSURE (left text + right checklist like homepage team section) ===== */}
       <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="max-w-[760px]">
             {/* Left: disclosure info */}
             <Reveal>
               <div>
@@ -254,31 +252,6 @@ export default async function SecurityPage({ searchParams }: PageProps) {
               </div>
             </Reveal>
 
-            {/* Right: visual card mockup (like homepage's dashboard preview) */}
-            <Reveal delay={120}>
-              <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] overflow-hidden">
-                {/* Mock terminal header */}
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-[rgba(255,255,255,0.06)]">
-                  <div className="w-3 h-3 rounded-full bg-[#ef4444]" />
-                  <div className="w-3 h-3 rounded-full bg-[#f59e0b]" />
-                  <div className="w-3 h-3 rounded-full bg-[#10b981]" />
-                  <span className="ml-3 text-[12px] text-[#666]">security-report.md</span>
-                </div>
-                {/* Mock report content */}
-                <div className="p-5 font-mono text-[13px] leading-[1.8] text-[#999]">
-                  <p><span className="text-[#7fee64]">##</span> <span className="text-white">Security Report</span></p>
-                  <p className="mt-3"><span className="text-[#666]">affected:</span> <span className="text-[#10b981]">/skills/browser-research</span></p>
-                  <p><span className="text-[#666]">severity:</span> <span className="text-[#f59e0b]">{locale === "zh" ? "中" : "medium"}</span></p>
-                  <p><span className="text-[#666]">type:</span> <span className="text-white">permission-escalation</span></p>
-                  <p className="mt-3"><span className="text-[#666]">description:</span></p>
-                  <p className="text-[#999] ml-2">{locale === "zh" ? "技能在 manifest 中声明只读权限，" : "Skill declares read-only in manifest,"}</p>
-                  <p className="text-[#999] ml-2">{locale === "zh" ? "但运行时尝试写入文件系统。" : "but runtime attempts filesystem writes."}</p>
-                  <p className="mt-3"><span className="text-[#666]">contact:</span> <span className="text-[#7fee64]">researcher@example.com</span></p>
-                  <p className="mt-4 text-[#525252]">---</p>
-                  <p className="text-[#525252]">{locale === "zh" ? "# 不含任何真实 token 或密钥" : "# No real tokens or secrets included"}</p>
-                </div>
-              </div>
-            </Reveal>
           </div>
         </div>
       </section>
@@ -315,37 +288,6 @@ export default async function SecurityPage({ searchParams }: PageProps) {
                       {item.time}
                     </span>
                   </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== 5. PLATFORM STATUS (stat cards like homepage's evidence chain) ===== */}
-      <section className="py-[96px] border-t border-[rgba(255,255,255,0.08)]">
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="text-center mb-12">
-            <Reveal>
-              <p className="text-[12px] font-medium text-[#666] tracking-[0.05em] uppercase mb-2">
-                {t.statusEyebrow}
-              </p>
-              <h2 className="text-[40px] font-bold text-white tracking-[-0.04em]">
-                {t.statusTitle}
-              </h2>
-            </Reveal>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {t.statusItems.map((item, i) => (
-              <Reveal key={item.label} delay={i * 60}>
-                <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[12px] p-5 hover:border-[rgba(255,255,255,0.15)] transition-all">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="pulse-dot" aria-hidden="true" />
-                    <span className="text-[11px] font-medium text-[#10b981] uppercase tracking-wider">{item.status}</span>
-                  </div>
-                  <h3 className="text-[15px] font-semibold text-white mb-1">{item.label}</h3>
-                  <p className="text-[13px] text-[#666] leading-[1.5]">{item.desc}</p>
                 </div>
               </Reveal>
             ))}

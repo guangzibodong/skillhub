@@ -20,6 +20,7 @@ import { formatCompactNumber, formatPercent } from "@/lib/ops-format";
 import { getPublicPublisherProfile } from "@/lib/public-publishers";
 import { getSkillInstallState } from "@/lib/skill-install-state";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -58,14 +59,14 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     },
     zh: {
       title: `${publisher.displayName} - SkillHub 发布者档案`,
-      description: `查看 ${publisher.displayName} 的已验证技能、公开上架、运行证据、安装信号和付费市场预览状态。`
+      description: `查看 ${publisher.displayName} 的已验证技能、公开上架、调用记录、安装信号和付费市场状态。`
     }
   });
 }
 
 const copy = {
   en: {
-    activePaid: "Paid preview inventory",
+    activePaid: "Paid marketplace inventory",
     back: "Back to marketplace",
     calls: "Calls",
     details: "Skill details",
@@ -75,7 +76,7 @@ const copy = {
     metricInstalls: "Adoption evidence",
     metricPublic: "Public skills",
     metricVerified: "Verified skills",
-    payout: "Paid marketplace preview",
+    payout: "Paid marketplace",
     profile: "Publisher profile",
     publicSkills: "Public skills",
     skillBody: "Skills are listed with verification, permission risk, pricing state, API inspect commands, and install eligibility so agent builders can compare before adopting.",
@@ -101,14 +102,14 @@ const copy = {
     metricInstalls: "采用证据",
     metricPublic: "公开技能",
     metricVerified: "已验证技能",
-    payout: "付费市场预览",
+    payout: "付费市场",
     profile: "发布者档案",
     publicSkills: "公开技能",
     skillBody: "这里展示每个技能的验证状态、权限风险、价格状态、API 查看命令和安装资格，方便智能体开发者在采用前比较。",
     status: "资料状态",
     success: "平均成功率",
     trust: "信任信号",
-    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、运行证据和安装证据共同决定。付费市场预览状态只作为预发布上下文展示。",
+    trustBody: "发布者信任由档案状态、已验证技能数量、公开上架、审核状态、调用记录和安装证据共同决定。付费市场状态只作为预发布上下文展示。",
     trustLevels: { active: "公开资料", blocked: "已阻断发布者", limited: "受限发布者", verified: "已验证发布者" },
     billingModels: { free: "免费", per_call: "按次调用", subscription: "订阅" },
     payoutStatuses: { blocked: "已阻断", not_configured: "预发布 / 未配置", verification_required: "需要验证", verified: "已验证" },
@@ -121,7 +122,7 @@ const copy = {
 export default async function PublicPublisherPage({ params, searchParams }: PageProps) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
   const locale = getLocaleFromSearchParams(search);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const apiUrl = getPublicApiUrl();
   const publisher = await getPublicPublisherProfile(slug);
   const labels = copy[locale];
 

@@ -1,5 +1,4 @@
-import { LayoutDashboard, LogIn, LogOut, ShieldCheck, UserCircle } from "lucide-react";
-import { signOutAction } from "@/lib/auth-actions";
+import { LayoutDashboard, LogIn, ShieldCheck, UserCircle } from "lucide-react";
 import type { WorkspaceSession } from "@/lib/auth-session";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 
@@ -21,7 +20,6 @@ const copy = {
     role: "Role",
     retrySession: "Sign in again",
     signIn: "Sign in",
-    signOut: "Sign out",
     status: "Status",
     signedInTitle: "You are signed in",
     signedOutTitle: "Sign in required",
@@ -41,7 +39,6 @@ const copy = {
     role: "角色",
     retrySession: "重新登录",
     signIn: "去登录",
-    signOut: "退出登录",
     status: "状态",
     signedInTitle: "你已登录",
     signedOutTitle: "需要先登录",
@@ -67,20 +64,11 @@ export function SessionStatusPanel({ locale, session }: SessionStatusPanelProps)
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{statusTitle}</span>
         </div>
-        {subject ? (
-          session.source === "cookie" ? (
-            <form action={signOutAction.bind(null, locale)}>
-              <button className="ghost-button ghost-button--inline" type="submit">
-                <LogOut size={15} aria-hidden="true" />
-                <span>{labels.signOut}</span>
-              </button>
-            </form>
-          ) : (
-            <a className="ghost-button ghost-button--inline" href={localizedHref("/account", locale)}>
-              <UserCircle size={15} aria-hidden="true" />
-              <span>{labels.account}</span>
-            </a>
-          )
+        {subject && session.source !== "cookie" ? (
+          <a className="ghost-button ghost-button--inline" href={localizedHref("/account", locale)}>
+            <UserCircle size={15} aria-hidden="true" />
+            <span>{labels.account}</span>
+          </a>
         ) : null}
       </div>
       {subject ? (

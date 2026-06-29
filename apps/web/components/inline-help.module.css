@@ -1,0 +1,102 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+.trigger {
+  display: inline-grid;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  cursor: help;
+  flex: 0 0 auto;
+  padding: 0;
+}
+
+.root .trigger {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+}
+
+.trigger svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+
+.trigger:hover,
+.trigger:focus-visible,
+.root:focus-within .trigger {
+  border-color: rgba(127, 238, 100, 0.28);
+  background: rgba(127, 238, 100, 0.08);
+  color: var(--ink);
+  outline: 0;
+}
+
+.panel {
+  position: absolute;
+  z-index: 1200;
+  display: none;
+  width: min(280px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(16, 20, 15, 0.98);
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.36);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.root:hover .panel,
+.root:focus-within .panel {
+  display: block;
+}
+
+.top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.left {
+  top: 50%;
+  right: calc(100% + 8px);
+  transform: translateY(-50%);
+}
+
+.right {
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(-50%);
+}
+
+@media (max-width: 680px) {
+  .panel {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+}

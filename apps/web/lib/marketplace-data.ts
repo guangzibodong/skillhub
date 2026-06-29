@@ -28,6 +28,7 @@ export type MarketplaceSkill = {
   categoryKey: MarketplaceCategoryKey;
   tags: Record<Locale, string[]>;
   price: LocalizedText;
+  priceId?: string;
   billing: "free" | "per_call" | "subscription";
   rating: string;
   feedbackCount?: number;
@@ -3026,7 +3027,7 @@ const expansionCatalogPacks: ExpansionCatalogPack[] = [
       { en: "Browser Automation", zh: "浏览器自动化" },
       { en: "Competitor Research", zh: "竞品研究" },
       { en: "News Tracker", zh: "新闻追踪" },
-      { en: "Evidence Pack", zh: "证据包" },
+      { en: "Evidence Pack", zh: "检查结果" },
     ],
   },
   {

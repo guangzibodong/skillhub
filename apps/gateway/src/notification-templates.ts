@@ -28,105 +28,12 @@ export type NotificationTemplateRecord = {
 const channels: TemplateChannel[] = ["email", "in_app", "webhook"];
 const statuses: TemplateStatus[] = ["draft", "active", "archived"];
 
-const fallbackTemplates: NotificationTemplateRecord[] = [
-  {
-    id: "demo-template-auth-code",
-    templateKey: "auth.email.code.requested",
-    channel: "email",
-    locale: "en",
-    subject: "Your SkillHub verification code",
-    body: "Use code {{code}} to continue signing in to SkillHub. The code expires soon.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-workspace-ready",
-    templateKey: "auth.email.signup.verified",
-    channel: "in_app",
-    locale: "en",
-    subject: "Workspace created",
-    body: "Your SkillHub workspace is ready. Create a project, install a skill, or publish your first skill package.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-review-submitted",
-    templateKey: "skill.review.submitted",
-    channel: "in_app",
-    locale: "en",
-    subject: "Skill submitted for review",
-    body: "Skill {{skillSlug}} entered review. Track automated checks and reviewer notes from the publisher workspace.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-skill-review",
-    templateKey: "skill.review.approved",
-    channel: "in_app",
-    locale: "en",
-    subject: "Skill review approved",
-    body: "Your skill {{skillSlug}} has been approved and can appear in marketplace discovery.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-runtime-incident",
-    templateKey: "runtime.incident.opened",
-    channel: "email",
-    locale: "en",
-    subject: "Runtime incident opened for {{skillName}}",
-    body: "SkillHub opened a {{severity}} incident for {{skillName}}. Review the publisher workspace for recovery steps.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-billing-subscription",
-    templateKey: "billing.subscription_posted",
-    channel: "in_app",
-    locale: "en",
-    subject: "Subscription period posted",
-    body: "A subscription period for {{skillName}} was posted to the ledger and is ready for invoice, split, balance, refund, and dispute workflows.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-payout-review",
-    templateKey: "payout.review",
-    channel: "in_app",
-    locale: "en",
-    subject: "Payout entered review",
-    body: "Payout {{payoutId}} entered finance review because it requires manual approval before finance transfers funds.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-webhook-billing",
-    templateKey: "billing.subscription_posted",
-    channel: "webhook",
-    locale: "en",
-    subject: "billing.subscription_posted",
-    body: "{\"event\":\"billing.subscription_posted\",\"skillName\":\"{{skillName}}\",\"transactionId\":\"{{transactionId}}\",\"amountCents\":\"{{amountCents}}\"}",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-marketplace-curation",
-    templateKey: "marketplace.curation.updated",
-    channel: "in_app",
-    locale: "en",
-    subject: "Marketplace placement updated",
-    body: "Marketplace placement for {{skillSlug}} changed. Review reason, expiry, quality gaps, and appeal path from the publisher workspace.",
-    status: "active",
-    updatedAt: "demo"
-  }
-];
-
 export async function listNotificationTemplates(limit = 50) {
   const sql = await getSql();
   const safeLimit = Math.min(Math.max(Math.trunc(Number(limit) || 50), 1), 100);
 
   if (!sql) {
-    return fallbackTemplates.slice(0, safeLimit);
+    return [];
   }
 
   return (await sql`

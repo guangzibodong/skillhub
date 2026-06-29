@@ -2,7 +2,9 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, LogIn, XCircle } from "lucide-react";
+import Password from "antd/es/input/Password";
+import { KeyRound, LogIn } from "lucide-react";
+import { SkillAlert, SkillButton } from "@/components/skill-antd";
 import { signInAction, type AuthActionState } from "@/lib/auth-actions";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 
@@ -86,7 +88,7 @@ export function SessionLoginForm({
         />
         <label>
           <span>{labels.label}</span>
-          <input
+          <Password
             autoComplete="off"
             name="token"
             placeholder={labels.placeholder}
@@ -94,10 +96,10 @@ export function SessionLoginForm({
             type="password"
           />
         </label>
-        <button className="secondary-button" disabled={isPending} type="submit">
+        <SkillButton className="secondary-button" disabled={isPending} htmlType="submit">
           <LogIn size={16} aria-hidden="true" />
           <span>{isPending ? labels.submitting : labels.submit}</span>
-        </button>
+        </SkillButton>
       </form>
       {showFeedback ? <AuthMessage id={feedbackId} state={state} /> : null}
       {state.subject ? (
@@ -120,7 +122,7 @@ export function SessionLoginForm({
 
 function AuthMessage({ id, state }: { id: string; state: AuthActionState }) {
   return (
-    <div
+    <SkillAlert
       aria-atomic="true"
       aria-live={state.status === "success" ? "polite" : "assertive"}
       className={
@@ -128,15 +130,10 @@ function AuthMessage({ id, state }: { id: string; state: AuthActionState }) {
           ? "action-message action-message--success"
           : "action-message action-message--error"
       }
+      description={state.message}
       id={id}
       role={state.status === "success" ? "status" : "alert"}
-    >
-      {state.status === "success" ? (
-        <CheckCircle2 size={16} aria-hidden="true" />
-      ) : (
-        <XCircle size={16} aria-hidden="true" />
-      )}
-      <span>{state.message}</span>
-    </div>
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
 }

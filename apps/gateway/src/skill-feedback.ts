@@ -1,4 +1,3 @@
-import { demoFallback } from "./demo-fallback.js";
 import { getSql } from "./registry.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
@@ -101,122 +100,8 @@ const decisionActions: FeedbackDecisionAction[] = [
   "reopen",
 ];
 
-const fallbackFeedback = [
-  {
-    id: "demo-feedback-browser-research-1",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: null,
-    reviewerDisplayName: "Research Agent Ops",
-    reviewerOrganizationName: "SkillHub Demo Org",
-    projectSlug: "research-agent",
-    rating: 5,
-    title: "Reliable source gathering for daily briefings",
-    body: "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
-    useCase: "Daily market and policy research briefings",
-    status: "published",
-    moderationReason: "Public demo feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody:
-      "Thanks for the citation request. We are adding source timestamps and confidence fields to the next reviewed version.",
-    publisherRespondedAt: "demo",
-    publisherResponderDisplayName: "SkillHub Labs",
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-  {
-    id: "demo-feedback-browser-research-2",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: null,
-    reviewerDisplayName: "Automation Lead",
-    reviewerOrganizationName: "Builder Studio",
-    projectSlug: "content-agent",
-    rating: 4,
-    title: "Good contract, needs richer citation metadata",
-    body: "Works well for first-pass research. We would like source timestamps and confidence fields before using it in compliance-heavy workflows.",
-    useCase: "Long-form content research",
-    status: "published",
-    moderationReason: "Public demo feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody:
-      "This is on our roadmap for regulated workflows. The next manifest revision will expose richer source metadata.",
-    publisherRespondedAt: "demo",
-    publisherResponderDisplayName: "SkillHub Labs",
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-  {
-    id: "demo-feedback-manifest-review-1",
-    skillId: "demo-skill-manifest-review",
-    skillSlug: "manifest-review",
-    skillName: "Manifest Review",
-    reviewerEmail: null,
-    reviewerDisplayName: "Platform Reviewer",
-    reviewerOrganizationName: "SkillHub Demo Org",
-    projectSlug: "publisher-workbench",
-    rating: 5,
-    title: "Useful before submitting a new skill",
-    body: "It catches missing examples and permission mismatches before the skill enters the formal review queue.",
-    useCase: "Publisher preflight checks",
-    status: "published",
-    moderationReason: "Public demo feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody: null,
-    publisherRespondedAt: null,
-    publisherResponderDisplayName: null,
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-  {
-    id: "demo-feedback-pending",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: "ops@example.com",
-    reviewerDisplayName: "Ops Reviewer",
-    reviewerOrganizationName: "Research Agent",
-    projectSlug: "research-agent",
-    rating: 3,
-    title: "Needs review before publishing",
-    body: "Pending queue example for admin moderation.",
-    useCase: "Admin queue demo",
-    status: "pending",
-    moderationReason: null,
-    moderatedAt: null,
-    publisherResponseBody: null,
-    publisherRespondedAt: null,
-    publisherResponderDisplayName: null,
-    publishedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo",
-  },
-] satisfies SkillFeedbackRow[];
-
 export async function listPublicSkillFeedback(skillSlug: string, limit = 12) {
   const sql = await getSql();
-
-  if (!sql) {
-    const feedbackRows = demoFallback(
-      fallbackFeedback
-        .filter(
-          (row) => row.skillSlug === skillSlug && row.status === "published",
-        )
-        .slice(0, normalizeLimit(limit, 24)),
-      [],
-    );
-    const feedback = feedbackRows.map(toPublicFeedbackRow);
-
-    return {
-      feedback,
-      summary: summarizeFeedback(feedbackRows),
-    };
-  }
 
   const feedbackRows = await listFeedbackRows(sql, {
     limit,
@@ -233,15 +118,6 @@ export async function listPublicSkillFeedback(skillSlug: string, limit = 12) {
 export async function listAdminSkillFeedback(status?: string, limit = 50) {
   const normalizedStatus = normalizeOptionalStatus(status);
   const sql = await getSql();
-
-  if (!sql) {
-    return demoFallback(
-      fallbackFeedback
-        .filter((row) => !normalizedStatus || row.status === normalizedStatus)
-        .slice(0, normalizeLimit(limit, 100)),
-      [],
-    );
-  }
 
   return listFeedbackRows(sql, {
     limit,

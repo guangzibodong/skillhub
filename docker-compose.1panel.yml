@@ -6,21 +6,21 @@ services:
       context: .
       dockerfile: deploy/docker/web.Dockerfile
       args:
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
-        SKILLHUB_SERVER_API_URL: ${SKILLHUB_SERVER_API_URL:-https://api.useskillhub.com}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        SKILLHUB_SERVER_API_URL: http://api:8787
     container_name: skillhub-web
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      SKILLHUB_ENV: production
+      SKILLHUB_ENV: ${SKILLHUB_ENV}
       SKILLHUB_ACCESS_LOG_PATHS: /var/log/skillhub/useskillhub/access.log,/var/log/skillhub/www.useskillhub/access.log
       SKILLHUB_ANALYTICS_TIME_ZONE: Asia/Shanghai
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
-      SKILLHUB_SERVER_API_URL: ${SKILLHUB_SERVER_API_URL:-https://api.useskillhub.com}
-      SKILLHUB_AUTH_CALLBACK_BASE_URL: ${SKILLHUB_AUTH_CALLBACK_BASE_URL:-https://api.useskillhub.com}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      SKILLHUB_SERVER_API_URL: http://api:8787
+      SKILLHUB_AUTH_CALLBACK_BASE_URL: ${SKILLHUB_AUTH_CALLBACK_BASE_URL}
     volumes:
       - /opt/1panel/www/sites/useskillhub.com/log:/var/log/skillhub/useskillhub:ro
       - /opt/1panel/www/sites/www.useskillhub.com/log:/var/log/skillhub/www.useskillhub:ro
@@ -40,12 +40,12 @@ services:
     env_file:
       - .env
     environment:
-      SKILLHUB_ENV: production
+      SKILLHUB_ENV: ${SKILLHUB_ENV}
       HOST: 0.0.0.0
       PORT: 8787
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://useskillhub.com}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.useskillhub.com}
-      SKILLHUB_AUTH_CALLBACK_BASE_URL: ${SKILLHUB_AUTH_CALLBACK_BASE_URL:-https://api.useskillhub.com}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      SKILLHUB_AUTH_CALLBACK_BASE_URL: ${SKILLHUB_AUTH_CALLBACK_BASE_URL}
       DATABASE_URL: postgres://skillhub:${POSTGRES_PASSWORD}@postgres:5432/skillhub
       REDIS_URL: redis://redis:6379
     ports:

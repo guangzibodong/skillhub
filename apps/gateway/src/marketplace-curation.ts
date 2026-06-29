@@ -34,75 +34,12 @@ export type AdminMarketplaceCurationRecord = {
 
 const placements: MarketplacePlacement[] = ["featured", "standard", "suppressed"];
 
-const fallbackCuration: AdminMarketplaceCurationRecord[] = [
-  {
-    id: "demo-curation-browser-research",
-    averageRating: 4.8,
-    boost: 120,
-    displayName: "Browser Research",
-    endsAt: null,
-    feedbackCount: 24,
-    incidentCount: 0,
-    installCount: 12840,
-    invocationCount: 96200,
-    pendingFeedbackCount: 1,
-    placement: "featured",
-    reason: "Verified, high adoption, and strong published feedback.",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    successRate: 0.982,
-    updatedAt: "demo",
-    verificationStatus: "verified",
-    visibility: "public"
-  },
-  {
-    id: "demo-curation-dataset-summarizer",
-    averageRating: 4.6,
-    boost: 20,
-    displayName: "Dataset Summarizer",
-    endsAt: null,
-    feedbackCount: 17,
-    incidentCount: 1,
-    installCount: 6920,
-    invocationCount: 41800,
-    pendingFeedbackCount: 0,
-    placement: "standard",
-    reason: "Useful data workflow, keep visible while reviewer checks retention wording.",
-    skillId: "demo-skill-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    successRate: 0.975,
-    updatedAt: "demo",
-    verificationStatus: "submitted",
-    visibility: "public"
-  },
-  {
-    id: "demo-curation-manifest-review",
-    averageRating: 4.3,
-    boost: -60,
-    displayName: "Manifest Review",
-    endsAt: null,
-    feedbackCount: 9,
-    incidentCount: 0,
-    installCount: 1840,
-    invocationCount: 11600,
-    pendingFeedbackCount: 2,
-    placement: "suppressed",
-    reason: "Draft trust state should not outrank verified alternatives yet.",
-    skillId: "demo-skill-manifest-review",
-    skillSlug: "manifest-review",
-    successRate: 0.946,
-    updatedAt: "demo",
-    verificationStatus: "draft",
-    visibility: "public"
-  }
-];
-
 export async function listAdminMarketplaceCuration(limit = 30) {
   const sql = await getSql();
   const safeLimit = Math.min(Math.max(Math.trunc(Number(limit) || 30), 1), 100);
 
   if (!sql) {
-    return fallbackCuration.slice(0, safeLimit);
+    return [];
   }
 
   try {

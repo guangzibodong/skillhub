@@ -1,0 +1,41 @@
+/* Page-level styles moved from globals.css: project */
+.pageStyles :global(.project-detail-layout) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 18px;
+  align-items: start;
+  width: min(1220px, calc(100% - 48px));
+  margin: 18px auto 72px;
+}
+
+.pageStyles :global(.project-detail-main),
+.pageStyles :global(.project-detail-side) {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.pageStyles :global(.project-detail-workspace) {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  gap: 24px;
+  min-width: 0;
+}
+
+.pageStyles :global(.project-detail-workspace > *) {
+  min-width: 0;
+}
+
+.pageStyles :global(.project-detail-main > div),
+.pageStyles :global(.project-detail-side > div),
+.pageStyles :global(.project-detail-main > div > .ops-panel),
+.pageStyles :global(.project-detail-side > div > .ops-panel) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1120px) {
+  .pageStyles :global(.project-detail-workspace) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

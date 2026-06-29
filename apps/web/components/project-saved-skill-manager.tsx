@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Bookmark, Plus, Trash2 } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectSavedSkillRecord } from "@/lib/ops-data";
 import {
@@ -117,16 +118,16 @@ export function ProjectSavedSkillManager({
       <form action={saveAction} className="project-saved-skill-form">
         <label>
           <span>{labels.skillSlug}</span>
-          <input name="skillSlug" placeholder="browser-research" required />
+          <SkillInput name="skillSlug" placeholder="browser-research" required />
         </label>
         <label>
           <span>{labels.collection}</span>
-          <input defaultValue={labels.defaultCollection} name="collectionName" />
+          <SkillInput defaultValue={labels.defaultCollection} name="collectionName" />
         </label>
-        <button className="secondary-button" disabled={isSavePending} type="submit">
+        <SkillButton className="secondary-button" disabled={isSavePending} htmlType="submit">
           <Plus size={15} aria-hidden="true" />
           <span>{isSavePending ? labels.saving : labels.add}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {saveState.status !== "idle" ? <ActionMessage state={saveState} /> : null}
@@ -145,17 +146,17 @@ export function ProjectSavedSkillManager({
                   </span>
                 </div>
                 <div className="project-saved-skill-card__meta">
-                  <span className={statusChipClass(savedSkill.verificationStatus)}>{formatVerificationStatus(savedSkill.verificationStatus, labels)}</span>
-                  <span className="status-chip status-chip--neutral">{formatPermissionLevel(savedSkill.permissionLevel, labels)}</span>
-                  {savedSkill.installedStatus ? <span className="status-chip">{formatInstalledStatus(savedSkill.installedStatus, labels)}</span> : null}
+                  <SkillStatusTag className={statusChipClass(savedSkill.verificationStatus)}>{formatVerificationStatus(savedSkill.verificationStatus, labels)}</SkillStatusTag>
+                  <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">{formatPermissionLevel(savedSkill.permissionLevel, labels)}</SkillStatusTag>
+                  {savedSkill.installedStatus ? <SkillStatusTag className="status-chip">{formatInstalledStatus(savedSkill.installedStatus, labels)}</SkillStatusTag> : null}
                 </div>
                 <small>{pricingLabel(savedSkill, locale)}</small>
                 <form action={removeAction}>
                   <input name="savedSkillId" type="hidden" value={savedSkill.id} />
-                  <button className="ghost-button ghost-button--danger" disabled={isRemovePending} type="submit">
+                  <SkillButton className="ghost-button ghost-button--danger" disabled={isRemovePending} htmlType="submit">
                     <Trash2 size={15} aria-hidden="true" />
                     <span>{labels.remove}</span>
-                  </button>
+                  </SkillButton>
                 </form>
                 {statusMessage && statusMessage.status !== "idle" ? <ActionMessage state={statusMessage} /> : null}
               </div>
@@ -170,7 +171,7 @@ export function ProjectSavedSkillManager({
 }
 
 function ActionMessage({ state }: { state: ProjectSavedSkillActionState }) {
-  return <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>{state.message}</div>;
+  return <SkillAlert className="action-message" message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }
 
 function statusChipClass(status: string) {

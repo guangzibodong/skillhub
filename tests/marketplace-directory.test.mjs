@@ -7,14 +7,17 @@ const browserSource = readFileSync(
   "utf8",
 );
 const marketplacePage = readFileSync("apps/web/app/marketplace/page.tsx", "utf8");
-const stylesheet = readFileSync("apps/web/app/globals.css", "utf8");
+const stylesheet = readFileSync(
+  "apps/web/app/marketplace/marketplace.module.css",
+  "utf8",
+);
 
 test("marketplace prioritizes searchable Agent Skill discovery before guides", () => {
   const searchIndex = browserSource.indexOf('className="market-search"');
-  const layoutIndex = browserSource.indexOf('className="market-directory-layout"');
-  const filterIndex = browserSource.indexOf('className="market-filter-panel"');
-  const resultsIndex = browserSource.indexOf('className="market-card-grid"');
-  const guideIndex = browserSource.indexOf('className="market-quality-guide"');
+  const layoutIndex = browserSource.indexOf("market-directory-layout");
+  const filterIndex = browserSource.indexOf("market-filter-panel");
+  const resultsIndex = browserSource.indexOf("market-card-grid");
+  const guideIndex = browserSource.indexOf("market-quality-guide");
 
   assert.ok(searchIndex > -1, "search box is present");
   assert.ok(layoutIndex > searchIndex, "directory layout follows search");
@@ -36,25 +39,42 @@ test("marketplace prioritizes searchable Agent Skill discovery before guides", (
   assert.doesNotMatch(browserSource, /官方认证|官方合作/);
 });
 
-test("marketplace uses the curated agent marketplace layout", () => {
-  assert.match(marketplacePage, /market-curated-shell/);
-  assert.match(marketplacePage, /market-adoption-path/);
-  assert.match(browserSource, /market-workflow-section/);
-  assert.match(browserSource, /market-workflow-grid/);
-  assert.match(browserSource, /market-featured-strip/);
-  assert.match(browserSource, /market-skill-score/);
-  assert.match(browserSource, /market-skill-logo/);
-  assert.match(stylesheet, /\.market-curated-shell/);
-  assert.match(stylesheet, /\.market-workflow-card/);
-  assert.match(stylesheet, /\.market-skill-score/);
+test("marketplace exposes full client-side sorting and view controls", () => {
+  assert.match(browserSource, /sortOptions = \[/);
+  assert.match(browserSource, /"adoption"/);
+  assert.match(browserSource, /"success"/);
+  assert.match(browserSource, /"lowRisk"/);
+  assert.match(browserSource, /"recent"/);
+  assert.match(browserSource, /serializeSort\(sort\)/);
+  assert.match(browserSource, /sort === "lowRisk" \? "low_risk" : sort/);
+  assert.match(browserSource, /viewOptions = \["compact", "comfortable"\]/);
+  assert.match(browserSource, /market-card-grid--\$\{view\}/);
+  assert.match(stylesheet, /\.market-segmented-control/);
+  assert.match(stylesheet, /\.market-card-grid--comfortable/);
 });
 
-test("marketplace exposes mobile-first search and compact workflow browsing", () => {
-  assert.match(marketplacePage, /market-hero-search-form/);
-  assert.match(marketplacePage, /name="q"/);
-  assert.match(browserSource, /market-workflow-card__body/);
-  assert.match(browserSource, /market-workflow-card__meta/);
-  assert.match(stylesheet, /\.market-hero-search-form/);
-  assert.match(stylesheet, /\.market-workflow-card__body/);
-  assert.match(stylesheet, /-webkit-line-clamp: 2/);
+test("marketplace preserves filters in URL state and fetches a resettable catalog", () => {
+  assert.match(browserSource, /name="category"/);
+  assert.match(browserSource, /name="permissionLevel"/);
+  assert.match(browserSource, /name="runtime"/);
+  assert.match(browserSource, /name="verification"/);
+  assert.match(browserSource, /name="view"/);
+  assert.match(browserSource, /normalizeSort/);
+  assert.match(browserSource, /low-risk/);
+  assert.match(browserSource, /normalizeView/);
+  assert.match(marketplacePage, /includeReviewListings: true/);
+  assert.match(marketplacePage, /limit: MARKETPLACE_PAGE_SKILL_LIMIT/);
+  assert.doesNotMatch(marketplacePage, /toPublicMarketplaceSearchOptions/);
+  assert.doesNotMatch(marketplacePage, /limit: 50/);
+});
+
+test("marketplace exposes mobile filter drawer behavior", () => {
+  assert.match(browserSource, /isMobileFiltersOpen/);
+  assert.match(browserSource, /market-filter-backdrop--open/);
+  assert.match(browserSource, /market-filter-panel--open/);
+  assert.match(browserSource, /aria-expanded=\{isMobileFiltersOpen\}/);
+  assert.match(browserSource, /event\.key === "Escape"/);
+  assert.match(stylesheet, /\.market-filter-backdrop--open/);
+  assert.match(stylesheet, /\.market-filter-close-button/);
+  assert.match(stylesheet, /\.market-filter-panel--open/);
 });

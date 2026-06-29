@@ -44,7 +44,7 @@ const copy = {
   en: {
     billing: "Pricing status",
     billingReady: "Free or metered use can move into project policy.",
-    billingTrial: "Start a provider-deferred subscription trial before runtime use.",
+    billingTrial: "Start a Stripe-backed subscription trial before runtime use.",
     copied: "Copied",
     copy: "Copy",
     copyFailed: "Copy failed",

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, RadioTower, Save, Siren, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import {
   createAdminIncidentAction,
@@ -103,30 +104,24 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
       <form action={createAction} className="incident-create-form">
         <label>
           <span>{labels.skillSlug}</span>
-          <input name="skillSlug" placeholder={labels.skillSlugPlaceholder} />
+          <SkillInput name="skillSlug" placeholder={labels.skillSlugPlaceholder} />
         </label>
         <label>
           <span>{labels.newTitle}</span>
-          <input name="title" placeholder={labels.newTitlePlaceholder} required />
+          <SkillInput name="title" placeholder={labels.newTitlePlaceholder} required />
         </label>
         <label>
           <span>{labels.severity}</span>
-          <select defaultValue="medium" name="severity" required>
-            {severities.map((severity) => (
-              <option key={severity} value={severity}>
-                {labels.severityLabels[severity]}
-              </option>
-            ))}
-          </select>
+          <SkillSelect defaultValue="medium" name="severity" options={severityOptions(labels)} required />
         </label>
         <label className="incident-create-form__summary">
           <span>{labels.summary}</span>
-          <input name="summary" placeholder={labels.summaryPlaceholder} required />
+          <SkillInput name="summary" placeholder={labels.summaryPlaceholder} required />
         </label>
-        <button className="secondary-button secondary-button--compact" disabled={isCreatePending} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isCreatePending} htmlType="submit">
           <RadioTower size={15} aria-hidden="true" />
           <span>{isCreatePending ? labels.saving : labels.create}</span>
-        </button>
+        </SkillButton>
       </form>
       {createState.status !== "idle" ? <ActionMessage state={createState} /> : null}
 
@@ -144,7 +139,7 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                       {incident.skillName} / {incident.skillSlug}
                     </span>
                   </div>
-                  <span className={severityClass(incident.severity)}>{labels.severityLabels[incident.severity]}</span>
+                  <SkillStatusTag className={severityClass(incident.severity)}>{labels.severityLabels[incident.severity]}</SkillStatusTag>
                 </header>
 
                 <p>{incident.summary ?? labels.empty}</p>
@@ -168,32 +163,20 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
                   <input name="incidentId" type="hidden" value={incident.id} />
                   <label>
                     <span>{labels.status}</span>
-                    <select defaultValue={suggestedStatus(incident)} name="status" required>
-                      {statuses.map((status) => (
-                        <option key={status} value={status}>
-                          {labels.statuses[status]}
-                        </option>
-                      ))}
-                    </select>
+                    <SkillSelect defaultValue={suggestedStatus(incident)} name="status" options={statusOptions(labels)} required />
                   </label>
                   <label>
                     <span>{labels.severity}</span>
-                    <select defaultValue={incident.severity} name="severity" required>
-                      {severities.map((severity) => (
-                        <option key={severity} value={severity}>
-                          {labels.severityLabels[severity]}
-                        </option>
-                      ))}
-                    </select>
+                    <SkillSelect defaultValue={incident.severity} name="severity" options={severityOptions(labels)} required />
                   </label>
                   <label>
                     <span>{labels.reason}</span>
-                    <input defaultValue={incident.summary ?? ""} name="reason" required />
+                    <SkillInput defaultValue={incident.summary ?? ""} name="reason" required />
                   </label>
-                  <button className="secondary-button secondary-button--compact" disabled={isDecisionPending} type="submit">
+                  <SkillButton className="secondary-button secondary-button--compact" disabled={isDecisionPending} htmlType="submit">
                     <Save size={15} aria-hidden="true" />
                     <span>{isDecisionPending && statusMessage ? labels.saving : labels.save}</span>
-                  </button>
+                  </SkillButton>
                 </form>
 
                 {statusMessage && statusMessage.status !== "idle" ? <ActionMessage state={statusMessage} /> : null}
@@ -209,12 +192,15 @@ export function AdminIncidentManager({ incidents, locale }: AdminIncidentManager
 }
 
 function ActionMessage({ state }: { state: AdminIncidentActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
+}
+
+function severityOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return severities.map((severity) => ({ label: labels.severityLabels[severity], value: severity }));
+}
+
+function statusOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return statuses.map((status) => ({ label: labels.statuses[status], value: status }));
 }
 
 function suggestedStatus(incident: AdminIncidentRecord) {

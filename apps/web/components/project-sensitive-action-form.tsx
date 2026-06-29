@@ -2,6 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
+import { SkillButton, SkillInput, SkillTextArea } from "@/components/skill-antd";
 
 type ProjectSensitiveActionFormProps = {
   action: (payload: FormData) => void;
@@ -42,10 +43,10 @@ export function ProjectSensitiveActionForm({
 
   if (!isArmed) {
     return (
-      <button className={buttonClass} disabled={disabled} onClick={() => setIsArmed(true)} type="button">
+      <SkillButton className={buttonClass} disabled={disabled} onClick={() => setIsArmed(true)} htmlType="button">
         <Icon size={15} aria-hidden="true" />
         <span>{label}</span>
-      </button>
+      </SkillButton>
     );
   }
 
@@ -57,20 +58,20 @@ export function ProjectSensitiveActionForm({
       <p>{description}</p>
       <label>
         <span>{confirmLabel}</span>
-        <input autoComplete="off" name="confirmation" placeholder={confirmPlaceholder} required />
+        <SkillInput autoComplete="off" name="confirmation" placeholder={confirmPlaceholder} required />
       </label>
       <label>
         <span>{reasonLabel}</span>
-        <textarea name="reason" placeholder={reasonPlaceholder} required rows={2} />
+        <SkillTextArea name="reason" placeholder={reasonPlaceholder} required rows={2} />
       </label>
       <div className="project-sensitive-action__buttons">
-        <button className="ghost-button ghost-button--compact" onClick={() => setIsArmed(false)} type="button">
+        <SkillButton className="ghost-button ghost-button--compact" onClick={() => setIsArmed(false)} htmlType="button">
           <span>{cancelLabel}</span>
-        </button>
-        <button className={buttonClass} disabled={disabled} type="submit">
+        </SkillButton>
+        <SkillButton className={buttonClass} disabled={disabled} htmlType="submit">
           <Icon size={15} aria-hidden="true" />
           <span>{submitLabel}</span>
-        </button>
+        </SkillButton>
       </div>
     </form>
   );

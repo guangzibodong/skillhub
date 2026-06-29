@@ -72,107 +72,11 @@ type DeliverySkillVersion = {
   versionId: string;
 };
 
-const fallbackBuyerRequests = [
-  {
-    id: "demo-request-figma-linear",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "OpsPilot",
-    title: "Figma change request to Linear issue",
-    description: "Convert annotated Figma comments into scoped Linear issues with acceptance criteria.",
-    category: "workflow",
-    bountyCents: 60000,
-    currency: "usd",
-    status: "open",
-    claimedByPublisherId: null,
-    claimedByPublisherName: null,
-    claimedByPublisherOrganizationId: null,
-    submittedSkillId: null,
-    submittedSkillSlug: null,
-    submittedSkillName: null,
-    submittedSkillVerificationStatus: null,
-    submittedSkillVersionId: null,
-    submittedSkillVersion: null,
-    submittedSkillReviewStatus: null,
-    deliveryNote: null,
-    evidenceUrl: null,
-    submittedAt: null,
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: true,
-    nextAction: "Claim request"
-  },
-  {
-    id: "demo-request-shopify-ops",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "Commerce Desk",
-    title: "Shopify product operations skill",
-    description: "Normalize product attributes, flag missing SEO fields, and prepare bulk update actions.",
-    category: "commerce",
-    bountyCents: 90000,
-    currency: "usd",
-    status: "claimed",
-    claimedByPublisherId: "demo-publisher",
-    claimedByPublisherName: "SkillHub Publisher",
-    claimedByPublisherOrganizationId: "demo-org",
-    submittedSkillId: null,
-    submittedSkillSlug: null,
-    submittedSkillName: null,
-    submittedSkillVerificationStatus: null,
-    submittedSkillVersionId: null,
-    submittedSkillVersion: null,
-    submittedSkillReviewStatus: null,
-    deliveryNote: null,
-    evidenceUrl: null,
-    submittedAt: null,
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: false,
-    nextAction: "Submit build"
-  },
-  {
-    id: "demo-request-slack-incident",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "Reliability AI",
-    title: "Slack incident summarizer",
-    description: "Summarize incident threads into timeline, owner actions, and customer-impact notes.",
-    category: "ops",
-    bountyCents: 45000,
-    currency: "usd",
-    status: "submitted",
-    claimedByPublisherId: "demo-publisher",
-    claimedByPublisherName: "SkillHub Publisher",
-    claimedByPublisherOrganizationId: "demo-org",
-    submittedSkillId: "demo-skill-slack-incident",
-    submittedSkillSlug: "slack-incident-summarizer",
-    submittedSkillName: "Slack Incident Summarizer",
-    submittedSkillVerificationStatus: "verified",
-    submittedSkillVersionId: "demo-version-slack-incident-010",
-    submittedSkillVersion: "0.1.0",
-    submittedSkillReviewStatus: "approved",
-    deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
-    evidenceUrl: "https://useskillhub.com/skills/slack-incident-summarizer",
-    submittedAt: "demo",
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: false,
-    nextAction: "Await buyer match"
-  }
-] as const;
-
 export async function listPublisherBuyerRequests(organizationId: string | null | undefined, limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackBuyerRequests.slice(0, limit);
+    return [];
   }
 
   const safeLimit = normalizeLimit(limit);
@@ -239,7 +143,7 @@ export async function listDeveloperBuyerRequests(organizationId: string | null |
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackBuyerRequests.slice(0, limit);
+    return [];
   }
 
   const safeLimit = normalizeLimit(limit);

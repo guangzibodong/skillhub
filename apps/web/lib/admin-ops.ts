@@ -7,8 +7,7 @@ export type DataStatus =
   | "partial"
   | "error"
   | "delayed"
-  | "unknown_scope"
-  | "demo";
+  | "unknown_scope";
 
 export type StatusSeverity = "healthy" | "info" | "warning" | "critical" | "muted";
 
@@ -103,7 +102,6 @@ const DATA_STATUS_LABELS: Record<DataStatus, Record<Locale, string>> = {
   connected_has_data: { en: "Connected", zh: "已接入" },
   connected_no_data: { en: "Connected, no events", zh: "已接入，无事件" },
   delayed: { en: "Delayed", zh: "数据延迟" },
-  demo: { en: "Demo", zh: "示例数据" },
   error: { en: "Integration error", zh: "接入异常" },
   not_connected: { en: "Pending", zh: "未接入" },
   partial: { en: "Partial", zh: "部分接入" },
@@ -114,7 +112,6 @@ const DATA_STATUS_TONES: Record<DataStatus, DataStatusTone> = {
   connected_has_data: "green",
   connected_no_data: "gray",
   delayed: "amber",
-  demo: "purple",
   error: "red",
   not_connected: "amber",
   partial: "amber",

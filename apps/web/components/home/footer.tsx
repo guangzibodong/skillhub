@@ -152,8 +152,8 @@ export function HomeFooter({ locale }: Props) {
           </a>
           <p>
             {locale === "zh"
-              ? "面向 AI Agent 的 Skill 注册、审核、运行治理和市场预览基础设施。"
-              : "Skill API catalog, review, runtime governance, and marketplace preview infrastructure for AI Agent Skills."}
+              ? "面向 AI Agent 的 Skill 注册、审核、调用权限与记录和市场预览基础设施。"
+              : "Skill API catalog, review, call permissions and logs, and marketplace preview infrastructure for AI Agent Skills."}
           </p>
         </div>
 

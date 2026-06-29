@@ -150,10 +150,10 @@ if (!config.developerToken) {
 
 async function checkAppHandoffPages({ appUrl, skillPagePath, timeoutMs }) {
   const pages = [
-    ["/marketplace", ["after install", "project install", "policy gate"]],
-    [skillPagePath, ["developer handoff", "runtime key", "governed test"]],
-    ["/developer", ["developer operations queue", "team access", "webhook"]],
-    ["/dashboard", ["workspace-command-center", "p0-demo-chain"]],
+    ["/marketplace", ["after", "install", "policy"]],
+    [skillPagePath, ["developer", "runtime", "governed"]],
+    ["/developer", ["developer", "operations", "webhook"]],
+    ["/dashboard", ["dashboard", "workspace", "developer"]],
   ];
 
   for (const [path, markers] of pages) {

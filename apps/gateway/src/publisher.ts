@@ -11,23 +11,6 @@ type PublisherProfileInput = {
   status?: PublisherStatus;
 };
 
-type OnboardingInput = {
-  manualAccount?: string;
-  manualAccountHolder?: string;
-  manualMethod?: string;
-  manualNotes?: string;
-  provider?: string;
-  returnUrl?: string;
-  refreshUrl?: string;
-};
-
-type CompleteOnboardingInput = {
-  sessionId?: string;
-  payoutAccountId?: string;
-  status?: PayoutStatus;
-  reason?: string;
-};
-
 type AcceptTermsInput = {
   termsVersion?: unknown;
 };
@@ -45,62 +28,8 @@ type PublisherProfile = {
   updatedAt: string;
 };
 
-type ManualPayoutMethod = "paypal" | "alipay";
-
-const supportedPayoutProviders = ["manual_deferred"] as const;
-type SupportedPayoutProvider = (typeof supportedPayoutProviders)[number];
-
-const fallbackPublisherAccountSummary = {
-  publisherProfile: {
-    id: "demo-publisher",
-    organizationId: "demo-org",
-    displayName: "SkillHub Publisher",
-    status: "active",
-    payoutStatus: "verification_required",
-    termsAcceptedAt: null,
-    termsAcceptedByUserId: null,
-    termsVersion: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  payoutAccounts: [
-    {
-      id: "demo-payout-account",
-      manualAccount: "publisher-paypal@example.com",
-      manualAccountHolder: "SkillHub Publisher",
-      manualMethod: "paypal",
-      manualNotes: "Demo manual payout details for finance review.",
-      provider: "manual_deferred",
-      providerAccountId: "manual_deferred_demo",
-      status: "verification_required",
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  onboardingSessions: [
-    {
-      id: "demo-onboarding-session",
-      payoutAccountId: "demo-payout-account",
-      provider: "manual_deferred",
-      providerSessionId: "po_demo_session",
-      onboardingUrl: "https://useskillhub.com/dashboard?payout_onboarding=demo",
-      returnUrl: null,
-      refreshUrl: null,
-      status: "created",
-      expiresAt: "demo",
-      completedAt: null,
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ]
-};
-
 export async function getPublisherAccountSummary(organizationId?: string | null, publisherProfileId?: string | null) {
   const sql = await getSql();
-
-  if (!sql) {
-    return fallbackPublisherAccountSummary;
-  }
 
   return queryPublisherAccountSummary(sql, organizationId, publisherProfileId);
 }
@@ -126,6 +55,7 @@ async function queryPublisherAccountSummary(sql: Sql, organizationId?: string | 
         manual_notes as "manualNotes",
         provider,
         provider_account_id as "providerAccountId",
+        stripe_account_id as "stripeAccountId",
         status,
         created_at as "createdAt",
         updated_at as "updatedAt"
@@ -266,221 +196,6 @@ export async function acceptPublisherTerms(
   });
 }
 
-export async function createPayoutAccountOnboarding(organizationId: string | null | undefined, input: OnboardingInput) {
-  const sql = await requireSql();
-  const scopedOrganizationId = requireOrganizationId(organizationId);
-  const provider = normalizeProvider(input.provider);
-  const manualMethod = normalizeManualMethod(input.manualMethod);
-  const manualAccount = normalizeManualText(input.manualAccount, "manualAccount", 180, true);
-  const manualAccountHolder = normalizeManualText(input.manualAccountHolder, "manualAccountHolder", 120, false);
-  const manualNotes = normalizeManualText(input.manualNotes, "manualNotes", 500, false);
-  const returnUrl = normalizeOptionalProviderHandoffUrl(input.returnUrl, "returnUrl");
-  const refreshUrl = normalizeOptionalProviderHandoffUrl(input.refreshUrl, "refreshUrl");
-
-  return sql.begin(async (tx: Sql) => {
-    const publisher = await ensurePublisherProfile(tx, scopedOrganizationId);
-    const providerAccountId = `${provider}_${publisher.id}`;
-    const accountRows = (await tx`
-      insert into payout_accounts (
-        publisher_profile_id,
-        manual_account,
-        manual_account_holder,
-        manual_method,
-        manual_notes,
-        provider,
-        provider_account_id,
-        status,
-        updated_at
-      )
-      values (
-        ${publisher.id},
-        ${manualAccount},
-        ${manualAccountHolder},
-        ${manualMethod},
-        ${manualNotes},
-        ${provider},
-        ${providerAccountId},
-        'verification_required',
-        now()
-      )
-      on conflict (provider, provider_account_id) do update set
-        status = 'verification_required',
-        manual_account = excluded.manual_account,
-        manual_account_holder = excluded.manual_account_holder,
-        manual_method = excluded.manual_method,
-        manual_notes = excluded.manual_notes,
-        updated_at = now()
-      returning
-        id::text,
-        manual_account as "manualAccount",
-        manual_account_holder as "manualAccountHolder",
-        manual_method as "manualMethod",
-        manual_notes as "manualNotes",
-        provider,
-        provider_account_id as "providerAccountId",
-        status,
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `) as Array<{
-      id: string;
-      provider: string;
-      providerAccountId: string;
-      status: PayoutStatus;
-      createdAt: string;
-      updatedAt: string;
-      manualAccount: string | null;
-      manualAccountHolder: string | null;
-      manualMethod: ManualPayoutMethod | null;
-      manualNotes: string | null;
-    }>;
-    const account = accountRows[0];
-    const providerSessionId = `po_${randomToken(16)}`;
-    const onboardingUrl = normalizeProviderHandoffUrl(
-      getProcessEnv("SKILLHUB_PAYOUT_ONBOARDING_URL") ??
-        `https://useskillhub.com/dashboard?payout_onboarding=${providerSessionId}`,
-      "SKILLHUB_PAYOUT_ONBOARDING_URL"
-    );
-    const sessionRows = (await tx`
-      insert into payout_account_onboarding_sessions (
-        publisher_profile_id,
-        payout_account_id,
-        provider,
-        provider_session_id,
-        onboarding_url,
-        return_url,
-        refresh_url,
-        status,
-        expires_at,
-        updated_at
-      )
-      values (
-        ${publisher.id},
-        ${account.id},
-        ${provider},
-        ${providerSessionId},
-        ${onboardingUrl},
-        ${returnUrl},
-        ${refreshUrl},
-        'created',
-        now() + interval '7 days',
-        now()
-      )
-      returning
-        id::text,
-        payout_account_id::text as "payoutAccountId",
-        provider,
-        provider_session_id as "providerSessionId",
-        onboarding_url as "onboardingUrl",
-        return_url as "returnUrl",
-        refresh_url as "refreshUrl",
-        status,
-        expires_at as "expiresAt",
-        completed_at as "completedAt",
-        created_at as "createdAt",
-        updated_at as "updatedAt"
-    `) as Array<Record<string, unknown>>;
-
-    await tx`
-      update publisher_profiles
-      set
-        payout_status = 'verification_required',
-        updated_at = now()
-      where id = ${publisher.id}
-    `;
-    await recordPublisherAudit(tx, "payout_account.onboarding_created", "payout_account", account.id, null, {
-      manualAccountLast4: account.manualAccount ? account.manualAccount.slice(-4) : null,
-      manualAccountHolder: account.manualAccountHolder,
-      manualMethod: account.manualMethod,
-      publisherProfileId: publisher.id,
-      provider,
-      providerSessionId
-    });
-    await recordPublisherNotification(
-      tx,
-      publisher.organizationId,
-      "payout_account.onboarding_created",
-      "Manual payout account submitted",
-      {
-        manualMethod: account.manualMethod,
-        publisherProfileId: publisher.id,
-        payoutAccountId: account.id,
-        provider,
-        providerSessionId
-      }
-    );
-
-    return {
-      publisherProfileId: publisher.id,
-      payoutAccount: account,
-      onboardingSession: sessionRows[0]
-    };
-  });
-}
-
-export async function completePayoutAccountOnboarding(
-  organizationId: string | null | undefined,
-  input: CompleteOnboardingInput,
-  actorUserId?: string | null
-) {
-  const sql = await requireSql();
-  const scopedOrganizationId = organizationId ? requireOrganizationId(organizationId) : null;
-  const status = normalizePayoutStatus(input.status ?? "verified");
-
-  return sql.begin(async (tx: Sql) => {
-    const target = await getOnboardingTarget(tx, scopedOrganizationId, input);
-
-    if (!target) {
-      throw new Error("Payout account onboarding target not found.");
-    }
-
-    await tx`
-      update payout_accounts
-      set
-        status = ${status},
-        updated_at = now()
-      where id = ${target.payoutAccountId}
-    `;
-    await tx`
-      update publisher_profiles
-      set
-        payout_status = ${status},
-        updated_at = now()
-      where id = ${target.publisherProfileId}
-    `;
-
-    if (target.sessionId) {
-      await tx`
-        update payout_account_onboarding_sessions
-        set
-          status = ${status === "blocked" ? "canceled" : "completed"},
-          completed_at = now(),
-          updated_at = now()
-        where id = ${target.sessionId}
-      `;
-    }
-
-    await recordPublisherAudit(tx, "payout_account.onboarding_completed", "payout_account", target.payoutAccountId, input.reason, {
-      publisherProfileId: target.publisherProfileId,
-      status,
-      sessionId: target.sessionId
-    }, actorUserId);
-    await recordPublisherNotification(
-      tx,
-      target.organizationId,
-      `payout_account.${status}`,
-      `Payout account ${status}`,
-      {
-        publisherProfileId: target.publisherProfileId,
-        payoutAccountId: target.payoutAccountId,
-        status,
-        reason: input.reason ?? null
-      }
-    );
-
-    return queryPublisherAccountSummary(tx, target.organizationId, target.publisherProfileId);
-  });
-}
-
 async function findPublisherProfile(
   sql: Sql,
   input: { organizationId?: string | null; publisherProfileId?: string | null }
@@ -587,46 +302,6 @@ async function ensurePublisherProfile(sql: Sql, organizationId: string): Promise
   return rows[0];
 }
 
-async function getOnboardingTarget(sql: Sql, organizationId: string | null, input: CompleteOnboardingInput) {
-  if (input.sessionId) {
-    const rows = (await sql`
-      select
-        po.id::text as "sessionId",
-        pp.organization_id::text as "organizationId",
-        po.publisher_profile_id::text as "publisherProfileId",
-        po.payout_account_id::text as "payoutAccountId"
-      from payout_account_onboarding_sessions po
-      join publisher_profiles pp on pp.id = po.publisher_profile_id
-      where po.id = ${input.sessionId}
-        and (${organizationId}::uuid is null or pp.organization_id = ${organizationId})
-      limit 1
-      for update of po
-    `) as Array<{ sessionId: string; organizationId: string; publisherProfileId: string; payoutAccountId: string }>;
-
-    return rows[0] ?? null;
-  }
-
-  if (input.payoutAccountId) {
-    const rows = (await sql`
-      select
-        null::text as "sessionId",
-        pp.organization_id::text as "organizationId",
-        pp.id::text as "publisherProfileId",
-        pa.id::text as "payoutAccountId"
-      from payout_accounts pa
-      join publisher_profiles pp on pp.id = pa.publisher_profile_id
-      where pa.id = ${input.payoutAccountId}
-        and (${organizationId}::uuid is null or pp.organization_id = ${organizationId})
-      limit 1
-      for update of pa
-    `) as Array<{ sessionId: string | null; organizationId: string; publisherProfileId: string; payoutAccountId: string }>;
-
-    return rows[0] ?? null;
-  }
-
-  throw new Error("sessionId or payoutAccountId is required.");
-}
-
 async function recordPublisherAudit(
   sql: Sql,
   action: string,
@@ -677,53 +352,6 @@ function normalizeDisplay(value: string | undefined, fallback: string) {
   return value?.trim() || fallback;
 }
 
-function normalizeProvider(provider?: string): SupportedPayoutProvider {
-  const normalized = String(provider ?? "manual_deferred")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, "_");
-
-  if (supportedPayoutProviders.includes(normalized as SupportedPayoutProvider)) {
-    return normalized as SupportedPayoutProvider;
-  }
-
-  throw new Error("Payout provider must be manual_deferred until final provider integration is enabled.");
-}
-
-function normalizeManualMethod(method?: string): ManualPayoutMethod {
-  const normalized = String(method ?? "paypal").trim().toLowerCase();
-
-  if (normalized === "paypal" || normalized === "alipay") {
-    return normalized;
-  }
-
-  throw new Error("Payout method must be paypal or alipay.");
-}
-
-function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: true): string;
-function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: false): string | null;
-function normalizeManualText(value: string | undefined, label: string, maxLength: number, required: boolean) {
-  const normalized = value?.trim() ?? "";
-
-  if (!normalized) {
-    if (required) {
-      throw new Error(`${label} is required.`);
-    }
-
-    return null;
-  }
-
-  if (normalized.length > maxLength) {
-    throw new Error(`${label} must be ${maxLength} characters or fewer.`);
-  }
-
-  if (/https?:\/\//i.test(normalized)) {
-    throw new Error(`${label} should be the PayPal or Alipay receiving account, not a URL.`);
-  }
-
-  return normalized;
-}
-
 function normalizePublisherStatus(status: PublisherStatus) {
   if (!["pending", "active", "restricted", "suspended"].includes(status)) {
     throw new Error("Invalid publisher status.");
@@ -732,66 +360,7 @@ function normalizePublisherStatus(status: PublisherStatus) {
   return status;
 }
 
-function normalizePayoutStatus(status: PayoutStatus) {
-  if (!["not_configured", "verification_required", "verified", "blocked"].includes(status)) {
-    throw new Error("Invalid payout status.");
-  }
-
-  return status;
-}
-
 function normalizeTermsVersion(value: unknown) {
   const normalized = typeof value === "string" ? value.trim() : "";
   return normalized || CURRENT_PUBLISHER_TERMS_VERSION;
-}
-
-function normalizeOptionalProviderHandoffUrl(value: string | undefined, label: string) {
-  const normalized = value?.trim();
-  return normalized ? normalizeProviderHandoffUrl(normalized, label) : null;
-}
-
-function normalizeProviderHandoffUrl(value: string, label: string) {
-  const text = value.trim();
-
-  if (text.length > 500) {
-    throw new Error(`${label} must be 500 characters or fewer.`);
-  }
-
-  try {
-    const url = new URL(text);
-    const localhost = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
-
-    if (url.username || url.password) {
-      throw new Error(`${label} must not include embedded credentials.`);
-    }
-
-    if (url.protocol !== "https:" && !(url.protocol === "http:" && localhost)) {
-      throw new Error(`${label} must use https, except local development URLs.`);
-    }
-
-    return url.toString();
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      (error.message.includes("must use https") || error.message.includes("must not include embedded credentials"))
-    ) {
-      throw error;
-    }
-
-    throw new Error(`${label} must be a valid URL.`);
-  }
-}
-
-function randomToken(byteLength: number) {
-  const bytes = new Uint8Array(byteLength);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function getProcessEnv(key: string): string | undefined {
-  if (typeof process === "undefined") {
-    return undefined;
-  }
-
-  return process.env[key];
 }

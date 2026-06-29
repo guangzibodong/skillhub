@@ -1,9 +1,21 @@
 import { getSql } from "./registry.js";
+import {
+  getPublicAuthProviderReadiness,
+  resolveEmailProviderConfig,
+  resolveLaunchSettings,
+  resolveRuntimeSettings,
+  resolveStripeConfig,
+  resolveWebhookSettings,
+  type ResolvedLaunchSettings,
+  type ResolvedRuntimeSettings,
+  type ResolvedStripeConfig,
+  type ResolvedWebhookSettings,
+} from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-const expectedLatestMigrationFilename = "033_password_credentials.sql";
-const expectedLatestMigrationNumber = 33;
+const expectedLatestMigrationFilename = "040_platform_provider_configs.sql";
+const expectedLatestMigrationNumber = 40;
 
 type LaunchReadinessEnv = {
   DATABASE_URL?: string;
@@ -22,6 +34,8 @@ type LaunchReadinessEnv = {
   SKILLHUB_AUTH_CALLBACK_BASE_URL?: string;
   SKILLHUB_AUTH_COOKIE_DOMAIN?: string;
   SKILLHUB_DISABLE_PUBLIC_SIGNUP?: string;
+  SKILLHUB_CONFIG_ENCRYPTION_SECRET?: string;
+  SKILLHUB_AGENT_KEY_ENCRYPTION_SECRET?: string;
   SKILLHUB_EMAIL_AUTH_DEBUG_CODES?: string;
   SKILLHUB_EMAIL_AUTH_SECRET?: string;
   SKILLHUB_EMAIL_FROM?: string;
@@ -44,8 +58,15 @@ type LaunchReadinessEnv = {
   SKILLHUB_LAUNCH_MIN_SUCCESSFUL_INVOCATIONS?: string;
   SKILLHUB_LAUNCH_MIN_VERIFIED_SKILLS?: string;
   SKILLHUB_OAUTH_STATE_SECRET?: string;
+  SKILLHUB_STRIPE_CANCEL_URL?: string;
+  SKILLHUB_STRIPE_REFRESH_URL?: string;
+  SKILLHUB_STRIPE_RETURN_URL?: string;
+  SKILLHUB_STRIPE_SUCCESS_URL?: string;
   SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
   SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
+  STRIPE_CONNECT_CLIENT_ID?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
   VERCEL_ENV?: string;
 };
 
@@ -90,6 +111,8 @@ type DatabaseReadiness = {
   activeNotificationTemplates: number | null;
   activeProjectCount: number | null;
   activePublisherCount: number | null;
+  agentKeyEncryptionColumns: boolean;
+  agentTables: boolean;
   buyerRequestDeliveryColumns: boolean;
   databaseConnected: boolean;
   emailChallenges: boolean;
@@ -111,6 +134,12 @@ type DatabaseReadiness = {
   runtimeCheckRemediationColumns: boolean;
   schemaMigrations: boolean;
   successfulInvocationCount: number | null;
+  stripeCheckoutTables: boolean;
+  stripeCheckoutDestinationColumns: boolean;
+  stripeConnectTables: boolean;
+  stripeSkillPriceColumns: boolean;
+  stripeSubscriptionColumns: boolean;
+  stripeWebhookEvents: boolean;
   userAuthIdentities: boolean;
   verifiedSkillCount: number | null;
   webhookDeliveryWorker: boolean;
@@ -190,14 +219,30 @@ const requiredActiveNotificationTemplates = [
 
 export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<LaunchReadinessReport> {
   const database = await getDatabaseReadiness();
+  const [
+    authReadiness,
+    emailProvider,
+    launchSettings,
+    runtimeSettings,
+    stripeConfig,
+    webhookSettings,
+  ] = await Promise.all([
+    getPublicAuthProviderReadiness(env),
+    resolveEmailProviderConfig(env, { includeSecrets: false }),
+    resolveLaunchSettings(env),
+    resolveRuntimeSettings(env),
+    resolveStripeConfig(env, { includeSecrets: false }),
+    resolveWebhookSettings(env),
+  ]);
   const sections = [
-    buildIdentitySection(env),
-    buildEmailSection(env, database),
-    buildWebhookSection(env, database),
+    buildIdentitySection(env, authReadiness),
+    buildEmailSection(env, database, emailProvider),
+    buildWebhookSection(database, webhookSettings),
     buildMarketplaceOperationsSection(env, database),
-    buildLaunchCredibilitySection(env, database),
-    buildCommercialSection(database),
-    buildProductionGuardrailSection(env, database)
+    buildAgentSection(env, database),
+    buildLaunchCredibilitySection(database, launchSettings),
+    buildCommercialSection(database, stripeConfig),
+    buildProductionGuardrailSection(env, database, runtimeSettings)
   ];
   const counts = summarizeSections(sections);
 
@@ -222,34 +267,19 @@ export async function getLaunchReadiness(env?: LaunchReadinessEnv): Promise<Laun
   };
 }
 
-function buildIdentitySection(env: LaunchReadinessEnv | undefined): LaunchReadinessSection {
-  const callbackBaseUrl = configured(
+function buildIdentitySection(
+  env: LaunchReadinessEnv | undefined,
+  authReadiness: Awaited<ReturnType<typeof getPublicAuthProviderReadiness>>
+): LaunchReadinessSection {
+  const callbackBaseUrl = authReadiness.google.callbackBaseUrl ?? authReadiness.github.callbackBaseUrl ?? configured(
     env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? env?.NEXT_PUBLIC_API_URL,
     "SKILLHUB_AUTH_CALLBACK_BASE_URL",
     "SKILLHUB_AUTH_BASE_URL",
     "NEXT_PUBLIC_API_URL"
   );
   const stateSecret = configured(env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET, "SKILLHUB_OAUTH_STATE_SECRET", "SESSION_SECRET");
-  const googleReady = hasAll(
-    configured(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID, "SKILLHUB_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"),
-    configured(
-      env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET,
-      "SKILLHUB_GOOGLE_CLIENT_SECRET",
-      "GOOGLE_CLIENT_SECRET"
-    ),
-    callbackBaseUrl,
-    stateSecret
-  );
-  const githubReady = hasAll(
-    configured(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID, "SKILLHUB_GITHUB_CLIENT_ID", "GITHUB_CLIENT_ID"),
-    configured(
-      env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET,
-      "SKILLHUB_GITHUB_CLIENT_SECRET",
-      "GITHUB_CLIENT_SECRET"
-    ),
-    callbackBaseUrl,
-    stateSecret
-  );
+  const googleReady = hasAll(authReadiness.google.clientId, authReadiness.google.clientSecretConfigured ? "configured" : "", callbackBaseUrl, stateSecret);
+  const githubReady = hasAll(authReadiness.github.clientId, authReadiness.github.clientSecretConfigured ? "configured" : "", callbackBaseUrl, stateSecret);
   const items: LaunchReadinessItem[] = [
     {
       action: callbackBaseUrl ? "Register the listed callback URLs in Google and GitHub." : "Set SKILLHUB_AUTH_CALLBACK_BASE_URL.",
@@ -296,26 +326,30 @@ function buildIdentitySection(env: LaunchReadinessEnv | undefined): LaunchReadin
   return section("identity", "Identity and sign-in", items);
 }
 
-function buildEmailSection(env: LaunchReadinessEnv | undefined, database: DatabaseReadiness): LaunchReadinessSection {
+function buildEmailSection(
+  env: LaunchReadinessEnv | undefined,
+  database: DatabaseReadiness,
+  emailProviderConfig: Awaited<ReturnType<typeof resolveEmailProviderConfig>>
+): LaunchReadinessSection {
   const emailSecret = configured(
     env?.SKILLHUB_EMAIL_AUTH_SECRET ?? env?.SKILLHUB_OAUTH_STATE_SECRET ?? env?.SESSION_SECRET,
     "SKILLHUB_EMAIL_AUTH_SECRET",
     "SKILLHUB_OAUTH_STATE_SECRET",
     "SESSION_SECRET"
   );
-  const provider = (configured(env?.SKILLHUB_EMAIL_PROVIDER, "SKILLHUB_EMAIL_PROVIDER") ?? "provider_deferred").toLowerCase();
-  const debugProvider = provider === "debug_preview";
+  const provider = emailProviderConfig.provider;
+  const debugProvider = false;
   const resendReady =
     provider === "resend" &&
-    Boolean(configured(env?.RESEND_API_KEY, "RESEND_API_KEY")) &&
-    Boolean(configured(env?.SKILLHUB_EMAIL_FROM, "SKILLHUB_EMAIL_FROM"));
+    emailProviderConfig.resendApiKeyConfigured &&
+    Boolean(emailProviderConfig.from);
   const smtpReady =
     provider === "smtp" &&
-    Boolean(configured(env?.SKILLHUB_SMTP_HOST, "SKILLHUB_SMTP_HOST")) &&
-    Boolean(configured(env?.SKILLHUB_SMTP_USER, "SKILLHUB_SMTP_USER")) &&
-    Boolean(configured(env?.SKILLHUB_SMTP_PASSWORD, "SKILLHUB_SMTP_PASSWORD")) &&
-    Boolean(configured(env?.SKILLHUB_EMAIL_FROM, "SKILLHUB_EMAIL_FROM")) &&
-    smtpPortReady(configured(env?.SKILLHUB_SMTP_PORT, "SKILLHUB_SMTP_PORT"));
+    Boolean(emailProviderConfig.smtpHost) &&
+    Boolean(emailProviderConfig.smtpUser) &&
+    emailProviderConfig.smtpPasswordConfigured &&
+    Boolean(emailProviderConfig.from) &&
+    smtpPortReady(emailProviderConfig.smtpPort);
   const providerReady = resendReady || smtpReady;
   const debugEnabled = truthy(configured(env?.SKILLHUB_EMAIL_AUTH_DEBUG_CODES, "SKILLHUB_EMAIL_AUTH_DEBUG_CODES"));
   const production = isProductionLike(env);
@@ -383,9 +417,12 @@ function buildEmailSection(env: LaunchReadinessEnv | undefined, database: Databa
   return section("email", "Email access and delivery", items);
 }
 
-function buildWebhookSection(env: LaunchReadinessEnv | undefined, database: DatabaseReadiness): LaunchReadinessSection {
-  const timeout = numberValue(configured(env?.SKILLHUB_WEBHOOK_TIMEOUT_MS, "SKILLHUB_WEBHOOK_TIMEOUT_MS"), 8000);
-  const maxAttempts = numberValue(configured(env?.SKILLHUB_WEBHOOK_MAX_ATTEMPTS, "SKILLHUB_WEBHOOK_MAX_ATTEMPTS"), 8);
+function buildWebhookSection(
+  database: DatabaseReadiness,
+  settings: ResolvedWebhookSettings
+): LaunchReadinessSection {
+  const timeout = settings.timeoutMs;
+  const maxAttempts = settings.maxAttempts;
   const items: LaunchReadinessItem[] = [
     {
       action: database.webhookDeliveryWorker ? "No action needed." : "Run migration 023_webhook_delivery_worker.sql.",
@@ -396,17 +433,17 @@ function buildWebhookSection(env: LaunchReadinessEnv | undefined, database: Data
       status: database.webhookDeliveryWorker ? "ready" : "blocker"
     },
     {
-      action: "Tune SKILLHUB_WEBHOOK_TIMEOUT_MS only if endpoint latency requires it.",
+      action: "Tune webhook timeout in Admin > Platform Config only if endpoint latency requires it.",
       description: "Webhook HTTP delivery uses a bounded timeout so due batches cannot hang indefinitely.",
-      detail: `Timeout ${timeout}ms.`,
+      detail: `Timeout ${timeout}ms from ${settings.source}.`,
       key: "webhook_timeout",
       label: "Webhook timeout",
       status: timeout >= 1000 && timeout <= 30000 ? "ready" : "warning"
     },
     {
-      action: "Tune SKILLHUB_WEBHOOK_MAX_ATTEMPTS only after observing production failures.",
+      action: "Tune webhook max attempts in Admin > Platform Config only after observing production failures.",
       description: "Webhook retries stop at the cap and remain visible as failed operations.",
-      detail: `Max attempts ${maxAttempts}.`,
+      detail: `Max attempts ${maxAttempts} from ${settings.source}.`,
       key: "webhook_retry_cap",
       label: "Webhook retry cap",
       status: maxAttempts >= 1 && maxAttempts <= 20 ? "ready" : "warning"
@@ -511,10 +548,9 @@ function buildMarketplaceOperationsSection(
 }
 
 function buildLaunchCredibilitySection(
-  env: LaunchReadinessEnv | undefined,
-  database: DatabaseReadiness
+  database: DatabaseReadiness,
+  thresholds: ResolvedLaunchSettings
 ): LaunchReadinessSection {
-  const thresholds = getLaunchCredibilityThresholds(env);
   const items: LaunchReadinessItem[] = [
     launchCredibilityItem({
       action: `Verify and publish at least ${thresholds.verifiedSkills} launch-quality public skill(s).`,
@@ -561,7 +597,56 @@ function buildLaunchCredibilitySection(
   return section("launch_credibility", "Launch credibility thresholds", items);
 }
 
-function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSection {
+function buildAgentSection(env: LaunchReadinessEnv | undefined, database: DatabaseReadiness): LaunchReadinessSection {
+  const encryptionSecret = configured(
+    env?.SKILLHUB_CONFIG_ENCRYPTION_SECRET ?? env?.SKILLHUB_AGENT_KEY_ENCRYPTION_SECRET,
+    "SKILLHUB_CONFIG_ENCRYPTION_SECRET",
+    "SKILLHUB_AGENT_KEY_ENCRYPTION_SECRET"
+  );
+  const secretReady = Boolean(encryptionSecret && encryptionSecret.length >= 32);
+  const items: LaunchReadinessItem[] = [
+    {
+      action: database.agentTables ? "No action needed." : "Run migration 036_agent_prompt_assistant.sql.",
+      description: "The agent prompt assistant needs model configuration and prompt generation history tables.",
+      detail: database.agentTables ? "Agent prompt tables are available." : "Agent prompt tables are missing.",
+      key: "agent_tables",
+      label: "Agent tables",
+      status: database.agentTables ? "ready" : "blocker"
+    },
+    {
+      action: database.agentKeyEncryptionColumns ? "No action needed." : "Run migration 037_agent_model_key_encryption.sql.",
+      description: "Model provider API keys must be encrypted at rest and exposed only as last4 metadata.",
+      detail: database.agentKeyEncryptionColumns
+        ? "Agent model key encryption columns are available."
+        : "Agent model key encryption columns are missing.",
+      key: "agent_key_encryption_schema",
+      label: "Agent key encryption schema",
+      status: database.agentKeyEncryptionColumns ? "ready" : "blocker"
+    },
+    {
+      action: secretReady ? "No action needed." : "Set SKILLHUB_CONFIG_ENCRYPTION_SECRET to a stable 32+ character secret.",
+      description: "The gateway needs a stable secret to encrypt and decrypt model provider keys.",
+      detail: secretReady ? "Configured" : "Missing or too short.",
+      key: "agent_key_encryption_secret",
+      label: "Platform config encryption secret",
+      status: secretReady ? "ready" : "blocker"
+    }
+  ];
+
+  return section("agent", "Agent prompt assistant", items);
+}
+
+function buildCommercialSection(
+  database: DatabaseReadiness,
+  stripeConfig: ResolvedStripeConfig
+): LaunchReadinessSection {
+  const stripeSecret = stripeConfig.secretKeyConfigured;
+  const stripeWebhookSecret = stripeConfig.webhookSecretConfigured;
+  const stripeConnectClientId = stripeConfig.connectClientIdConfigured;
+  const successUrl = stripeConfig.successUrl;
+  const cancelUrl = stripeConfig.cancelUrl;
+  const returnUrl = stripeConfig.returnUrl;
+  const refreshUrl = stripeConfig.refreshUrl;
   const items: LaunchReadinessItem[] = [
     {
       action: database.activeCommissionRules && database.activeCommissionRules > 0 ? "No action needed." : "Create the default commission rule.",
@@ -575,7 +660,7 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.activeCommissionRules && database.activeCommissionRules > 0 ? "ready" : "warning"
     },
     {
-      action: database.payoutTables ? "No action needed." : "Run payout, manual payout setup, and payout workflow migrations.",
+      action: database.payoutTables ? "No action needed." : "Run payout and payout workflow migrations.",
       description: "Publishers need payout-account submission sessions and payout-request state before paid marketplace launch.",
       detail: database.payoutTables
         ? "Payout account, submission, and payout request tables are available."
@@ -587,14 +672,67 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       status: database.payoutTables ? "ready" : "blocker"
     },
     {
-      action: database.manualPayoutAccountColumns ? "No action needed." : "Run migration 032_manual_payout_accounts.sql.",
-      description: "P0 paid marketplace payout setup uses publisher-submitted PayPal or Alipay receiving details for finance to transfer manually.",
-      detail: database.manualPayoutAccountColumns
-        ? "Manual payout method, account, holder, and notes columns are available."
-        : "Manual payout receiving-account columns are missing.",
-      key: "manual_payout_accounts",
-      label: "Manual payout accounts",
-      status: database.manualPayoutAccountColumns ? "ready" : "blocker"
+      action: database.stripeCheckoutTables && database.stripeCheckoutDestinationColumns && database.stripeSkillPriceColumns && database.stripeSubscriptionColumns
+        ? "No action needed."
+        : "Run migrations 038_stripe_commerce.sql and 039_stripe_connect_checkout_destination.sql, then link active prices to Stripe Price ids.",
+      description: "Paid marketplace purchases must use Stripe Checkout, Stripe Connect destination charges, and durable Stripe customer/session/subscription records.",
+      detail:
+        database.stripeCheckoutTables && database.stripeCheckoutDestinationColumns && database.stripeSkillPriceColumns && database.stripeSubscriptionColumns
+          ? "Stripe Checkout and Connect destination schema is available."
+          : "Stripe Checkout tables, destination charge columns, or price/subscription columns are missing.",
+      key: "stripe_checkout_schema",
+      label: "Stripe Checkout schema",
+      status: database.stripeCheckoutTables && database.stripeCheckoutDestinationColumns && database.stripeSkillPriceColumns && database.stripeSubscriptionColumns ? "ready" : "blocker"
+    },
+    {
+      action: database.stripeConnectTables ? "No action needed." : "Run migration 038_stripe_commerce.sql.",
+      description: "Publisher payouts require Stripe Connect account storage and payout account linkage.",
+      detail: database.stripeConnectTables ? "Stripe Connect schema is available." : "Stripe Connect schema is missing.",
+      key: "stripe_connect_schema",
+      label: "Stripe Connect schema",
+      status: database.stripeConnectTables ? "ready" : "blocker"
+    },
+    {
+      action: database.stripeWebhookEvents ? "No action needed." : "Run migration 038_stripe_commerce.sql.",
+      description: "Stripe webhooks must be stored idempotently before they drive subscriptions, refunds, disputes, and payout status.",
+      detail: database.stripeWebhookEvents ? "Stripe webhook event table is available." : "Stripe webhook event table is missing.",
+      key: "stripe_webhook_schema",
+      label: "Stripe webhook schema",
+      status: database.stripeWebhookEvents ? "ready" : "blocker"
+    },
+    {
+      action: stripeSecret ? "No action needed." : "Configure Stripe secret key in Admin > Platform Config.",
+      description: "Checkout, Connect onboarding, refunds, and status refreshes call Stripe directly.",
+      detail: stripeSecret ? `Configured from ${stripeConfig.source}.` : "Missing Stripe secret key.",
+      key: "stripe_secret_key",
+      label: "Stripe secret key",
+      status: stripeSecret ? "ready" : "blocker"
+    },
+    {
+      action: stripeWebhookSecret ? "No action needed." : "Configure Stripe webhook secret in Admin > Platform Config.",
+      description: "Webhook signature verification is required in every environment.",
+      detail: stripeWebhookSecret ? `Configured from ${stripeConfig.source}.` : "Missing Stripe webhook secret.",
+      key: "stripe_webhook_secret",
+      label: "Stripe webhook secret",
+      status: stripeWebhookSecret ? "ready" : "blocker"
+    },
+    {
+      action: stripeConnectClientId ? "No action needed." : "Configure Stripe Connect client id in Admin > Platform Config.",
+      description: "Publisher payout onboarding must be backed by Stripe Connect.",
+      detail: stripeConnectClientId ? `Configured from ${stripeConfig.source}.` : "Missing Stripe Connect client id.",
+      key: "stripe_connect_client_id",
+      label: "Stripe Connect client id",
+      status: stripeConnectClientId ? "ready" : "blocker"
+    },
+    {
+      action: hasAll(successUrl, cancelUrl, returnUrl, refreshUrl)
+        ? "No action needed."
+        : "Configure Stripe Checkout and Connect return URLs in Admin > Platform Config.",
+      description: "Stripe browser handoffs need explicit app URLs for Checkout and Connect.",
+      detail: hasAll(successUrl, cancelUrl, returnUrl, refreshUrl) ? `Configured from ${stripeConfig.source}.` : "One or more Stripe return URLs are missing.",
+      key: "stripe_return_urls",
+      label: "Stripe return URLs",
+      status: hasAll(successUrl, cancelUrl, returnUrl, refreshUrl) ? "ready" : "blocker"
     },
     {
       action: database.payoutExplainabilityColumns ? "No action needed." : "Run migration 030_payout_explainability.sql.",
@@ -615,26 +753,22 @@ function buildCommercialSection(database: DatabaseReadiness): LaunchReadinessSec
       key: "publisher_terms_acceptance",
       label: "Publisher terms acceptance",
       status: database.publisherTermsAcceptanceColumns ? "ready" : "blocker"
-    },
-    {
-      action: "Choose and connect the final payment provider after internal billing states are stable.",
-      description: "Payment capture and tax/KYC automation remain intentionally deferred; publisher payouts use manual PayPal/Alipay transfer records for P0.",
-      detail: "Payment-provider API integration is deferred by product scope.",
-      key: "payment_provider",
-      label: "Payment provider",
-      status: "deferred"
     }
   ];
 
   return section("commercial", "Commercial readiness", items);
 }
 
-function buildProductionGuardrailSection(env: LaunchReadinessEnv | undefined, database: DatabaseReadiness): LaunchReadinessSection {
+function buildProductionGuardrailSection(
+  env: LaunchReadinessEnv | undefined,
+  database: DatabaseReadiness,
+  runtimeSettings: ResolvedRuntimeSettings
+): LaunchReadinessSection {
   const production = isProductionLike(env);
   const appUrl = configured(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL");
   const demoFallback = truthy(configured(env?.SKILLHUB_ENABLE_DEMO_FALLBACK, "SKILLHUB_ENABLE_DEMO_FALLBACK"));
   const legacySignup = truthy(configured(env?.SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN, "SKILLHUB_ENABLE_LEGACY_SIGNUP_TOKEN"));
-  const publicSignupDisabled = truthy(configured(env?.SKILLHUB_DISABLE_PUBLIC_SIGNUP, "SKILLHUB_DISABLE_PUBLIC_SIGNUP"));
+  const publicSignupDisabled = runtimeSettings.disablePublicSignup;
   const items: LaunchReadinessItem[] = [
     {
       action: appUrl ? "No action needed." : "Set NEXT_PUBLIC_APP_URL.",
@@ -671,7 +805,9 @@ function buildProductionGuardrailSection(env: LaunchReadinessEnv | undefined, da
     {
       action: publicSignupDisabled ? "Confirm invite-only launch policy." : "Confirm open workspace signup policy.",
       description: "Signup policy is a launch decision, not a code default.",
-      detail: publicSignupDisabled ? "Public signup is disabled." : "Public signup is open.",
+      detail: publicSignupDisabled
+        ? `Public signup is disabled from ${runtimeSettings.source}.`
+        : `Public signup is open from ${runtimeSettings.source}.`,
       key: "public_signup_policy",
       label: "Public signup policy",
       status: "warning"
@@ -698,6 +834,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       activeNotificationTemplates: null,
       activeProjectCount: null,
       activePublisherCount: null,
+      agentKeyEncryptionColumns: false,
+      agentTables: false,
       buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
@@ -719,6 +857,12 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
       successfulInvocationCount: null,
+      stripeCheckoutTables: false,
+      stripeCheckoutDestinationColumns: false,
+      stripeConnectTables: false,
+      stripeSkillPriceColumns: false,
+      stripeSubscriptionColumns: false,
+      stripeWebhookEvents: false,
       userAuthIdentities: false,
       verifiedSkillCount: null,
       webhookDeliveryWorker: false
@@ -742,12 +886,22 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         to_regclass('public.webhook_delivery_events') is not null as "webhookDeliveryEvents",
         to_regclass('public.notification_events') is not null as "notificationEvents",
         to_regclass('public.notification_templates') is not null as "notificationTemplates",
+        to_regclass('public.agent_model_configs') is not null as "agentModelConfigs",
+        to_regclass('public.agent_prompt_generations') is not null as "agentPromptGenerations",
         to_regclass('public.payout_accounts') is not null as "payoutAccounts",
         to_regclass('public.payout_account_onboarding_sessions') is not null as "payoutAccountOnboardingSessions",
         to_regclass('public.payouts') is not null as "payouts",
+        to_regclass('public.stripe_checkout_sessions') is not null as "stripeCheckoutSessions",
+        to_regclass('public.stripe_connect_accounts') is not null as "stripeConnectAccounts",
+        to_regclass('public.stripe_customers') is not null as "stripeCustomers",
+        to_regclass('public.stripe_payment_intents') is not null as "stripePaymentIntents",
+        to_regclass('public.stripe_subscriptions') is not null as "stripeSubscriptions",
+        to_regclass('public.stripe_webhook_events') is not null as "stripeWebhookEvents",
         to_regclass('public.commission_rules') is not null as "commissionRules",
         to_regclass('public.schema_migrations') is not null as "schemaMigrations"
     `) as Array<{
+      agentModelConfigs: boolean;
+      agentPromptGenerations: boolean;
       commissionRules: boolean;
       emailChallenges: boolean;
       passwordCredentials: boolean;
@@ -765,12 +919,81 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       skillInvocations: boolean;
       skills: boolean;
       skillFeedback: boolean;
+      stripeCheckoutSessions: boolean;
+      stripeConnectAccounts: boolean;
+      stripeCustomers: boolean;
+      stripePaymentIntents: boolean;
+      stripeSubscriptions: boolean;
+      stripeWebhookEvents: boolean;
       userAuthIdentities: boolean;
       webhookDeliveryEvents: boolean;
     }>;
     const tables = tableRows[0];
     const columnRows = (await sql`
       select
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'agent_model_configs'
+            and column_name = 'api_key_ciphertext'
+        ) as "agentApiKeyCiphertext",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'agent_model_configs'
+            and column_name = 'api_key_iv'
+        ) as "agentApiKeyIv",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'agent_model_configs'
+            and column_name = 'api_key_tag'
+        ) as "agentApiKeyTag",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'agent_model_configs'
+            and column_name = 'api_key_last4'
+        ) as "agentApiKeyLast4",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_prices'
+            and column_name = 'stripe_price_id'
+        ) as "skillPriceStripePriceId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'skill_prices'
+            and column_name = 'stripe_product_id'
+        ) as "skillPriceStripeProductId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'subscriptions'
+            and column_name = 'stripe_subscription_id'
+        ) as "subscriptionStripeSubscriptionId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'subscriptions'
+            and column_name = 'stripe_checkout_session_id'
+        ) as "subscriptionStripeCheckoutSessionId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'payout_accounts'
+            and column_name = 'stripe_account_id'
+        ) as "payoutAccountStripeAccountId",
         exists (
           select 1
           from information_schema.columns
@@ -946,8 +1169,33 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
           where table_schema = 'public'
             and table_name = 'payout_accounts'
             and column_name = 'manual_notes'
-        ) as "payoutAccountManualNotes"
+        ) as "payoutAccountManualNotes",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'stripe_checkout_sessions'
+            and column_name = 'stripe_connected_account_id'
+        ) as "stripeCheckoutConnectedAccountId",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'stripe_checkout_sessions'
+            and column_name = 'application_fee_amount_cents'
+        ) as "stripeCheckoutApplicationFeeAmount",
+        exists (
+          select 1
+          from information_schema.columns
+          where table_schema = 'public'
+            and table_name = 'stripe_checkout_sessions'
+            and column_name = 'publisher_share_cents'
+        ) as "stripeCheckoutPublisherShare"
     `) as Array<{
+      agentApiKeyCiphertext: boolean;
+      agentApiKeyIv: boolean;
+      agentApiKeyLast4: boolean;
+      agentApiKeyTag: boolean;
       buyerRequestDecidedAt: boolean;
       buyerRequestDecisionNote: boolean;
       buyerRequestDeliveryNote: boolean;
@@ -960,6 +1208,7 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       payoutAccountManualAccountHolder: boolean;
       payoutAccountManualMethod: boolean;
       payoutAccountManualNotes: boolean;
+      payoutAccountStripeAccountId: boolean;
       payoutNextAction: boolean;
       payoutRetryCondition: boolean;
       publisherResponseBody: boolean;
@@ -972,6 +1221,13 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       runtimeCheckIsBlocking: boolean;
       runtimeCheckNextAction: boolean;
       runtimeCheckTargetField: boolean;
+      skillPriceStripePriceId: boolean;
+      skillPriceStripeProductId: boolean;
+      stripeCheckoutApplicationFeeAmount: boolean;
+      stripeCheckoutConnectedAccountId: boolean;
+      stripeCheckoutPublisherShare: boolean;
+      subscriptionStripeCheckoutSessionId: boolean;
+      subscriptionStripeSubscriptionId: boolean;
       webhookLastAttemptedAt: boolean;
     }>;
     const columns = columnRows[0];
@@ -986,6 +1242,12 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       activeNotificationTemplates,
       activeProjectCount: launchCredibility.activeProjectCount,
       activePublisherCount: launchCredibility.activePublisherCount,
+      agentKeyEncryptionColumns:
+        columns.agentApiKeyCiphertext &&
+        columns.agentApiKeyIv &&
+        columns.agentApiKeyTag &&
+        columns.agentApiKeyLast4,
+      agentTables: tables.agentModelConfigs && tables.agentPromptGenerations,
       buyerRequestDeliveryColumns:
         columns.buyerRequestSubmittedSkillId &&
         columns.buyerRequestSubmittedSkillVersionId &&
@@ -1033,6 +1295,21 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
         columns.runtimeCheckNextAction,
       schemaMigrations: tables.schemaMigrations,
       successfulInvocationCount: launchCredibility.successfulInvocationCount,
+      stripeCheckoutTables:
+        tables.stripeCustomers &&
+        tables.stripeCheckoutSessions &&
+        tables.stripePaymentIntents &&
+        tables.stripeSubscriptions,
+      stripeCheckoutDestinationColumns:
+        columns.stripeCheckoutConnectedAccountId &&
+        columns.stripeCheckoutApplicationFeeAmount &&
+        columns.stripeCheckoutPublisherShare,
+      stripeConnectTables: tables.stripeConnectAccounts && columns.payoutAccountStripeAccountId,
+      stripeSkillPriceColumns: columns.skillPriceStripeProductId && columns.skillPriceStripePriceId,
+      stripeSubscriptionColumns:
+        columns.subscriptionStripeSubscriptionId &&
+        columns.subscriptionStripeCheckoutSessionId,
+      stripeWebhookEvents: tables.stripeWebhookEvents,
       userAuthIdentities: tables.userAuthIdentities,
       verifiedSkillCount: launchCredibility.verifiedSkillCount,
       webhookDeliveryWorker: tables.webhookDeliveryEvents && columns.webhookLastAttemptedAt
@@ -1043,6 +1320,8 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       activeNotificationTemplates: null,
       activeProjectCount: null,
       activePublisherCount: null,
+      agentKeyEncryptionColumns: false,
+      agentTables: false,
       buyerRequestDeliveryColumns: false,
       databaseConnected: false,
       emailChallenges: false,
@@ -1064,6 +1343,12 @@ async function getDatabaseReadiness(): Promise<DatabaseReadiness> {
       runtimeCheckRemediationColumns: false,
       schemaMigrations: false,
       successfulInvocationCount: null,
+      stripeCheckoutTables: false,
+      stripeCheckoutDestinationColumns: false,
+      stripeConnectTables: false,
+      stripeSkillPriceColumns: false,
+      stripeSubscriptionColumns: false,
+      stripeWebhookEvents: false,
       userAuthIdentities: false,
       verifiedSkillCount: null,
       webhookDeliveryWorker: false

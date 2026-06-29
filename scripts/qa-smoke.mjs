@@ -153,26 +153,25 @@ const PAGE_ASSERTIONS = {
   "/": [
     "/marketplace?lang=en",
     "/publish?lang=en",
-    "/docs?lang=en#operating-reference",
-    "what works without login",
-    "what requires login",
-    "operator direct link only",
+    "/docs?lang=en",
+    "public web/api health ok",
+    "project key",
     "launch preview",
   ],
   "/?lang=zh": [
     "/marketplace?lang=zh",
     "/publish?lang=zh",
-    "/docs?lang=zh#operating-reference",
-    "\u9605\u8bfb\u8fd0\u8425\u53c2\u8003",
-    "\u9700\u8981\u767b\u5f55",
-    "\u8fd0\u8425\u5458\u4f7f\u7528\u5355\u72ec\u94fe\u63a5",
+    "/docs?lang=zh",
+    "\u516c\u5171 Web/API \u5065\u5eb7\u6b63\u5e38",
+    "Project Key",
+    "\u516c\u5f00\u9884\u89c8",
     "\u667a\u80fd\u4f53\u6280\u80fd\u57fa\u7840\u8bbe\u65bd",
   ],
   "/marketplace": ["marketplace", "publisher", "runtime"],
   "/marketplace?lang=zh": [
-    "\u4e3a\u4f60\u7684 agent \u5de5\u4f5c\u6d41",
+    "\u627e\u5230\u9002\u5408",
     "\u53d1\u5e03\u8005\u76ee\u5f55",
-    "API \u67e5\u770b",
+    "Project Key",
   ],
   "/publishers": ["public publishers", "publisher trust", "marketplace"],
   "/publishers?lang=zh": [
@@ -196,9 +195,9 @@ const PAGE_ASSERTIONS = {
     "\u751f\u4ea7\u667a\u80fd\u4f53\u4f7f\u7528\u524d",
   ],
   "/docs?lang=zh": [
-    "\u5f00\u53d1\u8005\u5feb\u901f\u5f00\u59cb",
-    "\u516c\u5f00 API \u5df2\u53ef\u7528",
-    "MCP \u4f7f\u7528 POST",
+    "SkillHub \u4f7f\u7528\u6587\u6863",
+    "Skill \u5408\u7ea6",
+    "Project Key",
   ],
   "/login": [
     "Sign in to SkillHub",
@@ -233,14 +232,14 @@ const PAGE_ASSERTIONS = {
     "\u6d4f\u89c8\u6280\u80fd\u5e93",
   ],
   "/publish": [
-    "self-service publisher access",
-    "preflight repair queue",
-    "reviewer evidence packet",
+    "publisher access",
+    "manifest preflight",
+    "review requirements",
   ],
   "/publish?lang=zh": [
-    "\u53d1\u5e03\u8005\u5de5\u4f5c\u6d41",
-    "\u9884\u68c0\u4fee\u590d\u961f\u5217",
-    "\u5ba1\u6838\u8bc1\u636e\u5305",
+    "\u53d1\u5e03\u8005\u5165\u53e3",
+    "manifest",
+    "\u67e5\u770b\u5ba1\u6838\u89c4\u5219",
   ],
   "/publisher": [
     "publisher workspace",
@@ -257,13 +256,11 @@ const PAGE_ASSERTIONS = {
   "/developer": [
     "developer workspace",
     "enter the developer workspace after sign-in",
-    "authenticated project path",
     "sign-in required",
   ],
   "/developer?lang=zh": [
     "\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
     "\u767b\u5f55\u540e\u8fdb\u5165\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
-    "\u8ba4\u8bc1\u9879\u76ee\u8def\u5f84",
     "\u9700\u8981\u5148\u767b\u5f55",
   ],
   "/admin": [
@@ -384,7 +381,6 @@ const ANONYMOUS_NAV_FORBIDDEN_MARKERS = [
   'href="/agents',
   'href="/api',
   'href="/account',
-  'href="/dashboard',
   'href="/developer',
   'href="/publisher"',
   'href="/publisher?',
@@ -392,9 +388,7 @@ const ANONYMOUS_NAV_FORBIDDEN_MARKERS = [
   "API health",
   "Account center",
   "Agents",
-  "Dashboard",
   "Developer",
-  "Open workspace",
   "Publisher workspace",
   "Publishers",
 ];
@@ -1688,27 +1682,9 @@ async function checkPublicSkillActionProtection({ apiUrl, timeoutMs }) {
       path: "/v1/publisher/terms/accept",
     },
     {
-      body: {
-        manualAccount: "publisher-paypal@example.com",
-        manualAccountHolder: "SkillHub Smoke Publisher",
-        manualMethod: "paypal",
-        manualNotes: "Routine no-token boundary probe for manual payout setup.",
-        provider: "manual_deferred",
-        refreshUrl: "https://example.com/refresh",
-        returnUrl: "https://example.com/return",
-      },
-      name: "POST /v1/publisher/payout-account/onboarding without token",
-      path: "/v1/publisher/payout-account/onboarding",
-    },
-    {
-      body: {
-        reason:
-          "Routine no-token boundary probe for finance payout verification.",
-        sessionId: "public-payout-session-boundary",
-        status: "verified",
-      },
-      name: "POST /v1/publisher/payout-account/onboarding/complete without token",
-      path: "/v1/publisher/payout-account/onboarding/complete",
+      body: {},
+      name: "POST /v1/publisher/connect/onboarding without token",
+      path: "/v1/publisher/connect/onboarding",
     },
     {
       body: {
@@ -3371,7 +3347,8 @@ async function checkPublicPreviewSourceContract() {
       ["web canonical publisher alias", /skillhub-publisher["']:\s*["']skillhub/.test(webPublishers)],
       ["gateway canonical publisher alias", /skillhub-publisher["']:\s*["']skillhub/.test(gatewayPublishers)],
       ["skill availability regression test", /submitted skills stay inspection-only/.test(availabilityTest)],
-      ["anonymous publish entry", /href=\{localizedHref\("\/publish"/.test(siteHeaderClient)],
+      ["anonymous publish entry", /\{\s*id:\s*["']publish["'],\s*label:\s*labels\.nav\.publish,\s*href:\s*["']\/publish["']\s*\}/.test(siteHeaderClient)],
+      ["login-gated workspace CTA", /href=\{localizedHref\("\/dashboard",\s*locale\)\}/.test(siteHeaderClient)],
     ];
     const missing = requiredSourceMarkers
       .filter(([, present]) => !present)

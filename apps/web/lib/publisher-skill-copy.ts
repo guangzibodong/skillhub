@@ -31,17 +31,17 @@ const publisherSkillCopy = {
       title: "Next operating step",
       curation: "Request distribution review after quality gaps are fixed.",
       feedback: "Respond to published buyer feedback to improve trust.",
-      pricing: "Resolve paid-preview blockers before paid pricing can enter review.",
+      pricing: "Resolve paid-marketplace blockers before paid pricing can enter review.",
       review: "Submit an exact version for review.",
       runtime: "Resolve failed checks or document warnings before review can close.",
-      verified: "Monitor adoption, calls, buyer demand, paid-preview ledger state, and finance-gated payout readiness.",
+      verified: "Monitor adoption, calls, buyer demand, paid-marketplace ledger state, and finance-gated payout readiness.",
       version: "Create a semantic version from the saved draft."
     },
     reviewRepair: {
       actions: "Repair actions",
       actionLabels: {
         clarify_risk: "Document high-risk permission rationale",
-        complete_commercial: "Clear paid-preview blockers",
+        complete_commercial: "Clear paid-marketplace blockers",
         create_version: "Create a new semantic version",
         fix_checks: "Fix failed checks or document warnings",
         monitor: "Monitor operations",
@@ -86,7 +86,7 @@ const publisherSkillCopy = {
       draftSafe: "Draft pricing can be saved now; active paid pricing still follows the paid-marketplace preview gate.",
       freePreview: "Free listing",
       preview: "Price preview",
-      ready: "Paid-preview ready",
+      ready: "Paid marketplace ready",
       title: "Pricing gate"
     },
     quality: "Quality",

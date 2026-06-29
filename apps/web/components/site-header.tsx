@@ -1,27 +1,15 @@
 import type { Dictionary, Locale } from "@/lib/i18n";
-import { SiteHeaderClient, type SiteHeaderDictionary } from "./site-header-client";
+import { SiteHeaderClient, type SiteHeaderActive, type SiteHeaderDictionary } from "./site-header-client";
 
 type SiteHeaderProps = {
-  active:
-    | "home"
-    | "marketplace"
-    | "solutions"
-    | "registry"
-    | "publishers"
-    | "agents"
-    | "docs"
-    | "dashboard"
-    | "developer"
-    | "publisher"
-    | "admin"
-    | "publish"
-    | "account";
+  active?: SiteHeaderActive;
   apiUrl?: string;
   dictionary: Dictionary;
   locale: Locale;
-  pathname: string;
+  pathname?: string;
   consoleHref?: string;
   consoleLabel?: string;
+  showStageBanner?: boolean;
   subtitle?: string;
 };
 
@@ -32,6 +20,7 @@ export function SiteHeader({
   dictionary,
   locale,
   pathname,
+  showStageBanner,
   subtitle,
 }: SiteHeaderProps) {
   return (
@@ -42,6 +31,7 @@ export function SiteHeader({
       pathname={pathname}
       consoleHref={consoleHref}
       consoleLabel={consoleLabel}
+      showStageBanner={showStageBanner}
       subtitle={subtitle}
     />
   );

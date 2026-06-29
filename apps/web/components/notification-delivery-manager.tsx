@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { AlertTriangle, CheckCircle2, MailCheck, RefreshCw, Send, SkipForward, Webhook, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import {
   decideNotificationDeliveryAction,
@@ -149,23 +150,20 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
         </div>
         <label>
           <span>{labels.processMode}</span>
-          <select defaultValue="dry_run" name="mode">
-            <option value="dry_run">{labels.processModes.dry_run}</option>
-            <option value="deliver">{labels.processModes.deliver}</option>
-          </select>
+          <SkillSelect defaultValue="dry_run" name="mode" options={processModeOptions(labels)} />
         </label>
         <label>
           <span>{labels.processLimit}</span>
-          <input defaultValue="10" max="50" min="1" name="limit" type="number" />
+          <SkillInput defaultValue="10" max="50" min="1" name="limit" type="number" />
         </label>
         <label>
           <span>{labels.confirmation}</span>
-          <input autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
+          <SkillInput autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
         </label>
-        <button className="secondary-button secondary-button--compact" disabled={isProcessing} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isProcessing} htmlType="submit">
           <RefreshCw size={15} aria-hidden="true" />
           <span>{isProcessing ? labels.saving : labels.process}</span>
-        </button>
+        </SkillButton>
       </form>
       {processState.status !== "idle" ? <ProcessMessage labels={labels} state={processState} /> : null}
 
@@ -186,7 +184,7 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
                     <strong>{delivery.subject ?? delivery.eventType}</strong>
                     <span>{delivery.eventType}</span>
                   </div>
-                  <span className={statusClass(delivery.status)}>{labels.statuses[delivery.status]}</span>
+                  <SkillStatusTag className={statusClass(delivery.status)}>{labels.statuses[delivery.status]}</SkillStatusTag>
                 </header>
 
                 <dl className="notification-delivery-meta">
@@ -209,38 +207,38 @@ export function NotificationDeliveryManager({ deliveries, locale }: Notification
                   <input name="deliveryId" type="hidden" value={delivery.id} />
                   <label>
                     <span>{labels.reason}</span>
-                    <input name="reason" placeholder={labels.reasonPlaceholder} required />
+                    <SkillInput name="reason" placeholder={labels.reasonPlaceholder} required />
                   </label>
                   <label>
                     <span>{labels.provider}</span>
-                    <input defaultValue={delivery.deliveryProvider ?? ""} name="provider" placeholder={labels.providerPlaceholder} />
+                    <SkillInput defaultValue={delivery.deliveryProvider ?? ""} name="provider" placeholder={labels.providerPlaceholder} />
                   </label>
                   <label>
                     <span>{labels.providerMessageId}</span>
-                    <input defaultValue={delivery.providerMessageId ?? ""} name="providerMessageId" />
+                    <SkillInput defaultValue={delivery.providerMessageId ?? ""} name="providerMessageId" />
                   </label>
                   <label>
                     <span>{labels.nextAttempt}</span>
-                    <input name="nextAttemptAt" type="datetime-local" />
+                    <SkillInput name="nextAttemptAt" type="datetime-local" />
                   </label>
 
                   <div className="notification-delivery-actions">
-                    <button className="secondary-button secondary-button--compact" disabled={disableSentOrSkip} name="action" type="submit" value="mark_sent">
+                    <SkillButton className="secondary-button secondary-button--compact" disabled={disableSentOrSkip} htmlType="submit" name="action" value="mark_sent">
                       <Send size={15} aria-hidden="true" />
                       <span>{isSaving && statusMessage ? labels.saving : labels.markSent}</span>
-                    </button>
-                    <button className="ghost-button ghost-button--compact" disabled={disableRetry} name="action" type="submit" value="retry">
+                    </SkillButton>
+                    <SkillButton className="ghost-button ghost-button--compact" disabled={disableRetry} htmlType="submit" name="action" value="retry">
                       <RefreshCw size={15} aria-hidden="true" />
                       <span>{labels.retry}</span>
-                    </button>
-                    <button className="ghost-button ghost-button--compact" disabled={isSaving || isTerminal} name="action" type="submit" value="mark_failed">
+                    </SkillButton>
+                    <SkillButton className="ghost-button ghost-button--compact" disabled={isSaving || isTerminal} htmlType="submit" name="action" value="mark_failed">
                       <XCircle size={15} aria-hidden="true" />
                       <span>{labels.fail}</span>
-                    </button>
-                    <button className="ghost-button ghost-button--compact" disabled={disableSentOrSkip} name="action" type="submit" value="skip">
+                    </SkillButton>
+                    <SkillButton className="ghost-button ghost-button--compact" disabled={disableSentOrSkip} htmlType="submit" name="action" value="skip">
                       <SkipForward size={15} aria-hidden="true" />
                       <span>{labels.skip}</span>
-                    </button>
+                    </SkillButton>
                   </div>
                 </form>
 
@@ -277,20 +275,21 @@ function ProcessMessage({
     : state.message;
 
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.result ? `${state.message} ${summary}` : state.message}</span>
-    </div>
+    <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.result ? `${state.message} ${summary}` : state.message} type={state.status === "success" ? "success" : "error"} />
   );
 }
 
 function ActionMessage({ state }: { state: NotificationDeliveryActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
+    <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />
   );
+}
+
+function processModeOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return [
+    { label: labels.processModes.dry_run, value: "dry_run" },
+    { label: labels.processModes.deliver, value: "deliver" }
+  ];
 }
 
 function MetaItem({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
@@ -322,7 +321,7 @@ function statusClass(status: AdminNotificationDelivery["status"]) {
 }
 
 function formatProvider(value: string | null | undefined, locale: Locale) {
-  if (!value || value === "provider_deferred" || value === "n/a") {
+  if (!value || value === "unconfigured_provider" || value === "n/a") {
     return locale === "zh" ? "服务商待接入" : "Provider deferred";
   }
 

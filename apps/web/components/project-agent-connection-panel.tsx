@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Check, Copy, KeyRound, PlugZap, RadioTower, ShieldCheck, Terminal } from "lucide-react";
+import { SkillButton } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 
 type ProjectAgentConnectionPanelProps = {
@@ -118,9 +119,9 @@ export function ProjectAgentConnectionPanel({
         <RadioTower size={15} aria-hidden="true" />
         <span>{labels.endpoint}</span>
         <code>{mcpEndpoint}</code>
-        <button className="icon-button" onClick={() => copyText("endpoint", mcpEndpoint)} title={labels.copy} type="button">
+        <SkillButton className="icon-button" onClick={() => copyText("endpoint", mcpEndpoint)} title={labels.copy} htmlType="button">
           {copiedKey === "endpoint" ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
-        </button>
+        </SkillButton>
       </div>
 
       <p className="agent-connection-policy">{labels.policy}</p>
@@ -133,10 +134,10 @@ export function ProjectAgentConnectionPanel({
                 <Terminal size={14} aria-hidden="true" />
                 <span>{snippet.title}</span>
               </strong>
-              <button className="ghost-button" onClick={() => copyText(snippet.id, snippet.body)} type="button">
+              <SkillButton className="ghost-button" onClick={() => copyText(snippet.id, snippet.body)} htmlType="button">
                 {copiedKey === snippet.id ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
                 <span>{copiedKey === snippet.id ? labels.copied : labels.copy}</span>
-              </button>
+              </SkillButton>
             </div>
             <pre>
               <code>{snippet.body}</code>

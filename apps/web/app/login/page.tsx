@@ -1,18 +1,14 @@
-import type { LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
+import styles from "./login.module.css";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
   BadgeCheck,
-  Box,
   CheckCircle2,
   ChevronDown,
-  Code2,
-  FileText,
   Info,
   KeyRound,
   LogOut,
-  MonitorUp,
   ShieldCheck,
   UserCircle,
   UserRound,
@@ -33,6 +29,7 @@ import {
 } from "@/lib/i18n";
 import { roleCanOpenRequestedPath, roleLandingPath } from "@/lib/role-landing";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -70,8 +67,7 @@ const copy = {
     accountFallback: "SkillHub account",
     authSubtitle: "Choose a method to enter your SkillHub workspace.",
     authTitle: "Sign in",
-    body:
-      "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
+    body: "Create projects, adopt verified skills, manage Project Keys, and invoke skills through governed REST / MCP runtime paths.",
     currentBrowser: "Current browser session",
     environment: "Environment fallback",
     eyebrow: "Launch Preview",
@@ -111,7 +107,12 @@ const copy = {
       "Signing out clears the current browser session and returns to the sign-in flow.",
     workspace: "Workspace",
     workspaceAction: "Enter workspace",
-    flowNodes: ["Verified Skill", "Project Key", "SkillHub Gateway", "REST / MCP Runtime"],
+    flowNodes: [
+      "Verified Skill",
+      "Project Key",
+      "SkillHub Gateway",
+      "REST / MCP Runtime",
+    ],
     metrics: [
       ["Live", "Public discovery"],
       ["Required", "Project Key"],
@@ -161,8 +162,7 @@ const copy = {
     accountFallback: "SkillHub 账号",
     authSubtitle: "选择一种方式进入 SkillHub 工作区。",
     authTitle: "登录账号",
-    body:
-      "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
+    body: "创建项目、接入已验证技能、管理 Project Key，并通过受治理的 REST / MCP 路径安全调用技能。",
     currentBrowser: "当前浏览器会话",
     environment: "环境变量兜底",
     eyebrow: "Launch Preview",
@@ -247,8 +247,6 @@ const copy = {
 
 type LoginCopy = (typeof copy)[keyof typeof copy];
 
-const valueIcons = [Box, KeyRound, FileText, MonitorUp] as const;
-const flowIcons = [Box, KeyRound, ShieldCheck, Code2] as const;
 
 export default async function LoginPage({ searchParams }: PageProps) {
   const params = await searchParams;
@@ -256,7 +254,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const labels = copy[locale];
   const returnTo = getSafeReturnTo(params.returnTo, locale);
   const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+    getPublicApiUrl();
   const [providers, session] = await Promise.all([
     getAuthProviders(),
     getWorkspaceSession(),
@@ -265,14 +263,20 @@ export default async function LoginPage({ searchParams }: PageProps) {
   const isSignedIn = Boolean(session.subject);
 
   if (session.subject) {
-    const landingPath = resolveSignedInLandingPath(session.subject, returnTo, locale);
+    const landingPath = resolveSignedInLandingPath(
+      session.subject,
+      returnTo,
+      locale,
+    );
 
     redirect(landingPath as Parameters<typeof redirect>[0]);
   }
 
   return (
     <AppShell active="login" locale={locale} flushTop>
-      <div className={`login-page-shell login-page-shell--${locale}`}>
+      <div
+        className={`login-page-shell login-page-shell--${locale} ${styles.pageStyles}`}
+      >
         <p className="visually-hidden">
           {locale === "zh"
             ? "账号入口：登录 SkillHub。可使用账号密码、Google 或 GitHub。登录后的路径会按角色继续进入可用的工作区。"
@@ -340,19 +344,14 @@ function LoginPreviewNotice({
   locale: Locale;
 }) {
   return (
-    <div
-      className="login-preview-notice"
-      role="status"
-    >
+    <div className="login-preview-notice" role="status">
       <div className="login-preview-notice__inner">
         <Info size={15} aria-hidden="true" />
         <p>
           <strong>{labels.noticeLabel}: </strong>
           <span>{labels.noticeBody}</span>
         </p>
-        <a
-          href={localizedHref("/status", locale)}
-        >
+        <a href={localizedHref("/status", locale)}>
           <span>{labels.noticeLink}</span>
           <ArrowRight size={14} aria-hidden="true" />
         </a>
@@ -368,8 +367,6 @@ function LoginWorkspaceHero({
   isSignedIn: boolean;
   labels: LoginCopy;
 }) {
-  const valueCards = isSignedIn ? labels.signedInValueCards : labels.valueCards;
-
   return (
     <div className="login-workspace-hero-v2">
       <div className="login-workspace-hero-v2__copy">
@@ -378,33 +375,18 @@ function LoginWorkspaceHero({
           <span>{isSignedIn ? labels.signedInEyebrow : labels.eyebrow}</span>
         </div>
         <h1 id="login-title">
-          <span>{isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}</span>{" "}
-          <span className="login-workspace-hero-v2__brand">{labels.heroBrand}</span>{" "}
+          <span>
+            {isSignedIn ? labels.heroSignedInBefore : labels.heroTitleBefore}
+          </span>{" "}
+          <span className="login-workspace-hero-v2__brand">
+            {labels.heroBrand}
+          </span>{" "}
           <span className="login-workspace-hero-v2__tail">
             {isSignedIn ? labels.heroSignedInAfter : labels.heroTitleAfter}
           </span>
         </h1>
-        <p>
-          {isSignedIn ? labels.sessionBody : labels.body}
-        </p>
+        <p>{isSignedIn ? labels.sessionBody : labels.body}</p>
       </div>
-
-      <div className="login-value-grid-v2">
-        {valueCards.map((item, index) => {
-          const Icon = valueIcons[index] ?? ShieldCheck;
-
-          return (
-            <ValueCard
-              body={item.body}
-              icon={Icon}
-              key={item.title}
-              title={item.title}
-            />
-          );
-        })}
-      </div>
-
-      <RuntimeFlowVisual labels={labels} />
 
       <div
         className="login-metric-strip-v2"
@@ -417,52 +399,6 @@ function LoginWorkspaceHero({
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function ValueCard({
-  body,
-  icon: Icon,
-  title,
-}: {
-  body: string;
-  icon: LucideIcon;
-  title: string;
-}) {
-  return (
-    <article className="login-value-card-v2">
-      <Icon size={22} aria-hidden="true" />
-      <strong>{title}</strong>
-      <span>{body}</span>
-    </article>
-  );
-}
-
-function RuntimeFlowVisual({ labels }: { labels: LoginCopy }) {
-  return (
-    <div
-      className="login-runtime-flow-v2"
-      aria-label={labels.runtimeAria}
-    >
-      <div className="login-runtime-flow-v2__grid" aria-hidden="true" />
-      <div className="login-runtime-flow-v2__line" aria-hidden="true" />
-      <span className="login-runtime-flow-v2__packet login-runtime-flow-v2__packet--a" />
-      <span className="login-runtime-flow-v2__packet login-runtime-flow-v2__packet--b" />
-      {labels.flowNodes.map((label, index) => {
-        const Icon = flowIcons[index] ?? ShieldCheck;
-        const isGateway = index === 2;
-
-        return (
-          <div
-            className={isGateway ? "login-runtime-node-v2 login-runtime-node-v2--gateway" : "login-runtime-node-v2"}
-            key={label}
-          >
-            <Icon size={isGateway ? 30 : 24} aria-hidden="true" />
-            <strong>{label}</strong>
-          </div>
-        );
-      })}
     </div>
   );
 }
@@ -486,9 +422,7 @@ function LoginAuthCard({
     <section className="login-auth-card-v2" aria-labelledby="login-card-title">
       {notice ? <LoginNotice notice={notice} /> : null}
       <div className="login-auth-card-v2__head">
-        <h2 id="login-card-title">
-          {labels.authTitle}
-        </h2>
+        <h2 id="login-card-title">{labels.authTitle}</h2>
         <p>{labels.authSubtitle}</p>
       </div>
       <AuthProviderPanel
@@ -500,9 +434,7 @@ function LoginAuthCard({
       />
       <div className="login-divider-v2" role="separator">
         <span />
-        <small>
-          {locale === "zh" ? "或" : "or"}
-        </small>
+        <small>{locale === "zh" ? "或" : "or"}</small>
         <span />
       </div>
       <LoginEmailCard labels={labels} locale={locale} returnTo={returnTo} />
@@ -528,7 +460,11 @@ function LoginNotice({
       role={notice.kind === "error" ? "alert" : "status"}
     >
       {notice.kind === "success" ? (
-        <CheckCircle2 size={18} aria-hidden="true" className="shrink-0 mt-0.5" />
+        <CheckCircle2
+          size={18}
+          aria-hidden="true"
+          className="shrink-0 mt-0.5"
+        />
       ) : (
         <XCircle size={18} aria-hidden="true" className="shrink-0 mt-0.5" />
       )}
@@ -559,10 +495,11 @@ function LoginSessionCard({
 
   const accountName =
     session.source === "cookie"
-      ? subject.displayName ?? subject.email ?? labels.accountFallback
+      ? (subject.displayName ?? subject.email ?? labels.accountFallback)
       : labels.environment;
   const workspaceName =
-    subject.organizationId ?? (locale === "zh" ? "已连接工作区" : "Connected workspace");
+    subject.organizationId ??
+    (locale === "zh" ? "已连接工作区" : "Connected workspace");
   const fields = [
     {
       icon: UserRound,
@@ -603,9 +540,7 @@ function LoginSessionCard({
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.sessionTitle}</span>
         </div>
-        <span>
-          {labels.sessionActive}
-        </span>
+        <span>{labels.sessionActive}</span>
       </div>
 
       <div className="login-session-fields-v2">
@@ -613,10 +548,7 @@ function LoginSessionCard({
           const Icon = field.icon;
 
           return (
-            <div
-              key={field.label}
-              className="login-session-field-v2"
-            >
+            <div key={field.label} className="login-session-field-v2">
               <Icon size={19} aria-hidden="true" />
               <div>
                 <span>{field.label}</span>
@@ -629,10 +561,7 @@ function LoginSessionCard({
       </div>
 
       <div className="login-session-actions-v2">
-        <a
-          className="login-session-primary-v2"
-          href={returnTo}
-        >
+        <a className="login-session-primary-v2" href={returnTo}>
           <UserCircle size={17} aria-hidden="true" />
           <span>{labels.workspaceAction}</span>
         </a>
@@ -644,10 +573,7 @@ function LoginSessionCard({
           <span>{labels.accountCenter}</span>
         </a>
         <form action={signOutAction.bind(null, locale)}>
-          <button
-            className="login-session-text-v2"
-            type="submit"
-          >
+          <button className="login-session-text-v2" type="submit">
             <LogOut size={15} aria-hidden="true" />
             <span>{labels.signOut}</span>
           </button>
@@ -786,7 +712,9 @@ function roleLabel(roles: string[], locale: Locale) {
     user: "用户",
   };
 
-  return visibleRoles.map((role) => labels[role] ?? role).join(" / ") || labels.user;
+  return (
+    visibleRoles.map((role) => labels[role] ?? role).join(" / ") || labels.user
+  );
 }
 
 function safeOAuthErrorMessage(

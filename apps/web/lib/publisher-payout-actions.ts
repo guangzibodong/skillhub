@@ -57,6 +57,8 @@ export async function requestPublisherPayoutAction(
 
     const payload = (await response.json()) as { payout: PayoutRecord };
 
+    revalidatePath("/account");
+    revalidatePath("/account/commissions");
     revalidatePath("/dashboard");
     revalidatePath("/publisher");
 

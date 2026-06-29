@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, CreditCard, Save, ShieldCheck, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillCheckbox, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { OrganizationBillingSummary, OrganizationPaymentMethod } from "@/lib/ops-data";
 import {
@@ -136,53 +137,53 @@ export function OrganizationBillingManager({ billing, locale }: OrganizationBill
           <CreditCard size={16} aria-hidden="true" />
           <span>{labels.title}</span>
         </div>
-        <span className={billing.summary.invoiceReady ? "status-chip" : "status-chip status-chip--warning"}>
+        <SkillStatusTag className={billing.summary.invoiceReady ? "status-chip" : "status-chip status-chip--warning"}>
           {billing.summary.invoiceReady ? labels.ready : labels.requiresSetup}
-        </span>
+        </SkillStatusTag>
       </div>
 
       <form action={profileAction} className="organization-billing-form">
         <strong>{labels.profileTitle}</strong>
         <label>
           <span>{labels.billingName}</span>
-          <input defaultValue={profile?.billingName ?? ""} name="billingName" required />
+          <SkillInput defaultValue={profile?.billingName ?? ""} name="billingName" required />
         </label>
         <label>
           <span>{labels.billingEmail}</span>
-          <input defaultValue={profile?.billingEmail ?? ""} name="billingEmail" type="email" />
+          <SkillInput defaultValue={profile?.billingEmail ?? ""} name="billingEmail" type="email" />
         </label>
         <label>
           <span>{labels.taxId}</span>
-          <input defaultValue={profile?.taxId ?? ""} name="taxId" />
+          <SkillInput defaultValue={profile?.taxId ?? ""} name="taxId" />
         </label>
         <label>
           <span>{labels.country}</span>
-          <input defaultValue={profile?.country ?? ""} maxLength={2} name="country" />
+          <SkillInput defaultValue={profile?.country ?? ""} maxLength={2} name="country" />
         </label>
         <label className="organization-billing-form__wide">
           <span>{labels.addressLine1}</span>
-          <input defaultValue={profile?.addressLine1 ?? ""} name="addressLine1" />
+          <SkillInput defaultValue={profile?.addressLine1 ?? ""} name="addressLine1" />
         </label>
         <label>
           <span>{labels.city}</span>
-          <input defaultValue={profile?.city ?? ""} name="city" />
+          <SkillInput defaultValue={profile?.city ?? ""} name="city" />
         </label>
         <label>
           <span>{labels.region}</span>
-          <input defaultValue={profile?.region ?? ""} name="region" />
+          <SkillInput defaultValue={profile?.region ?? ""} name="region" />
         </label>
         <label>
           <span>{labels.postalCode}</span>
-          <input defaultValue={profile?.postalCode ?? ""} name="postalCode" />
+          <SkillInput defaultValue={profile?.postalCode ?? ""} name="postalCode" />
         </label>
         <label className="organization-billing-form__wide">
           <span>{labels.invoiceNotes}</span>
-          <input defaultValue={profile?.invoiceNotes ?? ""} name="invoiceNotes" />
+          <SkillInput defaultValue={profile?.invoiceNotes ?? ""} name="invoiceNotes" />
         </label>
-        <button className="primary-button organization-billing-form__wide" disabled={isProfilePending} type="submit">
+        <SkillButton className="primary-button organization-billing-form__wide" disabled={isProfilePending} htmlType="submit">
           <Save size={16} aria-hidden="true" />
           <span>{isProfilePending ? labels.saving : labels.saveProfile}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {profileState.status !== "idle" ? <ActionMessage state={profileState} /> : null}
@@ -210,62 +211,53 @@ export function OrganizationBillingManager({ billing, locale }: OrganizationBill
       <form action={paymentAction} className="organization-payment-form">
         <label>
           <span>{labels.provider}</span>
-          <select defaultValue="manual" name="provider">
-            <option value="manual">{labels.providers.manual}</option>
-          </select>
+          <SkillSelect defaultValue="manual" name="provider" options={[{ label: labels.providers.manual, value: "manual" }]} />
         </label>
         <label>
           <span>{labels.providerCustomerId}</span>
-          <input name="providerCustomerId" />
+          <SkillInput name="providerCustomerId" />
         </label>
         <label className="organization-payment-form__wide">
           <span>{labels.providerPaymentMethodId}</span>
-          <input name="providerPaymentMethodId" />
+          <SkillInput name="providerPaymentMethodId" />
         </label>
         <label>
           <span>{labels.methodType}</span>
-          <select defaultValue="invoice" name="methodType">
-            <option value="invoice">{labels.methodTypes.invoice}</option>
-            <option value="card">{labels.methodTypes.card}</option>
-            <option value="bank_account">{labels.methodTypes.bank_account}</option>
-            <option value="external">{labels.methodTypes.external}</option>
-          </select>
+          <SkillSelect defaultValue="invoice" name="methodType" options={[
+            { label: labels.methodTypes.invoice, value: "invoice" },
+            { label: labels.methodTypes.card, value: "card" },
+            { label: labels.methodTypes.bank_account, value: "bank_account" },
+            { label: labels.methodTypes.external, value: "external" }
+          ]} />
         </label>
         <label>
           <span>{labels.status}</span>
-          <select defaultValue="pending" name="status">
-            <option value="not_configured">{labels.statuses.not_configured}</option>
-            <option value="pending">{labels.statuses.pending}</option>
-            <option value="ready">{labels.statuses.ready}</option>
-            <option value="requires_action">{labels.statuses.requires_action}</option>
-            <option value="failed">{labels.statuses.failed}</option>
-            <option value="disabled">{labels.statuses.disabled}</option>
-          </select>
+          <SkillSelect defaultValue="pending" name="status" options={paymentStatusOptions(labels)} />
         </label>
         <label>
           <span>{labels.brand}</span>
-          <input defaultValue="manual" name="brand" />
+          <SkillInput defaultValue="manual" name="brand" />
         </label>
         <label>
           <span>{labels.last4}</span>
-          <input maxLength={4} name="last4" />
+          <SkillInput maxLength={4} name="last4" />
         </label>
         <label>
           <span>{labels.expMonth}</span>
-          <input min="1" max="12" name="expMonth" type="number" />
+          <SkillInput min="1" max="12" name="expMonth" type="number" />
         </label>
         <label>
           <span>{labels.expYear}</span>
-          <input min="2026" max="2100" name="expYear" type="number" />
+          <SkillInput min="2026" max="2100" name="expYear" type="number" />
         </label>
         <label className="policy-checkbox organization-payment-form__default">
-          <input defaultChecked name="isDefault" type="checkbox" />
+          <SkillCheckbox defaultChecked name="isDefault" />
           <span>{labels.defaultMethod}</span>
         </label>
-        <button className="secondary-button organization-payment-form__submit" disabled={isPaymentPending} type="submit">
+        <SkillButton className="secondary-button organization-payment-form__submit" disabled={isPaymentPending} htmlType="submit">
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{isPaymentPending ? labels.saving : labels.addMethod}</span>
-        </button>
+        </SkillButton>
       </form>
 
       {paymentState.status !== "idle" ? <ActionMessage state={paymentState} /> : null}
@@ -298,22 +290,15 @@ function PaymentMethodCard({
           {method.isDefault ? ` / ${labels.defaultMethod}` : ""}
         </span>
       </div>
-      <select defaultValue={method.status} name="status">
-        <option value="not_configured">{labels.statuses.not_configured}</option>
-        <option value="pending">{labels.statuses.pending}</option>
-        <option value="ready">{labels.statuses.ready}</option>
-        <option value="requires_action">{labels.statuses.requires_action}</option>
-        <option value="failed">{labels.statuses.failed}</option>
-        <option value="disabled">{labels.statuses.disabled}</option>
-      </select>
+      <SkillSelect defaultValue={method.status} name="status" options={paymentStatusOptions(labels)} />
       <label className="policy-checkbox">
-        <input name="isDefault" type="checkbox" />
+        <SkillCheckbox name="isDefault" />
         <span>{labels.setDefault}</span>
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={disabled} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={disabled} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{labels.updateStatus}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }
@@ -327,10 +312,16 @@ function formatProvider(value: string, labels: Record<string, string>) {
 }
 
 function ActionMessage({ state }: { state: OrganizationBillingActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
+}
+
+function paymentStatusOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return [
+    { label: labels.statuses.not_configured, value: "not_configured" },
+    { label: labels.statuses.pending, value: "pending" },
+    { label: labels.statuses.ready, value: "ready" },
+    { label: labels.statuses.requires_action, value: "requires_action" },
+    { label: labels.statuses.failed, value: "failed" },
+    { label: labels.statuses.disabled, value: "disabled" }
+  ];
 }

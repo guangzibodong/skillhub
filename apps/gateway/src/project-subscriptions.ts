@@ -199,7 +199,7 @@ export async function createProjectSubscription(
         ${auditAction},
         'subscription',
         ${subscription.id},
-        ${`Project subscription ${auditVerb} with ${status} provider-deferred state.`},
+        ${`Project subscription ${auditVerb} with ${status} billing state.`},
         ${tx.json({
           projectSlug,
           skillSlug: subscription.skillSlug,
@@ -229,7 +229,7 @@ export async function createProjectSubscription(
           priceId: target.priceId,
           unitAmountCents: target.unitAmountCents,
           currency: target.currency,
-          providerDeferred: true
+          stripeBacked: Boolean(subscription.id)
         })},
         'queued'
       )

@@ -1,4 +1,5 @@
 import { getSql } from "./registry.js";
+import { resolvePayoutSettings, type PlatformConfigEnv } from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -34,6 +35,7 @@ type PayoutAccount = {
   manualNotes: string | null;
   provider: string;
   providerAccountId: string;
+  stripeAccountId: string | null;
   status: "not_configured" | "verification_required" | "verified" | "blocked";
   createdAt: string;
   updatedAt: string;
@@ -68,93 +70,27 @@ type PayoutReadiness = {
     | "wait_for_balance_maturity";
 };
 
-const fallbackPayoutSummary = {
-  publisherProfile: {
-    id: "demo-publisher",
-    displayName: "SkillHub Publisher",
-    status: "active",
-    payoutStatus: "verified"
-  },
-  balances: {
-    pendingCents: 126000,
-    availableCents: 482000,
-    blockedCents: 0,
-    paidCents: 940000,
-    currency: "usd",
-    minPayoutCents: getMinPayoutCents(),
-    reviewThresholdCents: getPayoutReviewThresholdCents()
-  },
-  readiness: {
-    blockers: [],
-    canRequest: true,
-    expectedStatus: "review",
-    nextAction: "request_payout"
-  },
-  payoutAccounts: [
-    {
-      id: "demo-payout-account",
-      manualAccount: "publisher-paypal@example.com",
-      manualAccountHolder: "SkillHub Publisher",
-      manualMethod: "paypal",
-      manualNotes: "Demo manual payout account for finance review.",
-      provider: "manual_deferred",
-      providerAccountId: "manual_deferred_demo",
-      status: "verified",
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  payouts: [
-    {
-      id: "demo-payout-review",
-      publisherProfileId: "demo-publisher",
-      publisherName: "SkillHub Publisher",
-      amountCents: 480000,
-      currency: "usd",
-      status: "review",
-      balanceCount: 4,
-      manualAccount: "publisher-paypal@example.com",
-      manualAccountHolder: "SkillHub Publisher",
-      manualMethod: "paypal",
-      manualNotes: "Demo manual payout account for finance review.",
-      provider: "manual_deferred",
-      accountStatus: "verified",
-      requestedAt: "demo",
-      reviewedAt: null,
-      paidAt: null,
-      reviewReason: "High-value payout queued for manual review.",
-      failureReason: null,
-      providerReference: null,
-      retryCondition: null,
-      nextAction: "await_finance_review"
-    }
-  ]
+type PayoutRuntimeEnv = PlatformConfigEnv & {
+  SKILLHUB_MIN_PAYOUT_CENTS?: string;
+  SKILLHUB_PAYOUT_REVIEW_THRESHOLD_CENTS?: string;
 };
 
-export async function getPublisherPayoutSummary(publisherProfileId?: string, organizationId?: string | null) {
+export async function getPublisherPayoutSummary(
+  publisherProfileId?: string,
+  organizationId?: string | null,
+  env?: PayoutRuntimeEnv
+) {
   const sql = await getSql();
+  const settings = await resolvePayoutSettings(env);
 
   if (!sql) {
-    return fallbackPayoutSummary;
+    return emptyPayoutSummary(settings);
   }
 
   const publisher = await getPublisherProfile(sql, publisherProfileId, false, organizationId);
 
   if (!publisher) {
-    return {
-      ...fallbackPayoutSummary,
-      publisherProfile: null,
-      balances: {
-        ...fallbackPayoutSummary.balances,
-        pendingCents: 0,
-        availableCents: 0,
-        blockedCents: 0,
-        paidCents: 0
-      },
-      readiness: buildPayoutReadiness(null, undefined, 0),
-      payoutAccounts: [],
-      payouts: []
-    };
+    return emptyPayoutSummary(settings);
   }
 
   const [balanceRows, payoutAccounts, payouts] = await Promise.all([
@@ -176,6 +112,7 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
         manual_notes as "manualNotes",
         provider,
         provider_account_id as "providerAccountId",
+        stripe_account_id as "stripeAccountId",
         status,
         created_at as "createdAt",
         updated_at as "updatedAt"
@@ -192,8 +129,8 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
     blockedCents: Number(balanceRows[0]?.blockedCents ?? 0),
     paidCents: Number(balanceRows[0]?.paidCents ?? 0),
     currency: "usd",
-    minPayoutCents: getMinPayoutCents(),
-    reviewThresholdCents: getPayoutReviewThresholdCents()
+    minPayoutCents: settings.minPayoutCents,
+    reviewThresholdCents: settings.payoutReviewThresholdCents
   };
 
   return {
@@ -205,19 +142,38 @@ export async function getPublisherPayoutSummary(publisherProfileId?: string, org
   };
 }
 
+function emptyPayoutSummary(settings: Awaited<ReturnType<typeof resolvePayoutSettings>>) {
+  return {
+    publisherProfile: null,
+    balances: {
+      pendingCents: 0,
+      availableCents: 0,
+      blockedCents: 0,
+      paidCents: 0,
+      currency: "usd",
+      minPayoutCents: settings.minPayoutCents,
+      reviewThresholdCents: settings.payoutReviewThresholdCents
+    },
+    readiness: buildPayoutReadiness(null, undefined, 0),
+    payoutAccounts: [],
+    payouts: []
+  };
+}
+
 export async function listAdminPayouts(limit = 50) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackPayoutSummary.payouts;
+    return [];
   }
 
   return listPayoutRows(sql, limit);
 }
 
-export async function requestPublisherPayout(input: RequestPayoutInput) {
+export async function requestPublisherPayout(input: RequestPayoutInput, env?: PayoutRuntimeEnv) {
   const sql = await requireSql();
   const currency = normalizeCurrency(input.currency);
+  const settings = await resolvePayoutSettings(env);
 
   return sql.begin(async (tx: Sql) => {
     const publisher = await getPublisherProfile(tx, input.publisherProfileId, true, input.organizationId);
@@ -243,11 +199,11 @@ export async function requestPublisherPayout(input: RequestPayoutInput) {
     const balances = await getAvailableBalancesForPayout(tx, publisher.id, currency);
     const amountCents = balances.reduce((total, balance) => total + Number(balance.amountCents), 0);
 
-    if (amountCents < getMinPayoutCents()) {
+    if (amountCents < settings.minPayoutCents) {
       throw new Error("Available balance is below the minimum payout threshold.");
     }
 
-    const status: PayoutStatus = amountCents >= getPayoutReviewThresholdCents() ? "review" : "requested";
+    const status: PayoutStatus = amountCents >= settings.payoutReviewThresholdCents ? "review" : "requested";
     const payoutRows = (await tx`
       insert into payouts (
         publisher_profile_id,
@@ -379,7 +335,7 @@ export async function decidePayout(payoutId: string, input: PayoutDecisionInput,
         update payouts
         set
           status = 'processing',
-          review_reason = ${reason ?? "Approved for manual transfer."},
+          review_reason = ${reason ?? "Approved for Stripe payout processing."},
           retry_condition = null,
           next_action = 'await_provider_processing',
           reviewed_at = now(),
@@ -484,6 +440,8 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
       pa.manual_method as "manualMethod",
       pa.manual_notes as "manualNotes",
       pa.provider,
+      pa.provider_account_id as "providerAccountId",
+      pa.stripe_account_id as "stripeAccountId",
       pa.status as "accountStatus",
       p.requested_at as "requestedAt",
       p.reviewed_at as "reviewedAt",
@@ -509,6 +467,8 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
       pa.manual_method,
       pa.manual_notes,
       pa.provider,
+      pa.provider_account_id,
+      pa.stripe_account_id,
       pa.status
     order by p.requested_at desc
     limit ${safeLimit}
@@ -523,6 +483,7 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
     manualAccountHolder: string | null;
     manualMethod: "paypal" | "alipay" | null;
     manualNotes: string | null;
+    providerAccountId: string | null;
     nextAction: string | null;
     paidAt: string | null;
     provider: string | null;
@@ -534,6 +495,7 @@ async function listPayoutRows(sql: Sql, limit = 50, publisherProfileId?: string,
     reviewReason: string | null;
     retryCondition: string | null;
     status: PayoutStatus;
+    stripeAccountId: string | null;
   }>;
 
   return rows.map((row) => ({
@@ -603,6 +565,7 @@ async function getVerifiedPayoutAccount(sql: Sql, publisherProfileId: string): P
       manual_notes as "manualNotes",
       provider,
       provider_account_id as "providerAccountId",
+      stripe_account_id as "stripeAccountId",
       status,
       created_at as "createdAt",
       updated_at as "updatedAt"

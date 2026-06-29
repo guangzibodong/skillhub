@@ -2,17 +2,18 @@
 
 import { useActionState, useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Checkbox, Input, Segmented, Select } from "antd";
+import Password from "antd/es/input/Password";
 import {
   Building2,
-  CheckCircle2,
   Eye,
   EyeOff,
   KeyRound,
   MailCheck,
   Send,
   UserPlus,
-  XCircle,
 } from "lucide-react";
+import { SkillAlert, SkillButton } from "@/components/skill-antd";
 import { signUpAction, type SignupActionState } from "@/lib/auth-actions";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 
@@ -28,6 +29,8 @@ const copy = {
     codeHelp: "The code expires in 10 minutes and can be used once.",
     codePlaceholder: "123456",
     createAccount: "Create account",
+    confirmPassword: "Confirm password",
+    confirmPasswordPlaceholder: "Re-enter password",
     createMode: "Register",
     createPrompt: "New to SkillHub?",
     createPromptAction: "Create a workspace",
@@ -38,9 +41,8 @@ const copy = {
     email: "Work email",
     emailLoginMode: "Sign in",
     emailPlaceholder: "you@company.com",
-    forgotDisabledTitle:
-      "Password reset is not public yet. Contact support for account recovery or use an operator-issued recovery token below.",
-    forgotPassword: "Forgot password? Contact support",
+    forgotDisabledTitle: "Reset your password with an email verification code.",
+    forgotPassword: "Forgot password?",
     hidePassword: "Hide password",
     helper: "Use email or username with a password, or register a new workspace.",
     identifier: "Email or username",
@@ -78,6 +80,8 @@ const copy = {
     codeHelp: "验证码 10 分钟内有效，只能使用一次。",
     codePlaceholder: "123456",
     createAccount: "创建账号",
+    confirmPassword: "确认密码",
+    confirmPasswordPlaceholder: "再次输入密码",
     createMode: "注册",
     createPrompt: "还没有账号？",
     createPromptAction: "创建工作区",
@@ -88,9 +92,8 @@ const copy = {
     email: "工作邮箱",
     emailLoginMode: "登录",
     emailPlaceholder: "you@company.com",
-    forgotDisabledTitle:
-      "公开密码重置还没有上线。请联系支持恢复账号，或使用管理员提供的恢复令牌。",
-    forgotPassword: "忘记密码？联系支持",
+    forgotDisabledTitle: "使用邮箱验证码重置密码。",
+    forgotPassword: "忘记密码？",
     hidePassword: "隐藏密码",
     helper: "使用邮箱或用户名加密码登录，也可以注册新的工作区。",
     identifier: "邮箱或用户名",
@@ -137,6 +140,7 @@ export function WorkspaceSignupForm({
   const router = useRouter();
   const passwordId = useId();
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [role, setRole] = useState("developer");
   const [showPassword, setShowPassword] = useState(false);
   const [state, action, isPending] = useActionState(
     signUpAction.bind(null, locale),
@@ -182,34 +186,33 @@ export function WorkspaceSignupForm({
             type="hidden"
             value={returnTo ?? localizedHref("/role-landing", locale)}
           />
-          <div className="auth-mode-switch" role="group" aria-label={labels.title}>
-            <button
-              className={
-                mode === "login"
-                  ? "auth-mode-switch__item auth-mode-switch__item--active"
-                  : "auth-mode-switch__item"
-              }
-              onClick={() => setMode("login")}
-              aria-pressed={mode === "login"}
-              type="button"
-            >
-              <MailCheck size={15} aria-hidden="true" />
-              <span>{labels.emailLoginMode}</span>
-            </button>
-            <button
-              className={
-                mode === "signup"
-                  ? "auth-mode-switch__item auth-mode-switch__item--active"
-                  : "auth-mode-switch__item"
-              }
-              onClick={() => setMode("signup")}
-              aria-pressed={mode === "signup"}
-              type="button"
-            >
-              <UserPlus size={15} aria-hidden="true" />
-              <span>{labels.createMode}</span>
-            </button>
-          </div>
+          <Segmented
+            aria-label={labels.title}
+            block
+            className="auth-mode-switch auth-mode-switch--antd"
+            onChange={(value) => setMode(value as "login" | "signup")}
+            options={[
+              {
+                label: (
+                  <span className="auth-mode-switch__label">
+                    <MailCheck size={15} aria-hidden="true" />
+                    {labels.emailLoginMode}
+                  </span>
+                ),
+                value: "login",
+              },
+              {
+                label: (
+                  <span className="auth-mode-switch__label">
+                    <UserPlus size={15} aria-hidden="true" />
+                    {labels.createMode}
+                  </span>
+                ),
+                value: "signup",
+              },
+            ]}
+            value={mode}
+          />
 
           <div
             className={
@@ -222,7 +225,7 @@ export function WorkspaceSignupForm({
               <>
                 <label>
                   <span>{labels.username}</span>
-                  <input
+                  <Input
                     autoComplete="username"
                     name="username"
                     placeholder={labels.usernamePlaceholder}
@@ -231,7 +234,7 @@ export function WorkspaceSignupForm({
                 </label>
                 <label>
                   <span>{labels.email}</span>
-                  <input
+                  <Input
                     autoComplete="email"
                     name="email"
                     placeholder={labels.emailPlaceholder}
@@ -247,9 +250,20 @@ export function WorkspaceSignupForm({
                   showPassword={showPassword}
                   togglePassword={() => setShowPassword((current) => !current)}
                 />
+                <PasswordField
+                  autoComplete="new-password"
+                  className="auth-form-grid__wide"
+                  id={`${passwordId}-signup-confirm`}
+                  label={labels.confirmPassword}
+                  labels={labels}
+                  name="confirmPassword"
+                  placeholder={labels.confirmPasswordPlaceholder}
+                  showPassword={showPassword}
+                  togglePassword={() => setShowPassword((current) => !current)}
+                />
                 <label>
                   <span>{labels.displayName}</span>
-                  <input
+                  <Input
                     autoComplete="name"
                     name="displayName"
                     placeholder={labels.displayNamePlaceholder}
@@ -257,7 +271,7 @@ export function WorkspaceSignupForm({
                 </label>
                 <label>
                   <span>{labels.organizationName}</span>
-                  <input
+                  <Input
                     name="organizationName"
                     placeholder={labels.organizationNamePlaceholder}
                     required
@@ -265,25 +279,30 @@ export function WorkspaceSignupForm({
                 </label>
                 <label>
                   <span>{labels.organizationSlug}</span>
-                  <input
+                  <Input
                     name="organizationSlug"
                     placeholder={labels.organizationSlugPlaceholder}
                   />
                 </label>
                 <label className="auth-form-grid__wide">
                   <span>{labels.role}</span>
-                  <select defaultValue="developer" name="role">
-                    <option value="developer">{labels.developer}</option>
-                    <option value="publisher">{labels.publisher}</option>
-                    <option value="owner">{labels.owner}</option>
-                  </select>
+                  <input name="role" type="hidden" value={role} />
+                  <Select
+                    onChange={setRole}
+                    options={[
+                      { label: labels.developer, value: "developer" },
+                      { label: labels.publisher, value: "publisher" },
+                      { label: labels.owner, value: "owner" },
+                    ]}
+                    value={role}
+                  />
                 </label>
               </>
             ) : (
               <>
                 <label>
                   <span>{labels.identifier}</span>
-                  <input
+                  <Input
                     autoComplete="username"
                     name="identifier"
                     placeholder={labels.identifierPlaceholder}
@@ -303,13 +322,12 @@ export function WorkspaceSignupForm({
 
           {mode === "login" ? (
             <div className="auth-form-options">
-              <label className="auth-checkbox-row">
-                <input defaultChecked name="remember" type="checkbox" />
-                <span>{labels.remember}</span>
-              </label>
+              <Checkbox className="auth-checkbox-row" defaultChecked name="remember">
+                {labels.remember}
+              </Checkbox>
               <a
                 className="auth-muted-action"
-                href={localizedHref("/support", locale)}
+                href={localizedHref("/forgot-password", locale)}
                 title={labels.forgotDisabledTitle}
               >
                 {labels.forgotPassword}
@@ -330,7 +348,7 @@ export function WorkspaceSignupForm({
 
           {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
 
-          <button className="primary-button auth-primary-button" disabled={isPending} type="submit">
+          <SkillButton className="primary-button auth-primary-button" disabled={isPending} htmlType="submit">
             <Send size={16} aria-hidden="true" />
             <span>
               {isPending
@@ -339,14 +357,14 @@ export function WorkspaceSignupForm({
                   ? labels.createAccount
                   : labels.signIn}
             </span>
-          </button>
+          </SkillButton>
 
           {mode === "login" ? (
             <p className="auth-register-prompt">
               <span>{labels.createPrompt}</span>
-              <button onClick={() => setMode("signup")} type="button">
+              <SkillButton onClick={() => setMode("signup")} type="text">
                 {labels.createPromptAction}
-              </button>
+              </SkillButton>
             </p>
           ) : null}
         </form>
@@ -381,7 +399,7 @@ export function WorkspaceSignupForm({
           </div>
           <label>
             <span>{labels.code}</span>
-            <input
+            <Input
               autoComplete="one-time-code"
               inputMode="numeric"
               maxLength={6}
@@ -392,10 +410,10 @@ export function WorkspaceSignupForm({
             />
           </label>
           {showFeedback ? <SignupMessage id={feedbackId} state={state} /> : null}
-          <button className="primary-button auth-primary-button" disabled={isPending} type="submit">
+          <SkillButton className="primary-button auth-primary-button" disabled={isPending} htmlType="submit">
             <MailCheck size={16} aria-hidden="true" />
             <span>{isPending ? labels.verifying : labels.verify}</span>
-          </button>
+          </SkillButton>
         </form>
       ) : null}
 
@@ -426,14 +444,20 @@ function PasswordField({
   autoComplete,
   className,
   id,
+  label,
   labels,
+  name = "password",
+  placeholder,
   showPassword,
   togglePassword,
 }: {
   autoComplete: "current-password" | "new-password";
   className?: string;
   id: string;
+  label?: string;
   labels: (typeof copy)["en"] | (typeof copy)["zh"];
+  name?: "password" | "confirmPassword";
+  placeholder?: string;
   showPassword: boolean;
   togglePassword: () => void;
 }) {
@@ -442,38 +466,29 @@ function PasswordField({
   return (
     <div className={className ? `auth-password-field ${className}` : "auth-password-field"}>
       <label htmlFor={id}>
-        <span>{labels.password}</span>
+        <span>{label ?? labels.password}</span>
       </label>
-      <div className="auth-password-control">
-        <input
-          autoComplete={autoComplete}
-          id={id}
-          name="password"
-          placeholder={labels.passwordPlaceholder}
-          required
-          type={showPassword ? "text" : "password"}
-        />
-        <button
-          aria-label={actionLabel}
-          className="auth-password-toggle"
-          onClick={togglePassword}
-          title={actionLabel}
-          type="button"
-        >
-          {showPassword ? (
-            <EyeOff size={16} aria-hidden="true" />
-          ) : (
-            <Eye size={16} aria-hidden="true" />
-          )}
-        </button>
-      </div>
+      <Password
+        autoComplete={autoComplete}
+        id={id}
+        name={name}
+        placeholder={placeholder ?? labels.passwordPlaceholder}
+        required
+        visibilityToggle={{
+          visible: showPassword,
+          onVisibleChange: togglePassword,
+        }}
+        iconRender={(visible) =>
+          visible ? <EyeOff size={16} aria-label={actionLabel} /> : <Eye size={16} aria-label={actionLabel} />
+        }
+      />
     </div>
   );
 }
 
 function SignupMessage({ id, state }: { id: string; state: SignupActionState }) {
   return (
-    <div
+    <SkillAlert
       aria-atomic="true"
       aria-live={state.status === "success" ? "polite" : "assertive"}
       className={
@@ -481,15 +496,10 @@ function SignupMessage({ id, state }: { id: string; state: SignupActionState }) 
           ? "action-message action-message--success auth-form__feedback"
           : "action-message action-message--error auth-form__feedback"
       }
+      description={state.message}
       id={id}
       role={state.status === "success" ? "status" : "alert"}
-    >
-      {state.status === "success" ? (
-        <CheckCircle2 size={16} aria-hidden="true" />
-      ) : (
-        <XCircle size={16} aria-hidden="true" />
-      )}
-      <span>{state.message}</span>
-    </div>
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
 }

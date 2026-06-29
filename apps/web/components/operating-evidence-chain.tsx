@@ -86,13 +86,13 @@ const copy: Record<
       },
       marketplace: {
         body:
-          "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated runtime governance, and prelaunch paid-marketplace modeling.",
+          "Discovery is credible only when a public listing connects to publisher trust, availability, login-gated call permissions and logs, and prelaunch paid-marketplace modeling.",
         eyebrow: "Operating reference - Launch Preview model",
         title: "The catalog points to the governed path behind it."
       },
       platform: {
         body:
-          "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to governed runtime, and later to paid-marketplace ledger and audit states.",
+          "SkillHub is not a static directory: one skill can move from contract, to review, to authenticated project adoption, to controlled invocation, and later to paid-marketplace ledger and audit states.",
         eyebrow: "Architecture reference - Launch Preview model",
         title: "One visible path from publisher supply to agent use."
       },
@@ -133,7 +133,7 @@ const copy: Record<
         detail: "Project keys, policy approval, budget, rate limit, subscription state, REST, and MCP calls share the same gateway path.",
         href: "/developer",
         id: "runtime",
-        label: "Runtime governance",
+        label: "Call permissions and logs",
         owner: "Agent builder",
         state: "Invoke -> log"
       },
@@ -171,12 +171,12 @@ const copy: Record<
         title: "每个运营决策都有可复核记录。"
       },
       developer: {
-        body: "开发者需要看到，市场发现如何变成项目策略、项目 Key、受治理调用、成本、更新和运行证据。",
+        body: "开发者需要看到，市场发现如何变成项目策略、项目 Key、受治理调用、成本、更新和调用记录。",
         eyebrow: "开发者证据链",
         title: "公开查看之后，登录后采用会进入受控项目状态。"
       },
       marketplace: {
-        body: "市场可信不只靠列表，而是公开技能能连接发布者信任、可用状态、登录后运行治理和预发布账本模型。",
+        body: "市场可信不只靠列表，而是公开技能能连接发布者信任、可用状态、登录后调用权限与记录和预发布账本模型。",
         eyebrow: "市场证据链",
         title: "目录背后要能看见真实运营系统。"
       },
@@ -221,7 +221,7 @@ const copy: Record<
         detail: "项目 Key、策略审批、预算、限流、订阅状态、REST 和 MCP 调用共用同一条网关治理路径。",
         href: "/developer",
         id: "runtime",
-        label: "运行治理",
+        label: "调用权限与记录",
         owner: "Agent 构建者",
         state: "调用 -> 日志"
       },

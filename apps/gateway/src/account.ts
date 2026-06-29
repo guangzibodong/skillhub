@@ -1,9 +1,13 @@
 import { getSql } from "./registry.js";
 import type { AuthSubject } from "./auth.js";
+import {
+  getPublicAuthProviderReadiness,
+  type PlatformConfigEnv,
+} from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
-type AccountProviderEnv = {
+type AccountProviderEnv = PlatformConfigEnv & {
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
@@ -163,7 +167,7 @@ export async function getAccountSummary(subject: AuthSubject, env?: AccountProvi
 
   if (!sql) {
     return {
-      loginMethods: getAuthProviderStatuses(env, {
+      loginMethods: await getAuthProviderStatuses(env, {
         emailConnected: Boolean(subject.email),
         tokenConnected: Boolean(subject.tokenId)
       }),
@@ -194,7 +198,7 @@ export async function getAccountSummary(subject: AuthSubject, env?: AccountProvi
     memberships.find((membership) => membership.organizationId === subject.organizationId) ?? memberships[0] ?? null;
 
   return {
-    loginMethods: getAuthProviderStatuses(env, {
+    loginMethods: await getAuthProviderStatuses(env, {
       authIdentities,
       emailConnected: Boolean(profile.email),
       tokenConnected: Boolean(session)
@@ -439,19 +443,16 @@ export async function disconnectAccountAuthIdentity(
   });
 }
 
-export function getAuthProviderStatuses(
+export async function getAuthProviderStatuses(
   env?: AccountProviderEnv,
   options: { authIdentities?: AuthIdentityRecord[]; emailConnected?: boolean; tokenConnected?: boolean } = {}
-): AuthProviderStatus[] {
-  const googleConfigured = hasConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID ?? getProcessEnv("SKILLHUB_GOOGLE_CLIENT_ID") ?? getProcessEnv("GOOGLE_CLIENT_ID"));
-  const googleSecretConfigured = hasConfiguredValue(
-    env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET ?? getProcessEnv("SKILLHUB_GOOGLE_CLIENT_SECRET") ?? getProcessEnv("GOOGLE_CLIENT_SECRET")
-  );
-  const githubConfigured = hasConfiguredValue(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID ?? getProcessEnv("SKILLHUB_GITHUB_CLIENT_ID") ?? getProcessEnv("GITHUB_CLIENT_ID"));
-  const githubSecretConfigured = hasConfiguredValue(
-    env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET ?? getProcessEnv("SKILLHUB_GITHUB_CLIENT_SECRET") ?? getProcessEnv("GITHUB_CLIENT_SECRET")
-  );
-  const callbackBaseUrl = configuredValue(
+): Promise<AuthProviderStatus[]> {
+  const readiness = await getPublicAuthProviderReadiness(env);
+  const googleConfigured = Boolean(readiness.google.clientId);
+  const googleSecretConfigured = readiness.google.clientSecretConfigured;
+  const githubConfigured = Boolean(readiness.github.clientId);
+  const githubSecretConfigured = readiness.github.clientSecretConfigured;
+  const callbackBaseUrl = readiness.google.callbackBaseUrl ?? readiness.github.callbackBaseUrl ?? configuredValue(
     env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ??
       env?.SKILLHUB_AUTH_BASE_URL ??
       env?.NEXT_PUBLIC_API_URL ??

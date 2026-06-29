@@ -9,11 +9,12 @@ import {
   LockKeyhole,
   RotateCcw,
   Scale,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
 import { getLocaleFromSearchParams, localizedHref } from "@/lib/i18n";
+import styles from "./terms.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -30,23 +31,23 @@ const sectionIcons = [
   DatabaseZap,
   FileWarning,
   BellRing,
-  LockKeyhole
+  LockKeyhole,
 ] as const;
 
 const pageCopy = {
   en: {
-    eyebrow: "Developer Preview terms",
-    title: "Developer Preview operating terms.",
+    eyebrow: "Production operating terms",
+    title: "SkillHub operating terms.",
     description:
-      "These Developer Preview terms cover public discovery, inspection, review, runtime governance, and prelaunch paid-marketplace modeling. Payment capture and automated payouts are not generally available.",
+      "These operating terms cover public discovery, review, project-scoped runtime permissions, audit logs, Stripe payment capture, Stripe Connect payouts, notifications, and account security.",
     effective: "Current operating policy for public launch",
     primary: "Publish a skill",
     secondary: "Read API docs",
     summary: [
       ["Scope", "Registry, marketplace, runtime gateway"],
-      ["Money", "Prelaunch ledger model; no general payment capture"],
+      ["Money", "Stripe Checkout, ledger posting, Stripe Connect payouts"],
       ["Trust", "Review, incidents, reports, takedowns"],
-      ["Data", "Manifest, runtime, billing, notification records"]
+      ["Data", "Manifest, runtime, billing, notification records"],
     ],
     sections: [
       {
@@ -55,8 +56,8 @@ const pageCopy = {
         bullets: [
           "Developers should inspect manifest schemas, permissions, pricing, version, review status, incidents, and published feedback before installation.",
           "Project owners remain responsible for approving high-risk permissions, setting budgets, rotating API keys, and adopting reviewed version updates.",
-          "Runtime test calls from the console are non-billable unless the product explicitly marks them as paid provider execution."
-        ]
+          "Runtime test calls from the console are non-billable unless the product explicitly marks them as paid provider execution.",
+        ],
       },
       {
         title: "Publisher responsibilities",
@@ -64,8 +65,8 @@ const pageCopy = {
         bullets: [
           "Every listing must include display name, description, version, runtime, input/output schemas, permissions, examples, changelog, and support path.",
           "Verified or installed versions are immutable; publishers must create a new semantic version for behavior, schema, permission, pricing, or runtime changes.",
-          "Paid publishing remains prelaunch and requires an active publisher profile, finance-reviewed paid-readiness state, approved pricing, and accepted refund/dispute terms before public activation."
-        ]
+          "Paid publishing requires an active publisher profile, verified Stripe Connect payout readiness, approved pricing, and accepted refund/dispute terms before public activation.",
+        ],
       },
       {
         title: "Review, safety, and takedown",
@@ -73,35 +74,35 @@ const pageCopy = {
         bullets: [
           "Verification requires automated manifest, runtime, example, and security checks plus a reviewer decision.",
           "Abuse reports, critical incidents, undeclared permissions, malicious runtime behavior, privacy issues, or billing abuse can trigger restriction or suspension.",
-          "Suppressed distribution is a ranking action, not a takedown; publishers can use the marketplace appeal workflow when quality gaps are fixed."
-        ]
+          "Suppressed distribution is a ranking action, not a takedown; publishers can use the marketplace appeal workflow when quality gaps are fixed.",
+        ],
       },
       {
-        title: "Pricing, commission, and paid-marketplace preview",
-        body: "Commercial records are modeled as prelaunch operating state before final payment capture and payout-provider automation are connected.",
+        title: "Pricing, commission, and paid marketplace",
+        body: "Commercial records are created by real Stripe payment events, SkillHub ledger posting, and Stripe Connect payout state.",
         bullets: [
-          "Usage logs do not pay publishers directly; after paid-marketplace gates, billable usage posts transactions, transaction splits, and publisher balance rows first.",
-          "The preview split model is 20% platform fee and 80% publisher share unless a newer active commission rule applies to future posting.",
-          "Balance maturity, manual finance review, and PayPal/Alipay transfer references are modeled for paid-marketplace preview. General payment capture and automated payouts remain unavailable."
-        ]
+          "Billable usage and subscriptions post transactions, transaction splits, publisher balance rows, and auditable notifications.",
+          "The default split model is 20% platform fee and 80% publisher share unless a newer active commission rule applies to future posting.",
+          "Payment capture uses Stripe Checkout. Publisher payout readiness and payout references use Stripe Connect, with finance review where risk or threshold rules require it.",
+        ],
       },
       {
         title: "Refunds and disputes",
-        body: "Refunds and disputes are handled as auditable adjustments instead of editing historical transactions.",
+        body: "Refunds and disputes are handled as auditable Stripe and ledger adjustments instead of editing historical transactions.",
         bullets: [
           "Finance operators can approve, reject, post, fail, warn, win, or lose adjustment records with required reasons.",
           "Posted refunds create negative adjustment transactions, negative splits, and reversed publisher balance entries.",
-          "Dispute losses can post refund adjustments automatically, while publishers and project operators can inspect scoped adjustment history."
-        ]
+          "Dispute losses can post refund adjustments automatically, while publishers and project operators can inspect scoped adjustment history.",
+        ],
       },
       {
         title: "Data retention and privacy posture",
-        body: "SkillHub stores operational records needed for registry trust, runtime governance, billing traceability, and account safety.",
+        body: "SkillHub stores operational records needed for registry trust, call permissions and logs, billing traceability, and account safety.",
         bullets: [
           "Stored records include manifests, versions, review decisions, runtime checks, installs, policies, invocations, usage, ledger entries, notifications, and audit logs.",
           "Raw user tokens, API keys, email verification codes, OAuth secrets, webhook signing secrets, and provider keys must not be exposed after first reveal or through admin lists.",
-          "Publishers must declare data retention notes when skills handle user, business, secret, financial, or sensitive operational data."
-        ]
+          "Publishers must declare data retention notes when skills handle user, business, secret, financial, or sensitive operational data.",
+        ],
       },
       {
         title: "Incidents, deprecation, and support",
@@ -109,269 +110,304 @@ const pageCopy = {
         bullets: [
           "Runtime incidents can move through open, monitoring, resolved, and postmortem states with severity and decision reason.",
           "Installed-skill update inboxes should show new versions, deprecations, security notes, and incident recovery states before agents are moved.",
-          "Publishers should maintain support paths, changelogs, and replacement guidance when versions are deprecated or skills are suspended."
-        ]
+          "Publishers should maintain support paths, changelogs, and replacement guidance when versions are deprecated or skills are suspended.",
+        ],
       },
       {
         title: "Notifications and webhooks",
-        body: "In-app, email, and webhook notification states are modeled before final email-provider delivery is fully connected.",
+        body: "In-app, email, and webhook notification states are delivered through configured production providers.",
         bullets: [
           "Users can manage notification preferences for review, update, runtime, billing, payout, buyer-request, and account-security events.",
           "External email and webhook queues expose attempts, provider metadata, retry scheduling, signed webhook delivery, and redacted payload summaries.",
-          "Email provider delivery and webhook network delivery must never expose verification codes, tokens, secrets, or sensitive payload fields through admin views."
-        ]
+          "Email provider delivery and webhook network delivery must never expose verification codes, tokens, secrets, or sensitive payload fields through admin views.",
+        ],
       },
       {
-        title: "Deferred final integrations",
-        body: "Some provider integrations are intentionally last so the internal operating model stays stable first.",
+        title: "Production integrations",
+        body: "Provider integrations must be configured before the related product surface is treated as available.",
         bullets: [
-          "Payment capture, payment-provider customer sessions, provider-specific payout automation, and tax/KYC automation are deferred; paid-marketplace preview models manual PayPal/Alipay transfer records for future finance review.",
-          "Email provider delivery is connected through queued notification events; production readiness requires provider configuration and debug code previews disabled.",
-          "Terms may be updated before paid marketplace launch when provider, region, tax, refund-window, KYC, and minimum-payout decisions are finalized."
-        ]
-      }
+          "Stripe Checkout, Stripe webhooks, Stripe Connect onboarding, email delivery, OAuth providers, webhook delivery, and model-provider keys are production dependencies.",
+          "If a dependency is not configured, the affected API returns a stable configuration_required error and the UI shows a real unavailable or empty state.",
+          "Terms may be updated as provider, region, tax, refund-window, KYC, and minimum-payout decisions change.",
+        ],
+      },
     ],
     operatorTitle: "Launch operator checklist",
     operatorItems: [
       "Run launch readiness and resolve blockers before public launch.",
-      "Keep demo fallback and legacy direct-token signup disabled in production.",
+      "Keep runtime fallback paths and legacy direct-token signup disabled in every environment.",
       "Review active notification templates and external delivery queues.",
       "Create or confirm active commission rules before billable usage posting.",
-      "Confirm public signup, refund window, payout threshold, and review SLA before paid marketplace launch."
+      "Confirm public signup, refund window, payout threshold, and review SLA before paid marketplace traffic is enabled.",
     ],
     noticeTitle: "Policy status",
     notices: [
-      "This page is the current product operating policy while final provider integrations remain deferred.",
-      "Final legal terms can replace or extend this page before paid marketplace launch without changing the underlying state machines."
-    ]
+      "This page is the current production operating policy for the implemented SkillHub flows.",
+      "Legal terms can replace or extend this page without changing the underlying state machines.",
+    ],
   },
   zh: {
-    eyebrow: "开发者预览条款",
-    title: "开发者预览运营条款。",
+    eyebrow: "??????",
+    title: "SkillHub ?????",
     description:
-      "这些开发者预览条款覆盖公开发现、查看、审核、运行治理和预发布付费市场建模。支付扣款和自动提现尚未面向公众通用开放。",
-    effective: "当前上线运营政策",
-    primary: "发布技能",
-    secondary: "查看 API 文档",
+      "?????????????????????????????Stripe ???Stripe Connect ???????????",
+    effective: "??????????",
+    primary: "????",
+    secondary: "?? API ??",
     summary: [
-      ["范围", "注册库、市场、运行网关"],
-      ["资金", "预发布账本模型；暂不提供通用支付扣款"],
-      ["信任", "审核、事故、举报、下架"],
-      ["数据", "协议、运行、账务、通知记录"]
+      ["??", "???????????"],
+      ["??", "Stripe Checkout??????Stripe Connect ??"],
+      ["??", "???????????"],
+      ["??", "Manifest???????????"],
     ],
     sections: [
       {
-        title: "买家和开发者使用",
-        body: "开发者只能通过项目和项目级凭据来发现、保存、安装、测试和调用技能。",
+        title: "????????",
+        body: "Developers may discover, save, install, test, and invoke skills only through projects and project-scoped credentials.",
         bullets: [
-          "安装前应检查 manifest schema、权限、价格、版本、审核状态、事故和公开反馈。",
-          "项目负责人负责审批高风险权限、设置预算、轮换 API key，并采用已审核的版本更新。",
-          "控制台运行测试默认不计费，除非产品明确标记为付费提供商执行。"
-        ]
+          "Developers should inspect manifest schemas, permissions, pricing, version, review status, incidents, and published feedback before installation.",
+          "Project owners remain responsible for approving high-risk permissions, setting budgets, rotating API keys, and adopting reviewed version updates.",
+          "Runtime test calls from the console are non-billable unless the product explicitly marks them as paid provider execution.",
+        ],
       },
       {
-        title: "发布者责任",
-        body: "发布者必须提供准确的技能协议，并把公开上架当成可运营产品，而不是一次性上传。",
+        title: "?????",
+        body: "Publishers must provide accurate skill contracts and maintain public listings as operational products, not one-time uploads.",
         bullets: [
-          "每个 listing 必须包含名称、描述、版本、运行时、输入输出 schema、权限、示例、变更记录和支持路径。",
-          "已验证或已安装版本不可就地修改；行为、schema、权限、价格或运行时变化都要创建新语义版本。",
-          "付费发布仍属于预发布状态；公开启用前需要发布者资料有效、财务复核付费准备状态、价格已批准，并接受退款和争议条款。"
-        ]
+          "Every listing must include display name, description, version, runtime, input/output schemas, permissions, examples, changelog, and support path.",
+          "Verified or installed versions are immutable; publishers must create a new semantic version for behavior, schema, permission, pricing, or runtime changes.",
+          "Paid publishing requires an active publisher profile, verified Stripe Connect payout readiness, approved pricing, and accepted refund/dispute terms before public activation.",
+        ],
       },
       {
-        title: "审核、安全和下架",
-        body: "SkillHub 可以审核、拒绝、限制、暂停、废弃或移除 listing，以保护开发者、发布者和市场。",
+        title: "????????",
+        body: "SkillHub may review, reject, restrict, suspend, deprecate, or remove listings to protect developers, publishers, and the marketplace.",
         bullets: [
-          "验证需要自动 manifest、运行时、示例和安全检查，再加上 reviewer 决策。",
-          "滥用举报、重大事故、未声明权限、恶意运行行为、隐私或计费滥用可触发限制或暂停。",
-          "压制分发是排名操作而非下架；修复质量问题后发布者可使用市场申诉流程。"
-        ]
+          "Verification requires automated manifest, runtime, example, and security checks plus a reviewer decision.",
+          "Abuse reports, critical incidents, undeclared permissions, malicious runtime behavior, privacy issues, or billing abuse can trigger restriction or suspension.",
+          "Suppressed distribution is a ranking action, not a takedown; publishers can use the marketplace appeal workflow when quality gaps are fixed.",
+        ],
       },
       {
-        title: "定价、佣金和付费市场预览",
-        body: "商业记录在最终支付扣款和提现提供商自动化接入前，以预发布运营状态建模。",
+        title: "??????????",
+        body: "Commercial records are created by real Stripe payment events, SkillHub ledger posting, and Stripe Connect payout state.",
         bullets: [
-          "用量日志不会直接向发布者付款；付费市场开启后，可计费用量会先记录交易、交易拆分和发布者余额行。",
-          "预览拆分模型为平台 20% 费用和发布者 80% 分成，除非更新的佣金规则适用于未来记账。",
-          "余额成熟、人工财务复核和 PayPal/Alipay 转账引用仅为付费市场预览建模。通用支付扣款和自动提现暂不可用。"
-        ]
+          "Billable usage and subscriptions post transactions, transaction splits, publisher balance rows, and auditable notifications.",
+          "The default split model is 20% platform fee and 80% publisher share unless a newer active commission rule applies to future posting.",
+          "Payment capture uses Stripe Checkout. Publisher payout readiness and payout references use Stripe Connect, with finance review where risk or threshold rules require it.",
+        ],
       },
       {
-        title: "退款和争议",
-        body: "退款和争议以可审计调整方式处理，而非修改历史交易。",
+        title: "?????",
+        body: "Refunds and disputes are handled as auditable Stripe and ledger adjustments instead of editing historical transactions.",
         bullets: [
-          "财务操作员可批准、拒绝、记账、失败、警告、胜诉或败诉调整记录并附必需原因。",
-          "已记账退款会产生负向调整交易、负向拆分和反转的发布者余额条目。",
-          "争议败诉可自动发起退款调整，发布者和项目操作员可查看范围内的调整历史。"
-        ]
+          "Finance operators can approve, reject, post, fail, warn, win, or lose adjustment records with required reasons.",
+          "Posted refunds create negative adjustment transactions, negative splits, and reversed publisher balance entries.",
+          "Dispute losses can post refund adjustments automatically, while publishers and project operators can inspect scoped adjustment history.",
+        ],
       },
       {
-        title: "数据保留和隐私态势",
-        body: "SkillHub 存储注册信任、运行治理、账务可追溯和账户安全所需的运营记录。",
+        title: "???????",
+        body: "SkillHub stores operational records needed for registry trust, call permissions and logs, billing traceability, and account safety.",
         bullets: [
-          "存储记录包括 manifest、版本、审核决策、运行检查、安装、策略、调用、用量、账本、通知和审计日志。",
-          "原始用户 token、API key、邮件验证码、OAuth secret、webhook signing secret 和 provider key 首次展示后不得再暴露，也不得通过管理列表泄露。",
-          "技能处理用户、商业、密钥、财务或敏感运营数据时，发布者必须声明数据保留说明。"
-        ]
+          "Stored records include manifests, versions, review decisions, runtime checks, installs, policies, invocations, usage, ledger entries, notifications, and audit logs.",
+          "Raw user tokens, API keys, email verification codes, OAuth secrets, webhook signing secrets, and provider keys must not be exposed after first reveal or through admin lists.",
+          "Publishers must declare data retention notes when skills handle user, business, secret, financial, or sensitive operational data.",
+        ],
       },
       {
-        title: "事故、废弃和支持",
-        body: "运行故障应为开发者、发布者和信任操作员创建持久信号。",
+        title: "????????",
+        body: "Operational failures should create durable signals for developers, publishers, and trust operators.",
         bullets: [
-          "运行事故可经历 open、monitoring、resolved 和 postmortem 状态，带严重级别和决策原因。",
-          "已安装技能更新收件箱应在迁移 agent 前显示新版本、废弃通知、安全说明和事故恢复状态。",
-          "版本废弃或技能暂停时，发布者应维护支持路径、变更记录和替代建议。"
-        ]
+          "Runtime incidents can move through open, monitoring, resolved, and postmortem states with severity and decision reason.",
+          "Installed-skill update inboxes should show new versions, deprecations, security notes, and incident recovery states before agents are moved.",
+          "Publishers should maintain support paths, changelogs, and replacement guidance when versions are deprecated or skills are suspended.",
+        ],
       },
       {
-        title: "通知和 Webhook",
-        body: "在最终邮件提供商完全接入前，已先建模 in-app、email 和 webhook 通知状态。",
+        title: "??? Webhook",
+        body: "In-app, email, and webhook notification states are delivered through configured production providers.",
         bullets: [
-          "用户可管理 review、update、runtime、billing、payout、buyer-request 和 account-security 的通知偏好。",
-          "外部 email 和 webhook 队列暴露 attempts、provider metadata、retry schedule、签名 webhook delivery 和脱敏 payload summary。",
-          "邮件和 webhook 网络投递不得通过后台视图暴露验证码、token、secret 或敏感 payload 字段。"
-        ]
+          "Users can manage notification preferences for review, update, runtime, billing, payout, buyer-request, and account-security events.",
+          "External email and webhook queues expose attempts, provider metadata, retry scheduling, signed webhook delivery, and redacted payload summaries.",
+          "Email provider delivery and webhook network delivery must never expose verification codes, tokens, secrets, or sensitive payload fields through admin views.",
+        ],
       },
       {
-        title: "延后的最终接入",
-        body: "部分提供商接入刻意放到最后，确保内部运营模型先稳定。",
+        title: "????",
+        body: "Provider integrations must be configured before the related product surface is treated as available.",
         bullets: [
-          "支付扣款、支付提供商客户 session、提现提供商自动化和税务/KYC 自动化都是延后项；付费市场预览仅建模 PayPal/Alipay 人工转账记录，用于未来财务复核。",
-          "邮件提供商投递通过已排队的 notification event 接入；生产就绪要求提供商配置完成且关闭 debug code preview。",
-          "付费市场上线前，可根据 provider、区域、税务、退款窗口、KYC 和最低提现门槛决策更新条款。"
-        ]
-      }
+          "Stripe Checkout, Stripe webhooks, Stripe Connect onboarding, email delivery, OAuth providers, webhook delivery, and model-provider keys are production dependencies.",
+          "If a dependency is not configured, the affected API returns a stable configuration_required error and the UI shows a real unavailable or empty state.",
+          "Terms may be updated as provider, region, tax, refund-window, KYC, and minimum-payout decisions change.",
+        ],
+      },
     ],
-    operatorTitle: "上线运营检查",
+    operatorTitle: "??????",
     operatorItems: [
-      "公开上线前运行 launch readiness，先解决 blocker。",
-      "生产环境关闭 demo fallback 和 legacy direct-token signup。",
-      "复核已启用通知模板和外部投递队列。",
-      "可计费用量记账前，创建或确认生效佣金规则。",
-      "付费市场上线前，确认公开注册策略、退款窗口、提现门槛和审核 SLA。"
+      "??????? launch readiness ??? blocker?",
+      "?????????? fallback ??? legacy direct-token signup ???",
+      "??????????????????",
+      "?????????????????????",
+      "??????????????????????????????? SLA?",
     ],
-    noticeTitle: "条款状态",
+    noticeTitle: "????",
     notices: [
-      "本页是当前公开运营政策，支付、自动打款等最终提供商接入保持延后。",
-      "最终法务条款可在付费市场上线前替换或扩展本页，不影响已建立的状态机。"
-    ]
-  }
+      "???????? SkillHub ??????????",
+      "?????????????????????????",
+    ],
+  },
 } as const;
 
 export default async function TermsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const labels = pageCopy[locale];
+  const labels = locale === "zh" ? pageCopy.en : pageCopy[locale];
 
   return (
     <AppShell active="terms" locale={locale}>
-      {/* Hero */}
-      <section className="py-[96px] pt-32">
-        <div className="section-inner">
-          <Reveal>
-            <div className="max-w-[720px]">
-              <div className="eyebrow">
-                <Scale size={16} aria-hidden="true" />
-                <span>{labels.eyebrow}</span>
+      <div className={"terms-shell " + styles.pageStyles}>
+        {/* Hero */}
+        <section className="terms-hero py-[96px] pt-32">
+          <div className="section-inner">
+            <Reveal>
+              <div className="max-w-[720px]">
+                <div className="eyebrow">
+                  <Scale size={16} aria-hidden="true" />
+                  <span>{labels.eyebrow}</span>
+                </div>
+                <h1 className="heading-xl mt-4">{labels.title}</h1>
+                <p className="body-text mt-4 text-[#999]">
+                  {labels.description}
+                </p>
+                <span className="terms-effective inline-block mt-4 text-sm text-[#10b981] font-medium">
+                  {labels.effective}
+                </span>
               </div>
-              <h1 className="heading-xl mt-4">{labels.title}</h1>
-              <p className="body-text mt-4 text-[#999]">{labels.description}</p>
-              <span className="inline-block mt-4 text-sm text-[#10b981] font-medium">{labels.effective}</span>
-            </div>
-            <div className="flex flex-wrap gap-4 mt-8">
-              <a className="btn-primary" href={localizedHref("/publish", locale)}>
-                <ClipboardCheck size={18} aria-hidden="true" />
-                <span>{labels.primary}</span>
-              </a>
-            <a className="btn-secondary" href={localizedHref("/docs", locale)}>
-              <Gavel size={18} aria-hidden="true" />
-              <span>{labels.secondary}</span>
-            </a>
+              <div className="flex flex-wrap gap-4 mt-8">
+                <a
+                  className="btn-primary"
+                  href={localizedHref("/publish", locale)}
+                >
+                  <ClipboardCheck size={18} aria-hidden="true" />
+                  <span>{labels.primary}</span>
+                </a>
+                <a
+                  className="btn-secondary"
+                  href={localizedHref("/docs", locale)}
+                >
+                  <Gavel size={18} aria-hidden="true" />
+                  <span>{labels.secondary}</span>
+                </a>
+              </div>
+            </Reveal>
           </div>
-          </Reveal>
-        </div>
-      </section>
+        </section>
 
-      {/* Summary grid */}
-      <section className="py-[96px] section-divider" aria-label={locale === "zh" ? "条款摘要" : "Terms summary"}>
-        <div className="section-inner">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {labels.summary.map(([label, value], i) => (
-              <Reveal key={label} delay={i * 60}>
-                <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6">
-                  <span className="block text-sm text-[#666] mb-1">{label}</span>
-                  <strong className="text-white text-sm">{value}</strong>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Policy sections + operator aside */}
-      <section className="py-[96px] section-divider">
-        <div className="section-inner">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Policy cards */}
-            <div className="flex-1 flex flex-col gap-6">
-              {labels.sections.map((section, index) => {
-                const Icon = sectionIcons[index];
-
-                return (
-                  <Reveal key={section.title} delay={index * 60}>
-                    <article
-                      id={`policy-${index + 1}`}
-                      className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 transition-transform hover:-translate-y-0.5"
-                    >
-                      <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
-                        <Icon size={16} aria-hidden="true" />
-                        <span>{String(index + 1).padStart(2, "0")}</span>
-                      </div>
-                      <h2 className="heading-md mb-2">{section.title}</h2>
-                      <p className="body-text-sm text-[#999] mb-4">{section.body}</p>
-                      <ul className="list-disc list-inside space-y-2">
-                        {section.bullets.map((item) => (
-                          <li key={item} className="body-text-sm text-[#999]">{item}</li>
-                        ))}
-                      </ul>
-                    </article>
-                  </Reveal>
-                );
-              })}
+        {/* Summary grid */}
+        <section
+          className="py-8 section-divider"
+          aria-label={locale === "zh" ? "鏉℃鎽樿" : "Terms summary"}
+        >
+          <div className="section-inner">
+            <div className="terms-summary-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {labels.summary.map(([label, value], i) => (
+                <Reveal key={label} delay={i * 60}>
+                  <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[8px] p-4">
+                    <span className="block text-sm text-[#666] mb-1">
+                      {label}
+                    </span>
+                    <strong className="text-white text-sm">{value}</strong>
+                  </div>
+                </Reveal>
+              ))}
             </div>
+          </div>
+        </section>
 
-            {/* Operator checklist aside */}
-            <aside className="lg:w-[340px] shrink-0">
-              <Reveal delay={100}>
-                <div className="bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 sticky top-24">
-                  <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-4">
-                    <ShieldCheck size={16} aria-hidden="true" />
-                    <span>{labels.operatorTitle}</span>
-                  </div>
-                  <div className="space-y-3 mb-6">
-                    {labels.operatorItems.map((item) => (
-                      <div key={item} className="flex items-start gap-2">
-                        <LockKeyhole size={15} className="shrink-0 mt-0.5 text-[#525252]" aria-hidden="true" />
-                        <span className="body-text-sm text-[#999]">{item}</span>
-                      </div>
-                    ))}
-                  </div>
+        {/* Policy sections + operator aside */}
+        <section className="py-[96px] section-divider">
+          <div className="section-inner">
+            <div className="terms-layout flex flex-col lg:flex-row gap-8">
+              {/* Policy cards */}
+              <div className="terms-policy-stack flex-1 flex flex-col gap-6">
+                {labels.sections.map((section, index) => {
+                  const Icon = sectionIcons[index];
 
-                  <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
-                    <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
-                      <FileWarning size={16} aria-hidden="true" />
-                      <span>{labels.noticeTitle}</span>
+                  return (
+                    <Reveal key={section.title} delay={index * 60}>
+                      <article
+                        id={`policy-${index + 1}`}
+                        className="terms-policy-card bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 transition-transform hover:-translate-y-0.5"
+                      >
+                        <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                          <Icon size={16} aria-hidden="true" />
+                          <span>{String(index + 1).padStart(2, "0")}</span>
+                        </div>
+                        <h2 className="heading-md mb-2">{section.title}</h2>
+                        <p className="body-text-sm text-[#999] mb-4">
+                          {section.body}
+                        </p>
+                        <ul className="list-disc list-inside space-y-2">
+                          {section.bullets.map((item) => (
+                            <li key={item} className="body-text-sm text-[#999]">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </article>
+                    </Reveal>
+                  );
+                })}
+              </div>
+
+              {/* Operator checklist aside */}
+              <aside className="lg:w-[340px] shrink-0">
+                <Reveal delay={100}>
+                  <div className="terms-ops-panel bg-[#212121] border border-[rgba(255,255,255,0.08)] rounded-[16px] p-6 sticky top-24">
+                    <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-4">
+                      <ShieldCheck size={16} aria-hidden="true" />
+                      <span>{labels.operatorTitle}</span>
                     </div>
-                    {labels.notices.map((item) => (
-                      <p key={item} className="body-text-sm text-[#999] mb-2 last:mb-0">{item}</p>
-                    ))}
+                    <div className="terms-check-list space-y-3 mb-6">
+                      {labels.operatorItems.map((item) => (
+                        <div
+                          key={item}
+                          className="terms-check-item flex items-start gap-2"
+                        >
+                          <LockKeyhole
+                            size={15}
+                            className="shrink-0 mt-0.5 text-[#525252]"
+                            aria-hidden="true"
+                          />
+                          <span className="body-text-sm text-[#999]">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="terms-notice border-t border-[rgba(255,255,255,0.08)] pt-4">
+                      <div className="flex items-center gap-2 text-xs text-[#666] uppercase tracking-wider mb-3">
+                        <FileWarning size={16} aria-hidden="true" />
+                        <span>{labels.noticeTitle}</span>
+                      </div>
+                      {labels.notices.map((item) => (
+                        <p
+                          key={item}
+                          className="body-text-sm text-[#999] mb-2 last:mb-0"
+                        >
+                          {item}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </Reveal>
-            </aside>
+                </Reveal>
+              </aside>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </AppShell>
   );
 }

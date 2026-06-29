@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  ArrowRight,
   BellRing,
   CheckCircle2,
   ClipboardCheck,
@@ -119,32 +120,32 @@ const initialReviewState: PublisherSkillActionState = {
 const reviewCopy = {
   en: {
     alreadyOpenBody:
-      "An open review already existed for this version, so SkillHub refreshed its automated evidence and publisher notification.",
+      "An open review already existed for this version, so SkillHub refreshed its automated check results and publisher notification.",
     alreadyOpenLabel: "Open review refreshed",
     blocking: "Blocking",
     createdVersion: "New draft version",
     failed: "Failed",
     handoffBody:
-      "This handoff is now visible in the publisher workspace, admin review queue, notification inbox, and audit stream.",
-    handoffTitle: "Review handoff evidence",
+      "This submission is now visible in the publisher workspace, admin review list, notification inbox, and audit stream.",
+    handoffTitle: "Review check results",
     newReviewBody:
-      "The version is queued for platform review with fresh automated evidence.",
+      "The version is queued for platform review with fresh automated check results.",
     newReviewLabel: "New review queued",
     openAccount: "Account and terms",
-    openPaid: "Paid-readiness metadata",
+    openPaid: "Paid-readiness information",
     openReview: "Review workbench",
     passed: "Passed",
     reviewId: "Review id",
     reviewErrorTitle: "Version was not submitted",
     reviewSuccessBody:
-      "Automated manifest, runtime, example, and security checks were created for reviewer evidence.",
+      "Automated manifest, runtime, example, and security checks are ready for reviewers.",
     reviewSuccessTitle: "Version submitted for review",
     risk: "Risk",
     status: "Status",
     submitReview: "Submit this version",
     submittingReview: "Submitting review",
     successBodyWithVersion:
-      "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing intent and prelaunch paid-readiness metadata.",
+      "Version {version} is saved as organization-owned draft state. You can submit it for review now or continue in the publisher workspace for pricing intent and prelaunch paid-readiness information.",
     total: "Total checks",
     updatedVersion: "Draft version updated",
     versionLabel: "Version",
@@ -152,16 +153,16 @@ const reviewCopy = {
   },
   zh: {
     alreadyOpenBody:
-      "该版本已经有打开中的审核记录，SkillHub 已刷新自动检查证据和发布者通知。",
+      "该版本已经有打开中的审核记录，SkillHub 已刷新自动检查结果和发布者通知。",
     alreadyOpenLabel: "已刷新打开中的审核",
     blocking: "阻塞",
     createdVersion: "\u65b0\u8349\u7a3f\u7248\u672c",
     failed: "失败",
     handoffBody:
-      "这次交接现在会出现在发布者工作台、管理员审核队列、通知收件箱和审计流中。",
-    handoffTitle: "审核交接证据",
-    newReviewBody: "该版本已带着最新自动检查证据进入平台审核队列。",
-    newReviewLabel: "新审核已排队",
+      "这次提交会出现在发布者工作台、管理员审核列表、通知收件箱和审计记录中。",
+    handoffTitle: "审核检查结果",
+    newReviewBody: "该版本已带着最新自动检查结果进入平台审核列表。",
+    newReviewLabel: "新审核已提交",
     openAccount: "账号和条款",
     openPaid: "付费准备",
     openReview: "审核工作台",
@@ -207,6 +208,8 @@ export function PublishForm({
     [labels, manifestText],
   );
   const canSubmit = access.canSubmit && preflight.canSaveDraft && !isPending;
+  const publisherWorkspaceLabel =
+    locale === "zh" ? "下一步：发布者工作台" : "Next: publisher workspace";
   const readinessTone =
     preflight.blockerCount > 0
       ? "danger"
@@ -284,12 +287,6 @@ export function PublishForm({
 
         {!access.canSubmit ? (
           <ActionResult
-            actions={
-              <a className="secondary-button" href={access.actionHref}>
-                <KeyRound size={16} aria-hidden="true" />
-                <span>{access.actionLabel}</span>
-              </a>
-            }
             body={locale === "zh" ? "首屏主按钮已经给出下一步，这里保留权限状态说明，避免填完 manifest 后才发现无法提交。" : "The hero CTA already gives the next step. This panel keeps the access status visible so publishers do not finish a manifest only to fail at submit time."}
             title={access.title}
             tone="warning"
@@ -337,6 +334,14 @@ export function PublishForm({
                   {isPending ? labels.action.saving : labels.action.draftButton}
                 </span>
               </button>
+              <a
+                className="secondary-button secondary-button--large publish-next-workspace-button"
+                href={localizedHref("/publisher#publisher-skills", locale)}
+              >
+                <Gauge size={18} aria-hidden="true" />
+                <span>{publisherWorkspaceLabel}</span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
               <StatusChip tone={canSubmit ? "success" : "danger"}>
                 {canSubmit
                   ? labels.action.ready
@@ -668,13 +673,6 @@ export function PublishForm({
             })}
           </div>
 
-          <a
-            className="primary-button primary-button--large publish-locked-guide__cta"
-            href={access.actionHref}
-          >
-            <KeyRound size={17} aria-hidden="true" />
-            <span>{access.actionLabel}</span>
-          </a>
           <p className="publish-locked-guide__note">{lockedGuide.note}</p>
         </aside>
       )}

@@ -1,5 +1,4 @@
 import { getServerApiUrl } from "@/lib/api-url";
-import { demoFallback } from "@/lib/demo-fallback";
 
 export type OverviewMetric = {
   label: string;
@@ -58,56 +57,6 @@ export type PlatformOverview = {
 };
 
 const apiUrl = getServerApiUrl();
-
-const fallbackOverview: PlatformOverview = {
-  platform: {
-    metrics: [
-      { label: "Public skills", value: 0 },
-      { label: "Verified skills", value: 0 },
-      { label: "Installed skills", value: 0 },
-      { label: "API calls", value: 0 },
-      { label: "Avg latency", value: "n/a" },
-      { label: "Open incidents", value: 0 },
-    ],
-    signals: [],
-  },
-  developer: {
-    metrics: [
-      { label: "Projects", value: 0 },
-      { label: "Installed skills", value: 0 },
-      { label: "Saved skills", value: 0 },
-      { label: "Update inbox", value: 0 },
-      { label: "Active subscriptions", value: 0 },
-    ],
-    projectControls: [],
-    updateInbox: [],
-  },
-  publisher: {
-    metrics: [
-      { label: "Submitted versions", value: 0 },
-      { label: "Runtime checks failed", value: 0 },
-      { label: "Open buyer requests", value: 0 },
-      { label: "Available balance", value: "$0" },
-      { label: "Pending balance", value: "$0" },
-    ],
-    reviewPipeline: [],
-    buyerRequests: [],
-  },
-  admin: {
-    metrics: [
-      { label: "Review queue", value: 0 },
-      { label: "Payout review", value: 0 },
-      { label: "Queued notifications", value: 0 },
-      { label: "Failed runtime checks", value: 0 },
-    ],
-    riskQueue: [],
-    moneyQueue: [],
-  },
-  retention: {
-    developerReasons: [],
-    publisherReasons: [],
-  },
-};
 
 const emptyOverview: PlatformOverview = {
   platform: {
@@ -171,7 +120,7 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
 
     return (await response.json()) as PlatformOverview;
   } catch {
-    return demoFallback(fallbackOverview, emptyOverview);
+    return emptyOverview;
   }
 }
 

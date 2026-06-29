@@ -27,15 +27,13 @@ export function buildReviewSlaFields(
   const reviewSubmittedAt = serializeDate(submittedAt, submittedDate);
 
   if (!submittedDate) {
-    const isDemo = submittedAt === "demo";
-
     return {
       reviewQueueAgeHours: null,
       reviewSlaBusinessDays: REVIEW_SLA_BUSINESS_DAYS,
-      reviewSlaDueAt: isDemo ? "demo" : null,
+      reviewSlaDueAt: null,
       reviewSlaHoursRemaining: null,
-      reviewSlaStatus: isDemo && isTerminalStatus(status) ? "decided" : isDemo ? "on_track" : "not_submitted",
-      reviewSubmittedAt: isDemo ? "demo" : null
+      reviewSlaStatus: isTerminalStatus(status) ? "decided" : "not_submitted",
+      reviewSubmittedAt: null
     };
   }
 
@@ -79,7 +77,7 @@ function isTerminalStatus(status: string | null | undefined) {
 }
 
 function parseDate(value: Date | string | null | undefined) {
-  if (!value || value === "demo") {
+  if (!value) {
     return null;
   }
 
@@ -88,10 +86,6 @@ function parseDate(value: Date | string | null | undefined) {
 }
 
 function serializeDate(value: Date | string | null | undefined, parsed: Date | null) {
-  if (value === "demo") {
-    return "demo";
-  }
-
   if (!parsed) {
     return null;
   }

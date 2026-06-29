@@ -417,7 +417,7 @@ export default async function Home({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
   const skills = await getSkills();
   const publicStats = await getPublicPlatformStats({ skills });
   const landing = homeLandingCopy[locale];

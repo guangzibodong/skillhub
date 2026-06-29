@@ -95,45 +95,11 @@ const placements: MarketplacePlacement[] = ["featured", "standard", "suppressed"
 const requestPlacements = ["featured", "standard"] as const;
 const decisionActions: CurationAppealDecisionAction[] = ["approve", "close", "reject", "review"];
 
-const fallbackAppeals: MarketplaceCurationAppealRecord[] = [
-  {
-    id: "demo-curation-appeal-dataset-summarizer",
-    appealReason: "Runtime endpoint was fixed and the publisher wants the listing restored to standard discovery.",
-    callCount: 9200,
-    createdAt: "demo",
-    createdByDisplayName: "Skill Author",
-    createdByEmail: "publisher@example.com",
-    currentCurationReason: "Runtime check failed during the last review window.",
-    currentPlacement: "suppressed",
-    decidedAt: null,
-    decidedByDisplayName: null,
-    decidedByEmail: null,
-    evidenceUrl: "https://example.com/runtime-checks/dataset-summarizer",
-    feedbackCount: 5,
-    incidentCount: 0,
-    installCount: 12,
-    operatorReason: null,
-    publisherOrganizationId: "demo-publisher-org",
-    publisherOrganizationName: "SkillHub Demo Publisher",
-    requestType: "suppression_appeal",
-    requestedPlacement: "standard",
-    skillId: "demo-skill-dataset-summarizer",
-    skillName: "Dataset Summarizer",
-    skillSlug: "dataset-summarizer",
-    slaDueAt: "demo",
-    status: "open",
-    successRate: 0.96,
-    updatedAt: "demo",
-    verificationStatus: "submitted",
-    visibility: "public"
-  }
-];
-
 export async function listAdminMarketplaceCurationAppeals(limit = 50, status?: string) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackAppeals.slice(0, normalizeLimit(limit, 100));
+    return [];
   }
 
   try {
@@ -154,7 +120,7 @@ export async function listPublisherMarketplaceCurationAppeals(organizationId: st
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackAppeals.slice(0, normalizeLimit(limit, 100));
+    return [];
   }
 
   if (!organizationId) {

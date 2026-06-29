@@ -1,4 +1,3 @@
-import { demoFallback } from "./demo-fallback.js";
 import { getRegistryStats, getSql } from "./registry.js";
 
 type Metric = {
@@ -57,7 +56,7 @@ export type PlatformOverview = {
   };
 };
 
-const fallbackOverview: PlatformOverview = {
+const overviewTemplate: PlatformOverview = {
   platform: {
     metrics: [
       { label: "Public skills", value: 0 },
@@ -180,33 +179,10 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
   const sql = await getSql();
   const registryStats = await getRegistryStats();
 
-  if (!sql) {
-    return demoFallback(
-      {
-        ...fallbackOverview,
-        platform: {
-          ...fallbackOverview.platform,
-          metrics: [
-            { label: "Public skills", value: registryStats.publicSkills },
-            { label: "Verified skills", value: registryStats.verifiedSkills },
-            { label: "API calls", value: registryStats.apiCalls },
-            {
-              label: "Avg latency",
-              value: registryStats.avgLatencyMs
-                ? `${registryStats.avgLatencyMs}ms`
-                : "n/a",
-            },
-          ],
-        },
-      },
-      emptyOverview(registryStats),
-    );
-  }
-
   try {
     return await queryOverviewFromDatabase(sql, registryStats);
   } catch {
-    return demoFallback(fallbackOverview, emptyOverview(registryStats));
+    return emptyOverview(registryStats);
   }
 }
 
@@ -268,9 +244,9 @@ async function queryOverviewFromDatabase(
   const openIncidents = firstCount(incidentRows);
 
   return {
-    ...fallbackOverview,
+    ...overviewTemplate,
     platform: {
-      ...fallbackOverview.platform,
+      ...overviewTemplate.platform,
       metrics: [
         { label: "Public skills", value: registryStats.publicSkills },
         { label: "Verified skills", value: registryStats.verifiedSkills },
@@ -286,7 +262,7 @@ async function queryOverviewFromDatabase(
       ],
     },
     developer: {
-      ...fallbackOverview.developer,
+      ...overviewTemplate.developer,
       metrics: [
         { label: "Projects", value: projects },
         { label: "Installed skills", value: installs },
@@ -296,7 +272,7 @@ async function queryOverviewFromDatabase(
       ],
     },
     publisher: {
-      ...fallbackOverview.publisher,
+      ...overviewTemplate.publisher,
       metrics: [
         { label: "Submitted versions", value: submitted },
         { label: "Runtime checks failed", value: failedChecks },
@@ -306,7 +282,7 @@ async function queryOverviewFromDatabase(
       ],
     },
     admin: {
-      ...fallbackOverview.admin,
+      ...overviewTemplate.admin,
       metrics: [
         { label: "Review queue", value: reviewQueue },
         { label: "Payout review", value: payoutQueue },

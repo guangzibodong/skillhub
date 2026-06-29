@@ -85,18 +85,7 @@ export async function listProjectApiKeys(projectSlug: string, organizationId?: s
   const sql = await getSql();
 
   if (!sql) {
-    return [
-      {
-        id: "demo-key",
-        projectSlug,
-        name: "Demo project key",
-        keyPrefix: "skh_demo",
-        keyLast4: "demo",
-        lastUsedAt: null,
-        createdAt: "demo",
-        revokedAt: null
-      }
-    ];
+    return [];
   }
 
   const scopedOrganizationId = organizationId ?? null;

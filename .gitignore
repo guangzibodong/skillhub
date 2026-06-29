@@ -14,3 +14,6 @@ coverage
 output
 .skillhub-acceptance-team*.json
 *.tsbuildinfo
+AGENTS.md
+/docs/example
+/examples/role-flow-qa

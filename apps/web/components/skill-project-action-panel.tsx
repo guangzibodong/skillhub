@@ -14,8 +14,9 @@ import {
   ShieldCheck,
   XCircle
 } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillTextArea } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
-import type { DeveloperProjectRecord } from "@/lib/ops-data";
+import type { DeveloperProjectRecord, PublicPaymentProviderStatus } from "@/lib/ops-data";
 import { submitSkillProjectAction, type SkillProjectActionState } from "@/lib/skill-project-actions";
 
 type SkillProjectActionPanelProps = {
@@ -29,7 +30,9 @@ type SkillProjectActionPanelProps = {
   lockedCtaHref: string;
   lockedCtaLabel: string;
   lockedTitle: string;
+  priceId?: string;
   projects: DeveloperProjectRecord[];
+  paymentProviders?: PublicPaymentProviderStatus[];
   showHandoff?: boolean;
   skillName: string;
   skillSlug: string;
@@ -44,13 +47,13 @@ const copy = {
     emptyCta: "Create project",
     heading: "Add verified skill to a signed-in project",
     headingLocked: "Sign in to add this skill to a project",
-    handoffAction: "Open signed-in developer workspace",
-    handoffActionLocked: "Sign in for project console",
+    handoffAction: "Open developer workspace",
+    handoffActionLocked: "Sign in for project workspace",
     handoffBody:
       "After sign-in and project policy approval, an eligible verified skill can become project state. Finish version pinning, runtime key setup, gated runtime checks, updates, and paid-readiness checks where applicable from the project command center.",
     handoffSteps: ["Policy", "Version pin", "Runtime key", "Login-gated runtime test", "Updates and paid-readiness checks where applicable"],
-    handoffTitle: "Project handoff steps",
-    handoffTitleLocked: "After sign-in: project handoff steps",
+    handoffTitle: "Project setup steps",
+    handoffTitleLocked: "After sign-in: project setup steps",
     install: "Add to project",
     installing: "Working",
     latestVersion: "Latest registry version",
@@ -59,9 +62,11 @@ const copy = {
     notBillable: "not billable",
     openProject: "Open project",
     project: "Target project",
+    paymentProvider: "Payment provider",
+    paymentUnavailable: "No live payment provider is active. Ask an admin to configure Stripe or PayPal in Platform configuration.",
     save: "Save for evaluation",
     saving: "Working",
-    subscribe: "Start subscription trial",
+    subscribe: "Start checkout",
     subscribing: "Working",
     subheading: "Move from discovery into a real agent workspace with policy, budget, and update tracking.",
     test: "Run runtime check",
@@ -81,13 +86,13 @@ const copy = {
     emptyCta: "\u521b\u5efa\u9879\u76ee",
     heading: "\u5c06\u5df2\u9a8c\u8bc1\u6280\u80fd\u52a0\u5165\u5df2\u767b\u5f55\u9879\u76ee",
     headingLocked: "\u767b\u5f55\u540e\u5c06\u8fd9\u4e2a\u6280\u80fd\u52a0\u5165\u9879\u76ee",
-    handoffAction: "\u6253\u5f00\u5df2\u767b\u5f55\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
-    handoffActionLocked: "\u767b\u5f55\u540e\u6253\u5f00\u5f00\u53d1\u8005\u5de5\u4f5c\u53f0",
+    handoffAction: "打开开发者工作台",
+    handoffActionLocked: "登录后打开项目工作台",
     handoffBody:
-      "\u767b\u5f55\u5e76\u901a\u8fc7\u9879\u76ee\u7b56\u7565\u540e\uff0c\u7b26\u5408\u6761\u4ef6\u7684\u5df2\u9a8c\u8bc1\u6280\u80fd\u624d\u4f1a\u53d8\u6210\u9879\u76ee\u72b6\u6001\u3002\u8bf7\u5230\u9879\u76ee\u547d\u4ee4\u4e2d\u5fc3\u5b8c\u6210\u7248\u672c\u56fa\u5b9a\u3001\u8fd0\u884c Key\u3001\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5\u3001\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907\u68c0\u67e5\u3002",
-    handoffSteps: ["\u7b56\u7565", "\u7248\u672c\u56fa\u5b9a", "\u8fd0\u884c Key", "\u767b\u5f55\u95e8\u63a7\u7684\u8fd0\u884c\u6d4b\u8bd5", "\u66f4\u65b0\u548c\u9002\u7528\u65f6\u7684\u4ed8\u8d39\u51c6\u5907\u68c0\u67e5"],
-    handoffTitle: "\u4e0b\u4e00\u6b65\uff1a\u5b8c\u6210\u9879\u76ee\u4ea4\u63a5",
-    handoffTitleLocked: "\u767b\u5f55\u540e\uff1a\u9879\u76ee\u4ea4\u63a5\u6b65\u9aa4",
+      "登录并通过项目策略后，符合条件的已验证技能才会变成项目状态。请到项目工作台完成版本固定、运行 Key、登录后的调用测试、更新处理和适用时的付费准备检查。",
+    handoffSteps: ["策略", "版本固定", "运行 Key", "登录后的调用测试", "更新和适用时的付费准备检查"],
+    handoffTitle: "下一步：完成项目接入",
+    handoffTitleLocked: "登录后：项目接入步骤",
     install: "\u5b89\u88c5\u5230\u9879\u76ee",
     installing: "\u5904\u7406\u4e2d",
     latestVersion: "\u5f53\u524d\u6ce8\u518c\u8868\u7248\u672c",
@@ -96,6 +101,8 @@ const copy = {
     notBillable: "\u672a\u8ba1\u8d39",
     openProject: "\u6253\u5f00\u9879\u76ee",
     project: "\u76ee\u6807\u9879\u76ee",
+    paymentProvider: "支付方式",
+    paymentUnavailable: "当前没有启用的真实支付供应商。请管理员先在平台配置中启用 Stripe 或 PayPal。",
     save: "\u4fdd\u5b58\u7528\u4e8e\u8bc4\u4f30",
     saving: "\u5904\u7406\u4e2d",
     subscribe: "\u5f00\u59cb\u8ba2\u9605\u8bd5\u7528",
@@ -128,6 +135,8 @@ export function SkillProjectActionPanel({
   lockedCtaHref,
   lockedCtaLabel,
   lockedTitle,
+  paymentProviders = [],
+  priceId,
   projects,
   showHandoff = true,
   skillName,
@@ -139,7 +148,11 @@ export function SkillProjectActionPanel({
     initialState
   );
   const hasProjects = projects.length > 0;
-  const isSubscriptionSkill = billingModel === "subscription";
+  const isPaidSkill = billingModel !== "free";
+  const activePaymentProviders = paymentProviders.filter(
+    (provider) => provider.status === "active" && provider.configured,
+  );
+  const canCheckout = !isPaidSkill || activePaymentProviders.length > 0;
   const handoffHref = state.projectSlug ? projectHref(state.projectSlug, locale) : canOperate ? dashboardHref : lockedCtaHref;
   const panelHeading = canOperate ? labels.heading : labels.headingLocked;
   const handoffTitle = canOperate ? labels.handoffTitle : labels.handoffTitleLocked;
@@ -175,54 +188,73 @@ export function SkillProjectActionPanel({
         <form action={action} className="skill-project-action-form">
           <label>
             <span>{labels.project}</span>
-            <select name="projectSlug" required>
-              {projects.map((project) => (
-                <option key={project.id} value={project.slug}>
-                  {project.name} / {project.slug}
-                </option>
-              ))}
-            </select>
+            <SkillSelect name="projectSlug" options={projects.map((project) => ({ label: `${project.name} / ${project.slug}`, value: project.slug }))} required />
           </label>
           <label>
             <span>{labels.collection}</span>
-            <input defaultValue={labels.collectionPlaceholder} name="collectionName" placeholder={labels.collectionPlaceholder} />
+            <SkillInput defaultValue={labels.collectionPlaceholder} name="collectionName" placeholder={labels.collectionPlaceholder} />
           </label>
           <label>
             <span>{labels.version}</span>
-            <input
+            <SkillInput
               aria-label={`${labels.version}: ${skillName}`}
               name="version"
               placeholder={latestVersion ? `${latestVersion} / ${labels.versionPlaceholder}` : labels.versionPlaceholder}
             />
           </label>
+          {isPaidSkill ? (
+            <label>
+              <span>{labels.paymentProvider}</span>
+              <SkillSelect
+                defaultValue={activePaymentProviders[0]?.provider}
+                disabled={activePaymentProviders.length === 0}
+                name="provider"
+                options={activePaymentProviders.map((provider) => ({
+                  label: `${provider.label} / ${provider.environment}`,
+                  value: provider.provider,
+                }))}
+              />
+            </label>
+          ) : null}
           <label className="skill-project-action-form__wide">
             <span>{labels.testInput}</span>
-            <textarea
+            <SkillTextArea
               name="testInput"
               placeholder={labels.testInputPlaceholder}
               rows={5}
               defaultValue={inputExample ? normalizeJsonExample(inputExample) : ""}
             />
           </label>
+          {isPaidSkill && !canCheckout ? (
+            <div className="skill-project-action-form__wide">
+              <SkillAlert
+                className="action-message"
+                icon={<XCircle size={16} aria-hidden="true" />}
+                message={labels.paymentUnavailable}
+                type="warning"
+              />
+            </div>
+          ) : null}
+          {priceId ? <input name="priceId" type="hidden" value={priceId} /> : null}
           <div className="skill-project-action-buttons">
-            <button className="secondary-button" disabled={isPending} name="intent" type="submit" value="save">
+            <SkillButton className="secondary-button" disabled={isPending} htmlType="submit" name="intent" value="save">
               <BookmarkPlus size={15} aria-hidden="true" />
               <span>{isPending ? labels.saving : labels.save}</span>
-            </button>
-            <button className="secondary-button" disabled={isPending} name="intent" type="submit" value="test">
+            </SkillButton>
+            <SkillButton className="secondary-button" disabled={isPending} htmlType="submit" name="intent" value="test">
               <PlayCircle size={15} aria-hidden="true" />
               <span>{isPending ? labels.testing : labels.test}</span>
-            </button>
-            {isSubscriptionSkill ? (
-              <button className="secondary-button" disabled={isPending} name="intent" type="submit" value="subscribe">
+            </SkillButton>
+            {isPaidSkill ? (
+              <SkillButton className="secondary-button" disabled={isPending || !canCheckout} htmlType="submit" name="intent" value="checkout">
                 <CreditCard size={15} aria-hidden="true" />
                 <span>{isPending ? labels.subscribing : labels.subscribe}</span>
-              </button>
+              </SkillButton>
             ) : null}
-            <button className="primary-button" disabled={isPending} name="intent" type="submit" value="install">
+            <SkillButton className="primary-button" disabled={isPending} htmlType="submit" name="intent" value="install">
               <PackageCheck size={15} aria-hidden="true" />
               <span>{isPending ? labels.installing : labels.install}</span>
-            </button>
+            </SkillButton>
           </div>
         </form>
       ) : (
@@ -281,15 +313,21 @@ function ActionMessage({
   state: SkillProjectActionState;
 }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-      {state.status === "success" && state.projectSlug ? (
-        <a className="ghost-button ghost-button--inline" href={projectHref(state.projectSlug, locale)}>
-          {labels.openProject}
-        </a>
-      ) : null}
-    </div>
+    <SkillAlert
+      className="action-message"
+      icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
+      message={
+        <>
+          <span>{state.message}</span>
+          {state.status === "success" && state.projectSlug ? (
+            <a className="ghost-button ghost-button--inline" href={projectHref(state.projectSlug, locale)}>
+              {labels.openProject}
+            </a>
+          ) : null}
+        </>
+      }
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
 }
 

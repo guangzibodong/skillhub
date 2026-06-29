@@ -43,44 +43,11 @@ const defaultEvents = [
   "account.security"
 ];
 
-const fallbackEndpoints: OrganizationWebhookEndpoint[] = [
-  {
-    id: "demo-webhook-ops",
-    organizationId: "demo-org",
-    url: "https://example.com/skillhub/webhooks",
-    description: "Operations automation receiver",
-    events: ["skill.update", "runtime.incident", "account.security"],
-    status: "active",
-    signingSecretPrefix: "whsec",
-    signingSecretLast4: "demo",
-    lastDeliveryStatus: "pending",
-    lastDeliveredAt: null,
-    failureCount: 0,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-webhook-finance",
-    organizationId: "demo-org",
-    url: "https://example.com/finance/events",
-    description: "Finance reconciliation receiver",
-    events: ["finance.billing", "publisher.payout"],
-    status: "paused",
-    signingSecretPrefix: "whsec",
-    signingSecretLast4: "fin1",
-    lastDeliveryStatus: "skipped",
-    lastDeliveredAt: null,
-    failureCount: 1,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
 export async function listOrganizationWebhookEndpoints(organizationId: string | null | undefined) {
   const sql = await getSql();
 
   if (!sql || !organizationId) {
-    return fallbackEndpoints;
+    return [];
   }
 
   return listEndpointRows(sql, organizationId);

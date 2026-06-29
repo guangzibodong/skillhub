@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import styles from "./page.module.css";
 import type { SkillSummary } from "@useskillhub/schema";
 import {
   ArrowRight,
@@ -17,6 +18,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import { getWorkspaceSession } from "@/lib/auth-session";
 import { companyInfo, companyLinks } from "@/lib/company-info";
 import {
   getDictionary,
@@ -24,12 +26,15 @@ import {
   localizedHref,
 } from "@/lib/i18n";
 import { PublicEventLink } from "@/components/public-event-link";
-import { ParticleField } from "@/components/home/particle-field";
 import { getSkills } from "@/lib/registry";
 import {
   getPromotedSkillPackages,
   promotedSkillPackageIntro,
 } from "@/lib/promoted-skill-packages";
+import { NeuralNetworkBackground } from "@/components/home/neural-network-background";
+import { NeuralNoiseBackground } from "@/components/home/neural-noise-background";
+import { HomeProductPreview } from "@/components/home/product-preview";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -37,15 +42,17 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
   const locale = getLocaleFromSearchParams(await searchParams);
   const isZh = locale === "zh";
   const title = isZh
-    ? "SkillHub - AI Agent Skill 注册中心与运行治理层"
-    : "SkillHub - Registry and Runtime Governance for AI Agent Skills";
+    ? "SkillHub - AI Agent Skill 注册中心与调用权限与记录"
+    : "SkillHub - Registry and Call Permissions for AI Agent Skills";
   const description = isZh
     ? "浏览可复用 AI Agent Skill，检查 manifest 与权限，并通过 Project Key、API 或 MCP 安全调用已批准的 Skill。"
-    : "Discover reusable AI agent Skills, inspect manifests and permissions, and run approved Skills through controlled APIs or MCP with Project Keys, logs, and governance.";
+    : "Discover reusable AI agent Skills, inspect manifests and permissions, and run approved Skills through controlled APIs or MCP with Project Keys, logs, and policy controls.";
   const url = `https://useskillhub.com/?lang=${locale}`;
 
   return {
@@ -75,6 +82,11 @@ const trustModuleIcons = [ShieldCheck, ServerCog, PackageCheck] as const;
 const howIcons = [Search, FileJson, KeyRound, Zap, BarChart3] as const;
 const skillIcons = [Boxes, BarChart3, Terminal, FileJson] as const;
 const packageIcons = [Search, ShoppingCart, BarChart3] as const;
+const homeBackgrounds = {
+  noise: NeuralNoiseBackground,
+  network: NeuralNetworkBackground,
+} as const;
+const HomeBackground = homeBackgrounds.network;
 
 type FooterAgentItem = {
   name: string;
@@ -88,7 +100,8 @@ const fallbackFeaturedSkills: SkillSummary[] = [
     id: "browser-research",
     slug: "browser-research",
     displayName: "Browser Research",
-    description: "Search the web and extract structured insights with source links.",
+    description:
+      "Search the web and extract structured insights with source links.",
     tags: ["research", "browser", "citations"],
     version: "1.4.2",
     verificationStatus: "verified",
@@ -100,7 +113,8 @@ const fallbackFeaturedSkills: SkillSummary[] = [
     id: "dataset-summarizer",
     slug: "dataset-summarizer",
     displayName: "Dataset Summarizer",
-    description: "Turn spreadsheet rows into anomalies, segments, metric deltas, and follow-up questions.",
+    description:
+      "Turn spreadsheet rows into anomalies, segments, metric deltas, and follow-up questions.",
     tags: ["data", "analysis", "summary"],
     version: "0.8.4",
     verificationStatus: "verified",
@@ -114,14 +128,14 @@ const homeLandingCopy = {
   en: {
     banner: {
       label: "Build agents with trusted skills",
-      body: "Discover reusable agent skills, inspect their contracts, and connect them through governed REST or MCP runtime paths.",
+      body: "Discover reusable agent skills, inspect their contracts, and connect them through controlled REST or MCP runtime paths.",
       action: "Explore live status",
     },
     eyebrow: "Agent infrastructure / skill runtime",
     title: "Run agent skills like production infrastructure.",
     mobileTitle: "Production-grade skill infrastructure for AI agents.",
     description:
-      "SkillHub is a registry and governance layer for reusable AI agent skills. Browse skills, inspect permissions and manifests, then run approved skills through controlled APIs or MCP.",
+      "SkillHub is a registry and trust layer for reusable AI agent skills. Browse skills, inspect permissions and manifests, then run approved skills through controlled APIs or MCP.",
     previewNote:
       "SkillHub is in Launch Preview: discovery and inspection are live today; runtime execution is available behind signed-in Project Keys.",
     whatIsSkillTitle: "What is a Skill?",
@@ -133,10 +147,10 @@ const homeLandingCopy = {
     evidence: [
       ["Contract-first registry", "Manifest, schema, and version checks"],
       ["Project Keys", "Policy gates before invocation"],
-      ["Operational proof", "Status, latency, logs, and audit trails"],
+      ["Operational records", "Status, latency, logs, and audit trails"],
     ],
     control: {
-      title: "SkillHub runtime plane",
+      title: "SkillHub runtime access",
       marketplace: "Marketplace",
       skillName: "Browser Research",
       verified: "Verified",
@@ -192,10 +206,7 @@ const homeLandingCopy = {
         "For publishers",
         "Submit Skills with clear manifests, permissions, and review status.",
       ],
-      [
-        "For teams",
-        "Govern Project Keys, logs, limits, and runtime usage.",
-      ],
+      ["For teams", "Govern Project Keys, logs, limits, and runtime usage."],
     ],
     accessMap: {
       eyebrow: "Launch access",
@@ -217,7 +228,8 @@ const homeLandingCopy = {
         ],
       ],
     },
-    trustTitle: "Review permissions, policies, and publisher checks before every agent call",
+    trustTitle:
+      "Review permissions, policies, and publisher checks before every agent call",
     trustModules: [
       {
         title: "Permission review",
@@ -226,10 +238,14 @@ const homeLandingCopy = {
         rows: ["web.search", "web.fetch", "data.store"],
       },
       {
-        title: "Runtime governance",
+        title: "Call permissions and logs",
         body: "Project keys, policies, logs, and limits keep runtime usage accountable.",
         status: "Policy checked",
-        rows: ["Project Key required", "Rate limit: 60 / min", "Allowed: web.search, web.fetch"],
+        rows: [
+          "Project Key required",
+          "Rate limit: 60 / min",
+          "Allowed: web.search, web.fetch",
+        ],
       },
       {
         title: "Publisher review",
@@ -249,14 +265,19 @@ const homeLandingCopy = {
     howSteps: [
       ["Discover", "Find the right Skill for your Agent."],
       ["Inspect", "Review manifests, permissions, and runtime details."],
-      ["Prepare Project Key", "Create a workspace project and generate a Project Key."],
+      [
+        "Prepare Project Key",
+        "Create a workspace project and generate a Project Key.",
+      ],
       ["Invoke", "Call the skill via REST API or MCP with your key."],
       ["Monitor", "Track usage, logs, and performance."],
     ],
     finalTitle: "Start from a real skill contract",
-    finalBody: "Explore the public registry first, then connect runtime only after project setup is ready.",
+    finalBody:
+      "Explore the public registry first, then connect runtime only after project setup is ready.",
     readDocs: "Read Docs",
-    footerBody: "Agent skill registry, governance layer, and runtime gateway for real builder workflows.",
+    footerBody:
+      "Agent skill registry, trust layer, and runtime gateway for real builder workflows.",
     footerAgentTitle: "Connect reusable Skills to agent workflows",
     footerAgentBadge: "Agent-ready skills",
     footerAgentBody:
@@ -348,26 +369,26 @@ const homeLandingCopy = {
   zh: {
     banner: {
       label: "让 Agent 安全调用可信技能",
-      body: "在 SkillHub 发现可复用技能，查看契约、权限和发布者信息，再通过受治理的 REST / MCP 路径接入运行。",
+      body: "在 SkillHub 发现可复用技能，查看契约、权限和发布者信息，再通过受控 REST / MCP 路径接入运行。",
       action: "查看运行状态",
     },
     eyebrow: "Agent 基础设施 / Skill 运行时",
     title: "把 Agent Skills 作为生产基础设施运行。",
     mobileTitle: "面向 AI Agent 的生产级 Skill 基础设施。",
     description:
-      "SkillHub 帮团队把可复用 Skill 收进统一目录，先检查来源、权限和 manifest，再通过受控 API 或 MCP 接入真实 Agent 工作流。",
+      "SkillHub 是面向 AI Agent 的 Skill 注册中心，帮团队把可复用 Skills 收进统一目录，先检查来源、权限和 manifest，再通过受控 API 或 MCP 接入真实 Agent 工作流。",
     previewNote:
-      "当前为公开预览：你可以直接浏览和检查 Skill；真实运行调用需登录后使用 Project Key。",
+      "公开预览中：你可以直接浏览和检查 Skill；真实运行调用需登录后使用 Project Key。",
     whatIsSkillTitle: "什么是 Skill？",
     whatIsSkillBody:
       "Skill 是可被 Agent 调用的可复用能力组件，例如网页研究、数据分析、代码执行或文档问答。",
-    primaryCta: "浏览公开技能",
+    primaryCta: "浏览公开 Skills",
     quickstartCta: "查看调用文档",
     publishCta: "发布技能",
     evidence: [
       ["契约优先注册", "manifest、Schema 与版本检查"],
       ["Project Key", "调用前先经过策略闸门"],
-      ["运营证据", "状态、延迟、日志和审计轨迹"],
+      ["操作记录", "状态、延迟、日志和审计轨迹"],
     ],
     control: {
       title: "SkillHub 运行平面",
@@ -422,14 +443,8 @@ const homeLandingCopy = {
         "面向开发者",
         "浏览可复用 Skill，在接入前确认 manifest、权限和运行方式。",
       ],
-      [
-        "面向发布者",
-        "提交带有 manifest、权限说明、示例和支持路径的 Skill。",
-      ],
-      [
-        "面向团队",
-        "统一管理 Project Key、日志、限流和运行调用证据。",
-      ],
+      ["面向发布者", "提交带有 manifest、权限说明、示例和支持路径的 Skill。"],
+      ["面向团队", "统一管理 Project Key、日志、限流和调用记录。"],
     ],
     accessMap: {
       eyebrow: "上线访问说明",
@@ -460,10 +475,14 @@ const homeLandingCopy = {
         rows: ["web.search", "web.fetch", "data.store"],
       },
       {
-        title: "运行治理",
+        title: "调用权限与记录",
         body: "Project Key、策略、日志和限流一起约束每次真实运行。",
         status: "策略已检查",
-        rows: ["需要 Project Key", "限流：60 / 分钟", "允许：web.search, web.fetch"],
+        rows: [
+          "需要 Project Key",
+          "限流：60 / 分钟",
+          "允许：web.search, web.fetch",
+        ],
       },
       {
         title: "发布审核",
@@ -488,17 +507,17 @@ const homeLandingCopy = {
       ["监控", "追踪用量、日志、延迟和调用结果。"],
     ],
     finalTitle: "从一个真实 Skill 契约开始",
-    finalBody: "先浏览公开 Skill，再在工作台完成项目设置，接入可治理的真实调用。",
+    finalBody: "先浏览公开 Skills，再在工作台项目设置就绪后接入真实运行调用。",
     readDocs: "阅读文档",
-    footerBody: "面向真实构建流程的 Agent 技能注册中心、治理层和运行网关。",
+    footerBody: "面向真实构建流程的 Agent 技能注册中心、信任层和运行网关。",
     footerAgentTitle: "接入主流 Agent 执行环境",
     footerAgentBadge: "Agent-ready skills",
     footerAgentBody:
-      "SkillHub 把可复用 Skill 统一放进可发现、可审核、可调用的运行路径里，帮助团队减少重复提示词配置、工具接线和跨 Agent 交接成本。",
+      "SkillHub 把可复用 Skill 统一放进可发现、可审核、可调用的运行路径里，帮助团队减少重复提示词配置、工具接线和跨 Agent 协作成本。",
     footerAgentEcosystem: [
       {
         name: "Codex",
-        body: "复用 Skill 契约处理仓库分析、代码修复、发布检查和研发交接。",
+        body: "复用 Skill 契约处理仓库分析、代码修复、发布检查和研发协作。",
         logo: "/brand/agents/codex-color.svg",
         logoKey: "codex",
       },
@@ -528,7 +547,7 @@ const homeLandingCopy = {
       },
       {
         name: "Hermes Agent",
-        body: "把常用 Agent 操作沉淀为可检查、可治理、可重复运行的团队模板。",
+        body: "把常用 Agent 操作沉淀为可检查、可检查、可重复运行的团队模板。",
         logo: "/brand/agents/hermesagent.svg",
         logoKey: "hermes",
       },
@@ -581,48 +600,49 @@ const homeLandingCopy = {
   },
 } as const;
 
-const homeSkillZhCopy: Record<string, { description: string; tags: string[] }> = {
-  "browser-research": {
-    description: "研究网页主题，并返回包含来源链接的简明结论。",
-    tags: ["研究", "浏览器", "引用"],
-  },
-  "browser-research-pro": {
-    description: "研究网页主题，并返回包含来源链接的简明结论。",
-    tags: ["研究", "浏览器", "引用"],
-  },
-  "crm-enrichment": {
-    description: "补全 CRM 线索资料，并保留可审计的数据来源。",
-    tags: ["销售", "CRM", "线索"],
-  },
-  "support-triage": {
-    description: "将客服请求分类、提取优先级，并给出下一步处理建议。",
-    tags: ["客服", "分类", "工单"],
-  },
-  "dataset-insight": {
-    description: "分析数据集结构、异常和摘要，输出可复核的洞察。",
-    tags: ["数据", "分析", "摘要"],
-  },
-  "dataset-summarizer": {
-    description: "汇总大型数据集并生成关键洞察。",
-    tags: ["数据", "分析", "摘要"],
-  },
-  "code-runner": {
-    description: "在隔离环境中安全执行代码并返回结果。",
-    tags: ["开发", "代码", "执行"],
-  },
-  "codebase-risk-scanner": {
-    description: "扫描代码快照中的风险文件、敏感模式和负责人复核线索。",
-    tags: ["安全", "代码", "审核"],
-  },
-  "invoice-extraction": {
-    description: "从发票文件中提取结构化字段，并保留审批提示。",
-    tags: ["财务", "发票", "OCR"],
-  },
-  "doc-qa": {
-    description: "基于文档和知识源回答问题。",
-    tags: ["文档", "问答"],
-  },
-};
+const homeSkillZhCopy: Record<string, { description: string; tags: string[] }> =
+  {
+    "browser-research": {
+      description: "研究网页主题，并返回包含来源链接的简明结论。",
+      tags: ["研究", "浏览器", "引用"],
+    },
+    "browser-research-pro": {
+      description: "研究网页主题，并返回包含来源链接的简明结论。",
+      tags: ["研究", "浏览器", "引用"],
+    },
+    "crm-enrichment": {
+      description: "补全 CRM 线索资料，并保留可审计的数据来源。",
+      tags: ["销售", "CRM", "线索"],
+    },
+    "support-triage": {
+      description: "将客服请求分类、提取优先级，并给出下一步处理建议。",
+      tags: ["客服", "分类", "工单"],
+    },
+    "dataset-insight": {
+      description: "分析数据集结构、异常和摘要，输出可复核的洞察。",
+      tags: ["数据", "分析", "摘要"],
+    },
+    "dataset-summarizer": {
+      description: "汇总大型数据集并生成关键洞察。",
+      tags: ["数据", "分析", "摘要"],
+    },
+    "code-runner": {
+      description: "在隔离环境中安全执行代码并返回结果。",
+      tags: ["开发", "代码", "执行"],
+    },
+    "codebase-risk-scanner": {
+      description: "扫描代码快照中的风险文件、敏感模式和负责人复核线索。",
+      tags: ["安全", "代码", "审核"],
+    },
+    "invoice-extraction": {
+      description: "从发票文件中提取结构化字段，并保留审批提示。",
+      tags: ["财务", "发票", "OCR"],
+    },
+    "doc-qa": {
+      description: "基于文档和知识源回答问题。",
+      tags: ["文档", "问答"],
+    },
+  };
 
 const homeTagZhLabels: Record<string, string> = {
   analysis: "分析",
@@ -640,7 +660,10 @@ const homeTagZhLabels: Record<string, string> = {
 
 const routableSkillSlugs = new Set(["browser-research", "dataset-summarizer"]);
 
-function statusLabel(status: SkillSummary["verificationStatus"], locale: "en" | "zh") {
+function statusLabel(
+  status: SkillSummary["verificationStatus"],
+  locale: "en" | "zh",
+) {
   if (status === "verified") {
     return homeLandingCopy[locale].verified;
   }
@@ -652,7 +675,10 @@ function statusLabel(status: SkillSummary["verificationStatus"], locale: "en" | 
   return locale === "zh" ? "预览" : "Preview";
 }
 
-function riskLabel(level: SkillSummary["permissionLevel"], locale: "en" | "zh") {
+function riskLabel(
+  level: SkillSummary["permissionLevel"],
+  locale: "en" | "zh",
+) {
   const labels = {
     en: { low: "1 scope", medium: "3 scopes", high: "4 scopes" },
     zh: { low: "1 个权限", medium: "3 个权限", high: "4 个权限" },
@@ -694,11 +720,19 @@ export default async function Home({ searchParams }: PageProps) {
   const locale = getLocaleFromSearchParams(params);
   const dictionary = getDictionary(locale);
   const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
-  const skills = await getSkills();
+    getPublicApiUrl();
+  const [skills, session] = await Promise.all([getSkills(), getWorkspaceSession()]);
   const landing = homeLandingCopy[locale];
   const packageIntro = promotedSkillPackageIntro[locale];
   const promotedPackages = getPromotedSkillPackages(locale);
+  const headerConsoleHref = session.subject
+    ? localizedHref("/account", locale)
+    : undefined;
+  const headerConsoleLabel = session.subject
+    ? locale === "zh"
+      ? "个人中心"
+      : "Account"
+    : undefined;
   const seenSkillKeys = new Set<string>();
   const featuredSkills = [...skills, ...fallbackFeaturedSkills]
     .filter((skill) => routableSkillSlugs.has(skill.slug))
@@ -721,796 +755,305 @@ export default async function Home({ searchParams }: PageProps) {
     : landing.control.runtime;
 
   return (
-    <main className={`product-shell home-shell home-shell--infrastructure home-shell--${locale}`}>
-      <section className="home-frame home-frame--v2 home-frame--infrastructure" aria-labelledby="home-v3-heading">
+    <main
+      className={`product-shell home-shell home-shell--infrastructure home-shell--${locale} ${styles.pageStyles}`}
+    >
+      <section
+        className="home-frame home-frame--v2 home-frame--infrastructure"
+        aria-labelledby="home-v3-heading"
+      >
+        <HomeBackground />
         <SiteHeader
           active="home"
           apiUrl={apiUrl}
+          consoleHref={headerConsoleHref}
+          consoleLabel={headerConsoleLabel}
           dictionary={dictionary}
           locale={locale}
           pathname="/"
         />
 
-        <section className="home-v3-root home-v2-root" aria-labelledby="home-v3-heading">
-          <div className="home-v2-edge-atmosphere" aria-hidden="true">
-            <span className="home-v2-edge-panel home-v2-edge-panel--left">
-              <span className="home-v2-edge-thread home-v2-edge-thread--a" />
-              <span className="home-v2-edge-thread home-v2-edge-thread--b" />
-            </span>
-            <span className="home-v2-runtime-rails home-v2-runtime-rails--left">
-              {["Codex request", "manifest parse", "policy gate", "audit write"].map((item, index) => (
-                <span className={`home-v2-legacy-edge-packet home-v2-legacy-edge-packet--${index + 1}`} key={item}>
-                  <small>invoke</small>
-                  <strong>{item}</strong>
-                </span>
-              ))}
-            </span>
-            <span className="home-v2-edge-panel home-v2-edge-panel--right">
-              <span className="home-v2-edge-thread home-v2-edge-thread--a" />
-              <span className="home-v2-edge-thread home-v2-edge-thread--b" />
-            </span>
-            <span className="home-v2-runtime-rails home-v2-runtime-rails--right">
-              {["schema ok", "REST / MCP", "runtime 200", "Audit locked"].map((item, index) => (
-                <span className={`home-v2-legacy-edge-packet home-v2-legacy-edge-packet--${index + 1}`} key={item}>
-                  <small>trace</small>
-                  <strong>{item}</strong>
-                </span>
-              ))}
-            </span>
-          </div>
-          <section className="home-v3-hero">
-            <div className="home-v3-hero__copy">
-              <span className="home-v3-eyebrow">Agent Skill Registry / Runtime Control Plane</span>
+        <section
+          className="home-v3-root home-v2-root"
+          aria-labelledby="home-v3-heading"
+        >
+          <section className="home-v3-hero home-v3-hero--centered">
+            <div className="home-v3-hero__copy home-v3-hero__copy--centered">
+              <span className="home-v3-eyebrow">
+                Agent Skill Registry / Runtime Control Plane
+              </span>
               <h1 id="home-v3-heading">
-                {locale === "zh"
-                  ? "让 Agent 调用可信技能。"
-                  : "Let agents call trusted Skills."}
+                {locale === "zh" ? landing.mobileTitle : landing.title}
               </h1>
-              <p>
-                {locale === "zh"
-                  ? "把 Skill 的发现、权限、Project Key、MCP / REST 调用和 audit log 放到同一个控制面。Codex、Claude Code、Gemini CLI、Copilot、OpenClaw、Hermes Agent 可以按项目策略调用，团队也能审查发布者、schema 和运行证据。"
-                  : "SkillHub turns Skill discovery, permissions, Project Keys, MCP / REST invocation, and audit logs into one control plane. Codex, Claude Code, Gemini CLI, Copilot, OpenClaw, and Hermes Agent can call skills by project policy while teams review publishers, schemas, and runtime evidence."}
-              </p>
-              <div className="home-v3-actions">
+              <p>{landing.description}</p>
+              <p className="home-v3-preview-note">{landing.previewNote}</p>
+              <div className="home-v3-actions home-v3-actions--centered">
                 <PublicEventLink
                   className="primary-button primary-button--large"
                   eventName="browse_skills_cta_click"
-                  eventProperties={{ surface: "home_v3_hero" }}
+                  eventProperties={{ surface: "home_reference_hero" }}
                   href={localizedHref("/marketplace", locale)}
                 >
                   <Search size={18} aria-hidden="true" />
-                  {locale === "zh" ? "浏览 Skill Marketplace" : "Browse Skill Marketplace"}
+                  <span>{landing.primaryCta}</span>
+                  <ArrowRight size={16} aria-hidden="true" />
                 </PublicEventLink>
                 <PublicEventLink
                   className="secondary-button secondary-button--large"
                   eventName="docs_cta_click"
-                  eventProperties={{ surface: "home_v3_hero" }}
+                  eventProperties={{ surface: "home_reference_hero" }}
                   href={localizedHref("/docs#api", locale)}
                 >
                   <Terminal size={18} aria-hidden="true" />
-                  {locale === "zh" ? "查看运行文档" : "View runtime docs"}
+                  <span>{landing.quickstartCta}</span>
                 </PublicEventLink>
               </div>
-              <div className="home-v3-proof-grid">
-                {(locale === "zh"
-                  ? [
-                      ["Discovery", "让人和 AI 都能准确找到可调用 Skill。"],
-                      ["Governance", "先校验 Project Key、权限、版本和发布者。"],
-                      ["Runtime", "每次 MCP / REST 调用都留下 audit log。"],
-                    ]
-                  : [
-                      ["Discovery", "Find callable Skills that users and AI can understand."],
-                      ["Governance", "Check Project Keys, permissions, versions, and publishers first."],
-                      ["Runtime", "Every MCP / REST call leaves an audit log."],
-                    ]
-                ).map(([label, body]) => (
-                  <article className="home-v3-proof" key={label}>
-                    <small>{label}</small>
-                    <strong>{body}</strong>
-                  </article>
-                ))}
-              </div>
-              <div className="home-v3-trace-card" aria-label={locale === "zh" ? "运行路径" : "Runtime path"}>
-                <div className="home-v3-trace-head">
-                  <small>Runtime path</small>
-                  <span>MCP / REST</span>
-                </div>
-                <div className="home-v3-trace-list">
-                  {(locale === "zh"
-                    ? [
-                        ["Agent request", "Codex / Claude Code 发起 Skill 调用"],
-                        ["Manifest", "校验输入输出、版本和运行协议"],
-                        ["Policy Gate", "Project Key 与权限策略通过"],
-                        ["Audit log", "结果、延迟和调用证据写入"],
-                      ]
-                    : [
-                        ["Agent request", "Codex / Claude Code starts the Skill call"],
-                        ["Manifest", "Inputs, outputs, versions, and protocols are checked"],
-                        ["Policy Gate", "Project Key and permissions pass policy"],
-                        ["Audit log", "Result, latency, and invocation evidence are written"],
-                      ]
-                  ).map(([label, body]) => (
-                    <div className="home-v3-trace-row" key={label}>
-                      <span className="home-v3-trace-dot" aria-hidden="true" />
-                      <strong>{label}</strong>
-                      <span>{body}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
-            <section className="home-v3-product-preview" aria-label={locale === "zh" ? "SkillHub 产品预览" : "SkillHub product preview"}>
-              <div className="home-v3-product-head">
-                <div className="home-v3-crumbs">
-                  <strong>SkillHub</strong>
-                  <span>/</span>
-                  <span>Marketplace</span>
-                  <span>/</span>
-                  <span>{leadSkill.slug}</span>
-                </div>
-                <span className="home-v3-status-pill">runtime gated</span>
-              </div>
-              <div className="home-v3-product-grid">
-                <aside className="home-v3-skill-directory">
-                  <div className="home-v3-panel-title">
-                    <span>Skill directory</span>
-                    <small>248</small>
-                  </div>
-                  <div className="home-v3-search-box">
-                    <Search size={14} aria-hidden="true" />
-                    <span>browser, code, crm, invoice...</span>
-                  </div>
-                  <div className="home-v3-skill-list">
-                    <article className="home-v3-skill-row home-v3-skill-row--active">
-                      <span className="home-v3-skill-icon" aria-hidden="true">BR</span>
-                      <div>
-                        <strong>{leadSkill.displayName}</strong>
-                        <small>web.search · citations</small>
-                      </div>
-                    </article>
-                    {[
-                      ["CR", "Codebase Risk Scanner", "repo · policy · audit"],
-                      ["IE", "Invoice Extraction", "finance · schema"],
-                      ["DS", "Dataset Summarizer", "data · analysis"],
-                    ].map(([initial, title, meta]) => (
-                      <article className="home-v3-skill-row" key={title}>
-                        <span className="home-v3-skill-icon" aria-hidden="true">{initial}</span>
-                        <div>
-                          <strong>{title}</strong>
-                          <small>{meta}</small>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </aside>
-
-                <section className="home-v3-skill-detail">
-                  <div className="home-v3-agent-strip" aria-label={locale === "zh" ? "支持的 Agent 环境" : "Supported agent environments"}>
-                    {landing.footerAgentEcosystem.map((agent) => (
-                      <span className={`home-v3-agent-badge home-v3-agent-badge--${agent.logoKey}`} key={agent.name}>
-                        <img src={agent.logo} alt="" aria-hidden="true" />
-                        <strong>{agent.name}</strong>
-                      </span>
-                    ))}
-                  </div>
-
-                  <article className="home-v3-detail-card">
-                    <header>
-                      <div>
-                        <h2>{leadSkill.displayName}</h2>
-                        <p>
-                          {locale === "zh"
-                            ? "面向 Agent 的网页研究 Skill。接入前先看清输入输出、权限范围、运行方式、发布者和审核状态。"
-                            : "A web research Skill for agents. Inspect inputs, outputs, permissions, runtime protocols, publisher, and review state before adoption."}
-                        </p>
-                      </div>
-                      <span className="home-v3-verified">{landing.verified}</span>
-                    </header>
-                    <div className="home-v3-tabs" aria-hidden="true">
-                      {["Manifest", "Schema", "Permissions", "Examples"].map((item, index) => (
-                        <span className={index === 0 ? "home-v3-tab home-v3-tab--active" : "home-v3-tab"} key={item}>
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="home-v3-manifest">
-                      <div className="home-v3-code" aria-label={locale === "zh" ? "Manifest 示例" : "Manifest sample"}>
-                        <span>{"{"}</span>
-                        <span>{`  "name": "${leadSkill.slug}",`}</span>
-                        <span>{`  "version": "${leadSkill.version}",`}</span>
-                        <span>{`  "runtime": ["rest", "mcp"],`}</span>
-                        <span>{`  "permissions": ["web.search", "web.fetch"],`}</span>
-                        <span>{`  "requiresProjectKey": true`}</span>
-                        <span>{"}"}</span>
-                      </div>
-                      <div className="home-v3-check-grid">
-                        <div>
-                          <small>Manifest</small>
-                          <strong>schema checked</strong>
-                        </div>
-                        <div>
-                          <small>Policy</small>
-                          <strong>web.fetch allowed</strong>
-                        </div>
-                        <div>
-                          <small>Publisher</small>
-                          <strong>SkillHub Labs</strong>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="home-v3-runtime-inline">
-                      <div>
-                        <small>Project Key</small>
-                        <strong>required</strong>
-                        <code>sk_live_project_••••••••••••</code>
-                      </div>
-                      <div>
-                        <small>Policy Gate</small>
-                        <strong>allowed</strong>
-                        <span>Audit trace locked</span>
-                      </div>
-                      <div>
-                        <small>Live invoke</small>
-                        <strong>p95 1.2s</strong>
-                        <span className="home-v3-meter"><i /></span>
-                      </div>
-                    </div>
-                    <div className="home-v3-audit-log" aria-label="Audit log">
-                      {[
-                        ["10:42", "Codex requested browser-research"],
-                        ["10:42", "Manifest and policy passed"],
-                        ["10:43", "Structured result returned"],
-                      ].map(([time, event]) => (
-                        <span key={`${time}-${event}`}>
-                          <time>{time}</time>
-                          <strong>{event}</strong>
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                </section>
-              </div>
-            </section>
+            <HomeProductPreview
+              agents={landing.footerAgentEcosystem}
+              leadSkill={leadSkill}
+              locale={locale}
+              verifiedLabel={landing.verified}
+            />
           </section>
 
-          <section className="home-v3-operating-grid">
-            {(locale === "zh"
-              ? [
-                  ["01 Marketplace", "给用户和 AI 都能找的 Skill 目录", "搜索、分类、权限、版本、发布者和示例都以结构化方式呈现。"],
-                  ["02 Governance", "Agent 调用前先经过项目治理", "Project Key、策略、预算、权限和审核状态决定 Skill 是否能被调用。"],
-                  ["03 Runtime", "真实运行结果留下证据链", "通过 MCP 或 REST 调用后，运行结果、延迟和 audit log 都可追踪。"],
-                ]
-              : [
-                  ["01 Marketplace", "A Skill directory users and AI can search", "Search, categories, permissions, versions, publishers, and examples are structured."],
-                  ["02 Governance", "Project controls before agent invocation", "Project Keys, policy, budget, permissions, and review state decide whether a Skill can run."],
-                  ["03 Runtime", "Runtime results leave an evidence chain", "MCP or REST calls produce traceable results, latency, and audit logs."],
-                ]
-            ).map(([label, title, body]) => (
-              <article className="home-v3-operating-card" key={label}>
-                <small>{label}</small>
-                <h2>{title}</h2>
-                <p>{body}</p>
-              </article>
-            ))}
-          </section>
+          <section
+            className="home-v3-proof-grid home-v3-proof-grid--band"
+            aria-label={landing.eyebrow}
+          >
+            {landing.evidence.map(([label, detail], index) => {
+              const Icon = proofIcons[index];
 
-          <section className="home-v2-hero">
-            <div className="home-v2-motion-field" aria-hidden="true">
-              <span className="home-v2-ambient-rail home-v2-ambient-rail--left">
-                <span />
-                <span />
-                <span />
-              </span>
-              <span className="home-v2-ambient-rail home-v2-ambient-rail--right">
-                <span />
-                <span />
-                <span />
-              </span>
-            </div>
-            <div className="home-v2-hero__head">
-              <div className="home-v2-hero__copy">
-                <span className="home-v2-eyebrow">Registry · Runtime · Governance</span>
-                <h1 id="home-v2-heading">
-                  {locale === "zh"
-                    ? "SkillHub：Agent Skill 的注册与运行层。"
-                    : "SkillHub: the registry and runtime layer for Agent Skills."}
-                </h1>
-                <p>
-                  {locale === "zh"
-                    ? "SkillHub 的 Skill 不是给人手动打开的应用，而是给智能体调用的能力单元。团队可以先检查 manifest、schema、权限和发布者，再通过 Project Key、MCP 或 REST 接入真实 Agent 工作流。"
-                    : "SkillHub Skills are not standalone apps for people to open manually. They are callable capability units for agents, reviewed through manifests, schemas, permissions, and publishers before MCP or REST runtime access."}
-                </p>
-                <div className="hero-actions home-v2-actions">
-                  <PublicEventLink
-                    className="primary-button primary-button--large"
-                    eventName="browse_skills_cta_click"
-                    eventProperties={{ surface: "home_v2_hero" }}
-                    href={localizedHref("/marketplace", locale)}
-                  >
-                    <Search size={18} aria-hidden="true" />
-                    {locale === "zh" ? "进入 Marketplace" : "Open Marketplace"}
-                  </PublicEventLink>
-                  <PublicEventLink
-                    className="secondary-button secondary-button--large"
-                    eventName="docs_cta_click"
-                    eventProperties={{ surface: "home_v2_hero" }}
-                    href={localizedHref("/docs#api", locale)}
-                  >
-                    <Terminal size={18} aria-hidden="true" />
-                    {locale === "zh" ? "查看运行文档" : "View runtime docs"}
-                  </PublicEventLink>
-                </div>
-                <section className="home-v2-agent-support" aria-label={locale === "zh" ? "支持的智能体运行环境" : "Supported agent runtimes"}>
-                  <div className="home-v2-agent-support__head">
-                    <strong>{locale === "zh" ? "支持的 Agent 环境" : "Supported agent environments"}</strong>
-                    <span>
-                      {locale === "zh"
-                        ? "Skill 通过 MCP 或 REST 被 Agent 调用，并由 Project Key 控制运行权限。"
-                        : "Skills are callable by agents through MCP or REST, gated by Project Key."}
-                    </span>
-                  </div>
-                  <div className="home-v2-agent-badge-grid">
-                    {landing.footerAgentEcosystem.map((agent) => (
-                      <span className={`home-v2-agent-badge home-v2-agent-badge--${agent.logoKey}`} key={agent.name}>
-                        <img src={agent.logo} alt="" aria-hidden="true" />
-                        <strong>{agent.name}</strong>
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              </div>
-              <aside className="home-v2-preview-note" role="status">
-                <span>{locale === "zh" ? "公开预览" : "Launch Preview"}</span>
-                <strong>
-                  {locale === "zh"
-                    ? "Skill 只能被 Agent 调用；真实运行必须绑定登录后的 Project Key。"
-                    : "Skills are agent-callable only; real runtime calls require a signed-in Project Key."}
-                </strong>
-                <p>
-                  {locale === "zh"
-                    ? "访客可以查看 Skill 契约和发布者信息。Agent 真正调用前，需要经过项目密钥、权限策略、运行日志和审计记录。"
-                    : "Visitors can inspect Skill contracts and publishers. Before an agent can call a Skill, the request passes through project keys, policy checks, runtime logs, and audit records."}
-                </p>
-                <div className="home-v2-agent-call-rail" aria-hidden="true">
-                  <div className="home-v2-agent-call-node">
-                    <small>Agent</small>
-                    <strong>Codex / Claude / Gemini</strong>
-                  </div>
-                  <span className="home-v2-agent-call-arrow" />
-                  <div className="home-v2-agent-call-node">
-                    <small>SkillHub</small>
-                    <strong>Manifest + Policy Gate</strong>
-                  </div>
-                  <span className="home-v2-agent-call-arrow" />
-                  <div className="home-v2-agent-call-node">
-                    <small>Skill</small>
-                    <strong>Runtime result + Audit</strong>
-                  </div>
-                </div>
-              </aside>
-            </div>
-
-            <section className="home-v2-workbench" aria-label={locale === "zh" ? "SkillHub 工作台预览" : "SkillHub workbench preview"}>
-              <span className="home-v2-workbench__ambient" aria-hidden="true" />
-              <span className="home-v2-workbench__scan" aria-hidden="true" />
-              <span className="home-v2-flow-line home-v2-flow-line--catalog" aria-hidden="true" />
-              <span className="home-v2-flow-line home-v2-flow-line--runtime" aria-hidden="true" />
-              <div className="home-v2-workbench__top">
-                <div className="home-v2-crumbs">
-                  <strong>SkillHub Workbench</strong>
-                  <span>/</span>
-                  <span>Marketplace</span>
-                  <span>/</span>
-                  <span>{leadSkill.slug}</span>
-                </div>
-                <span className="home-v2-workbench__status">Manifest verified · runtime gated</span>
-              </div>
-
-              <div className="home-v2-legacy-runtime-canvas" aria-label={locale === "zh" ? "Agent Runtime Canvas" : "Agent Runtime Canvas"}>
-                <div className="home-v2-legacy-canvas-orbit" aria-hidden="true">
-                  {["Codex", "Claude", "Gemini", "MCP", "REST", "Audit"].map((node, index) => (
-                    <span className={`home-v2-canvas-node home-v2-canvas-node--${index + 1}`} key={node}>
-                      {node}
-                    </span>
-                  ))}
-                </div>
-                <div className="home-v2-canvas-route" aria-hidden="true">
-                  <span className="home-v2-canvas-packet home-v2-canvas-packet--primary">
-                    <small>agent.invoke</small>
-                  </span>
-                  <span className="home-v2-canvas-packet home-v2-canvas-packet--secondary">
-                    <small>audit.write</small>
-                  </span>
-                </div>
-                <section className="home-v2-canvas-core">
-                  <span>Agent Runtime Canvas</span>
-                  <h2>SkillHub Policy Gate</h2>
-                  <p>
-                    {locale === "zh"
-                      ? "Agent 发起调用后，SkillHub 先解析 manifest、校验 Project Key 和权限，再把结果写入运行证据。"
-                      : "After an agent request, SkillHub resolves the manifest, checks Project Key and permissions, then writes runtime evidence."}
-                  </p>
-                  <div className="home-v2-canvas-core__signal" aria-hidden="true">
-                    <span>POST /runtime/invoke</span>
-                    <code>manifest checked - policy allowed - audit locked</code>
-                  </div>
-                  <div className="home-v2-canvas-core__flow" aria-hidden="true">
-                    {["Agent", "Manifest", "Policy Gate", "Runtime Evidence"].map((item) => (
-                      <strong className="home-v2-canvas-core__flow-step" key={item}>
-                        {item}
-                      </strong>
-                    ))}
-                  </div>
-                </section>
-                <aside className="home-v2-canvas-panel home-v2-canvas-panel--contract">
-                  <span>Skill Contract</span>
-                  <strong>{leadSkill.displayName}</strong>
-                  <p>manifest v{leadSkill.version} · REST / MCP · 3 scopes</p>
-                  <code>{`permissions: web.search + web.fetch`}</code>
-                  <div className="home-v2-canvas-panel__stream" aria-hidden="true">
-                    <span>schema ok</span>
-                    <span>manifest checked</span>
-                    <span>scopes matched</span>
-                  </div>
-                </aside>
-                <aside className="home-v2-canvas-panel home-v2-canvas-panel--evidence">
-                  <span>Runtime Evidence</span>
-                  {[
-                    ["Project Key", "required"],
-                    ["Policy Gate", "allowed"],
-                    ["Audit trace", "locked"],
-                  ].map(([label, value]) => (
-                    <div className={`home-v2-canvas-evidence-row${label === "Audit trace" ? " home-v2-canvas-evidence-row--live" : ""}`} key={label}>
-                      <strong>{label}</strong>
-                      <small>{value}</small>
-                    </div>
-                  ))}
-                  <div className="home-v2-canvas-panel__stream" aria-hidden="true">
-                    <span>project key bound</span>
-                    <span>policy allowed</span>
-                    <span>audit locked</span>
-                  </div>
-                </aside>
-                <div className="home-v2-mobile-runtime-summary" aria-hidden="true">
-                  {[
-                    ["01", "Agent request"],
-                    ["02", "Manifest parse"],
-                    ["03", "Policy Gate"],
-                    ["04", "Runtime Evidence"],
-                  ].map(([step, title]) => (
-                    <span key={title}>
-                      <small>{step}</small>
-                      <strong>{title}</strong>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="home-v2-workbench-live-strip" aria-hidden="true">
-                <div className="home-v2-invocation-timeline">
-                  {[
-                    ["01", "Agent request", "Codex asks for browser-research"],
-                    ["02", "Manifest parse", "Schema and scopes resolved"],
-                    ["03", "Policy gate", "Project Key + permission check"],
-                    ["04", "Runtime result", "REST / MCP returns structured data"],
-                    ["05", "Audit locked", "Trace saved for the team"],
-                  ].map(([step, title, body]) => (
-                    <span className="home-v2-invocation-step" key={title}>
-                      <small>{step}</small>
-                      <strong>{title}</strong>
-                      <em>{body}</em>
-                    </span>
-                  ))}
-                </div>
-                <div className="home-v2-runtime-meter">
-                  <span />
-                  <strong>live invoke</strong>
-                  <small>p95 1.23s</small>
-                </div>
-              </div>
-
-              <div className="home-v2-workbench__grid">
-                <aside className="home-v2-pane home-v2-pane--side">
-                  <div className="home-v2-pane__title">
-                    <span>Find a Skill</span>
-                    <small>Public catalog</small>
-                  </div>
-                  <div className="home-v2-search-panel">
-                    <div className="home-v2-search-box">
-                      <Search size={15} aria-hidden="true" />
-                      <span>research / data / code review</span>
-                    </div>
-                    <div className="home-v2-tag-row">
-                      <span className="home-v2-tag home-v2-tag--green">Verified</span>
-                      <span className="home-v2-tag home-v2-tag--cyan">MCP</span>
-                      <span className="home-v2-tag">REST</span>
-                      <span className="home-v2-tag home-v2-tag--amber">Preview</span>
-                    </div>
-                  </div>
-                  <div className="home-v2-skill-list">
-                    <article className="home-v2-skill-row home-v2-skill-row--active">
-                      <span className="home-v2-skill-icon" aria-hidden="true">B</span>
-                      <div>
-                        <strong>{leadSkill.displayName}</strong>
-                        <small>SkillHub Labs · web.search · citations</small>
-                        <span className="home-v2-tag home-v2-tag--green">{landing.verified}</span>
-                        <span className="home-v2-tag home-v2-tag--cyan">REST / MCP</span>
-                      </div>
-                    </article>
-                    {[
-                      ["D", "dataset-summarizer", "Data workflow · sheet.read · report.write", "Reviewed", "HTTP"],
-                      ["R", "repo-review-assistant", "Developer workflow · repo.read · release", "Preview", "MCP"],
-                      ["S", "support-triage", "Operations workflow · ticket.read", "Public", "Medium risk"],
-                    ].map(([initial, title, meta, state, runtime]) => (
-                      <article className="home-v2-skill-row" key={title}>
-                        <span className="home-v2-skill-icon" aria-hidden="true">{initial}</span>
-                        <div>
-                          <strong>{title}</strong>
-                          <small>{meta}</small>
-                          <span className={state === "Preview" ? "home-v2-tag home-v2-tag--amber" : "home-v2-tag"}>
-                            {state}
-                          </span>
-                          <span className={runtime === "MCP" ? "home-v2-tag home-v2-tag--cyan" : "home-v2-tag"}>
-                            {runtime}
-                          </span>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </aside>
-
-                <section className="home-v2-pane home-v2-pane--contract">
-                  <div className="home-v2-pane__title">
-                    <span>Skill Contract</span>
-                    <small>Visible before adoption</small>
-                  </div>
-                  <div className="home-v2-contract-head">
-                    <h2>{leadSkill.displayName}</h2>
-                    <p>
-                      {locale === "zh"
-                        ? "面向 Agent 的网页研究 Skill。接入前先看清输入输出、权限范围、运行方式、发布者和审核状态。"
-                        : "A web research Skill for agents. Inspect inputs, outputs, permissions, runtime protocols, publisher, and review status before adoption."}
-                    </p>
-                    <div className="home-v2-paper-actions">
-                      <PublicEventLink
-                        className="home-v2-paper-button home-v2-paper-button--primary"
-                        eventName="browse_skills_cta_click"
-                        eventProperties={{ surface: "home_v2_workbench" }}
-                        href={homeSkillHref(leadSkill, locale)}
-                      >
-                        {locale === "zh" ? "加入项目" : "Add to project"}
-                      </PublicEventLink>
-                      <PublicEventLink
-                        className="home-v2-paper-button"
-                        eventName="skill_card_click"
-                        eventProperties={{ surface: "home_v2_workbench", skill: leadSkill.slug }}
-                        href={homeSkillHref(leadSkill, locale)}
-                      >
-                        {locale === "zh" ? "查看详情" : "View details"}
-                      </PublicEventLink>
-                      <span className="home-v2-paper-button">{locale === "zh" ? "复制 API 路径" : "Copy API path"}</span>
-                    </div>
-                  </div>
-                  <div className="home-v2-contract-matrix">
-                    <div>
-                      <span>Publisher</span>
-                      <strong>SkillHub Labs</strong>
-                    </div>
-                    <div>
-                      <span>Runtime</span>
-                      <strong>{leadRuntime}</strong>
-                    </div>
-                    <div>
-                      <span>Permissions</span>
-                      <strong>3 scopes</strong>
-                    </div>
-                    <div>
-                      <span>Access</span>
-                      <strong>Project Key</strong>
-                    </div>
-                  </div>
-                  <div className="home-v2-manifest">
-                    <div className="home-v2-code" aria-label={locale === "zh" ? "Manifest 示例" : "Manifest sample"}>
-                      <span><em>1</em>{"{"}</span>
-                      <span className="home-v2-code__key"><em>2</em>{`"name": "${leadSkill.slug}",`}</span>
-                      <span><em>3</em>{`"version": "${leadSkill.version}",`}</span>
-                      <span className="home-v2-code__key"><em>4</em>{`"runtime": ["rest", "mcp"],`}</span>
-                      <span><em>5</em>{`"input_schema": ["query", "depth", "sources_required"],`}</span>
-                      <span><em>6</em>{`"permissions": ["web.search", "web.fetch", "data.store"],`}</span>
-                      <span className="home-v2-code__key"><em>7</em>{`"review_status": "verified"`}</span>
-                      <span><em>8</em>{"}"}</span>
-                    </div>
-                    <aside className="home-v2-review-card">
-                      <h3>Pre-adoption review</h3>
-                      {(locale === "zh"
-                        ? [
-                            "Schema 能被 Agent 和调用方稳定解析",
-                            "权限边界在详情页提前展示",
-                            "真实运行绑定项目与 Project Key",
-                            "调用结果进入日志和审计轨迹",
-                          ]
-                        : [
-                            "Schema is stable for agents and callers",
-                            "Permission boundaries are visible before adoption",
-                            "Runtime calls are bound to projects and Project Keys",
-                            "Results enter logs and audit trails",
-                          ]
-                      ).map((item) => (
-                        <span className="home-v2-check" key={item}>{item}</span>
-                      ))}
-                    </aside>
-                  </div>
-                </section>
-
-                <aside className="home-v2-pane home-v2-pane--runtime">
-                  <div className="home-v2-pane__title">
-                    <span>Runtime Route</span>
-                    <small>Policy checked</small>
-                  </div>
-                  <div className="home-v2-runtime-route">
-                    <article>
-                      <i className="home-v2-runtime-pulse" aria-hidden="true" />
-                      <span>REST</span>
-                      <code>POST /v1/runtime/invoke</code>
-                      <strong>Authorization: Bearer sk_proj_***</strong>
-                    </article>
-                    <article>
-                      <i className="home-v2-runtime-pulse" aria-hidden="true" />
-                      <span>MCP</span>
-                      <code>@useskillhub/mcp-server</code>
-                      <strong>Expose approved Skills as callable tools.</strong>
-                    </article>
-                    <article>
-                      <span>Audit trace</span>
-                      {[
-                        { label: "manifest v1.4.2 locked", value: "ok", warn: false },
-                        { label: "requires Project Key", value: "gate", warn: true },
-                        { label: "policy allows web.search", value: "ok", warn: false },
-                        { label: "response schema matched", value: "200", warn: false },
-                      ].map((item) => (
-                        <div className={item.warn ? "home-v2-trace home-v2-trace--warn" : "home-v2-trace"} key={item.label}>
-                          <strong>{item.label}</strong>
-                          <small>{item.value}</small>
-                        </div>
-                      ))}
-                    </article>
-                  </div>
-                </aside>
-              </div>
-            </section>
-          </section>
-
-          <section className="home-v2-section">
-            <div className="home-v2-section__head">
-              <div>
-                <span>{locale === "zh" ? "面向真实使用路径" : "Built for real adoption paths"}</span>
-                <h2>
-                  {locale === "zh"
-                    ? "开发者、团队和发布者共用一条 Skill 采用流程。"
-                    : "Developers, teams, and publishers share one Skill adoption flow."}
-                </h2>
-              </div>
-              <p>
-                {locale === "zh"
-                  ? "从发现、审查到项目接入，每个角色都能清楚看到下一步。"
-                  : "From discovery and inspection to project adoption, every role gets a clear next step."}
-              </p>
-            </div>
-            <div className="home-v2-role-grid">
-              {(locale === "zh"
-                ? [
-                    ["Agent 开发者", "BUILD", "从 Marketplace 找到可复用 Skill，确认契约后接入自己的 Agent 或工作流。", ["检查输入输出 schema", "确认 REST / MCP 调用方式", "用 Project Key 开始真实运行"]],
-                    ["团队管理员", "GOVERN", "把权限、调用、日志和审计放进统一项目边界，减少不可追踪的一次性工具接入。", ["项目级 Key 与策略控制", "调用日志和版本记录", "公开访问和登录工作台分层"]],
-                    ["Skill 发布者", "PUBLISH", "用清晰 manifest、权限说明和审核状态，让自己的 Skill 更容易被团队采用。", ["提交 Skill 契约与示例", "展示发布者和审核信息", "为未来付费市场准备分发路径"]],
-                  ]
-                : [
-                    ["Agent builders", "BUILD", "Find reusable Skills in the Marketplace, inspect the contract, and connect them to agent workflows.", ["Inspect input and output schemas", "Confirm REST / MCP runtime paths", "Run with Project Keys"]],
-                    ["Team admins", "GOVERN", "Put permissions, runtime usage, logs, and audits inside a project boundary.", ["Project Keys and policy controls", "Invocation logs and version records", "Public and signed-in workflow separation"]],
-                    ["Skill publishers", "PUBLISH", "Publish Skills with clear manifests, permission notes, and review status.", ["Submit contracts and examples", "Show publisher and review metadata", "Prepare for marketplace distribution"]],
-                  ]
-              ).map(([title, badge, body, items]) => (
-                <article className="home-v2-role-card" key={title as string}>
-                  <div>
-                    <h3>{title as string}</h3>
-                    <span>{badge as string}</span>
-                  </div>
-                  <p>{body as string}</p>
-                  <ul>
-                    {(items as string[]).map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
+              return (
+                <article className="home-v3-proof" key={label}>
+                  <Icon size={18} aria-hidden="true" />
+                  <small>{label}</small>
+                  <strong>{detail}</strong>
                 </article>
-              ))}
+              );
+            })}
+          </section>
+
+          <section
+            className="home-v3-section home-v3-section--centered"
+            aria-labelledby="home-capability-heading"
+          >
+            <div className="home-v3-section__head">
+              <span>
+                {locale === "zh" ? "平台能力" : "Platform capabilities"}
+              </span>
+              <h2 id="home-capability-heading">
+                {locale === "zh"
+                  ? "发现、检查、策略和调用在同一条路径里。"
+                  : "Discovery, inspection, logs, and runtime share one path."}
+              </h2>
+              <p>{landing.accessMap.body}</p>
+            </div>
+            <div className="home-v3-card-grid home-v3-card-grid--four">
+              {landing.capabilities.map((item, index) => {
+                const Icon = capabilityIcons[index];
+
+                return (
+                  <article className="home-v3-feature-card" key={item.title}>
+                    <Icon size={22} aria-hidden="true" />
+                    <span className={`state-badge state-badge--${item.tone}`}>
+                      {item.badge}
+                    </span>
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                  </article>
+                );
+              })}
             </div>
           </section>
 
-          <section className="home-v2-section">
-            <div className="home-v2-section__head">
-              <div>
-                <span>{locale === "zh" ? "运行边界" : "Runtime boundary"}</span>
-                <h2>
-                  {locale === "zh"
-                    ? "公开发现、登录运行、项目治理分层清楚。"
-                    : "Public discovery, signed-in runtime, and project governance stay clearly separated."}
-                </h2>
-              </div>
+          <section
+            className="home-v3-section home-v3-section--split"
+            aria-labelledby="home-flow-heading"
+          >
+            <div className="home-v3-section__head home-v3-section__head--side">
+              <span>{locale === "zh" ? "采用流程" : "Adoption flow"}</span>
+              <h2 id="home-flow-heading">{landing.howTitle}</h2>
               <p>
                 {locale === "zh"
-                  ? "公开目录服务发现和审查；真实调用进入登录后的项目、权限、日志和审计体系。"
-                  : "The public catalog supports discovery and inspection; real invocations move through signed-in projects, permissions, logs, and audits."}
+                  ? "从公开目录到真实调用，每一步都保留契约、权限和审计上下文。"
+                  : "From public discovery to runtime calls, every step keeps contract, permission, and audit context visible."}
               </p>
             </div>
-            <div className="home-v2-ops-grid">
-              <article className="home-v2-ops-panel">
-                <div className="home-v2-ops-panel__head">
-                  <strong>{locale === "zh" ? "今天可用" : "Available today"}</strong>
-                  <span className="home-v2-tag home-v2-tag--green">Public</span>
-                </div>
-                {(locale === "zh"
-                  ? [
-                      ["Marketplace 浏览", "无需登录", "可搜索和筛选"],
-                      ["Skill 详情检查", "无需登录", "manifest / 权限"],
-                      ["Project Key", "需要登录", "项目绑定"],
-                      ["Runtime Invoke", "需要登录", "REST / MCP"],
-                    ]
-                  : [
-                      ["Marketplace browsing", "No login", "Search and filter"],
-                      ["Skill detail inspection", "No login", "manifest / permissions"],
-                      ["Project Key", "Sign-in required", "Project scoped"],
-                      ["Runtime Invoke", "Sign-in required", "REST / MCP"],
-                    ]
-                ).map(([label, access, detail]) => (
-                  <div className="home-v2-ops-row" key={label}>
-                    <strong>{label}</strong>
-                    <span>{access}</span>
-                    <span>{detail}</span>
-                  </div>
-                ))}
-              </article>
-              <div className="home-v2-primitive-grid">
-                {(locale === "zh"
-                  ? [
-                      ["01", "Public Skill Catalog", "让用户和 AI 都能按任务、分类、运行方式和审核状态找到 Skill。"],
-                      ["02", "Manifest Contract", "统一展示名称、版本、输入输出、权限、发布者和运行协议。"],
-                      ["03", "Permission Boundary", "在采用前说明 Skill 声明的能力范围和可能接触的数据类型。"],
-                      ["04", "Runtime Evidence", "记录调用路径、版本、策略结果和响应状态，便于团队回看。"],
-                    ]
-                  : [
-                      ["01", "Public Skill Catalog", "Let users and AI find Skills by task, category, runtime, and review state."],
-                      ["02", "Manifest Contract", "Show name, version, inputs, outputs, permissions, publisher, and runtime protocol."],
-                      ["03", "Permission Boundary", "Explain declared capabilities and data access before adoption."],
-                      ["04", "Runtime Evidence", "Record routes, versions, policy results, and response state for review."],
-                    ]
-                ).map(([num, title, body]) => (
-                  <article className="home-v2-primitive-card" key={num}>
-                    <span>{num}</span>
-                    <h3>{title}</h3>
-                    <p>{body}</p>
+            <div className="home-v3-flow-rail">
+              {landing.howSteps.map(([title, body], index) => {
+                const Icon = howIcons[index];
+
+                return (
+                  <article className="home-v3-flow-step" key={title}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <Icon size={21} aria-hidden="true" />
+                    <div>
+                      <h3>{title}</h3>
+                      <p>{body}</p>
+                    </div>
                   </article>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </section>
 
-          <section className="home-v2-agent-section">
+          <section
+            className="home-v3-section"
+            aria-labelledby="home-package-heading"
+          >
+            <div className="home-v3-section__head">
+              <span>{packageIntro.eyebrow}</span>
+              <h2 id="home-package-heading">{packageIntro.title}</h2>
+              <p>{packageIntro.body}</p>
+            </div>
+            <div className="home-v3-card-grid home-v3-card-grid--three">
+              {promotedPackages.map((item, index) => {
+                const Icon = packageIcons[index] ?? Boxes;
+
+                return (
+                  <article className="home-v3-package-card" key={item.key}>
+                    <div className="home-v3-package-card__top">
+                      <Icon size={22} aria-hidden="true" />
+                      <div>
+                        <span>{item.eyebrow}</span>
+                        <h3>{item.title}</h3>
+                      </div>
+                    </div>
+                    <p>{item.body}</p>
+                    <strong>{item.fit}</strong>
+                    <div className="home-v3-package-card__list">
+                      {item.outcomes.map((outcome) => (
+                        <span key={outcome}>
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          {outcome}
+                        </span>
+                      ))}
+                    </div>
+                    <PublicEventLink
+                      className="secondary-button"
+                      href={localizedHref(item.marketplaceHref, locale)}
+                      eventName="browse_skills_cta_click"
+                      eventProperties={{
+                        surface: "home_reference_package",
+                        track: item.key,
+                      }}
+                    >
+                      {item.ctaPrimary}
+                      <ArrowRight size={15} aria-hidden="true" />
+                    </PublicEventLink>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section
+            className="home-v3-section home-v3-section--centered"
+            aria-labelledby="home-trust-heading"
+          >
+            <div className="home-v3-section__head">
+              <span>{locale === "zh" ? "信任层" : "Trust layer"}</span>
+              <h2 id="home-trust-heading">{landing.trustTitle}</h2>
+            </div>
+            <div className="home-v3-card-grid home-v3-card-grid--three">
+              {landing.trustModules.map((item, index) => {
+                const Icon = trustModuleIcons[index];
+
+                return (
+                  <article className="home-v3-trust-card" key={item.title}>
+                    <div>
+                      <Icon size={22} aria-hidden="true" />
+                      <span>{item.status}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                    {item.rows.map((row, rowIndex) => (
+                      <small key={row}>
+                        {row} · {trustEvidenceLabel(rowIndex, locale)}
+                      </small>
+                    ))}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section
+            className="home-v3-section"
+            aria-labelledby="home-featured-heading"
+          >
+            <div className="home-v3-section__head home-v3-section__head--inline">
+              <div>
+                <span>
+                  {locale === "zh" ? "精选 Skill" : "Featured skills"}
+                </span>
+                <h2 id="home-featured-heading">{landing.featuredTitle}</h2>
+              </div>
+              <PublicEventLink
+                href={localizedHref("/marketplace", locale)}
+                eventName="browse_skills_cta_click"
+                eventProperties={{ surface: "home_reference_featured" }}
+              >
+                {landing.featuredAction}
+                <ArrowRight size={15} aria-hidden="true" />
+              </PublicEventLink>
+            </div>
+            <div className="home-v3-card-grid home-v3-card-grid--four">
+              {featuredSkills.map((skill, index) => {
+                const Icon = skillIcons[index] ?? Boxes;
+                const status = statusLabel(skill.verificationStatus, locale);
+
+                return (
+                  <article className="home-v3-skill-card" key={skill.id}>
+                    <Icon size={22} aria-hidden="true" />
+                    <span className="home-v3-verified">{status}</span>
+                    <h3>{skill.displayName}</h3>
+                    <p>{homeSkillDescription(skill, locale)}</p>
+                    <div className="control-tag-row">
+                      {homeSkillTags(skill, locale)
+                        .slice(0, 2)
+                        .map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                    </div>
+                    <PublicEventLink
+                      className="secondary-button"
+                      href={homeSkillHref(skill, locale)}
+                      eventName="skill_card_click"
+                      eventProperties={{
+                        surface: "home_reference_featured",
+                        skill: skill.slug,
+                      }}
+                    >
+                      {landing.inspect}
+                    </PublicEventLink>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section
+            className="home-v2-agent-section home-v3-agent-section"
+            aria-labelledby="home-agent-heading"
+          >
             <div className="home-v2-agent-copy">
               <span>Agent runtime coverage</span>
-              <h2>
+              <h2 id="home-agent-heading">
                 {locale === "zh"
                   ? "按项目策略接入主流 Agent。"
                   : "Connect agent environments by project policy."}
               </h2>
-              <p>
-                {locale === "zh"
-                  ? "Codex、Claude Code、Gemini CLI、GitHub Copilot、OpenClaw 和 Hermes Agent 可以通过 REST 或 MCP 调用已审核 Skill；manifest、权限、Project Key 和 audit log 仍由 SkillHub 统一治理。"
-                  : "Codex, Claude Code, Gemini CLI, GitHub Copilot, OpenClaw, and Hermes Agent can invoke reviewed Skills through REST or MCP while manifests, permissions, Project Keys, and audit logs stay governed in SkillHub."}
-              </p>
+              <p>{landing.footerAgentBody}</p>
             </div>
             <div className="home-v2-agent-grid">
               {landing.footerAgentEcosystem.map((agent) => (
-                <article className={`home-v2-agent-card home-v2-agent-card--${agent.logoKey}`} key={agent.name}>
+                <article
+                  className={`home-v2-agent-card home-v2-agent-card--${agent.logoKey}`}
+                  key={agent.name}
+                >
                   <span className="home-v2-agent-logo" aria-hidden="true">
                     <img src={agent.logo} alt="" />
                   </span>
@@ -1523,33 +1066,55 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           </section>
 
-          <section className="home-v2-final-cta">
+          <section className="home-v2-final-cta home-v3-final-cta">
             <div>
               <h2>{landing.finalTitle}</h2>
               <p>{landing.finalBody}</p>
             </div>
             <div className="hero-actions">
-              <PublicEventLink className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)} eventName="browse_skills_cta_click" eventProperties={{ surface: "home_v2_final_cta" }}>
+              <PublicEventLink
+                className="primary-button primary-button--large"
+                href={localizedHref("/marketplace", locale)}
+                eventName="browse_skills_cta_click"
+                eventProperties={{ surface: "home_reference_final_cta" }}
+              >
                 {landing.primaryCta}
                 <ArrowRight size={16} aria-hidden="true" />
               </PublicEventLink>
-              <PublicEventLink className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)} eventName="docs_cta_click" eventProperties={{ surface: "home_v2_final_cta" }}>
+              <PublicEventLink
+                className="secondary-button secondary-button--large"
+                href={localizedHref("/docs", locale)}
+                eventName="docs_cta_click"
+                eventProperties={{ surface: "home_reference_final_cta" }}
+              >
                 <FileJson size={17} aria-hidden="true" />
                 {landing.readDocs}
               </PublicEventLink>
             </div>
           </section>
 
-          <footer className="home-v2-footer">
-            <section className="home-v2-footer-agent" aria-label={locale === "zh" ? "页脚 Agent 生态接入" : "Footer agent ecosystem"}>
+          <footer className="home-v2-footer home-v3-footer">
+            <section
+              className="home-v2-footer-agent"
+              aria-label={
+                locale === "zh"
+                  ? "页脚 Agent 生态接入"
+                  : "Footer agent ecosystem"
+              }
+            >
               <div className="home-v2-footer-agent__intro">
-                <span className="home-v2-tag home-v2-tag--green">{landing.footerAgentBadge}</span>
+                <span className="home-v2-tag home-v2-tag--green">
+                  {landing.footerAgentBadge}
+                </span>
                 <h2>{landing.footerAgentTitle}</h2>
                 <p>{landing.footerAgentBody}</p>
               </div>
               <div className="home-v2-footer-logo-grid">
                 {landing.footerAgentEcosystem.map((agent) => (
-                  <article className={`home-v2-footer-logo home-v2-footer-logo--${agent.logoKey}`} key={agent.name}>
+                  <article
+                    className={`home-v2-footer-logo home-v2-footer-logo--${agent.logoKey}`}
+                    key={agent.name}
+                  >
                     <img src={agent.logo} alt="" />
                     <span>{agent.name}</span>
                   </article>
@@ -1566,28 +1131,44 @@ export default async function Home({ searchParams }: PageProps) {
                 <div className="home-v2-footer-contact">
                   <div>
                     <span>{locale === "zh" ? "技术支持" : "Support"}</span>
-                    <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
+                    <a href={companyLinks.supportMailto}>
+                      {companyInfo.supportEmail}
+                    </a>
                   </div>
                   <div>
                     <span>{locale === "zh" ? "商务合作" : "Business"}</span>
-                    <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
+                    <a href={companyLinks.businessMailto}>
+                      {companyInfo.businessEmail}
+                    </a>
                   </div>
                   <div>
                     <span>{locale === "zh" ? "公司地址" : "Address"}</span>
                     <span>{companyInfo.address}</span>
                   </div>
                 </div>
-                <PublicEventLink className="home-v2-status-pill" href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
+                <PublicEventLink
+                  className="home-v2-status-pill"
+                  href={localizedHref("/status", locale)}
+                  eventName="footer_link_click"
+                  eventProperties={{ target: "status" }}
+                >
                   {landing.systemStatus} · {landing.viewStatus}
                 </PublicEventLink>
               </div>
-              <nav className="home-v2-footer-nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
+              <nav
+                className="home-v2-footer-nav"
+                aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}
+              >
                 {landing.footerGroups.map((group) => (
                   <section className="home-v2-footer-group" key={group.title}>
                     <h2>{group.title}</h2>
                     {group.links.map(([label, href], index) => (
                       <PublicEventLink
-                        className={index === 0 ? "home-v2-footer-link--featured" : undefined}
+                        className={
+                          index === 0
+                            ? "home-v2-footer-link--featured"
+                            : undefined
+                        }
                         href={localizedHref(href, locale)}
                         eventName="footer_link_click"
                         eventProperties={{ target: href }}
@@ -1602,567 +1183,17 @@ export default async function Home({ searchParams }: PageProps) {
             </section>
             <div className="home-v2-footer-bottom">
               <span>© 2026 SkillHub. All rights reserved.</span>
-              <span className="home-v2-footer-signature" aria-label="Registry Runtime Governance">
+              <span
+                className="home-v2-footer-signature"
+                aria-label="Registry Call Permissions"
+              >
                 <span>Registry</span>
                 <span>Runtime</span>
-                <span>Governance</span>
+                <span>Policies</span>
               </span>
             </div>
           </footer>
         </section>
-
-        <div className="home-preview-banner" role="status">
-          <div className="home-preview-banner__inner">
-            <span className="home-preview-banner__dot" aria-hidden="true" />
-            <strong>{landing.banner.label}</strong>
-            <p>{landing.banner.body}</p>
-            <PublicEventLink href={localizedHref("/status", locale)} eventName="view_status_click" eventProperties={{ surface: "hero_banner" }}>
-              {landing.banner.action}
-              <ArrowRight size={14} aria-hidden="true" />
-            </PublicEventLink>
-          </div>
-        </div>
-
-        <section className="home-hero-grid reveal-scope">
-          <div className="home-tech-field" aria-hidden="true">
-            <ParticleField />
-            <span className="home-tech-field__scan home-tech-field__scan--a" />
-            <span className="home-tech-field__scan home-tech-field__scan--b" />
-            <span className="home-tech-field__orbit home-tech-field__orbit--a" />
-            <span className="home-tech-field__orbit home-tech-field__orbit--b" />
-            <span className="home-tech-field__node home-tech-field__node--a" />
-            <span className="home-tech-field__node home-tech-field__node--b" />
-            <span className="home-tech-field__node home-tech-field__node--c" />
-            <span className="home-tech-field__data home-tech-field__data--a" />
-            <span className="home-tech-field__data home-tech-field__data--b" />
-            <span className="home-tech-field__data home-tech-field__data--c" />
-          </div>
-          <div className="hero-copy home-hero-copy reveal-item">
-            <div className="eyebrow">
-              <span>{landing.eyebrow}</span>
-            </div>
-            <h1 id="home-heading" aria-label={landing.title}>
-              {locale === "en" ? (
-                <>
-                  Run agent skills like{" "}
-                  <span>production infrastructure.</span>
-                </>
-              ) : (
-                <>
-                  把 Agent Skills
-                  <br />
-                  作为<span>生产基础设施</span>
-                  <br />
-                  运行。
-                </>
-              )}
-            </h1>
-            <p>{landing.description}</p>
-            <p className="home-preview-note">{landing.previewNote}</p>
-            <div className="hero-actions">
-              <PublicEventLink
-                className="primary-button primary-button--large"
-                eventName="browse_skills_cta_click"
-                eventProperties={{ surface: "hero" }}
-                href={localizedHref("/marketplace", locale)}
-              >
-                <Search size={18} aria-hidden="true" />
-                <span>{landing.primaryCta}</span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </PublicEventLink>
-              <PublicEventLink
-                className="secondary-button secondary-button--large"
-                eventName="docs_cta_click"
-                eventProperties={{ surface: "hero" }}
-                href={localizedHref("/docs#api", locale)}
-              >
-                <Terminal size={18} aria-hidden="true" />
-                <span>{landing.quickstartCta}</span>
-              </PublicEventLink>
-              <PublicEventLink
-                className="ghost-button ghost-button--large"
-                eventName="publish_skill_cta_click"
-                eventProperties={{ surface: "hero" }}
-                href={localizedHref("/publish", locale)}
-              >
-                <span>{landing.publishCta}</span>
-                <ArrowRight size={15} aria-hidden="true" />
-              </PublicEventLink>
-            </div>
-
-            <div className="home-evidence-row" aria-label={landing.eyebrow}>
-              {landing.evidence.map(([label, detail], index) => {
-                const Icon = proofIcons[index];
-
-                return (
-                  <div className="home-evidence-pill" key={label}>
-                    <Icon size={18} aria-hidden="true" />
-                    <span>{label}</span>
-                    <small>{detail}</small>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <aside className="control-plane reveal-item reveal-item--delay" aria-label={landing.control.title}>
-            <div className="control-runtime-map" aria-hidden="true">
-              <span className="control-runtime-map__node control-runtime-map__node--registry" />
-              <span className="control-runtime-map__node control-runtime-map__node--policy" />
-              <span className="control-runtime-map__node control-runtime-map__node--runtime" />
-              <span className="control-runtime-map__rail control-runtime-map__rail--a" />
-              <span className="control-runtime-map__rail control-runtime-map__rail--b" />
-              <span className="control-runtime-map__pulse control-runtime-map__pulse--a" />
-              <span className="control-runtime-map__pulse control-runtime-map__pulse--b" />
-            </div>
-            <div className="control-mobile-tabs" aria-hidden="true">
-              <span className="control-mobile-tabs__item control-mobile-tabs__item--active">
-                Skill
-              </span>
-              <span className="control-mobile-tabs__item">{landing.control.manifest}</span>
-              <span className="control-mobile-tabs__item">{landing.control.policy}</span>
-            </div>
-
-            <article className="control-pane control-pane--market">
-              <div className="control-pane__label">
-                <span>{landing.control.marketplace}</span>
-              </div>
-              <div className="control-skill-card">
-                <div className="control-skill-card__icon" aria-hidden="true">
-                  <Boxes size={22} />
-                </div>
-                <div>
-                  <strong>{leadSkill.displayName}</strong>
-                  <span>
-                    by {landing.control.publisher}
-                    <CheckCircle2 size={12} aria-hidden="true" />
-                  </span>
-                </div>
-                <span className="control-badge control-badge--verified">
-                  {landing.control.verified}
-                </span>
-              </div>
-              <p className="control-skill-description">
-                {homeSkillDescription(leadSkill, locale)}
-              </p>
-              <div className="control-tag-row">
-                {homeSkillTags(leadSkill, locale).slice(0, 2).map((tag) => (
-                  <span key={tag}>{tag}</span>
-                ))}
-              </div>
-              <dl className="control-meta-list">
-                <div>
-                  <dt>{landing.control.runtime}</dt>
-                  <dd>{leadRuntime}</dd>
-                </div>
-                <div>
-                  <dt>{landing.control.permissions}</dt>
-                  <dd>{riskLabel(leadSkill.permissionLevel, locale)}</dd>
-                </div>
-              </dl>
-              <PublicEventLink className="control-pane__button" eventName="skill_card_click" eventProperties={{ surface: "hero_mockup", skill: leadSkill.slug }} href={homeSkillHref(leadSkill, locale)}>
-                {landing.control.viewSkill}
-              </PublicEventLink>
-            </article>
-
-            <div className="control-flow-line" aria-hidden="true" />
-
-            <article className="control-pane control-pane--manifest">
-              <div className="control-tabs" aria-label={landing.control.manifest}>
-                <span className="control-tabs__item control-tabs__item--active">
-                  {landing.control.manifest}
-                </span>
-                <span className="control-tabs__item">{landing.control.schema}</span>
-                <span className="control-tabs__item">{landing.control.permissions}</span>
-              </div>
-              <div className="control-code" aria-label={locale === "zh" ? "示例 manifest JSON" : "Example manifest JSON"}>
-                <span className="control-code__line">
-                  <em>1</em> {"{"}
-                </span>
-                <span className="control-code__line control-code__line--active">
-                  <em>2</em> {'"name": "browser-research",'}
-                </span>
-                <span className="control-code__line">
-                  <em>3</em> {'"version": "1.2.0",'}
-                </span>
-                <span className="control-code__line control-code__line--active control-code__line--delay">
-                  <em>4</em> {'"permissions": ["web.search", "web.fetch", "data.store"],'}
-                </span>
-                <span className="control-code__line">
-                  <em>5</em> {'"runtime": {"protocols": ["rest", "mcp"]}'}
-                </span>
-                <span className="control-code__line">
-                  <em>6</em> {"}"}
-                </span>
-              </div>
-              <div className="control-pane__foot">
-                <span className="home-preview-banner__dot" aria-hidden="true" />
-                <span>{landing.control.schemaValid}</span>
-                <code>v1.2.0</code>
-              </div>
-            </article>
-
-            <div className="control-flow-line control-flow-line--late" aria-hidden="true" />
-
-            <article className="control-pane control-pane--runtime">
-              <div className="control-pane__label">
-                <span>{landing.control.policy}</span>
-                <span className="control-badge control-badge--key">
-                  {landing.control.keyRequired}
-                </span>
-              </div>
-              <div className="runtime-console" aria-label={locale === "zh" ? "示例 API 请求" : "Sample API request"}>
-                <span>{landing.control.request}</span>
-                <code>POST /v1/runtime/invoke</code>
-                <pre>{`{
-  "query": "latest AI agent framework comparison",
-  "max_results": 5
-}`}</pre>
-              </div>
-              <div className="runtime-console runtime-console--success" aria-label={locale === "zh" ? "示例 API 响应" : "Sample API response"}>
-                <span>{landing.control.response}</span>
-                <strong>{landing.control.status}</strong>
-                <code>{landing.control.latency}</code>
-              </div>
-              <div className="runtime-audit">
-                <span>{landing.control.audit}</span>
-                <strong>/v1/runtime/invoke</strong>
-                <strong>200</strong>
-              </div>
-              <div className="control-pane__foot">
-                <span className="home-preview-banner__dot" aria-hidden="true" />
-                <span>{landing.control.allSystems}</span>
-              </div>
-            </article>
-          </aside>
-
-          <section className="home-capability-strip reveal-item reveal-item--late" aria-label={landing.banner.label}>
-            {landing.capabilities.map((item, index) => {
-              const Icon = capabilityIcons[index];
-
-              return (
-                <article className="home-capability" key={item.title}>
-                  <Icon size={22} aria-hidden="true" />
-                  <div>
-                    <div className="home-capability__head">
-                      <strong>{item.title}</strong>
-                      <span className={`state-badge state-badge--${item.tone}`}>
-                        {item.badge}
-                      </span>
-                    </div>
-                    <p>{item.body}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </section>
-        </section>
-
-        <section className="home-section home-clarity-section" aria-labelledby="home-skill-definition-heading">
-          <article className="home-definition-callout lift-card">
-            <div>
-              <span>{landing.banner.label}</span>
-              <h2 id="home-skill-definition-heading">{landing.whatIsSkillTitle}</h2>
-            </div>
-            <p>{landing.whatIsSkillBody}</p>
-          </article>
-          <div className="home-audience-grid" aria-label={locale === "zh" ? "用户路径" : "Audience routes"}>
-            {landing.audience.map(([title, body]) => (
-              <article className="home-audience-card" key={title}>
-                <h3>{title}</h3>
-                <p>{body}</p>
-              </article>
-            ))}
-          </div>
-          <article className="home-access-map lift-card" aria-labelledby="home-access-map-heading">
-            <div className="home-access-map__head">
-              <div>
-                <span>{landing.accessMap.eyebrow}</span>
-                <h2 id="home-access-map-heading">{landing.accessMap.title}</h2>
-              </div>
-              <PublicEventLink
-                className="secondary-button secondary-button--compact"
-                eventName="docs_cta_click"
-                eventProperties={{ surface: "access_map" }}
-                href={localizedHref("/docs#operating-reference", locale)}
-              >
-                <FileJson size={15} aria-hidden="true" />
-                {landing.accessMap.action}
-              </PublicEventLink>
-            </div>
-            <p>{landing.accessMap.body}</p>
-            <div className="home-access-map__grid">
-              {landing.accessMap.items.map(([title, body]) => (
-                <div className="home-access-map__item" key={title}>
-                  <strong>{title}</strong>
-                  <span>{body}</span>
-                </div>
-              ))}
-            </div>
-          </article>
-        </section>
-
-        <section className="home-section home-package-section" aria-labelledby="home-package-heading">
-          <div className="home-section__head home-package-section__head">
-            <div>
-              <span className="home-package-section__eyebrow">{packageIntro.eyebrow}</span>
-              <h2 id="home-package-heading">{packageIntro.title}</h2>
-              <p>{packageIntro.body}</p>
-            </div>
-          </div>
-
-          <div className="home-package-grid">
-            {promotedPackages.map((item, index) => {
-              const Icon = packageIcons[index] ?? Boxes;
-
-              return (
-                <article className="home-package-card lift-card" key={item.key}>
-                  <div className="home-package-card__top">
-                    <div className="home-package-card__icon" aria-hidden="true">
-                      <Icon size={22} />
-                    </div>
-                    <div>
-                      <span>{item.eyebrow}</span>
-                      <h3>{item.title}</h3>
-                    </div>
-                  </div>
-                  <p>{item.body}</p>
-                  <div className="home-package-card__fit">{item.fit}</div>
-                  <div className="home-package-card__list">
-                    <strong>{locale === "zh" ? "交付结果" : "Outcomes"}</strong>
-                    {item.outcomes.map((outcome) => (
-                      <span key={outcome}>
-                        <CheckCircle2 size={14} aria-hidden="true" />
-                        {outcome}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="home-package-card__skills" aria-label={locale === "zh" ? "推荐技能" : "Recommended skills"}>
-                    {item.skills.map((skill) => (
-                      <span key={skill}>{skill}</span>
-                    ))}
-                  </div>
-                  <p className="home-package-card__path">{item.path}</p>
-                  <div className="home-package-card__actions">
-                    <PublicEventLink
-                      className="secondary-button"
-                      href={localizedHref(item.marketplaceHref, locale)}
-                      eventName="browse_skills_cta_click"
-                      eventProperties={{ surface: "home_package", track: item.key }}
-                    >
-                      {item.ctaPrimary}
-                      <ArrowRight size={15} aria-hidden="true" />
-                    </PublicEventLink>
-                    <PublicEventLink
-                      className="ghost-button"
-                      href={localizedHref(item.contactHref, locale)}
-                      eventName="contact_cta_click"
-                      eventProperties={{ surface: "home_package", track: item.key }}
-                    >
-                      {item.ctaSecondary}
-                    </PublicEventLink>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-section home-trust-section" aria-labelledby="home-trust-heading">
-          <h2 id="home-trust-heading">{landing.trustTitle}</h2>
-          <div className="home-trust-modules">
-            {landing.trustModules.map((item, index) => {
-              const Icon = trustModuleIcons[index];
-
-              return (
-                <article className="home-trust-module lift-card" key={item.title}>
-                  <div className="home-trust-module__head">
-                    <Icon size={20} aria-hidden="true" />
-                    <span>{item.status}</span>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                  <div className="home-trust-module__rows">
-                    {item.rows.map((row, rowIndex) => (
-                      <span key={row}>
-                        {row}
-                        <strong>{trustEvidenceLabel(rowIndex, locale)}</strong>
-                      </span>
-                    ))}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-section home-featured-section" aria-labelledby="home-featured-heading">
-          <div className="home-section__head">
-            <h2 id="home-featured-heading">{landing.featuredTitle}</h2>
-            <PublicEventLink href={localizedHref("/marketplace", locale)} eventName="browse_skills_cta_click" eventProperties={{ surface: "featured_header" }}>
-              {landing.featuredAction}
-              <ArrowRight size={15} aria-hidden="true" />
-            </PublicEventLink>
-          </div>
-
-          <div className="home-featured-grid">
-            {featuredSkills.map((skill, index) => {
-              const Icon = skillIcons[index] ?? Boxes;
-              const status = statusLabel(skill.verificationStatus, locale);
-              const isVerified = skill.verificationStatus === "verified";
-
-              return (
-                <article className="home-skill-card lift-card" key={skill.id}>
-                  <div className="home-skill-card__head">
-                    <div className={`home-skill-card__icon home-skill-card__icon--${index + 1}`} aria-hidden="true">
-                      <Icon size={23} />
-                    </div>
-                    <div>
-                      <h3>{skill.displayName}</h3>
-                      <span className={isVerified ? "control-badge control-badge--verified" : "state-badge state-badge--preview"}>
-                        {status}
-                      </span>
-                    </div>
-                  </div>
-                  <p>{homeSkillDescription(skill, locale)}</p>
-                  <div className="control-tag-row">
-                    {homeSkillTags(skill, locale).slice(0, 2).map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                  <dl className="home-skill-card__meta">
-                    <div>
-                      <dt>{landing.runtime}</dt>
-                      <dd>{skill.runtimeType ? skill.runtimeType.toUpperCase() : "REST / MCP"}</dd>
-                    </div>
-                    <div>
-                      <dt>{landing.permissions}</dt>
-                      <dd>{riskLabel(skill.permissionLevel, locale)}</dd>
-                    </div>
-                  </dl>
-                  <PublicEventLink className="secondary-button" href={homeSkillHref(skill, locale)} eventName="skill_card_click" eventProperties={{ surface: "featured", skill: skill.slug }}>
-                    {landing.inspect}
-                  </PublicEventLink>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-section home-how-section" aria-labelledby="home-how-heading">
-          <h2 id="home-how-heading">{landing.howTitle}</h2>
-          <div className="home-how-rail">
-            {landing.howSteps.map(([title, body], index) => {
-              const Icon = howIcons[index];
-
-              return (
-                <article className="home-how-step" key={title}>
-                  <div className="home-how-step__icon" aria-hidden="true">
-                    <Icon size={22} />
-                  </div>
-                  <span>{index + 1}</span>
-                  <h3>{title}</h3>
-                  <p>{body}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="home-final-cta">
-          <div>
-            <h2>{landing.finalTitle}</h2>
-            <p>{landing.finalBody}</p>
-          </div>
-          <div className="hero-actions">
-            <PublicEventLink className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)} eventName="browse_skills_cta_click" eventProperties={{ surface: "final_cta" }}>
-              {landing.primaryCta}
-              <ArrowRight size={16} aria-hidden="true" />
-            </PublicEventLink>
-            <PublicEventLink className="secondary-button secondary-button--large" href={localizedHref("/docs", locale)} eventName="docs_cta_click" eventProperties={{ surface: "final_cta" }}>
-              <FileJson size={17} aria-hidden="true" />
-              {landing.readDocs}
-            </PublicEventLink>
-          </div>
-        </section>
-
-        <footer className="site-footer home-footer">
-          <section className="home-footer__agent-panel" aria-label={locale === "zh" ? "页脚 Agent 生态接入" : "Footer agent ecosystem"}>
-            <div className="home-footer__agent-intro">
-              <span className="home-footer__agent-badge">{landing.footerAgentBadge}</span>
-              <h2>{landing.footerAgentTitle}</h2>
-              <p>{landing.footerAgentBody}</p>
-            </div>
-            <div className="home-footer__agent-grid">
-              {landing.footerAgentEcosystem.map((agent) => (
-                <article className="home-footer__agent-card" key={agent.name}>
-                  <span className={`home-footer__agent-logo home-footer__agent-logo--${agent.logoKey}`} aria-hidden="true">
-                    <img src={agent.logo} alt="" />
-                  </span>
-                  <div>
-                    <strong>{agent.name}</strong>
-                    <p>{agent.body}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-          <div className="home-footer__main">
-            <div className="home-footer__brand">
-              <div className="home-footer__brand-head">
-                <span className="home-footer__brand-mark" aria-hidden="true">S</span>
-                <strong>SkillHub</strong>
-              </div>
-              <p>{landing.footerBody}</p>
-              <div className="home-footer__contact-list">
-                <div className="home-footer__contact-row">
-                  <span>{locale === "zh" ? "技术支持" : "Support"}</span>
-                  <a href={companyLinks.supportMailto}>{companyInfo.supportEmail}</a>
-                </div>
-                <div className="home-footer__contact-row">
-                  <span>{locale === "zh" ? "商务合作" : "Business"}</span>
-                  <a href={companyLinks.businessMailto}>{companyInfo.businessEmail}</a>
-                </div>
-                <div className="home-footer__contact-row">
-                  <span>{locale === "zh" ? "公司地址" : "Address"}</span>
-                  <span>{companyInfo.address}</span>
-                </div>
-              </div>
-              <PublicEventLink className="home-footer__status-pill" href={localizedHref("/status", locale)} eventName="footer_link_click" eventProperties={{ target: "status" }}>
-                <span aria-hidden="true" />
-                {landing.systemStatus} · {landing.viewStatus}
-              </PublicEventLink>
-            </div>
-            <div className="home-footer__link-panel">
-              <nav className="home-footer__nav" aria-label={locale === "zh" ? "页脚导航" : "Footer navigation"}>
-                {landing.footerGroups.map((group) => (
-                  <section className="home-footer__group" key={group.title}>
-                    <h2>{group.title}</h2>
-                    {group.links.map(([label, href], index) => (
-                      <PublicEventLink
-                        className={index === 0 ? "home-footer__link--featured" : undefined}
-                        href={localizedHref(href, locale)}
-                        eventName="footer_link_click"
-                        eventProperties={{ target: href }}
-                        key={`${group.title}-${label}`}
-                      >
-                        {label}
-                      </PublicEventLink>
-                    ))}
-                  </section>
-                ))}
-              </nav>
-            </div>
-            <div className="home-footer__bottom">
-              <span className="home-footer__copyright">© 2026 SkillHub. All rights reserved.</span>
-              <span className="home-footer__signature" aria-label="Registry Runtime Governance">
-                <span>Registry</span>
-                <span>Runtime</span>
-                <span>Governance</span>
-              </span>
-            </div>
-          </div>
-        </footer>
       </section>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useActionState, type ReactNode } from "react";
 import { CheckCircle2, RefreshCw, ServerCrash, Webhook, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillSelect, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import {
   processWebhookDeliveriesAction,
@@ -117,23 +118,20 @@ export function WebhookDeliveryManager({ deliveries, locale }: WebhookDeliveryMa
       <form action={processAction} className="notification-delivery-process-form">
         <label>
           <span>{labels.processMode}</span>
-          <select defaultValue="dry_run" name="mode">
-            <option value="dry_run">{labels.processModes.dry_run}</option>
-            <option value="deliver">{labels.processModes.deliver}</option>
-          </select>
+          <SkillSelect defaultValue="dry_run" name="mode" options={processModeOptions(labels)} />
         </label>
         <label>
           <span>{labels.processLimit}</span>
-          <input defaultValue="10" max="50" min="1" name="limit" type="number" />
+          <SkillInput defaultValue="10" max="50" min="1" name="limit" type="number" />
         </label>
         <label>
           <span>{labels.confirmation}</span>
-          <input autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
+          <SkillInput autoComplete="off" name="confirmation" placeholder={labels.confirmationPlaceholder} />
         </label>
-        <button className="secondary-button secondary-button--compact" disabled={isProcessing} type="submit">
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isProcessing} htmlType="submit">
           <RefreshCw size={15} aria-hidden="true" />
           <span>{isProcessing ? labels.saving : labels.process}</span>
-        </button>
+        </SkillButton>
       </form>
       {processState.status !== "idle" ? <ProcessMessage labels={labels} state={processState} /> : null}
 
@@ -146,7 +144,7 @@ export function WebhookDeliveryManager({ deliveries, locale }: WebhookDeliveryMa
                   <strong>{delivery.endpointUrl ?? delivery.endpointId ?? delivery.id}</strong>
                   <span>{delivery.eventType}</span>
                 </div>
-                <span className={statusClass(delivery.status)}>{labels.statuses[delivery.status]}</span>
+                <SkillStatusTag className={statusClass(delivery.status)}>{labels.statuses[delivery.status]}</SkillStatusTag>
               </header>
 
               <dl className="notification-delivery-meta">
@@ -198,11 +196,15 @@ function ProcessMessage({
     : state.message;
 
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.result ? `${state.message} ${summary}` : state.message}</span>
-    </div>
+    <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.result ? `${state.message} ${summary}` : state.message} type={state.status === "success" ? "success" : "error"} />
   );
+}
+
+function processModeOptions(labels: (typeof copy)["en"] | (typeof copy)["zh"]) {
+  return [
+    { label: labels.processModes.dry_run, value: "dry_run" },
+    { label: labels.processModes.deliver, value: "deliver" }
+  ];
 }
 
 function MetaItem({ icon, label, value }: { icon?: ReactNode; label: string; value: string }) {

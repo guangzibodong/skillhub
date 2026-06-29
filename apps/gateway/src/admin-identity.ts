@@ -48,94 +48,15 @@ export type AdminIdentityDirectory = {
   users: AdminIdentityUser[];
 };
 
-const fallbackDirectory: AdminIdentityDirectory = {
-  organizations: [
-    {
-      id: "demo-org-skillhub",
-      name: "SkillHub Demo Org",
-      slug: "skillhub-demo",
-      memberCount: 3,
-      projectCount: 2,
-      skillCount: 4,
-      publisherProfileCount: 1,
-      activeTokenCount: 2,
-      invocationCount: 1840,
-      ledgerCents: 1860000,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      id: "demo-org-agent-lab",
-      name: "Agent Lab",
-      slug: "agent-lab",
-      memberCount: 2,
-      projectCount: 1,
-      skillCount: 1,
-      publisherProfileCount: 1,
-      activeTokenCount: 1,
-      invocationCount: 320,
-      ledgerCents: 76000,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    }
-  ],
-  summary: {
-    activeTokenCount: 3,
-    adminUserCount: 2,
-    organizationCount: 2,
-    userCount: 5
-  },
-  users: [
-    {
-      id: "demo-user-owner",
-      email: "owner@useskillhub.com",
-      displayName: "SkillHub Owner",
-      platformRole: "admin",
-      organizationCount: 1,
-      memberships: [
-        {
-          organizationId: "demo-org-skillhub",
-          organizationName: "SkillHub Demo Org",
-          organizationSlug: "skillhub-demo",
-          role: "owner"
-        }
-      ],
-      tokenCount: 2,
-      activeTokenCount: 2,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      id: "demo-user-finance",
-      email: "finance@useskillhub.com",
-      displayName: "Finance Operator",
-      platformRole: "finance",
-      organizationCount: 1,
-      memberships: [
-        {
-          organizationId: "demo-org-skillhub",
-          organizationName: "SkillHub Demo Org",
-          organizationSlug: "skillhub-demo",
-          role: "finance"
-        }
-      ],
-      tokenCount: 1,
-      activeTokenCount: 0,
-      lastTokenUsedAt: null,
-      createdAt: "demo"
-    }
-  ]
-};
-
 export async function getAdminIdentityDirectory(limit = 12): Promise<AdminIdentityDirectory> {
   const sql = await getSql();
   const safeLimit = Math.min(Math.max(Math.trunc(Number(limit) || 12), 1), 50);
 
   if (!sql) {
     return {
-      organizations: fallbackDirectory.organizations.slice(0, safeLimit),
-      summary: fallbackDirectory.summary,
-      users: fallbackDirectory.users.slice(0, safeLimit)
+      organizations: [],
+      summary: emptySummary(),
+      users: []
     };
   }
 
@@ -173,7 +94,16 @@ async function getSummary(sql: Sql) {
       ) as "activeTokenCount"
   `) as Array<AdminIdentityDirectory["summary"]>;
 
-  return rows[0] ?? fallbackDirectory.summary;
+  return rows[0] ?? emptySummary();
+}
+
+function emptySummary() {
+  return {
+    activeTokenCount: 0,
+    adminUserCount: 0,
+    organizationCount: 0,
+    userCount: 0
+  };
 }
 
 async function getOrganizations(sql: Sql, limit: number) {

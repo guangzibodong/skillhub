@@ -3,6 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 const pageSource = readFileSync("apps/web/app/page.tsx", "utf8");
+const appShellSource = readFileSync("apps/web/components/app-shell.tsx", "utf8");
+const siteHeaderClientSource = readFileSync("apps/web/components/site-header-client.tsx", "utf8");
 const stylesheet = readFileSync("apps/web/app/globals.css", "utf8");
 
 test("homepage first screen uses a product infrastructure preview instead of an AI stage", () => {
@@ -13,7 +15,7 @@ test("homepage first screen uses a product infrastructure preview instead of an 
   assert.match(pageSource, /home-v3-skill-detail/);
   assert.match(pageSource, /home-v3-runtime-inline/);
   assert.match(pageSource, /Agent Skill Registry \/ Runtime Control Plane/);
-  assert.match(pageSource, /让 Agent 调用可信技能/);
+  assert.match(pageSource, /Production-grade skill infrastructure|面向 AI Agent 的生产级 Skill 基础设施/);
   assert.doesNotMatch(pageSource, /SkillHub 让 Agent/);
   assert.match(pageSource, /Skill directory/);
   assert.match(pageSource, /Browser Research/);
@@ -34,7 +36,7 @@ test("homepage keeps supported agent signals inside the real product preview", (
   assert.match(pageSource, /copilot-color\.svg/);
   assert.match(pageSource, /openclaw-color\.svg/);
   assert.match(pageSource, /hermesagent\.svg/);
-  assert.match(pageSource, /Skills are callable by agents through MCP or REST/);
+  assert.match(pageSource, /Agent runtime coverage/);
 });
 
 test("homepage visual system is restrained and product-like", () => {
@@ -50,6 +52,17 @@ test("homepage visual system is restrained and product-like", () => {
   assert.doesNotMatch(stylesheet, /home-v3-bokeh/);
 });
 
+test("homepage infrastructure frame is flush and header is shared with public pages", () => {
+  assert.match(stylesheet, /\.product-shell\.home-shell--infrastructure\s*\{[\s\S]*?padding:\s*0;/);
+  assert.match(stylesheet, /\.home-frame--infrastructure\s*\{[\s\S]*?width:\s*100%;[\s\S]*?max-width:\s*none;[\s\S]*?margin:\s*0;[\s\S]*?border:\s*0;[\s\S]*?border-radius:\s*0;[\s\S]*?box-shadow:\s*none;/);
+  assert.doesNotMatch(stylesheet, /\.home-frame--infrastructure\s*\{[^}]*width:\s*min\(100% -/);
+  assert.match(stylesheet, /\.site-header\s*\{[\s\S]*?background:\s*transparent;[\s\S]*?backdrop-filter:\s*none;/);
+  assert.match(stylesheet, /\.brand small\s*\{[\s\S]*?display:\s*none;/);
+  assert.match(appShellSource, /<SiteHeader/);
+  assert.match(appShellSource, /showStageBanner=\{false\}/);
+  assert.match(siteHeaderClientSource, /showStageBanner = true/);
+});
+
 test("homepage product preview has responsive rules for desktop, tablet, and mobile", () => {
   const baseIndex = stylesheet.indexOf(".home-v3-product-grid {");
   const tabletIndex = stylesheet.indexOf("@media (max-width: 1180px)", baseIndex);
@@ -58,7 +71,7 @@ test("homepage product preview has responsive rules for desktop, tablet, and mob
   assert.ok(baseIndex > -1);
   assert.ok(tabletIndex > baseIndex);
   assert.ok(mobileIndex > baseIndex);
-  assert.match(stylesheet, /@media \(max-width: 1180px\)[\s\S]*?\.home-v3-hero\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(stylesheet, /@media \(max-width: 1180px\)[\s\S]*?\.home-v3-hero[^{]*\{[^}]*grid-template-columns:\s*1fr/s);
   assert.match(stylesheet, /@media \(max-width: 720px\)[\s\S]*?\.home-v3-product-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
   assert.match(stylesheet, /@media \(max-width: 720px\)[\s\S]*?\.home-v3-agent-strip\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s);
 });

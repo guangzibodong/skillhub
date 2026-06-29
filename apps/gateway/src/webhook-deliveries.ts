@@ -1,4 +1,8 @@
 import { getSql } from "./registry.js";
+import {
+  resolveWebhookSettings,
+  type PlatformConfigEnv,
+} from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -11,7 +15,7 @@ type WebhookDeliveryProcessInput = {
   mode?: unknown;
 };
 
-type WebhookDeliveryRuntimeEnv = {
+type WebhookDeliveryRuntimeEnv = PlatformConfigEnv & {
   SKILLHUB_ENV?: string;
   SKILLHUB_WEBHOOK_MAX_ATTEMPTS?: string;
   SKILLHUB_WEBHOOK_TIMEOUT_MS?: string;
@@ -86,53 +90,6 @@ export type AdminWebhookDeliveryProcessResult = {
   skippedCount: number;
 };
 
-const fallbackWebhookDeliveries: AdminWebhookDeliveryRecord[] = [
-  {
-    id: "demo-webhook-outbox-incident",
-    organizationId: "demo-org",
-    organizationName: "Demo Builder Lab",
-    endpointId: "demo-webhook-ops",
-    endpointUrl: "https://example.com/skillhub/webhooks",
-    endpointStatus: "active",
-    eventType: "runtime.incident.opened",
-    payloadSummary: {
-      notificationEventId: "demo-notification",
-      payload: "[object]"
-    },
-    status: "failed",
-    attemptCount: 2,
-    nextAttemptAt: "demo",
-    lastAttemptedAt: "demo",
-    deliveredAt: null,
-    responseStatus: 503,
-    responseBody: "Endpoint returned 503.",
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-webhook-outbox-review",
-    organizationId: "demo-org",
-    organizationName: "Demo Builder Lab",
-    endpointId: "demo-webhook-ops",
-    endpointUrl: "https://example.com/skillhub/webhooks",
-    endpointStatus: "active",
-    eventType: "skill.review.approved",
-    payloadSummary: {
-      notificationEventId: "demo-review-notification",
-      payload: "[object]"
-    },
-    status: "pending",
-    attemptCount: 0,
-    nextAttemptAt: "demo",
-    lastAttemptedAt: null,
-    deliveredAt: null,
-    responseStatus: null,
-    responseBody: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
 export async function listAdminWebhookDeliveries(
   limit = 25,
   options: { status?: string | null } = {}
@@ -141,7 +98,7 @@ export async function listAdminWebhookDeliveries(
   const safeLimit = normalizeLimit(limit);
 
   if (!sql) {
-    return fallbackWebhookDeliveries.slice(0, safeLimit);
+    return [];
   }
 
   const status = normalizeOptionalStatus(options.status);
@@ -158,7 +115,8 @@ export async function processWebhookDeliveries(
   const limit = normalizeLimit(Number(input.limit) || 10, 50);
   const mode = normalizeProcessMode(input.mode);
   requireDeliverConfirmation(mode, input.confirmation);
-  const maxAttempts = normalizeMaxAttempts(env);
+  const settings = await resolveWebhookSettings(env);
+  const maxAttempts = settings.maxAttempts;
   const rows =
     mode === "deliver"
       ? await claimDueWebhookDeliveries(sql, limit, maxAttempts)
@@ -166,7 +124,7 @@ export async function processWebhookDeliveries(
   const processed: AdminWebhookDeliveryProcessItem[] = [];
 
   for (const row of rows) {
-    const outcome = await prepareWebhookDeliveryOutcome(row, env, mode);
+    const outcome = await prepareWebhookDeliveryOutcome(row, settings, mode);
 
     if (mode === "deliver") {
       await applyWebhookDeliveryOutcome(sql, row, outcome);
@@ -355,7 +313,7 @@ async function claimDueWebhookDeliveries(sql: Sql, limit: number, maxAttempts: n
 
 async function prepareWebhookDeliveryOutcome(
   row: WebhookDeliveryRow,
-  env: WebhookDeliveryRuntimeEnv | undefined,
+  settings: Awaited<ReturnType<typeof resolveWebhookSettings>>,
   mode: WebhookDeliveryProcessMode
 ): Promise<WebhookDeliveryOutcome> {
   if (!row.endpointId || !row.endpointUrl) {
@@ -381,7 +339,7 @@ async function prepareWebhookDeliveryOutcome(
   if (!row.signingSecretHash) {
     return {
       message: "Webhook endpoint is missing signing material.",
-      nextAttemptAt: computeNextAttemptAt(row.attemptCount, env),
+      nextAttemptAt: computeNextAttemptAt(row.attemptCount, settings.maxAttempts),
       responseBody: "Webhook endpoint is missing signing material.",
       responseStatus: null,
       status: "failed"
@@ -398,10 +356,13 @@ async function prepareWebhookDeliveryOutcome(
     };
   }
 
-  return deliverWebhook(row, env);
+  return deliverWebhook(row, settings);
 }
 
-async function deliverWebhook(row: WebhookDeliveryRow, env: WebhookDeliveryRuntimeEnv | undefined): Promise<WebhookDeliveryOutcome> {
+async function deliverWebhook(
+  row: WebhookDeliveryRow,
+  settings: Awaited<ReturnType<typeof resolveWebhookSettings>>
+): Promise<WebhookDeliveryOutcome> {
   const body = JSON.stringify({
     createdAt: row.createdAt,
     deliveryId: row.id,
@@ -411,7 +372,7 @@ async function deliverWebhook(row: WebhookDeliveryRow, env: WebhookDeliveryRunti
   });
   const signature = await createWebhookSignature(row, body);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), normalizeTimeoutMs(env));
+  const timeout = setTimeout(() => controller.abort(), settings.timeoutMs);
 
   try {
     const response = await fetch(row.endpointUrl ?? "", {
@@ -442,7 +403,7 @@ async function deliverWebhook(row: WebhookDeliveryRow, env: WebhookDeliveryRunti
 
     return {
       message: `Webhook endpoint returned HTTP ${response.status}.`,
-      nextAttemptAt: computeNextAttemptAt(row.attemptCount, env),
+      nextAttemptAt: computeNextAttemptAt(row.attemptCount, settings.maxAttempts),
       responseBody,
       responseStatus: response.status,
       status: "failed"
@@ -452,7 +413,7 @@ async function deliverWebhook(row: WebhookDeliveryRow, env: WebhookDeliveryRunti
 
     return {
       message: `Webhook delivery failed: ${message}`,
-      nextAttemptAt: computeNextAttemptAt(row.attemptCount, env),
+      nextAttemptAt: computeNextAttemptAt(row.attemptCount, settings.maxAttempts),
       responseBody: message.slice(0, 2000),
       responseStatus: null,
       status: "failed"
@@ -572,33 +533,13 @@ async function readResponseBody(response: Response) {
   return (text || response.statusText || "No response body.").slice(0, 2000);
 }
 
-function computeNextAttemptAt(attemptCount: number, env: WebhookDeliveryRuntimeEnv | undefined) {
-  if (attemptCount >= normalizeMaxAttempts(env)) {
+function computeNextAttemptAt(attemptCount: number, maxAttempts: number) {
+  if (attemptCount >= maxAttempts) {
     return null;
   }
 
   const delaySeconds = [60, 300, 1800, 7200, 21600, 86400][Math.min(Math.max(attemptCount - 1, 0), 5)];
   return new Date(Date.now() + delaySeconds * 1000).toISOString();
-}
-
-function normalizeMaxAttempts(env: WebhookDeliveryRuntimeEnv | undefined) {
-  return Math.min(Math.max(Math.trunc(Number(getRuntimeEnv(env, "SKILLHUB_WEBHOOK_MAX_ATTEMPTS")) || 8), 1), 20);
-}
-
-function normalizeTimeoutMs(env: WebhookDeliveryRuntimeEnv | undefined) {
-  return Math.min(Math.max(Math.trunc(Number(getRuntimeEnv(env, "SKILLHUB_WEBHOOK_TIMEOUT_MS")) || 8000), 1000), 30000);
-}
-
-function getRuntimeEnv(env: WebhookDeliveryRuntimeEnv | undefined, key: keyof WebhookDeliveryRuntimeEnv) {
-  return env?.[key] ?? getProcessEnv(String(key));
-}
-
-function getProcessEnv(key: string): string | undefined {
-  if (typeof process === "undefined") {
-    return undefined;
-  }
-
-  return process.env[key];
 }
 
 function summarizeWebhookProcess(

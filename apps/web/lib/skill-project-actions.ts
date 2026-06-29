@@ -2,10 +2,12 @@
 
 import { getServerApiUrl } from "@/lib/api-url";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import type { Route } from "next";
 import { getWorkspaceToken } from "@/lib/auth-session";
 import type { Locale } from "@/lib/i18n";
 
-export type SkillProjectActionIntent = "install" | "save" | "subscribe" | "test";
+export type SkillProjectActionIntent = "checkout" | "install" | "save" | "subscribe" | "test";
 
 export type SkillProjectActionState = {
   intent?: SkillProjectActionIntent;
@@ -29,7 +31,7 @@ export type SkillProjectActionState = {
 const copy = {
   en: {
     installed: "Skill installed to the selected project. Review policy, budget, and runtime approval before production use.",
-    invalidIntent: "Choose whether to save, install, test, or subscribe to this skill.",
+    invalidIntent: "Choose whether to save, install, test, or checkout this skill.",
     invalidJson: "Test input must be valid JSON.",
     missingProject: "Choose a project before continuing.",
     missingSkill: "Missing skill slug.",
@@ -40,6 +42,7 @@ const copy = {
     testPassed: "Test invocation completed. Review the runtime output and project log before production use.",
     unableInstall: "Unable to install skill.",
     unableSave: "Unable to save skill.",
+    unableCheckout: "Unable to start checkout.",
     unableSubscribe: "Unable to create project subscription.",
     unableTest: "Unable to test skill invocation."
   },
@@ -54,6 +57,7 @@ const copy = {
     subscribed: "\u9879\u76ee\u8ba2\u9605\u5df2\u521b\u5efa\u3002\u751f\u4ea7\u8fd0\u884c\u524d\u8bf7\u7ee7\u7eed\u5b89\u88c5\u6280\u80fd\u5e76\u68c0\u67e5\u7b56\u7565\u3002",
     testBlocked: "\u6d4b\u8bd5\u8c03\u7528\u672a\u901a\u8fc7\u9879\u76ee\u8fd0\u884c\u7f51\u5173\u3002",
     testPassed: "\u6d4b\u8bd5\u8c03\u7528\u5df2\u5b8c\u6210\u3002\u751f\u4ea7\u4f7f\u7528\u524d\u8bf7\u68c0\u67e5\u8fd0\u884c\u8f93\u51fa\u548c\u9879\u76ee\u65e5\u5fd7\u3002",
+    unableCheckout: "无法启动支付。",
     unableInstall: "\u65e0\u6cd5\u5b89\u88c5\u6280\u80fd\u3002",
     unableSave: "\u65e0\u6cd5\u4fdd\u5b58\u6280\u80fd\u3002",
     unableSubscribe: "\u65e0\u6cd5\u521b\u5efa\u9879\u76ee\u8ba2\u9605\u3002",
@@ -72,7 +76,7 @@ export async function submitSkillProjectAction(
   const projectSlug = String(formData.get("projectSlug") ?? "").trim();
   const normalizedSkillSlug = skillSlug.trim();
 
-  if (!["install", "save", "subscribe", "test"].includes(intent)) {
+  if (!["checkout", "install", "save", "subscribe", "test"].includes(intent)) {
     return { message: labels.invalidIntent, status: "error" };
   }
 
@@ -102,7 +106,60 @@ export async function submitSkillProjectAction(
     return subscribeProjectSkill({ labels, projectSlug, skillSlug: normalizedSkillSlug, token });
   }
 
+  if (intent === "checkout") {
+    return checkoutProjectSkill({ labels, projectSlug, skillSlug: normalizedSkillSlug, token, formData });
+  }
+
   return installSkillToProject({ labels, projectSlug, skillSlug: normalizedSkillSlug, token, formData });
+}
+
+async function checkoutProjectSkill(input: {
+  formData: FormData;
+  labels: (typeof copy)[Locale];
+  projectSlug: string;
+  skillSlug: string;
+  token: string;
+}): Promise<SkillProjectActionState> {
+  const priceId = String(input.formData.get("priceId") ?? "").trim();
+  const provider = String(input.formData.get("provider") ?? "stripe").trim().toLowerCase() || "stripe";
+  let checkoutUrl = "";
+
+  try {
+    const response = await fetch(`${getApiUrl()}/v1/checkout/sessions`, {
+      body: JSON.stringify({
+        priceId: priceId || undefined,
+        provider,
+        skillSlug: input.skillSlug,
+        projectSlug: input.projectSlug
+      }),
+      headers: {
+        Authorization: `Bearer ${input.token}`,
+        "Content-Type": "application/json"
+      },
+      method: "POST"
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      checkout?: { url?: string | null };
+      error?: string;
+      url?: string;
+    };
+    const url = payload.checkout?.url ?? payload.url;
+
+    if (!response.ok || !url) {
+      throw new Error(payload.error ?? input.labels.unableCheckout);
+    }
+
+    checkoutUrl = url;
+  } catch (error) {
+    return {
+      intent: "checkout",
+      message: error instanceof Error ? error.message : input.labels.unableCheckout,
+      projectSlug: input.projectSlug,
+      status: "error"
+    };
+  }
+
+  redirect(checkoutUrl as Route);
 }
 
 async function saveSkillToProject(input: {

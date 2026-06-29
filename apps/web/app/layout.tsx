@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "./globals.css";
 import "./tailwind.css";
+import "antd/dist/reset.css";
+import { SiteMotion } from "@/components/site-motion";
+import { SkillAntdProvider } from "@/components/skill-antd-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://useskillhub.com"),
@@ -37,7 +41,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <AntdRegistry>
+          <SkillAntdProvider>
+            <SiteMotion />
+            {children}
+          </SkillAntdProvider>
+        </AntdRegistry>
+      </body>
     </html>
   );
 }

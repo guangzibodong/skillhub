@@ -1,4 +1,4 @@
-﻿import { getServerApiUrl } from "@/lib/api-url";
+import { getServerApiUrl } from "@/lib/api-url";
 import type { SkillFeedbackRecord } from "@/lib/skill-feedback";
 
 type FinanceLedgerSummary = {
@@ -178,6 +178,132 @@ export type LaunchReadinessReport = {
   };
 };
 
+export type AdminOAuthProviderConfig = {
+  callbackBaseUrl: string | null;
+  clientId: string | null;
+  clientSecretConfigured: boolean;
+  clientSecretLast4: string | null;
+  provider: "github" | "google";
+  source: ConfigSource;
+  status: "active" | "disabled";
+  updatedAt: string | null;
+};
+
+export type AdminEmailProviderConfig = {
+  from: string | null;
+  provider: "resend" | "smtp" | "unconfigured";
+  resendApiKeyConfigured: boolean;
+  resendApiKeyLast4: string | null;
+  smtpHost: string | null;
+  smtpPasswordConfigured: boolean;
+  smtpPasswordLast4: string | null;
+  smtpPort: string | null;
+  smtpSecure: string | null;
+  smtpUser: string | null;
+  source: ConfigSource;
+  status: "active" | "disabled";
+  updatedAt: string | null;
+};
+
+export type AdminPlatformProviderConfig = {
+  email: AdminEmailProviderConfig;
+  oauth: AdminOAuthProviderConfig[];
+};
+
+type ConfigSource = "database" | "default" | "environment" | "none";
+
+export type AdminStripeConfig = {
+  cancelUrl: string | null;
+  connectClientIdConfigured: boolean;
+  connectClientIdLast4: string | null;
+  refreshUrl: string | null;
+  returnUrl: string | null;
+  secretKeyConfigured: boolean;
+  secretKeyLast4: string | null;
+  source: ConfigSource;
+  status: "active" | "disabled";
+  successUrl: string | null;
+  updatedAt: string | null;
+  webhookSecretConfigured: boolean;
+  webhookSecretLast4: string | null;
+};
+
+export type AdminPayPalConfig = {
+  cancelUrl: string | null;
+  clientIdConfigured: boolean;
+  clientIdLast4: string | null;
+  clientSecretConfigured: boolean;
+  clientSecretLast4: string | null;
+  environment: "live" | "sandbox";
+  returnUrl: string | null;
+  source: ConfigSource;
+  status: "active" | "disabled";
+  updatedAt: string | null;
+  webhookIdConfigured: boolean;
+  webhookIdLast4: string | null;
+};
+
+export type AdminWebhookSettings = {
+  maxAttempts: number;
+  source: ConfigSource;
+  timeoutMs: number;
+  updatedAt: string | null;
+};
+
+export type AdminPayoutSettings = {
+  minPayoutCents: number;
+  payoutReviewThresholdCents: number;
+  source: ConfigSource;
+  updatedAt: string | null;
+};
+
+export type AdminLaunchSettings = {
+  activeProjects: number;
+  activePublishers: number;
+  publishedFeedback: number;
+  source: ConfigSource;
+  successfulInvocations: number;
+  updatedAt: string | null;
+  verifiedSkills: number;
+};
+
+export type AdminRuntimeSettings = {
+  disablePublicSignup: boolean;
+  source: ConfigSource;
+  updatedAt: string | null;
+};
+
+export type AdminPlatformConfig = AdminPlatformProviderConfig & {
+  bootstrap: {
+    appUrlConfigured: boolean;
+    apiUrlConfigured: boolean;
+    databaseConfigured: boolean;
+    encryptionSecretConfigured: boolean;
+    encryptionSecretSource: "agent_legacy" | "config" | "session_fallback" | "none";
+    encryptionSecretValid: boolean;
+    r2Configured: boolean;
+    serverApiUrlConfigured: boolean;
+    sessionSecretConfigured: boolean;
+    stripeLiveModeHint: "live" | "test" | "unknown";
+    supabaseConfigured: boolean;
+  };
+  launch: AdminLaunchSettings;
+  paypal: AdminPayPalConfig;
+  payouts: AdminPayoutSettings;
+  runtime: AdminRuntimeSettings;
+  stripe: AdminStripeConfig;
+  webhooks: AdminWebhookSettings;
+};
+
+export type PublicPaymentProviderStatus = {
+  configured: boolean;
+  environment: "live" | "sandbox" | "test" | "unknown";
+  label: string;
+  provider: "paypal" | "stripe";
+  source: ConfigSource;
+  status: "active" | "disabled";
+};
+
 export type AdminAuditLogRecord = {
   id: string;
   action: string;
@@ -259,6 +385,25 @@ export type NotificationTemplateRecord = {
   subject: string;
   body: string;
   status: "active" | "archived" | "draft";
+  updatedAt: string;
+};
+
+export type PublicAgentModelRecord = {
+  id: string;
+  displayName: string;
+  provider: "anthropic" | "custom" | "deepseek" | "google" | "openai" | "openrouter";
+  model: string;
+  isDefault: boolean;
+};
+
+export type AdminAgentModelRecord = PublicAgentModelRecord & {
+  apiKeyLast4: string;
+  baseUrl: string | null;
+  createdAt: string;
+  maxOutputTokens: number;
+  status: "active" | "disabled" | "draft";
+  systemPrompt: string;
+  temperature: number;
   updatedAt: string;
 };
 
@@ -456,7 +601,9 @@ export type PayoutRecord = {
   manualMethod: "paypal" | "alipay" | string | null;
   manualNotes: string | null;
   provider: string | null;
+  providerAccountId?: string | null;
   accountStatus: string | null;
+  stripeAccountId?: string | null;
   requestedAt: string;
   reviewedAt: string | null;
   paidAt: string | null;
@@ -521,6 +668,7 @@ export type PublisherPayoutSummary = {
     manualNotes: string | null;
     provider: string;
     providerAccountId: string;
+    stripeAccountId?: string | null;
     status: string;
     createdAt: string;
     updatedAt: string;
@@ -549,6 +697,7 @@ export type PublisherAccountSummary = {
     manualNotes: string | null;
     provider: string;
     providerAccountId: string;
+    stripeAccountId?: string | null;
     status: string;
     createdAt: string;
     updatedAt: string;
@@ -1085,45 +1234,13 @@ export type DeveloperProjectDetail = {
 
 const apiUrl = getServerApiUrl();
 
-const isProductionLike =
-  process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production" || process.env.SKILLHUB_ENV === "production";
-const allowDemoFallback = !isProductionLike || process.env.SKILLHUB_ENABLE_DEMO_FALLBACK === "true";
-
-function demoFallback<T>(fallback: T, productionValue: T): T {
-  return allowDemoFallback ? fallback : productionValue;
+function safeOperationValue<T>(value: T, _emptyValue: T): T {
+  return value;
 }
 
-function safeOperationValue<T>(value: T, productionValue: T): T {
-  return allowDemoFallback || !hasDemoSentinel(value) ? value : productionValue;
+function emptyOnOperationError<T>(_error: unknown, emptyValue: T): T {
+  return emptyValue;
 }
-
-function safeOperationFallback<T>(error: unknown, fallback: T, productionValue: T): T {
-  return isAuthorizationFailure(error) ? productionValue : demoFallback(fallback, productionValue);
-}
-
-function isAuthorizationFailure(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  return /\b(401|403)\b/.test(message);
-}
-
-function hasDemoSentinel(value: unknown): boolean {
-  if (Array.isArray(value)) {
-    return value.some((item) => hasDemoSentinel(item));
-  }
-
-  if (value && typeof value === "object") {
-    return Object.entries(value).some(([key, item]) => {
-      if (typeof item === "string" && (item === "demo" || item.startsWith("demo-"))) {
-        return key === "id" || key.endsWith("At") || key.endsWith("Id") || key.endsWith("Reference") || key.endsWith("Slug");
-      }
-
-      return hasDemoSentinel(item);
-    });
-  }
-
-  return false;
-}
-
 const emptyLedger: FinanceLedger = {
   summary: {
     grossCents: 0,
@@ -1176,7 +1293,7 @@ const emptyLaunchReadiness: LaunchReadinessReport = {
   environment: {
     appUrl: null,
     callbackBaseUrl: null,
-    isProductionLike: isProductionLike,
+    isProductionLike: process.env.SKILLHUB_ENV === "production" || process.env.NODE_ENV === "production",
     runtime: process.env.SKILLHUB_ENV ?? process.env.NODE_ENV ?? "development"
   },
   sections: [],
@@ -1186,6 +1303,118 @@ const emptyLaunchReadiness: LaunchReadinessReport = {
     ready: 0,
     status: "warning",
     warning: 0
+  }
+};
+
+const emptyPlatformProviders: AdminPlatformProviderConfig = {
+  email: {
+    from: null,
+    provider: "unconfigured",
+    resendApiKeyConfigured: false,
+    resendApiKeyLast4: null,
+    smtpHost: null,
+    smtpPasswordConfigured: false,
+    smtpPasswordLast4: null,
+    smtpPort: "465",
+    smtpSecure: "true",
+    smtpUser: null,
+    source: "none",
+    status: "disabled",
+    updatedAt: null
+  },
+  oauth: [
+    {
+      callbackBaseUrl: null,
+      clientId: null,
+      clientSecretConfigured: false,
+      clientSecretLast4: null,
+      provider: "google",
+      source: "none",
+      status: "disabled",
+      updatedAt: null
+    },
+    {
+      callbackBaseUrl: null,
+      clientId: null,
+      clientSecretConfigured: false,
+      clientSecretLast4: null,
+      provider: "github",
+      source: "none",
+      status: "disabled",
+      updatedAt: null
+    }
+  ]
+};
+
+const emptyPlatformConfig: AdminPlatformConfig = {
+  ...emptyPlatformProviders,
+  bootstrap: {
+    appUrlConfigured: false,
+    apiUrlConfigured: false,
+    databaseConfigured: false,
+    encryptionSecretConfigured: false,
+    encryptionSecretSource: "none",
+    encryptionSecretValid: false,
+    r2Configured: false,
+    serverApiUrlConfigured: false,
+    sessionSecretConfigured: false,
+    stripeLiveModeHint: "unknown",
+    supabaseConfigured: false
+  },
+  launch: {
+    activeProjects: 3,
+    activePublishers: 2,
+    publishedFeedback: 5,
+    source: "default",
+    successfulInvocations: 20,
+    updatedAt: null,
+    verifiedSkills: 5
+  },
+  payouts: {
+    minPayoutCents: 5000,
+    payoutReviewThresholdCents: 100000,
+    source: "default",
+    updatedAt: null
+  },
+  runtime: {
+    disablePublicSignup: false,
+    source: "default",
+    updatedAt: null
+  },
+  paypal: {
+    cancelUrl: null,
+    clientIdConfigured: false,
+    clientIdLast4: null,
+    clientSecretConfigured: false,
+    clientSecretLast4: null,
+    environment: "sandbox",
+    returnUrl: null,
+    source: "none",
+    status: "disabled",
+    updatedAt: null,
+    webhookIdConfigured: false,
+    webhookIdLast4: null
+  },
+  stripe: {
+    cancelUrl: null,
+    connectClientIdConfigured: false,
+    connectClientIdLast4: null,
+    refreshUrl: null,
+    returnUrl: null,
+    secretKeyConfigured: false,
+    secretKeyLast4: null,
+    source: "none",
+    status: "disabled",
+    successUrl: null,
+    updatedAt: null,
+    webhookSecretConfigured: false,
+    webhookSecretLast4: null
+  },
+  webhooks: {
+    maxAttempts: 8,
+    source: "default",
+    timeoutMs: 8000,
+    updatedAt: null
   }
 };
 
@@ -1227,2204 +1456,11 @@ const emptyOrganizationBillingSummary: OrganizationBillingSummary = {
   }
 };
 
-const fallbackLedger: FinanceLedger = {
-  summary: {
-    grossCents: 1860000,
-    platformFeeCents: 372000,
-    publisherShareCents: 1488000,
-    usageGrossCents: 1240000,
-    usagePlatformFeeCents: 248000,
-    usagePublisherShareCents: 992000,
-    usageTransactionCount: 34,
-    subscriptionGrossCents: 620000,
-    subscriptionPlatformFeeCents: 124000,
-    subscriptionPublisherShareCents: 496000,
-    subscriptionTransactionCount: 8,
-    pendingBalanceCents: 126000,
-    availableBalanceCents: 482000,
-    unprocessedUsageCount: 0,
-    unprocessedSubscriptionCount: 1,
-    renewableSubscriptionCount: 1
-  },
-  recentTransactions: [
-    {
-      id: "demo-usage-browser-research",
-      sourceType: "usage",
-      sourceReference: null,
-      skillSlug: "browser-research",
-      skillName: "Browser Research",
-      grossCents: 124000,
-      currency: "usd",
-      status: "posted",
-      platformFeeCents: 24800,
-      publisherShareCents: 99200,
-      balanceState: "available",
-      availableAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      id: "demo-usage-support-triage",
-      sourceType: "subscription",
-      sourceReference: "demo-subscription-period",
-      skillSlug: "support-triage",
-      skillName: "Support Triage",
-      grossCents: 76000,
-      currency: "usd",
-      status: "posted",
-      platformFeeCents: 15200,
-      publisherShareCents: 60800,
-      balanceState: "pending",
-      availableAt: "demo",
-      createdAt: "demo"
-    }
-  ]
-};
-
-const fallbackCommissionRules: CommissionRuleRecord[] = [
-  {
-    id: "demo-commission-default",
-    name: "Default 20/80 split",
-    platformFeeBps: 2000,
-    publisherShareBps: 8000,
-    startsAt: "demo",
-    endsAt: null,
-    createdAt: "demo",
-    isActive: true
-  }
-];
-
-const fallbackNotifications: AdminNotification[] = [
-  {
-    id: "demo-billing-posted",
-    eventType: "billing.usage_posted",
-    channel: "in_app",
-    subject: "Billable usage posted to ledger",
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  },
-  {
-    id: "demo-review-approved",
-    eventType: "skill.review.approved",
-    channel: "in_app",
-    subject: "Skill review approved",
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  }
-];
-
-const fallbackNotificationDeliveries: AdminNotificationDelivery[] = [
-  {
-    id: "demo-email-code",
-    eventType: "auth.email.code.requested",
-    channel: "email",
-    deliveryAttempts: 0,
-    deliveryProvider: "provider_deferred",
-    deliveredAt: null,
-    error: null,
-    lastAttemptedAt: null,
-    nextAttemptAt: null,
-    payloadSummary: {
-      challengeId: "demo-email-challenge",
-      code: "[redacted]",
-      email: "builder@example.com",
-      mode: "signup"
-    },
-    providerMessageId: null,
-    status: "queued",
-    subject: "SkillHub verification code",
-    createdAt: "demo"
-  },
-  {
-    id: "demo-webhook-delivery",
-    eventType: "runtime.incident.opened",
-    channel: "webhook",
-    deliveryAttempts: 2,
-    deliveryProvider: "webhook_worker",
-    deliveredAt: null,
-    error: "Endpoint returned 503.",
-    lastAttemptedAt: "demo",
-    nextAttemptAt: "demo",
-    payloadSummary: {
-      incidentId: "demo-incident",
-      skillSlug: "browser-research"
-    },
-    providerMessageId: "demo-msg-503",
-    status: "failed",
-    subject: "Runtime incident opened",
-    createdAt: "demo"
-  }
-];
-
-const fallbackWebhookDeliveries: AdminWebhookDelivery[] = [
-  {
-    id: "demo-webhook-outbox-incident",
-    organizationId: "demo-org",
-    organizationName: "Demo Builder Lab",
-    endpointId: "demo-webhook-ops",
-    endpointUrl: "https://example.com/skillhub/webhooks",
-    endpointStatus: "active",
-    eventType: "runtime.incident.opened",
-    payloadSummary: {
-      notificationEventId: "demo-notification",
-      payload: "[object]"
-    },
-    status: "failed",
-    attemptCount: 2,
-    nextAttemptAt: "demo",
-    lastAttemptedAt: "demo",
-    deliveredAt: null,
-    responseStatus: 503,
-    responseBody: "Endpoint returned 503.",
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-webhook-outbox-review",
-    organizationId: "demo-org",
-    organizationName: "Demo Builder Lab",
-    endpointId: "demo-webhook-ops",
-    endpointUrl: "https://example.com/skillhub/webhooks",
-    endpointStatus: "active",
-    eventType: "skill.review.approved",
-    payloadSummary: {
-      notificationEventId: "demo-review-notification",
-      payload: "[object]"
-    },
-    status: "pending",
-    attemptCount: 0,
-    nextAttemptAt: "demo",
-    lastAttemptedAt: null,
-    deliveredAt: null,
-    responseStatus: null,
-    responseBody: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackLaunchReadiness: LaunchReadinessReport = {
-  checkedAt: "demo",
-  environment: {
-    appUrl: "https://useskillhub.com",
-    callbackBaseUrl: "https://api.useskillhub.com",
-    isProductionLike: false,
-    runtime: "development"
-  },
-  sections: [
-    {
-      key: "identity",
-      status: "warning",
-      title: "Identity and sign-in",
-      items: [
-        {
-          action: "Configure Google and GitHub client credentials.",
-          description: "OAuth provider readiness is visible before provider secrets are added.",
-          detail: "Google/GitHub OAuth not configured in demo mode.",
-          key: "oauth_providers",
-          label: "OAuth providers",
-          status: "warning"
-        },
-        {
-          action: "Keep email-code access enabled.",
-          description: "Email-code login remains the normal account entry.",
-          detail: "Email-code path active.",
-          key: "email_code",
-          label: "Email code login",
-          status: "ready"
-        }
-      ]
-    },
-    {
-      key: "marketplace_operations",
-      status: "ready",
-      title: "Marketplace operations",
-      items: [
-        {
-          action: "Run ./scripts/run-postgres-migrations.sh before each production rebuild.",
-          description: "Migration history is tracked in schema_migrations so operators can see whether SQL kept up with code.",
-          detail: "Demo latest migration: 031_public_publisher_profile_backfill.sql.",
-          key: "schema_migrations",
-          label: "Migration history",
-          status: "ready"
-        }
-      ]
-    },
-    {
-      key: "launch_credibility",
-      status: "ready",
-      title: "Launch credibility thresholds",
-      items: [
-        {
-          action: "No action needed.",
-          description: "Public launch needs enough verified supply that buyers are not evaluating an empty marketplace.",
-          detail: "5/5 target reached.",
-          key: "verified_skills_threshold",
-          label: "Verified public skills",
-          status: "ready"
-        },
-        {
-          action: "No action needed.",
-          description: "Supplier diversity keeps SkillHub from looking like a single-team catalog.",
-          detail: "2/2 target reached.",
-          key: "active_publishers_threshold",
-          label: "Active publishers",
-          status: "ready"
-        },
-        {
-          action: "No action needed.",
-          description: "Developer-side project state proves listings become governed agent workspace state.",
-          detail: "3/3 target reached.",
-          key: "active_projects_threshold",
-          label: "Active developer projects",
-          status: "ready"
-        },
-        {
-          action: "No action needed.",
-          description: "Successful invocations prove the runtime gateway, policy checks, logging, and metering path work.",
-          detail: "20/20 target reached.",
-          key: "successful_invocations_threshold",
-          label: "Successful invocations",
-          status: "ready"
-        },
-        {
-          action: "No action needed.",
-          description: "Published feedback gives buyers public trust evidence and gives publishers a reason to return.",
-          detail: "5/5 target reached.",
-          key: "published_feedback_threshold",
-          label: "Published feedback",
-          status: "ready"
-        }
-      ]
-    },
-    {
-      key: "commercial",
-      status: "deferred",
-      title: "Commercial readiness",
-      items: [
-        {
-          action: "Choose payment provider after internal billing states are stable.",
-          description: "Payment provider integration is intentionally last.",
-          detail: "Provider API integration deferred.",
-          key: "payment_provider",
-          label: "Payment provider",
-          status: "deferred"
-        }
-      ]
-    }
-  ],
-  summary: {
-    blocker: 0,
-    deferred: 1,
-    ready: 7,
-    status: "warning",
-    warning: 1
-  }
-};
-
-const fallbackAdminAuditLogs: AdminAuditLogRecord[] = [
-  {
-    id: "demo-audit-review",
-    action: "skill.review.decided",
-    actorDisplayName: "SkillHub Reviewer",
-    actorEmail: "reviewer@useskillhub.com",
-    actorUserId: "demo-user-reviewer",
-    createdAt: "demo",
-    entityId: "demo-review-browser-research",
-    entityType: "skill_review",
-    metadata: {
-      riskLevel: "low",
-      skillSlug: "browser-research",
-      status: "approved"
-    },
-    reason: "Approved verified marketplace listing."
-  },
-  {
-    id: "demo-audit-payout",
-    action: "payout.decided",
-    actorDisplayName: "Finance Operator",
-    actorEmail: "finance@useskillhub.com",
-    actorUserId: "demo-user-finance",
-    createdAt: "demo",
-    entityId: "demo-payout-001",
-    entityType: "payout",
-    metadata: {
-      amountCents: 482000,
-      currency: "usd",
-      status: "processing"
-    },
-    reason: "Payout approved for manual transfer."
-  },
-  {
-    id: "demo-audit-team",
-    action: "organization.member.token_created",
-    actorDisplayName: "SkillHub Owner",
-    actorEmail: "owner@useskillhub.com",
-    actorUserId: "demo-user-owner",
-    createdAt: "demo",
-    entityId: "demo-user-developer",
-    entityType: "organization_member",
-    metadata: {
-      role: "developer",
-      tokenName: "Developer workspace access"
-    },
-    reason: "Organization team access changed."
-  }
-];
-
-const fallbackNotificationTemplates: NotificationTemplateRecord[] = [
-  {
-    id: "demo-template-auth-code",
-    templateKey: "auth.email.code.requested",
-    channel: "email",
-    locale: "en",
-    subject: "Your SkillHub verification code",
-    body: "Use code {{code}} to continue signing in to SkillHub. The code expires soon.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-workspace-ready",
-    templateKey: "auth.email.signup.verified",
-    channel: "in_app",
-    locale: "en",
-    subject: "Workspace created",
-    body: "Your SkillHub workspace is ready. Create a project, install a skill, or publish your first skill package.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-review-submitted",
-    templateKey: "skill.review.submitted",
-    channel: "in_app",
-    locale: "en",
-    subject: "Skill submitted for review",
-    body: "Skill {{skillSlug}} entered review. Track automated checks and reviewer notes from the publisher workspace.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-skill-review",
-    templateKey: "skill.review.approved",
-    channel: "in_app",
-    locale: "en",
-    subject: "Skill review approved",
-    body: "Your skill {{skillSlug}} has been approved and can appear in marketplace discovery.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-runtime-incident",
-    templateKey: "runtime.incident.opened",
-    channel: "email",
-    locale: "en",
-    subject: "Runtime incident opened for {{skillName}}",
-    body: "SkillHub opened a {{severity}} incident for {{skillName}}. Review the publisher workspace for recovery steps.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-billing-subscription",
-    templateKey: "billing.subscription_posted",
-    channel: "in_app",
-    locale: "en",
-    subject: "Subscription period posted",
-    body: "A subscription period for {{skillName}} was posted to the ledger and is ready for invoice, split, balance, refund, and dispute workflows.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-payout-review",
-    templateKey: "payout.review",
-    channel: "in_app",
-    locale: "en",
-    subject: "Payout entered review",
-    body: "Payout {{payoutId}} entered finance review because it requires manual approval before finance transfers funds.",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-webhook-billing",
-    templateKey: "billing.subscription_posted",
-    channel: "webhook",
-    locale: "en",
-    subject: "billing.subscription_posted",
-    body: "{\"event\":\"billing.subscription_posted\",\"skillName\":\"{{skillName}}\",\"transactionId\":\"{{transactionId}}\",\"amountCents\":\"{{amountCents}}\"}",
-    status: "active",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-template-marketplace-curation",
-    templateKey: "marketplace.curation.updated",
-    channel: "in_app",
-    locale: "en",
-    subject: "Marketplace placement updated",
-    body: "Marketplace placement for {{skillSlug}} changed. Review reason, expiry, quality gaps, and appeal path from the publisher workspace.",
-    status: "active",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackAdminIdentityDirectory: AdminIdentityDirectory = {
-  organizations: [
-    {
-      id: "demo-org-skillhub",
-      name: "SkillHub Demo Org",
-      slug: "skillhub-demo",
-      memberCount: 3,
-      projectCount: 2,
-      skillCount: 4,
-      publisherProfileCount: 1,
-      activeTokenCount: 2,
-      invocationCount: 1840,
-      ledgerCents: 1860000,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      id: "demo-org-agent-lab",
-      name: "Agent Lab",
-      slug: "agent-lab",
-      memberCount: 2,
-      projectCount: 1,
-      skillCount: 1,
-      publisherProfileCount: 1,
-      activeTokenCount: 1,
-      invocationCount: 320,
-      ledgerCents: 76000,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    }
-  ],
-  summary: {
-    activeTokenCount: 3,
-    adminUserCount: 2,
-    organizationCount: 2,
-    userCount: 5
-  },
-  users: [
-    {
-      id: "demo-user-owner",
-      email: "owner@useskillhub.com",
-      displayName: "SkillHub Owner",
-      platformRole: "admin",
-      organizationCount: 1,
-      memberships: [
-        {
-          organizationId: "demo-org-skillhub",
-          organizationName: "SkillHub Demo Org",
-          organizationSlug: "skillhub-demo",
-          role: "owner"
-        }
-      ],
-      tokenCount: 2,
-      activeTokenCount: 2,
-      lastTokenUsedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      id: "demo-user-finance",
-      email: "finance@useskillhub.com",
-      displayName: "Finance Operator",
-      platformRole: "finance",
-      organizationCount: 1,
-      memberships: [
-        {
-          organizationId: "demo-org-skillhub",
-          organizationName: "SkillHub Demo Org",
-          organizationSlug: "skillhub-demo",
-          role: "finance"
-        }
-      ],
-      tokenCount: 1,
-      activeTokenCount: 0,
-      lastTokenUsedAt: null,
-      createdAt: "demo"
-    }
-  ]
-};
-
-const fallbackOrganizationTeam: OrganizationTeamMember[] = [
-  {
-    userId: "demo-user-owner",
-    email: "owner@useskillhub.com",
-    displayName: "SkillHub Owner",
-    platformRole: "admin",
-    role: "owner",
-    tokenCount: 2,
-    activeTokenCount: 2,
-    lastTokenUsedAt: "demo",
-    memberSince: "demo"
-  },
-  {
-    userId: "demo-user-developer",
-    email: "developer@useskillhub.com",
-    displayName: "Agent Developer",
-    platformRole: "user",
-    role: "developer",
-    tokenCount: 1,
-    activeTokenCount: 1,
-    lastTokenUsedAt: "demo",
-    memberSince: "demo"
-  },
-  {
-    userId: "demo-user-finance",
-    email: "finance@useskillhub.com",
-    displayName: "Finance Operator",
-    platformRole: "finance",
-    role: "finance",
-    tokenCount: 1,
-    activeTokenCount: 0,
-    lastTokenUsedAt: null,
-    memberSince: "demo"
-  }
-];
-
-const fallbackOrganizationWebhookEndpoints: OrganizationWebhookEndpoint[] = [
-  {
-    id: "demo-webhook-ops",
-    organizationId: "demo-org",
-    url: "https://example.com/skillhub/webhooks",
-    description: "Operations automation receiver",
-    events: ["skill.update", "runtime.incident", "account.security"],
-    status: "active",
-    signingSecretPrefix: "whsec",
-    signingSecretLast4: "demo",
-    lastDeliveryStatus: "pending",
-    lastDeliveredAt: null,
-    failureCount: 0,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-webhook-finance",
-    organizationId: "demo-org",
-    url: "https://example.com/finance/events",
-    description: "Finance reconciliation receiver",
-    events: ["finance.billing", "publisher.payout"],
-    status: "paused",
-    signingSecretPrefix: "whsec",
-    signingSecretLast4: "fin1",
-    lastDeliveryStatus: "skipped",
-    lastDeliveredAt: null,
-    failureCount: 1,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackAdminReviews: AdminReviewRecord[] = [
-  {
-    id: "demo-review-browser-research",
-    skillSlug: "browser-research",
-    displayName: "Browser Research",
-    version: "0.1.0",
-    status: "queued",
-    riskLevel: "medium",
-    notes: "Validate browser domain allowlist, citation output schema, and pricing readiness before approval.",
-    reviewQueueAgeHours: 8,
-    reviewSlaBusinessDays: 3,
-    reviewSlaDueAt: "demo",
-    reviewSlaHoursRemaining: 64,
-    reviewSlaStatus: "on_track",
-    reviewSubmittedAt: "demo",
-    reviewEvidence: {
-      manifestSummary: {
-        authorName: "SkillHub Labs",
-        authorUrl: "https://useskillhub.com/publishers/skillhub-labs",
-        description: "Research browsing skill that collects citations, checks freshness, and returns structured source notes for agent workflows.",
-        displayName: "Browser Research",
-        inputPropertyCount: 3,
-        inputRequiredCount: 2,
-        inputType: "object",
-        name: "browser-research",
-        outputPropertyCount: 4,
-        outputRequiredCount: 3,
-        outputType: "object",
-        permissionLevel: "medium",
-        permissions: {
-          browser: true,
-          filesystem: "none",
-          network: true,
-          secretCount: 0
-        },
-        runtimeTarget: "https://api.useskillhub.com/demo/browser-research",
-        runtimeType: "http",
-        schemaVersion: "0.1",
-        tags: ["research", "browser", "citations"],
-        tagsCount: 3,
-        version: "0.1.0"
-      },
-      publisher: {
-        displayName: "SkillHub Labs",
-        organizationName: "SkillHub Labs",
-        organizationSlug: "skillhub-labs",
-        payoutStatus: "verified",
-        status: "active"
-      }
-    },
-    runtimeChecks: [
-      {
-        checkType: "manifest",
-        status: "passed",
-        message: "Manifest contract includes required fields.",
-        isBlocking: false,
-        fixCategory: "manifest",
-        targetField: null,
-        nextAction: "No manifest repair is needed."
-      },
-      {
-        checkType: "runtime",
-        status: "passed",
-        message: "HTTP runtime entrypoint uses HTTPS.",
-        isBlocking: false,
-        fixCategory: "runtime",
-        targetField: "runtime.entrypoint",
-        nextAction: "No runtime URL repair is needed."
-      },
-      {
-        checkType: "example",
-        status: "passed",
-        message: "Schemas are ready for example invocation.",
-        isBlocking: false,
-        fixCategory: "example",
-        targetField: null,
-        nextAction: "No example schema repair is needed."
-      },
-      {
-        checkType: "security",
-        status: "warning",
-        message: "Browser plus network permissions require data-policy confirmation.",
-        isBlocking: false,
-        fixCategory: "security",
-        targetField: "permissions.network/permissions.browser",
-        nextAction: "Document allowed domains, retention, and browser/network purpose before approval."
-      }
-    ],
-    createdAt: "demo",
-    decidedAt: null
-  },
-  {
-    id: "demo-review-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    version: "0.1.0",
-    status: "in_review",
-    riskLevel: "low",
-    notes: "Runtime passed; reviewer should confirm file-retention wording and example output coverage.",
-    reviewQueueAgeHours: 68,
-    reviewSlaBusinessDays: 3,
-    reviewSlaDueAt: "demo",
-    reviewSlaHoursRemaining: 4,
-    reviewSlaStatus: "due_soon",
-    reviewSubmittedAt: "demo",
-    reviewEvidence: {
-      manifestSummary: {
-        authorName: "DataOps Studio",
-        authorUrl: "https://useskillhub.com/publishers/dataops-studio",
-        description: "Summarizes structured datasets into concise agent-ready findings with typed output and retention-safe defaults.",
-        displayName: "Dataset Summarizer",
-        inputPropertyCount: 2,
-        inputRequiredCount: 2,
-        inputType: "object",
-        name: "dataset-summarizer",
-        outputPropertyCount: 3,
-        outputRequiredCount: 2,
-        outputType: "object",
-        permissionLevel: "low",
-        permissions: {
-          browser: false,
-          filesystem: "none",
-          network: false,
-          secretCount: 0
-        },
-        runtimeTarget: "https://api.dataops.example/skillhub/summarize",
-        runtimeType: "http",
-        schemaVersion: "0.1",
-        tags: ["data", "summarization", "analytics"],
-        tagsCount: 3,
-        version: "0.1.0"
-      },
-      publisher: {
-        displayName: "DataOps Studio",
-        organizationName: "DataOps Studio",
-        organizationSlug: "dataops-studio",
-        payoutStatus: "verification_required",
-        status: "pending"
-      }
-    },
-    runtimeChecks: [
-      {
-        checkType: "manifest",
-        status: "passed",
-        message: "Manifest contract includes required fields.",
-        isBlocking: false,
-        fixCategory: "manifest",
-        targetField: null,
-        nextAction: "No manifest repair is needed."
-      },
-      {
-        checkType: "runtime",
-        status: "passed",
-        message: "Runtime declaration is valid.",
-        isBlocking: false,
-        fixCategory: "runtime",
-        targetField: "runtime.entrypoint",
-        nextAction: "No runtime declaration repair is needed."
-      },
-      {
-        checkType: "example",
-        status: "passed",
-        message: "Example schemas are object-shaped.",
-        isBlocking: false,
-        fixCategory: "example",
-        targetField: null,
-        nextAction: "No example schema repair is needed."
-      },
-      {
-        checkType: "security",
-        status: "passed",
-        message: "Permission profile is low risk.",
-        isBlocking: false,
-        fixCategory: "security",
-        targetField: null,
-        nextAction: "No security repair is needed."
-      }
-    ],
-    createdAt: "demo",
-    decidedAt: null
-  },
-  {
-    id: "demo-review-local-file-agent",
-    skillSlug: "local-file-agent",
-    displayName: "Local File Agent",
-    version: "0.2.0",
-    status: "blocked",
-    riskLevel: "high",
-    notes: "Filesystem write access requires explicit owner approval and stronger rollback instructions.",
-    reviewQueueAgeHours: null,
-    reviewSlaBusinessDays: 3,
-    reviewSlaDueAt: "demo",
-    reviewSlaHoursRemaining: null,
-    reviewSlaStatus: "decided",
-    reviewSubmittedAt: "demo",
-    reviewEvidence: {
-      manifestSummary: {
-        authorName: "Ops Automation Guild",
-        authorUrl: "https://useskillhub.com/publishers/ops-automation",
-        description: "Local runtime that reads and writes project files for maintenance tasks; requires stronger sandbox and rollback review.",
-        displayName: "Local File Agent",
-        inputPropertyCount: 4,
-        inputRequiredCount: 3,
-        inputType: "object",
-        name: "local-file-agent",
-        outputPropertyCount: 3,
-        outputRequiredCount: 2,
-        outputType: "object",
-        permissionLevel: "high",
-        permissions: {
-          browser: false,
-          filesystem: "write",
-          network: false,
-          secretCount: 1
-        },
-        runtimeTarget: "node ./dist/local-file-agent.js",
-        runtimeType: "local",
-        schemaVersion: "0.1",
-        tags: ["files", "automation", "maintenance"],
-        tagsCount: 3,
-        version: "0.2.0"
-      },
-      publisher: {
-        displayName: "Ops Automation Guild",
-        organizationName: "Ops Automation Guild",
-        organizationSlug: "ops-automation",
-        payoutStatus: "blocked",
-        status: "restricted"
-      }
-    },
-    runtimeChecks: [
-      {
-        checkType: "manifest",
-        status: "passed",
-        message: "Manifest contract includes required fields.",
-        isBlocking: false,
-        fixCategory: "manifest",
-        targetField: null,
-        nextAction: "No manifest repair is needed."
-      },
-      {
-        checkType: "runtime",
-        status: "warning",
-        message: "Local runtime requires manual execution proof.",
-        isBlocking: false,
-        fixCategory: "runtime",
-        targetField: "runtime.command",
-        nextAction: "Attach packaging, sandboxing, and execution proof for local runtime review."
-      },
-      {
-        checkType: "example",
-        status: "passed",
-        message: "Example schemas are object-shaped.",
-        isBlocking: false,
-        fixCategory: "example",
-        targetField: null,
-        nextAction: "No example schema repair is needed."
-      },
-      {
-        checkType: "security",
-        status: "warning",
-        message: "High-risk filesystem permissions require explicit reviewer notes.",
-        isBlocking: false,
-        fixCategory: "security",
-        targetField: "permissions.filesystem",
-        nextAction: "Provide high-risk permission rationale and owner-approval guidance before approval."
-      }
-    ],
-    createdAt: "demo",
-    decidedAt: null
-  }
-];
-
-const fallbackUserNotifications: UserNotificationRecord[] = [
-  {
-    id: "demo-buyer-request-claimed",
-    eventType: "buyer_request.claimed",
-    channel: "in_app",
-    subject: "Your buyer request was claimed",
-    payload: {
-      requestId: "demo-request-figma-linear",
-      title: "Figma change request to Linear issue"
-    },
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  },
-  {
-    id: "demo-skill-update",
-    eventType: "skill.update",
-    channel: "in_app",
-    subject: "New citation freshness scoring available",
-    payload: {
-      projectSlug: "research-agent",
-      skillSlug: "browser-research"
-    },
-    status: "sent",
-    createdAt: "demo",
-    deliveredAt: "demo"
-  },
-  {
-    id: "demo-payout-review",
-    eventType: "publisher.payout",
-    channel: "in_app",
-    subject: "Payout request entered review",
-    payload: {
-      amountCents: 480000,
-      currency: "usd"
-    },
-    status: "queued",
-    createdAt: "demo",
-    deliveredAt: null
-  }
-];
-const fallbackUserNotificationInbox: UserNotificationInbox = {
-  notifications: fallbackUserNotifications,
-  summary: summarizeUserNotifications(fallbackUserNotifications)
-};
-
-const fallbackNotificationPreferences: NotificationPreferenceRecord[] = [
-  {
-    category: "trust",
-    description: "Review decisions, rejection notes, and verification state changes.",
-    emailEnabled: true,
-    eventType: "skill.review",
-    inAppEnabled: true,
-    label: "Skill review",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "operations",
-    description: "New versions, deprecations, security notices, and project update inbox events.",
-    emailEnabled: true,
-    eventType: "skill.update",
-    inAppEnabled: true,
-    label: "Skill updates",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "runtime",
-    description: "Runtime incidents, blocked calls, and quality signals that need operator attention.",
-    emailEnabled: true,
-    eventType: "runtime.incident",
-    inAppEnabled: true,
-    label: "Runtime incidents",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "finance",
-    description: "Invoice generation, billing profile changes, usage posting, refunds, and disputes.",
-    emailEnabled: true,
-    eventType: "finance.billing",
-    inAppEnabled: true,
-    label: "Billing and disputes",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "publisher",
-    description: "Payout account onboarding, payout review decisions, blocked payouts, and balance milestones.",
-    emailEnabled: true,
-    eventType: "publisher.payout",
-    inAppEnabled: true,
-    label: "Payouts",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "marketplace",
-    description: "Buyer request claims, submissions, matches, cancellations, and demand updates.",
-    emailEnabled: true,
-    eventType: "buyer.request",
-    inAppEnabled: true,
-    label: "Buyer requests",
-    updatedAt: null,
-    webhookEnabled: false
-  },
-  {
-    category: "account",
-    description: "API keys, organization billing readiness, and sensitive account operations.",
-    emailEnabled: true,
-    eventType: "account.security",
-    inAppEnabled: true,
-    label: "Account and security",
-    updatedAt: null,
-    webhookEnabled: false
-  }
-];
-
-const fallbackPayouts: PayoutRecord[] = [
-  {
-    id: "demo-payout-review",
-    publisherProfileId: "demo-publisher",
-    publisherName: "SkillHub Publisher",
-    amountCents: 480000,
-    currency: "usd",
-    status: "review",
-    balanceCount: 4,
-    manualAccount: "publisher-paypal@example.com",
-    manualAccountHolder: "SkillHub Publisher",
-    manualMethod: "paypal",
-    manualNotes: "Demo manual payout account for finance review.",
-    provider: "manual_deferred",
-    accountStatus: "verified",
-    requestedAt: "demo",
-    reviewedAt: null,
-    paidAt: null,
-    reviewReason: "High-value payout queued for manual review.",
-    failureReason: null,
-    providerReference: null,
-    retryCondition: null,
-    nextAction: "await_finance_review"
-  }
-];
-
-const fallbackPublisherPayoutSummary: PublisherPayoutSummary = {
-  publisherProfile: {
-    id: "demo-publisher",
-    displayName: "SkillHub Publisher",
-    status: "active",
-    payoutStatus: "verified"
-  },
-  balances: {
-    pendingCents: 126000,
-    availableCents: 482000,
-    blockedCents: 480000,
-    paidCents: 940000,
-    currency: "usd",
-    minPayoutCents: 5000,
-    reviewThresholdCents: 100000
-  },
-  readiness: {
-    blockers: [],
-    canRequest: true,
-    expectedStatus: "review",
-    nextAction: "request_payout"
-  },
-  payoutAccounts: [
-    {
-      id: "demo-payout-account",
-      manualAccount: "publisher-paypal@example.com",
-      manualAccountHolder: "SkillHub Publisher",
-      manualMethod: "paypal",
-      manualNotes: "Demo manual payout account for finance review.",
-      provider: "manual_deferred",
-      providerAccountId: "manual_deferred_demo",
-      status: "verified",
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  payouts: fallbackPayouts
-};
-
-const fallbackPublisherAccountSummary: PublisherAccountSummary = {
-  publisherProfile: {
-    id: "demo-publisher",
-    organizationId: "demo-org",
-    displayName: "SkillHub Publisher",
-    status: "active",
-    payoutStatus: "verification_required",
-    termsAcceptedAt: null,
-    termsAcceptedByUserId: null,
-    termsVersion: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  payoutAccounts: [
-    {
-      id: "demo-payout-account",
-      manualAccount: "publisher-paypal@example.com",
-      manualAccountHolder: "SkillHub Publisher",
-      manualMethod: "paypal",
-      manualNotes: "Demo manual payout account for finance review.",
-      provider: "manual_deferred",
-      providerAccountId: "manual_deferred_demo",
-      status: "verification_required",
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  onboardingSessions: [
-    {
-      id: "demo-onboarding-session",
-      payoutAccountId: "demo-payout-account",
-      provider: "manual_deferred",
-      providerSessionId: "po_demo_session",
-      onboardingUrl: "https://useskillhub.com/dashboard?payout_onboarding=demo",
-      returnUrl: null,
-      refreshUrl: null,
-      status: "created",
-      expiresAt: "demo",
-      completedAt: null,
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ]
-};
-
-const fallbackOrganizationBillingSummary: OrganizationBillingSummary = {
-  billingProfile: {
-    id: "demo-billing-profile",
-    organizationId: "demo-org",
-    billingName: "SkillHub Demo Org",
-    billingEmail: "billing@example.com",
-    taxId: null,
-    country: "US",
-    addressLine1: "Demo billing address",
-    addressLine2: null,
-    city: "San Francisco",
-    region: "CA",
-    postalCode: "94105",
-    invoiceNotes: "Demo billing profile for local development.",
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  paymentMethods: [
-    {
-      id: "demo-payment-method",
-      organizationId: "demo-org",
-      provider: "manual",
-      providerCustomerId: null,
-      providerPaymentMethodId: null,
-      methodType: "invoice",
-      brand: "manual",
-      last4: null,
-      expMonth: null,
-      expYear: null,
-      status: "ready",
-      isDefault: true,
-      createdAt: "demo",
-      updatedAt: "demo"
-    }
-  ],
-  summary: {
-    defaultPaymentMethodStatus: "ready",
-    invoiceReady: true,
-    paymentMethodCount: 1,
-    profileComplete: true
-  }
-};
-
-const fallbackRefunds: RefundRecord[] = [
-  {
-    id: "demo-refund-request",
-    transactionId: "demo-usage-browser-research",
-    adjustmentTransactionId: null,
-    skillName: "Browser Research",
-    projectSlug: "research-agent",
-    amountCents: 9600,
-    currency: "usd",
-    status: "requested",
-    reason: "Buyer reported duplicate billable call.",
-    providerReference: null,
-    createdAt: "demo",
-    requestedAt: "demo",
-    decidedAt: null,
-    postedAt: null
-  }
-];
-
-const fallbackDisputes: DisputeRecord[] = [
-  {
-    id: "demo-dispute-warning",
-    transactionId: "demo-usage-support-triage",
-    skillName: "Support Triage",
-    projectSlug: "support-agent",
-    amountCents: 7600,
-    currency: "usd",
-    status: "warning_needs_response",
-    reason: "Card network warning needs evidence before deadline.",
-    externalReference: "dp_demo_warning",
-    dueAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackAbuseReports: AbuseReportRecord[] = [
-  {
-    id: "demo-abuse-security",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research-pro",
-    skillName: "Browser Research Pro",
-    skillVisibility: "public",
-    skillVerificationStatus: "verified",
-    category: "security",
-    severity: "high",
-    status: "open",
-    title: "Unexpected outbound domain during runtime",
-    description: "A project operator reported calls to an undeclared analytics endpoint during citation extraction.",
-    evidenceUrl: "https://example.com/evidence/runtime-domain-log",
-    reporterEmail: "security@example.com",
-    reporterOrganizationName: "Research Agent",
-    projectSlug: "research-agent",
-    decisionReason: null,
-    decidedAt: null,
-    latestAction: null,
-    latestActionAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-abuse-quality",
-    skillId: "demo-skill-support-triage",
-    skillSlug: "support-triage",
-    skillName: "Support Triage",
-    skillVisibility: "public",
-    skillVerificationStatus: "verified",
-    category: "quality",
-    severity: "medium",
-    status: "triaged",
-    title: "Repeated low-confidence classifications",
-    description: "Three projects reported misrouted tickets after the last model prompt update.",
-    evidenceUrl: null,
-    reporterEmail: "ops@example.com",
-    reporterOrganizationName: "Support Agent",
-    projectSlug: "support-agent",
-    decisionReason: "Publisher asked to submit a runtime fix and examples.",
-    decidedAt: "demo",
-    latestAction: "triage",
-    latestActionAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackAdminIncidents: AdminIncidentRecord[] = [
-  {
-    id: "demo-incident-browser-runtime",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    skillVersionId: "demo-version-browser-research",
-    status: "monitoring",
-    severity: "high",
-    title: "Citation runtime timeout spike",
-    summary: "Runtime p95 latency crossed the project policy threshold after a source parsing change.",
-    startedAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-incident-dataset-schema",
-    skillId: "demo-skill-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    skillName: "Dataset Summarizer",
-    skillVersionId: "demo-version-dataset-summarizer",
-    status: "open",
-    severity: "medium",
-    title: "Output schema mismatch for sparse rows",
-    summary: "A developer project reported missing anomaly fields when input rows contain sparse numeric columns.",
-    startedAt: "demo",
-    resolvedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackSkillFeedback: SkillFeedbackRecord[] = [
-  {
-    id: "demo-feedback-pending",
-    skillId: "demo-skill-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    reviewerEmail: "ops@example.com",
-    reviewerDisplayName: "Ops Reviewer",
-    reviewerOrganizationName: "Research Agent",
-    projectSlug: "research-agent",
-    rating: 3,
-    title: "Needs citation metadata before broader rollout",
-    body: "The browser workflow is useful, but our compliance agent needs source timestamps and confidence fields before we can use it for regulated reports.",
-    useCase: "Compliance-heavy research briefings",
-    status: "pending",
-    moderationReason: null,
-    moderatedAt: null,
-    publisherResponseBody: null,
-    publisherRespondedAt: null,
-    publisherResponderDisplayName: null,
-    publishedAt: null,
-    createdAt: "demo",
-    updatedAt: "demo"
-  },
-  {
-    id: "demo-feedback-published",
-    skillId: "demo-skill-manifest-review",
-    skillSlug: "manifest-review",
-    skillName: "Manifest Review",
-    reviewerEmail: null,
-    reviewerDisplayName: "Platform Reviewer",
-    reviewerOrganizationName: "SkillHub Demo Org",
-    projectSlug: "publisher-workbench",
-    rating: 5,
-    title: "Good publisher preflight",
-    body: "It catches missing examples and permission mismatches before a skill enters formal review.",
-    useCase: "Publisher preflight checks",
-    status: "published",
-    moderationReason: "Approved as useful implementation feedback.",
-    moderatedAt: "demo",
-    publisherResponseBody: null,
-    publisherRespondedAt: null,
-    publisherResponderDisplayName: null,
-    publishedAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo"
-  }
-];
-
-const fallbackPublisherSkills: PublisherSkillRecord[] = [
-  {
-    id: "browser-research",
-    slug: "browser-research",
-    displayName: "Browser Research",
-    description: "Research a web topic and return concise findings with source URLs.",
-    version: "0.1.0",
-    visibility: "public",
-    verificationStatus: "verified",
-    permissionLevel: "medium",
-    review: {
-      status: "approved",
-      riskLevel: "medium",
-      notes: "Manifest, runtime, and examples accepted.",
-      decidedAt: "demo",
-      reviewQueueAgeHours: null,
-      reviewSlaBusinessDays: 3,
-      reviewSlaDueAt: "demo",
-      reviewSlaHoursRemaining: null,
-      reviewSlaStatus: "decided",
-      reviewSubmittedAt: "demo"
-    },
-    runtime: {
-      checkCount: 4,
-      passedCount: 4,
-      failedCount: 0,
-      warningCount: 0,
-      health: "healthy",
-      checks: [
-        {
-          checkType: "manifest",
-          status: "passed",
-          message: "Manifest contract includes required fields.",
-          isBlocking: false,
-          fixCategory: "manifest",
-          targetField: null,
-          nextAction: "No manifest repair is needed."
-        },
-        {
-          checkType: "runtime",
-          status: "passed",
-          message: "HTTP runtime entrypoint uses HTTPS.",
-          isBlocking: false,
-          fixCategory: "runtime",
-          targetField: "runtime.entrypoint",
-          nextAction: "No runtime URL repair is needed."
-        },
-        {
-          checkType: "example",
-          status: "passed",
-          message: "Input and output schemas include concrete fields.",
-          isBlocking: false,
-          fixCategory: "example",
-          targetField: null,
-          nextAction: "No example schema repair is needed."
-        },
-        {
-          checkType: "security",
-          status: "passed",
-          message: "Permission profile is compatible with automated review gates.",
-          isBlocking: false,
-          fixCategory: "security",
-          targetField: null,
-          nextAction: "No security repair is needed."
-        }
-      ]
-    },
-    analytics: {
-      installCount: 46,
-      callCount: 18400,
-      successCount: 17664,
-      errorCount: 736,
-      blockedCount: 0,
-      successRate: 0.96,
-      avgLatencyMs: 1280,
-      billableUsageCount: 12400,
-      grossCents: 248000,
-      currency: "usd"
-    },
-    pricing: {
-      billingModel: "per_call",
-      unitAmountCents: 2,
-      status: "active"
-    },
-    commercial: {
-      blockers: [],
-      paidActivationReady: true,
-      payoutStatus: "verified",
-      publisherStatus: "active",
-      requiresTermsVersion: "2026-06-05-prelaunch-operating-terms",
-      termsAcceptedAt: "demo",
-      termsVersion: "2026-06-05-prelaunch-operating-terms"
-    },
-    feedback: {
-      averageRating: 4.7,
-      publishedCount: 18,
-      pendingCount: 2
-    },
-    recentFeedback: [
-      {
-        body:
-          "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
-        createdAt: "demo",
-        id: "demo-feedback-browser-research-1",
-        moderationReason: "Public demo feedback.",
-        moderatedAt: "demo",
-        projectSlug: "research-agent",
-        publishedAt: "demo",
-        publisherResponseBody:
-          "Thanks for the detailed production note. We are keeping output-shape changes behind reviewed versions so pinned agent projects remain stable.",
-        publisherRespondedAt: "demo",
-        publisherResponderDisplayName: "SkillHub Labs",
-        rating: 5,
-        reviewerDisplayName: "Research Agent Ops",
-        reviewerEmail: null,
-        reviewerOrganizationName: "SkillHub Demo Org",
-        skillId: "demo-skill-browser-research",
-        skillName: "Browser Research",
-        skillSlug: "browser-research",
-        status: "published",
-        title: "Reliable source gathering for daily briefings",
-        updatedAt: "demo",
-        useCase: "Daily market and policy research briefings"
-      }
-    ],
-    quality: {
-      score: 86,
-      installSuccessRate: 0.96,
-      incidentCount: 0,
-      checklist: [
-        { key: "manifest", label: "Manifest", status: "complete" },
-        { key: "review", label: "Review signal", status: "complete" },
-        { key: "runtime", label: "Runtime health", status: "complete" },
-        { key: "pricing", label: "Pricing", status: "complete" },
-        { key: "usage", label: "Usage signal", status: "complete" }
-      ]
-    },
-    marketplace: {
-      placement: "featured",
-      reason: "Verified, healthy runtime, and strong published feedback.",
-      endsAt: null,
-      updatedAt: "demo",
-      improvementHints: [{ key: "maintain_quality", severity: "positive" }]
-    },
-    versions: [
-      {
-        callCount: 18400,
-        createdAt: "demo",
-        id: "browser-research-0.1.0",
-        installCount: 46,
-        manifest: {
-          schemaVersion: "0.1",
-          name: "browser-research",
-          displayName: "Browser Research",
-          version: "0.1.0",
-          description: "Research a web topic and return concise findings with source URLs.",
-          tags: ["research", "browser", "citations"],
-          runtime: { type: "http", entrypoint: "https://api.useskillhub.com/demo/browser-research" },
-          permissions: { network: true, browser: true, filesystem: "none", secrets: [] },
-          inputSchema: { type: "object", properties: { query: { type: "string" } } },
-          outputSchema: { type: "object", properties: { summary: { type: "string" }, sources: { type: "array" } } }
-        },
-        reviewDecidedAt: "demo",
-        reviewNotes: "Manifest, runtime, and examples accepted.",
-        reviewRiskLevel: "medium",
-        reviewQueueAgeHours: null,
-        reviewSlaBusinessDays: 3,
-        reviewSlaDueAt: "demo",
-        reviewSlaHoursRemaining: null,
-        reviewSlaStatus: "decided",
-        reviewStatus: "approved",
-        reviewSubmittedAt: "demo",
-        runtimeCheckCount: 4,
-        runtimeChecks: [
-          {
-            checkType: "manifest",
-            status: "passed",
-            message: "Manifest contract includes required fields.",
-            isBlocking: false,
-            fixCategory: "manifest",
-            targetField: null,
-            nextAction: "No manifest repair is needed."
-          },
-          {
-            checkType: "runtime",
-            status: "passed",
-            message: "HTTP runtime entrypoint uses HTTPS.",
-            isBlocking: false,
-            fixCategory: "runtime",
-            targetField: "runtime.entrypoint",
-            nextAction: "No runtime URL repair is needed."
-          },
-          {
-            checkType: "example",
-            status: "passed",
-            message: "Input and output schemas include concrete fields.",
-            isBlocking: false,
-            fixCategory: "example",
-            targetField: null,
-            nextAction: "No example schema repair is needed."
-          },
-          {
-            checkType: "security",
-            status: "passed",
-            message: "Permission profile is compatible with automated review gates.",
-            isBlocking: false,
-            fixCategory: "security",
-            targetField: null,
-            nextAction: "No security repair is needed."
-          }
-        ],
-        runtimeFailedCount: 0,
-        runtimePassedCount: 4,
-        runtimeWarningCount: 0,
-        status: "verified",
-        version: "0.1.0"
-      }
-    ],
-    updatedAt: "demo"
-  },
-  {
-    id: "dataset-summarizer",
-    slug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    description: "Summarize structured datasets with typed output.",
-    version: "0.1.0",
-    visibility: "public",
-    verificationStatus: "submitted",
-    permissionLevel: "medium",
-    review: {
-      status: "queued",
-      riskLevel: "medium",
-      notes: "Needs data retention review.",
-      decidedAt: null,
-      reviewQueueAgeHours: 68,
-      reviewSlaBusinessDays: 3,
-      reviewSlaDueAt: "demo",
-      reviewSlaHoursRemaining: 4,
-      reviewSlaStatus: "due_soon",
-      reviewSubmittedAt: "demo"
-    },
-    runtime: {
-      checkCount: 4,
-      passedCount: 2,
-      failedCount: 1,
-      warningCount: 1,
-      health: "needs_attention",
-      checks: [
-        {
-          checkType: "manifest",
-          status: "passed",
-          message: "Manifest contract includes required fields.",
-          isBlocking: false,
-          fixCategory: "manifest",
-          targetField: null,
-          nextAction: "No manifest repair is needed."
-        },
-        {
-          checkType: "runtime",
-          status: "failed",
-          message: "Runtime declaration needs a reachable secure endpoint.",
-          isBlocking: true,
-          fixCategory: "runtime",
-          targetField: "runtime.entrypoint",
-          nextAction: "Use a reachable HTTPS endpoint before resubmitting this version."
-        },
-        {
-          checkType: "example",
-          status: "warning",
-          message: "Example schemas should include concrete fields before approval.",
-          isBlocking: false,
-          fixCategory: "example",
-          targetField: "inputSchema.properties/outputSchema.properties",
-          nextAction: "Add concrete input and output fields so reviewers and developers can test the skill."
-        },
-        {
-          checkType: "security",
-          status: "passed",
-          message: "Permission profile is compatible with review gates.",
-          isBlocking: false,
-          fixCategory: "security",
-          targetField: null,
-          nextAction: "No security repair is needed."
-        }
-      ]
-    },
-    analytics: {
-      installCount: 12,
-      callCount: 9200,
-      successCount: 8832,
-      errorCount: 368,
-      blockedCount: 0,
-      successRate: 0.96,
-      avgLatencyMs: 1420,
-      billableUsageCount: 0,
-      grossCents: 0,
-      currency: "usd"
-    },
-    pricing: {
-      billingModel: "free",
-      unitAmountCents: 0,
-      status: "active"
-    },
-    commercial: {
-      blockers: ["review", "payout", "terms"],
-      paidActivationReady: false,
-      payoutStatus: "verification_required",
-      publisherStatus: "active",
-      requiresTermsVersion: "2026-06-05-prelaunch-operating-terms",
-      termsAcceptedAt: null,
-      termsVersion: null
-    },
-    feedback: {
-      averageRating: 4.1,
-      publishedCount: 5,
-      pendingCount: 1
-    },
-    quality: {
-      score: 64,
-      installSuccessRate: 0.96,
-      incidentCount: 1,
-      checklist: [
-        { key: "manifest", label: "Manifest", status: "complete" },
-        { key: "review", label: "Review signal", status: "complete" },
-        { key: "runtime", label: "Runtime health", status: "needs_attention" },
-        { key: "pricing", label: "Pricing", status: "complete" },
-        { key: "usage", label: "Usage signal", status: "complete" }
-      ]
-    },
-    marketplace: {
-      placement: "standard",
-      reason: "Keep improving runtime checks before featured placement.",
-      endsAt: null,
-      updatedAt: "demo",
-      appeal: {
-        appealReason: "Runtime endpoint evidence was updated and the publisher requested standard distribution review.",
-        createdAt: "demo",
-        currentPlacement: "suppressed",
-        decidedAt: null,
-        id: "demo-curation-appeal-dataset-summarizer",
-        operatorReason: null,
-        requestType: "suppression_appeal",
-        requestedPlacement: "standard",
-        skillId: "dataset-summarizer",
-        slaDueAt: "demo",
-        status: "open"
-      },
-      improvementHints: [
-        { key: "fix_runtime_checks", severity: "critical" },
-        { key: "collect_feedback", severity: "warning" }
-      ]
-    },
-    versions: [
-      {
-        callCount: 9200,
-        createdAt: "demo",
-        id: "dataset-summarizer-0.1.0",
-        installCount: 12,
-        manifest: {
-          schemaVersion: "0.1",
-          name: "dataset-summarizer",
-          displayName: "Dataset Summarizer",
-          version: "0.1.0",
-          description: "Summarize structured datasets with typed output.",
-          tags: ["data", "summary"],
-          runtime: { type: "http", entrypoint: "https://api.useskillhub.com/demo/dataset-summarizer" },
-          permissions: { network: true, browser: false, filesystem: "read", secrets: [] },
-          inputSchema: { type: "object", properties: { rows: { type: "array" } } },
-          outputSchema: { type: "object", properties: { summary: { type: "string" } } }
-        },
-        reviewDecidedAt: null,
-        reviewNotes: "Needs data retention review.",
-        reviewRiskLevel: "medium",
-        reviewQueueAgeHours: 68,
-        reviewSlaBusinessDays: 3,
-        reviewSlaDueAt: "demo",
-        reviewSlaHoursRemaining: 4,
-        reviewSlaStatus: "due_soon",
-        reviewStatus: "queued",
-        reviewSubmittedAt: "demo",
-        runtimeCheckCount: 4,
-        runtimeChecks: [
-          {
-            checkType: "manifest",
-            status: "passed",
-            message: "Manifest contract includes required fields.",
-            isBlocking: false,
-            fixCategory: "manifest",
-            targetField: null,
-            nextAction: "No manifest repair is needed."
-          },
-          {
-            checkType: "runtime",
-            status: "failed",
-            message: "Runtime declaration needs a reachable secure endpoint.",
-            isBlocking: true,
-            fixCategory: "runtime",
-            targetField: "runtime.entrypoint",
-            nextAction: "Use a reachable HTTPS endpoint before resubmitting this version."
-          },
-          {
-            checkType: "example",
-            status: "warning",
-            message: "Example schemas should include concrete fields before approval.",
-            isBlocking: false,
-            fixCategory: "example",
-            targetField: "inputSchema.properties/outputSchema.properties",
-            nextAction: "Add concrete input and output fields so reviewers and developers can test the skill."
-          },
-          {
-            checkType: "security",
-            status: "passed",
-            message: "Permission profile is compatible with review gates.",
-            isBlocking: false,
-            fixCategory: "security",
-            targetField: null,
-            nextAction: "No security repair is needed."
-          }
-        ],
-        runtimeFailedCount: 1,
-        runtimePassedCount: 2,
-        runtimeWarningCount: 1,
-        status: "submitted",
-        version: "0.1.0"
-      }
-    ],
-    updatedAt: "demo"
-  }
-];
-
-const fallbackBuyerRequests: BuyerRequestRecord[] = [
-  {
-    id: "demo-request-figma-linear",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "OpsPilot",
-    title: "Figma change request to Linear issue",
-    description: "Convert annotated Figma comments into scoped Linear issues with acceptance criteria.",
-    category: "workflow",
-    bountyCents: 60000,
-    currency: "usd",
-    status: "open",
-    claimedByPublisherId: null,
-    claimedByPublisherName: null,
-    claimedByPublisherOrganizationId: null,
-    submittedSkillId: null,
-    submittedSkillSlug: null,
-    submittedSkillName: null,
-    submittedSkillVerificationStatus: null,
-    submittedSkillVersionId: null,
-    submittedSkillVersion: null,
-    submittedSkillReviewStatus: null,
-    deliveryNote: null,
-    evidenceUrl: null,
-    submittedAt: null,
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: true,
-    nextAction: "Claim request"
-  },
-  {
-    id: "demo-request-shopify-ops",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "Commerce Desk",
-    title: "Shopify product operations skill",
-    description: "Normalize product attributes, flag missing SEO fields, and prepare bulk update actions.",
-    category: "commerce",
-    bountyCents: 90000,
-    currency: "usd",
-    status: "claimed",
-    claimedByPublisherId: "demo-publisher",
-    claimedByPublisherName: "SkillHub Publisher",
-    claimedByPublisherOrganizationId: "demo-org",
-    submittedSkillId: null,
-    submittedSkillSlug: null,
-    submittedSkillName: null,
-    submittedSkillVerificationStatus: null,
-    submittedSkillVersionId: null,
-    submittedSkillVersion: null,
-    submittedSkillReviewStatus: null,
-    deliveryNote: null,
-    evidenceUrl: null,
-    submittedAt: null,
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: false,
-    nextAction: "Submit build"
-  },
-  {
-    id: "demo-request-slack-incident",
-    requesterOrganizationId: "demo-buyer-org",
-    requesterOrganizationName: "Reliability AI",
-    title: "Slack incident summarizer",
-    description: "Summarize incident threads into timeline, owner actions, and customer-impact notes.",
-    category: "ops",
-    bountyCents: 45000,
-    currency: "usd",
-    status: "submitted",
-    claimedByPublisherId: "demo-publisher",
-    claimedByPublisherName: "SkillHub Publisher",
-    claimedByPublisherOrganizationId: "demo-org",
-    submittedSkillId: "demo-skill-slack-incident",
-    submittedSkillSlug: "slack-incident-summarizer",
-    submittedSkillName: "Slack Incident Summarizer",
-    submittedSkillVerificationStatus: "verified",
-    submittedSkillVersionId: "demo-version-slack-incident-010",
-    submittedSkillVersion: "0.1.0",
-    submittedSkillReviewStatus: "approved",
-    deliveryNote: "Submitted a verified skill version with sample incident timeline output and project test evidence.",
-    evidenceUrl: "https://useskillhub.com/skills/slack-incident-summarizer",
-    submittedAt: "demo",
-    decisionNote: null,
-    decidedAt: null,
-    dueAt: "demo",
-    createdAt: "demo",
-    updatedAt: "demo",
-    canClaim: false,
-    nextAction: "Await buyer match"
-  }
-];
-
-const fallbackDeveloperProjects: DeveloperProjectRecord[] = [
-  {
-    id: "demo-project-research",
-    slug: "research-agent",
-    name: "Research Agent",
-    apiKeys: {
-      activeCount: 2,
-      revokedCount: 1
-    },
-    installs: {
-      installedSkillCount: 8,
-      approvedSkillCount: 7,
-      ownerRequiredCount: 1,
-      suspendedInstallCount: 0
-    },
-    policy: {
-      policyCount: 8,
-      approvalRequiredCount: 1,
-      monthlyBudgetCents: 48000,
-      state: "owner_review"
-    },
-    runtime: {
-      callCount: 18400,
-      successCount: 17664,
-      errorCount: 642,
-      blockedCount: 94,
-      successRate: 0.96,
-      avgLatencyMs: 1280
-    },
-    usage: {
-      billableUsageCount: 12400,
-      grossCents: 248000,
-      currency: "usd"
-    },
-    subscriptions: {
-      activeCount: 3
-    },
-    updates: {
-      count: 2,
-      latestAt: "demo"
-    },
-    createdAt: "demo"
-  },
-  {
-    id: "demo-project-support",
-    slug: "support-agent",
-    name: "Support Agent",
-    apiKeys: {
-      activeCount: 1,
-      revokedCount: 0
-    },
-    installs: {
-      installedSkillCount: 5,
-      approvedSkillCount: 5,
-      ownerRequiredCount: 0,
-      suspendedInstallCount: 0
-    },
-    policy: {
-      policyCount: 5,
-      approvalRequiredCount: 0,
-      monthlyBudgetCents: 12000,
-      state: "approved"
-    },
-    runtime: {
-      callCount: 9200,
-      successCount: 8832,
-      errorCount: 318,
-      blockedCount: 50,
-      successRate: 0.96,
-      avgLatencyMs: 940
-    },
-    usage: {
-      billableUsageCount: 0,
-      grossCents: 0,
-      currency: "usd"
-    },
-    subscriptions: {
-      activeCount: 1
-    },
-    updates: {
-      count: 1,
-      latestAt: "demo"
-    },
-    createdAt: "demo"
-  }
-];
-
-const fallbackDeveloperProjectDetails: DeveloperProjectDetail[] = fallbackDeveloperProjects.map((project) => {
-  const isResearch = project.slug === "research-agent";
-
-  return {
-    project,
-    installedSkills: [
-      {
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        description: "Research a web topic and return concise findings with source URLs.",
-        version: "0.1.0",
-        verificationStatus: "verified",
-        status: "installed",
-        approvalState: "approved",
-        permissionLevel: "medium",
-        installedAt: "demo",
-        updatedAt: "demo",
-        policy: {
-          maxPermissionLevel: "medium",
-          allowNetwork: true,
-          allowBrowser: true,
-          filesystemAccess: "none",
-          allowSecretAccess: false,
-          monthlyBudgetCents: isResearch ? 48000 : 12000,
-          rateLimitPerMinute: 60,
-          approvalRequired: false,
-          approvedAt: "demo",
-          state: "approved"
-        },
-        runtime: {
-          callCount: isResearch ? 18400 : 9200,
-          successCount: isResearch ? 17664 : 8832,
-          errorCount: isResearch ? 642 : 318,
-          blockedCount: isResearch ? 94 : 50,
-          successRate: 0.96,
-          avgLatencyMs: isResearch ? 1280 : 940
-        },
-        usage: {
-          billableUsageCount: isResearch ? 12400 : 0,
-          grossCents: isResearch ? 248000 : 0,
-          currency: "usd"
-        },
-        pricing: {
-          billingModel: isResearch ? "per_call" : "free",
-          unitAmountCents: isResearch ? 2 : 0,
-          currency: "usd",
-          status: "active"
-        },
-        updates: {
-          count: isResearch ? 2 : 1,
-          latestAt: "demo"
-        },
-        incidents: {
-          openCount: 0
-        }
-      },
-      {
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        description: "Summarize structured datasets with typed output.",
-        version: "0.1.0",
-        verificationStatus: "submitted",
-        status: "installed",
-        approvalState: isResearch ? "owner_required" : "approved",
-        permissionLevel: "medium",
-        installedAt: "demo",
-        updatedAt: "demo",
-        policy: {
-          maxPermissionLevel: "medium",
-          allowNetwork: false,
-          allowBrowser: false,
-          filesystemAccess: "read",
-          allowSecretAccess: false,
-          monthlyBudgetCents: isResearch ? 0 : 8000,
-          rateLimitPerMinute: 30,
-          approvalRequired: isResearch,
-          approvedAt: isResearch ? null : "demo",
-          state: isResearch ? "owner_review" : "approved"
-        },
-        runtime: {
-          callCount: 9200,
-          successCount: 8832,
-          errorCount: 318,
-          blockedCount: 50,
-          successRate: 0.96,
-          avgLatencyMs: 1420
-        },
-        usage: {
-          billableUsageCount: 0,
-          grossCents: 0,
-          currency: "usd"
-        },
-        pricing: {
-          billingModel: "free",
-          unitAmountCents: 0,
-          currency: "usd",
-          status: "active"
-        },
-        updates: {
-          count: 1,
-          latestAt: "demo"
-        },
-        incidents: {
-          openCount: isResearch ? 1 : 0
-        }
-      }
-    ],
-    apiKeys: [
-      {
-        id: `demo-key-${project.slug}-primary`,
-        projectSlug: project.slug,
-        name: "Production runtime",
-        keyPrefix: "skh",
-        keyLast4: "demo",
-        lastUsedAt: "demo",
-        createdAt: "demo",
-        revokedAt: null
-      },
-      {
-        id: `demo-key-${project.slug}-rotation`,
-        projectSlug: project.slug,
-        name: "Rotation candidate",
-        keyPrefix: "skh",
-        keyLast4: "next",
-        lastUsedAt: null,
-        createdAt: "demo",
-        revokedAt: null
-      }
-    ],
-    updateInbox: [
-      {
-        id: `demo-update-${project.slug}-browser-research`,
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        eventType: "new_version",
-        severity: "info",
-        title: "New citation freshness scoring available",
-        body: "Version 0.1.1 adds fresher source ranking for research agents.",
-        currentVersion: "0.1.0",
-        targetVersion: "0.1.1",
-        targetReviewStatus: "approved",
-        adoptionState: "ready",
-        actionStatus: "open",
-        actionNote: null,
-        scheduledFor: null,
-        resolvedAt: null,
-        actionUpdatedAt: null,
-        createdAt: "demo"
-      },
-      {
-        id: `demo-update-${project.slug}-dataset-summarizer`,
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        eventType: "security",
-        severity: "medium",
-        title: "File-retention policy requires review",
-        body: "Project owner approval is required before broad file reads are enabled.",
-        currentVersion: "0.1.0",
-        targetVersion: null,
-        targetReviewStatus: null,
-        adoptionState: "not_version_update",
-        actionStatus: isResearch ? "scheduled" : "open",
-        actionNote: isResearch ? "Review during weekly agent safety window." : null,
-        scheduledFor: isResearch ? "demo" : null,
-        resolvedAt: null,
-        actionUpdatedAt: isResearch ? "demo" : null,
-        createdAt: "demo"
-      }
-    ],
-    recentInvocations: [
-      {
-        id: `demo-invocation-${project.slug}-success`,
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        version: "0.1.0",
-        status: "success",
-        latencyMs: isResearch ? 1184 : 840,
-        errorCode: null,
-        createdAt: "demo"
-      },
-      {
-        id: `demo-invocation-${project.slug}-blocked`,
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        version: "0.1.0",
-        status: "blocked",
-        latencyMs: 42,
-        errorCode: "policy_approval_required",
-        createdAt: "demo"
-      }
-    ],
-    subscriptions: [
-      {
-        id: `demo-subscription-${project.slug}-browser-research`,
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        status: isResearch ? "active" : "trialing",
-        billingModel: "subscription",
-        unitAmountCents: isResearch ? 4900 : 0,
-        currency: "usd",
-        currentPeriodStart: "demo",
-        currentPeriodEnd: "demo",
-        ledgerState: isResearch ? "posted" : "trial_access",
-        ledgerTransactionId: isResearch ? `demo-transaction-${project.slug}-subscription` : null,
-        ledgerSourceReference: isResearch ? `subscription:demo-subscription-${project.slug}-browser-research:demo` : null,
-        ledgerGrossCents: isResearch ? 4900 : null,
-        ledgerCurrency: isResearch ? "usd" : null,
-        ledgerStatus: isResearch ? "posted" : null,
-        ledgerPostedAt: isResearch ? "demo" : null,
-        ledgerInvoiceCount: isResearch ? 1 : 0,
-        renewalReady: false,
-        pausedAt: null,
-        canceledAt: null,
-        updatedAt: "demo",
-        createdAt: "demo"
-      }
-    ],
-    invoices: [
-      {
-        id: `demo-invoice-${project.slug}-june`,
-        projectSlug: project.slug,
-        invoiceNumber: `SH-DEMO-${isResearch ? "RESEARCH" : "SUPPORT"}-202606`,
-        status: "issued",
-        currency: "usd",
-        periodStart: "2026-06-01T00:00:00.000Z",
-        periodEnd: "2026-07-01T00:00:00.000Z",
-        subtotalCents: isResearch ? 248000 : 76000,
-        taxCents: 0,
-        totalCents: isResearch ? 248000 : 76000,
-        issuedAt: "demo",
-        dueAt: "demo",
-        paidAt: null,
-        createdAt: "demo",
-        updatedAt: "demo",
-        lineItemCount: isResearch ? 2 : 1
-      }
-    ],
-    savedSkills: [
-      {
-        id: `demo-saved-${project.slug}-browser-research`,
-        projectSlug: project.slug,
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        description: "Research a web topic and return concise findings with source URLs.",
-        version: "0.1.0",
-        verificationStatus: "verified",
-        permissionLevel: "medium",
-        collectionName: "default",
-        installedStatus: "installed",
-        pricing: {
-          billingModel: "per_call",
-          currency: "usd",
-          status: "active",
-          unitAmountCents: 2
-        },
-        savedAt: "demo"
-      },
-      {
-        id: `demo-saved-${project.slug}-manifest-review`,
-        projectSlug: project.slug,
-        skillSlug: "manifest-review",
-        displayName: "Manifest Review",
-        description: "Review a skillhub.json manifest for completeness before submission.",
-        version: "0.1.0",
-        verificationStatus: "draft",
-        permissionLevel: "low",
-        collectionName: "review",
-        installedStatus: null,
-        pricing: {
-          billingModel: "free",
-          currency: "usd",
-          status: "draft",
-          unitAmountCents: 0
-        },
-        savedAt: "demo"
-      }
-    ]
-  };
-});
-
 export async function getFinanceLedger(): Promise<FinanceLedger> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackLedger, emptyLedger);
+    return emptyLedger;
   }
 
   try {
@@ -3441,7 +1477,7 @@ export async function getFinanceLedger(): Promise<FinanceLedger> {
 
     return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
   } catch (error) {
-    return safeOperationFallback(error, fallbackLedger, emptyLedger);
+    return emptyOnOperationError(error, emptyLedger);
   }
 }
 
@@ -3449,7 +1485,7 @@ export async function getAdminCommissionRules(): Promise<CommissionRuleRecord[]>
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackCommissionRules, []);
+    return [];
   }
 
   try {
@@ -3467,7 +1503,7 @@ export async function getAdminCommissionRules(): Promise<CommissionRuleRecord[]>
     const payload = (await response.json()) as { rules: CommissionRuleRecord[] };
     return safeOperationValue(payload.rules, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackCommissionRules, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3475,7 +1511,7 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackLedger, emptyLedger);
+    return emptyLedger;
   }
 
   try {
@@ -3492,7 +1528,7 @@ export async function getPublisherFinanceLedger(): Promise<FinanceLedger> {
 
     return safeOperationValue((await response.json()) as FinanceLedger, emptyLedger);
   } catch (error) {
-    return safeOperationFallback(error, fallbackLedger, emptyLedger);
+    return emptyOnOperationError(error, emptyLedger);
   }
 }
 
@@ -3500,7 +1536,7 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackNotifications, []);
+    return [];
   }
 
   try {
@@ -3518,7 +1554,7 @@ export async function getAdminNotifications(): Promise<AdminNotification[]> {
     const payload = (await response.json()) as { notifications: AdminNotification[] };
     return safeOperationValue(payload.notifications, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackNotifications, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3526,7 +1562,7 @@ export async function getAdminNotificationDeliveries(): Promise<AdminNotificatio
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackNotificationDeliveries, []);
+    return [];
   }
 
   try {
@@ -3544,7 +1580,7 @@ export async function getAdminNotificationDeliveries(): Promise<AdminNotificatio
     const payload = (await response.json()) as { deliveries: AdminNotificationDelivery[] };
     return safeOperationValue(payload.deliveries, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackNotificationDeliveries, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3552,7 +1588,7 @@ export async function getAdminWebhookDeliveries(): Promise<AdminWebhookDelivery[
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackWebhookDeliveries, []);
+    return [];
   }
 
   try {
@@ -3570,7 +1606,7 @@ export async function getAdminWebhookDeliveries(): Promise<AdminWebhookDelivery[
     const payload = (await response.json()) as { deliveries: AdminWebhookDelivery[] };
     return safeOperationValue(payload.deliveries, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackWebhookDeliveries, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3578,7 +1614,7 @@ export async function getAdminLaunchReadiness(): Promise<LaunchReadinessReport> 
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackLaunchReadiness, emptyLaunchReadiness);
+    return emptyLaunchReadiness;
   }
 
   try {
@@ -3596,7 +1632,41 @@ export async function getAdminLaunchReadiness(): Promise<LaunchReadinessReport> 
     const payload = (await response.json()) as { readiness: LaunchReadinessReport };
     return safeOperationValue(payload.readiness, emptyLaunchReadiness);
   } catch (error) {
-    return safeOperationFallback(error, fallbackLaunchReadiness, emptyLaunchReadiness);
+    return emptyOnOperationError(error, emptyLaunchReadiness);
+  }
+}
+
+export async function getAdminPlatformProviders(): Promise<AdminPlatformProviderConfig> {
+  const config = await getAdminPlatformConfig();
+  return {
+    email: config.email,
+    oauth: config.oauth
+  };
+}
+
+export async function getAdminPlatformConfig(): Promise<AdminPlatformConfig> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return emptyPlatformConfig;
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/v1/admin/platform-config`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Platform configuration failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { config: AdminPlatformConfig };
+    return safeOperationValue(payload.config, emptyPlatformConfig);
+  } catch (error) {
+    return emptyOnOperationError(error, emptyPlatformConfig);
   }
 }
 
@@ -3604,7 +1674,7 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackAdminAuditLogs, []);
+    return [];
   }
 
   try {
@@ -3622,7 +1692,7 @@ export async function getAdminAuditLogs(): Promise<AdminAuditLogRecord[]> {
     const payload = (await response.json()) as { auditLogs: AdminAuditLogRecord[] };
     return safeOperationValue(payload.auditLogs, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackAdminAuditLogs, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3652,16 +1722,6 @@ export async function getAdminMarketplaceCuration(): Promise<AdminMarketplaceCur
 
     const payload = (await response.json()) as { curation: AdminMarketplaceCurationRecord[] };
     const appeals = await getAdminMarketplaceCurationAppeals(token);
-    const isDemoSource = payload.curation.length > 0 && payload.curation.every((item) => item.updatedAt === "demo");
-
-    if (isDemoSource) {
-      return {
-        appeals: [],
-        curation: [],
-        message: "The API is running without a live database, so marketplace ranking controls are disabled.",
-        mode: "unavailable"
-      };
-    }
 
     return {
       appeals,
@@ -3692,8 +1752,7 @@ async function getAdminMarketplaceCurationAppeals(token: string): Promise<AdminM
     }
 
     const payload = (await response.json()) as { appeals: AdminMarketplaceCurationAppealRecord[] };
-    const isDemoSource = payload.appeals.length > 0 && payload.appeals.every((item) => item.createdAt === "demo");
-    return isDemoSource ? [] : payload.appeals;
+    return payload.appeals;
   } catch {
     return [];
   }
@@ -3703,7 +1762,7 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackNotificationTemplates, []);
+    return [];
   }
 
   try {
@@ -3721,7 +1780,64 @@ export async function getAdminNotificationTemplates(): Promise<NotificationTempl
     const payload = (await response.json()) as { templates: NotificationTemplateRecord[] };
     return safeOperationValue(payload.templates, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackNotificationTemplates, []);
+    return emptyOnOperationError(error, []);
+  }
+}
+
+export async function getPublicAgentModels(): Promise<PublicAgentModelRecord[]> {
+  try {
+    let response = await fetch(`${apiUrl}/v1/prompts/models`, {
+      cache: "no-store"
+    });
+
+    if (response.status === 404) {
+      response = await fetch(`${apiUrl}/v1/agents/models`, {
+        cache: "no-store"
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`Prompt models failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { models: PublicAgentModelRecord[] };
+    return safeOperationValue(payload.models, []);
+  } catch (error) {
+    return emptyOnOperationError(error, []);
+  }
+}
+
+export async function getAdminAgentModels(): Promise<AdminAgentModelRecord[]> {
+  const token = await readAdminOperatorToken();
+
+  if (!token) {
+    return [];
+  }
+
+  try {
+    const headers = {
+      Authorization: `Bearer ${token}`
+    };
+    let response = await fetch(`${apiUrl}/v1/admin/prompt-models?limit=24`, {
+      cache: "no-store",
+      headers
+    });
+
+    if (response.status === 404) {
+      response = await fetch(`${apiUrl}/v1/admin/agent-models?limit=24`, {
+        cache: "no-store",
+        headers
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`Admin prompt models failed: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as { models: AdminAgentModelRecord[] };
+    return safeOperationValue(payload.models, []);
+  } catch (error) {
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3729,7 +1845,7 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
+    return emptyAdminIdentityDirectory;
   }
 
   try {
@@ -3747,7 +1863,7 @@ export async function getAdminIdentityDirectory(): Promise<AdminIdentityDirector
     const payload = (await response.json()) as { identity: AdminIdentityDirectory };
     return safeOperationValue(payload.identity, emptyAdminIdentityDirectory);
   } catch (error) {
-    return safeOperationFallback(error, fallbackAdminIdentityDirectory, emptyAdminIdentityDirectory);
+    return emptyOnOperationError(error, emptyAdminIdentityDirectory);
   }
 }
 
@@ -3755,7 +1871,7 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackOrganizationTeam, []);
+    return [];
   }
 
   try {
@@ -3773,7 +1889,7 @@ export async function getOrganizationTeamMembers(): Promise<OrganizationTeamMemb
     const payload = (await response.json()) as { members: OrganizationTeamMember[] };
     return safeOperationValue(payload.members, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackOrganizationTeam, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3781,7 +1897,7 @@ export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWeb
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackOrganizationWebhookEndpoints, []);
+    return [];
   }
 
   try {
@@ -3799,7 +1915,7 @@ export async function getOrganizationWebhookEndpoints(): Promise<OrganizationWeb
     const payload = (await response.json()) as { endpoints: OrganizationWebhookEndpoint[] };
     return safeOperationValue(payload.endpoints, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackOrganizationWebhookEndpoints, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3807,7 +1923,7 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackAdminReviews, []);
+    return [];
   }
 
   try {
@@ -3825,7 +1941,7 @@ export async function getAdminReviews(): Promise<AdminReviewRecord[]> {
     const payload = (await response.json()) as { reviews: AdminReviewRecord[] };
     return safeOperationValue(payload.reviews, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackAdminReviews, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3837,7 +1953,7 @@ export async function getUserNotificationInbox(): Promise<UserNotificationInbox>
   const token = await readUserToken();
 
   if (!token) {
-    return demoFallback(fallbackUserNotificationInbox, emptyUserNotificationInbox);
+    return emptyUserNotificationInbox;
   }
 
   try {
@@ -3860,7 +1976,7 @@ export async function getUserNotificationInbox(): Promise<UserNotificationInbox>
       summary: payload.summary ?? summarizeUserNotifications(notifications)
     }, emptyUserNotificationInbox);
   } catch (error) {
-    return safeOperationFallback(error, fallbackUserNotificationInbox, emptyUserNotificationInbox);
+    return emptyOnOperationError(error, emptyUserNotificationInbox);
   }
 }
 
@@ -3940,7 +2056,7 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
   const token = await readUserToken();
 
   if (!token) {
-    return demoFallback(fallbackNotificationPreferences, []);
+    return [];
   }
 
   try {
@@ -3958,7 +2074,7 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
     const payload = (await response.json()) as { preferences: NotificationPreferenceRecord[] };
     return safeOperationValue(payload.preferences, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackNotificationPreferences, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3966,7 +2082,7 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackPayouts, []);
+    return [];
   }
 
   try {
@@ -3984,7 +2100,7 @@ export async function getAdminPayouts(): Promise<PayoutRecord[]> {
     const payload = (await response.json()) as { payouts: PayoutRecord[] };
     return safeOperationValue(payload.payouts, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackPayouts, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -3992,7 +2108,7 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
+    return emptyPublisherPayoutSummary;
   }
 
   try {
@@ -4009,7 +2125,7 @@ export async function getPublisherPayoutSummary(): Promise<PublisherPayoutSummar
 
     return safeOperationValue((await response.json()) as PublisherPayoutSummary, emptyPublisherPayoutSummary);
   } catch (error) {
-    return safeOperationFallback(error, fallbackPublisherPayoutSummary, emptyPublisherPayoutSummary);
+    return emptyOnOperationError(error, emptyPublisherPayoutSummary);
   }
 }
 
@@ -4017,7 +2133,7 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
+    return emptyPublisherAccountSummary;
   }
 
   try {
@@ -4034,7 +2150,7 @@ export async function getPublisherAccountSummary(): Promise<PublisherAccountSumm
 
     return safeOperationValue((await response.json()) as PublisherAccountSummary, emptyPublisherAccountSummary);
   } catch (error) {
-    return safeOperationFallback(error, fallbackPublisherAccountSummary, emptyPublisherAccountSummary);
+    return emptyOnOperationError(error, emptyPublisherAccountSummary);
   }
 }
 
@@ -4042,7 +2158,7 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
+    return emptyOrganizationBillingSummary;
   }
 
   try {
@@ -4060,7 +2176,7 @@ export async function getOrganizationBillingSummary(): Promise<OrganizationBilli
     const payload = (await response.json()) as { billing: OrganizationBillingSummary };
     return safeOperationValue(payload.billing, emptyOrganizationBillingSummary);
   } catch (error) {
-    return safeOperationFallback(error, fallbackOrganizationBillingSummary, emptyOrganizationBillingSummary);
+    return emptyOnOperationError(error, emptyOrganizationBillingSummary);
   }
 }
 
@@ -4068,7 +2184,7 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackPublisherSkills, []);
+    return [];
   }
 
   try {
@@ -4086,7 +2202,7 @@ export async function getPublisherSkills(): Promise<PublisherSkillRecord[]> {
     const payload = (await response.json()) as { skills: PublisherSkillRecord[] };
     return safeOperationValue(payload.skills, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackPublisherSkills, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4094,7 +2210,7 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackBuyerRequests, []);
+    return [];
   }
 
   try {
@@ -4112,7 +2228,7 @@ export async function getPublisherBuyerRequests(): Promise<BuyerRequestRecord[]>
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
     return safeOperationValue(payload.requests, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackBuyerRequests, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4120,7 +2236,7 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackBuyerRequests, []);
+    return [];
   }
 
   try {
@@ -4138,7 +2254,7 @@ export async function getDeveloperBuyerRequests(): Promise<BuyerRequestRecord[]>
     const payload = (await response.json()) as { requests: BuyerRequestRecord[] };
     return safeOperationValue(payload.requests, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackBuyerRequests, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4146,7 +2262,7 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackDeveloperProjects, []);
+    return [];
   }
 
   try {
@@ -4164,17 +2280,15 @@ export async function getDeveloperProjects(): Promise<DeveloperProjectRecord[]> 
     const payload = (await response.json()) as { projects: DeveloperProjectRecord[] };
     return safeOperationValue(payload.projects, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackDeveloperProjects, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
 export async function getDeveloperProjectDetail(projectSlug: string): Promise<DeveloperProjectDetail | null> {
-  const demoProjectDetail = fallbackDeveloperProjectDetails.find((detail) => detail.project.slug === projectSlug) ?? null;
-  const fallback = demoFallback(demoProjectDetail, null);
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallback;
+    return null;
   }
 
   try {
@@ -4186,7 +2300,7 @@ export async function getDeveloperProjectDetail(projectSlug: string): Promise<De
     });
 
     if (response.status === 404) {
-      return fallback;
+      return null;
     }
 
     if (!response.ok) {
@@ -4196,16 +2310,15 @@ export async function getDeveloperProjectDetail(projectSlug: string): Promise<De
     const payload = (await response.json()) as { project: DeveloperProjectDetail };
     return safeOperationValue(payload.project, null);
   } catch {
-    return fallback;
+    return null;
   }
 }
 
 export async function getProjectRefunds(projectSlug: string): Promise<RefundRecord[]> {
-  const fallback = demoFallback(fallbackRefunds.filter((refund) => refund.projectSlug === projectSlug), []);
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallback;
+    return [];
   }
 
   try {
@@ -4223,16 +2336,15 @@ export async function getProjectRefunds(projectSlug: string): Promise<RefundReco
     const payload = (await response.json()) as { refunds: RefundRecord[] };
     return safeOperationValue(payload.refunds, []);
   } catch {
-    return fallback;
+    return [];
   }
 }
 
 export async function getProjectDisputes(projectSlug: string): Promise<DisputeRecord[]> {
-  const fallback = demoFallback(fallbackDisputes.filter((dispute) => dispute.projectSlug === projectSlug), []);
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return fallback;
+    return [];
   }
 
   try {
@@ -4250,7 +2362,7 @@ export async function getProjectDisputes(projectSlug: string): Promise<DisputeRe
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
     return safeOperationValue(payload.disputes, []);
   } catch {
-    return fallback;
+    return [];
   }
 }
 
@@ -4258,7 +2370,7 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackRefunds, []);
+    return [];
   }
 
   try {
@@ -4276,7 +2388,7 @@ export async function getPublisherRefunds(): Promise<RefundRecord[]> {
     const payload = (await response.json()) as { refunds: RefundRecord[] };
     return safeOperationValue(payload.refunds, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackRefunds, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4284,7 +2396,7 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
   const token = await readWorkspaceToken();
 
   if (!token) {
-    return demoFallback(fallbackDisputes, []);
+    return [];
   }
 
   try {
@@ -4302,7 +2414,7 @@ export async function getPublisherDisputes(): Promise<DisputeRecord[]> {
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
     return safeOperationValue(payload.disputes, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackDisputes, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4310,7 +2422,7 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackRefunds, []);
+    return [];
   }
 
   try {
@@ -4328,7 +2440,7 @@ export async function getAdminRefunds(): Promise<RefundRecord[]> {
     const payload = (await response.json()) as { refunds: RefundRecord[] };
     return safeOperationValue(payload.refunds, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackRefunds, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4336,7 +2448,7 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackDisputes, []);
+    return [];
   }
 
   try {
@@ -4354,7 +2466,7 @@ export async function getAdminDisputes(): Promise<DisputeRecord[]> {
     const payload = (await response.json()) as { disputes: DisputeRecord[] };
     return safeOperationValue(payload.disputes, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackDisputes, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4362,7 +2474,7 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackAbuseReports, []);
+    return [];
   }
 
   try {
@@ -4380,7 +2492,7 @@ export async function getAdminAbuseReports(): Promise<AbuseReportRecord[]> {
     const payload = (await response.json()) as { reports: AbuseReportRecord[] };
     return safeOperationValue(payload.reports, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackAbuseReports, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4388,7 +2500,7 @@ export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackAdminIncidents, []);
+    return [];
   }
 
   try {
@@ -4406,7 +2518,7 @@ export async function getAdminIncidents(): Promise<AdminIncidentRecord[]> {
     const payload = (await response.json()) as { incidents: AdminIncidentRecord[] };
     return safeOperationValue(payload.incidents, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackAdminIncidents, []);
+    return emptyOnOperationError(error, []);
   }
 }
 
@@ -4414,7 +2526,7 @@ export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
   const token = await readAdminOperatorToken();
 
   if (!token) {
-    return demoFallback(fallbackSkillFeedback, []);
+    return [];
   }
 
   try {
@@ -4432,7 +2544,7 @@ export async function getAdminSkillFeedback(): Promise<SkillFeedbackRecord[]> {
     const payload = (await response.json()) as { feedback: SkillFeedbackRecord[] };
     return safeOperationValue(payload.feedback, []);
   } catch (error) {
-    return safeOperationFallback(error, fallbackSkillFeedback, []);
+    return emptyOnOperationError(error, []);
   }
 }
 

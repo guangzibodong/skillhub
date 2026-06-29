@@ -137,7 +137,7 @@ export async function listPublisherSkills(organizationId: string | null | undefi
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackPublisherSkills(limit);
+    return [];
   }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
@@ -486,174 +486,6 @@ export async function listPublisherSkills(organizationId: string | null | undefi
   return rows.map((row) => mapPublisherSkill(row, appealBySkillId.get(row.id) ?? null));
 }
 
-async function fallbackPublisherSkills(limit: number) {
-  const skills = await searchSkills({ limit });
-
-  return skills.map((skill, index) => {
-    const calls = index === 0 ? 18400 : index === 1 ? 9200 : 0;
-    const successCount = Math.floor(calls * 0.96);
-    const errorCount = Math.max(calls - successCount, 0);
-    const runtimeFailedCount = skill.verificationStatus === "verified" ? 0 : 1;
-    const runtimeChecks = runtimeCheckSummaries(runtimeFailedCount);
-    const reviewStatus = skill.verificationStatus === "verified" ? "approved" : "queued";
-    const reviewDecidedAt = skill.verificationStatus === "verified" ? "demo" : null;
-    const reviewSla = buildReviewSlaFields("demo", reviewDecidedAt, reviewStatus);
-
-    return {
-      id: skill.id,
-      slug: skill.slug,
-      displayName: skill.displayName,
-      description: skill.description,
-      version: skill.version,
-      visibility: "public",
-      verificationStatus: skill.verificationStatus,
-      permissionLevel: skill.permissionLevel,
-      review: {
-        status: reviewStatus,
-        riskLevel: skill.permissionLevel,
-        notes: skill.verificationStatus === "verified" ? "Demo listing approved." : "Needs operator review.",
-        decidedAt: reviewDecidedAt,
-        ...reviewSla
-      },
-      runtime: {
-        checkCount: runtimeChecks.length,
-        passedCount: runtimeChecks.filter((check) => check.status === "passed").length,
-        failedCount: runtimeFailedCount,
-        warningCount: runtimeChecks.filter((check) => check.status === "warning").length,
-        health: runtimeFailedCount ? "needs_attention" : "healthy",
-        checks: runtimeChecks
-      },
-      analytics: {
-        installCount: index === 0 ? 46 : 12,
-        callCount: calls,
-        successCount,
-        errorCount,
-        blockedCount: 0,
-        successRate: calls > 0 ? successCount / calls : null,
-        avgLatencyMs: calls > 0 ? 1280 + index * 140 : null,
-        billableUsageCount: index === 0 ? 12400 : 0,
-        grossCents: index === 0 ? 248000 : 0,
-        currency: "usd"
-      },
-      pricing: {
-        billingModel: index === 0 ? "per_call" : "free",
-        unitAmountCents: index === 0 ? 2 : 0,
-        status: "active"
-      },
-      commercial: {
-        blockers: index === 0 ? [] : (["review", "payout", "terms"] as CommercialBlocker[]),
-        paidActivationReady: index === 0,
-        payoutStatus: index === 0 ? "verified" : "verification_required",
-        publisherStatus: "active",
-        requiresTermsVersion: CURRENT_PUBLISHER_TERMS_VERSION,
-        termsAcceptedAt: index === 0 ? "demo" : null,
-        termsVersion: index === 0 ? CURRENT_PUBLISHER_TERMS_VERSION : null
-      },
-      feedback: {
-        averageRating: index === 0 ? 4.7 : null,
-        publishedCount: index === 0 ? 18 : 0,
-        pendingCount: index === 0 ? 2 : 0
-      },
-      quality: {
-        score: index === 0 ? 86 : 64,
-        installSuccessRate: calls > 0 ? 0.96 : null,
-        incidentCount: runtimeFailedCount,
-        checklist: buildChecklist({
-          hasManifest: true,
-          hasReviewSignal: skill.verificationStatus !== "draft",
-          hasRuntimeHealth: !runtimeFailedCount,
-          hasPricing: true,
-          hasUsage: calls > 0
-        })
-      },
-      marketplace: {
-        placement: index === 0 ? "featured" : "standard",
-        reason:
-          index === 0
-            ? "Verified, healthy runtime, and strong published feedback."
-            : "Keep improving runtime checks before featured placement.",
-        endsAt: null,
-        updatedAt: "demo",
-        appeal:
-          index === 1
-            ? {
-                appealReason: "Runtime check evidence was updated and the publisher requested standard placement.",
-                createdAt: "demo",
-                currentPlacement: "suppressed" as const,
-                decidedAt: null,
-                id: "demo-curation-appeal-dataset-summarizer",
-                operatorReason: null,
-                requestType: "suppression_appeal" as const,
-                requestedPlacement: "standard" as const,
-                skillId: skill.id,
-                slaDueAt: "demo",
-                status: "open" as const
-              }
-            : null,
-        improvementHints:
-          index === 0
-            ? [{ key: "maintain_quality", severity: "positive" as const }]
-            : [
-                { key: "fix_runtime_checks", severity: "critical" as const },
-                { key: "collect_feedback", severity: "warning" as const }
-              ]
-      },
-      recentFeedback:
-        index === 0
-          ? [
-              {
-                body:
-                  "The manifest is clear, permissions match the browser workflow, and the output shape is stable enough for scheduled research agents.",
-                createdAt: "demo",
-                id: "demo-feedback-browser-research-1",
-                moderationReason: "Public demo feedback.",
-                moderatedAt: "demo",
-                projectSlug: "research-agent",
-                publishedAt: "demo",
-                publisherResponseBody:
-                  "Thanks for the detailed production note. We are keeping source shape changes behind reviewed versions so pinned agent projects remain stable.",
-                publisherRespondedAt: "demo",
-                publisherResponderDisplayName: "SkillHub Labs",
-                rating: 5,
-                reviewerDisplayName: "Research Agent Ops",
-                reviewerEmail: null,
-                reviewerOrganizationName: "SkillHub Demo Org",
-                skillId: skill.id,
-                skillName: skill.displayName,
-                skillSlug: skill.slug,
-                status: "published" as const,
-                title: "Reliable source gathering for daily briefings",
-                updatedAt: "demo",
-                useCase: "Daily market and policy research briefings"
-              }
-            ]
-          : [],
-      versions: [
-        {
-          callCount: calls,
-          createdAt: "demo",
-          id: `${skill.id}-${skill.version}`,
-          installCount: index === 0 ? 46 : 12,
-          manifest: fallbackManifestForSummary(skill),
-          reviewDecidedAt,
-          reviewNotes: skill.verificationStatus === "verified" ? "Demo listing approved." : "Needs operator review.",
-          reviewRiskLevel: skill.permissionLevel,
-          reviewStatus,
-          ...reviewSla,
-          runtimeCheckCount: runtimeChecks.length,
-          runtimeChecks,
-          runtimeFailedCount,
-          runtimePassedCount: runtimeChecks.filter((check) => check.status === "passed").length,
-          runtimeWarningCount: runtimeChecks.filter((check) => check.status === "warning").length,
-          status: skill.verificationStatus === "verified" ? ("verified" as const) : ("submitted" as const),
-          version: skill.version
-        }
-      ],
-      updatedAt: "demo"
-    };
-  });
-}
-
 export async function listPublisherSkillVersions(
   organizationId: string | null | undefined,
   skillSlug: string,
@@ -662,8 +494,7 @@ export async function listPublisherSkillVersions(
   const sql = await getSql();
 
   if (!sql) {
-    const fallback = await fallbackPublisherSkills(limit);
-    return fallback.find((skill) => skill.slug === skillSlug)?.versions ?? [];
+    return [];
   }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 50);
@@ -898,15 +729,15 @@ function normalizeVersionSummaries(value: Array<Partial<PublisherSkillVersionSum
   return value.map((version) => {
     const reviewStatus = typeof version.reviewStatus === "string" ? version.reviewStatus : null;
     const reviewSubmittedAt =
-      typeof version.reviewSubmittedAt === "string" ? version.reviewSubmittedAt : reviewStatus ? String(version.createdAt ?? "demo") : null;
+      typeof version.reviewSubmittedAt === "string" ? version.reviewSubmittedAt : reviewStatus ? String(version.createdAt ?? "") : null;
     const reviewSla = buildReviewSlaFields(reviewSubmittedAt, version.reviewDecidedAt ?? null, reviewStatus);
 
     return {
       callCount: Number(version.callCount ?? 0),
-      createdAt: String(version.createdAt ?? "demo"),
+      createdAt: String(version.createdAt ?? ""),
       id: String(version.id ?? version.version ?? "version"),
       installCount: Number(version.installCount ?? 0),
-      manifest: isSkillManifestLike(version.manifest) ? version.manifest : fallbackManifestForVersion(String(version.version ?? "0.1.0")),
+      manifest: requireSkillManifest(version.manifest),
       reviewDecidedAt: version.reviewDecidedAt ?? null,
       reviewNotes: version.reviewNotes ?? null,
       reviewRiskLevel: version.reviewRiskLevel ?? null,
@@ -930,7 +761,7 @@ function normalizePublisherFeedback(value: Array<Partial<PublisherSkillFeedbackS
 
   return value.map((feedback) => ({
     body: String(feedback.body ?? ""),
-    createdAt: String(feedback.createdAt ?? "demo"),
+    createdAt: String(feedback.createdAt ?? ""),
     id: String(feedback.id ?? "feedback"),
     moderatedAt: feedback.moderatedAt ?? null,
     moderationReason: feedback.moderationReason ?? null,
@@ -948,7 +779,7 @@ function normalizePublisherFeedback(value: Array<Partial<PublisherSkillFeedbackS
     skillSlug: String(feedback.skillSlug ?? ""),
     status: "published",
     title: String(feedback.title ?? "Feedback"),
-    updatedAt: String(feedback.updatedAt ?? feedback.createdAt ?? "demo"),
+    updatedAt: String(feedback.updatedAt ?? feedback.createdAt ?? ""),
     useCase: feedback.useCase ?? null
   }));
 }
@@ -996,110 +827,12 @@ function isSkillManifestLike(value: unknown): value is SkillManifest {
   return Boolean(value && typeof value === "object" && !Array.isArray(value) && "name" in value && "version" in value);
 }
 
-function fallbackManifestForSummary(skill: SkillSummary): SkillManifest {
-  return {
-    schemaVersion: "0.1",
-    name: skill.slug,
-    displayName: skill.displayName,
-    version: skill.version,
-    description: skill.description,
-    tags: skill.tags,
-    runtime:
-      skill.runtimeType === "mcp"
-        ? { type: "mcp", serverUrl: "https://api.useskillhub.com/demo/mcp" }
-        : skill.runtimeType === "local"
-          ? { type: "local", command: "skillhub-demo" }
-          : { type: "http", entrypoint: "https://api.useskillhub.com/demo/runtime" },
-    permissions: {
-      browser: skill.permissionLevel === "medium",
-      filesystem: skill.permissionLevel === "high" ? "write" : "none",
-      network: skill.permissionLevel !== "low",
-      secrets: []
-    },
-    inputSchema: {
-      properties: {},
-      type: "object"
-    },
-    outputSchema: {
-      properties: {},
-      type: "object"
-    }
-  };
-}
+function requireSkillManifest(value: unknown): SkillManifest {
+  if (isSkillManifestLike(value)) {
+    return value;
+  }
 
-function fallbackManifestForVersion(version: string): SkillManifest {
-  return {
-    ...fallbackManifestForSummary({
-      description: "Draft SkillHub skill version.",
-      displayName: "Draft skill",
-      id: "draft-skill",
-      permissionLevel: "low",
-      slug: "draft-skill",
-      tags: ["draft"],
-      verificationStatus: "draft",
-      version
-    }),
-    version
-  };
-}
-
-function runtimeCheckSummaries(failedCount: number): RuntimeCheckSummary[] {
-  const hasFailure = failedCount > 0;
-
-  return [
-    {
-      checkType: "manifest",
-      fixCategory: "manifest",
-      isBlocking: false,
-      status: "passed",
-      message: "Manifest contract includes required fields.",
-      nextAction: "No manifest repair is needed.",
-      targetField: null,
-      latencyMs: null,
-      checkedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      checkType: "runtime",
-      fixCategory: "runtime",
-      isBlocking: hasFailure,
-      status: hasFailure ? "failed" : "passed",
-      message: hasFailure ? "Runtime declaration needs a reachable secure endpoint." : "Runtime declaration is ready for review.",
-      nextAction: hasFailure
-        ? "Use a reachable HTTPS endpoint before resubmitting this version."
-        : "No runtime declaration repair is needed.",
-      targetField: "runtime.entrypoint",
-      latencyMs: hasFailure ? null : 120,
-      checkedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      checkType: "example",
-      fixCategory: "example",
-      isBlocking: false,
-      status: hasFailure ? "warning" : "passed",
-      message: hasFailure ? "Example schemas should include concrete fields before approval." : "Example schemas are ready for invocation review.",
-      nextAction: hasFailure
-        ? "Add concrete input and output properties so reviewers and developers can test the skill."
-        : "No example schema repair is needed.",
-      targetField: hasFailure ? "inputSchema.properties/outputSchema.properties" : null,
-      latencyMs: null,
-      checkedAt: "demo",
-      createdAt: "demo"
-    },
-    {
-      checkType: "security",
-      fixCategory: "security",
-      isBlocking: false,
-      status: "passed",
-      message: "Permission profile is compatible with review gates.",
-      nextAction: "No security repair is needed.",
-      targetField: null,
-      latencyMs: null,
-      checkedAt: "demo",
-      createdAt: "demo"
-    }
-  ];
+  throw new Error("Publisher skill version is missing a persisted manifest.");
 }
 
 function buildChecklist(input: {

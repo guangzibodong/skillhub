@@ -1,19 +1,21 @@
+import registryStyles from "@/components/registry-v2.module.css";
 import {
   ArrowRight,
   Boxes,
   Code2,
   ExternalLink,
-  FileJson,
-  KeyRound,
   PackageCheck,
   Plus,
-  SearchCheck,
   ShieldCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 import type { SkillSummary } from "@useskillhub/schema";
 import { AppShell } from "@/components/app-shell";
-import { getLocaleFromSearchParams, localizedHref, type Locale } from "@/lib/i18n";
+import {
+  getLocaleFromSearchParams,
+  localizedHref,
+  type Locale,
+} from "@/lib/i18n";
 import {
   publicSkillDescription,
   publicSkillDisplayName,
@@ -21,6 +23,7 @@ import {
 } from "@/lib/public-skill-localization";
 import { getSkills } from "@/lib/registry";
 import { buildLocalizedMetadata } from "@/lib/seo";
+import { getPublicApiUrl } from "@/lib/api-url";
 
 export const dynamic = "force-dynamic";
 
@@ -65,20 +68,44 @@ const registryCopy = {
     heroBody:
       "Registry is not another search page. It records each Skill version, manifest, schema, permission, runtime, and review state so developers, publishers, and AI agents can inspect contract boundaries before invocation.",
     heroProof: [
-      ["Contract first", "Versioned contracts come before public display and project adoption."],
-      ["Machine-readable", "Agents can inspect slug, schema, runtime, permissions, and status."],
-      ["Runtime gated", "Real calls require Project Keys, policy approval, and audit evidence."],
+      [
+        "Contract first",
+        "Versioned contracts come before public display and project adoption.",
+      ],
+      [
+        "Machine-readable",
+        "Agents can inspect slug, schema, runtime, permissions, and status.",
+      ],
+      [
+        "Runtime gated",
+        "Real calls require Project Keys, policy approval, and audit evidence.",
+      ],
     ],
     console: {
       title: "support-triage · v0.1.0",
       status: "verified contract",
-      body:
-        "Classifies support tickets by priority, topic, and recommended response. Public contract inspection is available; runtime requires project adoption.",
+      body: "Classifies support tickets by priority, topic, and recommended response. Public contract inspection is available; runtime requires project adoption.",
       endpoint: "https://api.useskillhub.com/v1/skills/support-triage",
-      input: ["Input schema", "ticketText: string", "Customer message or support ticket body."],
-      output: ["Output schema", "priority · category · reply", "Structured output for the next agent step."],
-      permissions: ["Permissions", "network: false", "No browser, filesystem, or secrets."],
-      runtime: ["Runtime", "HTTP endpoint", "Resolved through the governed gateway after project adoption."],
+      input: [
+        "Input schema",
+        "ticketText: string",
+        "Customer message or support ticket body.",
+      ],
+      output: [
+        "Output schema",
+        "priority · category · reply",
+        "Structured output for the next agent step.",
+      ],
+      permissions: [
+        "Permissions",
+        "network: false",
+        "No browser, filesystem, or secrets.",
+      ],
+      runtime: [
+        "Runtime",
+        "HTTP endpoint",
+        "Resolved through the governed gateway after project adoption.",
+      ],
       signals:
         "Public Skills, verified contracts, MCP contracts, and call records come from the live registry.",
       runtimeBoundary:
@@ -100,53 +127,114 @@ const registryCopy = {
     },
     fit: {
       eyebrow: "Where Registry Fits",
-      title: "Separate finding Skills, reading contracts, and running projects.",
-      body:
-        "Visitors should not see a duplicate marketplace here. This page explains SkillHub's protocol layer: what is public, what is reviewed, and what requires signed-in project runtime.",
+      title:
+        "Separate finding Skills, reading contracts, and running projects.",
+      body: "Visitors should not see a duplicate marketplace here. This page explains SkillHub's protocol layer: what is public, what is reviewed, and what requires signed-in project runtime.",
       cards: [
-        ["Marketplace", "Human discovery: categories, search, pricing intent, publisher trust, examples, and adoption comparison.", ["search", "pricing", "publisher"]],
-        ["Skill API", "Agent and system contract layer: slug, version, schema, runtime, permissions, review state, and endpoints.", ["manifest", "schema", "permissions"]],
-        ["Workspace runtime", "Real adoption and execution: project install, version pinning, Project Key, policy approval, logs, and usage.", ["project key", "policy", "logs"]],
+        [
+          "Marketplace",
+          "Human discovery: categories, search, pricing intent, publisher trust, examples, and adoption comparison.",
+          ["search", "pricing", "publisher"],
+        ],
+        [
+          "Skill API",
+          "Agent and system contract layer: slug, version, schema, runtime, permissions, review state, and endpoints.",
+          ["manifest", "schema", "permissions"],
+        ],
+        [
+          "Workspace runtime",
+          "Real adoption and execution: project install, version pinning, Project Key, policy approval, logs, and usage.",
+          ["project key", "policy", "logs"],
+        ],
       ],
     },
     lifecycle: {
       eyebrow: "Contract Lifecycle",
       title: "Every step from publisher contract to agent call has state.",
-      body:
-        "Registry turns Skills into inspectable operating records, not marketing cards. Agents can call them only after the project path pins a version and applies policy.",
+      body: "Registry turns Skills into inspectable operating records, not marketing cards. Agents can call them only after the project path pins a version and applies policy.",
       steps: [
-        ["Draft", "Publisher saves manifest, schema, permissions, runtime, examples, and support details."],
-        ["Review", "Automated checks and human review evaluate version, risk, examples, and runtime boundaries."],
-        ["Verified", "Approved versions become public contracts for developers and agents to inspect."],
-        ["Adopt", "Signed-in projects pin the version, approve policy, and create a Project Key."],
-        ["Invoke", "REST or MCP calls pass through the gateway and leave invocation, usage, and audit records."],
+        [
+          "Draft",
+          "Publisher saves manifest, schema, permissions, runtime, examples, and support details.",
+        ],
+        [
+          "Review",
+          "Automated checks and human review evaluate version, risk, examples, and runtime boundaries.",
+        ],
+        [
+          "Verified",
+          "Approved versions become public contracts for developers and agents to inspect.",
+        ],
+        [
+          "Adopt",
+          "Signed-in projects pin the version, approve policy, and create a Project Key.",
+        ],
+        [
+          "Invoke",
+          "REST or MCP calls pass through the gateway and leave invocation, usage, and audit records.",
+        ],
       ],
     },
     manifest: {
       eyebrow: "Manifest Quality Bar",
       title: "Every Skill contract must answer six questions.",
-      body:
-        "This makes clear why a Skill can be read by agents, reviewed by teams, and adopted by projects.",
+      body: "This makes clear why a Skill can be read by agents, reviewed by teams, and adopted by projects.",
       fields: [
-        ["Identity", "Who is it?", "name, displayName, semantic version, category, tags, support, and changelog."],
-        ["Runtime", "Where does it run?", "HTTP, MCP, or restricted local runtime, including target, transport, and health posture."],
-        ["Schema", "What are inputs and outputs?", "inputSchema, outputSchema, required fields, examples, and typed result shape."],
-        ["Permission", "What can it access?", "Network, browser, filesystem, secrets, sensitive data, and write/payment workflow boundaries."],
-        ["Trust", "Has it been reviewed?", "Review status, checks, incidents, feedback, deprecation, and replacement path."],
-        ["Commercial", "Can it enter paid preview?", "Billing model, price intent, publisher terms, and finance-reviewed readiness."],
+        [
+          "Identity",
+          "Who is it?",
+          "name, displayName, semantic version, category, tags, support, and changelog.",
+        ],
+        [
+          "Runtime",
+          "Where does it run?",
+          "HTTP, MCP, or restricted local runtime, including target, transport, and health posture.",
+        ],
+        [
+          "Schema",
+          "What are inputs and outputs?",
+          "inputSchema, outputSchema, required fields, examples, and typed result shape.",
+        ],
+        [
+          "Permission",
+          "What can it access?",
+          "Network, browser, filesystem, secrets, sensitive data, and write/payment workflow boundaries.",
+        ],
+        [
+          "Trust",
+          "Has it been reviewed?",
+          "Review status, checks, incidents, feedback, deprecation, and replacement path.",
+        ],
+        [
+          "Commercial",
+          "Can it enter paid marketplace?",
+          "Billing model, price intent, publisher terms, and finance-reviewed readiness.",
+        ],
       ],
       policies: [
-        ["Public pages do not fake supply", "Production-like environments show live API results. Missing core registry tables render an empty state, not fake Skills."],
-        ["High-risk actions require project policy", "CRM write-back, publishing, payment, file writes, and sensitive data handling need Project Keys, policy, and approval boundaries."],
-        ["Agent-readable is not automatically runnable", "Agents can inspect public contracts; runtime still goes through install, version pinning, budgets, limits, and logs."],
+        [
+          "Public pages do not fake supply",
+          "Production-like environments show live API results. Missing core registry tables render an empty state, not fake Skills.",
+        ],
+        [
+          "High-risk actions require project policy",
+          "CRM write-back, publishing, payment, file writes, and sensitive data handling need Project Keys, policy, and approval boundaries.",
+        ],
+        [
+          "Agent-readable is not automatically runnable",
+          "Agents can inspect public contracts; runtime still goes through install, version pinning, budgets, limits, and logs.",
+        ],
       ],
     },
     quickstart: {
       eyebrow: "API Quickstart",
       title: "Inspect contracts first, then run inside a project.",
-      body:
-        "Public API endpoints are for discovery and inspection. Real runtime starts only after a team adopts a Skill into a project, pins a version, and creates a Project Key.",
-      tags: ["public discovery", "manifest inspection", "project-gated runtime"],
+      body: "Public API endpoints are for discovery and inspection. Real runtime starts only after a team adopts a Skill into a project, pins a version, and creates a Project Key.",
+      tags: [
+        "public discovery",
+        "manifest inspection",
+        "project-gated runtime",
+      ],
       comment: "Runtime starts after sign-in:",
       flow: "create project -> approve policy -> generate Project Key -> REST / MCP call",
       terminal: "terminal",
@@ -155,8 +243,7 @@ const registryCopy = {
     rows: {
       eyebrow: "Live Skill API Rows",
       title: "Versioned Skill contracts returned by the public API.",
-      body:
-        "The rows stay connected to live registry data while the page keeps search and comparison in Marketplace or API parameters.",
+      body: "The rows stay connected to live registry data while the page keeps search and comparison in Marketplace or API parameters.",
       emptyTitle: "No public Skill contracts yet",
       emptyBody:
         "The public registry returned no Skills. Production-like deployments should show an empty state rather than fake supply.",
@@ -166,9 +253,9 @@ const registryCopy = {
       aria: "Live Skill API contract rows",
     },
     closing: {
-      title: "Make Skills trusted contracts before they become runtime capabilities.",
-      body:
-        "Registry explains capability boundaries; Marketplace supports discovery and comparison; Workspace controls project adoption and runtime governance.",
+      title:
+        "Make Skills trusted contracts before they become runtime capabilities.",
+      body: "Registry explains capability boundaries; Marketplace supports discovery and comparison; Workspace controls project adoption and call permissions and logs.",
     },
     metrics: {
       publicSkills: "Public Skills",
@@ -205,13 +292,28 @@ const registryCopy = {
     console: {
       title: "support-triage · v0.1.0",
       status: "已验证合约",
-      body:
-        "将客服消息分类为优先级、主题和建议回复。公开页面可检查合约，真实运行需要项目接入。",
+      body: "将客服消息分类为优先级、主题和建议回复。公开页面可检查合约，真实运行需要项目接入。",
       endpoint: "https://api.useskillhub.com/v1/skills/support-triage",
-      input: ["Input schema", "ticketText: string", "客户消息或工单正文，作为分类与回复建议的输入。"],
-      output: ["Output schema", "priority · category · reply", "输出结构化结果，方便 Agent 决定下一步动作。"],
-      permissions: ["Permissions", "network: false", "无浏览器、无文件系统、无 secret，风险边界可审查。"],
-      runtime: ["Runtime", "HTTP endpoint", "项目采用后通过治理网关解析版本和策略。"],
+      input: [
+        "Input schema",
+        "ticketText: string",
+        "客户消息或工单正文，作为分类与回复建议的输入。",
+      ],
+      output: [
+        "Output schema",
+        "priority · category · reply",
+        "输出结构化结果，方便 Agent 决定下一步动作。",
+      ],
+      permissions: [
+        "Permissions",
+        "network: false",
+        "无浏览器、无文件系统、无 secret，风险边界可审查。",
+      ],
+      runtime: [
+        "Runtime",
+        "HTTP endpoint",
+        "项目采用后通过治理网关解析版本和策略。",
+      ],
       signals:
         "公开 Skill、已验证合约、MCP 合约和调用记录来自 live registry，不用假数据填充。",
       runtimeBoundary:
@@ -234,21 +336,34 @@ const registryCopy = {
     fit: {
       eyebrow: "Registry 的位置",
       title: "把“找技能、读合约、接入运行”的边界讲清楚。",
-      body:
-        "用户来到 Registry 时，不应该再看到一个重复的筛选市场。这里解释 SkillHub 的协议层：哪些字段公开可读，哪些状态来自审核，哪些动作必须进入项目工作台。",
+      body: "用户来到 Registry 时，不应该再看到一个重复的筛选市场。这里解释 SkillHub 的协议层：哪些字段公开可读，哪些状态来自审核，哪些动作必须进入项目工作台。",
       cards: [
-        ["Marketplace", "给人看的发现入口：分类、搜索、价格意图、发布者信任、示例和采用对比。", ["search", "pricing", "publisher"]],
-        ["Skill API", "给 Agent 和系统看的合约层：slug、version、schema、runtime、权限、审核状态和 endpoint。", ["manifest", "schema", "permissions"]],
-        ["Workspace runtime", "真实采用和运行：项目安装、版本固定、Project Key、策略审批、调用日志和用量记录。", ["project key", "policy", "logs"]],
+        [
+          "Marketplace",
+          "给人看的发现入口：分类、搜索、价格意图、发布者信任、示例和采用对比。",
+          ["search", "pricing", "publisher"],
+        ],
+        [
+          "Skill API",
+          "给 Agent 和系统看的合约层：slug、version、schema、runtime、权限、审核状态和 endpoint。",
+          ["manifest", "schema", "permissions"],
+        ],
+        [
+          "Workspace runtime",
+          "真实采用和运行：项目安装、版本固定、Project Key、策略审批、调用日志和用量记录。",
+          ["project key", "policy", "logs"],
+        ],
       ],
     },
     lifecycle: {
       eyebrow: "合约生命周期",
       title: "从发布合约到 Agent 调用，每一步都有状态。",
-      body:
-        "Registry 的价值不是展示更多卡片，而是让 Skill 从草稿、审核、批准、项目采用到运行调用都有可检查状态。这样 Agent 能调用，团队也能审查。",
+      body: "Registry 的价值不是展示更多卡片，而是让 Skill 从草稿、审核、批准、项目采用到运行调用都有可检查状态。这样 Agent 能调用，团队也能审查。",
       steps: [
-        ["Draft", "发布者保存 manifest、schema、权限、运行时、示例和支持信息。"],
+        [
+          "Draft",
+          "发布者保存 manifest、schema、权限、运行时、示例和支持信息。",
+        ],
         ["Review", "自动检查和人工审核确认版本、风险、示例和运行边界。"],
         ["Verified", "已验证版本进入公开合约层，可供开发者和 Agent 检查。"],
         ["Adopt", "登录后的项目固定版本，审批策略并生成 Project Key。"],
@@ -258,28 +373,63 @@ const registryCopy = {
     manifest: {
       eyebrow: "Manifest 质量线",
       title: "每个 Skill 合约必须回答六个问题。",
-      body:
-        "这让页面真正解释 SkillHub 的规则：一个 Skill 为什么可以被 Agent 读取、被团队审查、被项目采用。",
+      body: "这让页面真正解释 SkillHub 的规则：一个 Skill 为什么可以被 Agent 读取、被团队审查、被项目采用。",
       fields: [
-        ["Identity", "它是谁？", "name、displayName、语义化版本、分类、标签、支持和变更记录。"],
-        ["Runtime", "在哪里运行？", "HTTP、MCP 或受限本地运行时，以及目标、传输和健康状态。"],
-        ["Schema", "输入输出是什么？", "inputSchema、outputSchema、必填字段、示例和类型化结果。"],
-        ["Permission", "能访问什么？", "网络、浏览器、文件系统、secret、敏感数据和写回动作边界。"],
-        ["Trust", "是否被审查？", "审核状态、检查结果、事件、反馈、弃用和替代路径。"],
-        ["Commercial", "能否进入付费预览？", "计费模型、价格意图、发布者条款和财务准备状态。"],
+        [
+          "Identity",
+          "它是谁？",
+          "name、displayName、语义化版本、分类、标签、支持和变更记录。",
+        ],
+        [
+          "Runtime",
+          "在哪里运行？",
+          "HTTP、MCP 或受限本地运行时，以及目标、传输和健康状态。",
+        ],
+        [
+          "Schema",
+          "输入输出是什么？",
+          "inputSchema、outputSchema、必填字段、示例和类型化结果。",
+        ],
+        [
+          "Permission",
+          "能访问什么？",
+          "网络、浏览器、文件系统、secret、敏感数据和写回动作边界。",
+        ],
+        [
+          "Trust",
+          "是否被审查？",
+          "审核状态、检查结果、事件、反馈、弃用和替代路径。",
+        ],
+        [
+          "Commercial",
+          "能否进入付费预览？",
+          "计费模型、价格意图、发布者条款和财务准备状态。",
+        ],
       ],
       policies: [
-        ["公开页面不会伪造供给", "生产类环境只展示 live API 结果。缺少核心 registry 表时显示空状态，而不是填充假 Skill。"],
-        ["高风险动作必须进入项目策略", "写回 CRM、发布内容、支付、文件写入和敏感数据处理，需要 Project Key、策略和人工审批边界。"],
-        ["Agent 可读不等于自动运行", "Agent 可以检查公开合约；真实调用仍经过安装、版本固定、预算、限流和日志。"],
+        [
+          "公开页面不会伪造供给",
+          "生产类环境只展示 live API 结果。缺少核心 registry 表时显示空状态，而不是填充假 Skill。",
+        ],
+        [
+          "高风险动作必须进入项目策略",
+          "写回 CRM、发布内容、支付、文件写入和敏感数据处理，需要 Project Key、策略和人工审批边界。",
+        ],
+        [
+          "Agent 可读不等于自动运行",
+          "Agent 可以检查公开合约；真实调用仍经过安装、版本固定、预算、限流和日志。",
+        ],
       ],
     },
     quickstart: {
       eyebrow: "API Quickstart",
       title: "先查合约，再进项目运行。",
-      body:
-        "公开 API 用于发现和检查，不需要登录。只有当团队要把 Skill 接入项目、固定版本、生成 Key 并运行时，才进入工作台。",
-      tags: ["public discovery", "manifest inspection", "project-gated runtime"],
+      body: "公开 API 用于发现和检查，不需要登录。只有当团队要把 Skill 接入项目、固定版本、生成 Key 并运行时，才进入工作台。",
+      tags: [
+        "public discovery",
+        "manifest inspection",
+        "project-gated runtime",
+      ],
       comment: "真实运行从登录后开始：",
       flow: "创建项目 -> 审批策略 -> 生成 Project Key -> REST / MCP 调用",
       terminal: "terminal",
@@ -288,8 +438,7 @@ const registryCopy = {
     rows: {
       eyebrow: "Live Skill API Rows",
       title: "公开 API 返回的版本化 Skill 合约。",
-      body:
-        "这里保留实时 registry 数据，但视觉上更像 API 输出而不是普通内容列表。搜索和筛选仍交给 Marketplace 或 API 参数。",
+      body: "这里保留实时 registry 数据，但视觉上更像 API 输出而不是普通内容列表。搜索和筛选仍交给 Marketplace 或 API 参数。",
       emptyTitle: "暂无公开 Skill 合约",
       emptyBody:
         "公开 registry 当前没有返回 Skill。生产类部署应显示空状态，而不是用假数据填充。",
@@ -300,8 +449,7 @@ const registryCopy = {
     },
     closing: {
       title: "让 Skill 先成为可信合约，再成为可运行能力。",
-      body:
-        "Registry 负责把能力边界讲清楚；Marketplace 负责发现和比较；Workspace 负责项目采用与运行治理。",
+      body: "Registry 负责把能力边界讲清楚；Marketplace 负责发现和比较；Workspace 负责项目采用与调用权限与记录。",
     },
     metrics: {
       publicSkills: "公开 Skill",
@@ -336,21 +484,34 @@ const manifestSnippet = `{
 export default async function RegistryPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const locale = getLocaleFromSearchParams(params);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "https://api.useskillhub.com";
+  const apiUrl =
+    getPublicApiUrl();
   const copy = registryCopy[locale];
   const skills = await getSkills();
   const registryMetrics = getRegistryMetrics(skills);
 
   const visibleMetrics = [
-    { label: copy.metrics.publicSkills, value: String(registryMetrics.publicSkills) },
-    { label: copy.metrics.totalSkillRecords, value: String(registryMetrics.totalSkillRecords) },
-    { label: copy.metrics.verifiedSkills, value: String(registryMetrics.verifiedSkills) },
-    { label: copy.metrics.callableSkills, value: String(registryMetrics.callableSkills) },
+    {
+      label: copy.metrics.publicSkills,
+      value: String(registryMetrics.publicSkills),
+    },
+    {
+      label: copy.metrics.totalSkillRecords,
+      value: String(registryMetrics.totalSkillRecords),
+    },
+    {
+      label: copy.metrics.verifiedSkills,
+      value: String(registryMetrics.verifiedSkills),
+    },
+    {
+      label: copy.metrics.callableSkills,
+      value: String(registryMetrics.callableSkills),
+    },
   ];
 
   return (
     <AppShell active="registry" locale={locale}>
-      <main className="registry-v2">
+      <main className={`registry-v2 ${registryStyles.registryStyles}`}>
         <section className="registry-v2-hero">
           <div className="registry-v2-shell registry-v2-hero__grid">
             <div className="registry-v2-hero__copy">
@@ -365,15 +526,24 @@ export default async function RegistryPage({ searchParams }: PageProps) {
               </h1>
               <p>{copy.heroBody}</p>
               <div className="registry-v2-actions">
-                <a className="registry-v2-button registry-v2-button--primary" href={`${apiUrl}/v1/skills/search?limit=20`}>
+                <a
+                  className="registry-v2-button registry-v2-button--primary"
+                  href={`${apiUrl}/v1/skills/search?limit=20`}
+                >
                   <Code2 size={16} aria-hidden="true" />
                   <span>{copy.actions.api}</span>
                 </a>
-                <a className="registry-v2-button" href={localizedHref("/marketplace", locale)}>
+                <a
+                  className="registry-v2-button"
+                  href={localizedHref("/marketplace", locale)}
+                >
                   <ArrowRight size={16} aria-hidden="true" />
                   <span>{copy.actions.marketplace}</span>
                 </a>
-                <a className="registry-v2-button registry-v2-button--quiet" href={localizedHref("/publish", locale)}>
+                <a
+                  className="registry-v2-button registry-v2-button--quiet"
+                  href={localizedHref("/publish", locale)}
+                >
                   <Plus size={16} aria-hidden="true" />
                   <span>{copy.actions.submit}</span>
                 </a>
@@ -394,50 +564,11 @@ export default async function RegistryPage({ searchParams }: PageProps) {
 
         <section className="registry-v2-section">
           <div className="registry-v2-shell">
-            <SectionHeading body={copy.fit.body} eyebrow={copy.fit.eyebrow} title={copy.fit.title} />
-            <div className="registry-v2-surface-grid">
-              {copy.fit.cards.map(([title, body, tags], index) => {
-                const Icon = index === 0 ? SearchCheck : index === 1 ? FileJson : KeyRound;
-
-                return (
-                  <article className="registry-v2-card" key={title}>
-                    <span className="registry-v2-card__icon">
-                      <Icon size={17} aria-hidden="true" />
-                    </span>
-                    <h3>{title}</h3>
-                    <p>{body}</p>
-                    <div className="registry-v2-tags">
-                      {tags.map((tag) => (
-                        <span key={tag}>{tag}</span>
-                      ))}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="registry-v2-section">
-          <div className="registry-v2-shell">
-            <SectionHeading body={copy.lifecycle.body} eyebrow={copy.lifecycle.eyebrow} title={copy.lifecycle.title} />
-            <div className="registry-v2-lane-panel">
-              <div className="registry-v2-lane">
-                {copy.lifecycle.steps.map(([title, body], index) => (
-                  <article className="registry-v2-lane-step" key={title}>
-                    <span>{index + 1}</span>
-                    <strong>{title}</strong>
-                    <p>{body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="registry-v2-section">
-          <div className="registry-v2-shell">
-            <SectionHeading body={copy.manifest.body} eyebrow={copy.manifest.eyebrow} title={copy.manifest.title} />
+            <SectionHeading
+              body={copy.manifest.body}
+              eyebrow={copy.manifest.eyebrow}
+              title={copy.manifest.title}
+            />
             <div className="registry-v2-manifest-layout">
               <div className="registry-v2-field-grid">
                 {copy.manifest.fields.map(([eyebrow, title, body]) => (
@@ -492,7 +623,11 @@ export default async function RegistryPage({ searchParams }: PageProps) {
 
         <section className="registry-v2-section">
           <div className="registry-v2-shell">
-            <SectionHeading body={copy.rows.body} eyebrow={copy.rows.eyebrow} title={copy.rows.title} />
+            <SectionHeading
+              body={copy.rows.body}
+              eyebrow={copy.rows.eyebrow}
+              title={copy.rows.title}
+            />
             <div className="registry-v2-metrics" aria-label={copy.rows.eyebrow}>
               {visibleMetrics.map((metric) => (
                 <div className="registry-v2-metric" key={metric.label}>
@@ -501,26 +636,15 @@ export default async function RegistryPage({ searchParams }: PageProps) {
                 </div>
               ))}
             </div>
-            <RegistryRows apiUrl={apiUrl} copy={copy} locale={locale} skills={skills} />
+            <RegistryRows
+              apiUrl={apiUrl}
+              copy={copy}
+              locale={locale}
+              skills={skills}
+            />
           </div>
         </section>
 
-        <section className="registry-v2-closing">
-          <div className="registry-v2-shell">
-            <h2>{copy.closing.title}</h2>
-            <p>{copy.closing.body}</p>
-            <div className="registry-v2-actions registry-v2-actions--center">
-              <a className="registry-v2-button registry-v2-button--primary" href={`${apiUrl}/v1/skills/search?limit=20`}>
-                <Code2 size={16} aria-hidden="true" />
-                <span>{copy.actions.api}</span>
-              </a>
-              <a className="registry-v2-button" href={localizedHref("/marketplace", locale)}>
-                <ArrowRight size={16} aria-hidden="true" />
-                <span>{copy.actions.marketplace}</span>
-              </a>
-            </div>
-          </div>
-        </section>
       </main>
     </AppShell>
   );
@@ -533,7 +657,9 @@ function getRegistryMetrics(skills: SkillSummary[]) {
       skill.verificationStatus === "submitted" ||
       skill.verificationStatus === "deprecated",
   );
-  const verifiedSkills = publicSkills.filter((skill) => skill.verificationStatus === "verified");
+  const verifiedSkills = publicSkills.filter(
+    (skill) => skill.verificationStatus === "verified",
+  );
 
   return {
     callableSkills: verifiedSkills.length,
@@ -573,10 +699,16 @@ function RegistryConsole({
   apiUrl: string;
   copy: RegistryCopy;
 }) {
-  const endpoint = copy.console.endpoint.replace("https://api.useskillhub.com", apiUrl);
+  const endpoint = copy.console.endpoint.replace(
+    "https://api.useskillhub.com",
+    apiUrl,
+  );
 
   return (
-    <aside className="registry-v2-console" aria-label={copy.console.consoleLabel}>
+    <aside
+      className="registry-v2-console"
+      aria-label={copy.console.consoleLabel}
+    >
       <div className="registry-v2-console__top">
         <span className="registry-v2-window-dots" aria-hidden="true">
           <span />
@@ -603,7 +735,12 @@ function RegistryConsole({
             <span>{endpoint}</span>
           </div>
           <div className="registry-v2-schema-grid">
-            {[copy.console.input, copy.console.output, copy.console.permissions, copy.console.runtime].map(([eyebrow, title, body]) => (
+            {[
+              copy.console.input,
+              copy.console.output,
+              copy.console.permissions,
+              copy.console.runtime,
+            ].map(([eyebrow, title, body]) => (
               <article className="registry-v2-schema-box" key={eyebrow}>
                 <small>{eyebrow}</small>
                 <strong>{title}</strong>
@@ -622,9 +759,22 @@ function RegistryConsole({
             <h3>{copy.console.signalTitle}</h3>
             <p>{copy.console.signals}</p>
             <div className="registry-v2-meter" aria-hidden="true">
-              <MeterRow label={copy.console.meterManifest} value={copy.console.ok} width="92%" />
-              <MeterRow label={copy.console.meterSchema} value={copy.console.ok} width="86%" />
-              <MeterRow label={copy.console.meterRisk} tone="warning" value={copy.console.low} width="34%" />
+              <MeterRow
+                label={copy.console.meterManifest}
+                value={copy.console.ok}
+                width="92%"
+              />
+              <MeterRow
+                label={copy.console.meterSchema}
+                value={copy.console.ok}
+                width="86%"
+              />
+              <MeterRow
+                label={copy.console.meterRisk}
+                tone="warning"
+                value={copy.console.low}
+                width="34%"
+              />
             </div>
           </div>
           <div className="registry-v2-side-block">
@@ -657,7 +807,11 @@ function MeterRow({
       <span>{label}</span>
       <div>
         <span
-          className={tone === "warning" ? "registry-v2-meter-row__bar registry-v2-meter-row__bar--warning" : "registry-v2-meter-row__bar"}
+          className={
+            tone === "warning"
+              ? "registry-v2-meter-row__bar registry-v2-meter-row__bar--warning"
+              : "registry-v2-meter-row__bar"
+          }
           style={{ width }}
         />
       </div>
@@ -695,10 +849,18 @@ function RegistryRows({
         ))}
       </div>
       {skills.slice(0, 8).map((skill) => {
-        const displayName = publicSkillDisplayName(skill.slug, skill.displayName)[locale];
-        const description = publicSkillDescription(skill.slug, skill.description)[locale];
+        const displayName = publicSkillDisplayName(
+          skill.slug,
+          skill.displayName,
+        )[locale];
+        const description = publicSkillDescription(
+          skill.slug,
+          skill.description,
+        )[locale];
         const tags = publicSkillTags(skill.slug, skill.tags)[locale];
-        const runtime = skill.runtimeType ? skill.runtimeType.toUpperCase() : "HTTP";
+        const runtime = skill.runtimeType
+          ? skill.runtimeType.toUpperCase()
+          : "HTTP";
         const review = copy.statusLabels[skill.verificationStatus];
         const risk = copy.riskLabels[skill.permissionLevel];
 
@@ -709,7 +871,9 @@ function RegistryRows({
                 <PackageCheck size={15} />
               </span>
               <div>
-                <strong>{displayName} · v{skill.version}</strong>
+                <strong>
+                  {displayName} · v{skill.version}
+                </strong>
                 <p>{description}</p>
                 <div className="registry-v2-row-tags">
                   {tags.slice(0, 3).map((tag) => (
@@ -720,11 +884,18 @@ function RegistryRows({
             </div>
             <span data-label={copy.rows.columns[1]}>{runtime}</span>
             <span data-label={copy.rows.columns[2]}>
-              <span className={`registry-v2-state registry-v2-state--${skill.verificationStatus}`}>{review}</span>
+              <span
+                className={`registry-v2-state registry-v2-state--${skill.verificationStatus}`}
+              >
+                {review}
+              </span>
             </span>
             <span data-label={copy.rows.columns[3]}>{risk}</span>
             <span data-label={copy.rows.columns[4]}>
-              <a href={`${apiUrl}/v1/skills/${skill.slug}`} aria-label={`${copy.rows.openManifest}: ${displayName}`}>
+              <a
+                href={`${apiUrl}/v1/skills/${skill.slug}`}
+                aria-label={`${copy.rows.openManifest}: ${displayName}`}
+              >
                 <span>{copy.rows.manifest}</span>
                 <ExternalLink size={14} aria-hidden="true" />
               </a>

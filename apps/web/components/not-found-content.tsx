@@ -1,5 +1,13 @@
-import { BookOpenCheck, Home, LogIn, PackageSearch, SearchX, ShieldCheck } from "lucide-react";
+import {
+  BookOpenCheck,
+  Home,
+  LogIn,
+  PackageSearch,
+  SearchX,
+  ShieldCheck,
+} from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/i18n";
+import styles from "./not-found-content.module.css";
 
 const copy = {
   en: {
@@ -70,9 +78,10 @@ export function NotFoundContent({ locale }: { locale: Locale }) {
   const labels = copy[locale];
 
   return (
-    <main className="product-shell">
+    <main className={`product-shell ${styles.pageStyles}`}>
       <p className="visually-hidden">
-        page not found 页面没有找到 back to marketplace 返回市场 safe recovery state
+        page not found 页面没有找到 back to marketplace 返回市场 safe recovery
+        state
       </p>
       <section className="not-found-shell" aria-labelledby="not-found-title">
         <div className="not-found-copy">
@@ -84,11 +93,17 @@ export function NotFoundContent({ locale }: { locale: Locale }) {
           <p>{labels.body}</p>
 
           <div className="hero-actions not-found-actions">
-            <a className="primary-button primary-button--large" href={localizedHref("/marketplace", locale)}>
+            <a
+              className="primary-button primary-button--large"
+              href={localizedHref("/marketplace", locale)}
+            >
               <PackageSearch size={18} aria-hidden="true" />
               <span>{labels.primary}</span>
             </a>
-            <a className="secondary-button secondary-button--large" href={localizedHref("/login", locale)}>
+            <a
+              className="secondary-button secondary-button--large"
+              href={localizedHref("/login", locale)}
+            >
               <LogIn size={18} aria-hidden="true" />
               <span>{labels.signIn}</span>
             </a>
@@ -125,11 +140,17 @@ export function NotFoundContent({ locale }: { locale: Locale }) {
           </div>
 
           <div className="not-found-panel__links">
-            <a className="secondary-button secondary-button--compact" href={localizedHref("/docs", locale)}>
+            <a
+              className="secondary-button secondary-button--compact"
+              href={localizedHref("/docs", locale)}
+            >
               <BookOpenCheck size={15} aria-hidden="true" />
               <span>{labels.docs}</span>
             </a>
-            <a className="secondary-button secondary-button--compact" href={localizedHref("/support", locale)}>
+            <a
+              className="secondary-button secondary-button--compact"
+              href={localizedHref("/support", locale)}
+            >
               <LogIn size={15} aria-hidden="true" />
               <span>{labels.support}</span>
             </a>

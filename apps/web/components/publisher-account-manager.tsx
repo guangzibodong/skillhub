@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./publisher-account-manager.module.css";
 import { useActionState, type ReactNode } from "react";
 import {
   BadgeCheck,
@@ -12,15 +13,16 @@ import {
   ShieldCheck,
   UserRound,
   WalletCards,
-  XCircle
+  XCircle,
 } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag } from "@/components/skill-antd";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import type { PublisherAccountSummary } from "@/lib/ops-data";
 import {
   acceptPublisherTermsAction,
   createPayoutOnboardingAction,
   updatePublisherProfileAction,
-  type PublisherAccountActionState
+  type PublisherAccountActionState,
 } from "@/lib/publisher-account-actions";
 
 type PublisherAccountManagerProps = {
@@ -41,21 +43,14 @@ const copy = {
     completing: "Updating",
     createdAt: "Created",
     displayName: "Public publisher name",
-    latestSession: "Latest payout submission",
-    manualAccount: "Receiving account",
-    manualAccountHolder: "Account holder",
-    manualAccountPlaceholder: "PayPal email or Alipay account",
-    manualMethod: "Receiving method",
-    manualNotes: "Finance notes",
-    manualNotesPlaceholder: "Optional transfer instructions for finance",
+    latestSession: "Latest Connect onboarding",
     noAccount: "No payout account yet",
     noProfile: "Create publisher profile",
     noSession: "No payout submission",
     notAccepted: "Not accepted",
     notAvailable: "n/a",
     onboarding: "Submit payout details",
-    onboardingProvider: "Provider",
-    onboardingTitle: "Manual payout account",
+    onboardingTitle: "Stripe Connect payout account",
     pendingFinanceReview: "Submitted for finance review",
     payoutReadiness: "Payout readiness",
     profile: "Publisher profile",
@@ -71,12 +66,8 @@ const copy = {
     termsStatus: "Terms status",
     termsTitle: "Operating terms",
     termsVersion: "Version",
-    manualMethods: {
-      alipay: "Alipay",
-      paypal: "PayPal"
-    },
     providers: {
-      manual_deferred: "Manual finance transfer"
+      stripe_connect: "Stripe Connect",
     },
     statuses: {
       blocked: "Blocked",
@@ -89,10 +80,10 @@ const copy = {
       pending: "Pending",
       ready: "Ready",
       verification_required: "Needs verification",
-      verified: "Verified"
+      verified: "Verified",
     },
     title: "Publisher account",
-    updateTitle: "Finance verification"
+    updateTitle: "Finance verification",
   },
   zh: {
     accountStatus: "\u6536\u6b3e\u8d26\u6237",
@@ -104,20 +95,13 @@ const copy = {
     createdAt: "\u521b\u5efa\u65f6\u95f4",
     displayName: "\u516c\u5f00\u53d1\u5e03\u8005\u540d\u79f0",
     latestSession: "\u6700\u8fd1\u6536\u6b3e\u63d0\u4ea4",
-    manualAccount: "\u6536\u6b3e\u8d26\u53f7",
-    manualAccountHolder: "\u6536\u6b3e\u4eba",
-    manualAccountPlaceholder: "PayPal \u90ae\u7bb1\u6216 Alipay \u8d26\u53f7",
-    manualMethod: "\u6536\u6b3e\u65b9\u5f0f",
-    manualNotes: "\u8d22\u52a1\u5907\u6ce8",
-    manualNotesPlaceholder: "\u53ef\u9009\uff1a\u7ed9\u8d22\u52a1\u7684\u8f6c\u8d26\u8bf4\u660e",
     noAccount: "\u8fd8\u6ca1\u6709\u6536\u6b3e\u8d26\u6237",
     noProfile: "\u521b\u5efa\u53d1\u5e03\u8005\u8d44\u6599",
     noSession: "\u8fd8\u6ca1\u6709\u6536\u6b3e\u63d0\u4ea4",
     notAccepted: "\u672a\u63a5\u53d7",
     notAvailable: "\u6682\u65e0",
     onboarding: "\u63d0\u4ea4\u6536\u6b3e\u8d44\u6599",
-    onboardingProvider: "\u670d\u52a1\u5546",
-    onboardingTitle: "\u624b\u5de5\u6253\u6b3e\u6536\u6b3e\u8d26\u6237",
+    onboardingTitle: "Stripe Connect \u6536\u6b3e\u8d26\u6237",
     pendingFinanceReview: "\u5df2\u63d0\u4ea4\u8d22\u52a1\u6838\u9a8c",
     payoutReadiness: "\u63d0\u73b0\u51c6\u5907",
     profile: "\u53d1\u5e03\u8005\u8d44\u6599",
@@ -133,12 +117,8 @@ const copy = {
     termsStatus: "\u6761\u6b3e\u72b6\u6001",
     termsTitle: "\u8fd0\u8425\u6761\u6b3e",
     termsVersion: "\u6761\u6b3e\u7248\u672c",
-    manualMethods: {
-      alipay: "Alipay",
-      paypal: "PayPal"
-    },
     providers: {
-      manual_deferred: "\u8d22\u52a1\u4eba\u5de5\u8f6c\u8d26"
+      stripe_connect: "Stripe Connect",
     },
     statuses: {
       blocked: "\u5df2\u963b\u65ad",
@@ -151,40 +131,50 @@ const copy = {
       pending: "\u5f85\u5904\u7406",
       ready: "\u53ef\u7528",
       verification_required: "\u9700\u8981\u9a8c\u8bc1",
-      verified: "\u5df2\u9a8c\u8bc1"
+      verified: "\u5df2\u9a8c\u8bc1",
     },
     title: "\u53d1\u5e03\u8005\u8d26\u6237",
-    updateTitle: "\u8d22\u52a1\u6838\u9a8c"
-  }
+    updateTitle: "\u8d22\u52a1\u6838\u9a8c",
+  },
 } as const;
 
 const initialActionState: PublisherAccountActionState = {
   message: "",
-  status: "idle"
+  status: "idle",
 };
 
-export function PublisherAccountManager({ account, locale, returnUrl }: PublisherAccountManagerProps) {
+export function PublisherAccountManager({
+  account,
+  locale,
+  returnUrl,
+}: PublisherAccountManagerProps) {
   const labels = copy[locale];
   const [profileState, profileAction, isProfilePending] = useActionState(
     updatePublisherProfileAction.bind(null, locale),
-    initialActionState
+    initialActionState,
   );
   const [termsState, termsAction, isTermsPending] = useActionState(
     acceptPublisherTermsAction.bind(null, locale),
-    initialActionState
+    initialActionState,
   );
-  const [onboardingState, onboardingAction, isOnboardingPending] = useActionState(
-    createPayoutOnboardingAction.bind(null, locale),
-    initialActionState
-  );
+  const [onboardingState, onboardingAction, isOnboardingPending] =
+    useActionState(
+      createPayoutOnboardingAction.bind(null, locale),
+      initialActionState,
+    );
   const profile = account.publisherProfile;
   const payoutAccount = account.payoutAccounts[0];
   const openSession =
-    account.onboardingSessions.find((session) => session.status === "created" || session.status === "opened") ?? null;
+    account.onboardingSessions.find(
+      (session) => session.status === "created" || session.status === "opened",
+    ) ?? null;
   const latestSession = openSession ?? account.onboardingSessions[0];
-  const payoutReady = profile?.payoutStatus === "verified" && payoutAccount?.status === "verified";
+  const payoutReady =
+    profile?.payoutStatus === "verified" &&
+    payoutAccount?.status === "verified";
   const acceptedCurrentTerms =
-    Boolean(profile?.termsAcceptedAt) && profile?.termsVersion === CURRENT_TERMS_VERSION;
+    Boolean(profile?.termsAcceptedAt) &&
+    profile?.termsVersion === CURRENT_TERMS_VERSION;
   const termsStatus = acceptedCurrentTerms
     ? labels.termsCurrent
     : profile?.termsAcceptedAt
@@ -192,159 +182,254 @@ export function PublisherAccountManager({ account, locale, returnUrl }: Publishe
       : labels.notAccepted;
 
   return (
-    <article className="ops-panel publisher-account-panel" id="publisher-account">
+    <article
+      className={`${styles.root} ops-panel publisher-account-panel`}
+      id="publisher-account"
+    >
       <div className="publisher-account-panel__head">
         <div className="card-kicker">
           <WalletCards size={16} aria-hidden="true" />
           <span>{labels.title}</span>
         </div>
-        <span className={payoutReady ? "status-chip" : "status-chip status-chip--warning"}>
+        <SkillStatusTag
+          className={
+            payoutReady ? "status-chip" : "status-chip status-chip--warning"
+          }
+        >
           {payoutReady ? labels.ready : labels.requiresSetup}
-        </span>
+        </SkillStatusTag>
       </div>
 
-      <div className="publisher-account-status-grid">
-        <StatusTile icon={<UserRound size={16} aria-hidden="true" />} label={labels.profile} value={profile?.displayName ?? labels.noProfile} />
-        <StatusTile
-          icon={<FileCheck size={16} aria-hidden="true" />}
-          label={labels.termsStatus}
-          value={termsStatus}
-        />
-        <StatusTile
-          icon={<BadgeCheck size={16} aria-hidden="true" />}
-          label={labels.payoutReadiness}
-          value={profile?.payoutStatus ? formatStatusLabel(profile.payoutStatus, labels.statuses) : labels.requiresSetup}
-        />
-        <StatusTile
-          icon={<ShieldCheck size={16} aria-hidden="true" />}
-          label={labels.accountStatus}
-          value={
-            payoutAccount
-              ? `${formatManualMethodLabel(payoutAccount.manualMethod, labels.manualMethods)} / ${maskManualAccount(payoutAccount.manualAccount, labels.noAccount)}`
-              : labels.noAccount
-          }
-        />
-        <StatusTile
-          icon={<Clock3 size={16} aria-hidden="true" />}
-          label={labels.latestSession}
-          value={
-            latestSession
-              ? `${formatProviderLabel(latestSession.provider, labels.providers)} / ${formatStatusLabel(latestSession.status, labels.statuses)}`
-              : labels.noSession
-          }
-        />
-      </div>
-
-      <form action={profileAction} className="publisher-profile-form">
-        <strong>{labels.profile}</strong>
-        <label>
-          <span>{labels.displayName}</span>
-          <input defaultValue={profile?.displayName ?? ""} name="displayName" required />
-        </label>
-        <button className="primary-button" disabled={isProfilePending} type="submit">
-          <Save size={16} aria-hidden="true" />
-          <span>{isProfilePending ? labels.saving : labels.saveProfile}</span>
-        </button>
-      </form>
-      {profileState.status !== "idle" ? <ActionMessage state={profileState} /> : null}
-
-      <section className="publisher-terms-card">
-        <div className="publisher-terms-card__head">
-          <strong>{labels.termsTitle}</strong>
-          <span className={acceptedCurrentTerms ? "status-chip" : "status-chip status-chip--warning"}>
-            {acceptedCurrentTerms ? labels.termsAccepted : labels.termsRequired}
-          </span>
-        </div>
-        <div className="publisher-terms-meta">
-          <span>
-            <strong>{labels.termsVersion}</strong>
-            {profile?.termsVersion ?? CURRENT_TERMS_VERSION}
-          </span>
-          <span>
-            <strong>{labels.acceptedAt}</strong>
-            {formatDate(profile?.termsAcceptedAt, labels.notAvailable, locale)}
-          </span>
-        </div>
-        <div className="publisher-terms-card__actions">
-          <a className="secondary-button secondary-button--compact" href={localizedHref("/terms", locale)}>
-            <ExternalLink size={15} aria-hidden="true" />
-            <span>{labels.readTerms}</span>
-          </a>
-          <form action={termsAction}>
-            <input name="termsVersion" type="hidden" value={CURRENT_TERMS_VERSION} />
-            <button className="primary-button" disabled={isTermsPending || acceptedCurrentTerms} type="submit">
-              <FileCheck size={16} aria-hidden="true" />
-              <span>{isTermsPending ? labels.accepting : labels.acceptTerms}</span>
-            </button>
-          </form>
-        </div>
-      </section>
-      {termsState.status !== "idle" ? <ActionMessage state={termsState} /> : null}
-
-      <form action={onboardingAction} className="publisher-onboarding-form">
-        <strong>{labels.onboardingTitle}</strong>
-        <input name="returnUrl" type="hidden" value={returnUrl} />
-        <input name="refreshUrl" type="hidden" value={returnUrl} />
-        <label>
-          <span>{labels.manualMethod}</span>
-          <select defaultValue={payoutAccount?.manualMethod ?? "paypal"} name="manualMethod">
-            <option value="paypal">{labels.manualMethods.paypal}</option>
-            <option value="alipay">{labels.manualMethods.alipay}</option>
-          </select>
-        </label>
-        <label>
-          <span>{labels.manualAccount}</span>
-          <input
-            defaultValue={payoutAccount?.manualAccount ?? ""}
-            name="manualAccount"
-            placeholder={labels.manualAccountPlaceholder}
-            required
+      <div className="publisher-account-summary">
+        <div className="publisher-account-status-grid">
+          <StatusTile
+            icon={<UserRound size={16} aria-hidden="true" />}
+            label={labels.profile}
+            value={profile?.displayName ?? labels.noProfile}
           />
-        </label>
-        <label>
-          <span>{labels.manualAccountHolder}</span>
-          <input defaultValue={payoutAccount?.manualAccountHolder ?? ""} name="manualAccountHolder" />
-        </label>
-        <label>
-          <span>{labels.manualNotes}</span>
-          <textarea defaultValue={payoutAccount?.manualNotes ?? ""} name="manualNotes" placeholder={labels.manualNotesPlaceholder} rows={3} />
-        </label>
-        <label>
-          <span>{labels.onboardingProvider}</span>
-          <select defaultValue={payoutAccount?.provider ?? "manual_deferred"} name="provider">
-            <option value="manual_deferred">{labels.providers.manual_deferred}</option>
-          </select>
-        </label>
-        <button className="secondary-button" disabled={isOnboardingPending} type="submit">
-          <Link2 size={16} aria-hidden="true" />
-          <span>{isOnboardingPending ? labels.saving : labels.onboarding}</span>
-        </button>
-      </form>
-      {onboardingState.status !== "idle" ? <ActionMessage state={onboardingState} /> : null}
-
-      <section className="publisher-readiness-form">
-        <strong>{labels.updateTitle}</strong>
-        <div className="publisher-readiness-form__status">
-          <ShieldCheck size={16} aria-hidden="true" />
-          <span>
-            {payoutReady
-              ? labels.ready
-              : payoutAccount
-                ? labels.pendingFinanceReview
-                : labels.requiresSetup}
-          </span>
+          <StatusTile
+            icon={<FileCheck size={16} aria-hidden="true" />}
+            label={labels.termsStatus}
+            value={termsStatus}
+          />
+          <StatusTile
+            icon={<BadgeCheck size={16} aria-hidden="true" />}
+            label={labels.payoutReadiness}
+            value={
+              profile?.payoutStatus
+                ? formatStatusLabel(profile.payoutStatus, labels.statuses)
+                : labels.requiresSetup
+            }
+          />
+          <StatusTile
+            icon={<ShieldCheck size={16} aria-hidden="true" />}
+            label={labels.accountStatus}
+            value={
+              payoutAccount
+                ? `${formatProviderLabel(payoutAccount.provider, labels.providers)} / ${payoutAccount.providerAccountId ?? payoutAccount.stripeAccountId ?? labels.noAccount}`
+                : labels.noAccount
+            }
+          />
+          <StatusTile
+            icon={<Clock3 size={16} aria-hidden="true" />}
+            label={labels.latestSession}
+            value={
+              latestSession
+                ? `${formatProviderLabel(latestSession.provider, labels.providers)} / ${formatStatusLabel(latestSession.status, labels.statuses)}`
+                : labels.noSession
+            }
+          />
         </div>
-      </section>
+      </div>
+
+      <div className="publisher-account-flow">
+        <section className="publisher-account-flow-step publisher-account-flow-step--profile">
+          <header className="publisher-account-flow-step__head">
+            <span className="publisher-account-flow-step__index">01</span>
+            <strong>{labels.profile}</strong>
+            <SkillStatusTag
+              className={
+                profile ? "status-chip" : "status-chip status-chip--warning"
+              }
+            >
+              {profile
+                ? formatStatusLabel(profile.status, labels.statuses)
+                : labels.noProfile}
+            </SkillStatusTag>
+          </header>
+          <form action={profileAction} className="publisher-profile-form">
+            <strong>{labels.profile}</strong>
+            <label>
+              <span>{labels.displayName}</span>
+              <SkillInput
+                defaultValue={profile?.displayName ?? ""}
+                name="displayName"
+                required
+              />
+            </label>
+            <SkillButton
+              className="primary-button"
+              disabled={isProfilePending}
+              htmlType="submit"
+            >
+              <Save size={16} aria-hidden="true" />
+              <span>
+                {isProfilePending ? labels.saving : labels.saveProfile}
+              </span>
+            </SkillButton>
+          </form>
+          {profileState.status !== "idle" ? (
+            <ActionMessage state={profileState} />
+          ) : null}
+        </section>
+
+        <section className="publisher-account-flow-step publisher-account-flow-step--terms publisher-terms-card">
+          <div className="publisher-terms-card__head">
+            <span className="publisher-account-flow-step__index">02</span>
+            <strong>{labels.termsTitle}</strong>
+            <SkillStatusTag
+              className={
+                acceptedCurrentTerms
+                  ? "status-chip"
+                  : "status-chip status-chip--warning"
+              }
+            >
+              {acceptedCurrentTerms
+                ? labels.termsAccepted
+                : labels.termsRequired}
+            </SkillStatusTag>
+          </div>
+          <div className="publisher-terms-meta">
+            <span>
+              <strong>{labels.termsVersion}</strong>
+              {profile?.termsVersion ?? CURRENT_TERMS_VERSION}
+            </span>
+            <span>
+              <strong>{labels.acceptedAt}</strong>
+              {formatDate(
+                profile?.termsAcceptedAt,
+                labels.notAvailable,
+                locale,
+              )}
+            </span>
+          </div>
+          <div className="publisher-terms-card__actions">
+            <a
+              className="secondary-button secondary-button--compact"
+              href={localizedHref("/terms", locale)}
+            >
+              <ExternalLink size={15} aria-hidden="true" />
+              <span>{labels.readTerms}</span>
+            </a>
+            <form action={termsAction}>
+              <input
+                name="termsVersion"
+                type="hidden"
+                value={CURRENT_TERMS_VERSION}
+              />
+              <SkillButton
+                className="primary-button"
+                disabled={isTermsPending || acceptedCurrentTerms}
+                htmlType="submit"
+              >
+                <FileCheck size={16} aria-hidden="true" />
+                <span>
+                  {isTermsPending ? labels.accepting : labels.acceptTerms}
+                </span>
+              </SkillButton>
+            </form>
+          </div>
+        </section>
+        {termsState.status !== "idle" ? (
+          <ActionMessage state={termsState} />
+        ) : null}
+
+        <section className="publisher-account-flow-step publisher-account-flow-step--onboarding">
+          <header className="publisher-account-flow-step__head">
+            <span className="publisher-account-flow-step__index">03</span>
+            <strong>{labels.onboardingTitle}</strong>
+            <SkillStatusTag
+              className={
+                payoutAccount
+                  ? "status-chip"
+                  : "status-chip status-chip--warning"
+              }
+            >
+              {payoutAccount
+                ? formatStatusLabel(payoutAccount.status, labels.statuses)
+                : labels.noAccount}
+            </SkillStatusTag>
+          </header>
+          <form action={onboardingAction} className="publisher-onboarding-form">
+            <strong>{labels.onboardingTitle}</strong>
+            <input name="returnUrl" type="hidden" value={returnUrl} />
+            <input name="refreshUrl" type="hidden" value={returnUrl} />
+            <SkillButton
+              className="secondary-button"
+              disabled={isOnboardingPending}
+              htmlType="submit"
+            >
+              <Link2 size={16} aria-hidden="true" />
+              <span>
+                {isOnboardingPending ? labels.saving : labels.onboarding}
+              </span>
+            </SkillButton>
+          </form>
+          {onboardingState.status !== "idle" ? (
+            <ActionMessage state={onboardingState} />
+          ) : null}
+        </section>
+
+        <section className="publisher-account-flow-step publisher-account-flow-step--readiness publisher-readiness-form">
+          <header className="publisher-account-flow-step__head">
+            <span className="publisher-account-flow-step__index">04</span>
+            <strong>{labels.updateTitle}</strong>
+            <SkillStatusTag
+              className={
+                payoutReady ? "status-chip" : "status-chip status-chip--warning"
+              }
+            >
+              {payoutReady ? labels.ready : labels.requiresSetup}
+            </SkillStatusTag>
+          </header>
+          <div className="publisher-readiness-form__status">
+            <ShieldCheck size={16} aria-hidden="true" />
+            <span>
+              {payoutReady
+                ? labels.ready
+                : payoutAccount
+                  ? labels.pendingFinanceReview
+                  : labels.requiresSetup}
+            </span>
+          </div>
+        </section>
+      </div>
 
       <div className="publisher-account-foot">
         <span>{labels.createdAt}</span>
-        <strong>{formatDate(profile?.createdAt ?? payoutAccount?.createdAt ?? latestSession?.createdAt, labels.notAvailable, locale)}</strong>
+        <strong>
+          {formatDate(
+            profile?.createdAt ??
+              payoutAccount?.createdAt ??
+              latestSession?.createdAt,
+            labels.notAvailable,
+            locale,
+          )}
+        </strong>
       </div>
     </article>
   );
 }
 
-function StatusTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function StatusTile({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="publisher-account-status-tile">
       {icon}
@@ -358,44 +443,19 @@ function formatProviderLabel(provider: string, labels: Record<string, string>) {
   return labels[provider] ?? provider.replaceAll("_", " ");
 }
 
-function formatManualMethodLabel(method: string | null | undefined, labels: Record<string, string>) {
-  return method ? (labels[method] ?? method.replaceAll("_", " ")) : labels.paypal;
-}
-
-function maskManualAccount(value: string | null | undefined, fallback: string) {
-  const normalized = value?.trim();
-
-  if (!normalized) {
-    return fallback;
-  }
-
-  if (normalized.includes("@")) {
-    const [name, domain] = normalized.split("@");
-    const maskedName = name.length <= 2 ? `${name[0] ?? "*"}*` : `${name.slice(0, 2)}***`;
-    return `${maskedName}@${domain}`;
-  }
-
-  if (normalized.length <= 6) {
-    return `${normalized.slice(0, 2)}***`;
-  }
-
-  return `${normalized.slice(0, 3)}***${normalized.slice(-3)}`;
-}
-
 function formatStatusLabel(status: string, labels: Record<string, string>) {
   return labels[status] ?? status.replaceAll("_", " ");
 }
 
 function ActionMessage({ state }: { state: PublisherAccountActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }
 
-function formatDate(value: string | null | undefined, fallback: string, locale: Locale) {
+function formatDate(
+  value: string | null | undefined,
+  fallback: string,
+  locale: Locale,
+) {
   if (!value || value === "demo") {
     return fallback;
   }
@@ -409,6 +469,6 @@ function formatDate(value: string | null | undefined, fallback: string, locale: 
   return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
     day: "2-digit",
     month: "short",
-    year: "numeric"
+    year: "numeric",
   }).format(date);
 }

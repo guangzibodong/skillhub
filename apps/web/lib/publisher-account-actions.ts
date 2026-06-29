@@ -14,25 +14,25 @@ export type PublisherAccountActionState = {
 const actionCopy = {
   en: {
     missingDisplayName: "Enter a publisher display name.",
-    missingManualAccount: "Enter the PayPal or Alipay receiving account.",
-    missingTarget: "Create a payout account before updating readiness.",
+    missingManualAccount: "Start Stripe Connect onboarding before updating payout readiness.",
+    missingTarget: "Start Stripe Connect onboarding before updating payout readiness.",
     missingToken: "Sign in with a publisher or owner account before managing publisher settings.",
-    onboardingCreated: "Manual payout details submitted for finance verification.",
-    onboardingUpdated: "Payout readiness state updated.",
+    onboardingCreated: "Stripe Connect onboarding created.",
+    onboardingUpdated: "Payout readiness is updated by Stripe Connect status and webhooks.",
     profileSaved: "Publisher profile saved.",
-    unableOnboarding: "Unable to submit manual payout details.",
+    unableOnboarding: "Unable to start Stripe Connect onboarding.",
     unableProfile: "Unable to save publisher profile.",
     unableReadiness: "Unable to update payout readiness."
   },
   zh: {
     missingDisplayName: "\u8bf7\u8f93\u5165\u53d1\u5e03\u8005\u5c55\u793a\u540d\u79f0\u3002",
-    missingManualAccount: "\u8bf7\u586b\u5199 PayPal \u6216 Alipay \u6536\u6b3e\u8d26\u53f7\u3002",
-    missingTarget: "\u8bf7\u5148\u63d0\u4ea4\u6536\u6b3e\u8d26\u6237\u8d44\u6599\uff0c\u518d\u66f4\u65b0\u6536\u6b3e\u72b6\u6001\u3002",
+    missingManualAccount: "\u8bf7\u5148\u542f\u52a8 Stripe Connect \u5165\u9a7b\u3002",
+    missingTarget: "\u8bf7\u5148\u542f\u52a8 Stripe Connect \u5165\u9a7b\u3002",
     missingToken: "请先使用具备发布者或 owner 角色的账号登录，才能管理发布者设置。",
-    onboardingCreated: "\u624b\u5de5\u6253\u6b3e\u6536\u6b3e\u8d44\u6599\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u8d22\u52a1\u6838\u9a8c\u3002",
-    onboardingUpdated: "\u63d0\u73b0\u51c6\u5907\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
+    onboardingCreated: "Stripe Connect \u5165\u9a7b\u94fe\u63a5\u5df2\u521b\u5efa\u3002",
+    onboardingUpdated: "\u63d0\u73b0\u51c6\u5907\u72b6\u6001\u7531 Stripe Connect \u72b6\u6001\u548c webhook \u66f4\u65b0\u3002",
     profileSaved: "\u53d1\u5e03\u8005\u8d44\u6599\u5df2\u4fdd\u5b58\u3002",
-    unableOnboarding: "\u65e0\u6cd5\u63d0\u4ea4\u624b\u5de5\u6253\u6b3e\u8d44\u6599\u3002",
+    unableOnboarding: "\u65e0\u6cd5\u542f\u52a8 Stripe Connect \u5165\u9a7b\u3002",
     unableProfile: "\u65e0\u6cd5\u4fdd\u5b58\u53d1\u5e03\u8005\u8d44\u6599\u3002",
     unableReadiness: "\u65e0\u6cd5\u66f4\u65b0\u63d0\u73b0\u51c6\u5907\u72b6\u6001\u3002"
   }
@@ -126,30 +126,13 @@ export async function createPayoutOnboardingAction(
 ): Promise<PublisherAccountActionState> {
   const labels = actionCopy[locale];
   const token = await getWorkspaceToken();
-  const manualAccount = String(formData.get("manualAccount") ?? "").trim();
-  const manualAccountHolder = String(formData.get("manualAccountHolder") ?? "").trim();
-  const manualMethod = String(formData.get("manualMethod") ?? "paypal").trim() || "paypal";
-  const manualNotes = String(formData.get("manualNotes") ?? "").trim();
-
-  if (!manualAccount) {
-    return { message: labels.missingManualAccount, status: "error" };
-  }
 
   if (!token) {
     return { message: labels.missingToken, status: "error" };
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/v1/publisher/payout-account/onboarding`, {
-      body: JSON.stringify({
-        manualAccount,
-        manualAccountHolder: manualAccountHolder || undefined,
-        manualMethod,
-        manualNotes: manualNotes || undefined,
-        provider: String(formData.get("provider") ?? "manual_deferred").trim() || "manual_deferred",
-        refreshUrl: String(formData.get("refreshUrl") ?? "").trim() || undefined,
-        returnUrl: String(formData.get("returnUrl") ?? "").trim() || undefined
-      }),
+    const response = await fetch(`${getApiUrl()}/v1/publisher/connect/onboarding`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json"
@@ -163,10 +146,8 @@ export async function createPayoutOnboardingAction(
     }
 
     const payload = (await response.json()) as {
-      onboarding?: {
-        onboardingSession?: {
-          onboardingUrl?: string;
-        };
+      connect?: {
+        onboardingUrl?: string;
       };
     };
 
@@ -174,7 +155,7 @@ export async function createPayoutOnboardingAction(
 
     return {
       message: labels.onboardingCreated,
-      onboardingUrl: payload.onboarding?.onboardingSession?.onboardingUrl,
+      onboardingUrl: payload.connect?.onboardingUrl,
       status: "success"
     };
   } catch (error) {
@@ -196,36 +177,10 @@ export async function completePayoutOnboardingAction(
     return { message: labels.missingToken, status: "error" };
   }
 
-  if (!sessionId && !payoutAccountId) {
-    return { message: labels.missingTarget, status: "error" };
-  }
-
-  try {
-    const response = await fetch(`${getApiUrl()}/v1/publisher/payout-account/onboarding/complete`, {
-      body: JSON.stringify({
-        payoutAccountId: sessionId ? undefined : payoutAccountId,
-        reason: String(formData.get("reason") ?? "").trim() || undefined,
-        sessionId: sessionId || undefined,
-        status: String(formData.get("status") ?? "verified").trim() || "verified"
-      }),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      method: "POST"
-    });
-
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(payload.error ?? labels.unableReadiness);
-    }
-
-    revalidatePublisherPaths();
-
-    return { message: labels.onboardingUpdated, status: "success" };
-  } catch (error) {
-    return { message: error instanceof Error ? error.message : labels.unableReadiness, status: "error" };
-  }
+  void sessionId;
+  void payoutAccountId;
+  void formData;
+  return { message: labels.onboardingUpdated, status: "success" };
 }
 
 function revalidatePublisherPaths() {

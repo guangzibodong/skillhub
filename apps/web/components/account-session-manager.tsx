@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { CheckCircle2, KeyRound, LogOut, ShieldCheck, Trash2, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillStatusTag } from "@/components/skill-antd";
 import {
   revokeAccountSessionAction,
   type AccountSessionActionState
@@ -77,9 +78,9 @@ export function AccountSessionManager({ locale, sessions }: AccountSessionManage
           <ShieldCheck size={16} aria-hidden="true" />
           <span>{labels.title}</span>
         </div>
-        <span className="status-chip status-chip--neutral">
+        <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">
           {activeCount} / {sessions.length} {labels.activeCount}
-        </span>
+        </SkillStatusTag>
       </div>
 
       {sessions.length === 0 ? (
@@ -102,7 +103,7 @@ export function AccountSessionManager({ locale, sessions }: AccountSessionManage
                     <strong>{session.name}</strong>
                     <span>{workspaceLabel(session, labels.organization)}</span>
                   </div>
-                  <span className={sessionStatusClass(session)}>{session.isCurrent ? labels.current : statusText(session, locale)}</span>
+                  <SkillStatusTag className={sessionStatusClass(session)}>{session.isCurrent ? labels.current : statusText(session, locale)}</SkillStatusTag>
                 </div>
 
                 <div className="account-session-token">
@@ -129,10 +130,10 @@ export function AccountSessionManager({ locale, sessions }: AccountSessionManage
                 {canRevoke ? (
                   <form action={action} className="account-session-action">
                     <input name="tokenId" type="hidden" value={session.tokenId} />
-                    <button className="ghost-button ghost-button--danger ghost-button--inline" disabled={isPending} type="submit">
+                    <SkillButton className="ghost-button ghost-button--danger ghost-button--inline" disabled={isPending} htmlType="submit">
                       <Trash2 size={15} aria-hidden="true" />
                       <span>{isPending && statusMessage ? labels.signingOut : labels.revoke}</span>
-                    </button>
+                    </SkillButton>
                   </form>
                 ) : (
                   <div className="account-session-hint">
@@ -152,12 +153,7 @@ export function AccountSessionManager({ locale, sessions }: AccountSessionManage
 }
 
 function ActionMessage({ state }: { state: AccountSessionActionState }) {
-  return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
-  );
+  return <SkillAlert className="action-message" icon={state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={state.message} type={state.status === "success" ? "success" : "error"} />;
 }
 
 function sessionStatusClass(session: AccountSessionRecord) {

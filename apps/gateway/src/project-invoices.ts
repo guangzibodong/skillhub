@@ -61,65 +61,11 @@ type InvoiceLineItemRow = {
   createdAt: string;
 };
 
-const fallbackInvoices = [
-  {
-    id: "demo-invoice-june",
-    projectSlug: "research-agent",
-    invoiceNumber: "SH-DEMO-202606",
-    status: "issued",
-    currency: "usd",
-    periodStart: "2026-06-01T00:00:00.000Z",
-    periodEnd: "2026-07-01T00:00:00.000Z",
-    subtotalCents: 248000,
-    taxCents: 0,
-    totalCents: 248000,
-    issuedAt: "demo",
-    dueAt: "demo",
-    paidAt: null,
-    createdAt: "demo",
-    updatedAt: "demo",
-    lineItemCount: 2
-  }
-] as const;
-
-const fallbackLineItems = [
-  {
-    id: "demo-line-browser-research",
-    transactionId: "demo-usage-browser-research",
-    skillSlug: "browser-research",
-    skillName: "Browser Research",
-    description: "Usage - Browser Research",
-    quantity: 1,
-    unitAmountCents: 124000,
-    amountCents: 124000,
-    currency: "usd",
-    sourceType: "usage",
-    servicePeriodStart: "demo",
-    servicePeriodEnd: "demo",
-    createdAt: "demo"
-  },
-  {
-    id: "demo-line-dataset-summarizer",
-    transactionId: "demo-usage-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    skillName: "Dataset Summarizer",
-    description: "Usage - Dataset Summarizer",
-    quantity: 1,
-    unitAmountCents: 124000,
-    amountCents: 124000,
-    currency: "usd",
-    sourceType: "usage",
-    servicePeriodStart: "demo",
-    servicePeriodEnd: "demo",
-    createdAt: "demo"
-  }
-] as const;
-
 export async function listProjectInvoices(projectSlug: string, organizationId?: string | null, limit = 20) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackInvoices.filter((invoice) => invoice.projectSlug === projectSlug).slice(0, limit);
+    return [];
   }
 
   const scopedOrganizationId = organizationId ?? null;
@@ -158,8 +104,7 @@ export async function getProjectInvoice(projectSlug: string, invoiceId: string, 
   const sql = await getSql();
 
   if (!sql) {
-    const invoice = fallbackInvoices.find((item) => item.projectSlug === projectSlug && item.id === invoiceId);
-    return invoice ? { invoice, lineItems: fallbackLineItems } : null;
+    return null;
   }
 
   return getProjectInvoiceWithSql(sql, projectSlug, invoiceId, organizationId ?? null);

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Bell, CalendarClock, CheckCircle2, Eye, XCircle } from "lucide-react";
+import { SkillAlert, SkillButton, SkillInput, SkillStatusTag } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { DeveloperProjectUpdateRecord } from "@/lib/ops-data";
 import { updateProjectUpdateAction, type ProjectUpdateActionState } from "@/lib/project-update-actions";
@@ -104,10 +105,10 @@ export function ProjectUpdateInboxManager({
                     {update.displayName}
                     <small>{update.skillSlug}</small>
                   </strong>
-                  <span className={severityClass(update.severity)}>{update.severity}</span>
+                  <SkillStatusTag className={severityClass(update.severity)}>{update.severity}</SkillStatusTag>
                 </header>
                 <div className="project-update-card__body">
-                  <span className={actionStatusClass(update.actionStatus)}>{actionStatusLabel(update.actionStatus, locale)}</span>
+                  <SkillStatusTag className={actionStatusClass(update.actionStatus)}>{actionStatusLabel(update.actionStatus, locale)}</SkillStatusTag>
                   <p>{update.title}</p>
                   {update.body ? <small>{update.body}</small> : null}
                   <div className="project-update-version-line">
@@ -131,11 +132,11 @@ export function ProjectUpdateInboxManager({
                   <input name="updateId" type="hidden" value={update.id} />
                   <label>
                     <span>{labels.note}</span>
-                    <input defaultValue={update.actionNote ?? ""} name="note" />
+                    <SkillInput defaultValue={update.actionNote ?? ""} name="note" />
                   </label>
                   <label>
                     <span>{labels.scheduledFor}</span>
-                    <input defaultValue={toDateTimeLocal(update.scheduledFor)} name="scheduledFor" type="datetime-local" />
+                    <SkillInput defaultValue={toDateTimeLocal(update.scheduledFor)} name="scheduledFor" type="datetime-local" />
                   </label>
                   <div className="project-update-action-buttons">
                     <ActionButton disabled={isUpdatePending} icon="acknowledge" label={labels.acknowledge} status="acknowledged" />
@@ -149,10 +150,7 @@ export function ProjectUpdateInboxManager({
                 </form>
 
                 {statusMessage && statusMessage.status !== "idle" ? (
-                  <div className={statusMessage.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-                    {statusMessage.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-                    <span>{isUpdatePending ? labels.saving : statusMessage.message}</span>
-                  </div>
+                  <SkillAlert className="action-message" icon={statusMessage.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />} message={isUpdatePending ? labels.saving : statusMessage.message} type={statusMessage.status === "success" ? "success" : "error"} />
                 ) : null}
               </article>
             );
@@ -181,16 +179,16 @@ function ActionButton({
   const Icon = icon === "schedule" ? CalendarClock : icon === "adopted" ? CheckCircle2 : icon === "ignore" ? XCircle : Eye;
 
   return (
-    <button
+    <SkillButton
       className={danger ? "secondary-button secondary-button--compact secondary-button--danger" : "secondary-button secondary-button--compact"}
       disabled={disabled}
+      htmlType="submit"
       name="status"
-      type="submit"
       value={status}
     >
       <Icon size={15} aria-hidden="true" />
       <span>{label}</span>
-    </button>
+    </SkillButton>
   );
 }
 

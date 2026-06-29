@@ -19,7 +19,7 @@ const copy = {
       "Save or install a verified skill to a project.",
       "Create project runtime keys.",
       "Run login-gated runtime tests through project policy checks.",
-      "Approve project policy, budget, subscription, billing, or ledger actions where the paid-preview role allows them.",
+      "Approve project policy, budget, subscription, billing, or ledger actions where the paid-marketplace role allows them.",
       "Submit feedback or trust reports.",
     ],
   },

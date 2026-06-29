@@ -1,0 +1,845 @@
+/* SkillHub pricing page three-part layout */
+.pageStyles:global(.pricing-page-shell) {
+  --pricing-ink: #f3f7ef;
+  --pricing-muted: rgba(221, 255, 220, 0.66);
+  --pricing-soft: rgba(221, 255, 220, 0.42);
+  --pricing-line: rgba(221, 255, 220, 0.12);
+  --pricing-line-strong: rgba(127, 238, 100, 0.34);
+  --pricing-green: #7fee64;
+  --pricing-panel: rgba(17, 22, 16, 0.84);
+  --pricing-panel-strong: rgba(22, 30, 22, 0.94);
+  overflow-x: clip;
+  background:
+    linear-gradient(180deg, rgba(127, 238, 100, 0.035), transparent 22%),
+    linear-gradient(
+      90deg,
+      rgba(127, 238, 100, 0.035),
+      transparent 26%,
+      transparent 74%,
+      rgba(127, 238, 100, 0.026)
+    );
+  color: var(--pricing-ink);
+}
+
+.pageStyles :global(.pricing-hero-section) {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  padding-top: 128px;
+  padding-bottom: 88px;
+}
+
+.pageStyles :global(.pricing-hero__inner),
+.pageStyles :global(.pricing-compare__inner),
+.pageStyles :global(.pricing-faq__inner) {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.pageStyles :global(.pricing-hero__inner) {
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.pageStyles :global(.pricing-hero__copy) {
+  max-width: 780px;
+}
+
+.pageStyles :global(.pricing-hero__copy) :global(.body-text) {
+  max-width: 700px;
+}
+
+.pageStyles :global(.pricing-hero__actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.pageStyles :global(.pricing-plans-intro) {
+  position: relative;
+  z-index: 30;
+  width: min(100%, 800px);
+  overflow: visible;
+}
+
+.pageStyles :global(.pricing-plans__head) {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 800px;
+  overflow: visible;
+}
+
+.pageStyles :global(.pricing-plans-title-row) {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  overflow: visible;
+}
+
+.pageStyles :global(.pricing-plans-title-row) h2 {
+  margin-bottom: 0;
+}
+
+.pageStyles :global(.pricing-workflow-help) {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 13px;
+  overflow: visible;
+}
+
+.pageStyles :global(.pricing-workflow-help__trigger) {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(127, 238, 100, 0.28);
+  border-radius: 999px;
+  background: rgba(127, 238, 100, 0.08);
+  color: var(--pricing-green);
+  cursor: help;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.pageStyles :global(.pricing-workflow-help__trigger):hover,
+.pageStyles
+  :global(.pricing-workflow-help):focus-within
+  :global(.pricing-workflow-help__trigger) {
+  border-color: rgba(127, 238, 100, 0.54);
+  background: rgba(127, 238, 100, 0.14);
+  color: #ddffdc;
+  transform: translateY(-1px);
+}
+
+.pageStyles :global(.pricing-workflow-help__panel) {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  z-index: 200;
+  width: min(720px, calc(100vw - 48px));
+  max-width: 720px;
+  border: 1px solid rgba(221, 255, 220, 0.13);
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.055),
+      rgba(221, 255, 220, 0.018)
+    ),
+    rgba(8, 12, 9, 0.98);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.46);
+  opacity: 0;
+  padding: 18px;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    visibility 0s linear 160ms;
+  will-change: opacity, transform;
+}
+
+.pageStyles :global(.pricing-workflow-help__panel)::before {
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid rgba(221, 255, 220, 0.13);
+  border-left: 1px solid rgba(221, 255, 220, 0.13);
+  background: rgba(8, 12, 9, 0.98);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.pageStyles
+  :global(.pricing-workflow-help):hover
+  :global(.pricing-workflow-help__panel),
+.pageStyles
+  :global(.pricing-workflow-help):focus-within
+  :global(.pricing-workflow-help__panel),
+.pageStyles :global(.pricing-workflow-help__panel):hover,
+.pageStyles :global(.pricing-workflow-help__panel):focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+  visibility: visible;
+}
+
+.pageStyles :global(.pricing-workflow-help__intro) {
+  display: grid;
+  gap: 7px;
+  max-width: 620px;
+  margin-bottom: 14px;
+}
+
+.pageStyles :global(.pricing-workflow-help__intro) span,
+.pageStyles :global(.pricing-workflow-help__card) > span {
+  color: var(--pricing-green);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.pageStyles :global(.pricing-workflow-help__intro) strong {
+  color: var(--pricing-ink);
+  font-size: 17px;
+  font-weight: 780;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.pageStyles :global(.pricing-workflow-help__intro) p,
+.pageStyles :global(.pricing-workflow-help__card) p,
+.pageStyles :global(.pricing-workflow-help__card) li {
+  margin: 0;
+  color: var(--pricing-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.pageStyles :global(.pricing-workflow-help__grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(221, 255, 220, 0.1);
+  border-radius: 8px;
+  background: rgba(3, 5, 3, 0.38);
+  padding: 14px;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) h3 {
+  margin: 0;
+  color: var(--pricing-ink);
+  font-size: 15px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) ul {
+  display: grid;
+  gap: 7px;
+  margin: auto 0 0;
+  padding: 0;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+  list-style: none;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) li svg {
+  margin-top: 3px;
+  color: var(--pricing-green);
+}
+
+.pageStyles :global(.pricing-workflow-help__card) a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  color: rgba(221, 255, 220, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pageStyles :global(.pricing-workflow-help__card) a:hover {
+  color: var(--pricing-green);
+}
+
+.pageStyles :global(.pricing-plan-grid) {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pageStyles :global(.pricing-plan-card),
+.pageStyles :global(.pricing-compare-table-wrap),
+.pageStyles :global(.pricing-faq-item) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--pricing-line);
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.045),
+      rgba(221, 255, 220, 0.012)
+    ),
+    var(--pricing-panel);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+}
+
+.pageStyles :global(.pricing-plan-card) {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 440px;
+  padding: 22px;
+}
+
+.pageStyles :global(.pricing-plan-card)::before,
+.pageStyles :global(.pricing-compare-table-wrap)::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(
+      120deg,
+      transparent 0 38%,
+      rgba(127, 238, 100, 0.055) 48%,
+      transparent 58% 100%
+    ),
+    linear-gradient(rgba(127, 238, 100, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 238, 100, 0.02) 1px, transparent 1px);
+  background-size:
+    180% 100%,
+    38px 38px,
+    38px 38px;
+  opacity: 0.56;
+}
+
+.pageStyles :global(.pricing-plan-card) > *,
+.pageStyles :global(.pricing-compare-table-wrap) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pageStyles :global(.pricing-plan-card__top) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+}
+
+.pageStyles :global(.pricing-plan-card__icon) {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(127, 238, 100, 0.22);
+  border-radius: 8px;
+  background: rgba(127, 238, 100, 0.08);
+  color: var(--pricing-green);
+}
+
+.pageStyles :global(.pricing-plan-card__badge) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid rgba(127, 238, 100, 0.28);
+  border-radius: 999px;
+  background: rgba(127, 238, 100, 0.09);
+  padding: 5px 10px;
+  color: rgba(221, 255, 220, 0.9);
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.pageStyles :global(.pricing-plan-card__price) h3,
+.pageStyles :global(.pricing-faq-item) summary {
+  margin: 0;
+  color: var(--pricing-ink);
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.22;
+}
+
+.pageStyles :global(.pricing-plan-card__price) strong {
+  display: block;
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 820;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.pageStyles :global(.pricing-plan-card__price) span {
+  display: block;
+  margin-top: 8px;
+  color: var(--pricing-green);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.pageStyles :global(.pricing-plan-card) p,
+.pageStyles :global(.pricing-plan-card) li,
+.pageStyles :global(.pricing-faq-item) p {
+  color: var(--pricing-muted);
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.pageStyles :global(.pricing-plan-card) p,
+.pageStyles :global(.pricing-faq-item) p {
+  margin: 0;
+}
+
+.pageStyles :global(.pricing-plan-card) ul {
+  display: grid;
+  gap: 9px;
+  margin: auto 0 0;
+  padding: 0;
+}
+
+.pageStyles :global(.pricing-plan-card) li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  list-style: none;
+}
+
+.pageStyles :global(.pricing-plan-card) li svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--pricing-green);
+}
+
+.pageStyles :global(.pricing-plan-card__cta) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.pageStyles :global(.pricing-compare-section),
+.pageStyles :global(.pricing-faq-section) {
+  padding-top: 96px;
+  padding-bottom: 96px;
+}
+
+.pageStyles :global(.pricing-section-head) {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+}
+
+.pageStyles :global(.pricing-section-head) h2,
+.pageStyles :global(.pricing-section-head) p {
+  margin: 0;
+}
+
+.pageStyles :global(.pricing-section-head--compact) {
+  max-width: 360px;
+  align-self: start;
+}
+
+.pageStyles :global(.pricing-compare-table-wrap) {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pageStyles :global(.pricing-compare-table) {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.pageStyles :global(.pricing-compare-table) th,
+.pageStyles :global(.pricing-compare-table) td {
+  border-bottom: 1px solid rgba(221, 255, 220, 0.09);
+  padding: 18px 16px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.pageStyles :global(.pricing-compare-table) thead th {
+  background: rgba(3, 5, 3, 0.38);
+  color: var(--pricing-ink);
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.pageStyles :global(.pricing-compare-table) thead th:first-child,
+.pageStyles :global(.pricing-compare-table) tbody th[scope="row"] {
+  width: 22%;
+  color: rgba(221, 255, 220, 0.86);
+  font-weight: 720;
+}
+
+.pageStyles :global(.pricing-compare-table) thead span,
+.pageStyles :global(.pricing-compare-table) thead strong {
+  display: block;
+}
+
+.pageStyles :global(.pricing-compare-table) thead strong {
+  margin-top: 6px;
+  color: var(--pricing-green);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.pageStyles :global(.pricing-compare-table) td {
+  color: var(--pricing-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.pageStyles :global(.pricing-compare-table__group) th {
+  border-bottom-color: rgba(127, 238, 100, 0.18);
+  background: rgba(127, 238, 100, 0.07);
+  color: var(--pricing-green);
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pageStyles :global(.pricing-faq__inner) {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.36fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.pageStyles :global(.pricing-faq-list) {
+  display: grid;
+  gap: 12px;
+}
+
+.pageStyles :global(.pricing-faq-item) {
+  padding: 20px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.036),
+      rgba(221, 255, 220, 0.01)
+    ),
+    rgba(8, 12, 9, 0.82);
+}
+
+.pageStyles :global(.pricing-faq-item) summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.pageStyles :global(.pricing-faq-item) summary::-webkit-details-marker {
+  display: none;
+}
+
+.pageStyles :global(.pricing-faq-item) summary::after {
+  float: right;
+  color: var(--pricing-muted);
+  content: "+";
+}
+
+.pageStyles :global(.pricing-faq-item[open]) summary::after {
+  content: "-";
+}
+
+.pageStyles :global(.pricing-faq-item) p {
+  margin-top: 10px;
+}
+
+@media (max-width: 1180px) {
+  .pageStyles :global(.pricing-plan-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pageStyles :global(.pricing-plan-card) {
+    min-height: 390px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.pricing-hero-section) {
+    padding-top: 104px;
+    padding-bottom: 64px;
+  }
+
+  .pageStyles :global(.pricing-compare-section),
+  .pageStyles :global(.pricing-faq-section) {
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
+
+  .pageStyles :global(.pricing-hero__inner),
+  .pageStyles :global(.pricing-compare__inner),
+  .pageStyles :global(.pricing-faq__inner) {
+    gap: 24px;
+  }
+
+  .pageStyles :global(.pricing-plans-title-row) {
+    align-items: flex-start;
+  }
+
+  .pageStyles :global(.pricing-workflow-help) {
+    margin-top: 10px;
+  }
+
+  .pageStyles :global(.pricing-workflow-help__panel) {
+    top: calc(100% + 12px);
+    left: 0;
+    right: auto;
+    width: min(100%, calc(100vw - 36px));
+    max-height: min(72vh, 680px);
+    overflow-y: auto;
+    padding: 16px;
+    transform: translateY(8px);
+  }
+
+  .pageStyles
+    :global(.pricing-workflow-help):hover
+    :global(.pricing-workflow-help__panel),
+  .pageStyles
+    :global(.pricing-workflow-help):focus-within
+    :global(.pricing-workflow-help__panel),
+  .pageStyles :global(.pricing-workflow-help__panel):hover,
+  .pageStyles :global(.pricing-workflow-help__panel):focus-within {
+    transform: translateY(0);
+  }
+
+  .pageStyles :global(.pricing-workflow-help__panel)::before {
+    left: auto;
+    right: 10px;
+  }
+
+  .pageStyles :global(.pricing-workflow-help__grid) {
+    grid-template-columns: 1fr;
+  }
+
+  .pageStyles :global(.pricing-workflow-help__card) {
+    min-height: auto;
+  }
+
+  .pageStyles :global(.pricing-hero__actions) :global(.btn-primary),
+  .pageStyles :global(.pricing-hero__actions) :global(.btn-secondary) {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pageStyles :global(.pricing-plan-grid),
+  .pageStyles :global(.pricing-faq__inner) {
+    grid-template-columns: 1fr;
+  }
+
+  .pageStyles :global(.pricing-plan-card) {
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .pageStyles :global(.pricing-compare-table-wrap) {
+    margin-right: -18px;
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+  }
+
+  .pageStyles :global(.pricing-compare-table) {
+    min-width: 820px;
+  }
+
+  .pageStyles :global(.pricing-compare-table) th,
+  .pageStyles :global(.pricing-compare-table) td {
+    padding: 15px 14px;
+  }
+
+  .pageStyles :global(.pricing-faq-item) {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pageStyles :global(.pricing-plan-card)::before,
+  .pageStyles :global(.pricing-compare-table-wrap)::before {
+    animation: none !important;
+  }
+}
+
+/* Additional pricing route styles */
+.pageStyles :global(.pricing-grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.pageStyles :global(.pricing-card) {
+  min-height: 190px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.94);
+  padding: 20px;
+}
+
+.pageStyles :global(.pricing-card svg) {
+  color: var(--cyan);
+}
+
+.pageStyles :global(.pricing-card h3) {
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.pageStyles :global(.pricing-card p) {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1120px) {
+  .pageStyles :global(.pricing-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pageStyles :global(.pricing-card) {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(221, 255, 220, 0.12);
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(221, 255, 220, 0.045),
+      rgba(221, 255, 220, 0.012)
+    ),
+    rgba(17, 22, 16, 0.84);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+}
+
+.pageStyles :global(.pricing-card h3) {
+  color: var(--premium-ink, #ddffdc);
+  letter-spacing: 0;
+}
+
+.pageStyles :global(.pricing-card p) {
+  color: var(--premium-muted, rgba(221, 255, 220, 0.66));
+}
+
+.pageStyles :global(.pricing-package-grid) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pageStyles :global(.pricing-package-card) {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  min-height: 430px;
+  border: 1px solid rgba(221, 255, 220, 0.11);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 16% 0%,
+      rgba(127, 238, 100, 0.1),
+      transparent 32%
+    ),
+    linear-gradient(180deg, rgba(17, 22, 16, 0.86), rgba(6, 9, 7, 0.78));
+  padding: 22px;
+}
+
+.pageStyles :global(.pricing-package-card__head) {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #7fee64;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pageStyles :global(.pricing-package-card h3) {
+  margin: 0;
+  color: #f3f7ef;
+  font-size: 22px;
+  line-height: 1.16;
+}
+
+.pageStyles :global(.pricing-package-card p),
+.pageStyles :global(.pricing-package-card li),
+.pageStyles :global(.pricing-package-card__path) {
+  color: rgba(221, 255, 220, 0.65);
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+.pageStyles :global(.pricing-package-card p) {
+  margin: 0;
+}
+
+.pageStyles :global(.pricing-package-card__path) {
+  border-left: 2px solid rgba(127, 238, 100, 0.54);
+  padding-left: 12px;
+}
+
+.pageStyles :global(.pricing-package-card ul) {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.pageStyles :global(.pricing-package-card li) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  list-style: none;
+}
+
+.pageStyles :global(.pricing-package-card li svg) {
+  color: #7fee64;
+  margin-top: 3px;
+}
+
+@media (max-width: 880px) {
+  .pageStyles :global(.pricing-package-grid) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 880px) {
+  .pageStyles :global(.pricing-package-card) {
+    min-height: auto;
+  }
+}

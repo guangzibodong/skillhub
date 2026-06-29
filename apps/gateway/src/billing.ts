@@ -1,5 +1,9 @@
 import { getSql, searchSkills } from "./registry.js";
 import { CURRENT_PUBLISHER_TERMS_VERSION } from "./publisher-terms.js";
+import {
+  createStripeCatalogPrice,
+  type StripeRuntimeEnv,
+} from "./stripe-commerce.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -11,6 +15,11 @@ type PriceInput = {
   currency?: string;
   unitAmountCents?: number;
   status?: PriceStatus;
+};
+
+type StripePriceLink = {
+  stripePriceId: string | null;
+  stripeProductId: string | null;
 };
 
 type UsageEventRow = {
@@ -85,17 +94,7 @@ export async function listSkillPrices(slug: string) {
   const sql = await getSql();
 
   if (!sql) {
-    return [
-      {
-        id: "demo-price",
-        skillSlug: slug,
-        billingModel: "free",
-        currency: "usd",
-        unitAmountCents: 0,
-        status: "active",
-        createdAt: "demo"
-      }
-    ];
+    return [];
   }
 
   await seedRegistry();
@@ -117,7 +116,12 @@ export async function listSkillPrices(slug: string) {
   `;
 }
 
-export async function setSkillPrice(slug: string, input: PriceInput, organizationId?: string | null) {
+export async function setSkillPrice(
+  slug: string,
+  input: PriceInput,
+  organizationId?: string | null,
+  env?: StripeRuntimeEnv
+) {
   const sql = await requireSql();
   await seedRegistry();
 
@@ -135,6 +139,20 @@ export async function setSkillPrice(slug: string, input: PriceInput, organizatio
     assertPaidActivationReady(skill, publisher);
   }
 
+  const stripeLink = requiresPaidActivation
+    ? await createStripeCatalogPrice(
+        {
+          billingModel,
+          currency,
+          displayName: skill.display_name,
+          skillId: skill.id,
+          skillSlug: slug,
+          unitAmountCents
+        },
+        env
+      )
+    : { stripePriceId: null, stripeProductId: null };
+
   if (status === "active") {
     await sql`
       update skill_prices
@@ -150,20 +168,28 @@ export async function setSkillPrice(slug: string, input: PriceInput, organizatio
       billing_model,
       currency,
       unit_amount_cents,
-      status
+      status,
+      stripe_product_id,
+      stripe_price_id,
+      updated_at
     )
     values (
       ${skill.id},
       ${billingModel},
       ${currency},
       ${unitAmountCents},
-      ${status}
+      ${status},
+      ${stripeLink.stripeProductId},
+      ${stripeLink.stripePriceId},
+      now()
     )
     returning
       id::text,
       billing_model as "billingModel",
       currency,
       unit_amount_cents as "unitAmountCents",
+      stripe_product_id as "stripeProductId",
+      stripe_price_id as "stripePriceId",
       status,
       created_at as "createdAt"
   `) as Array<Record<string, unknown>>;
@@ -589,7 +615,7 @@ export async function renewSubscriptionPeriods(limit = 50, actorUserId?: string 
           'billing.subscription_period.renewed',
           'subscription',
           ${subscription.id},
-          'Advanced active subscription to the next provider-deferred billing period after the previous period was posted.',
+          'Advanced active subscription to the next billing period after the previous Stripe-backed period was posted.',
           ${tx.json(payload)}
         )
       `;
@@ -670,7 +696,7 @@ export async function listCommissionRules(limit = 30): Promise<CommissionRuleRec
   const sql = await getSql();
 
   if (!sql) {
-    return [demoCommissionRule()];
+    return [];
   }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
@@ -1126,12 +1152,12 @@ async function seedRegistry() {
 
 async function getSkillBySlug(sql: Sql, slug: string, organizationId?: string | null) {
   const rows = (await sql`
-    select id::text, organization_id::text, verification_status
+    select id::text, organization_id::text, display_name, verification_status
     from skills
     where slug = ${slug}
       and (${organizationId ?? null}::uuid is null or organization_id = ${organizationId ?? null})
     limit 1
-  `) as Array<{ id: string; organization_id: string; verification_status: string }>;
+  `) as Array<{ id: string; organization_id: string; display_name: string; verification_status: string }>;
 
   if (!rows[0]) {
     throw new Error(organizationId ? "Skill not found for this organization." : "Skill not found.");
@@ -1266,19 +1292,6 @@ async function getActiveCommissionRule(sql: Sql): Promise<CommissionRule> {
   `) as CommissionRule[];
 
   return rows[0];
-}
-
-function demoCommissionRule(): CommissionRuleRecord {
-  return {
-    id: "demo-commission-default",
-    name: "Default 20/80 split",
-    platformFeeBps: 2000,
-    publisherShareBps: 8000,
-    startsAt: "demo",
-    endsAt: null,
-    createdAt: "demo",
-    isActive: true
-  };
 }
 
 function calculateSplit(amountCents: number, commissionRule: CommissionRule) {

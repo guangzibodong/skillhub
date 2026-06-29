@@ -37,6 +37,7 @@ export type PublicMarketplaceSearchOptions = {
   runtimeType?: "http" | "mcp" | "local";
   sort?: "adoption" | "low_risk" | "recommended" | "recent" | "success";
   verificationStatus?: SkillSummary["verificationStatus"];
+  includeReviewListings?: boolean;
 };
 
 export type MarketplaceSkillSuggestion = {
@@ -49,60 +50,48 @@ export async function getPublicMarketplaceSkills(
   options: PublicMarketplaceSearchOptions = {},
 ): Promise<MarketplaceSkill[]> {
   const serverApiUrl = getServerApiUrl();
-  const shouldIncludeReviewListings = Boolean(options.verificationStatus);
+  const shouldIncludeReviewListings = Boolean(
+    options.includeReviewListings || options.verificationStatus,
+  );
 
-  try {
-    const searchParams = new URLSearchParams({
-      limit: String(options.limit ?? 50),
-      sort: options.sort ?? "recommended",
-    });
+  const searchParams = new URLSearchParams({
+    limit: String(options.limit ?? 50),
+    sort: options.sort ?? "recommended",
+  });
 
-    const apiBillingModel =
-      options.billingModel === "pro" ? undefined : options.billingModel;
+  const apiBillingModel =
+    options.billingModel === "pro" ? undefined : options.billingModel;
 
-    appendSearchParam(searchParams, "billingModel", apiBillingModel);
-    appendSearchParam(searchParams, "category", options.category);
-    appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
-    appendSearchParam(searchParams, "q", options.query);
-    appendSearchParam(searchParams, "runtimeType", options.runtimeType);
-    appendSearchParam(
-      searchParams,
-      "verificationStatus",
-      options.verificationStatus,
-    );
+  appendSearchParam(searchParams, "billingModel", apiBillingModel);
+  appendSearchParam(searchParams, "category", options.category);
+  appendSearchParam(searchParams, "permissionLevel", options.permissionLevel);
+  appendSearchParam(searchParams, "q", options.query);
+  appendSearchParam(searchParams, "runtimeType", options.runtimeType);
+  appendSearchParam(
+    searchParams,
+    "verificationStatus",
+    options.verificationStatus,
+  );
 
-    const payload = await fetchJson<{ skills: SkillSummary[] }>(
-      `${serverApiUrl}/v1/skills/search?${searchParams.toString()}`,
-    );
+  const payload = await fetchJson<{ skills: SkillSummary[] }>(
+    `${serverApiUrl}/v1/skills/search?${searchParams.toString()}`,
+  );
 
-    if (!payload) {
-      throw new Error("Marketplace skill search failed");
-    }
-
-    const publicSkills = payload.skills.filter((summary) =>
-      isPublicCatalogSkillSummary(summary, {
-        includeReviewListings: shouldIncludeReviewListings,
-      }),
-    );
-
-    const hydratedSkills = await Promise.all(
-      publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
-    );
-
-    return applyMarketplaceSearchOptions(
-      mergeMarketplaceSkills(hydratedSkills, {
-        includeReviewListings: shouldIncludeReviewListings,
-      }),
-      options,
-    );
-  } catch {
-    return applyMarketplaceSearchOptions(
-      staticMarketplaceCatalog({
-        includeReviewListings: shouldIncludeReviewListings,
-      }),
-      options,
-    );
+  if (!payload) {
+    return [];
   }
+
+  const publicSkills = payload.skills.filter((summary) =>
+    isPublicCatalogSkillSummary(summary, {
+      includeReviewListings: shouldIncludeReviewListings,
+    }),
+  );
+
+  const hydratedSkills = await Promise.all(
+    publicSkills.map((summary) => hydrateMarketplaceSkill(summary)),
+  );
+
+  return applyMarketplaceSearchOptions(hydratedSkills, options);
 }
 
 function applyMarketplaceSearchOptions(
@@ -180,39 +169,24 @@ export async function getPublicMarketplaceSkill(
     return null;
   }
 
-  const staticSkill = getMarketplaceSkill(slug);
+  const [manifest, prices, summary] = await Promise.all([
+    fetchSkillManifest(slug),
+    fetchSkillPrices(slug),
+    fetchSkillSummary(slug),
+  ]);
+  const resolvedSummary =
+    summary ?? (manifest ? manifestToSummary(manifest) : null);
 
-  try {
-    const [manifest, prices, summary] = await Promise.all([
-      fetchSkillManifest(slug),
-      fetchSkillPrices(slug),
-      fetchSkillSummary(slug),
-    ]);
-
-    if (!manifest && !summary && !staticSkill) {
-      return null;
-    }
-
-    if (!manifest && !summary) {
-      return staticSkill ?? null;
-    }
-
-    const resolvedSummary =
-      summary ?? (manifest ? manifestToSummary(manifest) : null);
-
-    if (!resolvedSummary) {
-      return staticSkill ?? null;
-    }
-
-    return manifestToMarketplaceSkill(
-      manifest,
-      resolvedSummary,
-      prices,
-      staticSkill,
-    );
-  } catch {
-    return staticSkill ?? null;
+  if (!resolvedSummary) {
+    return null;
   }
+
+  return manifestToMarketplaceSkill(
+    manifest,
+    resolvedSummary,
+    prices,
+    getMarketplaceSkill(slug),
+  );
 }
 
 export async function getRelatedMarketplaceSkills(
@@ -376,6 +350,7 @@ function manifestToMarketplaceSkill(
     price: isVerified
       ? formatPrice(activePrice, billing, staticSkill)
       : reviewOnlyPrice(),
+    priceId: activePrice?.id,
     rating: isVerified ? formatRating(summary, staticSkill) : "review",
     feedbackCount: isVerified
       ? (summary.feedbackCount ?? staticSkill?.feedbackCount ?? 0)
@@ -723,11 +698,11 @@ function formatPrice(
 
 function previewPriceLabel(billing: MarketplaceSkill["billing"]) {
   if (billing === "per_call") {
-    return { en: "Paid preview / call", zh: "付费预览 / 次" };
+    return { en: "Paid marketplace / call", zh: "付费市场 / 次" };
   }
 
   if (billing === "subscription") {
-    return { en: "Paid preview / month", zh: "付费预览 / 月" };
+    return { en: "Paid marketplace / month", zh: "付费市场 / 月" };
   }
 
   return { en: "Free", zh: "免费" };

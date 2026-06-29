@@ -64,115 +64,11 @@ type SkillRecord = {
   manifest: SkillManifest;
 };
 
-const fallbackInstalls = [
-  {
-    projectSlug: "research-agent",
-    skillSlug: "browser-research",
-    displayName: "Browser Research",
-    version: "0.1.0",
-    status: "installed",
-    approvalState: "approved",
-    permissionLevel: "medium",
-    installedAt: "demo"
-  },
-  {
-    projectSlug: "support-agent",
-    skillSlug: "support-triage",
-    displayName: "Support Triage",
-    version: "0.1.0",
-    status: "installed",
-    approvalState: "approved",
-    permissionLevel: "low",
-    installedAt: "demo"
-  }
-] as const;
-
-const fallbackPolicies = [
-  {
-    projectSlug: "research-agent",
-    skillSlug: "browser-research",
-    maxPermissionLevel: "medium",
-    allowNetwork: true,
-    allowBrowser: true,
-    filesystemAccess: "none",
-    allowSecretAccess: false,
-    monthlyBudgetCents: 48000,
-    rateLimitPerMinute: 60,
-    approvalRequired: false
-  }
-] as const;
-
-const fallbackUpdateInbox = [
-  {
-    id: "demo-update-browser-research",
-    skillSlug: "browser-research",
-    displayName: "Browser Research",
-    eventType: "new_version",
-    severity: "info",
-    title: "New citation freshness scoring available",
-    body: null,
-    currentVersion: "0.1.0",
-    targetVersion: "0.1.1",
-    targetReviewStatus: "approved",
-    adoptionState: "ready",
-    actionStatus: "open",
-    actionNote: null,
-    scheduledFor: null,
-    resolvedAt: null,
-    actionUpdatedAt: null,
-    createdAt: "demo"
-  },
-  {
-    id: "demo-update-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    eventType: "security",
-    severity: "medium",
-    title: "File-retention policy requires review",
-    body: null,
-    currentVersion: "0.1.0",
-    targetVersion: null,
-    targetReviewStatus: null,
-    adoptionState: "not_version_update",
-    actionStatus: "open",
-    actionNote: null,
-    scheduledFor: null,
-    resolvedAt: null,
-    actionUpdatedAt: null,
-    createdAt: "demo"
-  }
-] as const;
-
-const fallbackReviewQueue = [
-  {
-    id: "demo-review-browser-research",
-    skillSlug: "browser-research",
-    displayName: "Browser Research",
-    version: "0.1.0",
-    status: "approved",
-    riskLevel: "medium",
-    notes: "Demo verified listing",
-    createdAt: "demo",
-    decidedAt: "demo"
-  },
-  {
-    id: "demo-review-dataset-summarizer",
-    skillSlug: "dataset-summarizer",
-    displayName: "Dataset Summarizer",
-    version: "0.1.0",
-    status: "queued",
-    riskLevel: "medium",
-    notes: "Needs data retention review",
-    createdAt: "demo",
-    decidedAt: null
-  }
-] as const;
-
 export async function listProjectInstalls(projectSlug: string, organizationId?: string | null) {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackInstalls.filter((install) => install.projectSlug === projectSlug);
+    return [];
   }
 
   await seedRegistry(sql);
@@ -397,7 +293,7 @@ export async function listProjectPolicies(projectSlug: string, organizationId?: 
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackPolicies.filter((policy) => policy.projectSlug === projectSlug);
+    return [];
   }
 
   await seedRegistry(sql);
@@ -569,7 +465,7 @@ export async function listProjectUpdateInbox(projectSlug: string, organizationId
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackUpdateInbox;
+    return [];
   }
 
   await seedRegistry(sql);
@@ -752,10 +648,7 @@ export async function listReviewQueue() {
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackReviewQueue.map((review) => ({
-      ...review,
-      ...buildReviewSlaFields(review.createdAt, review.decidedAt, review.status)
-    }));
+    return [];
   }
 
   await seedRegistry(sql);

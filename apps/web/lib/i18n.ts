@@ -202,10 +202,10 @@ export const dictionaries = {
       eyebrow: "Workspace dashboard",
       title: "Run the publisher and developer sides from one console.",
       description:
-        "The dashboard is split into publisher operations, buyer projects, paid-preview ledger state, and finance-gated readiness so the platform can grow into real marketplace workflows.",
+        "The dashboard is split into publisher operations, buyer projects, paid-marketplace ledger state, and finance-gated readiness so the platform can grow into real marketplace workflows.",
       publisher: "Publisher backend",
       buyer: "Developer backend",
-      earnings: "Paid preview",
+      earnings: "Paid marketplace",
       payouts: "Finance review",
       metrics: [
         ["Available balance", "$4,820"],
@@ -223,7 +223,7 @@ export const dictionaries = {
         ["Subscriptions", "Approved paid skills, renewals, cancellations"],
         ["Usage", "Cost, calls, latency, and skill-level breakdowns"]
       ],
-      ledgerTitle: "Paid-preview ledger",
+      ledgerTitle: "Paid marketplace ledger",
       ledgerHeaders: ["Skill", "Gross", "Fee", "Net", "Status"],
       ledgerRows: [
         ["browser-research", "$1,240", "$248", "$992", "available"],
@@ -233,7 +233,7 @@ export const dictionaries = {
       payoutTitle: "Finance review readiness",
       payoutItems: [
         ["Receiving account", "Submitted"],
-        ["Manual transfer model", "PayPal/Alipay finance review"],
+        ["Stripe payout model", "Stripe Connect finance review"],
         ["Minimum threshold", "$100"],
         ["Next review", "Scheduled finance review"]
       ]
@@ -321,10 +321,10 @@ export const dictionaries = {
         restTitle: "REST invocation",
         sdkTitle: "SDK discovery"
       },
-      governanceEyebrow: "Runtime governance",
+      governanceEyebrow: "Call permissions and logs",
       governanceTitle: "What stays enforced at runtime",
       governanceBody:
-        "SkillHub is the control plane between agent intent and skill execution. Agents can move fast without losing ownership, review, or cost controls.",
+        "SkillHub is the control layer between agent intent and skill execution. Agents can move fast without losing ownership, review, or cost controls.",
       governanceItems: [
         "Project API keys are scoped and revocable.",
         "Installed skills keep version pins and approval state.",
@@ -639,7 +639,7 @@ export const dictionaries = {
       payoutTitle: "财务复核准备",
       payoutItems: [
         ["\u6536\u6b3e\u8d26\u53f7", "\u5df2\u63d0\u4ea4"],
-        ["人工转账模型", "PayPal/Alipay 财务复核"],
+        ["人工转账模型", "Stripe Connect 财务复核"],
         ["最低复核金额", "$100"],
         ["下一次复核", "等待计划审核"]
       ]
@@ -701,7 +701,7 @@ export const dictionaries = {
       timelineTitle: "智能体调用流程",
       timeline: ["按任务搜索", "读取 manifest", "检查权限", "调用运行时", "返回类型化输出"],
       integrationEyebrow: "接入路径",
-      integrationTitle: "通过同一个项目治理层连接智能体。",
+      integrationTitle: "通过同一个项目信任层连接智能体。",
       integrationBody:
         "项目级 Key 让智能体列出已安装工具、调用已批准技能，并把每次调用都绑定到策略、预算、订阅、调用日志和可计量用量。",
       integrationOptions: [
@@ -727,10 +727,10 @@ export const dictionaries = {
         restTitle: "REST 调用",
         sdkTitle: "SDK 发现"
       },
-      governanceEyebrow: "运行时治理",
-      governanceTitle: "运行时仍然生效的治理",
+      governanceEyebrow: "调用权限与记录",
+      governanceTitle: "调用时仍然生效的权限与记录",
       governanceBody:
-        "SkillHub 是智能体意图和技能执行之间的控制平面。智能体可以快速接入，但不会绕过所有权、审核和成本控制。",
+        "SkillHub 是智能体意图和技能执行之间的控制层。智能体可以快速接入，但不会绕过所有权、审核和成本控制。",
       governanceItems: [
         "项目 API Key 有范围并可撤销。",
         "已安装技能保留版本固定和审批状态。",

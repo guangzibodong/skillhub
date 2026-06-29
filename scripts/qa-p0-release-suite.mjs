@@ -35,13 +35,13 @@ const config = {
     process.env.SKILLHUB_P0_RELEASE_APP_URL ??
     process.env.SKILLHUB_SMOKE_APP_URL ??
     (args.prod ? DEFAULT_PROD_APP_URL : DEFAULT_LOCAL_APP_URL),
-  includeDemo: args.includeDemo,
+  includeRealFlow: args.includeRealFlow || args.includeDemo,
   includeDeveloper: args.includeDeveloper || args.includeMutating,
   includePublish: args.includePublish || args.includeMutating,
   skipAdmin: args.skipAdmin,
   skipApi: args.skipApi,
   skipApp: args.skipApp,
-  skipDemoLedger: args.skipDemoLedger,
+  skipRealFlowLedger: args.skipRealFlowLedger || args.skipDemoLedger,
   timeoutMs: parsePositiveInteger(
     args.timeoutMs ?? process.env.SKILLHUB_P0_RELEASE_TIMEOUT_MS,
     DEFAULT_TIMEOUT_MS,
@@ -76,13 +76,13 @@ function buildSteps({
   allowProduction,
   apiUrl,
   appUrl,
-  includeDemo,
   includeDeveloper,
   includePublish,
+  includeRealFlow,
   skipAdmin,
   skipApi,
   skipApp,
-  skipDemoLedger,
+  skipRealFlowLedger,
   timeoutMs,
 }) {
   const sharedArgs = [
@@ -140,16 +140,16 @@ function buildSteps({
     });
   }
 
-  if (includeDemo) {
+  if (includeRealFlow) {
     steps.push({
       args: [
-        "scripts/qa-p0-demo-chain-smoke.mjs",
+        "scripts/qa-p0-real-flow-smoke.mjs",
         ...sharedArgs,
         ...(skipApp ? ["--skip-app"] : []),
-        ...(skipDemoLedger ? ["--skip-ledger"] : []),
+        ...(skipRealFlowLedger ? ["--skip-ledger"] : []),
         ...(allowProduction ? ["--allow-production"] : []),
       ],
-      name: "P0 end-to-end demo-chain smoke",
+      name: "P0 real end-to-end smoke",
     });
   }
 
@@ -181,15 +181,15 @@ function parseArgs(argv) {
     apiUrl: undefined,
     appUrl: undefined,
     help: false,
-    includeDemo: false,
     includeDeveloper: false,
     includeMutating: false,
     includePublish: false,
+    includeRealFlow: false,
     prod: false,
     skipAdmin: false,
     skipApi: false,
     skipApp: false,
-    skipDemoLedger: false,
+    skipRealFlowLedger: false,
     timeoutMs: undefined,
   };
 
@@ -240,13 +240,13 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === "--include-demo") {
-      parsed.includeDemo = true;
+    if (arg === "--include-real-flow" || arg === "--include-demo") {
+      parsed.includeRealFlow = true;
       continue;
     }
 
-    if (arg === "--skip-demo-ledger") {
-      parsed.skipDemoLedger = true;
+    if (arg === "--skip-real-flow-ledger" || arg === "--skip-demo-ledger") {
+      parsed.skipRealFlowLedger = true;
       continue;
     }
 
@@ -302,7 +302,7 @@ function printHelp() {
 
 Runs the P0 release gate in a safe order. By default it runs the public
 production-safe smoke plus the non-mutating Journey C admin operations smoke.
-Mutating Journey A, Journey B, and demo-chain checks are opt-in.
+Mutating Journey A, Journey B, and full real-flow checks are opt-in.
 
 Production modes:
   Routine 1Panel public gate:
@@ -326,8 +326,8 @@ Options:
   --include-developer    Include the mutating Journey A developer handoff smoke.
   --include-publish      Include the mutating Journey B publish handoff smoke.
   --include-mutating     Include both Journey A and Journey B mutating smokes.
-  --include-demo         Include the mutating full P0 demo-chain smoke.
-  --skip-demo-ledger     Pass --skip-ledger to the demo-chain smoke.
+  --include-real-flow    Include the mutating full P0 real end-to-end smoke.
+  --skip-real-flow-ledger Pass --skip-ledger to the real-flow smoke.
   --allow-production     Pass --allow-production to selected mutating smokes.
   -h, --help             Show this help.
 
@@ -340,6 +340,6 @@ Examples:
   pnpm smoke:p0 -- --prod --skip-admin --timeout-ms 30000
   pnpm smoke:p0 -- --prod --timeout-ms 30000
   pnpm smoke:p0 -- --include-mutating
-  pnpm smoke:p0 -- --include-demo --skip-demo-ledger
+  pnpm smoke:p0 -- --include-real-flow --skip-real-flow-ledger
 `);
 }

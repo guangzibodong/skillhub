@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { App as AntdApp, Select } from "antd";
+import TextArea from "antd/es/input/TextArea";
 import {
   AlertTriangle,
   ArrowDownWideNarrow,
   Braces,
-  CheckCircle2,
   ClipboardCheck,
   Clock3,
   FileText,
@@ -15,8 +16,8 @@ import {
   ShieldAlert,
   Tags,
   UserRound,
-  XCircle
 } from "lucide-react";
+import { SkillAlert, SkillButton, SkillStatusTag } from "@/components/skill-antd";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import type { AdminReviewRecord } from "@/lib/ops-data";
 import { decideAdminReviewAction, type AdminReviewActionState } from "@/lib/admin-review-actions";
@@ -358,7 +359,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
           <ClipboardCheck size={16} aria-hidden="true" />
           <span>{labels.title}</span>
         </div>
-        <span className="status-chip status-chip--neutral">{reviews.length}</span>
+        <SkillStatusTag className="status-chip status-chip--neutral" tone="neutral">{reviews.length}</SkillStatusTag>
       </div>
 
       <div className="admin-review-summary" aria-label={labels.priorityLabel}>
@@ -377,16 +378,16 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
             {labels.filterLabel}
           </span>
           {filterOptions.map((option) => (
-            <button
+            <SkillButton
               aria-pressed={filter === option.key}
               className={filter === option.key ? "admin-review-filter is-active" : "admin-review-filter"}
               key={option.key}
               onClick={() => setFilter(option.key)}
-              type="button"
+              htmlType="button"
             >
               <span>{option.label}</span>
               <em>{option.count}</em>
-            </button>
+            </SkillButton>
           ))}
         </div>
 
@@ -395,13 +396,14 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
             <ArrowDownWideNarrow size={14} aria-hidden="true" />
             {labels.sortLabel}
           </span>
-          <select onChange={(event) => setSort(event.target.value as ReviewSort)} value={sort}>
-            {Object.entries(labels.sort).map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <Select
+            onChange={(value) => setSort(value as ReviewSort)}
+            options={Object.entries(labels.sort).map(([key, label]) => ({
+              label,
+              value: key,
+            }))}
+            value={sort}
+          />
         </label>
       </div>
 
@@ -421,7 +423,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                     <strong>{review.displayName}</strong>
                     <span>{review.skillSlug}</span>
                   </div>
-                  <span className={riskClass(review.riskLevel)}>{formatRiskLevel(review.riskLevel, locale)}</span>
+                  <SkillStatusTag className={riskClass(review.riskLevel)}>{formatRiskLevel(review.riskLevel, locale)}</SkillStatusTag>
                 </header>
 
                 <div className={priorityClass(priority.tone)}>
@@ -449,7 +451,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </span>
                   <span>
                     <strong>{labels.status}</strong>
-                    <em className={statusClass(review.status)}>{formatReviewStatus(review.status, locale)}</em>
+                    <SkillStatusTag className={statusClass(review.status)}>{formatReviewStatus(review.status, locale)}</SkillStatusTag>
                   </span>
                   <span>
                     <strong>{labels.created}</strong>
@@ -461,11 +463,11 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   </span>
                   <span>
                     <strong>{labels.sla}</strong>
-                    <em className={reviewSlaClass(review.reviewSlaStatus)}>
+                    <SkillStatusTag className={reviewSlaClass(review.reviewSlaStatus)}>
                       <Clock3 size={12} aria-hidden="true" />
                       {formatReviewSlaStatus(review.reviewSlaStatus, labels)}
                       {review.reviewSlaDueAt ? ` / ${formatDate(review.reviewSlaDueAt, locale)}` : ""}
-                    </em>
+                    </SkillStatusTag>
                   </span>
                   <span>
                     <strong>{labels.risk}</strong>
@@ -486,7 +488,7 @@ export function AdminReviewManager({ locale, reviews }: AdminReviewManagerProps)
                   <div className="admin-review-checks" aria-label={labels.checks}>
                     {review.runtimeChecks.map((check) => (
                       <div className="admin-review-check" key={`${review.id}-${check.checkType}`}>
-                        <span className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</span>
+                        <SkillStatusTag className={checkStatusClass(check.status)}>{formatCheckStatus(check.status, labels)}</SkillStatusTag>
                         <strong>{formatCheckType(check.checkType, labels)}</strong>
                         {typeof check.isBlocking === "boolean" ? (
                           <em className={check.isBlocking ? "quality-chip quality-chip--critical" : "quality-chip quality-chip--attention"}>
@@ -543,10 +545,11 @@ function SummaryItem({ label, tone = "neutral", value }: { label: string; tone?:
 
 function ActionMessage({ state }: { state: AdminReviewActionState }) {
   return (
-    <div className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}>
-      {state.status === "success" ? <CheckCircle2 size={16} aria-hidden="true" /> : <XCircle size={16} aria-hidden="true" />}
-      <span>{state.message}</span>
-    </div>
+    <SkillAlert
+      className={state.status === "success" ? "action-message action-message--success" : "action-message action-message--error"}
+      description={state.message}
+      type={state.status === "success" ? "success" : "error"}
+    />
   );
 }
 
@@ -567,53 +570,64 @@ function ReviewDecisionForm({
   review: AdminReviewRecord;
   rowState: AdminReviewActionState | null;
 }) {
+  const { modal } = AntdApp.useApp();
   const [decision, setDecision] = useState<ReviewDecision | "">("");
   const decisionCopy = getReviewDecisionCopy(locale);
   const buttonLabel = decision ? decisionCopy.buttons[decision] : labels.save;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     if (!decision) {
-      event.preventDefault();
       return;
     }
 
-    if (!window.confirm(decisionCopy.confirm[decision].replace("{skill}", review.displayName))) {
-      event.preventDefault();
-    }
+    const formData = new FormData(event.currentTarget);
+
+    modal.confirm({
+      centered: true,
+      content: decisionCopy.help,
+      okButtonProps: {
+        danger: decision !== "approved",
+      },
+      okText: buttonLabel,
+      onOk: () => action(formData),
+      title: decisionCopy.confirm[decision].replace("{skill}", review.displayName),
+    });
   }
 
   return (
     <form action={action} className="admin-review-action-form" onSubmit={handleSubmit}>
       <input name="reviewId" type="hidden" value={review.id} />
       <input name="skillSlug" type="hidden" value={review.skillSlug} />
+      <input name="status" type="hidden" value={decision} />
       <label>
         <span>{labels.decision}</span>
-        <select
-          name="status"
-          onChange={(event) => setDecision(event.target.value as ReviewDecision | "")}
-          required
-          value={decision}
-        >
-          <option value="">{decisionCopy.choose}</option>
-          <option value="approved">{labels.approve}</option>
-          <option value="rejected">{labels.reject}</option>
-          <option value="blocked">{labels.block}</option>
-        </select>
+        <Select
+          onChange={(value) => setDecision(value as ReviewDecision)}
+          options={[
+            { label: labels.approve, value: "approved" },
+            { label: labels.reject, value: "rejected" },
+            { label: labels.block, value: "blocked" },
+          ]}
+          placeholder={decisionCopy.choose}
+          value={decision || undefined}
+        />
         <small>{decisionCopy.help}</small>
       </label>
       <label className="admin-review-action-form__notes">
         <span>{labels.notes}</span>
-        <textarea defaultValue={review.notes ?? ""} name="notes" required />
+        <TextArea defaultValue={review.notes ?? ""} name="notes" required />
       </label>
       <div className="admin-review-actions">
-        <a className="ghost-button" href={localizedHref(`/skills/${review.skillSlug}`, locale)}>
+        <SkillButton className="ghost-button" href={localizedHref(`/skills/${review.skillSlug}`, locale)} type="text">
           <ShieldAlert size={15} aria-hidden="true" />
           <span>{labels.viewSkill}</span>
-        </a>
-        <button className="secondary-button secondary-button--compact" disabled={isPending || !decision} type="submit">
+        </SkillButton>
+        <SkillButton className="secondary-button secondary-button--compact" disabled={isPending || !decision} htmlType="submit">
           <Save size={15} aria-hidden="true" />
           <span>{isPending && rowState ? labels.saving : buttonLabel}</span>
-        </button>
+        </SkillButton>
       </div>
     </form>
   );

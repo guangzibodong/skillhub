@@ -24,19 +24,19 @@ const publishCopy = {
       badge: "skillhub.json",
       consoleSubtitle: "publish console",
       description:
-        "Submit a skillhub.json contract, run preflight checks, and send an exact version into verified review. Paid marketplace fields are collected only as prelaunch readiness metadata.",
+        "Submit a skillhub.json contract, run preflight checks, and send an exact version into verified review. Paid marketplace fields are collected only as prelaunch readiness information.",
       eyebrow: "Publisher workflow",
       pipelineBody:
-        "A marketplace listing is only trusted after the contract becomes draft state, exact-version review state, automated-check evidence, and public catalog readiness.",
-      pipelineEyebrow: "Operating pipeline",
-      pipelineTitle: "Upload is the first control point, not the finish line.",
+        "A marketplace listing is only trusted after the contract becomes draft state, exact-version review state, automated check results, and public catalog readiness.",
+      pipelineEyebrow: "Publishing steps",
+      pipelineTitle: "Upload starts the draft; review and launch checks still follow.",
       publisherWorkspace: "Publisher workspace",
-      signalLabel: "Publishing operating signals",
+      signalLabel: "Publishing status",
       signals: [
         ["Draft", "Org-scoped"],
-        ["Review", "Automated gates"],
-        ["Runtime", "Policy evidence"],
-        ["Paid", "Readiness metadata"]
+        ["Review", "Automated checks"],
+        ["Runtime", "Policy checks"],
+        ["Paid", "Readiness info"]
       ],
       title: "Register a skill package for review.",
       pipelineSteps: [
@@ -57,7 +57,7 @@ const publishCopy = {
           title: "Submit version"
         },
         {
-          body: "Manifest, runtime, example, and security checks become reviewer and publisher evidence.",
+          body: "Manifest, runtime, example, and security checks become shared check results for reviewers and publishers.",
           title: "Automated checks"
         },
         {
@@ -65,8 +65,8 @@ const publishCopy = {
           title: "Reviewer decision"
         },
         {
-          body: "Paid marketplace fields remain prelaunch metadata until review, terms, commission, and finance decisions are finalized.",
-          title: "Paid readiness metadata"
+          body: "Paid marketplace fields remain prelaunch readiness information until review, terms, commission, and finance decisions are finalized.",
+          title: "Paid readiness info"
         }
       ]
     },
@@ -86,9 +86,9 @@ const publishCopy = {
       },
       checks: {
         commercial: {
-          action: "Continue through terms, pricing intent, paid-readiness metadata, and commission gates after the draft is saved.",
+          action: "Continue through terms, pricing intent, paid-readiness information, and commission gates after the draft is saved.",
           detail: "Paid activation later requires verified review, accepted terms, active pricing, an active commission rule, and finance-approved paid-marketplace readiness.",
-          label: "Paid readiness metadata"
+          label: "Paid readiness info"
         },
         identity: {
           action: "Add every package identity field reviewers need before a version can be trusted.",
@@ -106,11 +106,11 @@ const publishCopy = {
           missing: "Declare network, browser, filesystem, and secrets permissions."
         },
         runtime: {
-          action: "Use a hardened HTTPS HTTP/MCP endpoint or prepare local-runtime evidence for human review.",
+          action: "Use a hardened HTTPS HTTP/MCP endpoint or prepare local runtime check details for human review.",
           fallback: "Requires HTTP entrypoint, MCP serverUrl, or local command.",
           insecure: "Runtime URL is valid but not HTTPS; transport hardening should happen before review.",
           label: "Runtime declared",
-          local: "Local runtime requires human sandboxing, packaging, and execution-evidence review.",
+          local: "Local runtime requires human sandboxing, packaging, and execution review.",
           ok: "{runtime} runtime uses a valid HTTPS endpoint."
         },
         schemas: {
@@ -130,7 +130,7 @@ const publishCopy = {
       editorHintInvalid: "Invalid JSON",
       editorHintValid: "Valid JSON",
       evidencePacket: {
-        body: "This is the secret-safe packet a publisher can reason about before submitting the exact version for platform review.",
+        body: "This is the secret-safe checklist a publisher can reason about before submitting the exact version for platform review.",
         commercial: "Paid-readiness gate",
         identity: "Identity",
         permissions: "Permissions",
@@ -139,10 +139,10 @@ const publishCopy = {
         runtime: "Runtime",
         schemas: "Schema fields",
         secrets: "Secret handles",
-        title: "Reviewer evidence packet"
+        title: "Reviewer check results"
       },
       manifestLabel: "skillhub.json",
-      nextActionsTitle: "Next operating steps",
+      nextActionsTitle: "Next steps",
       nextActions: [
         ["Draft", "Save the contract as organization-owned registry state."],
         ["Version", "Create or submit an exact semantic version from /publisher."],
@@ -161,8 +161,8 @@ const publishCopy = {
       },
       repairQueue: {
         blocker: "Blocker",
-        body: "Resolve blockers before saving. Warnings can be saved as draft, but they become reviewer evidence and may require notes.",
-        emptyBody: "Only paid-readiness metadata remains after draft save; continue in the publisher workspace for terms, pricing intent, future finance-review metadata, and version review.",
+        body: "Resolve blockers before saving. Warnings can be saved as draft, but they stay visible to reviewers and may require explanation.",
+        emptyBody: "Only paid-readiness information remains after draft save; continue in the publisher workspace for terms, pricing intent, future finance-review information, and version review.",
         emptyTitle: "No manifest blockers",
         target: "Target",
         title: "Preflight repair queue",
@@ -173,10 +173,10 @@ const publishCopy = {
         errorTitle: "Draft was not saved",
         publisher: "Open publisher workspace",
         successBody:
-          "Continue in the publisher workspace to submit a reviewed version, record pricing intent, and complete prelaunch paid-readiness metadata.",
+          "Continue in the publisher workspace to submit a reviewed version, record pricing intent, and complete prelaunch paid-readiness information.",
         successTitle: "Draft saved to the registry"
       },
-      reviewBody: "Client preflight is advisory evidence for the publisher. It is not a verified review decision.",
+      reviewBody: "Client preflight is advisory guidance for the publisher. It is not a verified review decision.",
       reviewTitle: "Manifest preflight",
       risk: {
         high: "High",
@@ -206,21 +206,21 @@ const publishCopy = {
   zh: {
     page: {
       badge: "skillhub.json",
-      consoleSubtitle: "发布控制台",
+      consoleSubtitle: "发布工作台",
       description:
-        "把一个 AI 能力打包成可治理的 SkillHub 协议。先保存草稿，再进入版本审核、运行证据、定价意图和付费准备。",
+        "把一个 AI 能力整理成可审核的 SkillHub 协议。先保存草稿，再进入版本审核、调用记录、定价意图和付费准备。",
       eyebrow: "发布者工作流",
       pipelineBody:
         "一个市场上架项只有进入草稿、版本、审核、运行检查和付费准备状态后，才算可信供应。",
-      pipelineEyebrow: "运营流水线",
-      pipelineTitle: "上传只是第一个控制点，不是结束。",
+      pipelineEyebrow: "发布步骤",
+      pipelineTitle: "上传只是第一个步骤，不是结束。",
       publisherWorkspace: "发布者工作台",
-      signalLabel: "发布运营信号",
+      signalLabel: "发布状态",
       signals: [
         ["草稿", "组织隔离"],
-        ["审核", "自动闸口"],
-        ["运行", "策略证据"],
-        ["付费", "准备元数据"]
+        ["审核", "自动检查"],
+        ["运行", "策略检查"],
+        ["付费", "准备信息"]
       ],
       title: "注册一个技能包。",
       pipelineSteps: [
@@ -241,7 +241,7 @@ const publishCopy = {
           title: "提交版本"
         },
         {
-          body: "Manifest、运行时、示例和安全检查会成为审核员和发布者共同看到的证据。",
+          body: "Manifest、运行时、示例和安全检查会成为审核员和发布者共同看到的检查结果。",
           title: "自动检查"
         },
         {
@@ -249,7 +249,7 @@ const publishCopy = {
           title: "审核决策"
         },
         {
-          body: "付费激活仍处于预发布；当前只收集审核、条款、定价意图、分佣规则和财务复核需要的准备元数据。",
+          body: "付费激活仍处于预发布；当前只收集审核、条款、定价意图、分佣规则和财务复核需要的准备信息。",
           title: "付费准备"
         }
       ]
@@ -290,11 +290,11 @@ const publishCopy = {
           missing: "需要声明 network、browser、filesystem 和 secrets 权限。"
         },
         runtime: {
-          action: "使用加固后的 HTTPS HTTP/MCP 端点，或准备本地运行时的人工审核证据。",
+          action: "使用加固后的 HTTPS HTTP/MCP 端点，或准备本地运行时的人工审核说明。",
           fallback: "需要 HTTP entrypoint、MCP serverUrl 或本地 command。",
           insecure: "运行时 URL 有效但不是 HTTPS；审核前应完成传输加固。",
           label: "运行时已声明",
-          local: "本地运行时需要人工审核沙箱、打包和执行证据。",
+          local: "本地运行时需要人工审核沙箱、打包和执行说明。",
           ok: "{runtime} 运行时使用了有效 HTTPS 端点。"
         },
         schemas: {
@@ -314,19 +314,19 @@ const publishCopy = {
       editorHintInvalid: "JSON 无效",
       editorHintValid: "JSON 有效",
       evidencePacket: {
-        body: "这是发布者在提交准确版本给平台审核前，可以先检查的安全证据包。",
-        commercial: "付费准备闸口",
+        body: "这是发布者在提交准确版本给平台审核前，可以先检查的安全检查清单。",
+        commercial: "付费准备要求",
         identity: "身份",
         permissions: "权限",
         risk: "风险",
-        reviewGate: "审核闸口",
+        reviewGate: "审核要求",
         runtime: "运行时",
         schemas: "Schema 字段",
         secrets: "密钥句柄",
-        title: "审核证据包"
+        title: "审核检查结果"
       },
       manifestLabel: "skillhub.json",
-      nextActionsTitle: "下一步运营动作",
+      nextActionsTitle: "下一步操作",
       nextActions: [
         ["草稿", "把协议保存成组织拥有的技能 API 状态。"],
         ["版本", "在 /publisher 创建或提交指定语义版本。"],
@@ -345,7 +345,7 @@ const publishCopy = {
       },
       repairQueue: {
         blocker: "阻塞",
-        body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
+        body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核说明，可能需要备注。",
         emptyBody: "草稿保存后继续到发布者工作台，处理条款、定价意图、收款资料和审核。",
         emptyTitle: "没有 manifest 阻塞项",
         target: "目标字段",
@@ -359,7 +359,7 @@ const publishCopy = {
         successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
         successTitle: "草稿已保存到技能 API"
       },
-      reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
+      reviewBody: "客户端预检只是给发布者看的建议性检查，不等于平台已验证审核。",
       reviewTitle: "Manifest 预检",
       risk: {
         high: "高",
@@ -382,7 +382,7 @@ const publishCopy = {
       missingManifest: "请先粘贴 SkillHub manifest，再保存草稿。",
       missingToken: "请先登录已开通发布权限的账号，再发布技能。",
       publishedPrefix: "草稿已保存",
-      publishedSuffix: "现在可以进入版本提交和发布者运营流程。",
+      publishedSuffix: "现在可以进入版本提交和发布者工作流程。",
       unableToPublish: "无法保存技能草稿。"
     }
   }
@@ -391,21 +391,21 @@ const publishCopy = {
 const normalizedZhPublishCopy: PublishCopy = {
   page: {
     badge: "skillhub.json",
-    consoleSubtitle: "发布控制台",
+    consoleSubtitle: "发布工作台",
     description:
       "提交 skillhub.json 合约、运行预检，并将精确版本送入验证审核。付费市场字段仅作为预发布准备信息收集。",
     eyebrow: "发布者工作流",
     pipelineBody:
-      "一个市场上架项只有进入草稿状态、精确版本审核状态、自动检查证据和公开目录准备状态后，才算可被信任的供应。",
-    pipelineEyebrow: "运营流水线",
-    pipelineTitle: "上传只是第一个控制点，不是终点。",
+      "一个市场上架项只有进入草稿状态、精确版本审核状态、自动检查结果和公开目录准备状态后，才算可被信任的供应。",
+    pipelineEyebrow: "发布步骤",
+    pipelineTitle: "上传只是第一个步骤，不是终点。",
     publisherWorkspace: "发布者工作台",
-    signalLabel: "发布运营信号",
+    signalLabel: "发布状态",
     signals: [
       ["草稿", "组织隔离"],
-      ["审核", "自动闸口"],
-      ["运行", "策略证据"],
-      ["付费", "准备元数据"]
+      ["审核", "自动检查"],
+      ["运行", "策略检查"],
+      ["付费", "准备信息"]
     ],
     title: "注册技能包并提交审核。",
     pipelineSteps: [
@@ -426,7 +426,7 @@ const normalizedZhPublishCopy: PublishCopy = {
         title: "提交版本"
       },
       {
-        body: "Manifest、运行时、示例和安全检查会成为审核员和发布者共同看到的证据。",
+        body: "Manifest、运行时、示例和安全检查会成为审核员和发布者共同看到的检查结果。",
         title: "自动检查"
       },
       {
@@ -434,7 +434,7 @@ const normalizedZhPublishCopy: PublishCopy = {
         title: "审核决策"
       },
       {
-        body: "付费市场字段在审核、条款、分佣和财务决策最终确认前，仅作为预发布元数据。",
+        body: "付费市场字段在审核、条款、分佣和财务决策最终确认前，仅作为预发布准备信息。",
         title: "付费准备"
       }
     ]
@@ -475,11 +475,11 @@ const normalizedZhPublishCopy: PublishCopy = {
         missing: "需要声明 network、browser、filesystem 和 secrets 权限。"
       },
       runtime: {
-        action: "使用加固后的 HTTPS HTTP/MCP 端点，或准备本地运行时的人工审核证据。",
+        action: "使用加固后的 HTTPS HTTP/MCP 端点，或准备本地运行时的人工审核说明。",
         fallback: "需要 HTTP entrypoint、MCP serverUrl 或本地 command。",
         insecure: "运行时 URL 有效但不是 HTTPS；审核前应完成传输加固。",
         label: "运行时已声明",
-        local: "本地运行时需要人工审核沙箱、打包和执行证据。",
+        local: "本地运行时需要人工审核沙箱、打包和执行说明。",
         ok: "{runtime} 运行时使用有效 HTTPS 端点。"
       },
       schemas: {
@@ -499,19 +499,19 @@ const normalizedZhPublishCopy: PublishCopy = {
     editorHintInvalid: "JSON 无效",
     editorHintValid: "JSON 有效",
     evidencePacket: {
-      body: "这是发布者在把准确版本提交给平台审核前，可以先检查的安全证据包。",
-      commercial: "付费准备闸口",
+      body: "这是发布者在把准确版本提交给平台审核前，可以先检查的安全检查清单。",
+      commercial: "付费准备要求",
       identity: "身份",
       permissions: "权限",
       risk: "风险",
-      reviewGate: "审核闸口",
+      reviewGate: "审核要求",
       runtime: "运行时",
       schemas: "Schema 字段",
       secrets: "密钥句柄",
-      title: "审核证据包"
+      title: "审核检查结果"
     },
     manifestLabel: "skillhub.json",
-    nextActionsTitle: "下一步运营动作",
+    nextActionsTitle: "下一步操作",
     nextActions: [
       ["草稿", "把合约保存成组织拥有的技能 API 状态。"],
       ["版本", "在 /publisher 创建或提交指定语义版本。"],
@@ -530,7 +530,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     },
     repairQueue: {
       blocker: "阻塞",
-      body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核证据，可能需要备注。",
+      body: "保存前必须先处理阻塞项。警告可以进入草稿，但会成为审核说明，可能需要备注。",
       emptyBody: "草稿保存后继续到发布者工作台，处理条款、定价意图、收款资料和审核。",
       emptyTitle: "没有 manifest 阻塞项",
       target: "目标字段",
@@ -544,7 +544,7 @@ const normalizedZhPublishCopy: PublishCopy = {
       successBody: "继续进入发布者工作台，提交审核版本、设置定价意图并完成付费准备。",
       successTitle: "草稿已保存到技能 API"
     },
-    reviewBody: "客户端预检只是给发布者看的建议性证据，不等于平台已验证审核。",
+    reviewBody: "客户端预检只是给发布者看的建议性检查，不等于平台已验证审核。",
     reviewTitle: "Manifest 预检",
     risk: {
       high: "高",
@@ -567,7 +567,7 @@ const normalizedZhPublishCopy: PublishCopy = {
     missingManifest: "请先粘贴 SkillHub manifest，再保存草稿。",
     missingToken: "请先登录已开通发布权限的账号，再发布技能。",
     publishedPrefix: "草稿已保存",
-    publishedSuffix: "现在可以进入版本提交和发布者运营流程。",
+    publishedSuffix: "现在可以进入版本提交和发布者工作流程。",
     unableToPublish: "无法保存技能草稿。"
   }
 };

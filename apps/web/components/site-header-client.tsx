@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { KeyRound, LogIn, Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, LogIn, Menu, X } from "lucide-react";
 import { localizedHref, type Locale } from "@/lib/locale-routing";
 import { getProductStageCopy } from "@/lib/product-stage";
 import { trackPublicEvent } from "@/lib/public-analytics";
@@ -30,26 +31,44 @@ export type SiteHeaderDictionary = {
   };
 };
 
+export type SiteHeaderActive =
+  | "home"
+  | "marketplace"
+  | "solutions"
+  | "use-cases"
+  | "examples"
+  | "integrations"
+  | "blog"
+  | "registry"
+  | "docs"
+  | "quickstart"
+  | "mcp"
+  | "pricing"
+  | "publish"
+  | "publishers"
+  | "agents"
+  | "prompts"
+  | "dashboard"
+  | "developer"
+  | "publisher"
+  | "admin"
+  | "login"
+  | "account"
+  | "skills"
+  | "support"
+  | "terms"
+  | "security"
+  | "status"
+  | "report";
+
 type SiteHeaderClientProps = {
-  active:
-    | "home"
-    | "marketplace"
-    | "solutions"
-    | "registry"
-    | "publishers"
-    | "agents"
-    | "docs"
-    | "dashboard"
-    | "developer"
-    | "publisher"
-    | "admin"
-    | "publish"
-    | "account";
+  active?: SiteHeaderActive;
   dictionary: SiteHeaderDictionary;
   locale: Locale;
-  pathname: string;
+  pathname?: string;
   consoleHref?: string;
   consoleLabel?: string;
+  showStageBanner?: boolean;
   subtitle?: string;
 };
 
@@ -60,11 +79,13 @@ export function SiteHeaderClient({
   dictionary,
   locale,
   pathname,
+  showStageBanner = true,
   subtitle,
 }: SiteHeaderClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const currentPathname = usePathname() ?? pathname ?? "/";
   const labels = headerLabels(dictionary, locale);
   const productStage = getProductStageCopy(locale);
   const navItems = [
@@ -74,7 +95,10 @@ export function SiteHeaderClient({
     { id: "docs", label: labels.nav.docs, href: "/docs" },
     { id: "publish", label: labels.nav.publish, href: "/publish" },
     { id: "pricing", label: labels.nav.pricing, href: "/pricing" },
+    { id: "prompts", label: locale === "zh" ? "提示词" : "Prompts", href: "/prompts" }
   ] as const;
+  const consoleActionHref = consoleHref ?? localizedHref("/login", locale);
+  const consoleActionAnalytics = getHeaderCtaAnalytics(consoleActionHref);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -150,23 +174,23 @@ export function SiteHeaderClient({
           <LanguageSwitcher
             label={labels.language}
             locale={locale}
-            pathname={pathname}
+            pathname={currentPathname}
           />
           <a
             className="secondary-button site-action-secondary"
-            href={consoleHref ?? localizedHref("/login", locale)}
-            onClick={() => trackPublicEvent("sign_in_click", { target: "login" })}
+            href={consoleActionHref}
+            onClick={() => trackPublicEvent(consoleActionAnalytics.eventName, { target: consoleActionAnalytics.target })}
           >
             <LogIn size={17} aria-hidden="true" />
             <span>{consoleLabel ?? labels.console}</span>
           </a>
           <a
             className="primary-button site-action-publish"
-            href={localizedHref("/marketplace", locale)}
-            onClick={() => trackPublicEvent("find_skills_click", { target: "marketplace" })}
+            href={localizedHref("/dashboard", locale)}
+            onClick={() => trackPublicEvent("open_workspace_click", { target: "dashboard" })}
           >
-            <KeyRound size={17} aria-hidden="true" />
-            <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
+            <LayoutDashboard size={17} aria-hidden="true" />
+            <span>{labels.getProjectKey}</span>
           </a>
         </div>
 
@@ -220,29 +244,49 @@ export function SiteHeaderClient({
           <div className="site-mobile-panel__actions">
             <a
               className="ghost-button"
-              href={consoleHref ?? localizedHref("/login", locale)}
-              onClick={() => trackPublicEvent("sign_in_click", { target: "login", surface: "mobile" })}
+              href={consoleActionHref}
+              onClick={() => trackPublicEvent(consoleActionAnalytics.eventName, { target: consoleActionAnalytics.target, surface: "mobile" })}
             >
               <LogIn size={17} aria-hidden="true" />
               <span>{consoleLabel ?? labels.console}</span>
             </a>
             <a
               className="primary-button"
-              href={localizedHref("/marketplace", locale)}
-              onClick={() => trackPublicEvent("find_skills_click", { target: "marketplace", surface: "mobile" })}
+              href={localizedHref("/dashboard", locale)}
+              onClick={() => trackPublicEvent("open_workspace_click", { target: "dashboard", surface: "mobile" })}
             >
-              <KeyRound size={17} aria-hidden="true" />
-              <span>{locale === "zh" ? "找技能" : "Find Skills"}</span>
+              <LayoutDashboard size={17} aria-hidden="true" />
+              <span>{labels.getProjectKey}</span>
             </a>
           </div>
         </div>
       </header>
-      <div className="product-stage-banner" role="status">
-        <strong>{productStage.label}</strong>
-        <span>{productStage.body}</span>
-      </div>
+      {showStageBanner ? (
+        <div className="product-stage-banner" role="status">
+          <strong>{productStage.label}</strong>
+          <span>{productStage.body}</span>
+        </div>
+      ) : null}
     </>
   );
+}
+
+function getHeaderCtaAnalytics(href: string) {
+  const target = getHeaderCtaTarget(href);
+
+  return {
+    eventName: target === "login" ? "sign_in_click" : "header_cta_click",
+    target,
+  };
+}
+
+function getHeaderCtaTarget(href: string) {
+  try {
+    const url = new URL(href, "https://useskillhub.local");
+    return url.pathname.split("/").filter(Boolean)[0] ?? "home";
+  } catch {
+    return "unknown";
+  }
 }
 
 function headerLabels(dictionary: SiteHeaderDictionary, locale: Locale) {

@@ -138,7 +138,7 @@ export async function listDeveloperProjects(organizationId: string | null | unde
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjects(limit);
+    return [];
   }
 
   const safeLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
@@ -241,7 +241,7 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug);
+    return null;
   }
 
   const scopedOrganizationId = organizationId ?? null;
@@ -363,381 +363,6 @@ export async function getDeveloperProjectDetail(projectSlug: string, organizatio
   };
 }
 
-function fallbackDeveloperProjects(limit: number) {
-  return [
-    {
-      id: "demo-project-research",
-      slug: "research-agent",
-      name: "Research Agent",
-      apiKeys: {
-        activeCount: 2,
-        revokedCount: 1
-      },
-      installs: {
-        installedSkillCount: 8,
-        approvedSkillCount: 7,
-        ownerRequiredCount: 1,
-        suspendedInstallCount: 0
-      },
-      policy: {
-        policyCount: 8,
-        approvalRequiredCount: 1,
-        monthlyBudgetCents: 48000,
-        state: "owner_review"
-      },
-      runtime: {
-        callCount: 18400,
-        successCount: 17664,
-        errorCount: 642,
-        blockedCount: 94,
-        successRate: 0.96,
-        avgLatencyMs: 1280
-      },
-      usage: {
-        billableUsageCount: 12400,
-        grossCents: 248000,
-        currency: "usd"
-      },
-      subscriptions: {
-        activeCount: 3
-      },
-      updates: {
-        count: 2,
-        latestAt: "demo"
-      },
-      createdAt: "demo"
-    },
-    {
-      id: "demo-project-support",
-      slug: "support-agent",
-      name: "Support Agent",
-      apiKeys: {
-        activeCount: 1,
-        revokedCount: 0
-      },
-      installs: {
-        installedSkillCount: 5,
-        approvedSkillCount: 5,
-        ownerRequiredCount: 0,
-        suspendedInstallCount: 0
-      },
-      policy: {
-        policyCount: 5,
-        approvalRequiredCount: 0,
-        monthlyBudgetCents: 12000,
-        state: "approved"
-      },
-      runtime: {
-        callCount: 9200,
-        successCount: 8832,
-        errorCount: 318,
-        blockedCount: 50,
-        successRate: 0.96,
-        avgLatencyMs: 940
-      },
-      usage: {
-        billableUsageCount: 0,
-        grossCents: 0,
-        currency: "usd"
-      },
-      subscriptions: {
-        activeCount: 1
-      },
-      updates: {
-        count: 1,
-        latestAt: "demo"
-      },
-      createdAt: "demo"
-    }
-  ].slice(0, Math.min(Math.max(Math.trunc(limit), 1), 100));
-}
-
-function fallbackDeveloperProjectDetail(projectSlug: string) {
-  const project = fallbackDeveloperProjects(100).find((item) => item.slug === projectSlug);
-
-  if (!project) {
-    return null;
-  }
-
-  const isResearch = project.slug === "research-agent";
-
-  return {
-    project,
-    installedSkills: [
-      {
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        description: "Research a web topic and return concise findings with source URLs.",
-        version: "0.1.0",
-        verificationStatus: "verified",
-        status: "installed",
-        approvalState: "approved",
-        permissionLevel: "medium",
-        installedAt: "demo",
-        updatedAt: "demo",
-        policy: {
-          maxPermissionLevel: "medium",
-          allowNetwork: true,
-          allowBrowser: true,
-          filesystemAccess: "none",
-          allowSecretAccess: false,
-          monthlyBudgetCents: isResearch ? 48000 : 12000,
-          rateLimitPerMinute: 60,
-          approvalRequired: false,
-          approvedAt: "demo",
-          state: "approved"
-        },
-        runtime: {
-          callCount: isResearch ? 18400 : 9200,
-          successCount: isResearch ? 17664 : 8832,
-          errorCount: isResearch ? 642 : 318,
-          blockedCount: isResearch ? 94 : 50,
-          successRate: 0.96,
-          avgLatencyMs: isResearch ? 1280 : 940
-        },
-        usage: {
-          billableUsageCount: isResearch ? 12400 : 0,
-          grossCents: isResearch ? 248000 : 0,
-          currency: "usd"
-        },
-        pricing: {
-          billingModel: isResearch ? "per_call" : "free",
-          unitAmountCents: isResearch ? 2 : 0,
-          currency: "usd",
-          status: "active"
-        },
-        updates: {
-          count: isResearch ? 2 : 1,
-          latestAt: "demo"
-        },
-        incidents: {
-          openCount: 0
-        }
-      },
-      {
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        description: "Summarize structured datasets with typed output.",
-        version: "0.1.0",
-        verificationStatus: "submitted",
-        status: "installed",
-        approvalState: isResearch ? "owner_required" : "approved",
-        permissionLevel: "medium",
-        installedAt: "demo",
-        updatedAt: "demo",
-        policy: {
-          maxPermissionLevel: "medium",
-          allowNetwork: false,
-          allowBrowser: false,
-          filesystemAccess: "read",
-          allowSecretAccess: false,
-          monthlyBudgetCents: isResearch ? 0 : 8000,
-          rateLimitPerMinute: 30,
-          approvalRequired: isResearch,
-          approvedAt: isResearch ? null : "demo",
-          state: isResearch ? "owner_review" : "approved"
-        },
-        runtime: {
-          callCount: 9200,
-          successCount: 8832,
-          errorCount: 318,
-          blockedCount: 50,
-          successRate: 0.96,
-          avgLatencyMs: 1420
-        },
-        usage: {
-          billableUsageCount: 0,
-          grossCents: 0,
-          currency: "usd"
-        },
-        pricing: {
-          billingModel: "free",
-          unitAmountCents: 0,
-          currency: "usd",
-          status: "active"
-        },
-        updates: {
-          count: 1,
-          latestAt: "demo"
-        },
-        incidents: {
-          openCount: isResearch ? 1 : 0
-        }
-      }
-    ],
-    apiKeys: [
-      {
-        id: "demo-key-primary",
-        projectSlug: project.slug,
-        name: "Production runtime",
-        keyPrefix: "skh",
-        keyLast4: "demo",
-        lastUsedAt: "demo",
-        createdAt: "demo",
-        revokedAt: null
-      },
-      {
-        id: "demo-key-rotation",
-        projectSlug: project.slug,
-        name: "Rotation candidate",
-        keyPrefix: "skh",
-        keyLast4: "next",
-        lastUsedAt: null,
-        createdAt: "demo",
-        revokedAt: null
-      }
-    ],
-    updateInbox: [
-      {
-        id: "demo-update-browser-research",
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        eventType: "new_version",
-        severity: "info",
-        title: "New citation freshness scoring available",
-        body: "Version 0.1.1 adds fresher source ranking for research agents.",
-        currentVersion: "0.1.0",
-        targetVersion: "0.1.1",
-        targetReviewStatus: "approved",
-        adoptionState: "ready",
-        actionStatus: "open",
-        actionNote: null,
-        scheduledFor: null,
-        resolvedAt: null,
-        actionUpdatedAt: null,
-        createdAt: "demo"
-      },
-      {
-        id: "demo-update-dataset-summarizer",
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        eventType: "security",
-        severity: "medium",
-        title: "File-retention policy requires review",
-        body: "Project owner approval is required before broad file reads are enabled.",
-        currentVersion: "0.1.0",
-        targetVersion: null,
-        targetReviewStatus: null,
-        adoptionState: "not_version_update",
-        actionStatus: isResearch ? "scheduled" : "open",
-        actionNote: isResearch ? "Review during weekly agent safety window." : null,
-        scheduledFor: isResearch ? "demo" : null,
-        resolvedAt: null,
-        actionUpdatedAt: isResearch ? "demo" : null,
-        createdAt: "demo"
-      }
-    ],
-    recentInvocations: [
-      {
-        id: "demo-invocation-success",
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        version: "0.1.0",
-        status: "success",
-        latencyMs: 1184,
-        errorCode: null,
-        createdAt: "demo"
-      },
-      {
-        id: "demo-invocation-blocked",
-        skillSlug: "dataset-summarizer",
-        displayName: "Dataset Summarizer",
-        version: "0.1.0",
-        status: "blocked",
-        latencyMs: 42,
-        errorCode: "policy_approval_required",
-        createdAt: "demo"
-      }
-    ],
-    subscriptions: [
-      {
-        id: "demo-subscription-browser-research",
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        status: isResearch ? "active" : "trialing",
-        billingModel: "subscription",
-        unitAmountCents: isResearch ? 4900 : 0,
-        currency: "usd",
-        currentPeriodStart: "demo",
-        currentPeriodEnd: "demo",
-        ledgerState: isResearch ? "posted" : "trial_access",
-        ledgerTransactionId: isResearch ? `demo-transaction-${project.slug}-subscription` : null,
-        ledgerSourceReference: isResearch ? `subscription:demo-subscription-${project.slug}-browser-research:demo` : null,
-        ledgerGrossCents: isResearch ? 4900 : null,
-        ledgerCurrency: isResearch ? "usd" : null,
-        ledgerStatus: isResearch ? "posted" : null,
-        ledgerPostedAt: isResearch ? "demo" : null,
-        ledgerInvoiceCount: isResearch ? 1 : 0,
-        renewalReady: false,
-        pausedAt: null,
-        canceledAt: null,
-        updatedAt: "demo",
-        createdAt: "demo"
-      }
-    ],
-    invoices: [
-      {
-        id: "demo-invoice-june",
-        projectSlug: project.slug,
-        invoiceNumber: "SH-DEMO-202606",
-        status: "issued",
-        currency: "usd",
-        periodStart: "2026-06-01T00:00:00.000Z",
-        periodEnd: "2026-07-01T00:00:00.000Z",
-        subtotalCents: isResearch ? 248000 : 76000,
-        taxCents: 0,
-        totalCents: isResearch ? 248000 : 76000,
-        issuedAt: "demo",
-        dueAt: "demo",
-        paidAt: null,
-        createdAt: "demo",
-        updatedAt: "demo",
-        lineItemCount: isResearch ? 2 : 1
-      }
-    ],
-    savedSkills: [
-      {
-        id: `demo-saved-${project.slug}-browser-research`,
-        projectSlug: project.slug,
-        skillSlug: "browser-research",
-        displayName: "Browser Research",
-        description: "Research a web topic and return concise findings with source URLs.",
-        version: "0.1.0",
-        verificationStatus: "verified",
-        permissionLevel: "medium",
-        collectionName: "default",
-        installedStatus: "installed",
-        pricing: {
-          billingModel: "per_call",
-          currency: "usd",
-          status: "active",
-          unitAmountCents: 2
-        },
-        savedAt: "demo"
-      },
-      {
-        id: `demo-saved-${project.slug}-manifest-review`,
-        projectSlug: project.slug,
-        skillSlug: "manifest-review",
-        displayName: "Manifest Review",
-        description: "Review a skillhub.json manifest for completeness before submission.",
-        version: "0.1.0",
-        verificationStatus: "draft",
-        permissionLevel: "low",
-        collectionName: "review",
-        installedStatus: null,
-        pricing: {
-          billingModel: "free",
-          currency: "usd",
-          status: "draft",
-          unitAmountCents: 0
-        },
-        savedAt: "demo"
-      }
-    ]
-  };
-}
-
 function mapDeveloperProject(row: ProjectRow) {
   const successRate = row.callCount > 0 ? row.successCount / row.callCount : null;
   const policyState =
@@ -795,7 +420,7 @@ async function listProjectSkillDetails(projectSlug: string, organizationId: stri
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug)?.installedSkills ?? [];
+    return [];
   }
 
   const rows = (await sql`
@@ -953,7 +578,7 @@ async function listProjectApiKeyDetails(projectSlug: string, organizationId: str
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug)?.apiKeys ?? [];
+    return [];
   }
 
   return (await sql`
@@ -979,7 +604,7 @@ async function listProjectUpdateDetails(projectSlug: string, organizationId: str
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug)?.updateInbox ?? [];
+    return [];
   }
 
   return (await sql`
@@ -1033,7 +658,7 @@ async function listRecentProjectInvocations(projectSlug: string, organizationId:
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug)?.recentInvocations ?? [];
+    return [];
   }
 
   return (await sql`
@@ -1061,7 +686,7 @@ async function listProjectSubscriptions(projectSlug: string, organizationId: str
   const sql = await getSql();
 
   if (!sql) {
-    return fallbackDeveloperProjectDetail(projectSlug)?.subscriptions ?? [];
+    return [];
   }
 
   return (await sql`

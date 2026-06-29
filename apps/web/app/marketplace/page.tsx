@@ -1,30 +1,21 @@
 import {
-  Activity,
   ArrowRight,
   BadgeCheck,
   BookOpenCheck,
-  Building2,
-  CircleDollarSign,
   Code2,
-  Gauge,
-  HandCoins,
-  History,
   PackageSearch,
-  PlugZap,
   ShieldCheck,
   Store,
   Terminal,
 } from "lucide-react";
 import type { Metadata } from "next";
+import styles from "./marketplace.module.css";
 import { AppShell } from "@/components/app-shell";
 import { Reveal } from "@/components/home/reveal";
-import { JourneyRail } from "@/components/journey-rail";
 import {
   MarketplaceBrowser,
   type MarketplaceSkillCard,
 } from "@/components/marketplace-browser";
-import { OperatingEvidenceChain } from "@/components/operating-evidence-chain";
-import { PublicAccessScope } from "@/components/public-access-scope";
 import {
   getDictionary,
   getLocaleFromSearchParams,
@@ -33,17 +24,10 @@ import {
 } from "@/lib/i18n";
 import { marketplaceSkills } from "@/lib/marketplace-data";
 import {
-  getOverviewMetric,
-  getPlatformOverview,
-} from "@/lib/platform-overview";
-import {
   getPublicPlatformStats,
   type PublicPlatformStats,
 } from "@/lib/public-platform-stats";
-import {
-  getPublicMarketplaceSkills,
-  type PublicMarketplaceSearchOptions,
-} from "@/lib/public-marketplace";
+import { getPublicMarketplaceSkills } from "@/lib/public-marketplace";
 import { getPublicPublishers } from "@/lib/public-publishers";
 import { isVerifiedSkillStatus } from "@/lib/skill-install-state";
 
@@ -102,6 +86,7 @@ type MarketplaceInitialFilterState = {
   runtime?: string;
   sort?: string;
   verification?: string;
+  view?: string;
 };
 
 const MARKETPLACE_PAGE_SKILL_LIMIT = 720;
@@ -185,30 +170,27 @@ const pageCopy = {
       ],
       [
         "Money",
-        "Prelaunch commission and ledger model; no general payment capture.",
+        "Stripe or PayPal checkout is available only when a real provider is configured by admins.",
       ],
       [
         "Support",
         "Changelog, deprecation policy, issue channel, response expectations.",
       ],
     ],
-    moneyTitle: "Future paid marketplace model",
+    moneyTitle: "Paid marketplace model",
     moneyRows: [
-      [
-        "Current stage",
-        "Launch Preview catalog; payment capture is prelaunch",
-      ],
+      ["Checkout providers", "Stripe and PayPal are selected from real admin configuration"],
       [
         "Paid readiness",
-        "Signed-in publishers can prepare paid-readiness metadata for future finance review",
+        "Signed-in publishers prepare pricing, payout, support, and review evidence before paid activation",
       ],
       [
-        "Future ledger rule",
-        "Billable usage will post transactions only after paid marketplace launch gates",
+        "Ledger rule",
+        "Captured payments and billable runtime usage post to the finance ledger",
       ],
       [
         "Operator control",
-        "Finance evidence remains admin-gated and prelaunch on public pages",
+        "Finance evidence remains admin-gated and auditable",
       ],
     ],
     overview: {
@@ -218,7 +200,7 @@ const pageCopy = {
       body: "These launch signals explain the discovery-to-runtime architecture without inflating production API counts. Public pages may show curated launch examples while verified runtime inventory grows behind the API.",
       metrics: {
         activeSubscriptions: "Active subscriptions",
-        paidPreview: "Paid preview",
+        paidPreview: "Paid marketplace",
         failedChecks: "Failed checks",
         installedSkills: "Adopted skills",
         openBuyerRequests: "Buyer requests",
@@ -301,7 +283,7 @@ const pageCopy = {
       [
         "Invoke",
         "Verified runtime calls carry typed input, project policy checks, success signals, and reviewable output.",
-        "Runtime evidence",
+        "Call logs",
       ],
       [
         "Return",
@@ -333,7 +315,7 @@ const pageCopy = {
         "Reviews, incidents, usage, and changelog pressure feed the next version.",
       ],
       [
-        "Paid preview view",
+        "Paid marketplace view",
         "Prelaunch ledger model",
         "Future paid usage reaches ledger review only after paid marketplace launch gates.",
       ],
@@ -355,14 +337,17 @@ const pageCopy = {
       eyebrow: "采用路径",
       title: "从发现到接入，先确认边界",
       steps: [
-        ["发现 Skill", "按任务、团队工作流、Agent 运行时和工具上下文找到候选技能。"],
+        [
+          "发现 Skill",
+          "按任务、团队工作流、Agent 运行时和工具上下文找到候选技能。",
+        ],
         [
           "比较合约和权限",
           "确认输入输出、运行时、风险等级、验证状态和发布者信息。",
         ],
         [
           "接入项目工作台",
-          "登录后安装到项目，配置策略，并保留可复核的运行证据。",
+          "登录后安装到项目，配置策略，并保留可复核的调用记录。",
         ],
       ],
     },
@@ -373,7 +358,7 @@ const pageCopy = {
         "技能 API",
         "给系统和 API 查 manifest、schema、版本、运行时和检索结果。",
       ],
-      ["登录后可做", "把已验证技能加入项目，配置策略、预算并查看运行证据。"],
+      ["登录后可做", "把已验证技能加入项目，配置策略、预算并查看调用记录。"],
       ["公开页不做", "不直接调用生产运行时，也不执行后台运营操作。"],
     ],
     mcpMetadataNote:
@@ -392,7 +377,7 @@ const pageCopy = {
     trustItems: [
       ["契约", "输入输出、运行时、版本和作者。"],
       ["权限", "网络、浏览器、文件、密钥和高风险能力。"],
-      ["验证", "状态、更新记录、运行证据和问题历史。"],
+      ["验证", "状态、更新记录、调用记录和问题历史。"],
       ["发布者", "资料完整度、支持路径和响应速度。"],
     ],
     moneyTitle: "找技能和技能 API 的区别",
@@ -431,7 +416,7 @@ const pageCopy = {
         },
         developer: {
           empty: "暂无已采用技能更新。",
-          subtitle: "项目会为了策略、版本变化、预算、Key 和运行证据回到平台。",
+          subtitle: "项目会为了策略、版本变化、预算、Key 和调用记录回到平台。",
           title: "开发者",
         },
         publisher: {
@@ -472,19 +457,19 @@ const pageCopy = {
     moneyMetricValue: "登录后接入",
     publisherDirectoryTitle: "供应方信任也是发现的一部分",
     publisherDirectoryBody:
-      "每张市场技能卡都会连接到背后的发布者。公开目录让团队在采用前比较资料状态、已验证上架、公开审核状态、采用证据和运行证据。",
+      "每张市场技能卡都会连接到背后的发布者。公开目录让团队在采用前比较资料状态、已验证上架、公开审核状态、采用证据和调用记录。",
     publisherDirectoryCta: "浏览发布者",
     loopEyebrow: "已验证技能采用路径",
     loopTitle: "看清楚，再接入。",
     loopBody:
-      "先在找技能页面比对技能，再进入技能 API 查看合约细节。已验证技能可以在登录后进入项目策略和运行证据；未验证技能只能公开查看。",
+      "先在找技能页面比对技能，再进入技能 API 查看合约细节。已验证技能可以在登录后进入项目策略和调用记录；未验证技能只能公开查看。",
     loopSteps: [
       ["检查", "先看技能用途、权限、版本和发布者。", "公共合约"],
       ["采用", "登录团队把已验证技能挂到项目 key 或 MCP server。", "项目关卡"],
       [
         "调用",
         "已验证运行调用携带类型化输入、策略检查和可复核输出。",
-        "运行证据",
+        "调用记录",
       ],
       ["回访", "反馈、事故和更新记录会形成下一次发布者行动。", "留存闭环"],
     ],
@@ -499,7 +484,7 @@ const pageCopy = {
       ["买家视角", "采用轨迹", "权限画像和项目策略在登录后保持可检查。"],
       [
         "Agent 视角",
-        "运行证据",
+        "调用记录",
         "Agent 可在重复调用前校验 schema、延迟和成功历史。",
       ],
       ["发布者视角", "行动队列", "评价、事故和更新压力会进入下一版本。"],
@@ -512,8 +497,6 @@ const pageCopy = {
   },
 } as const;
 
-const loopStepIcons = [PackageSearch, PlugZap, Gauge, History] as const;
-const overviewRoleIcons = [PlugZap, HandCoins, ShieldCheck] as const;
 
 function formatCompactMetric(value: number, locale: keyof typeof pageCopy) {
   return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
@@ -538,11 +521,11 @@ function formatQueueValue(value: string, locale: keyof typeof pageCopy) {
     "New payout threshold": "新提现门槛",
     "Pending buyer approval": "待买方批准",
     "Pending publisher update": "待发布者更新",
-    "Prepare pricing metadata": "准备价格元数据",
+    "Prepare pricing metadata": "准备价格信息",
     "Resubmit with changes": "修改后重新提交",
     "Review pending": "审核中",
     "Review runtime checks": "审核运行检查",
-    "Runtime evidence": "运行证据",
+    "Call logs": "调用记录",
     "Submit for review": "提交审核",
     approved: "已批准",
     critical: "严重",
@@ -579,16 +562,17 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
       firstSearchParam(params, "risk"),
     runtime: firstSearchParam(params, "runtime"),
     sort: firstSearchParam(params, "sort"),
+    view: firstSearchParam(params, "view"),
     verification:
       firstSearchParam(params, "verification") ??
       firstSearchParam(params, "verificationStatus"),
   };
-  const marketplaceSearchOptions =
-    toPublicMarketplaceSearchOptions(initialFilters);
-  const [skills, publishers, overview] = await Promise.all([
-    getPublicMarketplaceSkills(marketplaceSearchOptions),
+  const [skills, publishers] = await Promise.all([
+    getPublicMarketplaceSkills({
+      includeReviewListings: true,
+      limit: MARKETPLACE_PAGE_SKILL_LIMIT,
+    }),
     getPublicPublishers(),
-    getPlatformOverview(),
   ]);
   const rawPublicStats = await getPublicPlatformStats({ publishers });
   const pageSkills = selectMarketplacePageSkills(
@@ -609,546 +593,193 @@ export default async function MarketplacePage({ searchParams }: PageProps) {
     [labels.reviewMetric, labels.reviewMetricValue],
     [labels.moneyMetric, labels.moneyMetricValue],
   ];
-  const loopMetrics = [
-    [labels.loopMetrics.callable, String(publicStats.callableSkills)],
-    [
-      labels.loopMetrics.calls,
-      formatCompactMetric(publicStats.recordedCalls, locale),
-    ],
-    [
-      labels.loopMetrics.feedback,
-      formatCompactMetric(publicStats.feedbackSignals, locale),
-    ],
-    [labels.loopMetrics.submitted, String(publicStats.submittedSkills)],
-  ];
-  const overviewCards = [
-    {
-      empty: labels.overview.roles.developer.empty,
-      href: localizedHrefWithReturnTo("/login", locale, "/developer"),
-      metrics: [
-        [
-          labels.overview.metrics.projects,
-          getOverviewMetric(overview.developer.metrics, "Projects", "0"),
-        ],
-        [
-          labels.overview.metrics.installedSkills,
-          getOverviewMetric(
-            overview.developer.metrics,
-            "Installed skills",
-            "0",
-          ),
-        ],
-        [
-          labels.overview.metrics.updateInbox,
-          getOverviewMetric(overview.developer.metrics, "Update inbox", "0"),
-        ],
-      ],
-      rows: overview.developer.updateInbox.slice(0, 3).map((row) => ({
-        detail: `${labels.overview.queueLabels.event}: ${formatQueueValue(row.event, locale)}`,
-        meta: `${labels.overview.queueLabels.severity}: ${formatQueueValue(row.severity, locale)}`,
-        title: row.skill,
-      })),
-      subtitle: labels.overview.roles.developer.subtitle,
-      title: labels.overview.roles.developer.title,
-    },
-    {
-      empty: labels.overview.roles.publisher.empty,
-      href: localizedHref("/publisher", locale),
-      metrics: [
-        [
-          labels.overview.metrics.submittedVersions,
-          getOverviewMetric(
-            overview.publisher.metrics,
-            "Submitted versions",
-            "0",
-          ),
-        ],
-        [
-          labels.overview.metrics.failedChecks,
-          getOverviewMetric(
-            overview.publisher.metrics,
-            "Runtime checks failed",
-            "0",
-          ),
-        ],
-        [
-          labels.overview.metrics.paidPreview,
-          locale === "zh" ? "预发布" : "Prelaunch",
-        ],
-      ],
-      rows: overview.publisher.reviewPipeline.slice(0, 3).map((row) => ({
-        detail: `${labels.overview.queueLabels.stage}: ${formatQueueValue(row.stage, locale)}`,
-        meta: `${labels.overview.queueLabels.next}: ${formatQueueValue(row.nextStep, locale)}`,
-        title: row.skill,
-      })),
-      subtitle: labels.overview.roles.publisher.subtitle,
-      title: labels.overview.roles.publisher.title,
-    },
-    {
-      empty: labels.overview.roles.admin.empty,
-      metrics: [
-        [
-          labels.overview.metrics.reviewQueue,
-          locale === "zh" ? "后台门控" : "Admin gated",
-        ],
-        [
-          labels.overview.metrics.payoutGovernance,
-          locale === "zh" ? "预发布" : "Prelaunch",
-        ],
-        [
-          labels.overview.metrics.notificationGovernance,
-          locale === "zh" ? "后台门控" : "Admin gated",
-        ],
-      ],
-      rows: overview.admin.riskQueue.slice(0, 3).map((row) => ({
-        detail: `${labels.overview.queueLabels.scope}: ${formatQueueValue(row.scope, locale)}`,
-        meta: `${labels.overview.queueLabels.action}: ${formatQueueValue(row.action, locale)}`,
-        title: formatQueueValue(row.signal, locale),
-      })),
-      subtitle: labels.overview.roles.admin.subtitle,
-      title: labels.overview.roles.admin.title,
-    },
-  ];
+
 
   return (
     <AppShell active="marketplace" locale={locale}>
-      <div className="market-curated-shell">
-        <section
-          className="market-curated-hero market-hero market-hero--compact"
-          aria-labelledby="marketplace-heading"
-        >
-          <Reveal>
-            <div className="market-curated-hero__copy market-hero__copy">
-              <div className="eyebrow">
-                <Store size={16} aria-hidden="true" />
-                <span>{labels.eyebrow}</span>
-              </div>
-              <h1 id="marketplace-heading">
-                {locale === "zh" ? (
-                  <>
-                    为你的 Agent 工作流
-                    <br />
-                    找到合适的 Skill。
-                  </>
-                ) : (
-                  labels.title
-                )}
-              </h1>
-              <p>{labels.description}</p>
-              <div className="market-curated-proof" aria-label={labels.eyebrow}>
-                {labels.proof.map((item) => (
-                  <span key={item}>
-                    <BadgeCheck size={14} aria-hidden="true" />
-                    {item}
-                  </span>
-                ))}
-              </div>
-              <form
-                action="/marketplace"
-                className="market-hero-search-form"
-                method="get"
-                role="search"
-              >
-                <input name="lang" type="hidden" value={locale} />
-                <label className="market-hero-search-field">
-                  <PackageSearch size={16} aria-hidden="true" />
-                  <input
-                    aria-label={
-                      locale === "zh"
-                        ? "搜索任务、工具、发布者或 Skill 名称"
-                        : "Search tasks, tools, publishers, or Skill names"
-                    }
-                    defaultValue={initialFilters.query ?? ""}
-                    name="q"
-                    placeholder={
-                      locale === "zh"
-                        ? "搜索任务、工具、发布者或 Skill 名称"
-                        : "Search tasks, tools, publishers, or Skill names"
-                    }
-                    type="search"
-                  />
-                </label>
-                <button type="submit">
-                  {locale === "zh" ? "搜索 Skill" : "Search Skills"}
-                </button>
-              </form>
-            </div>
-          </Reveal>
-
-          <aside
-            className="market-adoption-path"
-            aria-label={labels.adoptionPath.title}
+      <div className={`marketplace-page ${styles.pageStyles}`}>
+        <div className="market-curated-shell">
+          <section
+            className="market-curated-hero market-hero market-hero--compact"
+            aria-labelledby="marketplace-heading"
           >
-            <div className="market-adoption-path__head">
-              <span>{labels.adoptionPath.eyebrow}</span>
-              <strong>{labels.adoptionPath.title}</strong>
+            <Reveal>
+              <div className="market-curated-hero__copy market-hero__copy">
+                <div className="eyebrow">
+                  <Store size={16} aria-hidden="true" />
+                  <span>{labels.eyebrow}</span>
+                </div>
+                <h1 id="marketplace-heading">
+                  {locale === "zh" ? (
+                    <>
+                      找到适合 Agent
+                      <br />
+                      工作流的 Skill。
+                    </>
+                  ) : (
+                    labels.title
+                  )}
+                </h1>
+                <p>{labels.description}</p>
+                <div
+                  className="market-curated-proof"
+                  aria-label={labels.eyebrow}
+                >
+                  {labels.proof.map((item) => (
+                    <span key={item}>
+                      <BadgeCheck size={14} aria-hidden="true" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <aside
+              className="market-hero-directory-card"
+              aria-label={labels.decisionTitle}
+            >
+              <div>
+                <Store size={16} aria-hidden="true" />
+                <span>{locale === "zh" ? "目录状态" : "Directory status"}</span>
+              </div>
+              <dl>
+                <div>
+                  <dt>{labels.catalogMetric}</dt>
+                  <dd>{catalogSummary.total}</dd>
+                </div>
+                <div>
+                  <dt>{locale === "zh" ? "业务分类" : "Categories"}</dt>
+                  <dd>{catalogSummary.categories}</dd>
+                </div>
+                <div>
+                  <dt>{locale === "zh" ? "免费入门" : "Free starters"}</dt>
+                  <dd>{catalogSummary.free}</dd>
+                </div>
+              </dl>
+              <nav aria-label={labels.decisionTitle}>
+                <a href="#catalog">
+                  <PackageSearch size={15} aria-hidden="true" />
+                  <span>{labels.primary}</span>
+                </a>
+                <a href={localizedHref("/registry", locale)}>
+                  <Terminal size={15} aria-hidden="true" />
+                  <span>
+                    {locale === "zh" ? "查看 Skill API" : "Open Skill API"}
+                  </span>
+                </a>
+              </nav>
+            </aside>
+          </section>
+
+          {/* Catalog */}
+          <div id="catalog">
+            <MarketplaceBrowser
+              catalogSummary={catalogSummary}
+              catalogTotal={publicStats.publicSkills}
+              initialFilters={initialFilters}
+              locale={locale}
+              publisherProfiles={publishers}
+              skills={skillCards}
+            />
+          </div>
+        </div>
+
+        <div className="section-divider" />
+
+        <section
+          className="marketplace-ops-strip"
+          aria-label="Marketplace operating metrics"
+        >
+          {metrics.map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
             </div>
-            <div className="market-adoption-path__stats">
-              <span>
-                <strong>{catalogSummary.total}</strong>
-                {labels.catalogMetric}
-              </span>
-              <span>
-                <strong>{catalogSummary.categories}</strong>
-                {locale === "zh" ? "业务分类" : "categories"}
-              </span>
-              <span>
-                <strong>{catalogSummary.free}</strong>
-                {locale === "zh" ? "免费入门" : "free starters"}
-              </span>
+          ))}
+        </section>
+
+        <div className="section-divider" />
+
+        <section className="market-operations-layout market-operations-layout--bottom">
+          <article className="market-ops-panel">
+            <div className="eyebrow">
+              <ShieldCheck size={16} aria-hidden="true" />
+              <span>{labels.trustTitle}</span>
             </div>
-            <ol>
-              {labels.adoptionPath.steps.map(([title, detail], index) => (
-                <li key={title}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <strong>{title}</strong>
-                    <p>{detail}</p>
-                  </div>
-                </li>
+            <div className="trust-requirement-grid">
+              {labels.trustItems.map(([title, detail]) => (
+                <div key={title} className="trust-requirement">
+                  <strong>{title}</strong>
+                  <span>{detail}</span>
+                </div>
               ))}
-            </ol>
+            </div>
+          </article>
+
+          <aside className="market-ops-panel">
+            <div className="eyebrow">
+              <BookOpenCheck size={16} aria-hidden="true" />
+              <span>{labels.publishTitle}</span>
+            </div>
+            <div className="publish-flow-list">
+              {labels.publishSteps.map((step, index) => (
+                <div key={step} className="publish-flow-step">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{step}</strong>
+                </div>
+              ))}
+            </div>
+            <a
+              className="ghost-button ghost-button--inline"
+              href={localizedHref("/docs", locale)}
+            >
+              <Code2 size={16} aria-hidden="true" />
+              <span>{dictionary.nav.docs}</span>
+            </a>
           </aside>
         </section>
 
-        {/* Catalog */}
-        <div id="catalog">
-          <MarketplaceBrowser
-            catalogSummary={catalogSummary}
-            catalogTotal={publicStats.publicSkills}
-            initialFilters={initialFilters}
-            locale={locale}
-            publisherProfiles={publishers}
-            skills={skillCards}
-          />
-        </div>
-      </div>
-
-      <div className="section-divider" />
-
-      <section
-        className="marketplace-ops-strip"
-        aria-label="Marketplace operating metrics"
-      >
-        {metrics.map(([label, value]) => (
-          <div key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </section>
-
-      <div className="section-divider" />
-
-      <PublicAccessScope locale={locale} />
-
-      <div className="section-divider" />
-
-      <JourneyRail
-        currentStep="marketplace"
-        journey="developer"
-        locale={locale}
-      />
-
-      <div className="section-divider" />
-
-      <OperatingEvidenceChain
-        focus="marketplace"
-        locale={locale}
-        stats={[
-          {
-            label: labels.catalogMetric,
-            value: String(publicStats.publicSkills),
-          },
-          {
-            label: labels.publisherMetric,
-            value: String(publicStats.publicPublishers),
-          },
-          {
-            label: labels.loopMetrics.calls,
-            value: formatCompactMetric(publicStats.recordedCalls, locale),
-          },
-          {
-            label: labels.loopMetrics.submitted,
-            tone: publicStats.submittedSkills > 0 ? "attention" : "neutral",
-            value: String(publicStats.submittedSkills),
-          },
-        ]}
-      />
-
-      <div className="section-divider" />
-
-      <section
-        className="market-overview-section"
-        aria-labelledby="market-overview-heading"
-      >
-        <div className="market-overview-head">
-          <div>
-            <div className="eyebrow">
-              <Gauge size={16} aria-hidden="true" />
-              <span>{labels.overview.eyebrow}</span>
-            </div>
-            <h2 id="market-overview-heading">{labels.overview.title}</h2>
-          </div>
-          <p>{labels.overview.body}</p>
-        </div>
-
-        <div className="market-overview-grid">
-          {overviewCards.map((card, index) => {
-            const Icon = overviewRoleIcons[index];
-
-            return (
-              <Reveal key={card.title} delay={index * 120}>
-                <article className="market-overview-card">
-                  <header>
-                    <span className="market-overview-card__icon">
-                      <Icon size={17} aria-hidden="true" />
-                    </span>
-                    <div>
-                      <h3>{card.title}</h3>
-                      <p>{card.subtitle}</p>
-                    </div>
-                  </header>
-
-                  <div className="market-overview-metrics">
-                    {card.metrics.map(([label, value]) => (
-                      <div key={label}>
-                        <span>{label}</span>
-                        <strong>{value}</strong>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="market-overview-queue">
-                    {card.rows.length > 0 ? (
-                      card.rows.map((row) => (
-                        <div
-                          key={`${card.title}-${row.title}-${row.detail}`}
-                          className="market-overview-row"
-                        >
-                          <strong>{row.title}</strong>
-                          <span>{row.detail}</span>
-                          <small>{row.meta}</small>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="market-overview-empty">{card.empty}</div>
-                    )}
-                  </div>
-
-                  {card.href ? (
-                    <a className="ghost-button" href={card.href}>
-                      <span>{card.title}</span>
-                      <ArrowRight size={14} aria-hidden="true" />
-                    </a>
-                  ) : (
-                    <span className="market-overview-card__operator-only">
-                      <ShieldCheck size={14} aria-hidden="true" />
-                      <span>
-                        {locale === "zh" ? "运营专用" : "Operator only"}
-                      </span>
-                    </span>
+        {/* Closing CTA */}
+        <section className="closing-cta marketplace-closing-cta">
+          <div className="section-inner">
+            <Reveal>
+              <h2 className="heading-lg mb-4">
+                {locale === "zh"
+                  ? "找到合适的技能了吗？"
+                  : "Found the right skill?"}
+              </h2>
+              <p className="body-text max-w-[480px] mx-auto mb-8">
+                {locale === "zh"
+                  ? "注册开发者账号开始集成，或浏览发布者目录。"
+                  : "Sign up for a developer account to start integrating, or browse the publisher directory."}
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <a
+                  className="btn-primary"
+                  href={localizedHrefWithReturnTo(
+                    "/login",
+                    locale,
+                    "/developer",
                   )}
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <div
-          className="market-retention-card"
-          aria-label={labels.overview.retentionTitle}
-        >
-          <strong>{labels.overview.retentionTitle}</strong>
-          <div>
-            {[
-              ...labels.overview.retention.developer,
-              ...labels.overview.retention.publisher,
-            ].map((reason) => (
-              <span key={reason}>
-                <BadgeCheck size={14} aria-hidden="true" />
-                {reason}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider" />
-
-      <section
-        className="market-publisher-callout"
-        aria-label={labels.publisherDirectoryTitle}
-      >
-        <div>
-          <div className="eyebrow">
-            <Building2 size={16} aria-hidden="true" />
-            <span>{labels.publisherDirectoryTitle}</span>
-          </div>
-          <p>{labels.publisherDirectoryBody}</p>
-        </div>
-        <a
-          className="secondary-button"
-          href={localizedHref("/publishers", locale)}
-        >
-          <ShieldCheck size={15} aria-hidden="true" />
-          <span>{labels.publisherDirectoryCta}</span>
-          <ArrowRight size={14} aria-hidden="true" />
-        </a>
-      </section>
-
-      <div className="section-divider" />
-
-      <section
-        className="market-operating-loop"
-        aria-labelledby="market-loop-heading"
-      >
-        <div className="market-loop-copy">
-          <div className="eyebrow">
-            <Activity size={16} aria-hidden="true" />
-            <span>{labels.loopEyebrow}</span>
-          </div>
-          <div className="market-loop-copy__head">
-            <div>
-              <h2 id="market-loop-heading">{labels.loopTitle}</h2>
-              <p>{labels.loopBody}</p>
-            </div>
-            <span className="market-loop-live">{labels.reviewMetricValue}</span>
-          </div>
-
-          <div
-            className="market-loop-metric-grid"
-            aria-label={labels.loopEyebrow}
-          >
-            {loopMetrics.map(([label, value]) => (
-              <div key={label} className="market-loop-metric">
-                <span>{label}</span>
-                <strong>{value}</strong>
+                >
+                  <span>
+                    {locale === "zh" ? "开发者工作台" : "Developer workspace"}
+                  </span>
+                </a>
+                <a
+                  className="btn-secondary"
+                  href={localizedHref("/publishers", locale)}
+                >
+                  <span>
+                    {locale === "zh" ? "发布者目录" : "Publisher directory"}
+                  </span>
+                </a>
               </div>
-            ))}
+            </Reveal>
           </div>
-
-          <div className="market-loop-steps">
-            {labels.loopSteps.map(([title, detail, meta], index) => {
-              const Icon = loopStepIcons[index];
-
-              return (
-                <article key={title} className="market-loop-step">
-                  <div className="market-loop-step__top">
-                    <span className="market-loop-step__icon">
-                      <Icon size={17} aria-hidden="true" />
-                    </span>
-                    <small>{meta}</small>
-                  </div>
-                  <strong>{title}</strong>
-                  <p>{detail}</p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-
-        <aside
-          className="market-loop-ledger"
-          aria-label={labels.loopLedgerTitle}
-        >
-          <div className="market-loop-ledger__head">
-            <div className="eyebrow">
-              <CircleDollarSign size={16} aria-hidden="true" />
-              <span>{labels.loopLedgerTitle}</span>
-            </div>
-            <span>{labels.moneyMetricValue}</span>
-          </div>
-          <div className="market-loop-log">
-            {labels.loopLedgerRows.map(([phase, signal, detail]) => (
-              <div key={phase} className="market-loop-log-row">
-                <span>{phase}</span>
-                <div>
-                  <strong>{signal}</strong>
-                  <p>{detail}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </aside>
-      </section>
-
-      <div className="section-divider" />
-
-      <section className="market-operations-layout market-operations-layout--bottom">
-        <article className="market-ops-panel">
-          <div className="eyebrow">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <span>{labels.trustTitle}</span>
-          </div>
-          <div className="trust-requirement-grid">
-            {labels.trustItems.map(([title, detail]) => (
-              <div key={title} className="trust-requirement">
-                <strong>{title}</strong>
-                <span>{detail}</span>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <aside className="market-ops-panel">
-          <div className="eyebrow">
-            <BookOpenCheck size={16} aria-hidden="true" />
-            <span>{labels.publishTitle}</span>
-          </div>
-          <div className="publish-flow-list">
-            {labels.publishSteps.map((step, index) => (
-              <div key={step} className="publish-flow-step">
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
-              </div>
-            ))}
-          </div>
-          <a
-            className="ghost-button ghost-button--inline"
-            href={localizedHref("/docs", locale)}
-          >
-            <Code2 size={16} aria-hidden="true" />
-            <span>{dictionary.nav.docs}</span>
-          </a>
-        </aside>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="closing-cta">
-        <div className="section-inner">
-          <Reveal>
-            <h2 className="heading-lg mb-4">
-              {locale === "zh"
-                ? "找到合适的技能了吗？"
-                : "Found the right skill?"}
-            </h2>
-            <p className="body-text max-w-[480px] mx-auto mb-8">
-              {locale === "zh"
-                ? "注册开发者账号开始集成，或浏览发布者目录。"
-                : "Sign up for a developer account to start integrating, or browse the publisher directory."}
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <a
-                className="btn-primary"
-                href={localizedHrefWithReturnTo("/login", locale, "/developer")}
-              >
-                <span>
-                  {locale === "zh" ? "开发者工作台" : "Developer workspace"}
-                </span>
-              </a>
-              <a
-                className="btn-secondary"
-                href={localizedHref("/publishers", locale)}
-              >
-                <span>
-                  {locale === "zh" ? "发布者目录" : "Publisher directory"}
-                </span>
-              </a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+        </section>
+      </div>
     </AppShell>
   );
 }
@@ -1187,9 +818,7 @@ function reconcileMarketplacePageStats(
     isVerifiedSkillStatus(skill.verification.en),
   );
   const catalogAuthorCount = new Set(
-    publicSkills
-      .map((skill) => skill.author.trim())
-      .filter(Boolean),
+    publicSkills.map((skill) => skill.author.trim()).filter(Boolean),
   ).size;
   const feedbackSignals = publicSkills.reduce(
     (sum, skill) => sum + (skill.feedbackCount ?? 0),
@@ -1204,10 +833,7 @@ function reconcileMarketplacePageStats(
     publicPublishers: Math.max(stats.publicPublishers, catalogAuthorCount),
     publicSkills: Math.max(stats.publicSkills, publicSkillCount),
     totalSkillRecords: Math.max(stats.totalSkillRecords, publicSkillCount),
-    verifiedPublishers: Math.max(
-      stats.verifiedPublishers,
-      catalogAuthorCount,
-    ),
+    verifiedPublishers: Math.max(stats.verifiedPublishers, catalogAuthorCount),
     verifiedSkills: stats.verifiedSkills,
   };
 }
@@ -1307,126 +933,4 @@ function selectMarketplacePageSkills(
   }
 
   return selected;
-}
-
-function toPublicMarketplaceSearchOptions(
-  filters: MarketplaceInitialFilterState,
-): PublicMarketplaceSearchOptions {
-  return {
-    billingModel: parseMarketplaceBilling(filters.pricing),
-    category: parseMarketplaceCategory(filters.category),
-    limit: 50,
-    permissionLevel: parseMarketplaceRisk(filters.risk),
-    query: parseMarketplaceQuery(filters.query),
-    runtimeType: parseMarketplaceRuntime(filters.runtime),
-    sort: parseMarketplaceSort(filters.sort),
-    verificationStatus: parseMarketplaceVerification(filters.verification),
-  };
-}
-
-function parseMarketplaceQuery(value: string | undefined) {
-  const query = String(value ?? "")
-    .trim()
-    .slice(0, 120);
-  return query.length > 0 ? query : undefined;
-}
-
-function parseMarketplaceCategory(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["category"] {
-  const normalized = value === "support" ? "ops" : value;
-
-  if (
-    normalized === "automation" ||
-    normalized === "content" ||
-    normalized === "data" ||
-    normalized === "dev" ||
-    normalized === "ecommerce" ||
-    normalized === "education" ||
-    normalized === "finance" ||
-    normalized === "hr" ||
-    normalized === "legal" ||
-    normalized === "marketing" ||
-    normalized === "ops" ||
-    normalized === "research" ||
-    normalized === "sales" ||
-    normalized === "security" ||
-    normalized === "seo" ||
-    normalized === "ui"
-  ) {
-    return normalized;
-  }
-
-  return undefined;
-}
-
-function parseMarketplaceBilling(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["billingModel"] {
-  if (value === "pro") {
-    return "pro";
-  }
-
-  if (value === "free" || value === "per_call" || value === "subscription") {
-    return value;
-  }
-
-  return undefined;
-}
-
-function parseMarketplaceRisk(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["permissionLevel"] {
-  if (value === "low" || value === "medium" || value === "high") {
-    return value;
-  }
-
-  return undefined;
-}
-
-function parseMarketplaceRuntime(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["runtimeType"] {
-  const normalized = String(value ?? "")
-    .trim()
-    .toLowerCase();
-
-  if (normalized === "http" || normalized === "mcp" || normalized === "local") {
-    return normalized;
-  }
-
-  return undefined;
-}
-
-function parseMarketplaceVerification(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["verificationStatus"] {
-  if (value === "verified" || value === "submitted" || value === "deprecated") {
-    return value;
-  }
-
-  if (value === "review") {
-    return "submitted";
-  }
-
-  return undefined;
-}
-
-function parseMarketplaceSort(
-  value: string | undefined,
-): PublicMarketplaceSearchOptions["sort"] {
-  if (
-    value === "adoption" ||
-    value === "recommended" ||
-    value === "recent" ||
-    value === "success"
-  ) {
-    return value;
-  }
-
-  if (value === "lowRisk" || value === "low-risk" || value === "low_risk") {
-    return "low_risk";
-  }
-
-  return undefined;
 }

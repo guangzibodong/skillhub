@@ -84,7 +84,7 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
     },
     intro: {
       en: "Practical explainers for teams adopting AI Agent Skills, MCP, governed runtime, SEO/GEO automation, and marketplace operations.",
-      zh: "面向团队采用 AI Agent Skill、MCP、运行治理、SEO/GEO 自动化和技能市场运营的实用文章。",
+      zh: "面向团队采用 AI Agent Skill、MCP、调用权限与记录、SEO/GEO 自动化和技能市场运营的实用文章。",
     },
     path: "/blog",
     seo: {
@@ -198,7 +198,7 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
           title: { en: "Verification", zh: "验证" },
           body: {
             en: "Use the examples to check permissions, runtime evidence, and support readiness before launch.",
-            zh: "通过示例去检查权限、运行证据和发布前支持准备度。",
+            zh: "通过示例去检查权限、调用记录和发布前支持准备度。",
           },
         },
         {
@@ -224,7 +224,7 @@ export const growthHubs: Record<GrowthHubKey, GrowthHub> = {
       zh: {
         title: "SkillHub 示例 - AI Agent Skill 工作流模板",
         description:
-          "使用 SkillHub 示例了解 manifest 结构、权限审核、REST/MCP 检查、运行证据和工作流交接模板。",
+          "使用 SkillHub 示例了解 manifest 结构、权限审核、REST/MCP 检查、调用记录和工作流交接模板。",
       },
     },
     title: { en: "Example workflows and templates", zh: "示例工作流与模板" },
@@ -295,7 +295,7 @@ export const growthContentItems: GrowthContentItem[] = [
     "MCP and SkillHub are complementary",
     "MCP 和 SkillHub 如何配合",
     "MCP helps agents discover and call tools. SkillHub adds marketplace discovery, publisher trust, permission review, project policy, runtime evidence, and commercial readiness around those tools.",
-    "MCP 帮助智能体发现和调用工具；SkillHub 在工具外层补上市场发现、发布者信任、权限审核、项目策略、运行证据和商业化准备。",
+    "MCP 帮助智能体发现和调用工具；SkillHub 在工具外层补上市场发现、发布者信任、权限审核、项目策略、调用记录和商业化准备。",
   ]),
   makeItem("blog", "geo-automation-skills", "GEO", "GEO", [
     "How to use Skills for SEO and GEO workflows",
@@ -309,7 +309,7 @@ export const growthContentItems: GrowthContentItem[] = [
     "A trustworthy marketplace exposes manifest contracts, permissions, publisher profile, review state, support path, version history, runtime boundaries, and clear paid-access rules.",
     "可信技能市场需要公开合约、权限、发布者档案、审核状态、支持路径、版本历史、运行边界和清晰的付费权限规则。",
   ]),
-  makeItem("blog", "project-key-governance", "Runtime", "运行治理", [
+  makeItem("blog", "project-key-governance", "Runtime", "调用权限与记录", [
     "How Project Keys keep Skill runtime controlled",
     "Project Key 如何让 Skill 运行可控",
     "Project Keys separate public inspection from real invocation. Teams should scope keys by project, rotate them when owners change, and review logs after runtime calls.",
@@ -373,7 +373,7 @@ export const growthContentItems: GrowthContentItem[] = [
     "Developer and security review solution",
     "开发与安全审查解决方案",
     "Review API contracts, release notes, permission scope, generated-code risk, and runtime evidence before automation reaches production.",
-    "在自动化进入生产前，检查 API 合约、发布说明、权限范围、生成代码风险和运行证据。",
+    "在自动化进入生产前，检查 API 合约、发布说明、权限范围、生成代码风险和调用记录。",
   ]),
   makeItem("use-cases", "spreadsheet-cleanup", "Data", "数据", [
     "Clean messy spreadsheets before automation",
@@ -439,7 +439,7 @@ export const growthContentItems: GrowthContentItem[] = [
     "Publisher launch checklist",
     "发布者上线检查清单",
     "A publisher can use this checklist before submitting a Skill for review: schema, runtime evidence, pricing intent, support path, and changelog must be clear.",
-    "发布者提交审核前可用这份清单检查：schema、运行证据、定价意图、支持路径和更新记录必须清楚。",
+    "发布者提交审核前可用这份清单检查：schema、调用记录、定价意图、支持路径和更新记录必须清楚。",
   ]),
   makeItem("examples", "project-key-runtime-test", "Runtime", "运行", [
     "Project Key runtime test template",
@@ -469,7 +469,7 @@ export const growthContentItems: GrowthContentItem[] = [
     "MCP integration path",
     "MCP 集成路径",
     "Public MCP metadata describes available tools and resources. Real invocation should stay behind authenticated project context and runtime policy.",
-    "公开 MCP 元数据描述可用工具和资源；真实调用应保留在已认证项目上下文和运行策略之后。",
+    "公开 MCP 元数据描述可用工具和资源；真实调用应保留在已认证项目上下文和调用策略之后。",
   ]),
   makeItem("integrations", "webhooks", "Webhooks", "Webhook", [
     "Webhook and event integration",
@@ -556,7 +556,7 @@ function makeItem(
 function buildBody(title: string, intro: string, isZh: boolean): GrowthContentBody {
   return {
     checklist: isZh
-      ? ["先确认业务目标", "检查权限和数据范围", "从免费或低风险 Skill 开始", "登录后再进入项目运行", "保留人工复核和运行证据"]
+      ? ["先确认业务目标", "检查权限和数据范围", "从免费或低风险 Skill 开始", "登录后再进入项目运行", "保留人工复核和调用记录"]
       : ["Confirm the business goal", "Inspect permissions and data scope", "Start with free or low-risk Skills", "Sign in only when adopting into a project", "Keep human review and runtime evidence"],
     intro,
     sections: isZh

@@ -29,7 +29,7 @@ const copy = {
       },
       {
         icon: "shield",
-        title: "Runtime governance",
+        title: "Call permissions and logs",
         body: "Runtime invocation requires signed-in workspace context and Project Keys. Calls are scoped by permissions, policies, rate limits, and audit trails.",
       },
       {
@@ -69,7 +69,7 @@ const copy = {
       },
       {
         icon: "shield",
-        title: "运行治理",
+        title: "调用权限与记录",
         body: "运行调用需要登录后的工作台上下文和 Project Key。调用受权限、策略、限流和审计轨迹约束。",
       },
       {

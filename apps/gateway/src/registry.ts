@@ -6,8 +6,7 @@ import {
   type SkillRuntime,
   type SkillSummary,
 } from "@useskillhub/schema";
-import { allowDemoFallback, isProductionRuntime } from "./demo-fallback.js";
-import { demoSkills } from "./demo-skills.js";
+import { isProductionRuntime } from "./runtime-env.js";
 
 type SqlClient = Awaited<ReturnType<typeof getSql>>;
 
@@ -114,7 +113,6 @@ export type PublicSkillCategory =
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Sql = any;
 let sqlPromise: Promise<Sql> | undefined;
-let seeded = false;
 
 const PUBLIC_REGISTRY_READ_TABLES = [
   "marketplace_curation_rules",
@@ -138,21 +136,11 @@ export async function searchSkills(
 ): Promise<SkillSummary[]> {
   const sql = await getSql();
 
-  if (!sql) {
-    if (!allowDemoFallback()) {
-      return [];
-    }
-
-    return filterSummaries(demoSkills.map(toSummary), options);
-  }
-
   try {
-    await seedDemoData(sql);
-
     const schema = await getPublicRegistrySchema(sql);
 
     if (!hasPublicRegistryCoreSchema(schema)) {
-      return fallbackSkillSummaries(options);
+      return [];
     }
 
     const rows = await listPublicSkillRows(sql, schema);
@@ -167,7 +155,7 @@ export async function searchSkills(
     );
   } catch (error) {
     if (options.allowIncompleteSchema && isMissingRegistrySchemaError(error)) {
-      return fallbackSkillSummaries(options);
+      return [];
     }
 
     throw error;
@@ -542,17 +530,11 @@ async function getPublicSkillManifestRows(
 export async function listSkillManifests(): Promise<SkillManifest[]> {
   const sql = await getSql();
 
-  if (!sql) {
-    return allowDemoFallback() ? demoSkills : [];
-  }
-
   try {
-    await seedDemoData(sql);
-
     const schema = await getPublicRegistrySchema(sql);
 
     if (!hasPublicRegistryCoreSchema(schema)) {
-      return allowDemoFallback() ? demoSkills : [];
+      return [];
     }
 
     const rows = await listPublicSkillManifestRows(sql, schema);
@@ -560,7 +542,7 @@ export async function listSkillManifests(): Promise<SkillManifest[]> {
     return rows.map((row) => row.manifest);
   } catch (error) {
     if (isMissingRegistrySchemaError(error)) {
-      return allowDemoFallback() ? demoSkills : [];
+      return [];
     }
 
     throw error;
@@ -572,21 +554,11 @@ export async function getSkillManifest(
 ): Promise<SkillManifest | undefined> {
   const sql = await getSql();
 
-  if (!sql) {
-    return allowDemoFallback()
-      ? demoSkills.find((skill) => skill.name === slug)
-      : undefined;
-  }
-
   try {
-    await seedDemoData(sql);
-
     const schema = await getPublicRegistrySchema(sql);
 
     if (!hasPublicRegistryCoreSchema(schema)) {
-      return allowDemoFallback()
-        ? demoSkills.find((skill) => skill.name === slug)
-        : undefined;
+      return undefined;
     }
 
     const rows = await getPublicSkillManifestRows(sql, slug, schema);
@@ -594,9 +566,7 @@ export async function getSkillManifest(
     return rows[0]?.manifest;
   } catch (error) {
     if (isMissingRegistrySchemaError(error)) {
-      return allowDemoFallback()
-        ? demoSkills.find((skill) => skill.name === slug)
-        : undefined;
+      return undefined;
     }
 
     throw error;
@@ -619,14 +589,11 @@ export async function publishSkill(
 
   const sql = await getSql();
 
-  if (!sql) {
-    throw new Error("DATABASE_URL is required to publish skills.");
+  if (!organizationId) {
+    throw new Error("Organization-scoped authorization is required to publish skills.");
   }
 
-  await seedDemoData(sql);
-
-  const ownerOrganizationId =
-    organizationId ?? (await upsertDefaultOrganization(sql)).id;
+  const ownerOrganizationId = organizationId;
 
   return sql.begin(async (tx: NonNullable<SqlClient>) => {
     const existingRows = (await tx`
@@ -826,45 +793,6 @@ function publicPublisherDisplayName(manifest: SkillManifest) {
 
 export async function getRegistryStats(): Promise<RegistryStats> {
   const sql = await getSql();
-
-  if (!sql) {
-    if (!allowDemoFallback()) {
-      return {
-        callableSkills: 0,
-        publicSkills: 0,
-        publishedSkills: 0,
-        submittedSkills: 0,
-        totalSkillRecords: 0,
-        verifiedSkills: 0,
-        apiCalls: 0,
-        avgLatencyMs: null,
-      };
-    }
-
-    const demoSummaries = demoSkills.map(toSummary);
-    const publicDemoSkills = demoSummaries.filter(
-      (skill) => skill.verificationStatus === "verified",
-    );
-
-    return {
-      callableSkills: publicDemoSkills.filter(
-        (skill) => skill.verificationStatus === "verified",
-      ).length,
-      publicSkills: publicDemoSkills.length,
-      publishedSkills: publicDemoSkills.length,
-      submittedSkills: publicDemoSkills.filter(
-        (skill) => skill.verificationStatus === "submitted",
-      ).length,
-      totalSkillRecords: demoSkills.length,
-      verifiedSkills: publicDemoSkills.filter(
-        (skill) => skill.verificationStatus === "verified",
-      ).length,
-      apiCalls: 0,
-      avgLatencyMs: null,
-    };
-  }
-
-  await seedDemoData(sql);
 
   const schema = await getPublicRegistrySchema(sql);
 
@@ -1281,300 +1209,6 @@ function rowToSummary(
   };
 }
 
-function toSummary(skill: SkillManifest): RankedSkillSummary {
-  const draftDemoSkills = new Set(["manifest-review"]);
-  const submittedDemoSkills = new Set([
-    "codebase-risk-scanner",
-    "contract-clause-extractor",
-    "crm-enrichment",
-    "dataset-summarizer",
-    "privacy-policy-checker",
-    "resume-screening-helper",
-    "vendor-risk-questionnaire",
-  ]);
-  const status: SkillSummary["verificationStatus"] = draftDemoSkills.has(
-    skill.name,
-  )
-    ? "draft"
-    : submittedDemoSkills.has(skill.name)
-      ? "submitted"
-      : "verified";
-  const signals = demoSkillSignals(skill.name);
-
-  return {
-    id: skill.name,
-    slug: skill.name,
-    displayName: skill.displayName,
-    description: skill.description,
-    tags: skill.tags,
-    version: skill.version,
-    verificationStatus: status,
-    permissionLevel: getPermissionLevel(skill.permissions),
-    runtimeType: skill.runtime.type,
-    billingModel: "free",
-    installCount: signals.installCount,
-    invocationCount: signals.invocationCount,
-    successRate: signals.successRate,
-    avgLatencyMs: signals.avgLatencyMs,
-    averageRating: signals.averageRating,
-    feedbackCount: signals.feedbackCount,
-    curation: demoCurationSignal(skill.name),
-    updatedAt: "demo",
-  };
-}
-
-function demoSkillSignals(
-  slug: string,
-): Pick<
-  SkillSummary,
-  | "installCount"
-  | "invocationCount"
-  | "successRate"
-  | "avgLatencyMs"
-  | "averageRating"
-  | "feedbackCount"
-> {
-  if (slug === "browser-research") {
-    return {
-      installCount: 12840,
-      invocationCount: 96200,
-      successRate: 0.982,
-      avgLatencyMs: 1800,
-      averageRating: 4.8,
-      feedbackCount: 24,
-    };
-  }
-
-  if (slug === "dataset-summarizer") {
-    return {
-      installCount: 6920,
-      invocationCount: 41800,
-      successRate: 0.975,
-      avgLatencyMs: 1100,
-      averageRating: 4.6,
-      feedbackCount: 17,
-    };
-  }
-
-  if (slug === "support-triage") {
-    return {
-      installCount: 15200,
-      invocationCount: 120400,
-      successRate: 0.991,
-      avgLatencyMs: 620,
-      averageRating: 4.7,
-      feedbackCount: 311,
-    };
-  }
-
-  if (slug === "seo-page-auditor") {
-    return {
-      installCount: 9600,
-      invocationCount: 53600,
-      successRate: 0.979,
-      avgLatencyMs: 1400,
-      averageRating: 4.8,
-      feedbackCount: 173,
-    };
-  }
-
-  if (slug === "ui-ux-reviewer") {
-    return {
-      installCount: 7300,
-      invocationCount: 48200,
-      successRate: 0.986,
-      avgLatencyMs: 1200,
-      averageRating: 4.9,
-      feedbackCount: 221,
-    };
-  }
-
-  if (slug === "content-brief-builder") {
-    return {
-      installCount: 6100,
-      invocationCount: 37400,
-      successRate: 0.971,
-      avgLatencyMs: 900,
-      averageRating: 4.7,
-      feedbackCount: 134,
-    };
-  }
-
-  if (slug === "api-contract-tester") {
-    return {
-      installCount: 4200,
-      invocationCount: 26800,
-      successRate: 0.969,
-      avgLatencyMs: 1600,
-      averageRating: 4.6,
-      feedbackCount: 88,
-    };
-  }
-
-  if (slug === "manifest-review") {
-    return {
-      installCount: 1840,
-      invocationCount: 11600,
-      successRate: 0.946,
-      avgLatencyMs: 760,
-      averageRating: 4.3,
-      feedbackCount: 9,
-    };
-  }
-
-  if (slug === "geo-answer-auditor") {
-    return {
-      installCount: 8800,
-      invocationCount: 45200,
-      successRate: 0.974,
-      avgLatencyMs: 1700,
-      averageRating: 4.8,
-      feedbackCount: 156,
-    };
-  }
-
-  if (slug === "landing-page-copy-optimizer") {
-    return {
-      installCount: 7600,
-      invocationCount: 48800,
-      successRate: 0.978,
-      avgLatencyMs: 980,
-      averageRating: 4.7,
-      feedbackCount: 141,
-    };
-  }
-
-  if (slug === "mobile-layout-qa") {
-    return {
-      installCount: 6900,
-      invocationCount: 39200,
-      successRate: 0.981,
-      avgLatencyMs: 1250,
-      averageRating: 4.8,
-      feedbackCount: 119,
-    };
-  }
-
-  if (slug === "knowledge-base-answer") {
-    return {
-      installCount: 10100,
-      invocationCount: 78400,
-      successRate: 0.988,
-      avgLatencyMs: 740,
-      averageRating: 4.7,
-      feedbackCount: 203,
-    };
-  }
-
-  if (slug === "webhook-payload-validator") {
-    return {
-      installCount: 3900,
-      invocationCount: 22400,
-      successRate: 0.972,
-      avgLatencyMs: 520,
-      averageRating: 4.5,
-      feedbackCount: 64,
-    };
-  }
-
-  if (slug === "prompt-injection-guard") {
-    return {
-      installCount: 9400,
-      invocationCount: 66800,
-      successRate: 0.983,
-      avgLatencyMs: 680,
-      averageRating: 4.8,
-      feedbackCount: 184,
-    };
-  }
-
-  if (slug === "spreadsheet-cleaner") {
-    return {
-      installCount: 8300,
-      invocationCount: 51600,
-      successRate: 0.976,
-      avgLatencyMs: 1050,
-      averageRating: 4.6,
-      feedbackCount: 126,
-    };
-  }
-
-  if (slug === "outbound-sequence-personalizer") {
-    return {
-      installCount: 4400,
-      invocationCount: 28600,
-      successRate: 0.965,
-      avgLatencyMs: 1300,
-      averageRating: 4.6,
-      feedbackCount: 73,
-    };
-  }
-
-  if (slug === "crm-enrichment") {
-    return {
-      installCount: 8400,
-      invocationCount: 59200,
-      successRate: 0.967,
-      avgLatencyMs: 2400,
-      averageRating: 4.7,
-      feedbackCount: 186,
-    };
-  }
-
-  if (slug === "codebase-risk-scanner") {
-    return {
-      installCount: 5100,
-      invocationCount: 31800,
-      successRate: 0.958,
-      avgLatencyMs: 3200,
-      averageRating: 4.7,
-      feedbackCount: 96,
-    };
-  }
-
-  if (slug === "invoice-extraction") {
-    return {
-      installCount: 4800,
-      invocationCount: 34400,
-      successRate: 0.961,
-      avgLatencyMs: 1900,
-      averageRating: 4.6,
-      feedbackCount: 118,
-    };
-  }
-
-  return demoFallbackSignals(slug);
-}
-
-function demoFallbackSignals(
-  slug: string,
-): Pick<
-  SkillSummary,
-  | "installCount"
-  | "invocationCount"
-  | "successRate"
-  | "avgLatencyMs"
-  | "averageRating"
-  | "feedbackCount"
-> {
-  let seed = 0;
-
-  for (const char of slug) {
-    seed = (seed * 31 + char.charCodeAt(0)) % 10_000;
-  }
-
-  const installCount = 2100 + (seed % 6800);
-
-  return {
-    installCount,
-    invocationCount: installCount * (5 + (seed % 7)),
-    successRate: Number((0.948 + (seed % 42) / 1000).toFixed(3)),
-    avgLatencyMs: 620 + (seed % 1900),
-    averageRating: Number((4.4 + (seed % 5) / 10).toFixed(1)),
-    feedbackCount: 38 + (seed % 150),
-  };
-}
-
 function compareSummaries(
   first: RankedSkillSummary,
   second: RankedSkillSummary,
@@ -1718,12 +1352,6 @@ async function getActiveCurationBySkillId(
   }
 }
 
-function fallbackSkillSummaries(options: SearchOptions): SkillSummary[] {
-  return allowDemoFallback()
-    ? filterSummaries(demoSkills.map(toSummary), options)
-    : [];
-}
-
 function isMissingRegistrySchemaError(error: unknown) {
   const text = errorDetails(error).toLowerCase();
   const code = errorCode(error);
@@ -1767,32 +1395,6 @@ function errorDetails(error: unknown) {
   return parts.join(" ");
 }
 
-function demoCurationSignal(slug: string): SkillCurationSignal | undefined {
-  const featuredDemoSkills = new Set([
-    "ad-creative-brief",
-    "browser-research",
-    "customer-health-brief",
-    "shopify-product-copy",
-    "training-quiz-builder",
-  ]);
-
-  if (featuredDemoSkills.has(slug)) {
-    return {
-      boost: 120,
-      placement: "featured",
-    };
-  }
-
-  if (slug === "manifest-review") {
-    return {
-      boost: -60,
-      placement: "suppressed",
-    };
-  }
-
-  return undefined;
-}
-
 function stripCuration(skill: RankedSkillSummary): SkillSummary {
   const { curation: _curation, ...summary } = skill;
   return summary;
@@ -1817,78 +1419,12 @@ function parseDate(value: string | undefined) {
   return Number.isFinite(time) ? time : 0;
 }
 
-async function seedDemoData(sql: SqlClient): Promise<void> {
-  if (seeded) {
-    return;
-  }
-
-  if (!allowDemoFallback()) {
-    return;
-  }
-
-  const organization = await upsertDefaultOrganization(sql);
-
-  for (const manifest of demoSkills) {
-    const status = toSummary(manifest).verificationStatus;
-    const skillRows = (await sql`
-      insert into skills (
-        organization_id,
-        slug,
-        display_name,
-        description,
-        tags,
-        visibility,
-        verification_status,
-        updated_at
-      )
-      values (
-        ${organization.id},
-        ${manifest.name},
-        ${manifest.displayName},
-        ${manifest.description},
-        ${manifest.tags},
-        'public',
-        ${status},
-        now()
-      )
-      on conflict (slug) do update set
-        display_name = excluded.display_name,
-        description = excluded.description,
-        tags = excluded.tags,
-        updated_at = now()
-      returning id::text
-    `) as Array<{ id: string }>;
-
-    await sql`
-      insert into skill_versions (skill_id, version, manifest)
-      values (${skillRows[0].id}, ${manifest.version}, ${sql.json(manifest)})
-      on conflict (skill_id, version) do update set
-        manifest = excluded.manifest
-    `;
-  }
-
-  seeded = true;
-}
-
-async function upsertDefaultOrganization(
-  sql: SqlClient,
-): Promise<{ id: string }> {
-  const rows = (await sql`
-    insert into organizations (name, slug)
-    values ('SkillHub', 'skillhub')
-    on conflict (slug) do update set name = excluded.name
-    returning id::text
-  `) as Array<{ id: string }>;
-
-  return rows[0];
-}
-
 export async function getSql(): Promise<Sql | undefined> {
   const databaseUrl =
     typeof process === "undefined" ? undefined : process.env.DATABASE_URL;
 
   if (!databaseUrl) {
-    return undefined;
+    throw new Error("DATABASE_URL is required for production data access.");
   }
 
   if (!sqlPromise) {

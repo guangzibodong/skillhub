@@ -1,0 +1,275 @@
+.root {
+  display: grid;
+  gap: 14px;
+}
+
+.root :global(.publisher-account-summary) {
+  display: grid;
+  min-width: 0;
+}
+
+.root :global(.publisher-account-status-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.root :global(.publisher-account-status-tile) {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  min-height: 96px;
+  align-content: start;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 11px;
+}
+
+.root :global(.publisher-account-status-tile svg) {
+  color: var(--cyan);
+}
+
+.root :global(.publisher-account-status-tile span),
+.root :global(.publisher-profile-form label span),
+.root :global(.publisher-onboarding-form label span),
+.root :global(.publisher-readiness-form label span),
+.root :global(.publisher-account-foot span) {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.root :global(.publisher-account-status-tile strong) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.root :global(.publisher-account-flow) {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.root :global(.publisher-account-flow-step) {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.13);
+  padding: 12px;
+}
+
+.root :global(.publisher-account-flow-step--terms) {
+  border-color: rgba(124, 199, 216, 0.14);
+  background: rgba(124, 199, 216, 0.045);
+}
+
+.root :global(.publisher-account-flow-step__head) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.root :global(.publisher-account-flow-step__head strong) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.root :global(.publisher-account-flow-step__index) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(124, 199, 216, 0.18);
+  border-radius: 999px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.root :global(.publisher-profile-form),
+.root :global(.publisher-onboarding-form),
+.root :global(.publisher-readiness-form) {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.root :global(.publisher-profile-form strong),
+.root :global(.publisher-onboarding-form strong),
+.root :global(.publisher-readiness-form strong) {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.root :global(.publisher-profile-form label),
+.root :global(.publisher-onboarding-form label),
+.root :global(.publisher-readiness-form label) {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.root :global(.publisher-profile-form input),
+.root :global(.publisher-onboarding-form input),
+.root :global(.publisher-onboarding-form select),
+.root :global(.publisher-onboarding-form textarea),
+.root :global(.publisher-readiness-form input),
+.root :global(.publisher-readiness-form select) {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  outline: 0;
+  padding: 0 10px;
+}
+
+.root :global(.publisher-onboarding-form textarea) {
+  min-height: 76px;
+  resize: vertical;
+  padding: 9px 10px;
+}
+
+.root :global(.publisher-profile-form input::placeholder),
+.root :global(.publisher-onboarding-form input::placeholder),
+.root :global(.publisher-onboarding-form textarea::placeholder),
+.root :global(.publisher-readiness-form input::placeholder) {
+  color: #7d8476;
+}
+
+.root :global(.publisher-onboarding-form select option),
+.root :global(.publisher-readiness-form select option) {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.root :global(.publisher-onboarding-link) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(124, 199, 216, 0.22);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.08);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 10px;
+}
+
+.root :global(.publisher-terms-card) {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(124, 199, 216, 0.14);
+  border-radius: var(--radius);
+  background: rgba(124, 199, 216, 0.045);
+  padding: 12px;
+}
+
+.root :global(.publisher-terms-card__head),
+.root :global(.publisher-terms-card__actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.root :global(.publisher-terms-card__head strong) {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.root :global(.publisher-terms-meta) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.root :global(.publisher-terms-meta span) {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.root :global(.publisher-terms-meta strong) {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.root :global(.publisher-terms-card__actions form) {
+  min-width: min(100%, 160px);
+}
+
+.root :global(.publisher-terms-card__actions .primary-button),
+.root :global(.publisher-terms-card__actions .secondary-button) {
+  width: 100%;
+}
+
+.root :global(.publisher-account-foot) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.root :global(.publisher-account-foot strong) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.root :global(.publisher-account-panel__head) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .root :global(.publisher-account-flow-step__head) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .root :global(.publisher-account-flow-step__head .status-chip) {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+(max-width: 480px) {
+  .root :global(.publisher-account-status-grid),
+  .root :global(.publisher-terms-meta) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .root :global(.publisher-onboarding-link) {
+    width: 100%;
+  }
+}

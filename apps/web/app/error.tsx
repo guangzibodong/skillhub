@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { RotateCcw, ShieldAlert } from "lucide-react";
+import styles from "@/components/not-found-content.module.css";
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -12,7 +13,8 @@ type ErrorPageProps = {
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const searchParams = useSearchParams();
   const locale = searchParams.get("lang") === "zh" ? "zh" : "en";
-  const marketplaceHref = locale === "zh" ? "/marketplace?lang=zh" : "/marketplace?lang=en";
+  const marketplaceHref =
+    locale === "zh" ? "/marketplace?lang=zh" : "/marketplace?lang=en";
   const labels =
     locale === "zh"
       ? {
@@ -31,7 +33,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         };
 
   return (
-    <main className="product-shell">
+    <main className={`product-shell ${styles.pageStyles}`}>
       <section className="not-found-shell" aria-labelledby="error-title">
         <div className="not-found-copy">
           <div className="eyebrow">
@@ -41,15 +43,24 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <h1 id="error-title">{labels.title}</h1>
           <p>{labels.body}</p>
           <div className="hero-actions not-found-actions">
-            <button className="primary-button primary-button--large" onClick={reset} type="button">
+            <button
+              className="primary-button primary-button--large"
+              onClick={reset}
+              type="button"
+            >
               <RotateCcw size={18} aria-hidden="true" />
               <span>{labels.retry}</span>
             </button>
-            <Link className="secondary-button secondary-button--large" href={marketplaceHref}>
+            <Link
+              className="secondary-button secondary-button--large"
+              href={marketplaceHref}
+            >
               {labels.marketplace}
             </Link>
           </div>
-          {error.digest ? <small className="error-digest">Error digest: {error.digest}</small> : null}
+          {error.digest ? (
+            <small className="error-digest">Error digest: {error.digest}</small>
+          ) : null}
         </div>
       </section>
     </main>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, type FormEvent } from "react";
+import { useActionState, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, Gavel, Save, ShieldAlert, XCircle } from "lucide-react";
+import { SkillButton, SkillInput, SkillSelect, useSkillModal } from "@/components/skill-antd";
 import type { Locale } from "@/lib/i18n";
 import type { AbuseReportRecord } from "@/lib/ops-data";
 import { decideAbuseReportAction, type AbuseReportActionState } from "@/lib/abuse-report-actions";
@@ -265,6 +266,8 @@ function AbuseDecisionForm({
 }) {
   const [selectedAction, setSelectedAction] = useState<AbuseAction | "">("");
   const actionCopy = getAbuseActionCopy(locale);
+  const modal = useSkillModal();
+  const isSubmitArmed = useRef(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (!selectedAction) {
@@ -273,9 +276,24 @@ function AbuseDecisionForm({
     }
 
     const message = actionCopy.confirm[selectedAction];
-    if (message && !window.confirm(message.replace("{skill}", report.skillName))) {
-      event.preventDefault();
+    if (!message) {
+      return;
     }
+
+    if (isSubmitArmed.current) {
+      isSubmitArmed.current = false;
+      return;
+    }
+
+    event.preventDefault();
+    const form = event.currentTarget;
+    modal.confirm({
+      title: message.replace("{skill}", report.skillName),
+      onOk: () => {
+        isSubmitArmed.current = true;
+        form.requestSubmit();
+      }
+    });
   }
 
   return (
@@ -283,29 +301,26 @@ function AbuseDecisionForm({
       <input name="reportId" type="hidden" value={report.id} />
       <label>
         <span>{labels.action}</span>
-        <select
+        <SkillSelect
           name="action"
-          onChange={(event) => setSelectedAction(event.target.value as AbuseAction | "")}
+          onChange={(value) => setSelectedAction(value as AbuseAction | "")}
+          options={[
+            { label: actionCopy.choose, value: "" },
+            ...Object.entries(labels.actions).map(([value, label]) => ({ label, value }))
+          ]}
           required
           value={selectedAction}
-        >
-          <option value="">{actionCopy.choose}</option>
-          {Object.entries(labels.actions).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        />
         <small>{actionCopy.help}</small>
       </label>
       <label>
         <span>{labels.reason}</span>
-        <input defaultValue={report.decisionReason ?? ""} name="reason" required />
+        <SkillInput defaultValue={report.decisionReason ?? ""} name="reason" required />
       </label>
-      <button className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} type="submit">
+      <SkillButton className="secondary-button secondary-button--compact" disabled={isPending || !selectedAction} htmlType="submit">
         <Save size={15} aria-hidden="true" />
         <span>{isPending && statusMessage ? labels.saving : labels.save}</span>
-      </button>
+      </SkillButton>
     </form>
   );
 }

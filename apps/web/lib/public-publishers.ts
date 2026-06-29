@@ -1,14 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import { getPublicApiUrl, getServerApiUrl } from "@/lib/api-url";
-import { demoFallback } from "@/lib/demo-fallback";
-import {
-  marketplaceSkills,
-  type MarketplaceSkill,
-} from "@/lib/marketplace-data";
-import {
-  isVerifiedSkillStatus,
-  publicApiInspectCommand,
-} from "@/lib/skill-install-state";
+import type { MarketplaceSkill } from "@/lib/marketplace-data";
+import { publicApiInspectCommand } from "@/lib/skill-install-state";
 import {
   publicSkillDescription,
   publicSkillDisplayName,
@@ -89,9 +82,6 @@ export type PublicPublisherProfile = {
 const publisherSlugAliases: Record<string, string> = {
   "skillhub-publisher": "skillhub",
 };
-const fallbackPublisherSlugAliases: Record<string, string> = {
-  skillhub: "skillhub-labs",
-};
 const publisherDisplayNameSlugs: Record<string, string> = {
   "skillhub publisher": "skillhub",
 };
@@ -124,24 +114,10 @@ export async function getPublicPublisherProfile(
         : null;
     }
   } catch {
-    // Static fallback below keeps public pages available when the API is not reachable.
+    return null;
   }
 
-  const productionProfile = productionPublisherProfile(normalizedSlug);
-
-  if (productionProfile) {
-    return productionProfile;
-  }
-
-  const fallbackProfiles = fallbackPublicPublishers();
-  const fallbackProfile =
-    fallbackProfiles.find((profile) => profile.slug === normalizedSlug) ??
-    fallbackProfiles.find(
-      (profile) => profile.slug === fallbackPublisherSlugAliases[normalizedSlug],
-    ) ??
-    null;
-
-  return demoFallback(fallbackProfile, null);
+  return null;
 }
 
 export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
@@ -165,10 +141,10 @@ export async function getPublicPublishers(): Promise<PublicPublisherProfile[]> {
       }
     }
   } catch {
-    // Static fallback below.
+    return [];
   }
 
-  return demoFallback(fallbackPublicPublishers(), []);
+  return [];
 }
 
 export function publisherSlugFromName(name: string) {
@@ -243,81 +219,6 @@ function isAcceptanceQaCatalogRecord(...parts: string[]) {
   );
 }
 
-function fallbackPublicPublishers(): PublicPublisherProfile[] {
-  const groups = new Map<string, MarketplaceSkill[]>();
-
-  marketplaceSkills.filter((skill) => isVerifiedSkillStatus(skill.verification.en)).forEach((skill) => {
-    const slug = publisherSlugFromName(skill.author);
-    groups.set(slug, [...(groups.get(slug) ?? []), skill]);
-  });
-
-  return Array.from(groups.entries()).map(([slug, skills]) => {
-    const publicSkills = skills.map(marketplaceSkillToPublisherSkill);
-
-    return {
-      createdAt: "demo",
-      displayName: skills[0]?.author ?? "SkillHub Publisher",
-      metrics: publisherMetrics(publicSkills),
-      payoutStatus: skills.some((skill) => skill.billing !== "free")
-        ? "verified"
-        : "not_configured",
-      skills: publicSkills,
-      slug,
-      status: "active",
-      trustLevel: skills.some((skill) => skill.verification.en === "Verified")
-        ? "verified"
-        : "active",
-      updatedAt: "demo",
-    };
-  });
-}
-
-function productionPublisherProfile(slug: string): PublicPublisherProfile | null {
-  if (slug !== "skillhub") {
-    return null;
-  }
-
-  const skill = marketplaceSkills.find((item) => item.slug === "browser-research");
-
-  if (!skill) {
-    return null;
-  }
-
-  const publicSkills = [marketplaceSkillToPublisherSkill(skill)];
-
-  return {
-    createdAt: "2026-06-07T14:35:15.995Z",
-    displayName: "SkillHub",
-    metrics: publisherMetrics(publicSkills),
-    payoutStatus: "not_configured",
-    skills: publicSkills,
-    slug: "skillhub",
-    status: "active",
-    trustLevel: "active",
-    updatedAt: "2026-06-07T14:35:15.995Z",
-  };
-}
-
-function marketplaceSkillToPublisherSkill(
-  skill: MarketplaceSkill,
-): PublicPublisherSkill {
-  return {
-    billing: skill.billing,
-    callCount: parseCompactNumber(skill.installs) * 6,
-    description: skill.summary,
-    displayName: skill.name,
-    installCommand: skill.installsCommand.cli,
-    installCount: parseCompactNumber(skill.installs),
-    permissionLevel: skill.risk,
-    price: skill.price,
-    priceStatus: skill.billing === "free" ? "active" : "active",
-    slug: skill.slug,
-    successRate: parsePercent(skill.successRate),
-    verificationStatus: verificationStatusFromLabel(skill.verification.en),
-    version: skill.changelog[0]?.version ?? null,
-  };
-}
-
 function publisherMetrics(
   skills: PublicPublisherSkill[],
 ): PublicPublisherProfile["metrics"] {
@@ -370,32 +271,4 @@ function formatApiPrice(
     en: `${amount} / call`,
     zh: `${amount} / 次`,
   };
-}
-
-function verificationStatusFromLabel(
-  label: string,
-): PublicPublisherSkill["verificationStatus"] {
-  const normalized = label.toLowerCase();
-
-  if (isVerifiedSkillStatus(normalized)) {
-    return "verified";
-  }
-
-  if (normalized.includes("restricted")) {
-    return "submitted";
-  }
-
-  return "submitted";
-}
-
-function parsePercent(value: string) {
-  const parsed = Number(value.replace("%", ""));
-  return Number.isFinite(parsed) ? parsed / 100 : null;
-}
-
-function parseCompactNumber(value: string) {
-  const normalized = value.trim().toLowerCase();
-  const multiplier = normalized.endsWith("k") ? 1000 : 1;
-  const parsed = Number(normalized.replace(/k$/, ""));
-  return Number.isFinite(parsed) ? Math.round(parsed * multiplier) : 0;
 }

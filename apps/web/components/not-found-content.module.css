@@ -1,0 +1,205 @@
+/* Not found and error recovery page styles */
+.pageStyles :global(.not-found-shell) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 24px;
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 76px 0 56px;
+}
+
+.pageStyles :global(.not-found-copy),
+.pageStyles :global(.not-found-panel) {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: var(--radius);
+  background: rgba(20, 24, 18, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.pageStyles :global(.not-found-copy) {
+  padding: clamp(28px, 5vw, 54px);
+}
+
+.pageStyles :global(.not-found-copy h1) {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 760;
+  line-height: 0.98;
+}
+
+.pageStyles :global(.not-found-copy p) {
+  max-width: 680px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.pageStyles :global(.not-found-copy__zh) {
+  color: #cbd4c2 !important;
+}
+
+.pageStyles :global(.not-found-actions .primary-button),
+.pageStyles :global(.not-found-actions .secondary-button),
+.pageStyles :global(.not-found-actions .ghost-button) {
+  white-space: normal;
+}
+
+.pageStyles :global(.not-found-panel) {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+}
+
+.pageStyles :global(.not-found-panel__status) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid rgba(155, 226, 141, 0.18);
+  border-radius: var(--radius);
+  background: rgba(155, 226, 141, 0.08);
+  color: var(--signal);
+  padding: 14px;
+}
+
+.pageStyles :global(.not-found-panel__status strong),
+.pageStyles :global(.not-found-panel__status span) {
+  display: block;
+}
+
+.pageStyles :global(.not-found-panel__status span) {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pageStyles :global(.not-found-recovery-list) {
+  display: grid;
+  gap: 12px;
+}
+
+.pageStyles :global(.not-found-recovery-item) {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 13px;
+}
+
+.pageStyles :global(.not-found-recovery-item > svg) {
+  margin-top: 2px;
+  color: var(--cyan);
+}
+
+.pageStyles :global(.not-found-recovery-item strong) {
+  display: block;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.pageStyles :global(.not-found-recovery-item p),
+.pageStyles :global(.not-found-recovery-item small) {
+  display: block;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.pageStyles :global(.not-found-panel__links) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+}
+
+@media (max-width: 1120px) {
+  .pageStyles :global(.not-found-shell) {
+    grid-template-columns: 1fr;
+    width: min(860px, calc(100% - 40px));
+    padding: 54px 0;
+  }
+}
+
+@media (max-width: 1120px) {
+  .pageStyles :global(.not-found-panel__links) {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-shell) {
+    gap: 14px;
+    width: min(640px, calc(100% - 28px));
+    padding: 34px 0 42px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-copy) {
+    padding: 22px 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-copy h1) {
+    font-size: 34px;
+    line-height: 1.05;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-copy p) {
+    font-size: 14px;
+    line-height: 1.62;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-panel) {
+    gap: 12px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-panel__links) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-actions),
+  .pageStyles :global(.not-found-actions .primary-button),
+  .pageStyles :global(.not-found-actions .secondary-button),
+  .pageStyles :global(.not-found-actions .ghost-button),
+  .pageStyles :global(.not-found-panel__links .secondary-button) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .pageStyles :global(.not-found-actions .primary-button),
+  .pageStyles :global(.not-found-actions .secondary-button),
+  .pageStyles :global(.not-found-actions .ghost-button),
+  .pageStyles :global(.not-found-panel__links .secondary-button) {
+    justify-content: center;
+  }
+}
+
+.pageStyles :global(.error-digest) {
+  display: block;
+  margin-top: 18px;
+  color: rgba(221, 255, 220, 0.42);
+  font-family: var(--font-mono, "SFMono-Regular", Consolas, monospace);
+  font-size: 12px;
+}

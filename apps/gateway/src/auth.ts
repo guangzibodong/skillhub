@@ -1,4 +1,8 @@
 import { getSql } from "./registry.js";
+import {
+  resolveOAuthProviderConfig,
+  type PlatformConfigEnv,
+} from "./platform-config.js";
 
 type Sql = NonNullable<Awaited<ReturnType<typeof getSql>>>;
 
@@ -69,6 +73,16 @@ type PasswordLoginInput = {
   password?: unknown;
 };
 
+type PasswordResetRequestInput = {
+  email?: unknown;
+};
+
+type PasswordResetConfirmInput = {
+  challengeId?: unknown;
+  code?: unknown;
+  password?: unknown;
+};
+
 export type OAuthProvider = "github" | "google";
 
 type OAuthProviderConfig = {
@@ -89,7 +103,7 @@ type OAuthProfile = {
   providerUserId: string;
 };
 
-type OAuthRuntimeEnv = {
+type OAuthRuntimeEnv = PlatformConfigEnv & {
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
@@ -513,7 +527,7 @@ export async function verifyEmailAccessCode(input: EmailAccessVerifyInput, env?:
       email: string;
       expiresAt: string;
       maxAttempts: number;
-      mode: EmailAccessMode;
+      mode: string;
       organizationName: string | null;
       organizationSlug: string | null;
       returnTo: string | null;
@@ -522,6 +536,10 @@ export async function verifyEmailAccessCode(input: EmailAccessVerifyInput, env?:
     const challenge = challengeRows[0];
 
     if (!challenge) {
+      throw new Error("Email verification challenge was not found.");
+    }
+
+    if (challenge.mode !== "login" && challenge.mode !== "signup") {
       throw new Error("Email verification challenge was not found.");
     }
 
@@ -559,6 +577,216 @@ export async function verifyEmailAccessCode(input: EmailAccessVerifyInput, env?:
     return challenge.mode === "signup"
       ? completeEmailSignup(tx, challenge)
       : completeEmailLogin(tx, challenge);
+  });
+}
+
+export async function requestPasswordResetCode(input: PasswordResetRequestInput, env?: OAuthRuntimeEnv) {
+  const sql = await requireSql();
+
+  if (!(await isEmailChallengesTableAvailable(sql))) {
+    throw new Error("Email verification challenge storage is not available.");
+  }
+
+  if (!(await isPasswordCredentialsTableAvailable(sql))) {
+    throw new Error("Password credential storage is not available.");
+  }
+
+  const email = normalizeEmail(String(input.email ?? ""));
+  const credential = await findPasswordCredential(sql, { email });
+  const exposeCode = shouldExposeEmailDebugCode(env);
+
+  if (!credential) {
+    const createdAt = new Date();
+    const expiresAt = new Date(createdAt.getTime() + 10 * 60 * 1000);
+
+    return {
+      challengeId: randomUuid(),
+      createdAt: createdAt.toISOString(),
+      delivery: {
+        channel: "email",
+        status: "queued"
+      },
+      deliveryPreviewCode: null,
+      email,
+      expiresAt: expiresAt.toISOString(),
+      mode: "password_reset" as const
+    };
+  }
+
+  const code = randomNumericCode();
+  const codeHash = await emailCodeHash(email, code, env);
+  const rows = (await sql`
+    insert into email_login_challenges (
+      email,
+      mode,
+      code_hash,
+      expires_at,
+      display_name,
+      delivery_channel,
+      delivery_status,
+      metadata
+    )
+    values (
+      ${email},
+      'password_reset',
+      ${codeHash},
+      now() + interval '10 minutes',
+      ${credential.displayName},
+      'email',
+      'queued',
+      ${sql.json({
+        source: "password_reset_request",
+        userId: credential.userId
+      })}
+    )
+    returning id::text as "challengeId", expires_at as "expiresAt", created_at as "createdAt"
+  `) as Array<{ challengeId: string; createdAt: string; expiresAt: string }>;
+  const challenge = rows[0];
+
+  await sql`
+    insert into notification_events (user_id, event_type, channel, subject, payload, status)
+    values (${credential.userId}, 'auth.email.code.requested', 'email', 'SkillHub password reset code', ${sql.json({
+      code,
+      challengeId: challenge.challengeId,
+      email,
+      expiresAt: challenge.expiresAt,
+      mode: "password_reset"
+    })}, 'queued')
+  `;
+
+  return {
+    challengeId: challenge.challengeId,
+    createdAt: challenge.createdAt,
+    delivery: {
+      channel: "email",
+      status: "queued"
+    },
+    deliveryPreviewCode: exposeCode ? code : null,
+    email,
+    expiresAt: challenge.expiresAt,
+    mode: "password_reset" as const
+  };
+}
+
+export async function resetPasswordWithCode(input: PasswordResetConfirmInput, env?: OAuthRuntimeEnv) {
+  const sql = await requireSql();
+
+  if (!(await isEmailChallengesTableAvailable(sql))) {
+    throw new Error("Email verification challenge storage is not available.");
+  }
+
+  if (!(await isPasswordCredentialsTableAvailable(sql))) {
+    throw new Error("Password credential storage is not available.");
+  }
+
+  const challengeId = normalizeUuid(String(input.challengeId ?? ""));
+  const code = normalizeEmailCode(input.code);
+  const passwordCredential = await hashPassword(normalizePassword(input.password));
+
+  return sql.begin(async (tx: Sql) => {
+    const challengeRows = (await tx`
+      select
+        id::text as "challengeId",
+        email,
+        code_hash as "codeHash",
+        attempts,
+        max_attempts as "maxAttempts",
+        expires_at as "expiresAt",
+        consumed_at as "consumedAt"
+      from email_login_challenges
+      where id = ${challengeId}
+        and mode = 'password_reset'
+      for update
+    `) as Array<{
+      attempts: number;
+      challengeId: string;
+      codeHash: string;
+      consumedAt: string | null;
+      email: string;
+      expiresAt: string;
+      maxAttempts: number;
+    }>;
+    const challenge = challengeRows[0];
+
+    if (!challenge) {
+      throw new Error("Email verification challenge was not found.");
+    }
+
+    if (challenge.consumedAt) {
+      throw new Error("Email verification code has already been used.");
+    }
+
+    if (new Date(challenge.expiresAt).getTime() < Date.now()) {
+      throw new Error("Email verification code has expired.");
+    }
+
+    if (challenge.attempts >= challenge.maxAttempts) {
+      throw new Error("Email verification code has too many failed attempts.");
+    }
+
+    const codeHash = await emailCodeHash(challenge.email, code, env);
+
+    if (codeHash !== challenge.codeHash) {
+      await tx`
+        update email_login_challenges
+        set attempts = attempts + 1,
+            updated_at = now()
+        where id = ${challenge.challengeId}
+      `;
+      throw new Error("Email verification code is invalid.");
+    }
+
+    const credential = await findPasswordCredential(tx, { email: challenge.email });
+
+    if (!credential) {
+      throw new Error("Email verification challenge was not found.");
+    }
+
+    await tx`
+      update email_login_challenges
+      set consumed_at = now(),
+          updated_at = now()
+      where id = ${challenge.challengeId}
+    `;
+
+    await tx`
+      update user_password_credentials
+      set password_hash = ${passwordCredential.hash},
+          password_salt = ${passwordCredential.salt},
+          password_iterations = ${passwordCredential.iterations},
+          password_algorithm = 'pbkdf2-sha256',
+          updated_at = now()
+      where user_id = ${credential.userId}
+    `;
+
+    const membershipRows = (await tx`
+      select organization_id::text as "organizationId"
+      from organization_members
+      where user_id = ${credential.userId}
+      order by created_at asc
+      limit 1
+    `) as Array<{ organizationId: string }>;
+    const organizationId = membershipRows[0]?.organizationId ?? null;
+
+    await tx`
+      insert into admin_audit_logs (actor_user_id, action, entity_type, entity_id, reason, metadata)
+      values (${credential.userId}, 'auth.password.reset', 'user', ${credential.userId}, 'Password reset completed with email verification code.', ${tx.json({
+        challengeId: challenge.challengeId,
+        username: credential.username
+      })})
+    `;
+
+    await tx`
+      insert into notification_events (user_id, organization_id, event_type, channel, subject, payload, status)
+      values (${credential.userId}, ${organizationId}, 'auth.password.reset', 'in_app', 'Password reset completed', ${tx.json({
+        userId: credential.userId
+      })}, 'queued')
+    `;
+
+    return {
+      email: credential.email,
+      userId: credential.userId
+    };
   });
 }
 
@@ -865,7 +1093,7 @@ export function publicSubject(subject: AuthSubject) {
 }
 
 export async function createOAuthAuthorizationUrl(provider: OAuthProvider, env?: OAuthRuntimeEnv, returnTo?: string) {
-  const config = getOAuthConfig(provider, env);
+  const config = await getOAuthConfig(provider, env);
   const state = await signOAuthState(
     {
       exp: Date.now() + 10 * 60 * 1000,
@@ -904,7 +1132,7 @@ export async function completeOAuthLogin(provider: OAuthProvider, input: { code?
     throw new Error("OAuth state provider mismatch.");
   }
 
-  const config = getOAuthConfig(provider, env);
+  const config = await getOAuthConfig(provider, env);
   const profile = await fetchOAuthProfile(config, code);
   const sql = await requireSql();
   const authIdentitiesAvailable = await isAuthIdentitiesTableAvailable(sql);
@@ -1020,14 +1248,14 @@ export async function completeOAuthLogin(provider: OAuthProvider, input: { code?
 }
 
 export function oauthSuccessRedirectUrl(returnTo: string | null | undefined, env?: OAuthRuntimeEnv) {
-  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://useskillhub.com";
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
   const url = new URL(normalizeReturnTo(returnTo), appUrl);
   url.searchParams.set("oauth", "connected");
   return url.toString();
 }
 
 export function oauthErrorRedirectUrl(message: string, env?: OAuthRuntimeEnv) {
-  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "https://useskillhub.com";
+  const appUrl = getConfiguredValue(env?.NEXT_PUBLIC_APP_URL, "NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
   const url = new URL("/login", appUrl);
   url.searchParams.set("oauth", "error");
   url.searchParams.set("message", message.slice(0, 160));
@@ -1533,6 +1761,19 @@ function randomNumericCode() {
   return String(bytes[0] % 1_000_000).padStart(6, "0");
 }
 
+function randomUuid() {
+  if (typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
+  return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
+}
+
 function randomToken(byteLength: number) {
   const bytes = new Uint8Array(byteLength);
   crypto.getRandomValues(bytes);
@@ -1860,55 +2101,41 @@ async function upsertOAuthAuthIdentity(tx: Sql, userId: string, provider: OAuthP
   `;
 }
 
-function getOAuthConfig(provider: OAuthProvider, env?: OAuthRuntimeEnv): OAuthProviderConfig {
-  const callbackBaseUrl = getConfiguredValue(
-    env?.SKILLHUB_AUTH_CALLBACK_BASE_URL ?? env?.SKILLHUB_AUTH_BASE_URL ?? env?.NEXT_PUBLIC_API_URL,
-    "SKILLHUB_AUTH_CALLBACK_BASE_URL",
-    "SKILLHUB_AUTH_BASE_URL",
-    "NEXT_PUBLIC_API_URL"
-  );
-  const googleClientId = getConfiguredValue(env?.SKILLHUB_GOOGLE_CLIENT_ID ?? env?.GOOGLE_CLIENT_ID, "SKILLHUB_GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID");
-  const googleClientSecret = getConfiguredValue(
-    env?.SKILLHUB_GOOGLE_CLIENT_SECRET ?? env?.GOOGLE_CLIENT_SECRET,
-    "SKILLHUB_GOOGLE_CLIENT_SECRET",
-    "GOOGLE_CLIENT_SECRET"
-  );
-  const githubClientId = getConfiguredValue(env?.SKILLHUB_GITHUB_CLIENT_ID ?? env?.GITHUB_CLIENT_ID, "SKILLHUB_GITHUB_CLIENT_ID", "GITHUB_CLIENT_ID");
-  const githubClientSecret = getConfiguredValue(
-    env?.SKILLHUB_GITHUB_CLIENT_SECRET ?? env?.GITHUB_CLIENT_SECRET,
-    "SKILLHUB_GITHUB_CLIENT_SECRET",
-    "GITHUB_CLIENT_SECRET"
-  );
+async function getOAuthConfig(provider: OAuthProvider, env?: OAuthRuntimeEnv): Promise<OAuthProviderConfig> {
+  const resolved = await resolveOAuthProviderConfig(provider, env, { includeSecret: true });
+  const callbackBaseUrl = resolved.callbackBaseUrl;
+  const clientId = resolved.clientId;
+  const clientSecret = resolved.clientSecret;
 
   if (!callbackBaseUrl) {
     throw new Error("OAuth callback base URL is not configured.");
   }
 
   if (provider === "google") {
-    if (!googleClientId || !googleClientSecret) {
+    if (!clientId || !clientSecret) {
       throw new Error("Google OAuth client id or secret is not configured.");
     }
 
     return {
       authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
       callbackBaseUrl,
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId,
+      clientSecret,
       provider,
       scope: "openid email profile",
       tokenUrl: "https://oauth2.googleapis.com/token"
     };
   }
 
-  if (!githubClientId || !githubClientSecret) {
+  if (!clientId || !clientSecret) {
     throw new Error("GitHub OAuth client id or secret is not configured.");
   }
 
   return {
     authorizationUrl: "https://github.com/login/oauth/authorize",
     callbackBaseUrl,
-    clientId: githubClientId,
-    clientSecret: githubClientSecret,
+    clientId,
+    clientSecret,
     provider,
     scope: "read:user user:email",
     tokenUrl: "https://github.com/login/oauth/access_token"
